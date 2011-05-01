@@ -56,7 +56,12 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements
         return value.toString();
     }
 
-    public Object getValue(String constant) {
+    public Object getValueFromString(String constant) {
+        return singleBool;
+    }
+
+    @Override
+    protected Object toValue(Boolean constant) {
         return singleBool;
     }
 

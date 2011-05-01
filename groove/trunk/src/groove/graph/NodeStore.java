@@ -27,8 +27,8 @@ import java.util.Arrays;
  */
 public class NodeStore<N extends Node> {
     /**
-     * Creates a store, given a prototype edge object to 
-     * create new edges off.
+     * Creates a store, given a factory to 
+     * create new nodes off.
      */
     public NodeStore(Factory<N> factory) {
         this.factory = factory;

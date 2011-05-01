@@ -5142,9 +5142,14 @@ public class Simulator {
          */
         public void refresh() {
             if (getGraphPanel() == getStatePanel()) {
-                setEnabled(getCurrentState() != null);
-                putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
-                putValue(SHORT_DESCRIPTION, Options.SAVE_STATE_ACTION_NAME);
+                setEnabled(getStatePanel().getJModel() != null);
+                if (getStatePanel().isShowingState()) {
+                    putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
+                    putValue(SHORT_DESCRIPTION, Options.SAVE_STATE_ACTION_NAME);
+                } else {
+                    putValue(NAME, Options.SAVE_GRAPH_ACTION_NAME);
+                    putValue(SHORT_DESCRIPTION, Options.SAVE_GRAPH_ACTION_NAME);
+                }
             } else if (getGraphPanel() == getRulePanel()) {
                 setEnabled(getCurrentRule() != null);
                 putValue(NAME, Options.SAVE_RULE_ACTION_NAME);
@@ -5165,6 +5170,56 @@ public class Simulator {
                 setEnabled(false);
                 putValue(NAME, Options.SAVE_AS_ACTION_NAME);
                 putValue(SHORT_DESCRIPTION, Options.SAVE_AS_ACTION_NAME);
+            }
+        }
+    }
+
+    /**
+     * Returns the host graph save action permanently associated with this simulator.
+     */
+    public SaveHostGraphAction getSaveHostGraphAction() {
+        // lazily create the action
+        if (this.saveHostGraphAction == null) {
+            this.saveHostGraphAction = new SaveHostGraphAction();
+        }
+        return this.saveHostGraphAction;
+    }
+
+    /**
+     * The host graph save action permanently associated with this simulator.
+     */
+    private SaveHostGraphAction saveHostGraphAction;
+
+    /**
+     * Action to save the host graph.
+     */
+    private class SaveHostGraphAction extends RefreshableAction {
+        /** Constructs an instance of the action. */
+        SaveHostGraphAction() {
+            super(Options.SAVE_STATE_ACTION_NAME, Icons.SAVE_ICON);
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+            refresh();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            GraphJModel<?,?> jModel = getStatePanel().getJModel();
+            getSaveGraphAction().actionForGraphs(
+                ((AspectJModel) jModel).getGraph(), FileType.STATE_FILTER);
+        }
+
+        /**
+         * Tests if the action should be enabled according to the current state
+         * of the simulator, and also modifies the action name.
+         * 
+         */
+        public void refresh() {
+            setEnabled(getStatePanel().getJModel() != null);
+            if (getStatePanel().isShowingState()) {
+                putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_STATE_ACTION_NAME);
+            } else {
+                putValue(NAME, Options.SAVE_GRAPH_ACTION_NAME);
+                putValue(SHORT_DESCRIPTION, Options.SAVE_GRAPH_ACTION_NAME);
             }
         }
     }

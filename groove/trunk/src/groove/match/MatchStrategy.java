@@ -19,7 +19,6 @@ package groove.match;
 
 import groove.trans.HostGraph;
 import groove.trans.RuleToHostMap;
-import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 import groove.util.Visitor.Finder;
@@ -41,11 +40,9 @@ abstract public class MatchStrategy<R> {
      * @param seedMap a predefined mapping to the elements of
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
-     * @param property a property used to filter the match. The result
-     *        of the method is guaranteed to satisfy the property.
      */
-    public R find(HostGraph host, RuleToHostMap seedMap, Property<R> property) {
-        Finder<R> finder = this.finder.newInstance(property);
+    public R find(HostGraph host, RuleToHostMap seedMap) {
+        Finder<R> finder = this.finder.newInstance();
         R result = traverse(host, seedMap, finder);
         finder.dispose();
         return result;
@@ -57,14 +54,10 @@ abstract public class MatchStrategy<R> {
      * @param seedMap a predefined mapping to the elements of
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
-     * @param property a property used to filter the matches. All matches
-     *        in the returned list are guaranteed to satisfy the property.
      */
-    public List<R> findAll(HostGraph host, RuleToHostMap seedMap,
-            Property<R> property) {
+    public List<R> findAll(HostGraph host, RuleToHostMap seedMap) {
         List<R> result = new ArrayList<R>();
-        Collector<R,List<R>> collector =
-            this.collector.newInstance(result, property);
+        Collector<R,List<R>> collector = this.collector.newInstance(result);
         traverse(host, seedMap, collector);
         collector.dispose();
         return result;
@@ -88,8 +81,8 @@ abstract public class MatchStrategy<R> {
     abstract public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
             Visitor<R,T> visitor);
 
-    /** Reusable finder for {@link #find(HostGraph, RuleToHostMap, Property)}. */
+    /** Reusable finder for {@link #find(HostGraph, RuleToHostMap)}. */
     private final Finder<R> finder = Visitor.newFinder(null);
-    /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap, Property)}. */
+    /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap)}. */
     private final Collector<R,List<R>> collector = Visitor.newCollector(null);
 }

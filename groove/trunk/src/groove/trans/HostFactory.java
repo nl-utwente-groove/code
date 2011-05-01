@@ -61,21 +61,14 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
     /**
      * Returns a (numbered) value node for a given algebra and value, creating
      * it if necessary. Stores previously generated instances for reuse.
-     * @param nr the intended number of the new node; if negative, a new (fresh) number
-     * is to be assigned. If a node for this value is already in the store, it is 
-     * returned without regard for the number
      * @param algebra the algebra of the value
-     * @param value the value for the node to be created
-     * @throws IllegalArgumentException if a different node with the same
-     * number already exists in the store
+     * @param value algebra representation of the value for the new node
      */
-    public ValueNode createNode(int nr, Algebra<?> algebra, Object value) {
+    public ValueNode createNode(Algebra<?> algebra, Object value) {
         Map<Object,ValueNode> valueMap = getValueMap(algebra);
         ValueNode result = valueMap.get(value);
         if (result == null) {
-            if (nr < 0) {
-                nr = this.nodeStore.getNextNodeNr();
-            }
+            int nr = this.nodeStore.getNextNodeNr();
             result = new ValueNode(nr, algebra, value);
             valueMap.put(value, result);
             this.nodeStore.addNode(result);
@@ -84,13 +77,23 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
     }
 
     /**
-     * Returns a value node for a given algebra and value. Stores
-     * previously generated instances for reuse.
+     * Returns a (numbered) value node for a given algebra and value.
+     * The value is given in its string representation.
      * @param algebra the algebra of the value
-     * @param value the value for the node to be created
+     * @param value string representation of the value for the node to be created
      */
-    public ValueNode createNode(Algebra<?> algebra, Object value) {
-        return createNode(-1, algebra, value);
+    public ValueNode createNodeFromString(Algebra<?> algebra, String value) {
+        return createNode(algebra, algebra.getValueFromString(value));
+    }
+
+    /**
+     * Returns a (numbered) value node for a given algebra and value.
+     * The value is given in its string representation.
+     * @param algebra the algebra of the value
+     * @param value native Java representation of the value for the node to be created
+     */
+    public ValueNode createNodeFromJava(Algebra<?> algebra, Object value) {
+        return createNode(algebra, algebra.getValueFromJava(value));
     }
 
     /** 
@@ -161,7 +164,7 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
      */
     protected HostEdge createEdge(HostNode source, Label label,
             HostNode target, int nr) {
-        return new HostEdge(source, (TypeLabel) label, target, nr);
+        return new HostEdge(this, source, (TypeLabel) label, target, nr);
     }
 
     /** 

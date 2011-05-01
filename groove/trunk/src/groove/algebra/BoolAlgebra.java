@@ -56,8 +56,13 @@ public class BoolAlgebra extends BoolSignature<Boolean> implements
         return value.toString();
     }
 
-    public Boolean getValue(String constant) {
+    public Boolean getValueFromString(String constant) {
         return constant.equals("true");
+    }
+
+    @Override
+    protected Boolean toValue(Boolean constant) {
+        return constant;
     }
 
     /** The name of this algebra. */

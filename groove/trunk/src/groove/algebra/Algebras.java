@@ -244,7 +244,8 @@ public class Algebras {
             Map<String,Operator> operators = new HashMap<String,Operator>();
             Method[] methods = signatureEntry.getValue().getDeclaredMethods();
             for (Method method : methods) {
-                if (Modifier.isAbstract(method.getModifiers())) {
+                if (Modifier.isAbstract(method.getModifiers())
+                    && Modifier.isPublic(method.getModifiers())) {
                     Operator oldOperator =
                         operators.put(method.getName(), new Operator(method));
                     if (oldOperator != null) {

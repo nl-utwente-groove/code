@@ -38,4 +38,24 @@ public abstract class BoolSignature<Bool> implements Signature {
     final public boolean isValue(String value) {
         return value.equals("true") || value.equals("false");
     }
+
+    /**
+     * Conversion of native Java representation of integer constants to
+     * the corresponding algebra values.
+     * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
+     */
+    final public Bool getValueFromJava(Object constant) {
+        if (!(constant instanceof Boolean)) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native int type is %s, not %s", Boolean.class.getSimpleName(),
+                constant.getClass().getSimpleName()));
+        }
+        return toValue((Boolean) constant);
+    }
+
+    /** 
+     * Callback method to convert from the native ({@link Integer})
+     * representation to the algebra representation.
+     */
+    protected abstract Bool toValue(Boolean constant);
 }

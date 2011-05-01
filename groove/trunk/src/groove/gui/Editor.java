@@ -130,7 +130,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
         AspectJModel newModel = this.jgraph.newModel();
         newModel.loadGraph(AspectGraph.emptyGraph(HOST));
         this.jgraph.setModel(newModel);
-        this.jgraph.setExporter(getExporter());
         initListeners();
         initGUI();
     }

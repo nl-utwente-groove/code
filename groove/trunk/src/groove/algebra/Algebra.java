@@ -28,7 +28,13 @@ public interface Algebra<T> extends Signature {
      * or return <code>null</code> if the string constant does not satisfy
      * {@link Signature#isValue(String)}.
      */
-    T getValue(String constant);
+    T getValueFromString(String constant);
+
+    /**
+     * Conversion of native Java representations of algebra constants to
+     * the corresponding algebra values.
+     */
+    T getValueFromJava(Object constant);
 
     /** Conversion of algebra values to their string representations. */
     String getSymbol(Object value);

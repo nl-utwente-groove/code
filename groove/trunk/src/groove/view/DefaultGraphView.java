@@ -171,10 +171,19 @@ public class DefaultGraphView implements GraphView {
         Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
         DefaultHostGraph model = createGraph(view.getName());
         // we need to record the view-to-model element map for layout transfer
-        ViewToHostMap elementMap = new ViewToHostMap(HostFactory.newInstance());
+        ViewToHostMap elementMap = new ViewToHostMap(model.getFactory());
         // copy the nodes from view to model
+        // first the non-value nodes because their numbers are fixed
         for (AspectNode viewNode : view.nodeSet()) {
-            processViewNode(model, elementMap, viewNode);
+            if (!viewNode.getAttrKind().isData()) {
+                processViewNode(model, elementMap, viewNode);
+            }
+        }
+        // then the value nodes because their numbers are generated
+        for (AspectNode viewNode : view.nodeSet()) {
+            if (viewNode.getAttrKind().isData()) {
+                processViewNode(model, elementMap, viewNode);
+            }
         }
         // copy the edges from view to model
         for (AspectEdge viewEdge : view.edgeSet()) {
@@ -251,9 +260,12 @@ public class DefaultGraphView implements GraphView {
                     this.algebraFamily.getAlgebra(attrType.getName());
                 Aspect dataType = viewNode.getAttrAspect();
                 String symbol = ((Constant) dataType.getContent()).getSymbol();
+                // don't reuse value node numbers in the image
+                //                                nodeImage =
+                //                                    model.getFactory().createNode(viewNode.getNumber(),
+                //                                        nodeAlgebra, nodeAlgebra.getValueFromString(symbol));
                 nodeImage =
-                    model.getFactory().createNode(viewNode.getNumber(),
-                        nodeAlgebra, nodeAlgebra.getValue(symbol));
+                    model.getFactory().createNodeFromString(nodeAlgebra, symbol);
                 model.addNode(nodeImage);
             } else {
                 nodeImage = model.addNode(viewNode.getNumber());
@@ -289,8 +301,8 @@ public class DefaultGraphView implements GraphView {
             Algebra<?> nodeAlgebra =
                 this.algebraFamily.getAlgebra(pred.getSignature());
             modelTarget =
-                model.getFactory().createNode(-1, nodeAlgebra,
-                    nodeAlgebra.getValue(pred.getValue().getSymbol()));
+                model.getFactory().createNodeFromString(nodeAlgebra,
+                    pred.getValue().getSymbol());
             model.addNode(modelTarget);
 
             // Update the label for the edge.
@@ -304,7 +316,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     /**
-     * Returns the graph factory used to construct the model.
+     * Callback method to create the host graph.
      */
     private DefaultHostGraph createGraph(String name) {
         return new DefaultHostGraph(name);

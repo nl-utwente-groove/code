@@ -37,7 +37,12 @@ public class RealPointAlgebra extends RealSignature<Object,Object,Object>
         return value.toString();
     }
 
-    public Object getValue(String constant) {
+    public Object getValueFromString(String constant) {
+        return singleReal;
+    }
+
+    @Override
+    protected Object toValue(Double constant) {
         return singleReal;
     }
 

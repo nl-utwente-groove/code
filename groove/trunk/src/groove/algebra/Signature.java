@@ -38,6 +38,18 @@ public interface Signature {
     /**
      * Tests if a given string is a representation of a value of the signature.
      * This should be implemented in the concrete signature, not in the algebra.
+     * @param value a prospective string representation of an algebra constant 
      */
     public boolean isValue(String value);
+
+    /**
+     * Conversion of native Java representation of algebra constants to
+     * the corresponding algebra values.
+     * @param constant the native Java representation of an algebra constants for
+     * this signature
+     * @throws IllegalArgumentException if the parameter is not of the
+     * native Java type
+     */
+    public Object getValueFromJava(Object constant)
+        throws IllegalArgumentException;
 }

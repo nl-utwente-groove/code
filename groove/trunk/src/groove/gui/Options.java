@@ -247,8 +247,10 @@ public class Options implements Cloneable {
     public static final String EXPORT_RULE_ACTION_NAME = "Export Rule ...";
     /** Export lts action name */
     public static final String EXPORT_LTS_ACTION_NAME = "Export LTS ...";
-    /** Export state action name */
+    /** Export graph action name */
     public static final String EXPORT_GRAPH_ACTION_NAME = "Export Graph ...";
+    /** Export state action name */
+    public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Export type action name */
     public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
     /** Export label filter action name */
@@ -360,6 +362,10 @@ public class Options implements Cloneable {
      * Save grammar action name
      */
     public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar As ...";
+    /**
+     * Save graph action name
+     */
+    public static final String SAVE_GRAPH_ACTION_NAME = "Save Graph As ...";
     /**
      * Save state action name
      */

@@ -104,8 +104,13 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String>
     /**
      * Creates a new {@link BigDecimal}.
      */
-    public BigDecimal getValue(String symbol) {
+    public BigDecimal getValueFromString(String symbol) {
         return new BigDecimal(symbol, MathContext.DECIMAL128);
+    }
+
+    @Override
+    protected BigDecimal toValue(Double constant) {
+        return BigDecimal.valueOf(constant);
     }
 
     /**

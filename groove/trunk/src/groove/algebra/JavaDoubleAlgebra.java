@@ -98,8 +98,13 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String>
     /**
      * Delegates to {@link BigDecimal#doubleValue()}.
      */
-    public Double getValue(String symbol) {
+    public Double getValueFromString(String symbol) {
         return new BigDecimal(symbol).doubleValue();
+    }
+
+    @Override
+    protected Double toValue(Double constant) {
+        return constant;
     }
 
     /**

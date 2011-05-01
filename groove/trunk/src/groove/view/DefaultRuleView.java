@@ -1139,7 +1139,8 @@ public class DefaultRuleView implements RuleView {
          */
         private boolean isForThisLevel(AspectElement elem) {
             AspectKind kind = elem.getKind();
-            return this.index.isExistential() || !kind.isCreator();
+            return this.index.isExistential() || kind.inNAC()
+                || !kind.isCreator();
         }
 
         /**

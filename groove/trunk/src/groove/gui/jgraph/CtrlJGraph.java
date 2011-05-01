@@ -44,7 +44,6 @@ public class CtrlJGraph extends GraphJGraph {
      */
     public CtrlJGraph(Simulator simulator) {
         super(simulator == null ? null : simulator.getOptions(), true);
-        setExporter(simulator.getExporter());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getSetLayoutMenu().selectLayoutAction(
             createInitialLayouter().newInstance((this)));

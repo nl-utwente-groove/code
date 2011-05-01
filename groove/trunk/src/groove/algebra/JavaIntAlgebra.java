@@ -103,8 +103,13 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
     /**
      * Delegates to {@link BigInteger#intValue()}.
      */
-    public Integer getValue(String symbol) {
+    public Integer getValueFromString(String symbol) {
         return new BigInteger(symbol).intValue();
+    }
+
+    @Override
+    protected Integer toValue(Integer constant) {
+        return constant;
     }
 
     /**

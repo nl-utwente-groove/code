@@ -79,4 +79,24 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
             return false;
         }
     }
+
+    /**
+     * Conversion of native Java representation of integer constants to
+     * the corresponding algebra values.
+     * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
+     */
+    final public Int getValueFromJava(Object constant) {
+        if (!(constant instanceof Integer)) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native int type is %s, not %s", Integer.class.getSimpleName(),
+                constant.getClass().getSimpleName()));
+        }
+        return toValue((Integer) constant);
+    }
+
+    /** 
+     * Callback method to convert from the native ({@link Integer})
+     * representation to the algebra representation.
+     */
+    protected abstract Int toValue(Integer constant);
 }

@@ -103,8 +103,13 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String>
     /**
      * Delegates to {@link BigInteger#intValue()}.
      */
-    public BigInteger getValue(String symbol) {
+    public BigInteger getValueFromString(String symbol) {
         return new BigInteger(symbol);
+    }
+
+    @Override
+    protected BigInteger toValue(Integer constant) {
+        return BigInteger.valueOf(constant);
     }
 
     /**
