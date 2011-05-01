@@ -25,7 +25,7 @@ import groove.abstraction.Shape;
 import groove.abstraction.ShapeEdge;
 import groove.graph.EdgeRole;
 import groove.trans.HostGraph;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -62,9 +62,9 @@ public class TestMaterialisation {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-0");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
-            for (RuleMatch preMatch : preMatches) {
+            for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertEquals(6, mats.size());
@@ -92,9 +92,9 @@ public class TestMaterialisation {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
-            for (RuleMatch preMatch : preMatches) {
+            for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertEquals(3, mats.size());
@@ -122,9 +122,9 @@ public class TestMaterialisation {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
-            for (RuleMatch preMatch : preMatches) {
+            for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertEquals(6, mats.size());
@@ -151,9 +151,9 @@ public class TestMaterialisation {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
-            for (RuleMatch preMatch : preMatches) {
+            for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 assertEquals(2, mats.size());

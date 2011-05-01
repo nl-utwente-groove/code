@@ -26,7 +26,6 @@ import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
-import groove.trans.RuleName;
 
 /**
  * Predicate rule_name(+Name, ?Rule)
@@ -43,10 +42,10 @@ public class Predicate_rule extends TransPrologCode {
             return interpreter.unify(args[0], res);
         } catch (Exception e) {
             try {
-                RuleName ruleName = null;
+                String ruleName = null;
 
                 try {
-                    ruleName = new RuleName(((AtomTerm) args[0]).value);
+                    ruleName = ((AtomTerm) args[0]).value;
                 } catch (Exception ee) {
                     return FAIL;
                 }

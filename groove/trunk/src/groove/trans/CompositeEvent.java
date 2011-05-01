@@ -102,14 +102,14 @@ public class CompositeEvent extends
         return result;
     }
 
-    public RuleMatch getMatch(HostGraph source) {
+    public Proof getMatch(HostGraph source) {
         if (false) {
             // the events are ordered according to rule level
             // so we can build a stack of corresponding matches
-            Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
+            Stack<Proof> matchStack = new Stack<Proof>();
             for (BasicEvent event : this.eventArray) {
-                RuleMatch match =
-                    new RuleMatch(event.getRule(),
+                Proof match =
+                    new Proof(event.getRule(),
                         event.getMatch(source).getPatternMap());
                 int[] eventLevel = event.getRule().getLevel();
                 int eventDepth = eventLevel.length;
@@ -121,23 +121,23 @@ public class CompositeEvent extends
                 // add this match to the match of the parent event
                 // (which is now on the top of the stack)
                 if (eventDepth > 0) {
-                    RuleMatch parentMatch = matchStack.peek();
+                    Proof parentMatch = matchStack.peek();
                     assert eventDepth <= 2
                         || parentMatch.getRule().getLevel()[eventDepth - 3] == eventLevel[eventDepth - 3];
-                    parentMatch.getSubMatches().add(match);
+                    parentMatch.getSubProofs().add(match);
                 }
                 // add this match to the stack, to receive its sub-matches
                 matchStack.push(match);
             }
             return matchStack.get(0);
         } else {
-            Property<RuleMatch> isMyMatch = new Property<RuleMatch>() {
+            Property<Proof> isMyMatch = new Property<Proof>() {
                 @Override
-                public boolean isSatisfied(RuleMatch value) {
+                public boolean isSatisfied(Proof value) {
                     return value.newEvent(null).equals(CompositeEvent.this);
                 }
             };
-            RuleMatch result =
+            Proof result =
                 getRule().traverseMatches(source, null,
                     Visitor.newFinder(isMyMatch));
             if (result != null) {

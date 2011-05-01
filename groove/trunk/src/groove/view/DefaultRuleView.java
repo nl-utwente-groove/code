@@ -43,8 +43,6 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
-import groove.trans.ForallCondition;
-import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
@@ -52,7 +50,6 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
-import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
@@ -104,22 +101,14 @@ public class DefaultRuleView implements RuleView {
      */
     public DefaultRuleView(AspectGraph graph, SystemProperties properties) {
         graph.testFixed(true);
-        this.name = new RuleName(graph.getName());
+        this.name = graph.getName();
         this.systemProperties = properties;
         this.graph = graph;
     }
 
-    /**
-     * Returns the name of the rule represented by this rule graph, set at
-     * construction time.
-     */
-    public RuleName getRuleName() {
-        return this.name;
-    }
-
     /** Convenience method for <code>getNameLabel().text()</code>. */
     public String getName() {
-        return getRuleName() == null ? null : getRuleName().toString();
+        return this.name;
     }
 
     public int getPriority() {
@@ -147,7 +136,7 @@ public class DefaultRuleView implements RuleView {
     public int compareTo(RuleView o) {
         int result = getPriority() - o.getPriority();
         if (result == 0) {
-            result = getRuleName().compareTo(o.getRuleName());
+            result = getName().compareTo(o.getName());
         }
         return result;
     }
@@ -427,7 +416,7 @@ public class DefaultRuleView implements RuleView {
     /**
      * The name of the rule represented by this rule graph.
      */
-    private final RuleName name;
+    private final String name;
 
     /** The view graph representation of the rule. */
     private final AspectGraph graph;
@@ -1740,10 +1729,9 @@ public class DefaultRuleView implements RuleView {
          * @param nacNodeSet set of graph elements that should be turned into a
          *        NAC target
          */
-        private NotCondition computeNac(RuleGraph lhs,
-                Set<RuleNode> nacNodeSet, Set<RuleEdge> nacEdgeSet)
-            throws FormatException {
-            NotCondition result = null;
+        private Condition computeNac(RuleGraph lhs, Set<RuleNode> nacNodeSet,
+                Set<RuleEdge> nacEdgeSet) throws FormatException {
+            Condition result = null;
             // first check for merge end edge embargoes
             // they are characterised by the fact that there is precisely 1
             // element
@@ -1819,13 +1807,13 @@ public class DefaultRuleView implements RuleView {
         /**
          * Callback method to create a general NAC on a given graph.
          * @param context the context-graph
-         * @return the new {@link groove.trans.NotCondition}
+         * @return the new {@link groove.trans.Condition}
          * @see #toRule()
          */
-        private NotCondition createNAC(RuleGraph context) {
-            return new NotCondition(
-                context.newGraph(context.getName() + "-nac"),
-                getSystemProperties());
+        private Condition createNAC(RuleGraph context) {
+            String name = context.getName() + "-nac";
+            return new Condition(name, Condition.Op.NOT,
+                context.newGraph(name), null, getSystemProperties());
         }
 
         /**
@@ -1834,17 +1822,19 @@ public class DefaultRuleView implements RuleView {
          * @param lhs the left hand side graph
          * @param rhs the right hand side graph
          * @param ruleMorphism morphism of the new rule to be created
-         * @param rootGraph root graph of the LHS
+         * @param root root graph of the LHS
          * @param coRootMap map of creator nodes in the parent rule to creator
          *        nodes of this rule
          * @return the fresh rule created by the factory
          */
         private Rule createRule(String name, RuleGraph lhs, RuleGraph rhs,
-                RuleGraphMorphism ruleMorphism, RuleGraph rootGraph,
+                RuleGraphMorphism ruleMorphism, RuleGraph root,
                 RuleGraphMorphism coRootMap) {
             Rule result =
-                new Rule(new RuleName(name), lhs, rhs, ruleMorphism, rootGraph,
-                    coRootMap, new GraphProperties(), getSystemProperties());
+                new Rule(name, lhs, rhs, ruleMorphism, root, coRootMap,
+                    new GraphProperties(), getSystemProperties());
+            // there must be at least one match
+            result.setPositive();
             return result;
         }
 
@@ -1857,10 +1847,10 @@ public class DefaultRuleView implements RuleView {
          *        non-vacuously
          * @return the fresh condition
          */
-        private ForallCondition createForall(RuleGraph pattern,
-                RuleGraph rootGraph, String name, boolean positive) {
-            ForallCondition result =
-                new ForallCondition(new RuleName(name), pattern, rootGraph,
+        private Condition createForall(RuleGraph pattern, RuleGraph rootGraph,
+                String name, boolean positive) {
+            Condition result =
+                new Condition(name, Condition.Op.FORALL, pattern, rootGraph,
                     getSystemProperties());
             if (positive) {
                 result.setPositive();

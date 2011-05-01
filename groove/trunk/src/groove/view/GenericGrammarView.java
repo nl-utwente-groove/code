@@ -17,9 +17,8 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
-import groove.trans.HostGraph;
-import groove.trans.RuleName;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.SystemProperties;
 
 import java.util.Set;
@@ -45,7 +44,7 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
     public Set<String> getGraphNames();
 
     /** Returns an unmodifiable view on the set of rule names in this grammar. */
-    public Set<RuleName> getRuleNames();
+    public Set<String> getRuleNames();
 
     /**
      * Returns an unmodifiable view on the set of type graph names in this
@@ -58,7 +57,7 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
      * @return the rule view for rule <code>name</code>, or <code>null</code> if
      *         there is no such rule.
      */
-    public RV getRuleView(RuleName name);
+    public RV getRuleView(String name);
 
     /**
      * Returns the graph view for a given graph name.

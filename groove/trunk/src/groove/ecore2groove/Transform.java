@@ -20,7 +20,6 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;
 
@@ -206,13 +205,13 @@ public class Transform {
 
         // Delete all former constraints since we are remaking them
         // and old ones need to go
-        Set<RuleName> rulesToDelete = new HashSet<RuleName>();
-        for (RuleName ruleName : grammar.getRules().keySet()) {
+        Set<String> rulesToDelete = new HashSet<String>();
+        for (String ruleName : grammar.getRules().keySet()) {
             if (ruleName.toString().startsWith("constraint")) {
                 rulesToDelete.add(ruleName);
             }
         }
-        for (RuleName ruleName : rulesToDelete) {
+        for (String ruleName : rulesToDelete) {
             grammar.deleteRule(ruleName);
         }
 

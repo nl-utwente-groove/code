@@ -23,21 +23,20 @@ import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
+import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.util.Visitor;
@@ -78,8 +77,8 @@ public class NACTest {
     protected static final int G0_INDEX = 2;
 
     protected Rule rule;
-    protected NotCondition NAC0;
-    protected NotCondition NAC3;
+    protected Condition NAC0;
+    protected Condition NAC3;
     protected HostGraph[] g = new HostGraph[NR_GRAPHS];
 
     protected RuleNode[][] ruleNodes = new RuleNode[2 + NR_NACS][];
@@ -112,8 +111,8 @@ public class NACTest {
         ruleProperties.setPriority(0);
         ruleProperties.setConfluent(false);
         this.rule =
-            new Rule(new RuleName("test"), lhs, rhs, ruleMorphism,
-                ruleProperties, SystemProperties.DEFAULT_PROPERTIES);
+            new Rule("test", lhs, rhs, ruleMorphism, ruleProperties,
+                SystemProperties.DEFAULT_PROPERTIES);
         this.rule.setLabelStore(this.labelStore);
         this.NAC0 =
             new EdgeEmbargo(lhs, new RuleEdge(this.ruleNodes[0][0],
@@ -275,9 +274,9 @@ public class NACTest {
             final HostGraph graph) {
         final Collection<RuleApplication> result =
             new ArrayList<RuleApplication>();
-        rule.traverseMatches(graph, null, new Visitor.Simple<RuleMatch>() {
+        rule.traverseMatches(graph, null, new Visitor.Simple<Proof>() {
             @Override
-            protected boolean process(RuleMatch match) {
+            protected boolean process(Proof match) {
                 result.add(match.newEvent(null).newApplication(graph));
                 return true;
             }

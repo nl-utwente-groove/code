@@ -28,7 +28,7 @@ import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.RuleToHostMap;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
@@ -49,7 +49,7 @@ public class MatchSetCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
-     * @param record factory to turn {@link RuleMatch}es in to
+     * @param record factory to turn {@link Proof}es in to
      *        {@link RuleEvent}s.
      */
     public MatchSetCollector(GraphState state, SystemRecord record,
@@ -100,7 +100,7 @@ public class MatchSetCollector {
         RuleToHostMap boundMap = extractBinding(ctrlTrans);
         MatchResult result = null;
         if (boundMap != null) {
-            RuleMatch match =
+            Proof match =
                 ctrlTrans.getRule().getMatch(this.state.getGraph(), boundMap);
             if (match != null) {
                 // convert the match to an event
@@ -153,10 +153,10 @@ public class MatchSetCollector {
             RuleToHostMap boundMap = extractBinding(ctrlTrans);
             if (boundMap != null) {
                 final SystemRecord record = MatchSetCollector.this.record;
-                Visitor<RuleMatch,Boolean> eventCollector =
-                    new Visitor<RuleMatch,Boolean>(false) {
+                Visitor<Proof,Boolean> eventCollector =
+                    new Visitor<Proof,Boolean>(false) {
                         @Override
-                        protected boolean process(RuleMatch object) {
+                        protected boolean process(Proof object) {
                             RuleEvent event = record.getEvent(object);
                             result.add(event);
                             setResult(true);

@@ -25,17 +25,10 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EdgeEmbargo extends NotCondition {
-    /**
-     * Constructs an edge embargo on a given graph from a given edge with end
-     * nodes in a given graph (presumably a rule lhs).
-     * @param graph the graph on which this embargo works
-     * @param embargoEdge the edge that is forbidden
-     */
-    public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
+public class EdgeEmbargo extends Condition {
+    private EdgeEmbargo(String name, RuleGraph context, RuleEdge embargoEdge,
             SystemProperties properties) {
-        super(graph.newGraph(String.format("%s:!(%s)", graph.getName(),
-            embargoEdge)), properties);
+        super(name, Condition.Op.NOT, context.newGraph(name), null, properties);
         this.embargoEdge = embargoEdge;
         getPattern().addEdge(embargoEdge);
         getRoot().addNode(embargoEdge.source());
@@ -44,6 +37,18 @@ public class EdgeEmbargo extends NotCondition {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);
         }
+    }
+
+    /**
+     * Constructs an edge embargo on a given graph from a given edge with end
+     * nodes in a given graph (presumably a rule lhs).
+     * @param graph the graph on which this embargo works
+     * @param embargoEdge the edge that is forbidden
+     */
+    public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
+            SystemProperties properties) {
+        this(String.format("%s:!(%s)", graph.getName(), embargoEdge), graph,
+            embargoEdge, properties);
     }
 
     /**

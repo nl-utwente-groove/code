@@ -32,7 +32,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.view.FormatException;
 
 /**
@@ -111,7 +111,7 @@ public class DefaultGraphTransition extends
         }
     }
 
-    public RuleMatch getMatch() {
+    public Proof getMatch() {
         return getEvent().getMatch(source().getGraph());
     }
 

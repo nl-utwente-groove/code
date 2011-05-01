@@ -23,7 +23,7 @@ import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleLabel;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.RuleNode;
 import groove.trans.BasicEvent;
 import groove.trans.Rule;
@@ -110,7 +110,7 @@ public final class Materialisation implements Cloneable {
      * Constructs the initial materialisation object given a shape and a
      * pre-match of a rule into the shape. The pre-match given must be valid.
      */
-    private Materialisation(Shape shape, RuleMatch preMatch) {
+    private Materialisation(Shape shape, Proof preMatch) {
         this.shape = shape;
         this.matchedRule = preMatch.getRule();
         this.originalMatch = (RuleToShapeMap) preMatch.getPatternMap();
@@ -206,7 +206,7 @@ public final class Materialisation implements Cloneable {
     * application.
     */
     public static Set<Materialisation> getMaterialisations(Shape shape,
-            RuleMatch preMatch) {
+            Proof preMatch) {
         Set<Materialisation> result = new HashSet<Materialisation>();
 
         // Clone the given shape to avoid aliasing and unwanted modifications.

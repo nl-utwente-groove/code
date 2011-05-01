@@ -17,7 +17,6 @@
 package groove.io.store;
 
 import groove.graph.TypeLabel;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.view.StoredGrammarView;
 
@@ -50,7 +49,7 @@ public interface GenericSystemStore<R,G,T,C> {
     public Object getLocation();
 
     /** Immutable view on the rulename-to-rule map in the store. */
-    public Map<RuleName,R> getRules();
+    public Map<String,R> getRules();
 
     /** Immutable view on the name-to-graph map in the store. */
     public Map<String,G> getGraphs();
@@ -71,7 +70,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         there was no such rule
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public R deleteRule(RuleName name) throws UnsupportedOperationException;
+    public R deleteRule(String name) throws UnsupportedOperationException;
 
     /**
      * Adds or replaces a rule in the store.

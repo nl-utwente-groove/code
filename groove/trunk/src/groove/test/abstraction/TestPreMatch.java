@@ -23,7 +23,7 @@ import groove.abstraction.Parameters;
 import groove.abstraction.PreMatch;
 import groove.abstraction.Shape;
 import groove.trans.HostGraph;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -63,7 +63,7 @@ public class TestPreMatch {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-0");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertTrue(preMatches.isEmpty());
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +84,7 @@ public class TestPreMatch {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-4");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertTrue(preMatches.isEmpty());
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,7 +105,7 @@ public class TestPreMatch {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-1");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(3, preMatches.size());
             rule = grammar.getRule("test-match-2");
             preMatches = PreMatch.getPreMatches(shape, rule);
@@ -126,7 +126,7 @@ public class TestPreMatch {
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-3");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape, rule);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(16, preMatches.size());
         } catch (IOException e) {
             e.printStackTrace();

@@ -70,25 +70,37 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class Condition implements Fixable {
+public class Condition implements Fixable {
+    /** Constructs a condition for a non-pattern operator. */
+    public Condition(String name, Op operator) {
+        assert !operator.hasPattern();
+        this.op = operator;
+        this.name = name;
+        this.pattern = null;
+        this.root = null;
+        this.systemProperties = null;
+    }
+
     /**
      * Constructs a (named) graph condition based on a given pattern graph
      * and root graph.
      * @param name the name of the condition; may be <code>null</code>
+     * @param operator the top-level operator of this condition
      * @param pattern the graph to be matched
-     * @param rootGraph the root graph of the condition; may be <code>null</code> if the condition is
+     * @param root the root graph of the condition; may be <code>null</code> if the condition is
      *        ground
      * @param properties properties for matching the condition
      */
-    protected Condition(RuleName name, RuleGraph pattern, RuleGraph rootGraph,
-            SystemProperties properties) {
-        this.rootGraph =
-            rootGraph == null ? pattern.newGraph((name == null ? "root"
-                    : name.toString() + "-root")) : rootGraph;
+    public Condition(String name, Op operator, RuleGraph pattern,
+            RuleGraph root, SystemProperties properties) {
+        assert operator.hasPattern();
+        this.op = operator;
+        this.name = name;
+        this.root =
+            root == null ? pattern.newGraph((name == null ? "root"
+                    : name.toString() + "-root")) : root;
         this.pattern = pattern;
         this.systemProperties = properties;
-        this.name = name;
-        this.subConditions = new ArrayList<Condition>();
     }
 
     /** Returns the secondary properties of this graph condition. */
@@ -121,7 +133,7 @@ abstract public class Condition implements Fixable {
      * condition has in common with its parent in the condition tree.
      */
     public RuleGraph getRoot() {
-        return this.rootGraph;
+        return this.root;
     }
 
     /**
@@ -141,7 +153,16 @@ abstract public class Condition implements Fixable {
      * bound before the condition has to be matched.
      */
     Set<RuleNode> computeInputNodes() {
-        return new HashSet<RuleNode>(this.rootGraph.nodeSet());
+        return new HashSet<RuleNode>(this.root.nodeSet());
+    }
+
+    /** Indicates if this condition has an associated graph pattern.
+     * This is the case if and only if the condition operator is a quantifier.
+     * @return {@code true} if and only if {@link #getPattern()} does not return
+     * {@code null}
+     */
+    public boolean hasPattern() {
+        return getPattern() != null;
     }
 
     /**
@@ -156,19 +177,8 @@ abstract public class Condition implements Fixable {
      * Returns the name of this condition. A return value of <code>null</code>
      * indicates that the condition is unnamed.
      */
-    public RuleName getName() {
+    public String getName() {
         return this.name;
-    }
-
-    /**
-     * Sets the name of this condition, if the condition is not fixed. The name
-     * is assumed to be as yet unset.
-     */
-    public void setName(RuleName name) {
-        testFixed(false);
-        assert this.name == null : String.format(
-            "Condition name already set to %s", name);
-        this.name = name;
     }
 
     /**
@@ -178,7 +188,7 @@ abstract public class Condition implements Fixable {
      */
     public boolean isGround() {
         assert isFixed();
-        return this.ground;
+        return this.root.isEmpty();
     }
 
     /**
@@ -197,6 +207,10 @@ abstract public class Condition implements Fixable {
      * @see #getSubConditions()
      */
     public void addSubCondition(Condition condition) {
+        if (!getOp().hasOperands()) {
+            throw new UnsupportedOperationException(String.format(
+                "%s conditions cannot have subconditions", condition.getOp()));
+        }
         condition.testFixed(true);
         testFixed(false);
         if (this.labelStore != null) {
@@ -234,11 +248,12 @@ abstract public class Condition implements Fixable {
                 subCondition.testFixed(true);
             }
             this.fixed = true;
-            this.ground = this.getRoot().isEmpty();
-            getPattern().setFixed();
-            testAlgebra();
-            if (getRule() != null) {
-                getRule().setFixed();
+            if (hasPattern()) {
+                getPattern().setFixed();
+                testAlgebra();
+                if (getRule() != null) {
+                    getRule().setFixed();
+                }
             }
         }
     }
@@ -454,8 +469,10 @@ abstract public class Condition implements Fixable {
         return res.toString();
     }
 
-    /** Returns the mode of this condition. */
-    public abstract Op getOp();
+    /** Returns the operator of this condition. */
+    public final Op getOp() {
+        return this.op;
+    }
 
     /** Sets a count node for this universal condition. 
      * @see #getCountNode() */
@@ -509,25 +526,24 @@ abstract public class Condition implements Fixable {
         return null;
     }
 
+    /** The operator of this condition. */
+    private final Op op;
     /**
      * The name of this condition. May be <code>code</code> null.
      */
-    private RuleName name;
+    private final String name;
 
     /** The collection of sub-conditions of this condition. */
-    private final Collection<Condition> subConditions;
+    private final Collection<Condition> subConditions =
+        new ArrayList<Condition>();
 
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;
     /**
-     * Flag indicating if the rule is ground.
-     */
-    private boolean ground;
-    /**
      * The root map of this condition, i.e., the element map from the root
      * graph to the pattern graph.
      */
-    private final RuleGraph rootGraph;
+    private final RuleGraph root;
 
     /** Subset of the root nodes that are bound to be bound before the condition is matched. */
     private Set<RuleNode> inputNodes;
@@ -551,6 +567,53 @@ abstract public class Condition implements Fixable {
      */
     private boolean positive;
 
+    /** Constant condition that is always satisfied. */
+    static public final Condition True = new Condition("true", Op.TRUE);
+    /** Constant condition that is never satisfied. */
+    static public final Condition False = new Condition("false", Op.FALSE);
+
+    /** Constructs a disjunctive condition for a non-empty list of operands. */
+    static public final Condition newOr(Condition... operands) {
+        return newCondition(Op.OR, "or", operands);
+    }
+
+    /** Constructs a conjunctive condition for a non-empty list of operands. */
+    static public final Condition newAnd(Condition... operands) {
+        return newCondition(Op.AND, "and", operands);
+    }
+
+    /** Constructs a disjunctive condition for a non-empty list of operands. */
+    static private final Condition newCondition(Op op, String descr,
+            Condition... operands) {
+        if (operands.length == 0) {
+            throw new IllegalArgumentException(String.format(
+                "Can't build '%s' with empty operand list", descr));
+        }
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < operands.length; i++) {
+            if (i > 0) {
+                name.append(' ');
+                name.append(descr);
+                name.append(' ');
+            }
+            name.append('(');
+            name.append(operands[i].getName());
+            name.append(')');
+        }
+        Condition result = new Condition(name.toString(), op);
+        for (Condition oper : operands) {
+            result.addSubCondition(oper);
+        }
+        try {
+            result.setFixed();
+        } catch (FormatException e) {
+            throw new IllegalArgumentException(
+                String.format("Error while fixing new condition %s: %s", name,
+                    e.getMessage()));
+        }
+        return result;
+    }
+
     /** 
      * The (top-level) operator of this condition.
      */
@@ -564,7 +627,11 @@ abstract public class Condition implements Fixable {
         /** Conjunction of subconditions. */
         AND("Conjunctive"),
         /** Disjunction of subconditions. */
-        OR("Disjunctive");
+        OR("Disjunctive"),
+        /** Truth. */
+        TRUE("True"),
+        /** Falsehood. */
+        FALSE("False");
 
         private Op(String name) {
             this.name = name;
@@ -580,9 +647,18 @@ abstract public class Condition implements Fixable {
             return getName();
         }
 
-        /** Indicates if this operator is a quantifier. */
-        public boolean isQuantifier() {
+        /** Indicates if this operator has an associated graph pattern. */
+        public boolean hasPattern() {
             return this == FORALL || this == EXISTS || this == NOT;
+        }
+
+        /** 
+         * Indicates if this operator may have operands,
+         * i.e., sub-conditions (apart from the possible graph pattern). 
+         */
+        public boolean hasOperands() {
+            return this == FORALL || this == EXISTS || this == AND
+                || this == OR;
         }
 
         /** 

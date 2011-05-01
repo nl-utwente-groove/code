@@ -92,7 +92,7 @@ import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Duo;
@@ -416,7 +416,7 @@ public class Simulator {
      */
     private boolean setCurrentRule(RuleView rule) {
         boolean result = this.getCurrentRule() != rule;
-        this.currentRuleName = rule == null ? null : rule.getRuleName();
+        this.currentRuleName = rule == null ? null : rule.getName();
         return result;
     }
 
@@ -646,7 +646,7 @@ public class Simulator {
      * Deletes a rule from the grammar and the file system, and resets the
      * grammar view.
      */
-    void doDeleteRule(RuleName name) {
+    void doDeleteRule(String name) {
         AspectGraph rule = getGrammarStore().deleteRule(name);
         if (rule != null) {
             updateGrammar();
@@ -1302,9 +1302,9 @@ public class Simulator {
      * thereby deactivated.
      * @param name the name of the new rule
      * @require name != null
-     * @see #fireSetRule(RuleName)
+     * @see #fireSetRule(String)
      */
-    public synchronized void setRule(RuleName name) {
+    public synchronized void setRule(String name) {
         setCurrentRule(getGrammarView().getRuleView(name));
         setCurrentTransition(null);
         setCurrentEvent(null);
@@ -1324,7 +1324,7 @@ public class Simulator {
     public synchronized void setTransition(GraphTransition transition) {
         if (transition != null) {
             if (setCurrentTransition(transition)) {
-                RuleName ruleName = transition.getEvent().getRule().getName();
+                String ruleName = transition.getEvent().getRule().getName();
                 setCurrentRule(getGrammarView().getRuleView(ruleName));
                 setCurrentEvent(transition.getEvent());
             }
@@ -1334,7 +1334,7 @@ public class Simulator {
     }
 
     /**
-     * Activates a given match. Invokes {@link #fireSetMatch(RuleMatch)} to
+     * Activates a given match. Invokes {@link #fireSetMatch(Proof)} to
      * notify all observers of the change.
      * @param event the match to be activated.
      * @see #fireSetTransition(GraphTransition)
@@ -1342,7 +1342,7 @@ public class Simulator {
     public synchronized void setEvent(RuleEvent event) {
         if (!event.equals(getCurrentEvent())) {
             assert event != null : "The match and the transition cannot be both null.";
-            RuleName ruleName = event.getRule().getName();
+            String ruleName = event.getRule().getName();
             setCurrentRule(getGrammarView().getRuleView(ruleName));
             setCurrentTransition(null);
             setCurrentEvent(event);
@@ -1594,7 +1594,7 @@ public class Simulator {
                             switch (errorGraph.getRole()) {
                             case RULE:
                                 panel = getRulePanel();
-                                setRule(new RuleName(name));
+                                setRule(name);
                                 break;
                             case HOST:
                                 panel = getStatePanel();
@@ -2350,14 +2350,14 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new rule. As a result,
-     * {@link SimulationListener#setRuleUpdate(RuleName)}is invoked on all
+     * {@link SimulationListener#setRuleUpdate(String)}is invoked on all
      * currently registered listeners. This method should not be called
-     * directly: use {@link #setRule(RuleName)}instead.
+     * directly: use {@link #setRule(String)}instead.
      * 
-     * @see SimulationListener#setRuleUpdate(RuleName)
-     * @see #setRule(RuleName)
+     * @see SimulationListener#setRuleUpdate(String)
+     * @see #setRule(String)
      */
-    private synchronized void fireSetRule(RuleName name) {
+    private synchronized void fireSetRule(String name) {
         if (!this.updating) {
             this.updating = true;
             for (SimulationListener listener : this.listeners) {
@@ -2369,13 +2369,13 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a newly selected match. As a result,
-     * {@link SimulationListener#setMatchUpdate(RuleMatch)}is invoked on all
+     * {@link SimulationListener#setMatchUpdate(Proof)}is invoked on all
      * currently registered listeners. This method should not be called
      * directly: use {@link #setEvent(RuleEvent)} instead.
      * 
-     * @see SimulationListener#setMatchUpdate(RuleMatch)
+     * @see SimulationListener#setMatchUpdate(Proof)
      */
-    private synchronized void fireSetMatch(RuleMatch match) {
+    private synchronized void fireSetMatch(Proof match) {
         assert match != null;
         if (!this.updating) {
             this.updating = true;
@@ -2530,7 +2530,7 @@ public class Simulator {
      * Asks whether a given existing rule should be replaced by a newly loaded
      * one.
      */
-    boolean confirmOverwriteRule(RuleName ruleName) {
+    boolean confirmOverwriteRule(String ruleName) {
         int response =
             JOptionPane.showConfirmDialog(getFrame(),
                 String.format("Replace existing rule '%s'?", ruleName), null,
@@ -2608,13 +2608,13 @@ public class Simulator {
      * @return a rule name not occurring in the current grammar, or
      *         <code>null</code>
      */
-    RuleName askNewRuleName(String title, String name, boolean mustBeFresh) {
-        FreshNameDialog<RuleName> ruleNameDialog =
-            new FreshNameDialog<RuleName>(getGrammarView().getRuleNames(),
-                name, mustBeFresh) {
+    String askNewRuleName(String title, String name, boolean mustBeFresh) {
+        FreshNameDialog<String> ruleNameDialog =
+            new FreshNameDialog<String>(getGrammarView().getRuleNames(), name,
+                mustBeFresh) {
                 @Override
-                protected RuleName createName(String name) {
-                    return new RuleName(name);
+                protected String createName(String name) {
+                    return name;
                 }
             };
         ruleNameDialog.showDialog(getFrame(), title);
@@ -2746,7 +2746,7 @@ public class Simulator {
     /**
      * The currently selected production rule.
      */
-    private RuleName currentRuleName;
+    private String currentRuleName;
 
     /**
      * The currently activated derivation.
@@ -3313,11 +3313,11 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             if (confirmAbandon(false)) {
-                RuleName newRuleName = null;
+                String newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
                 List<RuleView> rules =
                     new ArrayList<RuleView>(getCurrentRuleSet());
-                RuleName savedRule = null;
+                String savedRule = null;
                 for (RuleView rule : rules) {
                     AspectGraph oldRuleGraph = rule.getAspectGraph();
                     newRuleName =
@@ -3441,7 +3441,7 @@ public class Simulator {
             // copy the selected rules to avoid concurrent modifications
             List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
             for (int i = 0; i < rules.size(); i++) {
-                RuleName ruleName = rules.get(i).getRuleName();
+                String ruleName = rules.get(i).getName();
                 question = String.format(question, ruleName);
                 if (i < rules.size() - 1) {
                     question = question + ", '%s'";
@@ -3451,7 +3451,7 @@ public class Simulator {
             }
             if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
                 for (RuleView rule : rules) {
-                    doDeleteRule(rule.getRuleName());
+                    doDeleteRule(rule.getName());
                 }
             }
         }
@@ -4331,7 +4331,7 @@ public class Simulator {
         }
 
         private void importRule(AspectGraph rule) {
-            RuleName ruleName = new RuleName(rule.getName());
+            String ruleName = rule.getName();
             if (getGrammarView().getRuleView(ruleName) == null
                 || confirmOverwriteRule(ruleName)) {
                 if (doAddRule(rule)) {
@@ -4553,10 +4553,9 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            final RuleName ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
+            final String ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
             if (ruleName != null) {
-                AspectGraph newRule =
-                    AspectGraph.emptyGraph(ruleName.toString(), RULE);
+                AspectGraph newRule = AspectGraph.emptyGraph(ruleName, RULE);
                 handleEditGraph(newRule, true);
             }
         }
@@ -4898,12 +4897,12 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
                 // Multiple selection
-                RuleName newRuleName = null;
+                String newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
                 List<RuleView> rules =
                     new ArrayList<RuleView>(getCurrentRuleSet());
                 for (RuleView rule : rules) {
-                    RuleName oldRuleName = rule.getRuleName();
+                    String oldRuleName = rule.getName();
                     AspectGraph ruleGraph = rule.getAspectGraph();
                     newRuleName =
                         askNewRuleName("Select new rule name",

@@ -26,7 +26,7 @@ import groove.trans.HostNode;
 import groove.trans.MergeMap;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.view.FormatException;
 
 /**
@@ -110,7 +110,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * This implementation reconstructs the matching using the rule, the anchor
      * images, and the basis graph.
      */
-    public RuleMatch getMatch() {
+    public Proof getMatch() {
         return getEvent().getMatch(source().getGraph());
     }
 

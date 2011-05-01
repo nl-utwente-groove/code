@@ -21,7 +21,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.RuleNode;
 import groove.trans.Rule;
 import groove.util.Property;
@@ -60,13 +60,13 @@ public final class PreMatch {
      * Computes and returns the valid pre-matches of a rule into a shape.
      * The given host must be a shape.
      */
-    public static Set<RuleMatch> getPreMatches(final Shape shape, Rule rule) {
-        Set<RuleMatch> preMatches = new HashSet<RuleMatch>();
+    public static Set<Proof> getPreMatches(final Shape shape, Rule rule) {
+        Set<Proof> preMatches = new HashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
         rule.traverseMatches(shape, null,
-            Visitor.newCollector(preMatches, new Property<RuleMatch>() {
+            Visitor.newCollector(preMatches, new Property<Proof>() {
                 @Override
-                public boolean isSatisfied(RuleMatch value) {
+                public boolean isSatisfied(Proof value) {
                     return isValidPreMatch(shape, value);
                 }
             }));
@@ -87,7 +87,7 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(Shape shape, RuleMatch match) {
+    public static boolean isValidPreMatch(Shape shape, Proof match) {
         RuleToShapeMap map = (RuleToShapeMap) match.getPatternMap();
 
         // Since we have non-injective matching of the LHS of the rule

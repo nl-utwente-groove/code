@@ -151,8 +151,8 @@ final public class BasicEvent extends
     /**
      * Computes a match based on the precomputed anchor map.
      */
-    public RuleMatch getMatch(HostGraph host) {
-        RuleMatch result = null;
+    public Proof getMatch(HostGraph host) {
+        Proof result = null;
         if (isCorrectFor(host)) {
             result = getRule().getEventMatch(this, host);
         }

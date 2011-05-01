@@ -19,12 +19,14 @@ package groove.match.rete;
 import groove.match.MatchStrategy;
 import groove.match.TreeMatch;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Visitor;
+import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -93,17 +95,34 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
         final TreeMatch result = new TreeMatch(this.condition, patternMap);
         ReteStrategy[] subMatchers = getSubMatchers();
         if (subMatchers.length != 0) {
-            // add matches for the subconditions
-            Visitor.Simple<TreeMatch> visitor =
-                new Visitor.Simple<TreeMatch>() {
-                    @Override
-                    protected boolean process(TreeMatch subMatch) {
-                        result.addSubMatch(subMatch);
-                        return true;
-                    }
-                };
             for (int i = 0; i < subMatchers.length; i++) {
-                subMatchers[i].traverse(host, patternMap, visitor);
+                Condition subCondition = subMatchers[i].condition;
+                Condition.Op op;
+                switch (subCondition.getOp()) {
+                case AND:
+                case OR:
+                    op = subCondition.getOp();
+                    break;
+                case EXISTS:
+                    op = Op.OR;
+                    break;
+                case FORALL:
+                    op = Op.AND;
+                    break;
+                case NOT:
+                    continue;
+                default:
+                    assert false;
+                    op = null;
+                }
+                final TreeMatch subResult =
+                    new TreeMatch(op, subCondition, null);
+                // add matches for the subconditions
+                Collector<TreeMatch,?> collector =
+                    Visitor.newCollector(subResult.getSubMatches());
+                subMatchers[i].traverse(host, patternMap, collector);
+                collector.dispose();
+                result.addSubMatch(subResult);
             }
         }
         return result;

@@ -85,26 +85,26 @@ public class RuleDependencies {
                     + data.inParameterMap.get(rule));
                 System.out.println("Output types: "
                     + data.outParameterMap.get(rule));
-                Collection<RuleName> enablerNames = new ArrayList<RuleName>();
+                Collection<String> enablerNames = new ArrayList<String>();
                 for (Rule depRule : data.getEnablers(rule)) {
                     enablerNames.add(depRule.getName());
                 }
-                Collection<RuleName> disablerNames = new ArrayList<RuleName>();
+                Collection<String> disablerNames = new ArrayList<String>();
                 for (Rule depRule : data.getDisablers(rule)) {
                     disablerNames.add(depRule.getName());
                 }
-                Collection<RuleName> enabledNames = new ArrayList<RuleName>();
+                Collection<String> enabledNames = new ArrayList<String>();
                 for (Rule depRule : data.getEnableds(rule)) {
                     enabledNames.add(depRule.getName());
                 }
-                Collection<RuleName> disabledNames = new ArrayList<RuleName>();
+                Collection<String> disabledNames = new ArrayList<String>();
                 for (Rule depRule : data.getDisableds(rule)) {
                     disabledNames.add(depRule.getName());
                 }
                 // disablerNames.removeAll(enablerNames);
                 // disabledNames.removeAll(enabledNames);
-                Collection<RuleName> allRuleNames =
-                    new ArrayList<RuleName>(grammar.getRuleNames());
+                Collection<String> allRuleNames =
+                    new ArrayList<String>(grammar.getRuleNames());
                 allRuleNames.removeAll(enablerNames);
                 allRuleNames.removeAll(disablerNames);
                 System.out.println("Enabled rules:  " + enabledNames);

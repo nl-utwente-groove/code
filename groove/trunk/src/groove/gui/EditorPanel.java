@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.trans.RuleName;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -283,8 +282,7 @@ public class EditorPanel extends JPanel {
             this.simulator.getStateList().setSelectedGraph(getName());
             break;
         case RULE:
-            this.simulator.getRuleTree().setSelectedRule(
-                new RuleName(getName()));
+            this.simulator.getRuleTree().setSelectedRule(getName());
             break;
         case TYPE:
             this.simulator.getTypePanel().setSelectedType(getName());

@@ -118,7 +118,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         if (this.condition.getOp() == Condition.Op.NOT) {
             return new NegConditionRecord(search);
         } else {
-            return new ForallConditionRecord(search);
+            return new PosConditionRecord(search);
         }
     }
 
@@ -216,9 +216,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a positive graph condition.
      */
-    private class ForallConditionRecord extends AbstractConditionRecord {
+    private class PosConditionRecord extends AbstractConditionRecord {
         /** Constructs a record for a given search. */
-        public ForallConditionRecord(Search search) {
+        public PosConditionRecord(Search search) {
             super(search);
         }
 
@@ -234,9 +234,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
                 ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
-            if (ConditionSearchItem.this.positive && matches.size() == 0) {
-                result = false;
-            } else if (ConditionSearchItem.this.preCounted) {
+            if (ConditionSearchItem.this.preCounted) {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
                 this.countImage =
@@ -244,9 +242,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                         ConditionSearchItem.this.intAlgebra, matches.size());
             }
             if (result) {
-                this.match = createMatch();
-                this.match.addSubMatches(matches);
-
+                this.match = createMatch(matches);
                 result = write();
             } else {
                 this.match = null;
@@ -254,23 +250,33 @@ class ConditionSearchItem extends AbstractSearchItem {
             return result;
         }
 
-        private TreeMatch createMatch() {
+        /** Creates a match object for a given set of pattern matches. */
+        private TreeMatch createMatch(List<TreeMatch> matches) {
+            boolean noMatches = matches.isEmpty();
+            boolean positive = ConditionSearchItem.this.positive;
             Condition.Op op;
             switch (ConditionSearchItem.this.condition.getOp()) {
             case AND:
-            case OR:
-                op = ConditionSearchItem.this.condition.getOp();
-                break;
-            case EXISTS:
-                op = Op.OR;
+                op = noMatches ? Op.TRUE : Op.AND;
                 break;
             case FORALL:
-                op = Op.AND;
+                op = noMatches ? (positive ? Op.FALSE : Op.TRUE) : Op.AND;
+                break;
+            case OR:
+                op = noMatches ? Op.FALSE : Op.OR;
+                break;
+            case EXISTS:
+                op = noMatches ? (positive ? Op.FALSE : Op.TRUE) : Op.OR;
                 break;
             default:
                 throw new IllegalStateException();
             }
-            return new TreeMatch(op, ConditionSearchItem.this.condition, null);
+            TreeMatch result =
+                new TreeMatch(op, ConditionSearchItem.this.condition, null);
+            if (!noMatches) {
+                result.addSubMatches(matches);
+            }
+            return result;
         }
 
         @Override

@@ -19,8 +19,7 @@ package groove.gui;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
@@ -152,11 +151,11 @@ public class StateJList extends JList implements SimulationListener {
         }
     }
 
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         refreshCurrentState(true);
     }
 
-    public void setRuleUpdate(RuleName name) {
+    public void setRuleUpdate(String name) {
         // does nothing
     }
 

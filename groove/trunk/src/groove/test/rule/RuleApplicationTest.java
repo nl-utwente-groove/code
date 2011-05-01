@@ -24,8 +24,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -90,7 +89,7 @@ public class RuleApplicationTest {
         try {
             GrammarView view =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (RuleName ruleName : view.getRuleNames()) {
+            for (String ruleName : view.getRuleNames()) {
                 test(view, ruleName);
             }
         } catch (IOException e) {
@@ -106,7 +105,7 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code ruleName-<i>i</i>-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarView view, RuleName ruleName) {
+    private void test(GrammarView view, String ruleName) {
         boolean cont = true;
         int i;
         for (i = 0; cont; i++) {
@@ -130,7 +129,7 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarView view, RuleName ruleName, String startName) {
+    private void test(GrammarView view, String ruleName, String startName) {
         try {
             HostGraph start = view.getGraphView(startName).toModel();
             List<HostGraph> results = new ArrayList<HostGraph>();
@@ -165,7 +164,7 @@ public class RuleApplicationTest {
             new HashSet<TreeMatch>(rule.getMatcher().findAll(start,
                 start.getFactory().createRuleToHostMap()));
         for (TreeMatch match : matches) {
-            for (RuleMatch proof : match.toRuleMatchSet()) {
+            for (Proof proof : match.toRuleMatchSet()) {
                 HostGraph target =
                     new RuleApplication(proof.newEvent(null), start).getTarget();
                 // look up this graph in the intended results

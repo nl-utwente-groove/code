@@ -29,7 +29,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.Rule;
 
 import java.util.Collection;
@@ -938,7 +938,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Returns all pre-matches of the given rule into the shape. */
-    public Set<RuleMatch> getPreMatches(Rule rule) {
+    public Set<Proof> getPreMatches(Rule rule) {
         return PreMatch.getPreMatches(this, rule);
     }
 

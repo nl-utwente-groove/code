@@ -19,7 +19,7 @@ import java.util.Set;
 public class SystemRecord {
     /**
      * The total number of events (over all rules) created in
-     * {@link #getEvent(RuleMatch)}.
+     * {@link #getEvent(Proof)}.
      */
     private static int eventCount;
 
@@ -63,7 +63,7 @@ public class SystemRecord {
      * Returns an event for a given rule match. If {@link #isReuseEvents()} is
      * set, events are stored internally and reused.
      */
-    public RuleEvent getEvent(RuleMatch match) {
+    public RuleEvent getEvent(Proof match) {
         return match.newEvent(this);
     }
 

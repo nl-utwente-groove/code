@@ -17,7 +17,6 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
-import groove.trans.RuleName;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 
@@ -48,7 +47,7 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      * Returns the name of the rule of which this is a view. Yields the same
      * result as <code>toRule().getName().name()</code>.
      */
-    public RuleName getRuleName();
+    public String getName();
 
     /**
      * Returns the priority of the rule of which this is a view. Yields the same

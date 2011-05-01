@@ -113,7 +113,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * Returns a match of this event's rule, based on the anchor map in this
      * event. Returns <code>null</code> if no match exists.
      */
-    public RuleMatch getMatch(HostGraph source);
+    public Proof getMatch(HostGraph source);
 
     /**
      * Tests if this event conflicts with another, in the sense that if the

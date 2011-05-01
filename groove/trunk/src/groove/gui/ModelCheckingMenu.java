@@ -27,8 +27,7 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
+import groove.trans.Proof;
 import groove.view.StoredGrammarView;
 
 import java.util.HashMap;
@@ -152,7 +151,7 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
     }
 
     @Override
-    public void setRuleUpdate(RuleName name) {
+    public void setRuleUpdate(String name) {
         // do nothing
     }
 
@@ -162,7 +161,7 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
     }
 
     @Override
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         // nothing happens
     }
 

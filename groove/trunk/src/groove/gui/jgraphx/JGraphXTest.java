@@ -16,7 +16,6 @@
  */
 package groove.gui.jgraphx;
 
-import groove.trans.RuleName;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
@@ -44,7 +43,7 @@ public class JGraphXTest {
         File file = new File(DIRECTORY);
         try {
             StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            RuleView ruleView = view.getRuleView(new RuleName("del"));
+            RuleView ruleView = view.getRuleView("del");
             AspectGraph rule = ruleView.getAspectGraph();
             showRule(rule);
         } catch (IOException e) {

@@ -31,9 +31,8 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
 import groove.trans.Rule;
+import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -123,17 +122,16 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
                     getJGraph().setLabelStore(grammar.getLabelStore());
                 }
             }
-            for (RuleName ruleName : grammar.getRuleNames()) {
+            for (String ruleName : grammar.getRuleNames()) {
                 RuleView ruleView = grammar.getRuleView(ruleName);
                 AspectJModel jModel = getJGraph().newModel();
                 jModel.loadGraph(ruleView.getAspectGraph());
-                this.ruleJModelMap.put(ruleName, jModel);
+                this.ruleJModelMap.put(ruleName.toString(), jModel);
             }
         }
         // reset the display
         RuleView currentRule = this.simulator.getCurrentRule();
-        displayRule(currentRule == null ? null : currentRule.getRuleName(),
-            true);
+        displayRule(currentRule == null ? null : currentRule.getName(), true);
     }
 
     /** Does nothing (according to contract, the grammar has already been set). */
@@ -147,7 +145,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * @throws IllegalArgumentException if <code>name</code> is not a known rule
      *         name
      */
-    public synchronized void setRuleUpdate(RuleName name) {
+    public synchronized void setRuleUpdate(String name) {
         if (!this.ruleJModelMap.containsKey(name)) {
             throw new IllegalArgumentException("Unknown rule: " + name);
         }
@@ -162,20 +160,20 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /**
-     * Has the effect of {@link #setRuleUpdate(RuleName)} for the new
+     * Has the effect of {@link #setRuleUpdate(String)} for the new
      * transition's rule.
-     * @see #setRuleUpdate(RuleName)
+     * @see #setRuleUpdate(String)
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
         setRuleUpdate(transition.getEvent().getRule().getName());
     }
 
     /**
-     * Has the effect of {@link #setRuleUpdate(RuleName)} for the new match's
+     * Has the effect of {@link #setRuleUpdate(String)} for the new match's
      * rule.
-     * @see #setRuleUpdate(RuleName)
+     * @see #setRuleUpdate(String)
      */
-    public synchronized void setMatchUpdate(RuleMatch match) {
+    public synchronized void setMatchUpdate(Proof match) {
         setRuleUpdate(match.getRule().getName());
     }
 
@@ -194,7 +192,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * name; otherwise, only loads it if {@code ruleName} is different from
      * {@link #displayedRule}.
      */
-    private void displayRule(RuleName ruleName, boolean reload) {
+    private void displayRule(String ruleName, boolean reload) {
         if (reload || ruleName == null && this.displayedRule != null
             || !ruleName.equals(this.displayedRule)) {
             AspectJModel ruleJModel =
@@ -259,10 +257,10 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<RuleName,AspectJModel> ruleJModelMap =
-        new TreeMap<RuleName,AspectJModel>();
+    private final Map<String,AspectJModel> ruleJModelMap =
+        new TreeMap<String,AspectJModel>();
     // /** The currently displayed grammar, if any. */
     // private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */
-    private RuleName displayedRule;
+    private String displayedRule;
 }

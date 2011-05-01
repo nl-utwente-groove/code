@@ -30,7 +30,7 @@ import groove.abstraction.ShapeNode;
 import groove.graph.EdgeRole;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
-import groove.trans.RuleMatch;
+import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
@@ -207,8 +207,8 @@ public class TestShape {
 
             // More elaborated tests.
             Rule rule0 = grammar.getRule("add");
-            Set<RuleMatch> preMatches = PreMatch.getPreMatches(shape0, rule0);
-            for (RuleMatch preMatch : preMatches) {
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape0, rule0);
+            for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape0, preMatch);
                 for (Materialisation mat : mats) {

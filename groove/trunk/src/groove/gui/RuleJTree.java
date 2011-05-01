@@ -24,10 +24,10 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
-import groove.trans.RuleName;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
+import groove.trans.Proof;
+import groove.trans.RuleName;
 import groove.trans.SystemRecord;
 import groove.view.GrammarView;
 import groove.view.RuleView;
@@ -178,15 +178,15 @@ public class RuleJTree extends JTree implements SimulationListener {
                 dirNodeMap.clear();
             }
             for (RuleView ruleView : priorityEntry.getValue()) {
-                RuleName ruleName = ruleView.getRuleName();
+                String ruleName = ruleView.getName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, ruleName);
+                    addParentNode(topNode, dirNodeMap, new RuleName(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
                 parentNode.add(ruleNode);
                 expandPath(new TreePath(ruleNode.getPath()));
-                this.ruleNodeMap.put(ruleName, ruleNode);
+                this.ruleNodeMap.put(ruleName.toString(), ruleNode);
             }
         }
         this.ruleDirectory.reload(this.topDirectoryNode);
@@ -201,7 +201,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     private Map<Integer,Set<RuleView>> getPriorityMap(GrammarView grammar) {
         Map<Integer,Set<RuleView>> result =
             new TreeMap<Integer,Set<RuleView>>(Rule.PRIORITY_COMPARATOR);
-        for (RuleName ruleName : grammar.getRuleNames()) {
+        for (String ruleName : grammar.getRuleNames()) {
             RuleView ruleView = grammar.getRuleView(ruleName);
             int priority = ruleView.getPriority();
             Set<RuleView> priorityRules = result.get(priority);
@@ -231,7 +231,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Sets the tree selection to a given rule name. Does <i>not</i> trigger
      * actions based on the selection change.
      */
-    public synchronized void setRuleUpdate(RuleName name) {
+    public synchronized void setRuleUpdate(String name) {
         refresh();
     }
 
@@ -247,7 +247,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Sets the tree selection to a given derivation. Does <i>not</i> trigger
      * actions based on the selection change.
      */
-    public void setMatchUpdate(RuleMatch match) {
+    public void setMatchUpdate(Proof match) {
         refresh();
     }
 
@@ -281,7 +281,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Sets the selection to a rule with a given name.
      * If the rule does not exist, merely switches the simulator to rule view.
      */
-    public void setSelectedRule(RuleName rule) {
+    public void setSelectedRule(String rule) {
         RuleTreeNode ruleNode = this.ruleNodeMap.get(rule);
         if (ruleNode == null) {
             switchSimulatorToRulePanel();
@@ -381,7 +381,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         } else if (getCurrentEvent() != null) {
             treeNode = this.matchNodeMap.get(getCurrentEvent());
         } else if (getCurrentRule() != null) {
-            treeNode = this.ruleNodeMap.get(getCurrentRule().getRuleName());
+            treeNode = this.ruleNodeMap.get(getCurrentRule().getName());
         }
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
@@ -426,7 +426,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedEvents.addAll(matches);
         // insert new matches
         for (MatchResult match : orderedEvents) {
-            RuleName ruleName = match.getEvent().getRule().getName();
+            String ruleName = match.getEvent().getRule().getName();
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
@@ -477,7 +477,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedDerivations.addAll(derivations);
         // insert new matches
         for (GraphTransition edge : orderedDerivations) {
-            RuleName ruleName = edge.getEvent().getRule().getName();
+            String ruleName = edge.getEvent().getRule().getName();
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
@@ -621,7 +621,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 // node)
                 if (paths.length == 1) {
                     getSimulator().setRule(
-                        ((RuleTreeNode) selectedNode).getRule().getRuleName());
+                        ((RuleTreeNode) selectedNode).getRule().getName());
                     switchSimulatorToRulePanel();
                 }
             } else if (selectedNode instanceof MatchTreeNode) {
@@ -669,8 +669,8 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
      *                                               \cup RuleTreeNode</tt>
      */
-    protected final Map<RuleName,RuleTreeNode> ruleNodeMap =
-        new HashMap<RuleName,RuleTreeNode>();
+    protected final Map<String,RuleTreeNode> ruleNodeMap =
+        new HashMap<String,RuleTreeNode>();
 
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
@@ -848,7 +848,7 @@ public class RuleJTree extends JTree implements SimulationListener {
          */
         @Override
         public String toString() {
-            String name = getRule().getRuleName().child();
+            String name = new RuleName(getRule().getName()).child();
             if (getRule().isEnabled()) {
                 return name;
             } else {
