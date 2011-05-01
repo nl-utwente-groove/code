@@ -443,7 +443,9 @@ public class TreeMatch implements Fixable {
             result.append("  ");
         }
         result.append(getCondition().getName());
-        result.append(": ");
+        result.append(" (");
+        result.append(getOp());
+        result.append("): ");
         result.append(getPatternMap());
         result.append('\n');
         for (TreeMatch subMatch : getSubMatches()) {

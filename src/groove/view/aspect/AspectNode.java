@@ -311,12 +311,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                     "Source node of %s-edge should be quantifier", edgeLabel,
                     this);
             }
-            // nesting should alternate between existential and universal
-            if ((getKind() == AspectKind.EXISTS) == (edge.target().getKind() == AspectKind.EXISTS)) {
-                throw new FormatException(
-                    "Quantifier levels should alternate between existential and universal",
-                    this);
-            }
+            //            // nesting should alternate between existential and universal
+            //            if ((getKind() == AspectKind.EXISTS) == (edge.target().getKind() == AspectKind.EXISTS)) {
+            //                throw new FormatException(
+            //                    "Quantifier levels should alternate between existential and universal",
+            //                    this);
+            //            }
             // collect collective nesting grandparents to test for circularity
             Set<AspectNode> grandparents = new HashSet<AspectNode>();
             AspectNode parent = edge.target();

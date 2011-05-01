@@ -92,7 +92,9 @@ public class Proof {
         for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getEdgeValues());
         }
-        result.addAll(this.patternMap.edgeMap().values());
+        if (this.patternMap != null) {
+            result.addAll(this.patternMap.edgeMap().values());
+        }
         return result;
     }
 
@@ -102,7 +104,9 @@ public class Proof {
         for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getNodeValues());
         }
-        result.addAll(this.patternMap.nodeMap().values());
+        if (this.patternMap != null) {
+            result.addAll(this.patternMap.nodeMap().values());
+        }
         return result;
     }
 

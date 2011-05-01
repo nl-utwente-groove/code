@@ -120,6 +120,8 @@ public enum AspectKind {
     FORALL_POS("forallx", ContentKind.LEVEL),
     /** Existential quantifier. */
     EXISTS("exists", ContentKind.LEVEL),
+    /** Optional existential quantifier. */
+    EXISTS_OPT("existsx", ContentKind.LEVEL),
     /** Nesting edge. */
     NESTED("nested", ContentKind.NESTED),
     /** Node identity. */
@@ -275,10 +277,25 @@ public enum AspectKind {
 
     /** 
      * Indicates if this aspect is among the set of quantifiers.
-     * @see #quantifiers 
+     * @see #existsQuantifiers 
+     */
+    public boolean isExists() {
+        return existsQuantifiers.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of quantifiers.
+     * @see #forallQuantifiers 
+     */
+    public boolean isForall() {
+        return forallQuantifiers.contains(this);
+    }
+
+    /** 
+     * Indicates if this aspect is among the set of quantifiers.
      */
     public boolean isQuantifier() {
-        return quantifiers.contains(this);
+        return isExists() || isForall();
     }
 
     /** 
@@ -335,35 +352,40 @@ public enum AspectKind {
     }
 
     /** Set of role aspects. */
-    public static EnumSet<AspectKind> roles = EnumSet.of(ERASER, ADDER,
+    public static final Set<AspectKind> roles = EnumSet.of(ERASER, ADDER,
         CREATOR, READER, EMBARGO, CONNECT);
     /** Set of role aspects appearing (only) in NACs. */
-    public static EnumSet<AspectKind> nac = EnumSet.of(EMBARGO, ADDER, CONNECT);
+    public static final Set<AspectKind> nac = EnumSet.of(EMBARGO, ADDER,
+        CONNECT);
     /** Set of role aspects appearing in LHSs. */
-    public static EnumSet<AspectKind> lhs = EnumSet.of(READER, ERASER);
+    public static final Set<AspectKind> lhs = EnumSet.of(READER, ERASER);
     /** Set of role aspects appearing in RHSs. */
-    public static EnumSet<AspectKind> rhs = EnumSet.of(READER, CREATOR, ADDER);
+    public static final Set<AspectKind> rhs =
+        EnumSet.of(READER, CREATOR, ADDER);
     /** Set of data aspects, typed or untyped. */
-    public static EnumSet<AspectKind> data = EnumSet.of(UNTYPED, STRING, BOOL,
-        INT, REAL);
+    public static final Set<AspectKind> data = EnumSet.of(UNTYPED, STRING,
+        BOOL, INT, REAL);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
-    public static EnumSet<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
-        EXISTS, NESTED, REMARK, CONNECT);
+    public static final Set<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
+        EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
     /** Set of parameter aspects. */
-    public static EnumSet<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
+    public static final Set<AspectKind> params = EnumSet.of(PARAM_BI, PARAM_IN,
         PARAM_OUT);
-    /** Set of quantifier aspects, i.e., which do not reflect real graph structure. */
-    public static EnumSet<AspectKind> quantifiers = EnumSet.of(FORALL,
-        FORALL_POS, EXISTS);
+    /** Set of existential quantifier aspects, i.e., which do not reflect real graph structure. */
+    public static final Set<AspectKind> existsQuantifiers = EnumSet.of(EXISTS,
+        EXISTS_OPT);
+    /** Set of universal quantifier aspects, i.e., which do not reflect real graph structure. */
+    public static final Set<AspectKind> forallQuantifiers = EnumSet.of(FORALL,
+        FORALL_POS);
     /** Set of attribute-related aspects. */
-    public static EnumSet<AspectKind> attributers = EnumSet.of(PRODUCT,
+    public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
         ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, PRED);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
-    public static EnumMap<GraphRole,Set<AspectKind>> allowedNodeKinds =
+    public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
         new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
     /** Mapping from graph roles to the edge aspects allowed therein. */
-    public static EnumMap<GraphRole,Set<AspectKind>> allowedEdgeKinds =
+    public static final Map<GraphRole,Set<AspectKind>> allowedEdgeKinds =
         new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
 
     static {
@@ -379,11 +401,11 @@ public enum AspectKind {
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS, ID));
-                allowedEdgeKinds.put(role,
-                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
-                        CONNECT, BOOL, INT, REAL, STRING, ARGUMENT, PATH,
-                        LITERAL, FORALL, FORALL_POS, EXISTS, NESTED));
+                    EXISTS, EXISTS_OPT, ID));
+                allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
+                    CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL, STRING,
+                    ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
+                    EXISTS_OPT, NESTED));
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,

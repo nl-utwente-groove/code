@@ -20,6 +20,7 @@ package groove.view;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EXISTS;
+import static groove.view.aspect.AspectKind.EXISTS_OPT;
 import static groove.view.aspect.AspectKind.FORALL;
 import static groove.view.aspect.AspectKind.FORALL_POS;
 import static groove.view.aspect.AspectKind.PARAM_BI;
@@ -446,8 +447,9 @@ public class DefaultRuleView implements RuleView {
          * @param levelNode the view level node representing this level; may be
          *        <code>null</code> for an implicit or top level
          */
-        public LevelIndex(AspectNode levelNode) {
+        public LevelIndex(AspectKind quantifier, AspectNode levelNode) {
             assert levelNode == null || levelNode.getKind().isQuantifier();
+            this.quantifier = quantifier;
             this.levelNode = levelNode;
         }
 
@@ -557,33 +559,27 @@ public class DefaultRuleView implements RuleView {
          */
         public boolean isUniversal() {
             testFixed(true);
-            if (isImplicit()) {
-                // it's an implicit level
-                return !isTopLevel() && this.parent.isExistential();
-            } else {
-                AspectKind nodeKind = this.levelNode.getKind();
-                return nodeKind == FORALL || nodeKind == FORALL_POS;
-            }
+            return this.quantifier.isForall();
         }
 
         /** Indicates whether this level is existential. */
         public boolean isExistential() {
             testFixed(true);
-            if (isImplicit()) {
-                // it's an implicit level
-                return isTopLevel() || this.parent.isUniversal();
-            } else {
-                AspectKind nodeKind = this.levelNode.getKind();
-                return nodeKind == EXISTS;
-            }
+            return this.quantifier.isExists();
         }
 
         /**
          * Indicates, for a universal level, if the level is positive.
          */
         public boolean isPositive() {
-            return isImplicit() ? this.index.size() == 1
-                    : this.levelNode.getKind() == FORALL_POS;
+            return this.quantifier == FORALL_POS;
+        }
+
+        /**
+         * Indicates, for an existential level, if the level is optional.
+         */
+        public boolean isOptional() {
+            return this.quantifier == EXISTS_OPT;
         }
 
         @Override
@@ -602,6 +598,8 @@ public class DefaultRuleView implements RuleView {
             return this.levelNode == null;
         }
 
+        /** The view node representing this quantification level. */
+        final AspectKind quantifier;
         /** The view node representing this quantification level. */
         final AspectNode levelNode;
         /** The index uniquely identifying this level. */
@@ -622,39 +620,54 @@ public class DefaultRuleView implements RuleView {
             // First build an explicit tree of level nodes
             Map<LevelIndex,List<LevelIndex>> indexTree =
                 new HashMap<LevelIndex,List<LevelIndex>>();
-            this.topLevelIndex = createIndex(null, indexTree);
+            this.topLevelIndex = createIndex(EXISTS, null, indexTree);
             // initialise the data structures
             this.metaIndexMap = new HashMap<AspectNode,LevelIndex>();
             this.nameIndexMap = new HashMap<String,LevelIndex>();
             // Mapping from levels to match count nodes
             this.matchCountMap = new HashMap<LevelIndex,AspectNode>();
             indexTree.put(this.topLevelIndex, new ArrayList<LevelIndex>());
+            // make an ordered collection of quantifier nodes
+            SortedSet<AspectNode> quantNodes = new TreeSet<AspectNode>();
             for (AspectNode node : getAspectGraph().nodeSet()) {
+                if (node.getKind().isQuantifier()) {
+                    quantNodes.add(node);
+                }
+            }
+            for (AspectNode node : quantNodes) {
                 AspectKind nodeKind = node.getKind();
-                if (nodeKind.isQuantifier()) {
-                    // look for the parent level
-                    LevelIndex parentIndex;
-                    // by the correctness of the aspect graph we know that
-                    // there is at most one outgoing edge, which is a parent
-                    // edge and points to the parent level node
-                    AspectNode parentNode = node.getNestingParent();
-                    if (parentNode == null) {
-                        if (nodeKind != FORALL && nodeKind != FORALL_POS) {
-                            // create an artificial intermediate level to
-                            // accommodate erroneous top-level existential node
-                            parentIndex = createIndex(null, indexTree);
-                            indexTree.get(this.topLevelIndex).add(parentIndex);
-                        } else {
-                            parentIndex = this.topLevelIndex;
-                        }
+                // look for the parent level
+                LevelIndex parentIndex;
+                // by the correctness of the aspect graph we know that
+                // there is at most one outgoing edge, which is a parent
+                // edge and points to the parent level node
+                AspectNode parentNode = node.getNestingParent();
+                if (parentNode == null) {
+                    if (nodeKind.isExists()) {
+                        // create an artificial intermediate level to
+                        // accommodate erroneous top-level existential node
+                        parentIndex = createIndex(FORALL, null, indexTree);
+                        indexTree.get(this.topLevelIndex).add(parentIndex);
                     } else {
-                        parentIndex = getIndex(parentNode, indexTree);
+                        parentIndex = this.topLevelIndex;
                     }
-                    LevelIndex myIndex = getIndex(node, indexTree);
-                    indexTree.get(parentIndex).add(myIndex);
-                    if (node.getMatchCount() != null) {
-                        this.matchCountMap.put(myIndex, node.getMatchCount());
+                } else {
+                    AspectKind parentKind = parentNode.getKind();
+                    parentIndex = getIndex(parentKind, parentNode, indexTree);
+                    if (nodeKind.isExists() != parentKind.isExists()) {
+                        // create an artificial intermediate level to
+                        // accommodate erroneous top-level existential node
+                        LevelIndex newParentIndex =
+                            createIndex(nodeKind.isExists() ? FORALL : EXISTS,
+                                null, indexTree);
+                        indexTree.get(parentIndex).add(newParentIndex);
+                        parentIndex = newParentIndex;
                     }
+                }
+                LevelIndex myIndex = getIndex(nodeKind, node, indexTree);
+                indexTree.get(parentIndex).add(myIndex);
+                if (node.getMatchCount() != null) {
+                    this.matchCountMap.put(myIndex, node.getMatchCount());
                 }
             }
             // Set the parentage in tree preorder
@@ -670,7 +683,8 @@ public class DefaultRuleView implements RuleView {
                 // add an implicit existential sub-level to childless universal
                 // levels
                 if (next.isUniversal() && children.isEmpty()) {
-                    LevelIndex implicitChild = createIndex(null, indexTree);
+                    LevelIndex implicitChild =
+                        createIndex(EXISTS, null, indexTree);
                     children.add(implicitChild);
                 }
                 for (int i = 0; i < children.size(); i++) {
@@ -708,12 +722,12 @@ public class DefaultRuleView implements RuleView {
          *        should satisfy
          *        {@link AspectKind#isQuantifier()}
          */
-        private LevelIndex getIndex(AspectNode metaNode,
+        private LevelIndex getIndex(AspectKind quantifier, AspectNode metaNode,
                 Map<LevelIndex,List<LevelIndex>> indexTree) {
             LevelIndex result = this.metaIndexMap.get(metaNode);
             if (result == null) {
                 this.metaIndexMap.put(metaNode,
-                    result = createIndex(metaNode, indexTree));
+                    result = createIndex(quantifier, metaNode, indexTree));
                 String name = metaNode.getLevelName();
                 if (name != null && name.length() > 0) {
                     this.nameIndexMap.put(name, result);
@@ -728,9 +742,9 @@ public class DefaultRuleView implements RuleView {
          * @param levelTree the tree of level indices
          * @return the fresh level index
          */
-        private LevelIndex createIndex(AspectNode levelNode,
-                Map<LevelIndex,List<LevelIndex>> levelTree) {
-            LevelIndex result = new LevelIndex(levelNode);
+        private LevelIndex createIndex(AspectKind quantifier,
+                AspectNode levelNode, Map<LevelIndex,List<LevelIndex>> levelTree) {
+            LevelIndex result = new LevelIndex(quantifier, levelNode);
             levelTree.put(result, new ArrayList<LevelIndex>());
             return result;
         }
@@ -1531,6 +1545,9 @@ public class DefaultRuleView implements RuleView {
                 result =
                     createRule(this.index.getName(), this.lhs, this.rhs,
                         this.ruleMorph, getRootGraph(), getCoRootMap());
+                if (!this.index.isOptional()) {
+                    result.setPositive();
+                }
             } else {
                 result =
                     createForall(this.lhs, getRootGraph(),
@@ -1833,8 +1850,6 @@ public class DefaultRuleView implements RuleView {
             Rule result =
                 new Rule(name, lhs, rhs, ruleMorphism, root, coRootMap,
                     new GraphProperties(), getSystemProperties());
-            // there must be at least one match
-            result.setPositive();
             return result;
         }
 

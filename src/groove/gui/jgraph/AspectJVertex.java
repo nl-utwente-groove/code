@@ -263,10 +263,15 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 break;
             case FORALL_POS:
                 line.append(HTMLConverter.HTML_FORALL);
-                line.append(HTMLConverter.SUPER_TAG.on(HTMLConverter.HTML_GT + "0"));
+                line.append(HTMLConverter.SUPER_TAG.on(HTMLConverter.HTML_GT
+                    + "0"));
                 break;
             case EXISTS:
                 line.append(HTMLConverter.HTML_EXISTS);
+                break;
+            case EXISTS_OPT:
+                line.append(HTMLConverter.HTML_EXISTS);
+                line.append(HTMLConverter.SUPER_TAG.on("?"));
             }
             String level = (String) getNode().getAspect().getContent();
             if (level != null && level.length() != 0) {
