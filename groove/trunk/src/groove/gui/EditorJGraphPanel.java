@@ -16,24 +16,30 @@
  */
 package groove.gui;
 
+import static groove.io.HTMLConverter.HTML_LINEBREAK;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import groove.algebra.Algebras;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
+import groove.util.Pair;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectKind.NestedValue;
 import groove.view.aspect.AspectParser;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -63,10 +69,11 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         return result;
     }
 
+    /** Creates and returns a panel for the syntax descriptions. */
     private Component createSyntaxHelp() {
         JPanel result = new JPanel();
         result.setLayout(new BorderLayout());
-        result.add(new JLabel("Prefixes:"), BorderLayout.NORTH);
+        result.add(new JLabel("Allowed labels:"), BorderLayout.NORTH);
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Nodes", createAspectList(true));
         tabbedPane.addTab("Edges", createAspectList(false));
@@ -74,38 +81,63 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         return result;
     }
 
+    /**
+     * Creates and returns a list of aspect descriptions.
+     * @param forNode if {@code true}, returns the node aspect descriptions,
+     * otherwise returns the edge aspect descriptions
+     */
     private JComponent createAspectList(boolean forNode) {
         JList list = new JList();
+        list.setCellRenderer(new MyCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(createData(forNode).toArray());
         return createLabelScrollPane(list);
     }
 
+    /** Returns the list data for a list of aspect descriptions. */
     private Collection<? extends Object> createData(boolean forNode) {
         initSyntax();
-        return forNode ? this.nodeSyntaxSet : this.edgeSyntaxSet;
+        return (forNode ? this.nodeSyntaxMap : this.edgeSyntaxMap).keySet();
     }
 
+    /**
+     * Initialises the syntax descriptions of all aspect kinds of this 
+     * editor's graph mode.
+     */
     private void initSyntax() {
-        if (this.nodeSyntaxSet != null) {
+        if (this.nodeSyntaxMap != null) {
             return;
         }
-        this.nodeSyntaxSet = new TreeSet<String>();
-        this.edgeSyntaxSet = new TreeSet<String>();
+        this.nodeSyntaxMap =
+            new TreeMap<String,Pair<? extends Enum<?>,Boolean>>();
+        this.edgeSyntaxMap = new TreeMap<String,Enum<?>>();
         for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {
             if (AspectKind.allowedNodeKinds.get(this.role).contains(kind)) {
-                initSyntax(kind, true);
+                initSyntax(kind, true, true);
+                initSyntax(kind, true, false);
             }
             if (AspectKind.allowedEdgeKinds.get(this.role).contains(kind)) {
-                initSyntax(kind, false);
+                initSyntax(kind, false, true);
             }
+        }
+        for (EdgeRole role : EnumSet.allOf(EdgeRole.class)) {
+            initSyntax(role);
         }
     }
 
-    private void initSyntax(AspectKind kind, boolean forNode) {
+    /** 
+     * Initialises the syntax description for a given aspect kind.
+     * @param kind the aspect kind to initialise the description for
+     * @param forNode if {@code true}, take the node version of the aspect,
+     * otherwise take the edge version
+     */
+    private void initSyntax(AspectKind kind, boolean forNode, boolean withLabel) {
+        if (kind == AspectKind.NONE) {
+            return;
+        }
         // the fragment before the colon
         String pre = "";
-        // the fragment after the colon
+        // the fragment after the colon; if null, no syntax is created for this element
         String post;
         switch (kind.getContentKind()) {
         case BOOL_LITERAL:
@@ -113,32 +145,39 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case REAL_LITERAL:
         case STRING_LITERAL:
             pre = "";
-            if (this.role == GraphRole.TYPE) {
-                post = "";
+            if (this.role == GraphRole.TYPE || !withLabel) {
+                post = this.role == GraphRole.HOST ? null : "";
             } else if (forNode) {
-                post = var("const");
+                post = s(v(VAL_I));
             } else {
-                post = strong(var("op"));
+                post = s(v(OP_I));
             }
             break;
         case COLOR:
-            post = strong(var("rgb")) + "|" + strong(var("name"));
+            post = s(v(RGB_I)) + "|" + s(v(NAME_I));
             break;
         case EMPTY:
             post = "";
             break;
         case LET_EXPR:
-            post = strong(var("name") + "=" + var("val"));
+            post = s(v(NAME_I) + "=" + v(EXPR_I));
             break;
         case LEVEL:
-            pre = var("level");
-            post = forNode ? "" : strong(var("label"));
+            pre = v(Q_I);
+            if (kind.isQuantifier()) {
+                post = forNode ? "" : null;
+            } else if (forNode) {
+                post = withLabel ? s(EdgeRole.FLAG.getPrefix() + LABEL_V) : "";
+            } else {
+                post = LABEL_S;
+            }
             break;
         case MULTIPLICITY:
-            post = var("low") + ".." + strong(var("high"));
+            pre = v(LO_I) + ".." + s(v(HI_I));
+            post = LABEL_S;
             break;
         case NAME:
-            post = strong(var("name"));
+            post = s(v(NAME_I));
             break;
         case NESTED:
             post = "";
@@ -146,48 +185,426 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
                 if (post.length() > 0) {
                     post += "|";
                 }
-                post += strong(value.toString());
+                post += s(value.toString());
             }
             break;
         case NONE:
-            post = forNode ? "" : strong(var("label"));
+            if (forNode) {
+                if (kind == AspectKind.ABSTRACT && withLabel) {
+                    post = s(EdgeRole.FLAG.getPrefix() + LABEL_V);
+                } else {
+                    post = "";
+                }
+            } else if (kind == AspectKind.REMARK || kind == AspectKind.LITERAL) {
+                post = s(v(FREE_I));
+            } else if (kind == AspectKind.PATH) {
+                post = s(v(REGEXPR_I));
+            } else {
+                post = LABEL_S;
+            }
             break;
         case NUMBER:
-            post = strong(var("nr"));
+            post = NR_S;
             break;
         case PARAM:
-            post = var("nr");
-            if (kind != AspectKind.PARAM_BI) {
-                post = strong(post);
+            if (kind == AspectKind.PARAM_BI && !withLabel) {
+                post = "";
+            } else {
+                post = NR_S;
             }
             break;
         case PRED_VAL:
-            post = strong(var("constraint"));
+            post = s(v(CONSTRAINT_I));
             break;
         default:
             throw new IllegalStateException();
         }
-        Set<String> syntaxSet =
-            forNode ? this.nodeSyntaxSet : this.edgeSyntaxSet;
-        syntaxSet.add(toSyntax(kind, pre, post));
-    }
-
-    static private String strong(String text) {
-        return STRONG_TAG.on(text);
-    }
-
-    static private String var(String id) {
-        return HTMLConverter.toHtml("<") + ITALIC_TAG.on(id)
-            + HTMLConverter.toHtml(">");
-    }
-
-    private String toSyntax(AspectKind kind, String pre, String post) {
-        StringBuilder result = new StringBuilder(STRONG_TAG.on(kind.getName()));
-        if (pre.length() > 0) {
-            result.append(AspectParser.ASSIGN);
+        if (post != null) {
+            String tip = toSyntax(kind, pre, post);
+            if (forNode) {
+                this.nodeSyntaxMap.put(tip, Pair.newPair(kind, withLabel));
+            } else {
+                this.edgeSyntaxMap.put(tip, kind);
+            }
         }
-        result.append(pre);
-        result.append(STRONG_TAG.on(AspectParser.SEPARATOR));
+    }
+
+    private void initSyntax(EdgeRole role) {
+        String text;
+        switch (role) {
+        case BINARY:
+            if (this.role == GraphRole.RULE) {
+                text = s(v(REGEXPR_I));
+            } else {
+                text = LABEL_S;
+            }
+            this.edgeSyntaxMap.put(HTML_TAG.on(text), role);
+            break;
+        case FLAG:
+        case NODE_TYPE:
+            text = s(role.getPrefix() + LABEL_V);
+            this.nodeSyntaxMap.put(HTML_TAG.on(text),
+                new Pair<Enum<?>,Boolean>(role, true));
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+    }
+
+    private String createTip(AspectKind kind, boolean forNode, boolean withLabel) {
+        Tip t = new Tip();
+        String levelLine = "Optionally assigns a quantifier level " + Q_I;
+        switch (kind) {
+        case ABSTRACT:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Declares an abstract %s-flag for a node type",
+                        LABEL_I);
+                    t.add(
+                        "The flag can only occur on subtypes where it is redeclared concretely",
+                        LABEL_I);
+                } else {
+                    t.add("Declares a node type to be abstract");
+                    t.add("Only nodes of concrete subtypes can actually exist");
+                }
+            } else {
+                t.add("Declares an abstract %s-edge between node types",
+                    LABEL_I);
+                t.add(
+                    "The edge can only occur between subtypes where it is redeclared concretely",
+                    LABEL_I);
+            }
+            break;
+
+        case ADDER:
+            if (forNode) {
+                if (withLabel) {
+                    t.add(
+                        "Tests for the absence of a %s-flag; creates it when applied",
+                        LABEL_I);
+                } else {
+                    t.add("Tests for the absence of a node; creates it when applied");
+                }
+            } else {
+                t.add(
+                    "Tests for the absence of a %s-edge; creates it when applied",
+                    LABEL_I);
+            }
+            t.add(levelLine);
+            break;
+
+        case ARGUMENT:
+            t.add("Projects a product node onto argument %s (ranging from 0)",
+                NR_I);
+            break;
+
+        case BOOL:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Represents the boolean value %s (%s or %s)", VAL_I,
+                        i("true"), i("false"));
+                } else if (this.role == GraphRole.TYPE) {
+                    t.add("Represents the type of booleans");
+                } else {
+                    t.add("Declares a boolean-valued variable node");
+                }
+            } else {
+                t.add(
+                    "Applies operation %s from the bool signature: one of %s",
+                    OP_I, ops(kind));
+            }
+            break;
+
+        case COLOR:
+            t.add("Sets the color of the nodes and outgoing edges of a type");
+            t.add(
+                "The color is either specified as %s (with values in 0..255) or by %s",
+                RGB_I, NAME_I);
+            break;
+
+        case COMPOSITE:
+            t.add("Declares an edge to be composite %s", i("(unsupported)"));
+            break;
+
+        case CONNECT:
+            t.add("Declares a choice between two negative application patterns");
+            break;
+
+        case CREATOR:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Creates a %s-flag when applied", LABEL_I);
+                } else {
+                    t.add("Creates a node when applied");
+                }
+            } else {
+                t.add("Creates a %s-edge when applied", LABEL_I);
+            }
+            t.add(levelLine);
+            break;
+
+        case EMBARGO:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Tests for the absence of a %s-flag", LABEL_I);
+                } else {
+                    t.add("Tests for the absence of a node");
+                }
+            } else {
+                t.add("Tests for the absence of a %s-edge", LABEL_I);
+            }
+            t.add(levelLine);
+            break;
+
+        case ERASER:
+            if (forNode) {
+                if (withLabel) {
+                    t.add(
+                        "Tests for the presence of a %s-flag; deletes it when applied",
+                        LABEL_I);
+                } else {
+                    t.add("Tests for the presence of a node; deletes it when applied");
+                }
+            } else {
+                t.add(
+                    "Tests for the presence of a %s-edge; deletes it when applied",
+                    LABEL_I);
+            }
+            t.add(levelLine);
+            break;
+
+        case EXISTS:
+            t.add("Tests for the mandatory existence of a graph pattern");
+            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s",
+                Q_I);
+            break;
+
+        case EXISTS_OPT:
+            t.add("Tests for the optional existence of a graph pattern");
+            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s",
+                Q_I);
+            break;
+
+        case FORALL:
+            t.add("Matches all occurrences of a graph pattern");
+            t.add("The number of occurrences is given by an outgoing %s-edge",
+                i(NestedValue.COUNT.toString()));
+            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s",
+                Q_I);
+            break;
+
+        case FORALL_POS:
+            t.add("Matches all occurrences of a graph pattern, provided there is at least one");
+            t.add("The number of occurrences is given by an outgoing %s-edge",
+                i(NestedValue.COUNT.toString()));
+            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s",
+                Q_I);
+            break;
+
+        case ID:
+            t.add("Assigns an internal node identifier %s", NAME_I);
+            break;
+
+        case INT:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Represents the integer number value %s", VAL_I);
+                } else if (this.role == GraphRole.TYPE) {
+                    t.add("Represents the type of integer numbers");
+                } else {
+                    t.add("Declares a integer-valued variable node");
+                }
+            } else {
+                t.add("Applies operation %s from the int signature: one of %s",
+                    OP_I, ops(kind));
+            }
+            break;
+
+        case LET:
+            t.add("Assigns a new attibute %s to an outgoing %s-edge %s",
+                EXPR_I, NAME_I, UNSUPPORTED);
+            break;
+
+        case LITERAL:
+            t.add(
+                "Specifies a %s-labelled edge, containing arbitrary characters",
+                FREE_I);
+            break;
+
+        case MULT_IN:
+            t.add("Incoming edge multiplicity ", UNSUPPORTED);
+            t.add(
+                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded)",
+                LO_I, HI_I);
+            break;
+
+        case MULT_OUT:
+            t.add("Outgoing edge multiplicity ", UNSUPPORTED);
+            t.add(
+                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded)",
+                LO_I, HI_I);
+            break;
+
+        case NESTED:
+            t.add(
+                "Declares quantifier structure (the %s-prefix itself is optional):",
+                i(kind.getName()));
+            t.add("<li> %s nests one quantifier withing another",
+                i(NestedValue.IN.toString()));
+            t.add("<li> %s connects a graph pattern node to a quantifier",
+                i(NestedValue.AT.toString()));
+            t.add("<li> %s points to the cardinality of a quantifier",
+                i(NestedValue.COUNT.toString()));
+            break;
+
+        case NONE:
+            break;
+
+        case PARAM_BI:
+            if (withLabel) {
+                t.add(
+                    "Declares bidirectional rule parameter %s (ranging from 0)",
+                    NR_I);
+            } else {
+                t.add("Declares an explicit anchor node");
+            }
+            break;
+
+        case PARAM_IN:
+            t.add("Declares rule input parameter %s (ranging from 0)", NR_I);
+            break;
+
+        case PARAM_OUT:
+            t.add("Declares rule output parameter %s (ranging from 0)", NR_I);
+            break;
+
+        case PATH:
+            t.add("Tests for a path satisfying the regular expression %s",
+                REGEXPR_I);
+            break;
+
+        case PRED:
+            t.add("Specifies an attribute constraint", CONSTRAINT_I);
+            break;
+
+        case PRODUCT:
+            t.add("Declares a product node, corresponding to a tuple of attribute nodes.");
+            break;
+
+        case READER:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Tests for the presence of a %s-flag", LABEL_I);
+                } else {
+                    t.add("Tests for the presence of a node");
+                }
+            } else {
+                t.add("Tests for the presence of a %s-edge", LABEL_I);
+            }
+            t.add(levelLine);
+            break;
+
+        case REAL:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Represents the real number value %s", VAL_I);
+                } else if (this.role == GraphRole.TYPE) {
+                    t.add("Represents the type of real numbers");
+                } else {
+                    t.add("Declares a real-valued variable node");
+                }
+            } else {
+                t.add(
+                    "Applies operation %s from the real signature: one of %s",
+                    OP_I, ops(kind));
+            }
+            break;
+
+        case REMARK:
+            if (forNode) {
+                t.add("Declares a remark node, to be used for documentation");
+            } else {
+                t.add("Declares a remark edge with text %s", FREE_I);
+            }
+            break;
+
+        case STRING:
+            if (forNode) {
+                if (withLabel) {
+                    t.add("Represents the string value %s", VAL_I);
+                } else if (this.role == GraphRole.TYPE) {
+                    t.add("Represents the type of string values");
+                } else {
+                    t.add("Declares a string-valued variable node");
+                }
+            } else {
+                t.add(
+                    "Applies operation %s from the string signature: one of %s",
+                    OP_I, ops(kind));
+            }
+            break;
+
+        case SUBTYPE:
+            t.add("Declares the source type node to be a subtype of the target type node");
+            break;
+
+        case UNTYPED:
+            t.add("Declares an untyped attribute variable node");
+            break;
+
+        default:
+            throw new IllegalStateException();
+        }
+        return t.toHtml();
+    }
+
+    private String createTip(EdgeRole role, boolean forNode) {
+        Tip t = new Tip();
+        switch (role) {
+        case BINARY:
+            if (this.role == GraphRole.RULE) {
+                t.add("Tests for a binary edge label or regular expression");
+            } else {
+                t.add("Specifies a binary edge label");
+            }
+            break;
+        case FLAG:
+            t.add("Specifies a flag (= non-type node label)");
+            break;
+        case NODE_TYPE:
+            t.add("Specifies a node type");
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+        return t.toHtml();
+    }
+
+    /** Creates a HTML-formatted syntax description for a given aspect kind,
+     * by combining the kind name, and text preceding an following the aspect
+     * prefix separator {@link AspectParser#SEPARATOR}.
+     * @param kind the kind to create a syntax description for
+     * @param pre text preceding the separator
+     * @param post text following the separator
+     */
+    private String toSyntax(AspectKind kind, String pre, String post) {
+        StringBuilder result = new StringBuilder();
+        if (kind != AspectKind.NONE) {
+            result.append(STRONG_TAG.on(kind.getName()));
+            if (pre.length() > 0) {
+                result.append(AspectParser.ASSIGN);
+            }
+            result.append(pre);
+            result.append(STRONG_TAG.on(AspectParser.SEPARATOR));
+        }
         result.append(post);
         return HTML_TAG.on(result).toString();
     }
@@ -197,6 +614,124 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
      */
     private final Editor editor;
     private final GraphRole role;
-    private Set<String> nodeSyntaxSet;
-    private Set<String> edgeSyntaxSet;
+    private Map<String,Pair<? extends Enum<?>,Boolean>> nodeSyntaxMap;
+    private Map<String,Enum<?>> edgeSyntaxMap;
+
+    /** Formats a given string as a required part in a syntax description. */
+    static private String s(String text) {
+        return STRONG_TAG.on(text);
+    }
+
+    /** Formats a given string as a variable in a syntax description. */
+    static private String v(String id) {
+        return HTMLConverter.HTML_LANGLE + id + HTMLConverter.HTML_RANGLE;
+    }
+
+    /** Formats an italic string in a syntax description. */
+    static private String i(String id) {
+        return ITALIC_TAG.on(id);
+    }
+
+    /** Returns a list of operations from a given signature. */
+    static private String ops(AspectKind kind) {
+        StringBuilder result = new StringBuilder();
+        assert kind.isTypedData();
+        for (String opName : Algebras.getOperatorNames(kind.getName())) {
+            if (result.length() > 0) {
+                result.append(", ");
+            }
+            result.append(i(opName));
+        }
+        return result.toString();
+    }
+
+    /** Italic version of the syntax variable "label". */
+    static private String LABEL_I = i("label");
+    /** Angled version of the syntax variable "label". */
+    static private String LABEL_V = v(LABEL_I);
+    /** Strong version of the syntax variable "label". */
+    static private String LABEL_S = s(LABEL_V);
+    /** Italic version of the syntax variable "name". */
+    static private String NAME_I = i("name");
+    /** Italic version of the syntax variable "nr". */
+    static private String NR_I = i("nr");
+    /** Angled version of the syntax variable "nr". */
+    static private String NR_V = v(NR_I);
+    /** Strong version of the syntax variable "nr". */
+    static private String NR_S = s(NR_V);
+    /** Italic version of the syntax variable "q". */
+    static private String Q_I = i("q");
+    /** Italic version of the syntax variable "constraint". */
+    static private String CONSTRAINT_I = i("constraint");
+    /** Italic version of the syntax variable "regexpr". */
+    static private String REGEXPR_I = i("regexpr");
+    /** Italic version of the syntax variable "lo". */
+    static private String LO_I = i("lo");
+    /** Italic version of the syntax variable "hi". */
+    static private String HI_I = i("hi");
+    /** Italic version of the syntax variable "r,g,b". */
+    static private String RGB_I = i("r,g,b");
+    /** Italic version of the syntax variable "op". */
+    static private String OP_I = i("op");
+    /** Italic version of the syntax variable "val". */
+    static private String VAL_I = i("val");
+    /** Italic version of the syntax variable "expr". */
+    static private String EXPR_I = i("expr");
+    /** Italic version of the syntax variable "free". */
+    static private String FREE_I = i("free");
+
+    /** Tool tip announcement "unsupported". */
+    static private String UNSUPPORTED = i("(unsupported)");
+
+    /** Private cell renderer class that inserts the correct tool tips. */
+    private class MyCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            Component result =
+                super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+            if (result == this) {
+                boolean forNode =
+                    EditorJGraphPanel.this.nodeSyntaxMap.containsKey(value);
+                Enum<?> kind;
+                boolean withLabel;
+                if (forNode) {
+                    Pair<? extends Enum<?>,Boolean> nodeKind =
+                        EditorJGraphPanel.this.nodeSyntaxMap.get(value);
+                    kind = nodeKind.one();
+                    withLabel = nodeKind.two();
+                } else {
+                    kind = EditorJGraphPanel.this.edgeSyntaxMap.get(value);
+                    withLabel = true;
+                }
+                String tip =
+                    kind instanceof AspectKind ? createTip((AspectKind) kind,
+                        forNode, withLabel) : createTip((EdgeRole) kind,
+                        forNode);
+                setToolTipText(tip);
+            }
+            return result;
+        }
+    }
+
+    /** Class to facilitate the construction of a tool tip. */
+    private class Tip extends ArrayList<String> {
+        /** Adds a formatted line to the tool tip text. */
+        public void add(String text, Object... args) {
+            add(String.format(text, args));
+        }
+
+        /** Returns a HTML-formatted string concatenating the lines of this tool tip. */
+        public String toHtml() {
+            StringBuilder result = new StringBuilder();
+            for (String line : this) {
+                if (result.length() > 0) {
+                    result.append(HTML_LINEBREAK);
+                }
+                result.append(line);
+            }
+            return HTML_TAG.on(result).toString();
+        }
+    }
 }

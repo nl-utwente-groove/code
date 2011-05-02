@@ -21,9 +21,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -64,6 +64,11 @@ public class Algebras {
             result = operators.get(operName);
         }
         return result;
+    }
+
+    /** Returns the operator names for a given signature. */
+    static public Set<String> getOperatorNames(String sigName) {
+        return operatorsMap.get(sigName).keySet();
     }
 
     /**
@@ -237,11 +242,12 @@ public class Algebras {
     }
 
     /** Creates content for {@link #operatorsMap}. */
-    static private Map<String,Map<String,Operator>> createOperatorsMap() {
-        Map<String,Map<String,Operator>> result =
-            new HashMap<String,Map<String,Operator>>();
+    static private SortedMap<String,SortedMap<String,Operator>> createOperatorsMap() {
+        SortedMap<String,SortedMap<String,Operator>> result =
+            new TreeMap<String,SortedMap<String,Operator>>();
         for (Map.Entry<String,Class<? extends Signature>> signatureEntry : signatureMap.entrySet()) {
-            Map<String,Operator> operators = new HashMap<String,Operator>();
+            SortedMap<String,Operator> operators =
+                new TreeMap<String,Operator>();
             Method[] methods = signatureEntry.getValue().getDeclaredMethods();
             for (Method method : methods) {
                 if (Modifier.isAbstract(method.getModifiers())
@@ -267,7 +273,7 @@ public class Algebras {
     static private final Map<String,Class<? extends Signature>> signatureMap =
         new TreeMap<String,Class<? extends Signature>>();
     /** Map from signature and method names to operators. */
-    static private final Map<String,Map<String,Operator>> operatorsMap;
+    static private final SortedMap<String,SortedMap<String,Operator>> operatorsMap;
 
     static {
         addSignature(BoolSignature.class);

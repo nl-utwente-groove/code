@@ -99,7 +99,7 @@ public enum AspectKind {
     /** Indicates an abstract type. */
     ABSTRACT("abs"),
     /** Indicates a subtype relation. */
-    SUBTYPE("sub"),
+    SUBTYPE("sub", ContentKind.EMPTY),
     /** Indicates an incoming multiplicity. */
     MULT_IN("in", ContentKind.MULTIPLICITY),
     /** Indicates an outgoing multiplicity. */
