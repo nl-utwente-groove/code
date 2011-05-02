@@ -54,7 +54,7 @@ RuleMatch:
 
 % Retrieves one state from the GTS
 % state(?State)
-% @param	A state fromt the GTS
+% @param	A state from the GTS
 :-build_in(state/1,'groove.prolog.builtin.lts.Predicate_state').
 
 % Retrieves the currently selected state from the GTS

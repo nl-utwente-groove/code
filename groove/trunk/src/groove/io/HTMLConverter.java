@@ -81,7 +81,7 @@ public class HTMLConverter {
     }
 
     /**
-     * Returns an HTML tag embedder with an argument string.
+     * Returns an HTML tag embedded with an argument string.
      */
     static public HTMLTag createHtmlTag(String tag, String attribute,
             String arguments) {
@@ -93,6 +93,13 @@ public class HTMLConverter {
      */
     static public HTMLTag createSpanTag(String arguments) {
         return new HTMLTag(SPAN_TAG_NAME, STYLE_ATTR_NAME, arguments);
+    }
+
+    /**
+     * Returns a span tag with a style argument.
+     */
+    static public HTMLTag createDivTag(String arguments) {
+        return new HTMLTag(DIV_TAG_NAME, STYLE_ATTR_NAME, arguments);
     }
 
     /**
@@ -216,6 +223,8 @@ public class HTMLConverter {
     static public final HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
     /** Name of the span tag (<code>span</code>). */
     static public final String SPAN_TAG_NAME = "span";
+    /** Name of the span tag (<code>div</code>). */
+    static public final String DIV_TAG_NAME = "div";
     /** Name of the span style attribute. */
     static public final String STYLE_ATTR_NAME = "style";
     /** Name of the linebreak tag (<code>br</code>). */
@@ -370,7 +379,7 @@ public class HTMLConverter {
         /** Start text of this tag. */
         public final String tagBegin;
         /** End text of this tag. */
-        final String tagEnd;
+        public String tagEnd;
     }
 
 }

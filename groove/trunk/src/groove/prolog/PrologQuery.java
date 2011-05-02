@@ -22,9 +22,9 @@ import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
+import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.term.VariableTerm;
-import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
@@ -39,7 +39,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface to the prolog engine
@@ -91,6 +93,13 @@ public class PrologQuery {
      * The stream to use as default output stream
      */
     protected OutputStream userOutput;
+
+    /** The set of built-in Prolog predicates. */
+    private final Set<CompoundTermTag> prologTags =
+        new HashSet<CompoundTermTag>();
+    /** The set of built-in Groove predicates. */
+    private final Set<CompoundTermTag> grooveTags =
+        new HashSet<CompoundTermTag>();
 
     /**
      * No-args constructor
@@ -419,15 +428,29 @@ public class PrologQuery {
      * the standard groove environment. It can be used when you need to make
      * changes to the environment before loading user code.
      */
-    public Environment getEnvironment() {
+    public GrooveEnvironment getEnvironment() {
         if (this.env == null) {
             this.env = new GrooveEnvironment(null, this.userOutput);
             this.env.setGrooveState(this.grooveState);
+            this.prologTags.addAll(this.env.getModule().getPredicateTags());
+            // load the Groove predicates
             CompoundTerm term =
                 new CompoundTerm(AtomTerm.get("resource"),
                     new Term[] {AtomTerm.get(GROOVE_PRO)});
             this.env.ensureLoaded(term);
+            this.grooveTags.addAll(this.env.getModule().getPredicateTags());
+            this.grooveTags.removeAll(this.prologTags);
         }
         return this.env;
+    }
+
+    /** Returns the set of built-in Prolog predicates. */
+    public Set<CompoundTermTag> getPrologTags() {
+        return this.prologTags;
+    }
+
+    /** Returns the set of built-in Groove predicates. */
+    public Set<CompoundTermTag> getGrooveTags() {
+        return this.grooveTags;
     }
 }
