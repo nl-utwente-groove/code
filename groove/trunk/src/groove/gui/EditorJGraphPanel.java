@@ -29,6 +29,7 @@ import groove.graph.GraphRole;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Pair;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectKind.NestedValue;
@@ -41,6 +42,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -273,66 +275,94 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
     }
 
     private String createTip(AspectKind kind, boolean forNode, boolean withLabel) {
+        // header
+        String h = null;
+        // main body
         Tip t = new Tip();
-        String levelLine = "Optionally assigns a quantifier level " + Q_I;
+        // parameter spec
+        Map<String,String> p = new HashMap<String,String>();
+        String levelLine = "Optionally associates a quantifier level " + Q_I;
+        String flagPar =
+            "text of the flag; must consist of letters, digits, '$', '-' or '_'";
+        String edgePar =
+            "text of the edge; must consist of letters, digits, '$', '-' or '_'";
         switch (kind) {
         case ABSTRACT:
             if (forNode) {
                 if (withLabel) {
+                    h = "Abstract flag type";
                     t.add("Declares an abstract %s-flag for a node type.",
                         LABEL_I);
                     t.add(
                         "The flag can only occur on subtypes where it is redeclared concretely.",
                         LABEL_I);
+                    p.put(LABEL_I, flagPar);
                 } else {
+                    h = "Abstract flag type";
                     t.add("Declares a node type to be abstract.");
                     t.add("Only nodes of concrete subtypes can actually exist.");
                 }
             } else {
+                h = "Abstract edge type";
                 t.add("Declares an abstract %s-edge between node types.",
                     LABEL_I);
                 t.add(
                     "The edge can only occur between subtypes where it is redeclared concretely.",
                     LABEL_I);
+                p.put(LABEL_I, edgePar);
             }
             break;
 
         case ADDER:
             if (forNode) {
                 if (withLabel) {
+                    h = "Conditional flag creator";
                     t.add(
                         "Tests for the absence of a %s-flag; creates it when applied.",
                         LABEL_I);
+                    p.put(LABEL_I, flagPar);
                 } else {
+                    h = "Conditional node creator";
                     t.add("Tests for the absence of a node; creates it when applied.");
                 }
             } else {
+                h = "Conditional edge creator";
                 t.add(
                     "Tests for the absence of a %s-edge; creates it when applied.",
                     LABEL_I);
+                p.put(LABEL_I, edgePar);
             }
             t.add(levelLine);
             break;
 
         case ARGUMENT:
+            h = "Argument edge";
             t.add("Projects a product node onto argument %s (ranging from 0).",
                 NR_I);
+            p.put(NR_I,
+                "Argument number, ranging from 0 to the product node arity - 1");
             break;
 
         case BOOL:
             if (forNode) {
                 if (withLabel) {
+                    h = "Boolean constant";
                     t.add("Represents the boolean value %s (%s or %s).", VAL_I,
                         i("true"), i("false"));
+                    p.put(VAL_I, "boolean value: either " + i("true") + " or "
+                        + i("false"));
                 } else if (this.role == GraphRole.TYPE) {
+                    h = "Boolean type node";
                     t.add("Represents the type of booleans.");
                 } else {
+                    h = "Boolean variable";
                     t.add("Declares a boolean-valued variable node.");
                 }
             } else {
-                t.add(
-                    "Applies operation %s from the bool signature: one of %s.",
-                    OP_I, ops(kind));
+                h = "Boolean operator";
+                t.add("Applies operation %s from the %s signature.",
+                    s(kind.getName()), OP_I);
+                p.put(OP_I, "boolean operator: one of " + ops(kind));
             }
             break;
 
@@ -592,6 +622,10 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         default:
             throw new IllegalStateException();
         }
+        if (h != null) {
+            t.set(h);
+        }
+        t.set(p);
         return t.toHtml();
     }
 
@@ -745,7 +779,7 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
     }
 
     /** Class to facilitate the construction of a tool tip. */
-    private class Tip extends ArrayList<String> {
+    private static class Tip extends ArrayList<String> {
         /** Adds a formatted line to the tool tip text. */
         @Override
         public boolean add(String text) {
@@ -760,16 +794,49 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             add(String.format(text, args));
         }
 
+        /** Sets a header for the tool tip. */
+        public void set(String header) {
+            this.header = header;
+        }
+
+        /** Sets parameter documentation for the tool tip. */
+        public void set(Map<String,String> param) {
+            this.param = param;
+        }
+
         /** Returns a HTML-formatted string concatenating the lines of this tool tip. */
         public String toHtml() {
             StringBuilder result = new StringBuilder();
+            if (this.header != null) {
+                result.append(STRONG_TAG.on(this.header));
+                result.append(HTML_LINEBREAK);
+                result.append(HTML_LINEBREAK);
+            }
             for (String line : this) {
                 if (result.length() > 0) {
-                    result.append(HTML_LINEBREAK);
+                    result.append(" ");
                 }
                 result.append(line);
+                if (line.charAt(line.length() - 1) != '.') {
+                    result.append('.');
+                }
             }
-            return HTML_TAG.on(result).toString();
+            if (this.param != null && !this.param.isEmpty()) {
+                for (Map.Entry<String,String> par : this.param.entrySet()) {
+                    result.append(HTML_LINEBREAK);
+                    result.append("<li>");
+                    result.append(STRONG_TAG.on(par.getKey()));
+                    result.append(" - ");
+                    result.append(par.getValue());
+                }
+            }
+            return HTML_TAG.on(DIV_TAG.on(result)).toString();
         }
+
+        private String header;
+        private Map<String,String> param;
     }
+
+    private static HTMLTag DIV_TAG =
+        HTMLConverter.createDivTag("width: 300px;");
 }
