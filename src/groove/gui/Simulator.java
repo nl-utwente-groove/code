@@ -4401,7 +4401,11 @@ public class Simulator {
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 File selectedFile = fileChooser.getSelectedFile();
-                doLoadGrammar(selectedFile, null);
+                if (selectedFile == null) {
+                    showErrorDialog("No file selected", null);
+                } else {
+                    doLoadGrammar(selectedFile, null);
+                }
             }
         }
     }
