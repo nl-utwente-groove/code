@@ -20,6 +20,9 @@ import static groove.io.HTMLConverter.HTML_LINEBREAK;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import static groove.view.aspect.AspectKind.NestedValue.AT;
+import static groove.view.aspect.AspectKind.NestedValue.COUNT;
+import static groove.view.aspect.AspectKind.NestedValue.IN;
 import groove.algebra.Algebras;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
@@ -33,6 +36,8 @@ import groove.view.aspect.AspectParser;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -47,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 
 class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
     public EditorJGraphPanel(Editor editor) {
@@ -91,6 +97,21 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         list.setCellRenderer(new MyCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(createData(forNode).toArray());
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                this.manager.setDismissDelay(Integer.MAX_VALUE);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                this.manager.setDismissDelay(this.standardDelay);
+            }
+
+            private final ToolTipManager manager =
+                ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
+        });
         return createLabelScrollPane(list);
     }
 
@@ -185,7 +206,7 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
                 if (post.length() > 0) {
                     post += "|";
                 }
-                post += s(value.toString());
+                post += s(value);
             }
             break;
         case NONE:
@@ -258,20 +279,20 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case ABSTRACT:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Declares an abstract %s-flag for a node type",
+                    t.add("Declares an abstract %s-flag for a node type.",
                         LABEL_I);
                     t.add(
-                        "The flag can only occur on subtypes where it is redeclared concretely",
+                        "The flag can only occur on subtypes where it is redeclared concretely.",
                         LABEL_I);
                 } else {
-                    t.add("Declares a node type to be abstract");
-                    t.add("Only nodes of concrete subtypes can actually exist");
+                    t.add("Declares a node type to be abstract.");
+                    t.add("Only nodes of concrete subtypes can actually exist.");
                 }
             } else {
-                t.add("Declares an abstract %s-edge between node types",
+                t.add("Declares an abstract %s-edge between node types.",
                     LABEL_I);
                 t.add(
-                    "The edge can only occur between subtypes where it is redeclared concretely",
+                    "The edge can only occur between subtypes where it is redeclared concretely.",
                     LABEL_I);
             }
             break;
@@ -280,65 +301,65 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             if (forNode) {
                 if (withLabel) {
                     t.add(
-                        "Tests for the absence of a %s-flag; creates it when applied",
+                        "Tests for the absence of a %s-flag; creates it when applied.",
                         LABEL_I);
                 } else {
-                    t.add("Tests for the absence of a node; creates it when applied");
+                    t.add("Tests for the absence of a node; creates it when applied.");
                 }
             } else {
                 t.add(
-                    "Tests for the absence of a %s-edge; creates it when applied",
+                    "Tests for the absence of a %s-edge; creates it when applied.",
                     LABEL_I);
             }
             t.add(levelLine);
             break;
 
         case ARGUMENT:
-            t.add("Projects a product node onto argument %s (ranging from 0)",
+            t.add("Projects a product node onto argument %s (ranging from 0).",
                 NR_I);
             break;
 
         case BOOL:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Represents the boolean value %s (%s or %s)", VAL_I,
+                    t.add("Represents the boolean value %s (%s or %s).", VAL_I,
                         i("true"), i("false"));
                 } else if (this.role == GraphRole.TYPE) {
-                    t.add("Represents the type of booleans");
+                    t.add("Represents the type of booleans.");
                 } else {
-                    t.add("Declares a boolean-valued variable node");
+                    t.add("Declares a boolean-valued variable node.");
                 }
             } else {
                 t.add(
-                    "Applies operation %s from the bool signature: one of %s",
+                    "Applies operation %s from the bool signature: one of %s.",
                     OP_I, ops(kind));
             }
             break;
 
         case COLOR:
-            t.add("Sets the color of the nodes and outgoing edges of a type");
+            t.add("Sets the color of the nodes and outgoing edges of a type.");
             t.add(
-                "The color is either specified as %s (with values in 0..255) or by %s",
+                "The color is either specified as %s (with values in 0..255) or by %s.",
                 RGB_I, NAME_I);
             break;
 
         case COMPOSITE:
-            t.add("Declares an edge to be composite %s", i("(unsupported)"));
+            t.add("Declares an edge to be composite %s.", i("(unsupported)"));
             break;
 
         case CONNECT:
-            t.add("Declares a choice between two negative application patterns");
+            t.add("Declares a choice between two negative application patterns.");
             break;
 
         case CREATOR:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Creates a %s-flag when applied", LABEL_I);
+                    t.add("Creates a %s-flag when applied.", LABEL_I);
                 } else {
-                    t.add("Creates a node when applied");
+                    t.add("Creates a node when applied.");
                 }
             } else {
-                t.add("Creates a %s-edge when applied", LABEL_I);
+                t.add("Creates a %s-edge when applied.", LABEL_I);
             }
             t.add(levelLine);
             break;
@@ -346,12 +367,12 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case EMBARGO:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Tests for the absence of a %s-flag", LABEL_I);
+                    t.add("Tests for the absence of a %s-flag.", LABEL_I);
                 } else {
-                    t.add("Tests for the absence of a node");
+                    t.add("Tests for the absence of a node.");
                 }
             } else {
-                t.add("Tests for the absence of a %s-edge", LABEL_I);
+                t.add("Tests for the absence of a %s-edge.", LABEL_I);
             }
             t.add(levelLine);
             break;
@@ -360,96 +381,105 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             if (forNode) {
                 if (withLabel) {
                     t.add(
-                        "Tests for the presence of a %s-flag; deletes it when applied",
+                        "Tests for the presence of a %s-flag; deletes it when applied.",
                         LABEL_I);
                 } else {
-                    t.add("Tests for the presence of a node; deletes it when applied");
+                    t.add("Tests for the presence of a node; deletes it when applied.");
                 }
             } else {
                 t.add(
-                    "Tests for the presence of a %s-edge; deletes it when applied",
+                    "Tests for the presence of a %s-edge; deletes it when applied.",
                     LABEL_I);
             }
             t.add(levelLine);
             break;
 
         case EXISTS:
-            t.add("Tests for the mandatory existence of a graph pattern");
-            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add("Tests for the mandatory existence of a graph pattern.");
             t.add(
-                "Pattern edges may be declared through the optional quantifier level %s",
+                "Pattern nodes must have outgoing %s-edges to the quantifier.",
+                i(AT));
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s.",
                 Q_I);
             break;
 
         case EXISTS_OPT:
-            t.add("Tests for the optional existence of a graph pattern");
-            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add("Tests for the optional existence of a graph pattern.");
             t.add(
-                "Pattern edges may be declared through the optional quantifier level %s",
+                "Pattern nodes must have outgoing %s-edges to the quantifier.",
+                i(AT));
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s.",
                 Q_I);
             break;
 
         case FORALL:
-            t.add("Matches all occurrences of a graph pattern");
-            t.add("The number of occurrences is given by an outgoing %s-edge",
-                i(NestedValue.COUNT.toString()));
-            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add("Matches all occurrences of a graph pattern.");
+            t.add("The number of occurrences is given by an outgoing %s-edge.",
+                i(COUNT));
             t.add(
-                "Pattern edges may be declared through the optional quantifier level %s",
+                "Pattern nodes must have outgoing %s-edges to the quantifier.",
+                i(AT));
+            t.add(
+                "Pattern edges may be declared through the optional quantifier level %s.",
                 Q_I);
             break;
 
         case FORALL_POS:
-            t.add("Matches all occurrences of a graph pattern, provided there is at least one");
-            t.add("The number of occurrences is given by an outgoing %s-edge",
-                i(NestedValue.COUNT.toString()));
-            t.add("Pattern nodes must have outgoing %s-edges to the quantifier");
+            t.add("Matches all occurrences of a graph pattern, provided there is at least one.");
+            t.add("The number of occurrences is given by an outgoing %s-edge.",
+                i(COUNT));
+            t.add(
+                "Pattern nodes must have outgoing %s-edges to the quantifier.",
+                i(AT));
             t.add(
                 "Pattern edges may be declared through the optional quantifier level %s",
                 Q_I);
             break;
 
         case ID:
-            t.add("Assigns an internal node identifier %s", NAME_I);
+            t.add("Assigns an internal node identifier %s.", NAME_I);
             break;
 
         case INT:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Represents the integer number value %s", VAL_I);
+                    t.add("Represents the integer number value %s.", VAL_I);
                 } else if (this.role == GraphRole.TYPE) {
-                    t.add("Represents the type of integer numbers");
+                    t.add("Represents the type of integer numbers.");
                 } else {
-                    t.add("Declares a integer-valued variable node");
+                    t.add("Declares a integer-valued variable node.");
                 }
             } else {
-                t.add("Applies operation %s from the int signature: one of %s",
+                t.add(
+                    "Applies operation %s from the int signature: one of %s.",
                     OP_I, ops(kind));
             }
             break;
 
         case LET:
-            t.add("Assigns a new attibute %s to an outgoing %s-edge %s",
+            t.add("Assigns a new attibute %s to an outgoing %s-edge %s.",
                 EXPR_I, NAME_I, UNSUPPORTED);
             break;
 
         case LITERAL:
             t.add(
-                "Specifies a %s-labelled edge, containing arbitrary characters",
+                "Specifies a %s-labelled edge, containing arbitrary characters.",
                 FREE_I);
             break;
 
         case MULT_IN:
-            t.add("Incoming edge multiplicity ", UNSUPPORTED);
+            t.add("Incoming edge multiplicity %s.", UNSUPPORTED);
             t.add(
-                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded)",
+                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded).",
                 LO_I, HI_I);
             break;
 
         case MULT_OUT:
-            t.add("Outgoing edge multiplicity ", UNSUPPORTED);
+            t.add("Outgoing edge multiplicity %s.", UNSUPPORTED);
             t.add(
-                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded)",
+                "Optional lower bound %s, mandatory upper bound %s ('*' for unbounded).",
                 LO_I, HI_I);
             break;
 
@@ -457,12 +487,11 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             t.add(
                 "Declares quantifier structure (the %s-prefix itself is optional):",
                 i(kind.getName()));
-            t.add("<li> %s nests one quantifier withing another",
-                i(NestedValue.IN.toString()));
-            t.add("<li> %s connects a graph pattern node to a quantifier",
-                i(NestedValue.AT.toString()));
-            t.add("<li> %s points to the cardinality of a quantifier",
-                i(NestedValue.COUNT.toString()));
+            t.add("<li> %s nests one quantifier withing another;", i(IN));
+            t.add("<li> %s connects a graph pattern node to a quantifier;",
+                i(AT));
+            t.add("<li> %s points to the cardinality of a quantifier.",
+                i(COUNT));
             break;
 
         case NONE:
@@ -471,28 +500,28 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case PARAM_BI:
             if (withLabel) {
                 t.add(
-                    "Declares bidirectional rule parameter %s (ranging from 0)",
+                    "Declares bidirectional rule parameter %s (ranging from 0).",
                     NR_I);
             } else {
-                t.add("Declares an explicit anchor node");
+                t.add("Declares an explicit anchor node.");
             }
             break;
 
         case PARAM_IN:
-            t.add("Declares rule input parameter %s (ranging from 0)", NR_I);
+            t.add("Declares rule input parameter %s (ranging from 0).", NR_I);
             break;
 
         case PARAM_OUT:
-            t.add("Declares rule output parameter %s (ranging from 0)", NR_I);
+            t.add("Declares rule output parameter %s (ranging from 0).", NR_I);
             break;
 
         case PATH:
-            t.add("Tests for a path satisfying the regular expression %s",
+            t.add("Tests for a path satisfying the regular expression %s.",
                 REGEXPR_I);
             break;
 
         case PRED:
-            t.add("Specifies an attribute constraint", CONSTRAINT_I);
+            t.add("Specifies an attribute constraint.", CONSTRAINT_I);
             break;
 
         case PRODUCT:
@@ -502,12 +531,12 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case READER:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Tests for the presence of a %s-flag", LABEL_I);
+                    t.add("Tests for the presence of a %s-flag.", LABEL_I);
                 } else {
-                    t.add("Tests for the presence of a node");
+                    t.add("Tests for the presence of a node.");
                 }
             } else {
-                t.add("Tests for the presence of a %s-edge", LABEL_I);
+                t.add("Tests for the presence of a %s-edge.", LABEL_I);
             }
             t.add(levelLine);
             break;
@@ -515,11 +544,11 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         case REAL:
             if (forNode) {
                 if (withLabel) {
-                    t.add("Represents the real number value %s", VAL_I);
+                    t.add("Represents the real number value %s.", VAL_I);
                 } else if (this.role == GraphRole.TYPE) {
-                    t.add("Represents the type of real numbers");
+                    t.add("Represents the type of real numbers.");
                 } else {
-                    t.add("Declares a real-valued variable node");
+                    t.add("Declares a real-valued variable node.");
                 }
             } else {
                 t.add(
@@ -618,17 +647,17 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
     private Map<String,Enum<?>> edgeSyntaxMap;
 
     /** Formats a given string as a required part in a syntax description. */
-    static private String s(String text) {
+    static private String s(Object text) {
         return STRONG_TAG.on(text);
     }
 
     /** Formats a given string as a variable in a syntax description. */
-    static private String v(String id) {
+    static private String v(Object id) {
         return HTMLConverter.HTML_LANGLE + id + HTMLConverter.HTML_RANGLE;
     }
 
     /** Formats an italic string in a syntax description. */
-    static private String i(String id) {
+    static private String i(Object id) {
         return ITALIC_TAG.on(id);
     }
 
@@ -717,6 +746,15 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
 
     /** Class to facilitate the construction of a tool tip. */
     private class Tip extends ArrayList<String> {
+        /** Adds a formatted line to the tool tip text. */
+        @Override
+        public boolean add(String text) {
+            if (text.charAt(text.length() - 1) != '.') {
+                text += '.';
+            }
+            return add(text);
+        }
+
         /** Adds a formatted line to the tool tip text. */
         public void add(String text, Object... args) {
             add(String.format(text, args));
