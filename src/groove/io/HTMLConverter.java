@@ -198,6 +198,10 @@ public class HTMLConverter {
     static public final String HTML_NOT = "&#172;"; // &not;
     /** HTML lambda symbol. */
     static public final String HTML_LAMBDA = "&#955;"; // &lambda;
+    /** HTML left angular bracket symbol. */
+    static public final String HTML_LANGLE = "&lt;"; // &#9001; / &lang;
+    /** HTML right angular bracket symbol. */
+    static public final String HTML_RANGLE = "&gt;"; // &#9002; / &rang;
     /** HTML tau symbol. */
     static public final String HTML_TAU = "&#932;"; // &tau;
     /** HTML pi symbol. */
