@@ -654,9 +654,9 @@ public class DefaultRuleView implements RuleView {
                 } else {
                     AspectKind parentKind = parentNode.getKind();
                     parentIndex = getIndex(parentKind, parentNode, indexTree);
-                    if (nodeKind.isExists() != parentKind.isExists()) {
+                    if (nodeKind.isExists() == parentKind.isExists()) {
                         // create an artificial intermediate level to
-                        // accommodate erroneous top-level existential node
+                        // accommodate direct ancestors of the same type
                         LevelIndex newParentIndex =
                             createIndex(nodeKind.isExists() ? FORALL : EXISTS,
                                 null, indexTree);
