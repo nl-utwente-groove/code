@@ -304,14 +304,12 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         GraphState newState = transition.target();
-        AspectJModel newModel = getAspectJModel(newState);
         GraphState oldState = transition.source();
         HostGraphMorphism morphism = transition.getMorphism();
         copyLayout(this.stateToAspectMap.get(oldState),
             this.stateToAspectMap.get(newState), morphism);
         // set the graph model to the new state
-        setJModel(newModel);
-        refreshStatus();
+        setStateModel(newState);
     }
 
     @Override

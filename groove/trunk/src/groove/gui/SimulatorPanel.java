@@ -201,7 +201,12 @@ public class SimulatorPanel extends JTabbedPane {
 
     /** Resets the selected tab to the one before the last call to {@link #setSelectedIndex(int)}. */
     public void revertSelection() {
-        setSelectedComponent(this.lastSelected);
+        if (this.lastSelected != null
+            && indexOfComponent(this.lastSelected) >= 0) {
+            setSelectedComponent(this.lastSelected);
+        } else {
+            this.lastSelected = null;
+        }
     }
 
     /** List of components that can appear on this panel. */
