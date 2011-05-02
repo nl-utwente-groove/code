@@ -18,7 +18,11 @@
  */
 package groove.gui;
 
+import static groove.io.HTMLConverter.HTML_LINEBREAK;
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.STRONG_TAG;
 import gnu.prolog.database.Module;
+import gnu.prolog.database.Predicate;
 import gnu.prolog.io.TermWriter;
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
@@ -29,12 +33,16 @@ import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
+import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
+import groove.prolog.annotation.Param;
+import groove.prolog.annotation.Signature;
+import groove.prolog.annotation.ToolTip;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
-import groove.util.Groove;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -43,8 +51,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -60,7 +68,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -75,12 +82,14 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -195,14 +204,30 @@ public class PrologPanel extends JPanel {
     protected JFileChooser prologFileChooser;
 
     /**
-     * 
+     * The tree of built-in Prolog predicates
      */
-    protected JTree predicateTree;
+    protected JTree prologTree;
+    /**
+     * The tree of Groove predicates
+     */
+    protected JTree grooveTree;
+    /**
+     * The tree of user-defined predicates
+     */
+    protected JTree userTree;
 
     /**
-     * 
+     * Root node for built-in predicates tree
      */
-    protected DefaultMutableTreeNode predRootNode;
+    protected DefaultMutableTreeNode prologRootNode;
+    /**
+     * Root node for groove predicates tree
+     */
+    protected DefaultMutableTreeNode grooveRootNode;
+    /**
+     * Root node for user-defined predicates tree
+     */
+    protected DefaultMutableTreeNode userRootNode;
 
     /**
      * 
@@ -233,43 +258,6 @@ public class PrologPanel extends JPanel {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        /*
-        final JPopupMenu explorePopup = new JPopupMenu();
-        // explorePopup.add(new JMenuItem(createExploreGraphStateAction()));
-        // explorePopup.add(new JMenuItem(createExploreRuleEventsAction()));
-        
-        JButton exploreBtn = new JButton("Explore");
-        exploreBtn.setToolTipText("Explore the LTL for each state which has a result with the given query.");
-        exploreBtn.addMouseListener(new MouseAdapter() {
-            void postToolbarMenu(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    Component c = (Component) e.getSource();
-                    explorePopup.show(c, 0, c.getHeight());
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                postToolbarMenu(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                postToolbarMenu(e);
-            }
-        });
-        exploreBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component c = (Component) e.getSource();
-                explorePopup.show(c, 0, c.getHeight());
-            }
-        });
-        
-
-        toolBar.addSeparator();
-        toolBar.add(exploreBtn);
-        */
-
         this.query = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
         this.query.setFont(editFont);
         this.query.setEditable(true);
@@ -286,26 +274,105 @@ public class PrologPanel extends JPanel {
             }
         });
 
+        JPanel queryPane = new JPanel(new BorderLayout());
+        queryPane.add(toolBar, BorderLayout.NORTH);
+        queryPane.add(this.query, BorderLayout.CENTER);
+        queryPane.add(createExecuteButton(), BorderLayout.EAST);
+
+        toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.add(new JLabel("User code:"));
+        toolBar.addSeparator();
+        toolBar.add(createNewButton());
+        toolBar.add(createLoadButton());
+        toolBar.add(createSaveButton());
+        toolBar.add(getCloseButton());
+        toolBar.addSeparator();
+
+        this.consultBtn = createConsultButton();
+        toolBar.add(this.consultBtn);
+
+        this.userCodeConsulted = new JLabel("");
+        this.userCodeConsulted.setFont(this.userCodeConsulted.getFont().deriveFont(
+            Font.BOLD));
+        toolBar.addSeparator();
+        toolBar.add(this.userCodeConsulted);
+
+        this.prologEditors =
+            new JTabbedPane(SwingConstants.BOTTOM,
+                JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        JPanel editorPane = new JPanel(new BorderLayout());
+        editorPane.add(toolBar, BorderLayout.NORTH);
+        editorPane.add(this.prologEditors, BorderLayout.CENTER);
+
+        this.results = new JTextArea();
+        this.results.setFont(editFont);
+        this.results.setText("");
+        this.results.setEditable(false);
+        this.results.setEnabled(true);
+        this.results.setBackground(null);
+        this.userOutput = new JTextAreaOutputStream(this.results);
+        Environment.setDefaultOutputStream(this.userOutput);
+
+        this.nextResultBtn = createNextResultButton();
+
+        JPanel resultsPane = new JPanel(new BorderLayout());
+        resultsPane.add(new JScrollPane(this.results), BorderLayout.CENTER);
+        resultsPane.add(this.nextResultBtn, BorderLayout.SOUTH);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setBorder(null);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setTopComponent(editorPane);
+        splitPane.setBottomComponent(resultsPane);
+
+        JPanel mainPane = new JPanel(new BorderLayout());
+        mainPane.add(queryPane, BorderLayout.NORTH);
+        mainPane.add(splitPane, BorderLayout.CENTER);
+
+        this.prologRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.prologTree = createPredicateTree(this.prologRootNode, false);
+        this.grooveRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.grooveTree = createPredicateTree(this.grooveRootNode, true);
+        this.userRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.userTree = createPredicateTree(this.userRootNode, false);
+        JTabbedPane treePane = new JTabbedPane();
+        treePane.add("Groove", new JScrollPane(this.grooveTree));
+        treePane.add("Prolog", new JScrollPane(this.prologTree));
+        treePane.add("User", new JScrollPane(this.userTree));
+
+        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        sp2.setResizeWeight(0.9);
+        sp2.setBorder(null);
+        sp2.setOneTouchExpandable(true);
+        sp2.setRightComponent(treePane);
+        sp2.setLeftComponent(mainPane);
+        add(sp2, BorderLayout.CENTER);
+
+        this.statusBar = new JLabel(" ");
+        add(this.statusBar, BorderLayout.SOUTH);
+        consultUserCode();
+    }
+
+    /**
+     * Creates the Execute button.
+     */
+    private JButton createExecuteButton() {
         JButton execQuery = new JButton("Execute");
         execQuery.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 executeQuery();
             }
         });
+        return execQuery;
+    }
 
-        JPanel queryPane = new JPanel(new BorderLayout());
-        queryPane.add(toolBar, BorderLayout.NORTH);
-        queryPane.add(this.query, BorderLayout.CENTER);
-        queryPane.add(execQuery, BorderLayout.EAST);
-
-        toolBar = new JToolBar();
-        toolBar.setFloatable(false);
-
-        toolBar.add(new JLabel("User code:"));
-        toolBar.addSeparator();
-
-        JButton newButton =
-            new JButton(new ImageIcon(Groove.getResource("new.gif")));
+    /**
+     * Creates the New button.
+     */
+    private JButton createNewButton() {
+        JButton newButton = new JButton(Icons.NEW_ICON);
         newButton.setToolTipText("Create a new prolog file");
         newButton.addActionListener(new ActionListener() {
 
@@ -317,10 +384,14 @@ public class PrologPanel extends JPanel {
                 });
             }
         });
-        toolBar.add(newButton);
+        return newButton;
+    }
 
-        JButton loadButton =
-            new JButton(new ImageIcon(Groove.getResource("open.gif")));
+    /**
+     * Creates the load button.
+     */
+    private JButton createLoadButton() {
+        JButton loadButton = new JButton(Icons.OPEN_ICON);
         loadButton.setToolTipText("Open a prolog file");
         loadButton.addActionListener(new ActionListener() {
 
@@ -344,13 +415,16 @@ public class PrologPanel extends JPanel {
                 }
             }
         });
-        toolBar.add(loadButton);
+        return loadButton;
+    }
 
-        JButton saveButton =
-            new JButton(new ImageIcon(Groove.getResource("save.gif")));
+    /**
+     * Creates the save button.
+     */
+    private JButton createSaveButton() {
+        JButton saveButton = new JButton(Icons.SAVE_ICON);
         saveButton.setToolTipText("Save the current prolog file");
         saveButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 Component comp =
                     PrologPanel.this.prologEditors.getSelectedComponent();
@@ -423,13 +497,16 @@ public class PrologPanel extends JPanel {
                 return;
             }
         });
-        toolBar.add(saveButton);
+        return saveButton;
+    }
 
-        JButton closeButton =
-            new JButton(new ImageIcon(Groove.getResource("delete.gif")));
+    /**
+     * Creates the close button.
+     */
+    private JButton getCloseButton() {
+        JButton closeButton = new JButton(Icons.DELETE_ICON);
         closeButton.setToolTipText("Close the current prolog file");
         closeButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 Component comp =
                     PrologPanel.this.prologEditors.getSelectedComponent();
@@ -462,13 +539,16 @@ public class PrologPanel extends JPanel {
                 consultUserCode();
             }
         });
-        toolBar.add(closeButton);
+        return closeButton;
+    }
 
-        toolBar.addSeparator();
-
-        this.consultBtn = new JButton("Consult");
-        this.consultBtn.setToolTipText("Reconsult the prolog code. This will cancel the current active query.");
-        this.consultBtn.addActionListener(new ActionListener() {
+    /**
+     * Creates the consult button.
+     */
+    private JButton createConsultButton() {
+        JButton result = new JButton("Consult");
+        result.setToolTipText("Reconsult the prolog code. This will cancel the current active query.");
+        result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (!confirmDirty()) {
                     return;
@@ -476,70 +556,61 @@ public class PrologPanel extends JPanel {
                 consultUserCode();
             }
         });
-        toolBar.add(this.consultBtn);
+        return result;
+    }
 
-        this.userCodeConsulted = new JLabel("");
-        this.userCodeConsulted.setFont(this.userCodeConsulted.getFont().deriveFont(
-            Font.BOLD));
-        toolBar.addSeparator();
-        toolBar.add(this.userCodeConsulted);
-
-        this.prologEditors =
-            new JTabbedPane(SwingConstants.BOTTOM,
-                JTabbedPane.SCROLL_TAB_LAYOUT);
-
-        JPanel editorPane = new JPanel(new BorderLayout());
-        editorPane.add(toolBar, BorderLayout.NORTH);
-        editorPane.add(this.prologEditors, BorderLayout.CENTER);
-
-        this.results = new JTextArea();
-        this.results.setFont(editFont);
-        this.results.setText("");
-        this.results.setEditable(false);
-        this.results.setEnabled(true);
-        this.results.setBackground(null);
-        this.userOutput = new JTextAreaOutputStream(this.results);
-        Environment.setDefaultOutputStream(this.userOutput);
-
-        this.nextResultBtn = new JButton("More?");
-        this.nextResultBtn.setFont(this.nextResultBtn.getFont().deriveFont(
-            Font.BOLD));
-        this.nextResultBtn.setVisible(false);
-        this.nextResultBtn.addActionListener(new ActionListener() {
+    /**
+     * Creates the next-result button.
+     */
+    private JButton createNextResultButton() {
+        JButton result = new JButton("More?");
+        result.setFont(result.getFont().deriveFont(Font.BOLD));
+        result.setVisible(false);
+        result.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 nextResults();
             }
         });
+        return result;
+    }
 
-        JPanel resultsPane = new JPanel(new BorderLayout());
-        resultsPane.add(new JScrollPane(this.results), BorderLayout.CENTER);
-        resultsPane.add(this.nextResultBtn, BorderLayout.SOUTH);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setBorder(null);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setTopComponent(editorPane);
-        splitPane.setBottomComponent(resultsPane);
-        splitPane.setDividerLocation(0);
-
-        JPanel mainPane = new JPanel(new BorderLayout());
-        mainPane.add(queryPane, BorderLayout.NORTH);
-        mainPane.add(splitPane, BorderLayout.CENTER);
-
-        this.predRootNode = new DefaultMutableTreeNode("Predicates", true);
-        this.predRootNode.add(new DefaultMutableTreeNode(
-            "Press 'consult' to load the predicates"));
-        this.predicateTree = new JTree(this.predRootNode);
-        this.predicateTree.setRootVisible(false);
-        this.predicateTree.setShowsRootHandles(true);
-        this.predicateTree.addMouseListener(new MouseListener() {
+    /**
+     * Creates the predicate tree component.
+     */
+    private JTree createPredicateTree(TreeNode rootNode, final boolean toolTips) {
+        final JTree result = new JTree(rootNode) {
+            @Override
+            public String getToolTipText(MouseEvent evt) {
+                if (!toolTips
+                    || getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                    return null;
+                }
+                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                Object userObject =
+                    ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
+                if (userObject instanceof CompoundTermTag) {
+                    return createToolTipText((CompoundTermTag) userObject);
+                } else {
+                    return null;
+                }
+            }
+        };
+        result.setRootVisible(false);
+        result.setShowsRootHandles(true);
+        DefaultTreeCellRenderer renderer =
+            (DefaultTreeCellRenderer) result.getCellRenderer();
+        renderer.setLeafIcon(null);
+        renderer.setClosedIcon(null);
+        renderer.setOpenIcon(null);
+        ToolTipManager.sharedInstance().registerComponent(result);
+        result.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1
                     && e.getButton() == MouseEvent.BUTTON1) {
                     // when double clicked add the selected predicate (with
                     // template) to the current query
-                    TreePath sel =
-                        PrologPanel.this.predicateTree.getSelectionPath();
+                    TreePath sel = result.getSelectionPath();
                     if (sel != null) {
                         Object o = sel.getLastPathComponent();
                         if (o instanceof DefaultMutableTreeNode) {
@@ -573,50 +644,19 @@ public class PrologPanel extends JPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                /**
-                 * Blank by design
-                 */
+                this.manager.setDismissDelay(Integer.MAX_VALUE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                /**
-                 * Blank by design
-                 */
+                this.manager.setDismissDelay(this.standardDelay);
             }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                /**
-                 * Blank by design
-                 */
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                /**
-                 * Blank by design
-                 */
-            }
+            private final ToolTipManager manager =
+                ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
         });
-        DefaultTreeCellRenderer renderer =
-            (DefaultTreeCellRenderer) this.predicateTree.getCellRenderer();
-        renderer.setLeafIcon(null);
-        renderer.setClosedIcon(null);
-        renderer.setOpenIcon(null);
-
-        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        sp2.setResizeWeight(0.3);
-        sp2.setBorder(null);
-        sp2.setOneTouchExpandable(true);
-        sp2.setRightComponent(new JScrollPane(this.predicateTree));
-        sp2.setLeftComponent(mainPane);
-        sp2.setDividerLocation(Integer.MAX_VALUE);
-
-        add(sp2, BorderLayout.CENTER);
-
-        this.statusBar = new JLabel(" ");
-        add(this.statusBar, BorderLayout.SOUTH);
+        return result;
     }
 
     /**
@@ -715,150 +755,6 @@ public class PrologPanel extends JPanel {
     }
 
     /**
-     * Create the Action for exploring based on filtering of rule events
-     * 
-     * @return
-     */
-    /* TODO: Fix this code for the new version
-    protected Action createExploreRuleEventsAction() {
-        final ExploreStatePrologStrategy strat =
-            new ExploreStatePrologStrategy();
-        Scenario scen =
-            ScenarioFactory.getScenario(strat, new Acceptor(),
-                "Explore by selecting rule events.",
-                "Select Rule Events Exploration");
-        final Action innerAct = this.sim.createLaunchScenarioAction(scen);
-        Action act = new Action() {
-            public void addPropertyChangeListener(
-                    PropertyChangeListener listener) {
-                innerAct.addPropertyChangeListener(listener);
-            }
-
-            public Object getValue(String key) {
-                return innerAct.getValue(key);
-            }
-
-            public boolean isEnabled() {
-                return innerAct.isEnabled();
-            }
-
-            public void putValue(String key, Object value) {
-                innerAct.putValue(key, value);
-            }
-
-            public void removePropertyChangeListener(
-                    PropertyChangeListener listener) {
-                innerAct.removePropertyChangeListener(listener);
-            }
-
-            public void setEnabled(boolean b) {
-                innerAct.setEnabled(b);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                if (!confirmDirty()) {
-                    return;
-                }
-                if (PrologPanel.this.queryEdit.getText().length() == 0) {
-                    return;
-                }
-                if (PrologPanel.this.sim.getCurrentState() == null) {
-                    return;
-                }
-                PrologPanel.this.results.setText("");
-                strat.setPrologQuery(null,
-                    PrologPanel.this.queryEdit.getText(), getUserPrologCode());
-                addQueryHistory(PrologPanel.this.queryEdit.getText());
-                innerAct.actionPerformed(e);
-            }
-        };
-        return act;
-    }
-    */
-
-    /**
-     * Produces prolog code to load the currently open files
-     * 
-     * @return prolog code
-     */
-    /* TODO: Can this be removed?
-    private String getUserPrologCode() {
-        StringBuilder sb = new StringBuilder();
-        for (PrologFile pfile : this.prologFiles) {
-            if (pfile.file != null) {
-                sb.append(":-ensure_loaded(file('");
-                sb.append(pfile.file.toString().replaceAll("\\\\", "\\\\\\\\"));
-                sb.append("')).\n");
-            }
-        }
-        return sb.toString();
-    }
-    */
-
-    /**
-     * Create the Action for simulating using the graph state acceptor method
-     * 
-     * @return
-     */
-    /* TODO: Fix this code for the new version
-    protected Action createExploreGraphStateAction() {
-        ConditionalBFSStrategy strat = new ConditionalBFSStrategy();
-        this.prologCondition = new PrologCondition();
-        strat.setExploreCondition(this.prologCondition);
-        Scenario scen =
-            ScenarioFactory.getScenario(strat, new Acceptor(),
-                "Explore by accepting graph states.",
-                "Accept Graph State Exploration");
-        final Action innerAct = this.sim.createLaunchScenarioAction(scen);
-        Action act = new Action() {
-            public void addPropertyChangeListener(
-                    PropertyChangeListener listener) {
-                innerAct.addPropertyChangeListener(listener);
-            }
-
-            public Object getValue(String key) {
-                return innerAct.getValue(key);
-            }
-
-            public boolean isEnabled() {
-                return innerAct.isEnabled();
-            }
-
-            public void putValue(String key, Object value) {
-                innerAct.putValue(key, value);
-            }
-
-            public void removePropertyChangeListener(
-                    PropertyChangeListener listener) {
-                innerAct.removePropertyChangeListener(listener);
-            }
-
-            public void setEnabled(boolean b) {
-                innerAct.setEnabled(b);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                if (!confirmDirty()) {
-                    return;
-                }
-                if (PrologPanel.this.queryEdit.getText().length() == 0) {
-                    return;
-                }
-                if (PrologPanel.this.sim.getCurrentState() == null) {
-                    return;
-                }
-                PrologPanel.this.results.setText("");
-                PrologPanel.this.prologCondition.setCondition(PrologPanel.this.queryEdit.getText());
-                PrologPanel.this.prologCondition.setUsercode(getUserPrologCode());
-                addQueryHistory(PrologPanel.this.queryEdit.getText());
-                innerAct.actionPerformed(e);
-            }
-        };
-        return act;
-    }
-    */
-
-    /**
      * Return a file chooser for prolog files
      */
     protected JFileChooser getPrologFileChooser() {
@@ -914,7 +810,7 @@ public class PrologPanel extends JPanel {
             }
 
             try {
-                updatePredicateTree(this.prolog.getEnvironment().getModule());
+                updatePredicateTree(this.prolog);
                 this.prolog.init();
             } catch (GroovePrologLoadingException e) {
                 this.results.append("\nError loading the prolog engine:\n");
@@ -927,15 +823,16 @@ public class PrologPanel extends JPanel {
     }
 
     /**
-     * Update the tree with all known predicates
+     * Update the predicate trees with all known predicates
      */
-    protected void updatePredicateTree(Module module) {
-        this.predRootNode.removeAllChildren();
+    protected void updatePredicateTree(PrologQuery query) {
+        this.prologRootNode.removeAllChildren();
+        this.grooveRootNode.removeAllChildren();
+        this.userRootNode.removeAllChildren();
         Map<AtomTerm,DefaultMutableTreeNode> nodes =
             new HashMap<AtomTerm,DefaultMutableTreeNode>();
         SortedSet<CompoundTermTag> tags =
             new TreeSet<CompoundTermTag>(new Comparator<CompoundTermTag>() {
-
                 public int compare(CompoundTermTag o1, CompoundTermTag o2) {
                     int rc = o1.functor.value.compareTo(o2.functor.value);
                     if (rc == 0) {
@@ -944,12 +841,21 @@ public class PrologPanel extends JPanel {
                     return rc;
                 }
             });
+        Module module = query.getEnvironment().getModule();
+        Set<CompoundTermTag> prologTags = query.getPrologTags();
+        Set<CompoundTermTag> grooveTags = query.getGrooveTags();
         tags.addAll(module.getPredicateTags());
         for (CompoundTermTag tag : tags) {
             DefaultMutableTreeNode baseNode = nodes.get(tag.functor);
             if (baseNode == null) {
                 baseNode = new DefaultMutableTreeNode(tag);
-                this.predRootNode.add(baseNode);
+                if (prologTags.contains(tag)) {
+                    this.prologRootNode.add(baseNode);
+                } else if (grooveTags.contains(tag)) {
+                    this.grooveRootNode.add(baseNode);
+                } else {
+                    this.userRootNode.add(baseNode);
+                }
                 nodes.put(tag.functor, baseNode);
             } else {
                 if (baseNode.getChildCount() == 0) {
@@ -962,12 +868,16 @@ public class PrologPanel extends JPanel {
                 baseNode.add(predNode);
             }
         }
-        ((DefaultTreeModel) this.predicateTree.getModel()).reload();
-        this.predicateTree.expandPath(new TreePath(this.predRootNode.getPath()));
+        ((DefaultTreeModel) this.prologTree.getModel()).reload();
+        this.prologTree.expandPath(new TreePath(this.prologRootNode.getPath()));
+        ((DefaultTreeModel) this.grooveTree.getModel()).reload();
+        this.grooveTree.expandPath(new TreePath(this.grooveRootNode.getPath()));
+        ((DefaultTreeModel) this.userTree.getModel()).reload();
+        this.userTree.expandPath(new TreePath(this.userRootNode.getPath()));
     }
 
     /**
-     * Execute the gven prolog query
+     * Execute the given prolog query
      */
     public void executeQuery(String queryString) {
         if (this.sim.getGrammarView() == null) {
@@ -1157,6 +1067,96 @@ public class PrologPanel extends JPanel {
         }
         return true;
     }
+
+    /** 
+     * Constructs the HMTL-formatted tool tip for a given tag,
+     * by trying to construct this from the predicate class annotations.
+     */
+    private String createToolTipText(CompoundTermTag tag) {
+        String result = null;
+        try {
+            String name = tag.functor.value;
+            int arity = tag.arity;
+            Predicate predicate =
+                this.prolog.getEnvironment().getModule().getDefinedPredicate(
+                    tag);
+            String className = predicate.getJavaClassName();
+            if (className != null) {
+                result =
+                    createToolTipText(name, arity, Class.forName(className));
+            }
+        } catch (ClassNotFoundException e) {
+            // do nothing
+            return null;
+        }
+        return result;
+    }
+
+    private String createToolTipText(String name, int arity, Class<?> cl) {
+        String result = null;
+        Signature sigAnn = cl.getAnnotation(Signature.class);
+        if (sigAnn != null) {
+            StringBuilder tip = new StringBuilder();
+            String[] sigValue = sigAnn.value();
+            if (sigValue.length < arity) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Malformed annotation %s for %s/%s: insufficient arguments",
+                        sigAnn, name, arity));
+            }
+            for (int i = arity; i < sigValue.length; i++) {
+                String io = sigValue[i];
+                if (io.length() != arity) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "Malformed annodation %s for %s/%s: incorrect IO spec %s",
+                            sigAnn, name, arity, io));
+                }
+                StringBuilder sig = new StringBuilder();
+                sig.append(name);
+                sig.append('(');
+                for (int p = 0; p < arity; p++) {
+                    if (p > 0) {
+                        sig.append(',');
+                    }
+                    sig.append(io.charAt(p));
+                    sig.append(sigValue[p]);
+                }
+                sig.append(')');
+                tip.append(STRONG_TAG.on(sig));
+                tip.append(HTML_LINEBREAK);
+            }
+
+            ToolTip toolTipAnn = cl.getAnnotation(ToolTip.class);
+            if (toolTipAnn != null) {
+                tip.append(HTML_LINEBREAK);
+                for (String line : toolTipAnn.value()) {
+                    tip.append(line);
+                    tip.append(" ");
+                }
+            }
+            Param paramAnn = cl.getAnnotation(Param.class);
+            if (paramAnn != null) {
+                String[] paramValue = paramAnn.value();
+                if (paramValue.length != arity) {
+                    throw new IllegalStateException(String.format(
+                        "Malformed annodation %s for %s/%s: wrong arity",
+                        paramAnn, name, arity));
+                }
+                for (int p = 0; p < arity; p++) {
+                    tip.append(HTML_LINEBREAK);
+                    tip.append("<li>");
+                    tip.append(STRONG_TAG.on("#" + p + " - "));
+                    tip.append(paramValue[p]);
+                }
+            }
+            result = HTML_TAG.on(DIV_TAG.on(tip)).toString();
+        }
+        return result;
+    }
+
+    static private final HTMLTag DIV_TAG =
+        HTMLConverter.createDivTag("width: 300px;");
 
     /**
      * Class used to redirect the standard output stream used by prolog to the

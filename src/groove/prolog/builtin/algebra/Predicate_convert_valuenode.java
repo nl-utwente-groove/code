@@ -33,11 +33,20 @@ import groove.algebra.JavaDoubleAlgebra;
 import groove.algebra.JavaIntAlgebra;
 import groove.algebra.StringAlgebra;
 import groove.graph.algebra.ValueNode;
+import groove.prolog.annotation.Param;
+import groove.prolog.annotation.Signature;
+import groove.prolog.annotation.ToolTip;
 
 /**
  * Predicate convert_valuenode(+ValueNode,?Atom)
  * @author Michiel Hendriks
  */
+@ToolTip({
+    "Converts the value node's value to a prolog term.",
+    "A string value is converted to an AtomicTerm, and integer and double value are converted to a IntegerTerm and FloatTerm respectively.",
+    "All other values are converted to a JavaObjectTerm."})
+@Signature({"Node", "Term", "+?"})
+@Param({"The value node", "The corresponding term"})
 public class Predicate_convert_valuenode extends AlgebraPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
