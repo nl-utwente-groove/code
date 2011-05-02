@@ -752,7 +752,7 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             if (text.charAt(text.length() - 1) != '.') {
                 text += '.';
             }
-            return add(text);
+            return super.add(text);
         }
 
         /** Adds a formatted line to the tool tip text. */
