@@ -878,6 +878,7 @@ public final class GraphToTikz {
             styles.setTwo(CREATOR_LABEL_STYLE);
             break;
         case EMBARGO:
+        case CONNECT:
             styles.setOne(EMBARGO_EDGE_STYLE);
             styles.setTwo(EMBARGO_LABEL_STYLE);
             break;
