@@ -272,8 +272,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         assert match != null : "Match update should not be called with empty match";
         setStateModel(this.simulator.getCurrentState());
         AspectJModel jModel = getJModel();
-        HostToAspectMap aspectMap =
-            this.stateToAspectMap.get(this.selectedState);
+        HostToAspectMap aspectMap = getAspectMap(this.selectedState);
         Set<AspectJCell> emphElems = new HashSet<AspectJCell>();
         for (HostNode matchedNode : match.getNodeValues()) {
             AspectJCell jCell =
@@ -306,8 +305,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         GraphState newState = transition.target();
         GraphState oldState = transition.source();
         HostGraphMorphism morphism = transition.getMorphism();
-        copyLayout(this.stateToAspectMap.get(oldState),
-            this.stateToAspectMap.get(newState), morphism);
+        copyLayout(getAspectMap(oldState), getAspectMap(newState), morphism);
         // set the graph model to the new state
         setStateModel(newState);
     }
@@ -419,11 +417,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * state then one is created.
      */
     private AspectJModel getAspectJModel(GraphState state) {
-        HostToAspectMap aspectMap = this.stateToAspectMap.get(state);
-        if (aspectMap == null) {
-            this.stateToAspectMap.put(state, aspectMap =
-                state.getGraph().toAspectMap());
-        }
+        HostToAspectMap aspectMap = getAspectMap(state);
         AspectGraph aspectGraph = aspectMap.getAspectGraph();
         AspectJModel result = this.graphToJModel.get(aspectGraph);
         if (result == null) {
@@ -446,8 +440,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 // the following call will make sure the start state
                 // is actually loaded
                 getAspectJModel(oldState);
-                HostToAspectMap oldStateMap =
-                    this.stateToAspectMap.get(oldState);
+                HostToAspectMap oldStateMap = getAspectMap(oldState);
                 copyLayout(oldStateMap, aspectMap, morphism);
             } else {
                 assert state instanceof StartGraphState;
@@ -586,6 +579,20 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      */
     private StateJList getStateList() {
         return this.simulator.getStateList();
+    }
+
+    /** 
+     * Returns the aspect map for a given state. 
+     * Retrieves the result from {@link #stateToAspectMap},
+     * creating and inserting it if necessary.
+     */
+    private HostToAspectMap getAspectMap(GraphState state) {
+        HostToAspectMap result = this.stateToAspectMap.get(state);
+        if (result == null) {
+            this.stateToAspectMap.put(state, result =
+                state.getGraph().toAspectMap());
+        }
+        return result;
     }
 
     /**

@@ -179,12 +179,12 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
 
         /**
          * Adds embargo and injection search items to the super result.
-         * @param anchorNodes the set of pre-matched nodes
-         * @param anchorEdges the set of pre-matched edges
+         * @param seedNodes the set of pre-matched nodes
+         * @param seedEdges the set of pre-matched edges
          */
         Collection<AbstractSearchItem> computeSearchItems(
-                Collection<RuleNode> anchorNodes,
-                Collection<RuleEdge> anchorEdges) {
+                Collection<RuleNode> seedNodes,
+                Collection<RuleEdge> seedEdges) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
             Set<RuleNode> unmatchedNodes =
@@ -192,15 +192,15 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             Set<RuleEdge> unmatchedEdges =
                 new LinkedHashSet<RuleEdge>(this.remainingEdges);
             // first a single search item for the pre-matched elements
-            if (anchorNodes == null) {
-                anchorNodes = Collections.emptySet();
+            if (seedNodes == null) {
+                seedNodes = Collections.emptySet();
             }
-            if (anchorEdges == null) {
-                anchorEdges = Collections.emptySet();
+            if (seedEdges == null) {
+                seedEdges = Collections.emptySet();
             }
-            if (!anchorNodes.isEmpty() || !anchorEdges.isEmpty()) {
+            if (!seedNodes.isEmpty() || !seedEdges.isEmpty()) {
                 AbstractSearchItem preMatchItem =
-                    new SeedSearchItem(anchorNodes, anchorEdges);
+                    new SeedSearchItem(seedNodes, seedEdges);
                 result.add(preMatchItem);
                 unmatchedNodes.removeAll(preMatchItem.bindsNodes());
                 unmatchedEdges.removeAll(preMatchItem.bindsEdges());
@@ -229,9 +229,9 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
                         || ((VariableNode) node).getConstant() != null
-                        || anchorNodes.contains(node) : String.format(
+                        || seedNodes.contains(node) : String.format(
                         "Variable node '%s' should be among anchors %s", node,
-                        anchorNodes);
+                        seedNodes);
                     result.add(nodeItem);
                 }
             }
@@ -283,13 +283,13 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
 
         /**
          * Creates and returns a search plan on the basis of the given data.
-         * @param anchorNodes the set of pre-matched nodes; may be
+         * @param seedNodes the set of pre-matched nodes; may be
          *        <code>null</code> for an empty set
-         * @param anchorEdges the set of pre-matched edges; may be
+         * @param seedEdges the set of pre-matched edges; may be
          *        <code>null</code> for an empty set
          */
-        public SearchPlan getPlan(Collection<RuleNode> anchorNodes,
-                Collection<RuleEdge> anchorEdges) {
+        public SearchPlan getPlan(Collection<RuleNode> seedNodes,
+                Collection<RuleEdge> seedEdges) {
             if (this.used) {
                 throw new IllegalStateException(
                     "Method getPlan() was already called");
@@ -300,7 +300,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                 new SearchPlan(this.condition,
                     this.condition.getSystemProperties().isInjective());
             Collection<AbstractSearchItem> items =
-                computeSearchItems(anchorNodes, anchorEdges);
+                computeSearchItems(seedNodes, seedEdges);
             while (!items.isEmpty()) {
                 AbstractSearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
