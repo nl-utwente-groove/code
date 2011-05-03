@@ -30,15 +30,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class representing the application of a {@link groove.trans.Rule} to a
- * graph.
+ * Class representing a particular application of a {@link groove.trans.Rule} and a
+ * graph. This is essentially the combination of a {@link RuleEvent}, the host graph,
+ * and the created nodes.
+ * <p>
+ * The main functionality of objects of this class is to apply the rule event's changes
+ * to an arbitrary {@link DeltaTarget}, and to construct the target graph as well as a 
+ * morphism from host to target.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-06 17:04:38 $
  */
 public class RuleApplication implements DeltaApplier {
     /**
-     * Constructs a new derivation on the basis of a given production rule, host
-     * graph and rule factory.
+     * Constructs a new derivation on the basis of a given rule and host
+     * graph.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
@@ -83,8 +88,8 @@ public class RuleApplication implements DeltaApplier {
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public RuleApplication(RuleEvent event, HostGraph source,
-            HostGraph target, HostNode[] coanchorImage) {
+    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
+            HostNode[] coanchorImage) {
         this(event, source, coanchorImage);
         this.target = target;
     }

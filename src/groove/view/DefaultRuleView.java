@@ -1377,6 +1377,7 @@ public class DefaultRuleView implements RuleView {
         /**
          * Returns a rule graph that forms the intersection of the rule elements
          * of this and the parent level.
+         * Edges are only put in the intersection if they bind a label variable.
          */
         private RuleGraph getIntersection(RuleGraph parentLhs, RuleGraph myLhs) {
             RuleGraph result =
@@ -1387,7 +1388,8 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             for (RuleEdge edge : parentLhs.edgeSet()) {
-                if (myLhs.containsEdge(edge)) {
+                if (myLhs.containsEdge(edge)
+                    && edge.label().getWildcardId() != null) {
                     result.addEdge(edge);
                 }
             }
@@ -1856,16 +1858,16 @@ public class DefaultRuleView implements RuleView {
         /**
          * Factory method for universal conditions.
          * @param pattern target graph of the new condition
-         * @param rootGraph root graph of the new condition
+         * @param root root graph of the new condition
          * @param name name of the new condition to be created
          * @param positive if <code>true</code>, the condition should be matched
          *        non-vacuously
          * @return the fresh condition
          */
-        private Condition createForall(RuleGraph pattern, RuleGraph rootGraph,
+        private Condition createForall(RuleGraph pattern, RuleGraph root,
                 String name, boolean positive) {
             Condition result =
-                new Condition(name, Condition.Op.FORALL, pattern, rootGraph,
+                new Condition(name, Condition.Op.FORALL, pattern, root,
                     getSystemProperties());
             if (positive) {
                 result.setPositive();
