@@ -23,15 +23,11 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.graph.algebra.ValueNode;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
 
 /**
  * Predicate is_valuenode(+ValueNode)
  * @author Michiel Hendriks
  */
-@Signature({"Node", "+"})
-@ToolTip("Succeeds if the given term is a value node")
 public class Predicate_is_valuenode extends AlgebraPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,

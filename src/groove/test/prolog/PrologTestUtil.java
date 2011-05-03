@@ -53,7 +53,7 @@ public class PrologTestUtil {
      */
     public static QueryResult executeQuery(GrooveState grooveState, String query) {
         if (prologQuery == null) {
-            prologQuery = new PrologQuery();
+            prologQuery = PrologQuery.instance();
         }
 
         prologQuery.setGrooveState(grooveState);
@@ -86,7 +86,7 @@ public class PrologTestUtil {
     public static boolean test(GrooveState grooveState, String query)
         throws GroovePrologException {
         if (prologQuery == null) {
-            prologQuery = new PrologQuery();
+            prologQuery = PrologQuery.instance();
         }
 
         prologQuery.setGrooveState(grooveState);

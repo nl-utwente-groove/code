@@ -22,18 +22,12 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.graph.TypeGraph;
 import groove.prolog.GrooveEnvironment;
-import groove.prolog.annotation.Param;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
  * Predicate composite_type_graph(?TypeGraph)
  * @author Lesley Wevers
  */
-@Signature({"TypeGraph", "?"})
-@ToolTip("Retrieves the composite type graph, which is the union of the individual type graphs.")
-@Param("The composite type graph object")
 public class Predicate_composite_type_graph extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,

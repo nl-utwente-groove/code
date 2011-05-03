@@ -25,11 +25,19 @@ import java.lang.annotation.Target;
  * Signature of a Prolog predicate.
  * The value consists of a series of parameter names, followed
  * by a series of (at least one) allowed I/O specifications for the parameters.
- * An IO specification is a string of "?" and "+" characters standing
- * for input and output directionality of the corresponding parameters,
- * respectively.
+ * <p>
+ * An IO specification is a string of characters specifying the
+ * directionality of the corresponding parameters,
+ * respectively. Possible values are:
+ * <dd>
+ * <table>
+ * <tr><td> <b>+</b> <td> The argument shall be instantiated.
+ * <tr><td> <b>?</b> <td> The argument shall be instantiated or a variable.
+ * <tr><td> <b>@</b> <td> The argument shall remain unaltered.
+ * <tr><td> <b>-</b> <td> The argument shall be a variable that will be instantiated
+ * </table>
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Signature {
     /** The signature value. */

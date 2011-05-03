@@ -21,9 +21,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Parameter documentation of a GROOVE Prolog predicate. */
+/** 
+ * Parameter documentation of a GROOVE Prolog predicate.
+ * The value consists of a list of strings, each describing one parameter.
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Param {
     /** The list of parameter comments, ordered according to the parameters. */
     String[] value();

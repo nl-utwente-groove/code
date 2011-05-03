@@ -24,10 +24,13 @@ import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
+import groove.prolog.builtin.GroovePredicates;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.util.Map;
 
 /**
  * Subclass of the normal GNU Prolog Environment, contains a reference to a
@@ -87,7 +90,37 @@ public class GrooveEnvironment extends Environment {
         this.grooveState = grooveState;
     }
 
-    /** ensure that prolog text designated by term is loaded */
+    /** 
+     * Loads all derived predicates from a given class.
+     * Returns a map from loaded predicates to tool tip texts. 
+     */
+    public Map<CompoundTermTag,String> ensureLoaded(
+            Class<? extends GroovePredicates> source) {
+        Map<CompoundTermTag,String> result = null;
+        //        if (isInitialized()) {
+        //            throw new IllegalStateException(
+        //                "no files can be loaded after inializtion was run");
+        //        }
+        try {
+            GroovePredicates instance = source.newInstance();
+            // load the predicates
+            new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
+                instance.get()));
+            // retrieve the tool tip map
+            result = instance.getToolTipMap();
+        } catch (InstantiationException e) {
+            throw new IllegalArgumentException(String.format(
+                "Can't load predicate class %s: %s", source.getSimpleName(),
+                e.getMessage()));
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(String.format(
+                "Can't load predicate class %s: %s", source.getSimpleName(),
+                e.getMessage()));
+        }
+        return result;
+    }
+
+    /** Loads Prolog declarations from a named stream. */
     public synchronized void loadStream(Reader stream, String streamName) {
         if (isInitialized()) {
             throw new IllegalStateException(
