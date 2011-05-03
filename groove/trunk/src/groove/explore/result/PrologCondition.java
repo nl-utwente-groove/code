@@ -107,7 +107,7 @@ public class PrologCondition extends ExploreCondition<String> {
      * @throws GroovePrologLoadingException TODO
      */
     protected void initProlog() throws GroovePrologLoadingException {
-        this.query = new PrologQuery();
+        this.query = PrologQuery.instance();
         if (this.usercode != null && this.usercode.length() > 0) {
             this.query.init(new StringReader(this.usercode), "user_code");
         }

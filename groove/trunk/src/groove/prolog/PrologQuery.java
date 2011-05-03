@@ -18,6 +18,7 @@
  */
 package groove.prolog;
 
+import gnu.prolog.database.Predicate;
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
 import gnu.prolog.term.AtomTerm;
@@ -30,6 +31,12 @@ import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
 import groove.lts.GraphState;
+import groove.prolog.annotation.Param;
+import groove.prolog.annotation.Signature;
+import groove.prolog.annotation.ToolTip;
+import groove.prolog.builtin.AlgebraPredicates;
+import groove.prolog.builtin.GroovePredicates;
+import groove.prolog.builtin.TypePredicates;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
 import groove.prolog.util.TermConverter;
@@ -53,6 +60,11 @@ public class PrologQuery {
      * The groove prolog library, will always be included
      */
     public static final String GROOVE_PRO = "/groove/prolog/builtin/groove.pro";
+
+    /** Classes of predefined derived Groove predicates. */
+    @SuppressWarnings("unchecked")
+    public static final Class<GroovePredicates>[] GROOVE_DER = new Class[] {
+        AlgebraPredicates.class, TypePredicates.class};
 
     /**
      * The graph that will be queried.
@@ -94,29 +106,11 @@ public class PrologQuery {
      */
     protected OutputStream userOutput;
 
-    /** The set of built-in Prolog predicates. */
-    private final Set<CompoundTermTag> prologTags =
-        new HashSet<CompoundTermTag>();
-    /** The set of built-in Groove predicates. */
-    private final Set<CompoundTermTag> grooveTags =
-        new HashSet<CompoundTermTag>();
-
     /**
-     * No-args constructor
+     * Private no-args constructor for the singleton instance.
      */
-    public PrologQuery() {
-        /**
-         * Left blank by design
-         */
-    }
-
-    /**
-     * Construct a PrologQuery with the given GrooveState
-     * @param grooveState       A GrooveState
-     */
-    public PrologQuery(GrooveState grooveState) {
-        this();
-        setGrooveState(grooveState);
+    private PrologQuery() {
+        // empty by design
     }
 
     /**
@@ -266,6 +260,102 @@ public class PrologQuery {
         }
         return QueryReturnValue.NOT_RUN;
     }
+
+    /**
+     * Create the prolog environment. This will initialize the environment in
+     * the standard groove environment. It can be used when you need to make
+     * changes to the environment before loading user code.
+     */
+    public GrooveEnvironment getEnvironment() {
+        if (this.env == null) {
+            this.env = new GrooveEnvironment(null, this.userOutput);
+            this.env.setGrooveState(this.grooveState);
+            this.prologTags.addAll(this.env.getModule().getPredicateTags());
+            // load the class-based Groove predicates
+            CompoundTerm term =
+                new CompoundTerm(AtomTerm.get("resource"),
+                    new Term[] {AtomTerm.get(GROOVE_PRO)});
+            this.env.ensureLoaded(term);
+            // load the derived Groove predicates
+            for (Class<GroovePredicates> predicates : GROOVE_DER) {
+                this.toolTipMap.putAll(this.env.ensureLoaded(predicates));
+            }
+            this.grooveTags.addAll(this.env.getModule().getPredicateTags());
+            this.grooveTags.removeAll(this.prologTags);
+        }
+        return this.env;
+    }
+
+    /** Returns the set of built-in Prolog predicates. */
+    public Set<CompoundTermTag> getPrologTags() {
+        return this.prologTags;
+    }
+
+    /** Returns the set of built-in Groove predicates. */
+    public Set<CompoundTermTag> getGrooveTags() {
+        return this.grooveTags;
+    }
+
+    /**
+     * Retrieves the tool tip text for a given predicate from a map,
+     * creating it first if necessary.
+     */
+    public String getToolTipText(CompoundTermTag tag) {
+        if (this.toolTipMap.containsKey(tag)) {
+            return this.toolTipMap.get(tag);
+        } else {
+            String result = createToolTipText(tag);
+            this.toolTipMap.put(tag, result);
+            return result;
+        }
+    }
+
+    /** 
+     * Constructs the HMTL-formatted tool tip for a given tag,
+     * by trying to construct this from the predicate class annotations.
+     */
+    private String createToolTipText(CompoundTermTag tag) {
+        String result = null;
+        try {
+            Predicate predicate = this.env.getModule().getDefinedPredicate(tag);
+            String className = predicate.getJavaClassName();
+            if (className != null) {
+                Class<?> cl = Class.forName(className);
+                Signature sigAnn = cl.getAnnotation(Signature.class);
+                ToolTip toolTipAnn = cl.getAnnotation(ToolTip.class);
+                Param paramAnn = cl.getAnnotation(Param.class);
+                result =
+                    GroovePredicates.createToolTipText(tag, sigAnn, toolTipAnn,
+                        paramAnn);
+            }
+        } catch (ClassNotFoundException e) {
+            // do nothing
+            return null;
+        }
+        return result;
+    }
+
+    /** The set of built-in Prolog predicates. */
+    private final Set<CompoundTermTag> prologTags =
+        new HashSet<CompoundTermTag>();
+
+    /** The set of built-in Groove predicates. */
+    private final Set<CompoundTermTag> grooveTags =
+        new HashSet<CompoundTermTag>();
+
+    /**
+     * Mapping from Groove built-in predicates to 
+     * corresponding tool tip text.
+     */
+    private final Map<CompoundTermTag,String> toolTipMap =
+        new HashMap<CompoundTermTag,String>();
+
+    /** Returns the singleton instance of this class. */
+    public static PrologQuery instance() {
+        return instance;
+    }
+
+    private static final PrologQuery instance = new PrologQuery();
 
     /**
      * The result object returned on {@link PrologQuery#newQuery(String)} and
@@ -421,36 +511,5 @@ public class PrologQuery {
         public String getQuery() {
             return this.query;
         }
-    }
-
-    /**
-     * Create the prolog environment. This will initialize the environment in
-     * the standard groove environment. It can be used when you need to make
-     * changes to the environment before loading user code.
-     */
-    public GrooveEnvironment getEnvironment() {
-        if (this.env == null) {
-            this.env = new GrooveEnvironment(null, this.userOutput);
-            this.env.setGrooveState(this.grooveState);
-            this.prologTags.addAll(this.env.getModule().getPredicateTags());
-            // load the Groove predicates
-            CompoundTerm term =
-                new CompoundTerm(AtomTerm.get("resource"),
-                    new Term[] {AtomTerm.get(GROOVE_PRO)});
-            this.env.ensureLoaded(term);
-            this.grooveTags.addAll(this.env.getModule().getPredicateTags());
-            this.grooveTags.removeAll(this.prologTags);
-        }
-        return this.env;
-    }
-
-    /** Returns the set of built-in Prolog predicates. */
-    public Set<CompoundTermTag> getPrologTags() {
-        return this.prologTags;
-    }
-
-    /** Returns the set of built-in Groove predicates. */
-    public Set<CompoundTermTag> getGrooveTags() {
-        return this.grooveTags;
     }
 }

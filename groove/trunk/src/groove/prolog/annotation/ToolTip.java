@@ -21,10 +21,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Tool tip for GROOVE-based Prolog predicate. */
+/** Tool tip annotation for GROOVE-based Prolog predicates. */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface ToolTip {
-    /** Value of the tool tip. */
+    /** 
+     * Value of the tool tip.
+     * The strings in the array are concatenated to form the main
+     * body of the tool tip. 
+     */
     String[] value();
 }

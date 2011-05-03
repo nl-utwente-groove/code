@@ -256,6 +256,10 @@ public class HTMLConverter {
     static public final String SUB_TAG_NAME = "sub";
     /** Subscript font tag. */
     static public final HTMLTag SUB_TAG = new HTMLTag(SUB_TAG_NAME);
+    /** Name of the table tag. */
+    static public final String TABLE_TAG_NAME = "table";
+    /** Table tag. */
+    static public final HTMLTag TABLE_TAG = new HTMLTag(TABLE_TAG_NAME);
 
     /** The <code>html</code> tag to insert a line break. */
     static public final String HTML_LINEBREAK =
