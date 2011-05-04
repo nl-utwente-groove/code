@@ -130,7 +130,6 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
      *          
      *           
      */
-    @SuppressWarnings("unchecked")
     protected void giveNewMatchToSuccessor(RetePathMatch newMatch,
             ReteNetworkNode n, int repeatedSuccessorIndex) {
         if (n instanceof SubgraphCheckerNode) {
