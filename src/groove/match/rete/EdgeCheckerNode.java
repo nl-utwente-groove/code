@@ -153,7 +153,6 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
         ReteNetworkNode previous = null;

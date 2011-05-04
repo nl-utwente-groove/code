@@ -141,7 +141,6 @@ public class ReteNetwork {
      *  
      * @param condition The condition to processed and added to the RETE network.
      */
-    @SuppressWarnings("unchecked")
     private void addConditionToNetwork(Condition condition,
             ConditionChecker parent) {
         ConditionChecker result = null;

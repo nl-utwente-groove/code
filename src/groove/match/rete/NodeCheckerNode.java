@@ -90,7 +90,6 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         receiveNodeReporter.stop();
     }
 
-    @SuppressWarnings("unchecked")
     private void sendDownReceivedNode(HostNode node, Action action) {
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;

@@ -367,7 +367,6 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
         ReteNetworkNode previous = null;
