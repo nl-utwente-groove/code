@@ -22,6 +22,7 @@ import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJEdge;
@@ -525,7 +526,29 @@ public final class GraphToTikz {
                 }
                 this.result.append(END_NODE_LAB);
             }
+
+            // Add small parameter node, if needed.
+            boolean hasParameter =
+                node instanceof AspectJVertex
+                        ? ((AspectJVertex) node).getNode().hasParam() : false;
+            if (hasParameter) {
+                this.appendParameterNode((AspectJVertex) node);
+            }
         }
+    }
+
+    private void appendParameterNode(AspectJVertex node) {
+        String nodeId = node.getNode().toString();
+        String nr = node.getNode().getParamNr() + "";
+        // New node line.
+        this.result.append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
+        // Node name.
+        this.result.append(encloseSpace(enclosePar(nodeId + PAR_NODE_SUFFIX)));
+        // Node Coordinates.
+        this.result.append(encloseSpace(AT_KEYWORD));
+        this.result.append(enclosePar(nodeId + NORTH_WEST));
+        // Parameter number.
+        this.result.append(" " + encloseCurly(nr) + ";\n");
     }
 
     /**
@@ -536,6 +559,10 @@ public final class GraphToTikz {
     private void appendNodeStyles(GraphJVertex node, boolean selected) {
         ArrayList<String> styles = new ArrayList<String>();
         boolean isControlNode = false;
+        boolean isTypeGraphNode =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getGraphRole() == GraphRole.TYPE
+                    : false;
 
         if (node instanceof CtrlJVertex) {
             // Node from control automaton.
@@ -599,6 +626,10 @@ public final class GraphToTikz {
             }
         }
 
+        if (isTypeGraphNode) {
+            styles.add(TYPE_NODE_STYLE);
+        }
+
         if (!this.isShowBackground()) {
             styles.add(WHITE_FILL);
         }
@@ -652,7 +683,11 @@ public final class GraphToTikz {
      */
     private void appendNode(GraphJVertex node, Point2D point) {
         int side = this.getSide(node, point);
-        if (side == 0) {
+        boolean isProductNode =
+            node instanceof AspectJVertex
+                    ? ((AspectJVertex) node).getNode().getAttrKind() == PRODUCT
+                    : false;
+        if (side == 0 || isProductNode) {
             // The point is not aligned with the node, just use normal routing.
             this.appendNode(node);
         } else {
@@ -1285,6 +1320,7 @@ public final class GraphToTikz {
     private static final String THIN_NODE_STYLE = "thinnode";
     private static final String THIN_EDGE_STYLE = "thinedge";
     private static final String THIN_LABEL_STYLE = "thinlab";
+    private static final String TYPE_NODE_STYLE = "type";
     private static final String ABS_NODE_STYLE = "absnode";
     private static final String ABS_EDGE_STYLE = "absedge";
     private static final String ABS_LABEL_STYLE = "abslab";
@@ -1292,6 +1328,7 @@ public final class GraphToTikz {
     private static final String PRODUCT_NODE_STYLE = "prod";
     private static final String QUANTIFIER_NODE_STYLE = "quantnode";
     private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
+    private static final String PAR_NODE_STYLE = "parnode";
     private static final String CONTROL_NODE_STYLE = "cnode";
     private static final String CONTROL_START_NODE_STYLE = "cstart";
     private static final String CONTROL_SUCCESS_NODE_STYLE = "csuccess";
@@ -1333,6 +1370,8 @@ public final class GraphToTikz {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
+    private static final String NORTH_WEST = ".north west";
+    private static final String PAR_NODE_SUFFIX = "p";
     private static final String DOC = "% To use this figure in your LaTeX "
         + "document\n% import the package groove/resources/groove2tikz.sty"
         + ENTER;
