@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.control.CtrlPar.Var;
 import groove.graph.LabelStore;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -153,7 +154,18 @@ public class Condition implements Fixable {
      * bound before the condition has to be matched.
      */
     Set<RuleNode> computeInputNodes() {
-        return new HashSet<RuleNode>(this.root.nodeSet());
+        if (hasRule() && getRule().isTop()) {
+            // collect the input parameters
+            Set<RuleNode> result = new HashSet<RuleNode>();
+            for (Var var : getRule().getSignature()) {
+                if (var.isInOnly()) {
+                    result.add(var.getRuleNode());
+                }
+            }
+            return result;
+        } else {
+            return new HashSet<RuleNode>(this.root.nodeSet());
+        }
     }
 
     /** Indicates if this condition has an associated graph pattern.

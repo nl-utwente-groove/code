@@ -316,7 +316,7 @@ public class DefaultRuleView implements RuleView {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
-        Map<Level,Condition> ruleTree = new HashMap<Level,Condition>();
+        Map<Level,Condition> ruleTree = new TreeMap<Level,Condition>();
         // construct the rule tree and add parent rules
         try {
             for (Level level : this.levelTree.getLevels(true)) {
@@ -870,7 +870,9 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Returns the quantification levels in reverse order
+         * Returns the quantification levels in ascending or descending order
+         * @param ascending if {@code true}, the levels are returned in ascending
+         * order
          */
         public final Collection<Level> getLevels(boolean ascending) {
             testFixed(true);
@@ -995,7 +997,7 @@ public class DefaultRuleView implements RuleView {
      * Class containing all elements on a given rule level. Capable of computing
      * the rule on that level.
      */
-    private class Level {
+    private class Level implements Comparable<Level> {
         /**
          * Creates a new level, with a given index and parent level.
          * @param index the index of the new level
@@ -1921,6 +1923,11 @@ public class DefaultRuleView implements RuleView {
         @Override
         public String toString() {
             return String.format("Level %s", getIndex());
+        }
+
+        @Override
+        public int compareTo(Level o) {
+            return getIndex().compareTo(o.getIndex());
         }
 
         /** Parent level; {@code null} if this is the top level. */

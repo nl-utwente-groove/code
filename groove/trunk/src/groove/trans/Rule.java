@@ -707,8 +707,8 @@ public class Rule implements Fixable, Comparable<Rule> {
     public void setFixed() throws FormatException {
         if (!this.fixed && !this.fixing) {
             this.fixing = true;
-            getCondition().setFixed();
             this.fixed = true;
+            getCondition().setFixed();
             if (PRINT && isTop()) {
                 System.out.println(toString());
             }
