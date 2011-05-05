@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.control.CtrlPar.Var;
 import groove.trans.Rule;
 import groove.util.Groove;
 
@@ -57,6 +58,21 @@ public class CtrlCall {
         this.args = args;
         this.rule = rule;
         this.function = null;
+        assert ruleInputSatisfied();
+    }
+
+    private boolean ruleInputSatisfied() {
+        for (int i = 0; i < this.rule.getSignature().size(); i++) {
+            Var var = this.rule.getSignature().get(i);
+            if (var.isInOnly()) {
+                if (this.args == null || !this.args.get(i).isInOnly()) {
+                    throw new IllegalArgumentException(String.format(
+                        "Parameter %d of rule %s not instantiated in %s", i,
+                        this.rule.getName(), this));
+                }
+            }
+        }
+        return true;
     }
 
     @Override
