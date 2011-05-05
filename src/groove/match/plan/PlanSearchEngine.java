@@ -74,15 +74,13 @@ public class PlanSearchEngine extends SearchEngine {
     public PlanSearchStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
         assert (seedNodes == null) == (seedEdges == null) : "Anchor nodes and edges should be null simultaneously";
-        AlgebraFamily algebraFamily =
-            AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
         Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
         Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
         if (condition.hasRule()) {
             anchorNodes.addAll(Arrays.asList(condition.getRule().getAnchorNodes()));
             anchorEdges.addAll(Arrays.asList(condition.getRule().getAnchorEdges()));
         }
-        PlanData planData = new PlanData(condition, algebraFamily);
+        PlanData planData = new PlanData(condition);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
         for (AbstractSearchItem item : plan) {
             boolean relevant = anchorNodes.removeAll(item.bindsNodes());
@@ -137,17 +135,27 @@ public class PlanSearchEngine extends SearchEngine {
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        PlanData(Condition condition, AlgebraFamily family) {
-            RuleGraph graph = condition.getPattern();
-            // compute the set of remaining (unmatched) nodes
-            this.remainingNodes = new LinkedHashSet<RuleNode>(graph.nodeSet());
-            // compute the set of remaining (unmatched) edges and variables
-            this.remainingEdges = new LinkedHashSet<RuleEdge>(graph.edgeSet());
-            this.remainingVars =
-                new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
-            this.labelStore = condition.getLabelStore();
+        PlanData(Condition condition) {
             this.condition = condition;
-            this.algebraFamily = family;
+            this.labelStore = condition.getLabelStore();
+            if (condition.hasPattern()) {
+                RuleGraph graph = condition.getPattern();
+                // compute the set of remaining (unmatched) nodes
+                this.remainingNodes =
+                    new LinkedHashSet<RuleNode>(graph.nodeSet());
+                // compute the set of remaining (unmatched) edges and variables
+                this.remainingEdges =
+                    new LinkedHashSet<RuleEdge>(graph.edgeSet());
+                this.remainingVars =
+                    new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
+                this.algebraFamily =
+                    AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
+            } else {
+                this.remainingNodes = null;
+                this.remainingEdges = null;
+                this.remainingVars = null;
+                this.algebraFamily = null;
+            }
         }
 
         /**
@@ -156,6 +164,39 @@ public class PlanSearchEngine extends SearchEngine {
          * @param seedEdges the set of pre-matched edges
          */
         Collection<AbstractSearchItem> computeSearchItems(
+                Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
+            Collection<AbstractSearchItem> result =
+                new ArrayList<AbstractSearchItem>();
+            if (this.condition.hasPattern()) {
+                result.addAll(computePatternSearchItems(seedNodes, seedEdges));
+            }
+            for (Condition subCondition : this.condition.getSubConditions()) {
+                AbstractSearchItem item;
+                if (subCondition instanceof EdgeEmbargo) {
+                    RuleEdge embargoEdge =
+                        ((EdgeEmbargo) subCondition).getEmbargoEdge();
+                    if (embargoEdge.label().isEmpty()) {
+                        item =
+                            createEqualitySearchItem(embargoEdge.source(),
+                                embargoEdge.target(), false);
+                    } else {
+                        item =
+                            createNegatedSearchItem(createEdgeSearchItem(embargoEdge));
+                    }
+                } else {
+                    item = new ConditionSearchItem(subCondition);
+                }
+                result.add(item);
+            }
+            return result;
+        }
+
+        /**
+         * Adds embargo and injection search items to the super result.
+         * @param seedNodes the set of pre-matched nodes
+         * @param seedEdges the set of pre-matched edges
+         */
+        Collection<AbstractSearchItem> computePatternSearchItems(
                 Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
@@ -206,24 +247,6 @@ public class PlanSearchEngine extends SearchEngine {
                         seedNodes);
                     result.add(nodeItem);
                 }
-            }
-            for (Condition subCondition : this.condition.getSubConditions()) {
-                AbstractSearchItem item;
-                if (subCondition instanceof EdgeEmbargo) {
-                    RuleEdge embargoEdge =
-                        ((EdgeEmbargo) subCondition).getEmbargoEdge();
-                    if (embargoEdge.label().isEmpty()) {
-                        item =
-                            createEqualitySearchItem(embargoEdge.source(),
-                                embargoEdge.target(), false);
-                    } else {
-                        item =
-                            createNegatedSearchItem(createEdgeSearchItem(embargoEdge));
-                    }
-                } else {
-                    item = new ConditionSearchItem(subCondition);
-                }
-                result.add(item);
             }
             return result;
         }

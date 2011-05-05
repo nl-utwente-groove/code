@@ -464,12 +464,14 @@ public class Condition implements Fixable {
         result.append(prefix);
         result.append(String.format("%s condition %s", getOp().getName(),
             getName()));
-        result.append('\n');
-        result.append(prefix);
-        result.append(" * Root:    " + getRoot());
-        result.append('\n');
-        result.append(prefix);
-        result.append(" * Pattern: " + getPattern());
+        if (hasPattern()) {
+            result.append('\n');
+            result.append(prefix);
+            result.append(" * Root:    " + getRoot());
+            result.append('\n');
+            result.append(prefix);
+            result.append(" * Pattern: " + getPattern());
+        }
         if (hasRule()) {
             result.append('\n');
             result.append(prefix);
@@ -676,9 +678,17 @@ public class Condition implements Fixable {
             return getName();
         }
 
-        /** Indicates if this operator has an associated graph pattern. */
+        /** Indicates if this operator is a quantifier. */
+        public boolean isQuantifier() {
+            return this == FORALL || this == EXISTS;
+        }
+
+        /** 
+         * Indicates if this operator has an associated graph pattern.
+         * This is the case if it is a quantifier or {@link #NOT}.
+         */
         public boolean hasPattern() {
-            return this == FORALL || this == EXISTS || this == NOT;
+            return isQuantifier() || this == NOT;
         }
 
         /** 
@@ -686,8 +696,7 @@ public class Condition implements Fixable {
          * i.e., sub-conditions (apart from the possible graph pattern). 
          */
         public boolean hasOperands() {
-            return this == FORALL || this == EXISTS || this == AND
-                || this == OR;
+            return isQuantifier() || this == AND || this == OR;
         }
 
         /** 

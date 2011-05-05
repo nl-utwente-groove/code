@@ -55,17 +55,27 @@ class ConditionSearchItem extends AbstractSearchItem {
         this.condition = condition;
         SystemProperties properties = condition.getSystemProperties();
         this.matcher = MatcherFactory.instance().createMatcher(condition);
-        this.intAlgebra =
-            AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
-                "int");
-        this.rootGraph = condition.getRoot();
-        this.neededNodes = condition.getInputNodes();
-        this.neededVars = VarSupport.getAllVars(this.rootGraph);
-        this.positive = condition.isPositive();
-        this.countNode = condition.getCountNode();
-        this.boundNodes =
-            this.countNode == null ? Collections.<RuleNode>emptySet()
-                    : Collections.singleton(this.countNode);
+        if (condition.hasPattern()) {
+            this.intAlgebra =
+                AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
+                    "int");
+            this.rootGraph = condition.getRoot();
+            this.neededNodes = condition.getInputNodes();
+            this.neededVars = VarSupport.getAllVars(this.rootGraph);
+            this.positive = condition.isPositive();
+            this.countNode = condition.getCountNode();
+            this.boundNodes =
+                this.countNode == null ? Collections.<RuleNode>emptySet()
+                        : Collections.singleton(this.countNode);
+        } else {
+            this.intAlgebra = null;
+            this.rootGraph = null;
+            this.neededNodes = Collections.emptySet();
+            this.neededVars = Collections.emptySet();
+            this.positive = false;
+            this.boundNodes = Collections.emptySet();
+            this.countNode = null;
+        }
     }
 
     @Override
@@ -85,7 +95,20 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        return -this.condition.getPattern().nodeCount() - this.rootGraph.size();
+        switch (this.condition.getOp()) {
+        case EXISTS:
+        case FORALL:
+        case NOT:
+            return -this.condition.getPattern().nodeCount()
+                - (this.rootGraph == null ? 0 : this.rootGraph.size());
+        case TRUE:
+            return 0;
+        case FALSE:
+        case AND:
+        case OR:
+        default:
+            throw new IllegalStateException();
+        }
     }
 
     @Override
@@ -94,32 +117,43 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     public void activate(PlanSearchStrategy strategy) {
-        this.nodeIxMap = new HashMap<RuleNode,Integer>();
-        for (RuleNode node : this.rootGraph.nodeSet()) {
-            this.nodeIxMap.put(node, strategy.getNodeIx(node));
-        }
-        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
-        for (RuleEdge edge : this.rootGraph.edgeSet()) {
-            this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
-        }
-        this.varIxMap = new HashMap<LabelVar,Integer>();
-        for (LabelVar var : VarSupport.getAllVars(this.rootGraph)) {
-            this.varIxMap.put(var, strategy.getVarIx(var));
-        }
-        if (this.countNode != null) {
-            this.preCounted = strategy.isNodeFound(this.countNode);
-            this.countNodeIx = strategy.getNodeIx(this.countNode);
-        }
         if (this.condition.getOp() != Condition.Op.NOT) {
             this.condIx = strategy.getCondIx(this.condition);
+        }
+        if (this.condition.hasPattern()) {
+            this.nodeIxMap = new HashMap<RuleNode,Integer>();
+            for (RuleNode node : this.rootGraph.nodeSet()) {
+                this.nodeIxMap.put(node, strategy.getNodeIx(node));
+            }
+            this.edgeIxMap = new HashMap<RuleEdge,Integer>();
+            for (RuleEdge edge : this.rootGraph.edgeSet()) {
+                this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
+            }
+            this.varIxMap = new HashMap<LabelVar,Integer>();
+            for (LabelVar var : VarSupport.getAllVars(this.rootGraph)) {
+                this.varIxMap.put(var, strategy.getVarIx(var));
+            }
+            if (this.countNode != null) {
+                this.preCounted = strategy.isNodeFound(this.countNode);
+                this.countNodeIx = strategy.getNodeIx(this.countNode);
+            }
         }
     }
 
     public Record createRecord(Search search) {
-        if (this.condition.getOp() == Condition.Op.NOT) {
+        switch (this.condition.getOp()) {
+        case EXISTS:
+        case FORALL:
+            return new QuantifierRecord(search);
+        case NOT:
             return new NegConditionRecord(search);
-        } else {
-            return new PosConditionRecord(search);
+        case TRUE:
+            return new TrueRecord(search);
+        case OR:
+        case AND:
+        case FALSE:
+        default:
+            throw new IllegalStateException();
         }
     }
 
@@ -185,12 +219,41 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Mapping from the needed nodes to indices in the matcher. */
     Map<LabelVar,Integer> varIxMap;
 
+    private class TrueRecord extends SingularRecord {
+        public TrueRecord(Search search) {
+            super(search);
+        }
+
+        @Override
+        boolean find() {
+            return write();
+        }
+
+        @Override
+        boolean write() {
+            this.search.putSubMatch(ConditionSearchItem.this.condIx,
+                new TreeMatch(ConditionSearchItem.this.condition, null));
+            return true;
+        }
+
+        @Override
+        void erase() {
+            this.search.putSubMatch(ConditionSearchItem.this.condIx, null);
+        }
+
+        @Override
+        public String toString() {
+            return "Match of " + ConditionSearchItem.this.toString();
+        }
+
+    }
+
     /**
      * Search record for a graph condition.
      */
-    abstract private class AbstractConditionRecord extends SingularRecord {
+    abstract private class PatternRecord extends SingularRecord {
         /** Constructs a record for a given search. */
-        public AbstractConditionRecord(Search search) {
+        public PatternRecord(Search search) {
             super(search);
         }
 
@@ -216,11 +279,11 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Search record for a positive graph condition.
+     * Search record for a quantifier condition.
      */
-    private class PosConditionRecord extends AbstractConditionRecord {
+    private class QuantifierRecord extends PatternRecord {
         /** Constructs a record for a given search. */
-        public PosConditionRecord(Search search) {
+        public QuantifierRecord(Search search) {
             super(search);
         }
 
@@ -321,7 +384,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a negative graph condition.
      */
-    private class NegConditionRecord extends AbstractConditionRecord {
+    private class NegConditionRecord extends PatternRecord {
         /** Constructs a record for a given search. */
         public NegConditionRecord(Search search) {
             super(search);

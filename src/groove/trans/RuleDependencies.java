@@ -445,6 +445,27 @@ public class RuleDependencies {
 
     void collectConditionCharacteristics(Condition cond,
             Set<TypeLabel> positive, Set<TypeLabel> negative) {
+        if (cond.hasPattern()) {
+            collectPatternCharacteristics(cond, positive, negative);
+        }
+        for (Condition subCond : cond.getSubConditions()) {
+            Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
+            Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
+            collectConditionCharacteristics(subCond, subPositives, subNegatives);
+            Op subOp = subCond.getOp();
+            if (subOp != Op.NOT) {
+                positive.addAll(subPositives);
+                negative.addAll(subNegatives);
+            }
+            if (subOp == Op.FORALL || subOp == Op.NOT) {
+                negative.addAll(subPositives);
+                positive.addAll(subNegatives);
+            }
+        }
+    }
+
+    void collectPatternCharacteristics(Condition cond, Set<TypeLabel> positive,
+            Set<TypeLabel> negative) {
         RuleGraph pattern = cond.getPattern();
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<RuleNode>(pattern.nodeSet());
@@ -483,21 +504,6 @@ public class RuleDependencies {
         // does the condition test for an isolated node?
         if (!isolatedNodes.isEmpty()) {
             positive.add(ANY_NODE);
-        }
-        Condition.Op condMode = cond.getOp();
-        for (Condition subCond : cond.getSubConditions()) {
-            Set<TypeLabel> subPositives = new HashSet<TypeLabel>();
-            Set<TypeLabel> subNegatives = new HashSet<TypeLabel>();
-            collectConditionCharacteristics(subCond, subPositives, subNegatives);
-            Condition.Op subCondMode = subCond.getOp();
-            if (subCondMode == Op.FORALL || subCondMode == condMode) {
-                positive.addAll(subPositives);
-                negative.addAll(subNegatives);
-            }
-            if (subCondMode == Op.FORALL || subCondMode != condMode) {
-                negative.addAll(subPositives);
-                positive.addAll(subNegatives);
-            }
         }
     }
 
