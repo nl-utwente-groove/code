@@ -58,20 +58,20 @@ public class ConfluentMatchSetCollector extends MatchSetCollector {
     @Override
     protected boolean collectEvents(CtrlTransition call,
             Collection<MatchResult> result) {
-        boolean eventAdded;
+        boolean hasMatched;
         Rule rule = call.getRule();
         if (rule.isConfluent()) {
             // find a single match for this call
             MatchResult match = getMatch(call);
-            eventAdded = match != null;
-            if (eventAdded) {
+            hasMatched = match != null;
+            if (hasMatched) {
                 result.add(match);
             }
         } else { // Rule is not confluent.
             // Use method from super class.
-            eventAdded = super.collectEvents(call, result);
+            hasMatched = super.collectEvents(call, result);
         }
-        return eventAdded;
+        return hasMatched;
     }
 
     /**

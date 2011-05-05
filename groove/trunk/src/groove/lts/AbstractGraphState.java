@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Element;
@@ -110,7 +109,7 @@ abstract public class AbstractGraphState extends
     }
 
     @Override
-    public Map<CtrlCall,Collection<GraphTransition>> getTransitionMap() {
+    public Map<RuleEvent,GraphTransition> getTransitionMap() {
         return getCache().getTransitionMap();
     }
 

@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
 import groove.trans.RuleEdge;
@@ -33,7 +33,7 @@ import java.util.Set;
  * <li> Creation (constructor call). At this time nothing is known about the
  * ordering of search items in the search plan, so nothing is known about
  * already found or pre-matched parts.
- * <li> Activation (call of {@link #activate(SearchPlanStrategy)}). At this
+ * <li> Activation (call of {@link #activate(PlanSearchStrategy)}). At this
  * time the ordering of the items is known, and indices for the parts can be
  * obtained, as well as knowledge about which parts are already found.
  * <li> Record creation (call of {@link #createRecord(Search)}).
@@ -99,7 +99,7 @@ public interface SearchItem extends Comparable<SearchItem> {
      * information about the strategy.
      * @param strategy the search strategy to be applied
      */
-    void activate(SearchPlanStrategy strategy);
+    void activate(PlanSearchStrategy strategy);
 
     /**
      * Interface for an activation record of a search item.

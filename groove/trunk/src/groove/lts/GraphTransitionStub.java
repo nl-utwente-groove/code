@@ -26,7 +26,7 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransitionStub { //extends Element {
+public interface GraphTransitionStub {
     /**
      * Returns the event that underlies the transition from a given source to
      * this object.

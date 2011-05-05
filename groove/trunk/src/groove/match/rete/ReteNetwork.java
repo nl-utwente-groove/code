@@ -130,7 +130,7 @@ public class ReteNetwork {
         Collection<Rule> shuffledRules = rules;
         //Collections.shuffle(shuffledRules);
         for (Rule p : shuffledRules) {
-            addConditionToNetwork(p, null);
+            addConditionToNetwork(p.getCondition(), null);
         }
     }
 
@@ -319,9 +319,9 @@ public class ReteNetwork {
                 }
                 if (parent == null) {
                     result =
-                        new ProductionNode(this, (Rule) condition,
+                        new ProductionNode(this, condition.getRule(),
                             openList.get(0));
-                    this.productionNodes.put((Rule) condition,
+                    this.productionNodes.put(condition.getRule(),
                         (ProductionNode) result);
                     this.conditionCheckerNodes.put(condition, result);
                 } else {
@@ -337,8 +337,8 @@ public class ReteNetwork {
             //Such-special nodes will always return 
             //and empty match set. They do not have any antecedents.            
             if (parent == null) {
-                result = new ProductionNode(this, (Rule) condition, null);
-                this.productionNodes.put((Rule) condition,
+                result = new ProductionNode(this, condition.getRule(), null);
+                this.productionNodes.put(condition.getRule(),
                     (ProductionNode) result);
                 this.conditionCheckerNodes.put(condition, result);
             } else {

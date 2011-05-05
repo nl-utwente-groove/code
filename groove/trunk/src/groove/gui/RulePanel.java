@@ -31,8 +31,9 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.Rule;
 import groove.trans.Proof;
+import groove.trans.Rule;
+import groove.trans.RuleElement;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -40,10 +41,13 @@ import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Queue;
 import java.util.TreeMap;
 
 import javax.swing.JToolBar;
@@ -238,15 +242,27 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     /** Returns a string description of the anchors of a given rule. */
     private String getAnchorString(Rule rule) {
         if (!rule.hasSubRules()) {
-            return Groove.toString(rule.anchor(), "(", ")", ",");
+            return toAnchorString(rule);
         } else {
             List<String> result = new ArrayList<String>();
-            for (Rule subRule : rule.getSubRules()) {
-                result.add(subRule.getName().toString()
-                    + Groove.toString(subRule.anchor(), "(", ")", ","));
+            // collect all subrules
+            Queue<Rule> ruleQueue = new LinkedList<Rule>();
+            ruleQueue.add(rule);
+            while (!ruleQueue.isEmpty()) {
+                Rule next = ruleQueue.poll();
+                result.add(next.getName().toString() + toAnchorString(next));
+                ruleQueue.addAll(next.getSubRules());
             }
             return Groove.toString(result.toArray());
         }
+    }
+
+    /** Constructs a string listing all anchors of a given rule. */
+    private String toAnchorString(Rule rule) {
+        List<RuleElement> anchor = new ArrayList<RuleElement>();
+        anchor.addAll(Arrays.asList(rule.getAnchorNodes()));
+        anchor.addAll(Arrays.asList(rule.getAnchorEdges()));
+        return Groove.toString(anchor.toArray(), "(", ")", ",");
     }
 
     /**

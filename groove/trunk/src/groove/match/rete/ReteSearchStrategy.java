@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.match.MatchStrategy;
+import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
@@ -37,47 +37,49 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteStrategy extends MatchStrategy<TreeMatch> {
+public class ReteSearchStrategy implements SearchStrategy {
     /**
      * Creates a matching strategy object that uses the RETE algorithm for matching.  
      * @param owner The RETE search engine
      * @param condition the condition for which this strategy is to be created; non-{@code null}.
      */
-    public ReteStrategy(ReteSearchEngine owner, Condition condition) {
-        this.owner = owner;
+    public ReteSearchStrategy(ReteSearchEngine owner, Condition condition) {
+        this.engine = owner;
         this.condition = condition;
         assert condition != null;
     }
 
     @Override
+    public ReteSearchEngine getEngine() {
+        return this.engine;
+    }
+
+    @Override
     public <T> T traverse(final HostGraph host, RuleToHostMap seedMap,
             Visitor<TreeMatch,T> visitor) {
-        assert this.owner.getNetwork() != null;
+        ReteNetwork network = getEngine().getNetwork();
+        assert network != null;
 
-        if (host != this.owner.getNetwork().getState().getHostGraph()) {
-            this.owner.getNetwork().processGraph(host);
+        if (host != network.getState().getHostGraph()) {
+            network.processGraph(host);
         }
 
-        assert graphShapesEqual(host,
-            this.owner.getNetwork().getState().getHostGraph());
+        assert graphShapesEqual(host, network.getState().getHostGraph());
 
-        if (this.owner.getNetwork() != null) {
-            //iterate through the conflict set of the production node
-            //associated with this condition
-            ConditionChecker cc =
-                this.owner.getNetwork().getConditionCheckerNodeFor(
-                    this.condition);
-            if (cc != null) {
-                Iterator<ReteSimpleMatch> iter;
-                if ((seedMap != null) && (!seedMap.isEmpty())) {
-                    iter = cc.getConflictSetIterator(seedMap);
-                } else {
-                    iter = cc.getConflictSetIterator();
-                }
-                boolean cont = true;
-                while (cont && iter.hasNext()) {
-                    cont = visitor.visit(createTreeMatch(iter.next(), host));
-                }
+        //iterate through the conflict set of the production node
+        //associated with this condition
+        ConditionChecker cc =
+            network.getConditionCheckerNodeFor(getCondition());
+        if (cc != null) {
+            Iterator<ReteSimpleMatch> iter;
+            if ((seedMap != null) && (!seedMap.isEmpty())) {
+                iter = cc.getConflictSetIterator(seedMap);
+            } else {
+                iter = cc.getConflictSetIterator();
+            }
+            boolean cont = true;
+            while (cont && iter.hasNext()) {
+                cont = visitor.visit(createTreeMatch(iter.next(), host));
             }
         }
         return visitor.getResult();
@@ -92,11 +94,11 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
      */
     private TreeMatch createTreeMatch(ReteSimpleMatch matchMap, HostGraph host) {
         RuleToHostMap patternMap = matchMap.toRuleToHostMap(host.getFactory());
-        final TreeMatch result = new TreeMatch(this.condition, patternMap);
-        ReteStrategy[] subMatchers = getSubMatchers();
+        final TreeMatch result = new TreeMatch(getCondition(), patternMap);
+        ReteSearchStrategy[] subMatchers = getSubMatchers();
         if (subMatchers.length != 0) {
             for (int i = 0; i < subMatchers.length; i++) {
-                Condition subCondition = subMatchers[i].condition;
+                Condition subCondition = subMatchers[i].getCondition();
                 Condition.Op op;
                 switch (subCondition.getOp()) {
                 case AND:
@@ -198,22 +200,28 @@ public class ReteStrategy extends MatchStrategy<TreeMatch> {
      * Lazily constructs and returns an array of match strategies for all 
      * non-trivial subconditions.
      */
-    private ReteStrategy[] getSubMatchers() {
+    private ReteSearchStrategy[] getSubMatchers() {
         if (this.subMatchers == null) {
-            List<ReteStrategy> result =
-                new ArrayList<ReteStrategy>(
-                    this.condition.getSubConditions().size());
-            for (Condition subCondition : this.condition.getSubConditions()) {
+            List<ReteSearchStrategy> result =
+                new ArrayList<ReteSearchStrategy>(
+                    getCondition().getSubConditions().size());
+            for (Condition subCondition : getCondition().getSubConditions()) {
                 if (!(subCondition instanceof EdgeEmbargo)) {
-                    result.add(new ReteStrategy(this.owner, subCondition));
+                    result.add(new ReteSearchStrategy(getEngine(), subCondition));
                 }
             }
-            this.subMatchers = result.toArray(new ReteStrategy[result.size()]);
+            this.subMatchers =
+                result.toArray(new ReteSearchStrategy[result.size()]);
         }
         return this.subMatchers;
     }
 
-    private final ReteSearchEngine owner;
+    /** Returns the condition that this strategy is matching. */
+    private final Condition getCondition() {
+        return this.condition;
+    }
+
     private final Condition condition;
-    private ReteStrategy[] subMatchers;
+    private final ReteSearchEngine engine;
+    private ReteSearchStrategy[] subMatchers;
 }

@@ -18,15 +18,15 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.trans.AbstractEvent;
-import groove.trans.RuleApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.MergeMap;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
 import groove.trans.Proof;
+import groove.trans.Rule;
+import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 import groove.view.FormatException;
 
 /**
@@ -82,7 +82,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             HostNode[] parentValues = this.source.getBoundNodes();
             int[] varBinding = ctrlTrans.getTargetVarBinding();
             Rule rule = getEvent().getRule();
-            int anchorSize = getEvent().getAnchorSize();
+            int anchorNodeCount = rule.getAnchorNodes().length;
             MergeMap mergeMap = getEvent().getMergeMap();
             for (int i = 0; i < valueCount; i++) {
                 int fromI = varBinding[i];
@@ -90,12 +90,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements
                 if (fromI >= parentValues.length) {
                     int binding =
                         rule.getParBinding(fromI - parentValues.length);
-                    if (binding < anchorSize) {
+                    if (binding < anchorNodeCount) {
                         value =
                             mergeMap.getNode((HostNode) getEvent().getAnchorImage(
                                 binding));
                     } else {
-                        value = getAddedNodes()[binding - anchorSize];
+                        value = getAddedNodes()[binding - anchorNodeCount];
                     }
                 } else {
                     value = mergeMap.getNode(parentValues[fromI]);

@@ -19,14 +19,15 @@ package groove.match.plan;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
+import groove.match.Matcher;
+import groove.match.MatcherFactory;
 import groove.match.TreeMatch;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.HostNode;
-import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
@@ -53,7 +54,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     public ConditionSearchItem(Condition condition) {
         this.condition = condition;
         SystemProperties properties = condition.getSystemProperties();
-        this.matcher = SearchPlanEngine.getInstance().createMatcher(condition);
+        this.matcher = MatcherFactory.instance().createMatcher(condition);
         this.intAlgebra =
             AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
                 "int");
@@ -92,7 +93,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         return true;
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         for (RuleNode node : this.rootGraph.nodeSet()) {
             this.nodeIxMap.put(node, strategy.getNodeIx(node));
@@ -125,7 +126,8 @@ class ConditionSearchItem extends AbstractSearchItem {
     @Override
     public String toString() {
         return String.format("%s %s: %s", this.condition.getOp().getName(),
-            this.condition.getName(), this.matcher.getPlan());
+            this.condition.getName(),
+            ((PlanSearchStrategy) this.matcher.getSearchStrategy()).getPlan());
     }
 
     @Override
@@ -138,12 +140,12 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** Tests if this condition or one of its subconditions is a modifying rule. */
     private boolean isModifying() {
         boolean result = false;
-        if (this.condition instanceof Rule) {
-            result = ((Rule) this.condition).isModifying();
+        if (this.condition.hasRule()) {
+            result = this.condition.getRule().isModifying();
         } else {
             for (Condition subCondition : this.condition.getSubConditions()) {
-                if (subCondition instanceof Rule
-                    && ((Rule) subCondition).isModifying()) {
+                if (subCondition.hasRule()
+                    && subCondition.getRule().isModifying()) {
                     result = true;
                     break;
                 }
@@ -155,7 +157,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The graph condition that should be matched by this search item. */
     final Condition condition;
     /** The matcher for the condition. */
-    final SearchPlanStrategy matcher;
+    final Matcher matcher;
     /** The algebra used for integers. */
     final Algebra<?> intAlgebra;
     /** The count node of the universal condition, if any. */

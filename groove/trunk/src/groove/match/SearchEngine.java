@@ -30,17 +30,7 @@ import java.util.Collection;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SearchEngine<MatcherType extends MatchStrategy<TreeMatch>> {
-    /**
-     * Factory method returning a search engine for 
-     * a graph condition.
-     * @param condition the condition for which a search plan is to be
-     *        constructed
-     */
-    public MatcherType createMatcher(Condition condition) {
-        return createMatcher(condition, null, null);
-    }
-
+public abstract class SearchEngine {
     /**
      * Factory method returning a matcher for a graph condition, taking into
      * account that a certain set of nodes and edges has been matched already.
@@ -53,6 +43,6 @@ public abstract class SearchEngine<MatcherType extends MatchStrategy<TreeMatch>>
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
      */
-    public abstract MatcherType createMatcher(Condition condition,
+    public abstract SearchStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges);
 }

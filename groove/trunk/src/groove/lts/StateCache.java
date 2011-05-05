@@ -16,20 +16,17 @@
  */
 package groove.lts;
 
-import groove.control.CtrlCall;
-import groove.trans.RuleApplication;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +55,8 @@ class StateCache {
     boolean addTransitionStub(GraphTransitionStub stub) {
         boolean result = getStubSet().add(stub);
         if (result && this.transitionMap != null) {
-            addTransition(stub, this.transitionMap);
+            GraphTransition trans = stub.toTransition(this.state);
+            this.transitionMap.put(trans.getEvent(), trans);
         }
         return result;
     }
@@ -206,10 +204,10 @@ class StateCache {
     }
 
     /**
-     * Lazily creates and returns a mapping from the events to the target states
-     * of the currently stored outgoing transitions of this state.
+     * Lazily creates and returns a mapping from the events to 
+     * outgoing transitions of this state.
      */
-    Map<CtrlCall,Collection<GraphTransition>> getTransitionMap() {
+    Map<RuleEvent,GraphTransition> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -217,30 +215,17 @@ class StateCache {
     }
 
     /**
-     * Computes a mapping from the events to the target states of the currently
-     * stored outgoing transitions of this state.
+     * Computes a mapping from the events to the 
+     * outgoing transitions of this state.
      */
-    private Map<CtrlCall,Collection<GraphTransition>> computeTransitionMap() {
-        Map<CtrlCall,Collection<GraphTransition>> result =
-            new HashMap<CtrlCall,Collection<GraphTransition>>();
+    private Map<RuleEvent,GraphTransition> computeTransitionMap() {
+        Map<RuleEvent,GraphTransition> result =
+            new HashMap<RuleEvent,GraphTransition>();
         for (GraphTransitionStub stub : getStubSet()) {
-            addTransition(stub, result);
+            GraphTransition trans = stub.toTransition(this.state);
+            result.put(trans.getEvent(), trans);
         }
         return result;
-    }
-
-    /** Adds a single transition to a given rule-to-transition map. */
-    private void addTransition(GraphTransitionStub stub,
-            Map<CtrlCall,Collection<GraphTransition>> result) {
-        GraphTransition trans = stub.toTransition(this.state);
-        CtrlCall call = trans.getCtrlTransition().getCall();
-        Collection<GraphTransition> ruleTrans = result.get(call);
-        if (ruleTrans == null) {
-            result.put(call, ruleTrans = new ArrayList<GraphTransition>());
-        }
-        boolean fresh = ruleTrans.add(stub.toTransition(this.state));
-        assert fresh : String.format("Transition %s added twice",
-            stub.toTransition(this.state));
     }
 
     /**
@@ -309,7 +294,7 @@ class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private Map<CtrlCall,Collection<GraphTransition>> transitionMap;
+    private Map<RuleEvent,GraphTransition> transitionMap;
     /** Cached graph for this state. */
     private DeltaHostGraph graph;
     /**

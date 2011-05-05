@@ -16,11 +16,14 @@
  */
 package groove.trans;
 
-import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.match.TreeMatch;
+import groove.util.Property;
+import groove.util.Visitor;
+import groove.util.Visitor.Finder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,7 +63,7 @@ public class RuleApplication implements DeltaApplier {
      *        coanchor. If <code>null</code>, the coanchor image has to be
      *        computed from the source graph.
      */
-    public RuleApplication(RuleEvent event, HostGraph source,
+    public RuleApplication(final RuleEvent event, HostGraph source,
             HostNode[] coanchorImage) {
         this.event = event;
         this.rule = event.getRule();
@@ -68,15 +71,35 @@ public class RuleApplication implements DeltaApplier {
         this.coanchorImage = coanchorImage;
         if (event instanceof BasicEvent) {
             this.anchorMap = ((BasicEvent) event).getAnchorMap();
-            assert event.hasMatch(source) : String.format(
-                "Rule event %s has no matching in %s", event,
-                AbstractGraph.toString(source));
-        } else {
-            assert event instanceof CompositeEvent
-                && ((CompositeEvent) event).hasSubMatches(source) : String.format(
-                "Composite event %s has no matching in %s", event,
-                AbstractGraph.toString(source));
         }
+        assert testEvent(event, source);
+    }
+
+    /**
+     * Tests if a given event has a match at a given source graph.
+     */
+    private boolean testEvent(final RuleEvent event, HostGraph source) {
+        final Property<Proof> proofContainsEvent = new Property<Proof>() {
+            @Override
+            public boolean isSatisfied(Proof value) {
+                return value.newEvent(null).equals(event);
+            }
+        };
+        final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
+        final Property<TreeMatch> matchContainsProof =
+            new Property<TreeMatch>() {
+                @Override
+                public boolean isSatisfied(TreeMatch value) {
+                    return value.traverseProofs(eventFinder) != null;
+                }
+            };
+        Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
+        boolean result =
+            this.rule.getEventMatcher().traverse(source, event.getAnchorMap(),
+                matchFinder) != null;
+        eventFinder.dispose();
+        matchFinder.dispose();
+        return result;
     }
 
     /**

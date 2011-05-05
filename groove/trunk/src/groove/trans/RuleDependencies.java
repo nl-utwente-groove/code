@@ -300,8 +300,8 @@ public class RuleDependencies {
             Set<TypeLabel> negativeLabelSet = new HashSet<TypeLabel>();
             this.negativeLabelsMap.put(rule,
                 Collections.unmodifiableSet(negativeLabelSet));
-            collectConditionCharacteristics(rule, positiveLabelSet,
-                negativeLabelSet);
+            collectConditionCharacteristics(rule.getCondition(),
+                positiveLabelSet, negativeLabelSet);
         }
         // initialize the dependency maps
         init(this.enablerMap);
@@ -436,15 +436,10 @@ public class RuleDependencies {
                 inPars.add(parType);
             }
         }
-        // now investigate the negative conjunct, taking care to swap positive
-        // and negative
-        for (Condition negCond : rule.getSubConditions()) {
-            for (Condition subRule : negCond.getSubConditions()) {
-                if (subRule instanceof Rule) {
-                    collectRuleCharacteristics((Rule) subRule, consumed,
-                        produced, inPars, outPars);
-                }
-            }
+        // Recursively investigate the subrules
+        for (Rule subRule : rule.getSubRules()) {
+            collectRuleCharacteristics(subRule, consumed, produced, inPars,
+                outPars);
         }
     }
 

@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostNode;
 import groove.trans.RuleNode;
 
@@ -36,7 +36,7 @@ class NodeSearchItem extends AbstractSearchItem {
     }
 
     public Record createRecord(
-            groove.match.plan.SearchPlanStrategy.Search search) {
+            groove.match.plan.PlanSearchStrategy.Search search) {
         if (this.nodeMatched || search.getNodeSeed(this.nodeIx) != null) {
             // the node is pre-matched, so there is nothing to do
             return createDummyRecord();
@@ -73,7 +73,7 @@ class NodeSearchItem extends AbstractSearchItem {
         return this.node.hashCode();
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.nodeMatched = strategy.isNodeFound(this.node);
         this.nodeIx = strategy.getNodeIx(this.node);
     }

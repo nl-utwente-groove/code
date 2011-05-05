@@ -58,8 +58,9 @@ final public class BasicEvent extends
     }
 
     /**
-     * Returns a map from the rule anchors to elements of the host graph. #see
-     * {@link Rule#anchor()}
+     * Returns a map from the rule anchors to elements of the host graph. 
+     * @see Rule#getAnchorNodes()
+     * @see Rule#getAnchorEdges()
      */
     public RuleToHostMap getAnchorMap() {
         return getCache().getAnchorMap();
@@ -131,16 +132,17 @@ final public class BasicEvent extends
             result = EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
+            int anchorNodeCount = getRule().getAnchorNodes().length;
             HostElement[] anchorImage = getAnchorImage();
             for (int i = 0; i < size; i++) {
                 int binding = getRule().getParBinding(i);
                 HostNode argument;
-                if (binding < anchorImage.length) {
+                if (binding < anchorNodeCount) {
                     argument = (HostNode) anchorImage[binding];
                 } else if (addedNodes == null) {
                     argument = null;
                 } else {
-                    argument = addedNodes[binding - anchorImage.length];
+                    argument = addedNodes[binding - anchorNodeCount];
                 }
                 result[i] = argument;
             }
@@ -157,16 +159,6 @@ final public class BasicEvent extends
             result = getRule().getEventMatch(this, host);
         }
         return result;
-    }
-
-    /**
-     * Tests if there is a matching of this event to a given host graph. A
-     * matching may fail to exist because the anchor map does not map into the
-     * host graph, or because conditions outside the anchor map are not
-     * fulfilled.
-     */
-    public boolean hasMatch(HostGraph host) {
-        return getMatch(host) != null;
     }
 
     /**
@@ -246,17 +238,19 @@ final public class BasicEvent extends
      * the anchor image.
      */
     private HostElement[] computeAnchorImage(RuleToHostMap anchorMap) {
-        RuleElement[] anchor = getRule().anchor();
-        int anchorSize = anchor.length;
-        HostElement[] result = new HostElement[anchor.length];
-        for (int i = 0; i < anchorSize; i++) {
-            if (anchor[i] instanceof RuleNode) {
-                result[i] = anchorMap.getNode((RuleNode) anchor[i]);
-            } else {
-                result[i] = anchorMap.getEdge((RuleEdge) anchor[i]);
-            }
+        RuleNode[] anchorNodes = getRule().getAnchorNodes();
+        RuleEdge[] anchorEdges = getRule().getAnchorEdges();
+        HostElement[] result =
+            new HostElement[anchorNodes.length + anchorEdges.length];
+        for (int i = 0; i < anchorNodes.length; i++) {
+            result[i] = anchorMap.getNode(anchorNodes[i]);
             assert result[i] != null : String.format(
-                "No image for %s in anchor map %s", anchor[i], anchorMap);
+                "No image for %s in anchor map %s", anchorNodes[i], anchorMap);
+        }
+        for (int i = 0; i < anchorEdges.length; i++) {
+            result[anchorNodes.length + i] = anchorMap.getEdge(anchorEdges[i]);
+            assert result[anchorNodes.length + i] != null : String.format(
+                "No image for %s in anchor map %s", anchorEdges[i], anchorMap);
         }
         return result;
     }
@@ -733,27 +727,26 @@ final public class BasicEvent extends
          * edges and any variables on them.
          */
         private RuleToHostMap computeAnchorMap() {
-            RuleElement[] anchor = getRule().anchor();
+            RuleNode[] anchorNodes = getRule().getAnchorNodes();
+            RuleEdge[] anchorEdges = getRule().getAnchorEdges();
             HostElement[] anchorImage = getAnchorImage();
             RuleToHostMap result = createRuleToHostMap();
-            for (int i = 0; i < anchor.length; i++) {
-                RuleElement key = anchor[i];
-                HostElement image = anchorImage[i];
-                if (key instanceof RuleEdge) {
-                    // store the endpoints and the variable valuations for the
-                    // edges
-                    RuleEdge edgeKey = (RuleEdge) key;
-                    HostEdge edgeImage = (HostEdge) image;
-                    result.putNode(edgeKey.source(), edgeImage.source());
-                    result.putNode(edgeKey.target(), edgeImage.target());
-                    LabelVar var = edgeKey.label().getWildcardId();
-                    if (var != null) {
-                        result.putVar(var, edgeImage.label());
-                    }
-                    result.putEdge(edgeKey, edgeImage);
-                } else {
-                    result.putNode((RuleNode) key, (HostNode) image);
+            for (int i = 0; i < anchorNodes.length; i++) {
+                result.putNode(anchorNodes[i], (HostNode) anchorImage[i]);
+            }
+            for (int i = 0; i < anchorEdges.length; i++) {
+                RuleEdge key = anchorEdges[i];
+                // store the endpoints and the variable valuations for the
+                // edges
+                HostEdge edgeImage =
+                    (HostEdge) anchorImage[anchorNodes.length + i];
+                result.putNode(key.source(), edgeImage.source());
+                result.putNode(key.target(), edgeImage.target());
+                LabelVar var = key.label().getWildcardId();
+                if (var != null) {
+                    result.putVar(var, edgeImage.label());
                 }
+                result.putEdge(key, edgeImage);
             }
             // add the eraser edges
             for (RuleEdge eraserEdge : getRule().getEraserNonAnchorEdges()) {

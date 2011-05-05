@@ -49,7 +49,7 @@ public class ProductionNode extends ConditionChecker {
      */
     public ProductionNode(ReteNetwork network, Rule p,
             ReteStaticMapping antecedents) {
-        super(network, p, null, antecedents);
+        super(network, p.getCondition(), null, antecedents);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ProductionNode extends ConditionChecker {
      * @return The rule associated with this checker node.
      */
     public Rule getProductionRule() {
-        return (Rule) this.getCondition();
+        return this.getCondition().getRule();
     }
 
     @Override

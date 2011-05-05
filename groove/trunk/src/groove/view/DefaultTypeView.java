@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
@@ -65,7 +66,12 @@ public class DefaultTypeView implements TypeView {
 
     @Override
     public void setType(TypeGraph type) {
-        // does nothing
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setLabelStore(LabelStore labelStore) {
+        throw new UnsupportedOperationException();
     }
 
     public TypeGraph toModel() throws FormatException {

@@ -177,7 +177,7 @@ public class RuleApplicationTest {
                 start.getFactory().createRuleToHostMap()));
         Set<RuleEvent> eventSet = new HashSet<RuleEvent>();
         for (TreeMatch match : matches) {
-            for (Proof proof : match.toRuleMatchSet()) {
+            for (Proof proof : match.toProofSet()) {
                 eventSet.add(proof.newEvent(null));
             }
         }

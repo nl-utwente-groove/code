@@ -20,14 +20,15 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.graph.Element;
 import groove.graph.GraphProperties;
-import groove.match.MatchStrategy;
-import groove.match.SearchEngine;
+import groove.match.Matcher;
+import groove.match.MatcherFactory;
+import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
-import groove.match.plan.SearchPlanStrategy;
+import groove.match.plan.PlanSearchStrategy;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
+import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Visitor;
 import groove.view.FormatException;
@@ -53,44 +54,33 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Rule extends Condition implements Comparable<Rule> {
+public class Rule implements Fixable, Comparable<Rule> {
     /**
-     * @param name the name of the new rule
-     * @param lhs the left hand side graph of the rule
+     * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
      * @param morphism the mapping from the LHS to the RHS
      * @param ruleProperties the rule properties
-     * @param systemProperties the global grammar properties
      */
-    public Rule(String name, RuleGraph lhs, RuleGraph rhs,
-            RuleGraphMorphism morphism, GraphProperties ruleProperties,
-            SystemProperties systemProperties) {
-        this(name, lhs, rhs, morphism, null, null, ruleProperties,
-            systemProperties);
+    public Rule(Condition condition, RuleGraph rhs, RuleGraphMorphism morphism,
+            GraphProperties ruleProperties) {
+        this(condition, rhs, morphism, null, ruleProperties);
     }
 
     /**
-     * Constructs a rule that is a sub-condition of another rule. The
-     * information should be completed lated by a call to
-     * {@link #setParent(Rule, int[])}.
-     * @param name the name of the new rule
-     * @param lhs the left hand side graph of the rule
+     * Constructs a rule that is a sub-condition of another rule.
+     * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
      * @param morphism the mapping from the LHS to the RHS
-     * @param rootGraph root graph of the LHS
      * @param coRootMap map of creator nodes in the parent rule to creator nodes
      *        of this rule
      * @param ruleProperties the rule properties
-     * @param systemProperties the global grammar properties
      */
-    public Rule(String name, RuleGraph lhs, RuleGraph rhs,
-            RuleGraphMorphism morphism, RuleGraph rootGraph,
-            RuleGraphMorphism coRootMap, GraphProperties ruleProperties,
-            SystemProperties systemProperties) {
-        super(name, Op.EXISTS, lhs, rootGraph, systemProperties);
+    public Rule(Condition condition, RuleGraph rhs, RuleGraphMorphism morphism,
+            RuleGraphMorphism coRootMap, GraphProperties ruleProperties) {
+        this.condition = condition;
         this.coRootMap =
             coRootMap == null ? new RuleGraphMorphism() : coRootMap;
-        this.lhs = lhs;
+        this.lhs = condition.getPattern();
         this.rhs = rhs;
         this.morphism = morphism;
         this.ruleProperties = ruleProperties;
@@ -100,14 +90,19 @@ public class Rule extends Condition implements Comparable<Rule> {
             rhs().nodeSet(), coRootMap.nodeMap().values());
     }
 
-    @Override
-    public Rule getRule() {
-        return this;
-    }
-
     /** Returns the condition with which this rule is associated. */
     public Condition getCondition() {
-        return this;
+        return this.condition;
+    }
+
+    /** Returns the name of this rule (which equals the name of the associated condition). */
+    public String getName() {
+        return getCondition().getName();
+    }
+
+    /** Returns the system properties. */
+    public SystemProperties getSystemProperties() {
+        return getCondition().getSystemProperties();
     }
 
     /**
@@ -158,7 +153,6 @@ public class Rule extends Condition implements Comparable<Rule> {
                 this.coRootMap.nodeMap().keySet());
         }
         this.parent = parent;
-        this.level = level;
     }
 
     /** 
@@ -168,7 +162,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     public String getTransitionLabel() {
         String result = this.ruleProperties.getTransitionLabel();
         if (result == null) {
-            result = this.getName().toString();
+            result = getName().toString();
         }
         return result;
     }
@@ -197,6 +191,11 @@ public class Rule extends Condition implements Comparable<Rule> {
         this.ruleProperties.setFormatString(format);
     }
 
+    /** Sets the dangling-edge check for matches of this rule. */
+    public void setCheckDangling(boolean checkDangling) {
+        this.checkDangling = checkDangling;
+    }
+
     /**
      * Returns the parent rule of this rule. The parent may be this rule itself.
      */
@@ -222,9 +221,9 @@ public class Rule extends Condition implements Comparable<Rule> {
         }
     }
 
-    @Override
+    //    @Override
     Set<RuleNode> computeInputNodes() {
-        Set<RuleNode> result;
+        Set<RuleNode> result = null;
         // if this is a top-level rule, the (only) input nodes
         // are the input-only parameter nodes
         if (isTop()) {
@@ -234,36 +233,8 @@ public class Rule extends Condition implements Comparable<Rule> {
                     result.add(var.getRuleNode());
                 }
             }
-        } else {
-            result = super.computeInputNodes();
-        }
-        return result;
-    }
-
-    /**
-     * Returns the nesting position of this rule in the rule hierarchy. Each
-     * array element indicates a next level of the tree; the value is the order
-     * index within the level. Thus, an empty array indicates this is a
-     * top-level rule. Parent rule and level uniquely identify a rule.
-     */
-    public int[] getLevel() {
-        if (this.level == null) {
-            testFixed(true);
-            this.level = new int[0];
-        }
-        return this.level;
-    }
-
-    /**
-     * Returns the transitively and reflexively closed set of rules in the rule hierarchy.
-     */
-    public Collection<Rule> getSubRules() {
-        assert isFixed();
-        Collection<Rule> result = new TreeSet<Rule>();
-        result.add(this);
-        for (Rule subRule : getDirectSubRules()) {
-            result.add(subRule);
-            result.addAll(subRule.getSubRules());
+            //        } else {
+            //            result = super.computeInputNodes();
         }
         return result;
     }
@@ -273,37 +244,37 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     public boolean hasSubRules() {
         assert isFixed();
-        return !getDirectSubRules().isEmpty();
+        return !getSubRules().isEmpty();
     }
 
     /** 
-     * Adds a direct sub-rule to this rule.
-     * The direct sub-rules are those connected to sub-conditions 
+     * Adds a sub-rule to this rule.
+     * The sub-rules are those connected to sub-conditions 
      * in the associated condition tree.
-     * @param subRule the new direct sub-rule
+     * @param subRule the new sub-rule
      */
-    public void addDirectSubRule(Rule subRule) {
+    public void addSubRule(Rule subRule) {
         assert !isFixed();
         assert subRule.isFixed();
-        getDirectSubRules().add(subRule);
+        getSubRules().add(subRule);
     }
 
     /**
      * Returns the direct sub-rules of this rule, i.e., the sub-rules that have
      * this rule as their parent.
      */
-    private Collection<Rule> getDirectSubRules() {
-        if (this.directSubRules == null) {
-            this.directSubRules = new TreeSet<Rule>();
-            for (Condition condition : getSubConditions()) {
+    public Collection<Rule> getSubRules() {
+        if (this.subRules == null) {
+            this.subRules = new TreeSet<Rule>();
+            for (Condition condition : getCondition().getSubConditions()) {
                 for (Condition subCondition : condition.getSubConditions()) {
-                    if (subCondition instanceof Rule) {
-                        this.directSubRules.add((Rule) subCondition);
+                    if (subCondition.hasRule()) {
+                        this.subRules.add(subCondition.getRule());
                     }
                 }
             }
         }
-        return this.directSubRules;
+        return this.subRules;
     }
 
     /**
@@ -322,7 +293,7 @@ public class Rule extends Condition implements Comparable<Rule> {
             // add the LHS parameters to the root graph
             RuleNode parNode = sig.get(i).getRuleNode();
             if (this.lhs.containsNode(parNode)) {
-                getRoot().addNode(parNode);
+                this.condition.getRoot().addNode(parNode);
             }
             String parName = "arg" + i;
             String parTypeName = sig.get(i).getType().toString();
@@ -355,7 +326,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     /** Returns, for a given index in the signature,
      * the corresponding index in the anchor 
      * or in the created nodes (if the parameter is a creator).
-     * The latter are offset by the length of the anchor.
+     * The latter are offset by the anchor node count.
      */
     public int getParBinding(int i) {
         if (this.parBinding == null) {
@@ -371,7 +342,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     private int[] computeParBinding() {
         int[] result = new int[this.sig.size()];
-        int anchorSize = anchor().length;
+        int anchorSize = getAnchorNodes().length;
         for (int i = 0; i < this.sig.size(); i++) {
             CtrlPar.Var par = this.sig.get(i);
             int binding;
@@ -384,10 +355,10 @@ public class Rule extends Condition implements Comparable<Rule> {
                 assert binding >= anchorSize;
             } else {
                 // look up the node in the anchor
-                binding = Arrays.asList(anchor()).indexOf(ruleNode);
+                binding = Arrays.asList(getAnchorNodes()).indexOf(ruleNode);
                 assert binding >= 0 : String.format(
                     "Node %s not in anchors %s", ruleNode,
-                    Arrays.toString(anchor()));
+                    Arrays.toString(getAnchorNodes()));
             }
             result[i] = binding;
         }
@@ -407,14 +378,12 @@ public class Rule extends Condition implements Comparable<Rule> {
      * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
      */
     final public boolean hasMatch(HostGraph host) {
-        return isGround() && getMatch(host, null) != null;
+        return this.condition.isGround() && getMatch(host, null) != null;
     }
 
     /**
-     * Lazily creates and returns a matcher for rule events of this rule. The
-     * matcher will try to extend anchor maps to full matches. This is in 
-     * contrast with the normal (condition) matcher, which is based on the
-     * images of the root map.
+     * Reconstructs a proof for this rule's condition from a rule event.
+     * This is only invoked on simple rules, i.e., without subrules.
      */
     public Proof getEventMatch(BasicEvent event, final HostGraph host) {
         Proof result =
@@ -427,7 +396,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                         if (result) {
                             // this is a simple event, so there are no subrules;
                             // the match consists only of the pattern map
-                            setResult(createMatch(match.getPatternMap()));
+                            setResult(createProof(match.getPatternMap()));
                         }
                         return result;
                     }
@@ -495,7 +464,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                 protected boolean process(TreeMatch match) {
                     assert visitor.isContinue();
                     if (isValidPatternMap(host, match.getPatternMap())) {
-                        match.traverseRuleMatches(visitor);
+                        match.traverseProofs(visitor);
                     }
                     return visitor.isContinue();
                 }
@@ -507,12 +476,12 @@ public class Rule extends Condition implements Comparable<Rule> {
      * Callback factory method to create a match on the basis of a mapping of
      * this condition's target.
      * 
-     * @param matchMap the mapping, presumably of the elements of
-     *        {@link #getPattern()} into some host graph
+     * @param patternMap the mapping, presumably of the elements of
+     *        {@link #lhs()} into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    private Proof createMatch(RuleToHostMap matchMap) {
-        return new Proof(this, matchMap);
+    private Proof createProof(RuleToHostMap patternMap) {
+        return new Proof(this.condition, patternMap);
     }
 
     /**
@@ -521,27 +490,34 @@ public class Rule extends Condition implements Comparable<Rule> {
      * contrast with the normal (condition) matcher, which is based on the
      * images of the root map.
      */
-    private MatchStrategy<TreeMatch> getEventMatcher() {
+    public Matcher getEventMatcher() {
         if (this.eventMatcher == null) {
-            this.eventMatcher =
-                getMatcherFactory().createMatcher(this,
-                    getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
+            // add the anchor edge ends to the seed nodes
+            List<RuleNode> anchorNodes =
+                new ArrayList<RuleNode>(Arrays.asList(getAnchorNodes()));
+            List<RuleEdge> anchorEdges = Arrays.asList(getAnchorEdges());
+            for (RuleEdge edge : anchorEdges) {
+                anchorNodes.add(edge.source());
+                anchorNodes.add(edge.target());
+            }
+            this.eventMatcher = createMatcher(anchorNodes, anchorEdges);
         }
         return this.eventMatcher;
     }
 
     /**
-     * Returns the precomputed match strategy for the target
-     * pattern. First creates the order using {@link #createMatcher(Set,Set)} if that
+     * Returns the match strategy for the target
+     * pattern. First creates the strategy using 
+     * {@link #createMatcher(Collection,Collection)} if that
      * has not been done.
      * 
      * @param seedMap mapping from the seed elements to a host graph.
      * 
-     * @see #createMatcher(Set, Set)
+     * @see #createMatcher(Collection, Collection)
      */
-    private MatchStrategy<TreeMatch> getMatcher(RuleToHostMap seedMap) {
+    private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
-        MatchStrategy<TreeMatch> result;
+        Matcher result;
         if (getSignature().size() > 0) {
             int sigSize = getSignature().size();
             BitSet initPars = new BitSet(sigSize);
@@ -569,12 +545,13 @@ public class Rule extends Condition implements Comparable<Rule> {
     /**
      * Returns a (precomputed) match strategy for the target
      * pattern, given a seed map.
-     * @see #createMatcher(Set, Set)
+     * @see #createMatcher(Collection, Collection)
      */
-    public MatchStrategy<TreeMatch> getMatcher() {
+    public Matcher getMatcher() {
         if (this.matcher == null) {
             this.matcher =
-                createMatcher(getRoot().nodeSet(), getRoot().edgeSet());
+                createMatcher(this.condition.getRoot().nodeSet(),
+                    this.condition.getRoot().edgeSet());
         }
         return this.matcher;
     }
@@ -586,48 +563,30 @@ public class Rule extends Condition implements Comparable<Rule> {
      * @param seedNodes the pre-matched rule nodes
      * @param seedEdges the pre-matched rule edges
      */
-    private MatchStrategy<TreeMatch> createMatcher(Set<RuleNode> seedNodes,
-            Set<RuleEdge> seedEdges) {
+    private Matcher createMatcher(Collection<RuleNode> seedNodes,
+            Collection<RuleEdge> seedEdges) {
         testFixed(true);
-        return getMatcherFactory().createMatcher(this, seedNodes, seedEdges);
-    }
-
-    /**
-     * Forces the condition and all of its sub-conditions to re-acquire 
-     * a new instance of its cached matcher object from the  
-     * search engine factory. 
-     * This is necessary to enable exploration strategies
-     * to effectively change the matching engine factory.
-     */
-    final public void resetMatcher() {
-        this.matcherFactory = null;
-        this.matcher = null;
-        this.matcherMap.clear();
-        this.eventMatcher = null;
+        return getMatcherFactory().createMatcher(getCondition(), seedNodes,
+            seedEdges);
     }
 
     /** Returns a matcher factory, tuned to the properties of this condition. */
-    private SearchEngine<MatchStrategy<TreeMatch>> getMatcherFactory() {
-        if (this.matcherFactory == null) {
-            this.matcherFactory =
-                groove.match.SearchEngineFactory.getInstance().getEngine(
-                    getSystemProperties());
-        }
-        return this.matcherFactory;
+    private MatcherFactory getMatcherFactory() {
+        return MatcherFactory.instance();
     }
 
     /**
      * Tests whether a given match map satisfies the additional constraints
      * imposed by this rule.
      * @param host the graph to be matched
-     * @param matchMap the proposed map from {@link #getPattern()} to
+     * @param matchMap the proposed map from {@link #lhs()} to
      *        <code>host</code>
      * @return <code>true</code> if <code>matchMap</code> satisfies the
      *         constraints imposed by the rule (if any).
      */
     public boolean isValidPatternMap(HostGraph host, RuleToHostMap matchMap) {
         boolean result = true;
-        if (SystemProperties.isCheckDangling(getSystemProperties())) {
+        if (this.checkDangling) {
             result = satisfiesDangling(host, matchMap);
         }
         return result;
@@ -683,91 +642,58 @@ public class Rule extends Condition implements Comparable<Rule> {
         return this.morphism;
     }
 
-    /**
-     * Returns the array of elements that should be matched to have an
-     * unambiguous rule event. This includes the eraser nodes (or incident edges
-     * thereof), the eraser edges (or end nodes thereof) and the end nodes of
-     * creator edges (insofar they are not creator nodes), as well as root node
-     * images.
-     */
-    public RuleElement[] anchor() {
-        if (this.anchor == null) {
-            this.anchor = computeAnchor();
+    /** Returns the anchor nodes. */
+    public RuleNode[] getAnchorNodes() {
+        if (this.anchorNodes == null) {
+            initAnchor();
         }
-        return this.anchor;
+        return this.anchorNodes;
+    }
+
+    /** Returns the anchor edges. */
+    public RuleEdge[] getAnchorEdges() {
+        if (this.anchorEdges == null) {
+            initAnchor();
+        }
+        return this.anchorEdges;
     }
 
     /**
-     * Computes the anchor for this rule.
+     * Initialises the anchor nodes and edges for this rule.
      */
-    private RuleElement[] computeAnchor() {
-        Collection<RuleElement> result =
+    private void initAnchor() {
+        Collection<RuleElement> anchor =
             new TreeSet<RuleElement>(
                 Arrays.asList(anchorFactory.newAnchors(this)));
-        return result.toArray(new RuleElement[result.size()]);
+        List<RuleNode> nodeResult = new ArrayList<RuleNode>(anchor.size());
+        List<RuleEdge> edgeResult = new ArrayList<RuleEdge>(anchor.size());
+        for (RuleElement elem : anchor) {
+            if (elem instanceof RuleNode) {
+                nodeResult.add((RuleNode) elem);
+            } else {
+                edgeResult.add((RuleEdge) elem);
+            }
+        }
+        this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
+        this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
     }
 
-    // -------------------- OBJECT OVERRIDES -----------------------------
-
-    /**
-     * @see Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format("Rule %s, level %s, anchor %s%n",
-                getName(), Groove.toString(Groove.toArray(getLevel())),
-                Groove.toString(anchor())));
-        res.append(String.format("LHS: %s%nRHS: %s%nMorphism: %s", lhs(),
-            rhs(), getMorphism()));
-        if (!getRoot().isEmpty()) {
-            res.append(String.format("%nRoot graph: %s", getRoot()));
-        }
-        if (!getCoRootMap().isEmpty()) {
-            res.append(String.format("%nCo-root map: %s", getCoRootMap()));
-        }
-        if (!getSubConditions().isEmpty()) {
-            res.append(String.format("%n----Subconditions of %s:", getName()));
-            for (Condition subCondition : getSubConditions()) {
-                res.append(String.format("%n%s", subCondition));
-            }
-            res.append(String.format("%n----End of %s", getName()));
-        }
+            new StringBuilder(String.format(
+                "Rule %s; anchor nodes: %s, edges: %s%n", getName(),
+                Groove.toString(getAnchorNodes()),
+                Groove.toString(getAnchorEdges())));
+        res.append(getCondition().toString("    "));
         return res.toString();
     }
 
     /**
-     * Compares two rules on the basis of their nesting level, or failing that,
-     * their names.
+     * Compares two rules on the basis of their names.
      */
     public int compareTo(Rule other) {
-        int result = 0;
-        if (this != other) {
-            // compare parent rules
-            //            Rule otherParent = other.getParent();
-            //            if (equals(getParent())) {
-            //                other = otherParent;
-            //            } else {
-            //                result = getParent().compareTo(otherParent);
-            //            }
-            if (result == 0) {
-                // compare levels
-                int[] level = getLevel();
-                int[] otherLevel = other.getLevel();
-                for (int depth = 0; result == 0 && depth < level.length; depth++) {
-                    if (depth == otherLevel.length) {
-                        result = +1;
-                    } else {
-                        result = level[depth] - otherLevel[depth];
-                    }
-                }
-            }
-            if (result == 0) {
-                // we have to rely on names, so they'd better be non-null
-                result = getName().compareTo(other.getName());
-            }
-        }
-        return result;
+        return getName().compareTo(other.getName());
     }
 
     // ------------------- commands --------------------------
@@ -779,15 +705,20 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     @Override
     public void setFixed() throws FormatException {
-        super.setFixed();
-        if (PRINT && isTop()) {
-            System.out.println(toString());
+        if (!this.fixed && !this.fixing) {
+            this.fixing = true;
+            getCondition().setFixed();
+            this.fixed = true;
+            if (PRINT && isTop()) {
+                System.out.println(toString());
+            }
+            this.fixing = false;
         }
     }
 
     @Override
     public boolean isFixed() {
-        return super.isFixed();
+        return this.fixed;
     }
 
     /**
@@ -828,7 +759,7 @@ public class Rule extends Condition implements Comparable<Rule> {
                 result.add(node);
             }
         }
-        result.removeAll(getRoot().nodeSet());
+        result.removeAll(this.condition.getRoot().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
     }
 
@@ -849,24 +780,11 @@ public class Rule extends Condition implements Comparable<Rule> {
     private boolean computeHasMergers() {
         boolean result = !getMergeMap().isEmpty();
         if (!result) {
-            result = hasMergingSubRules(this);
-        }
-        return result;
-    }
-
-    /**
-     * Computes if a given condition has merging rules as sub-conditions.
-     */
-    private boolean hasMergingSubRules(Condition condition) {
-        boolean result = false;
-        for (Condition subCondition : condition.getSubConditions()) {
-            if (subCondition instanceof Rule) {
-                result = ((Rule) subCondition).hasMergers();
-            } else {
-                result = hasMergingSubRules(subCondition);
-            }
-            if (result) {
-                break;
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasMergers();
+                if (result) {
+                    break;
+                }
             }
         }
         return result;
@@ -893,24 +811,11 @@ public class Rule extends Condition implements Comparable<Rule> {
             getEraserEdges().length > 0 || getEraserNodes().length > 0
                 || hasMergers() || hasCreators();
         if (!result) {
-            result = hasModifyingSubRules(this);
-        }
-        return result;
-    }
-
-    /**
-     * Computes if a given condition has modifying rules as sub-conditions.
-     */
-    private boolean hasModifyingSubRules(Condition condition) {
-        boolean result = false;
-        for (Condition subCondition : condition.getSubConditions()) {
-            if (subCondition instanceof Rule) {
-                result = ((Rule) subCondition).isModifying();
-            } else {
-                result = hasModifyingSubRules(subCondition);
-            }
-            if (result) {
-                break;
+            for (Rule subRule : getSubRules()) {
+                result = subRule.isModifying();
+                if (result) {
+                    break;
+                }
             }
         }
         return result;
@@ -931,24 +836,11 @@ public class Rule extends Condition implements Comparable<Rule> {
         boolean result =
             getCreatorNodes().length + getCreatorEdges().length > 0;
         if (!result) {
-            result = hasCreatingSubRules(this);
-        }
-        return result;
-    }
-
-    /**
-     * Computes if a given condition has creating rules as sub-conditions.
-     */
-    private boolean hasCreatingSubRules(Condition condition) {
-        boolean result = false;
-        for (Condition subCondition : condition.getSubConditions()) {
-            if (subCondition instanceof Rule) {
-                result = ((Rule) subCondition).hasCreators();
-            } else {
-                result = hasCreatingSubRules(subCondition);
-            }
-            if (result) {
-                break;
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasCreators();
+                if (result) {
+                    break;
+                }
             }
         }
         return result;
@@ -990,7 +882,7 @@ public class Rule extends Condition implements Comparable<Rule> {
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> eraserNonAnchorEdgeSet =
             new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
-        eraserNonAnchorEdgeSet.removeAll(Arrays.asList(anchor()));
+        eraserNonAnchorEdgeSet.removeAll(Arrays.asList(getAnchorEdges()));
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
 
@@ -1052,57 +944,10 @@ public class Rule extends Condition implements Comparable<Rule> {
         }
         // add merged nodes
         result.addAll(getMergeMap().keySet());
-        // add subrule modifier ends
-        // disabled for now, as these nodes are not actually anchors
-        // at this level. The price is that reconstructing a match from
-        // an event may be more costly
-        if (SUBRULE_ANCHORS) {
-            addSubruleModifierEnds(result);
-        }
         assert lhs().nodeSet().containsAll(result) : String.format(
             "LHS node set %s does not contain all anchors in %s",
             lhs().nodeSet(), result);
         return result;
-    }
-
-    /**
-     * Adds the modifier ends of all subrules, intersected with their
-     * root nodes, to a given set of nodes.
-     */
-    private void addSubruleModifierEnds(Set<RuleNode> result) {
-        for (Condition condition : getSubConditions()) {
-            Set<RuleNode> childResult = new HashSet<RuleNode>();
-            for (Condition subCondition : condition.getSubConditions()) {
-                if (subCondition instanceof Rule) {
-                    // translate anchor nodes from grandchild to child
-                    Set<RuleNode> grandchildResult =
-                        ((Rule) subCondition).getModifierEnds();
-                    grandchildResult.retainAll(subCondition.getRoot().nodeSet());
-                    // check coroot map for mergers
-                    Set<RuleNode> mergers = new HashSet<RuleNode>();
-                    Map<RuleNode,RuleNode> inverseCoroots =
-                        new HashMap<RuleNode,RuleNode>();
-                    for (Map.Entry<RuleNode,RuleNode> coRootEntry : ((Rule) subCondition).getCoRootMap().nodeMap().entrySet()) {
-                        RuleNode coRootSource = coRootEntry.getKey();
-                        RuleNode coRootTarget = coRootEntry.getValue();
-                        if (inverseCoroots.containsKey(coRootTarget)) {
-                            mergers.add(coRootSource);
-                            mergers.add(inverseCoroots.get(coRootTarget));
-                        } else {
-                            inverseCoroots.put(coRootTarget, coRootSource);
-                        }
-                    }
-                    // translate mergers to LHS
-                    for (Map.Entry<RuleNode,RuleNode> lhsToRhsEntry : getMorphism().nodeMap().entrySet()) {
-                        if (mergers.contains(lhsToRhsEntry.getValue())) {
-                            result.add(lhsToRhsEntry.getKey());
-                        }
-                    }
-                }
-            }
-            childResult.retainAll(condition.getRoot().nodeSet());
-            result.addAll(childResult);
-        }
     }
 
     RuleGraphMorphism getCoRootMap() {
@@ -1327,45 +1172,13 @@ public class Rule extends Condition implements Comparable<Rule> {
     }
 
     /**
-     * Lazily creates and returns the anchor graph of this rule. The anchor
-     * graph is the smallest subgraph of the LHS that is necessary to apply the
-     * rule. This means it contains all eraser edges and all variables and nodes
-     * necessary for creation.
-     */
-    private RuleGraph getAnchorGraph() {
-        if (this.anchorGraph == null) {
-            this.anchorGraph = computeAnchorGraph();
-        }
-        return this.anchorGraph;
-    }
-
-    /**
-     * Computes the anchor graph of this rule.
-     * @see #getAnchorGraph()
-     */
-    private RuleGraph computeAnchorGraph() {
-        RuleGraph result = lhs().newGraph(getName() + "(anchors)");
-        for (Element elem : anchor()) {
-            if (elem instanceof RuleNode) {
-                result.addNode((RuleNode) elem);
-            } else {
-                result.addEdge((RuleEdge) elem);
-            }
-        }
-        // add the root map images
-        result.addNodeSet(getRoot().nodeSet());
-        result.addEdgeSet(getRoot().edgeSet());
-        result.addEdgeSet(Arrays.asList(getEraserEdges()));
-        return result;
-    }
-
-    /**
      * Returns the properties of the rule.
      */
     public GraphProperties getRuleProperties() {
         return this.ruleProperties;
     }
 
+    private final Condition condition;
     /**
      * The parent rule of this rule; may be <code>null</code>, if this is a
      * top-level rule.
@@ -1373,11 +1186,9 @@ public class Rule extends Condition implements Comparable<Rule> {
     private Rule parent;
     /**
      * The collection of direct sub-rules of this rules. Lazily created by
-     * {@link #getDirectSubRules()}.
+     * {@link #getSubRules()}.
      */
-    private Collection<Rule> directSubRules;
-    /** The nesting level of this rule. */
-    private int[] level;
+    private Collection<Rule> subRules;
     /**
      * Indicates if this rule has node mergers.
      */
@@ -1418,11 +1229,12 @@ public class Rule extends Condition implements Comparable<Rule> {
     private RuleGraph rhs;
     /** Mapping from the context of this rule to the RHS. */
     private final RuleGraphMorphism coRootMap;
-    /**
-     * Smallest subgraph of the left hand side that is necessary to apply the
-     * rule.
-     */
-    private RuleGraph anchorGraph;
+    /** Flag indicating whether rule applications should be checked for dangling edges. */
+    private boolean checkDangling;
+    /** Flag indicating whether the rule has been fixed. */
+    private boolean fixed;
+    /** Flag indicating whether the rule is currently in the process of fixing. */
+    private boolean fixing;
     /**
      * A sub-graph of the production rule's right hand side, consisting only of
      * the fresh nodes and edges.
@@ -1445,9 +1257,13 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     private RuleEdge[] eraserEdges;
     /**
-     * The set of anchors of this rule.
+     * The set of anchor nodes of this rule.
      */
-    private RuleElement[] anchor;
+    private RuleNode[] anchorNodes;
+    /**
+     * The set of anchor edges of this rule.
+     */
+    private RuleEdge[] anchorEdges;
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
@@ -1494,7 +1310,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     private Map<RuleNode,RuleNode> mergeMap;
 
-    private GraphProperties ruleProperties;
+    private final GraphProperties ruleProperties;
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;
@@ -1509,23 +1325,21 @@ public class Rule extends Condition implements Comparable<Rule> {
      */
     private Set<RuleNode> hiddenPars;
 
-    /** The factory for match strategies. */
-    private SearchEngine<MatchStrategy<TreeMatch>> matcherFactory;
     /**
      * The fixed matching strategy for this graph condition. Initially
      * <code>null</code>; set by {@link #getMatcher()} upon its first
      * invocation.
      */
-    private MatchStrategy<TreeMatch> matcher;
+    private Matcher matcher;
 
     /**
      * Mapping from sets of initialised parameters to match strategies.
      */
-    private final Map<BitSet,MatchStrategy<TreeMatch>> matcherMap =
-        new HashMap<BitSet,MatchStrategy<TreeMatch>>();
+    private final Map<BitSet,Matcher> matcherMap =
+        new HashMap<BitSet,Matcher>();
 
     /** The matcher for events of this rule. */
-    private MatchStrategy<TreeMatch> eventMatcher;
+    private Matcher eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory<Rule> getAnchorFactory() {
@@ -1545,7 +1359,7 @@ public class Rule extends Condition implements Comparable<Rule> {
      * time spent in certificate calculation.
      */
     static public long getMatchingTime() {
-        return SearchPlanStrategy.searchFindReporter.getTotalTime();
+        return PlanSearchStrategy.searchFindReporter.getTotalTime();
     }
 
     /**
@@ -1555,9 +1369,6 @@ public class Rule extends Condition implements Comparable<Rule> {
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
-    /** Flag to include subrule anchors into this rule. */
-    private static final boolean SUBRULE_ANCHORS = false;
-
     /**
      * The lowest rule priority, which is also the default value if no explicit
      * priority is given.

@@ -18,7 +18,7 @@
 package groove.match.plan;
 
 import groove.graph.TypeLabel;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;

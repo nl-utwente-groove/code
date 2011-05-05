@@ -22,7 +22,7 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -66,7 +66,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     public OperatorEdgeRecord createRecord(
-            groove.match.plan.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new OperatorEdgeRecord(matcher);
     }
 
@@ -133,7 +133,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         return this.edge;
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.targetFound = strategy.isNodeFound(this.target);
         this.targetIx = strategy.getNodeIx(this.target);
         this.argumentIxs = new int[this.arguments.size()];

@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
     }
 
     public EqualityRecord createRecord(
-            groove.match.plan.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new EqualityRecord(matcher);
     }
 
@@ -75,7 +75,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
         return 0;
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.node1Ix = strategy.getNodeIx(this.node1);
         this.node2Ix = strategy.getNodeIx(this.node2);
     }

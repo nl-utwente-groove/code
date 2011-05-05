@@ -18,15 +18,12 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultNode;
-import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
-import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
-import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -42,6 +39,7 @@ import groove.util.Bag;
 import groove.util.HashBag;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,49 +60,29 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision: 3291 $
  */
-public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
+public class PlanSearchEngine extends SearchEngine {
     /**
      * Private constructor. Get the instance through
-     * {@link #getInstance()}.
+     * {@link #instance()}.
      * @see AlgebraFamily#getInstance(String)
      */
-    private SearchPlanEngine() {
+    private PlanSearchEngine() {
         // empty
     }
 
-    /**
-     * Factory method returning a search engine for 
-     * a graph condition.
-     * @param condition the condition for which a search plan is to be
-     *        constructed
-     */
     @Override
-    public SearchPlanStrategy createMatcher(Condition condition) {
-        return createMatcher(condition, null, null);
-    }
-
-    @Override
-    public SearchPlanStrategy createMatcher(Condition condition,
+    public PlanSearchStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
         assert (seedNodes == null) == (seedEdges == null) : "Anchor nodes and edges should be null simultaneously";
-        this.algebraFamily =
+        AlgebraFamily algebraFamily =
             AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
-        if (seedNodes == null) {
-            seedNodes = condition.getInputNodes();
-            seedEdges = condition.getRoot().edgeSet();
-        }
         Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
         Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
         if (condition.hasRule()) {
-            for (Element anchorElem : condition.getRule().anchor()) {
-                if (anchorElem instanceof RuleNode) {
-                    anchorNodes.add((RuleNode) anchorElem);
-                } else {
-                    anchorEdges.add((RuleEdge) anchorElem);
-                }
-            }
+            anchorNodes.addAll(Arrays.asList(condition.getRule().getAnchorNodes()));
+            anchorEdges.addAll(Arrays.asList(condition.getRule().getAnchorEdges()));
         }
-        PlanData planData = new PlanData(condition);
+        PlanData planData = new PlanData(condition, algebraFamily);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
         for (AbstractSearchItem item : plan) {
             boolean relevant = anchorNodes.removeAll(item.bindsNodes());
@@ -112,7 +90,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             relevant |= condition.getOp() == Op.FORALL;
             item.setRelevant(relevant);
         }
-        SearchPlanStrategy result = new SearchPlanStrategy(plan);
+        PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
         if (PRINT) {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
@@ -130,24 +108,17 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
         return result;
     }
 
-    /** 
-     * The algebra family to be used for algebraic operations.
-     * If {@code null}, the default will be used.
-     * @see AlgebraFamily#getInstance(String)
-     */
-    private AlgebraFamily algebraFamily;
-
     /** Returns an instance of this factory class.
      * @see AlgebraFamily#getInstance(String)
      */
-    static public SearchPlanEngine getInstance() {
+    static public PlanSearchEngine instance() {
         if (instance == null) {
-            instance = new SearchPlanEngine();
+            instance = new PlanSearchEngine();
         }
         return instance;
     }
 
-    static private SearchPlanEngine instance;
+    static private PlanSearchEngine instance;
 
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;
@@ -158,14 +129,15 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class PlanData extends Observable implements Comparator<SearchItem> {
+    private static class PlanData extends Observable implements
+            Comparator<SearchItem> {
         /**
          * Constructs a fresh instance of the plan data, based on a given set of
          * system properties, and sets of already matched nodes and edges.
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        PlanData(Condition condition) {
+        PlanData(Condition condition, AlgebraFamily family) {
             RuleGraph graph = condition.getPattern();
             // compute the set of remaining (unmatched) nodes
             this.remainingNodes = new LinkedHashSet<RuleNode>(graph.nodeSet());
@@ -175,6 +147,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                 new LinkedHashSet<LabelVar>(VarSupport.getAllVars(graph));
             this.labelStore = condition.getLabelStore();
             this.condition = condition;
+            this.algebraFamily = family;
         }
 
         /**
@@ -183,8 +156,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
          * @param seedEdges the set of pre-matched edges
          */
         Collection<AbstractSearchItem> computeSearchItems(
-                Collection<RuleNode> seedNodes,
-                Collection<RuleEdge> seedEdges) {
+                Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
             Set<RuleNode> unmatchedNodes =
@@ -297,8 +269,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                 this.used = true;
             }
             SearchPlan result =
-                new SearchPlan(this.condition,
-                    this.condition.getSystemProperties().isInjective());
+                new SearchPlan(this.condition, seedNodes, seedEdges);
             Collection<AbstractSearchItem> items =
                 computeSearchItems(seedNodes, seedEdges);
             while (!items.isEmpty()) {
@@ -382,7 +353,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
             } else if (label.isOperator()) {
                 result =
                     new OperatorEdgeSearchItem((OperatorEdge) edge,
-                        SearchPlanEngine.this.algebraFamily);
+                        this.algebraFamily);
             } else if (!label.isArgument()) {
                 result = new RegExprEdgeSearchItem(edge, this.labelStore);
             }
@@ -398,7 +369,7 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
                 if (((VariableNode) node).getSymbol() != null) {
                     result =
                         new ValueNodeSearchItem((VariableNode) node,
-                            SearchPlanEngine.this.algebraFamily);
+                            this.algebraFamily);
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
@@ -444,6 +415,13 @@ public class SearchPlanEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
         private final Set<LabelVar> remainingVars;
         /** The label store containing the subtype relation. */
         private final LabelStore labelStore;
+        /** 
+         * The algebra family to be used for algebraic operations.
+         * If {@code null}, the default will be used.
+         * @see AlgebraFamily#getInstance(String)
+         */
+        private final AlgebraFamily algebraFamily;
+
         /**
          * The comparators used to determine the order in which the edges should
          * be matched.

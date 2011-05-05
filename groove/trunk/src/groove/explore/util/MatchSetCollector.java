@@ -27,10 +27,10 @@ import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 import groove.trans.Proof;
-import groove.trans.RuleToHostMap;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
+import groove.trans.RuleToHostMap;
 import groove.trans.SystemRecord;
 import groove.util.Visitor;
 
@@ -49,7 +49,7 @@ public class MatchSetCollector {
     /**
      * Constructs a match collector for a given (start) state.
      * @param state the state for which matches are to be collected
-     * @param record factory to turn {@link Proof}es in to
+     * @param record factory to turn {@link Proof}s in to
      *        {@link RuleEvent}s.
      */
     public MatchSetCollector(GraphState state, SystemRecord record,
@@ -70,26 +70,16 @@ public class MatchSetCollector {
             this.disabledRules = record.getDisabledRules(lastRule);
         } else {
             this.parentOutMap = null;
+            this.enabledRules = null;
+            this.disabledRules = null;
         }
     }
 
     /** Returns a single match for the state passed in through the constructor. */
     public MatchResult getMatch() {
         MatchResult result = null;
-        findResult: for (CtrlTransition ctrlTrans = firstCall(); result == null
+        for (CtrlTransition ctrlTrans = firstCall(); result == null
             && ctrlTrans != null; ctrlTrans = nextCall(false)) {
-            // first try to find a parent transition
-            Collection<GraphTransition> parentOuts = getParentOuts(ctrlTrans);
-            if (parentOuts != null) {
-                for (GraphTransition parentOut : parentOuts) {
-                    if (isStillValid(parentOut)) {
-                        result = parentOut;
-                        break findResult;
-                    }
-                }
-            }
-            // if this fails, try to find a match
-            // taking the variable binding into account
             result = getMatch(ctrlTrans);
         }
         return result;
@@ -115,7 +105,7 @@ public class MatchSetCollector {
      * constructor.
      */
     public Collection<MatchResult> getMatchSet() {
-        Set<MatchResult> result = new MatchResultSet();
+        MatchResultSet result = new MatchResultSet();
         collectMatchSet(result);
         return result;
     }
@@ -141,13 +131,21 @@ public class MatchSetCollector {
      */
     protected boolean collectEvents(CtrlTransition ctrlTrans,
             final Collection<MatchResult> result) {
-        boolean isEnabled = isEnabled(ctrlTrans.getCall());
+        boolean hasMatched = false;
         // there are three reasons to want to use the parent matches: to
         // save matching time, to reuse added nodes, and to find confluent 
         // diamonds. The first is only relevant if the rule is not (re)enabled,
         // the third only if the parent match target is already closed
-        boolean hasMatched = addParentOuts(ctrlTrans, result);
-        if (isEnabled) {
+        final boolean isDisabled = isDisabled(ctrlTrans.getCall());
+        if (!isDisabled) {
+            for (GraphTransition trans : this.parentOutMap.values()) {
+                if (trans.getEvent().getRule().equals(ctrlTrans.getRule())) {
+                    result.add(trans);
+                    hasMatched = true;
+                }
+            }
+        }
+        if (isDisabled || isEnabled(ctrlTrans.getCall())) {
             // the rule was possibly enabled afresh, so we have to add the fresh
             // matches
             RuleToHostMap boundMap = extractBinding(ctrlTrans);
@@ -158,7 +156,10 @@ public class MatchSetCollector {
                         @Override
                         protected boolean process(Proof object) {
                             RuleEvent event = record.getEvent(object);
-                            result.add(event);
+                            // only look up the event in the parent map if
+                            // the rule was disabled, as otherwise the result
+                            // already contains all relevant parent results
+                            result.add(isDisabled ? getParentOut(event) : event);
                             setResult(true);
                             return true;
                         }
@@ -171,8 +172,13 @@ public class MatchSetCollector {
         return hasMatched;
     }
 
+    /**
+     * Indicates if new matches of a given control call might have been enabled
+     * with respect to the parent state.
+     */
     private boolean isEnabled(CtrlCall call) {
-        if (this.enabledRules == null || this.enabledRules.contains(call)) {
+        if (this.enabledRules == null
+            || this.enabledRules.contains(call.getRule())) {
             return true;
         }
         // since enabledRules != null, it is now certain that this is a NextState
@@ -180,12 +186,30 @@ public class MatchSetCollector {
         if (state.getCtrlTransition().isModifying()) {
             return true;
         }
-        // there may be new matches only if the rule was untried in
+        // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<Rule> triedRules = state.source().getSchedule().getTriedRules();
-        return triedRules == null || !triedRules.contains(call);
+        Set<CtrlCall> triedCalls = state.source().getSchedule().getTriedCalls();
+        return triedCalls == null || !triedCalls.contains(call);
     }
 
+    /** 
+     * Indicates if matches of a given control call might have been disabled
+     * since the parent state.
+     */
+    private boolean isDisabled(CtrlCall call) {
+        if (this.disabledRules == null
+            || this.disabledRules.contains(call.getRule())) {
+            return true;
+        }
+        // since disabledRules != null, it is now certain that this is a NextState
+        GraphNextState state = (GraphNextState) this.state;
+        if (state.getCtrlTransition().isModifying()) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Indicates if match results are compared with the parent state. */
     private boolean checkDiamonds() {
         return this.checkDiamonds;
     }
@@ -230,51 +254,17 @@ public class MatchSetCollector {
         return result;
     }
 
-    /**
-     * Adds the parent's out-transitions for a given rule into an existing set.
-     * @return <code>true</code> if any out-transitions were found
+    /** 
+     * Returns the parent state's out-transition for a given event, if any,
+     * or otherwise the event itself.
      */
-    private boolean addParentOuts(CtrlTransition call,
-            Collection<MatchResult> result) {
-        boolean hasMatches = false;
-        Collection<GraphTransition> parentOuts = getParentOuts(call);
-        if (parentOuts != null) {
-            for (GraphTransition parentOut : parentOuts) {
-                if (isStillValid(parentOut)) {
-                    result.add(parentOut);
-                    hasMatches = true;
-                    parentOutReuse++;
-                }
-            }
-        }
-        return hasMatches;
-    }
-
-    /** Returns the parent's out-transitions for a given rule (if any). */
-    private Collection<GraphTransition> getParentOuts(CtrlTransition ctrlTrans) {
-        Collection<GraphTransition> result = null;
+    private MatchResult getParentOut(RuleEvent event) {
+        MatchResult result = null;
         if (this.parentOutMap != null) {
-            result = this.parentOutMap.get(ctrlTrans.getCall());
+            result = this.parentOutMap.get(event);
         }
-        return result;
-    }
-
-    /**
-     * Tests if a parent out-transition is still valid in this state.
-     */
-    private boolean isStillValid(GraphTransition parentOut) {
-        Rule rule = parentOut.getEvent().getRule();
-        boolean result = !this.disabledRules.contains(rule);
-        if (!result) {
-            assert this.state instanceof GraphNextState;
-            // check if the underlying control transition is the same
-            CtrlTransition parentCtrlTrans = parentOut.getCtrlTransition();
-            CtrlState myCtrlState = this.state.getCtrlState();
-            CtrlTransition myCtrlTrans =
-                myCtrlState == null ? null : myCtrlState.getTransition(rule);
-            result =
-                parentCtrlTrans == myCtrlTrans
-                    && parentOut.getEvent().hasMatch(this.state.getGraph());
+        if (result == null) {
+            result = event;
         }
         return result;
     }
@@ -322,11 +312,11 @@ public class MatchSetCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final Map<CtrlCall,Collection<GraphTransition>> parentOutMap;
+    private final Map<RuleEvent,GraphTransition> parentOutMap;
     /** The rules that may be enabled. */
-    private Set<Rule> enabledRules;
+    private final Set<Rule> enabledRules;
     /** The rules that may be disabled. */
-    private Set<Rule> disabledRules;
+    private final Set<Rule> disabledRules;
 
     /** Returns the total number of reused parent events. */
     public static int getEventReuse() {

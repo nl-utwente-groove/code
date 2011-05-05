@@ -22,6 +22,7 @@ import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
+import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
@@ -105,13 +106,18 @@ public class DefaultGraphView implements GraphView {
         }
     }
 
-    /** Changes the type graph under against which the model should be tested. */
+    /** Changes the type graph against which the model should be tested. */
     @Override
     public void setType(TypeGraph type) {
         if (this.type != type) {
             this.type = type;
             invalidate();
         }
+    }
+
+    @Override
+    public void setLabelStore(LabelStore labelStore) {
+        // Does nothing
     }
 
     /** Returns the set of labels used in this graph. */

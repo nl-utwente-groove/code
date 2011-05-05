@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
 import groove.trans.RuleNode;
@@ -44,7 +44,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     }
 
     public NegatedSearchRecord createRecord(
-            groove.match.plan.SearchPlanStrategy.Search search) {
+            groove.match.plan.PlanSearchStrategy.Search search) {
         return new NegatedSearchRecord(search);
     }
 
@@ -86,7 +86,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     }
 
     /** This implementation propagates the call to the inner item. */
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.inner.activate(strategy);
     }
 

@@ -18,14 +18,17 @@ package groove.graph;
 
 import groove.util.DefaultFixable;
 import groove.util.ExprParser;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -452,16 +455,21 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      */
     public void addDirectSubtypes(String directSubtypeString)
         throws FormatException {
-        for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : parseDirectSubtypeString(
-            directSubtypeString).entrySet()) {
-            TypeLabel type = subtypeEntry.getKey();
-            addLabel(type);
-            for (TypeLabel subtype : subtypeEntry.getValue()) {
-                addLabel(subtype);
-                getDirSubs(type).add(subtype);
+        try {
+            for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : parseDirectSubtypeString(
+                directSubtypeString).entrySet()) {
+                TypeLabel type = subtypeEntry.getKey();
+                addLabel(type);
+                for (TypeLabel subtype : subtypeEntry.getValue()) {
+                    addLabel(subtype);
+                    getDirSubs(type).add(subtype);
+                }
             }
+            invalidateSubtypes();
+        } catch (FormatException exc) {
+            this.errors.addAll(exc.getErrors());
+            throw exc;
         }
-        invalidateSubtypes();
     }
 
     /**
@@ -512,6 +520,16 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return result;
     }
 
+    /** Indicates if this label store has format errors. */
+    public boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    /** Returns the (possibly empty) list of format errors in this label store. */
+    public List<FormatError> getErrors() {
+        return this.errors;
+    }
+
     /** Resets the subtype map to {@code null}. */
     private void invalidateSubtypes() {
         this.subMap = null;
@@ -524,6 +542,8 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         this.superMap = null;
     }
 
+    /** Possibly empty list of format errors in this label store. */
+    private final List<FormatError> errors = new ArrayList<FormatError>();
     /** Mapping from a type label to its set of direct subtypes. */
     private final Map<TypeLabel,Set<TypeLabel>> dirSubMap =
         new TreeMap<TypeLabel,Set<TypeLabel>>();
