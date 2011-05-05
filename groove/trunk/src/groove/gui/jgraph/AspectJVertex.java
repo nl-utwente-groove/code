@@ -480,7 +480,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     /** Retrieves a node color from the model's label store, if any. */
-    Color getNodeColor() {
+    public Color getNodeColor() {
         Color result = null;
         if (getNode() != null && getNode().getColor() != null) {
             result = (Color) getNode().getColor().getContent();

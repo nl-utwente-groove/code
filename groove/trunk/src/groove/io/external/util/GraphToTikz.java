@@ -46,13 +46,17 @@ import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 
+import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -76,6 +80,8 @@ public final class GraphToTikz {
     private final Graph<Node,Edge<Node>> graph;
     /** The layout map of the graph. */
     private final LayoutMap<Node,Edge<Node>> layoutMap;
+    /** The color map of the graph. */
+    private final Map<GraphJVertex,Color> colorMap;
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
 
@@ -93,6 +99,7 @@ public final class GraphToTikz {
         this.model = (GraphJModel<Node,Edge<Node>>) this.jGraph.getModel();
         this.graph = this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
+        this.colorMap = this.createColorMap();
         this.result = new StringBuilder();
     }
 
@@ -437,6 +444,37 @@ public final class GraphToTikz {
         return null;
     }
 
+    // BEGIN
+    // Methods to handle special colors.
+
+    private static String getColorName(GraphJVertex vertex) {
+        return "n" + vertex.getNumber() + COLOR_SUFFIX;
+    }
+
+    private static String getColorStyle(GraphJVertex vertex) {
+        return getColorName(vertex) + COLOR_STYLE_SUFFIX;
+    }
+
+    private static String getRGBString(Color color) {
+        return encloseCurly(color.getRed() + "," + color.getGreen() + ","
+            + color.getBlue());
+    }
+
+    private static String getColorDefStr(GraphJVertex vertex, Color color) {
+        return DEF_COLOR + encloseCurly(getColorName(vertex)) + RGB
+            + getRGBString(color) + ENTER;
+    }
+
+    private static String getColorStyleDefStr(GraphJVertex vertex) {
+        String c = getColorName(vertex);
+        return getColorStyle(vertex) + STYLE_DEF
+            + encloseCurly(DRAW + c + TEXT + c + FILL + c + FILL_SUFFIX) + ","
+            + ENTER;
+    }
+
+    // Methods to handle special colors.
+    // END
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -473,8 +511,63 @@ public final class GraphToTikz {
         return this.result.toString();
     }
 
+    /** Returns true is the graph to be exported can have personalized colors. */
+    private boolean hasExtraColors() {
+        GraphRole role = this.graph.getRole();
+        return (role == GraphRole.HOST || role == GraphRole.TYPE);
+    }
+
+    /** Creates a map for the personalized colors. */
+    private Map<GraphJVertex,Color> createColorMap() {
+        Map<GraphJVertex,Color> result = new HashMap<GraphJVertex,Color>();
+        if (this.hasExtraColors()) {
+            for (Node node : this.graph.nodeSet()) {
+                AspectJVertex vertex =
+                    (AspectJVertex) this.model.getJCellForNode(node);
+                Color color = vertex.getNodeColor();
+                if (color != null) {
+                    result.put(vertex, color);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks if the given vertex is a key in the color map.
+     * @return the name of the color style for the vertex if it is a key;
+     *         null, otherwise.
+     */
+    private String getVertexColorStyle(GraphJVertex vertex) {
+        if (this.colorMap.get(vertex) != null) {
+            return getColorStyle(vertex);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Appends the header to the Tikz result string. The header includes
+     * additional styles local to the figure.
+     */
     private void appendTikzHeader() {
-        this.result.append(DOC + BEGIN_TIKZ_FIG + ENTER);
+        this.result.append(DOC);
+
+        // Special color definitions.
+        this.result.append(COLORS);
+        for (Entry<GraphJVertex,Color> entry : this.colorMap.entrySet()) {
+            this.result.append(getColorDefStr(entry.getKey(), entry.getValue()));
+        }
+
+        this.result.append(BEGIN_TIKZ_FIG_OPEN);
+
+        // Special color styles.
+        this.result.append(COLOR_STYLES);
+        for (GraphJVertex vertex : this.colorMap.keySet()) {
+            this.result.append(getColorStyleDefStr(vertex));
+        }
+
+        this.result.append(BEGIN_TIKZ_FIG_CLOSE);
     }
 
     private void appendTikzFooter() {
@@ -628,6 +721,11 @@ public final class GraphToTikz {
 
         if (isTypeGraphNode) {
             styles.add(TYPE_NODE_STYLE);
+        }
+
+        String colorStyle = this.getVertexColorStyle(node);
+        if (colorStyle != null) {
+            styles.add(colorStyle);
         }
 
         if (!this.isShowBackground()) {
@@ -958,6 +1056,12 @@ public final class GraphToTikz {
             styles.setOne(styles.one() + ", " + UNDIRECTED_EDGE_STYLE);
         }
 
+        // Check if the edge has a special color.
+        String colorStyle = this.getVertexColorStyle(edge.getSourceVertex());
+        if (colorStyle != null) {
+            styles.setOne(styles.one() + ", " + colorStyle);
+        }
+
         return styles;
     }
 
@@ -1280,8 +1384,10 @@ public final class GraphToTikz {
 
     private static final String ENTER = "\n";
     private static final String CRLF = "\\\\";
-    private static final String BEGIN_TIKZ_FIG =
-        "\\begin{tikzpicture}[scale=\\tikzscale]";
+    private static final String BEGIN_TIKZ_FIG_OPEN = "\\begin{tikzpicture}["
+        + ENTER;
+    private static final String BEGIN_TIKZ_FIG_CLOSE = "scale=\\tikzscale]"
+        + ENTER;
     private static final String END_TIKZ_FIG = "\\userdefinedmacro" + ENTER
         + "\\end{tikzpicture}" + ENTER
         + "\\renewcommand{\\userdefinedmacro}{\\relax}";
@@ -1372,7 +1478,19 @@ public final class GraphToTikz {
     private static final String WEST = ".west |- ";
     private static final String NORTH_WEST = ".north west";
     private static final String PAR_NODE_SUFFIX = "p";
+    private static final String COLOR_SUFFIX = "c";
+    private static final String COLOR_STYLE_SUFFIX = "s";
+    private static final String FILL_SUFFIX = "!10";
+    private static final String STYLE_DEF = "/.style=";
+    private static final String DRAW = "draw=";
+    private static final String FILL = ",fill=";
+    private static final String TEXT = ",text=";
+    private static final String DEF_COLOR = "\\definecolor";
+    private static final String RGB = "{RGB}";
     private static final String DOC = "% To use this figure in your LaTeX "
-        + "document\n% import the package groove/resources/groove2tikz.sty"
+        + "document" + ENTER
+        + "% import the package groove/resources/groove2tikz.sty" + ENTER + "%"
         + ENTER;
+    private static final String COLORS = "% Special colors" + ENTER;
+    private static final String COLOR_STYLES = "% Special color styles" + ENTER;
 }
