@@ -19,7 +19,7 @@ package groove.match.plan;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.trans.RuleEdge;
@@ -81,7 +81,7 @@ class SeedSearchItem extends AbstractSearchItem {
         return Integer.MAX_VALUE;
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         for (RuleNode node : this.nodes) {
             assert !strategy.isNodeFound(node) : String.format(
@@ -133,7 +133,7 @@ class SeedSearchItem extends AbstractSearchItem {
         return String.format("Check %s", elementList);
     }
 
-    public Record createRecord(groove.match.plan.SearchPlanStrategy.Search search) {
+    public Record createRecord(groove.match.plan.PlanSearchStrategy.Search search) {
         assert allElementsMatched(search) : String.format(
             "Elements %s not pre-matched", this.unmatched);
         return new DummyRecord();

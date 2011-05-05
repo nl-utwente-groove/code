@@ -19,6 +19,7 @@ package groove.view;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
+import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -50,6 +51,12 @@ public interface View<Model> {
      */
     void setType(TypeGraph type);
 
+    /** 
+     * Sets a label store for this view.
+     * This is mutually exclusive with {@link #setType(TypeGraph)}.
+     */
+    void setLabelStore(LabelStore labelStore);
+
     /**
      * Returns a mapping from the nodes in the view to the corresponding nodes
      * in the model that is being viewed.
@@ -65,10 +72,9 @@ public interface View<Model> {
 
     /**
      * Returns the set of labels occurring in this view.
-     * @return the set of labels occurring in the view; empty if the view
-     *         contains errors.
+     * @return the set of labels occurring in the view.
      */
-    public Set<TypeLabel> getLabels() throws FormatException;
+    public Set<TypeLabel> getLabels();
 
     /**
      * Returns the underlying model. This can only be successful if there are no

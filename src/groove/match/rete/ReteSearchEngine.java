@@ -16,9 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.match.MatchStrategy;
 import groove.match.SearchEngine;
-import groove.match.TreeMatch;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
@@ -29,156 +27,32 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.util.Reporter;
-import groove.view.StoredGrammarView;
 
 import java.util.Collection;
 
 /**
+ * Objects of this class create {@link ReteSearchStrategy} instances
+ * for the actual matching.
+ * Every object of this class keeps a {@link ReteNetwork} that is shared
+ * by all the search strategies.
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ReteSearchEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
-
-    private static ReteSearchEngine instances[] = new ReteSearchEngine[2];
-    /**
-     * A locked engine will respond to all requests through the 
-     * specific ReteSearchEngine specified by the lockedInstance
-     * member.
+public class ReteSearchEngine extends SearchEngine {
+    /** Creates a new engine, on the basis of a given grammar.
+     * This means the rete network gets initialised by that grammar,
+     * and populated by the grammar's start graph.
      */
-    private static boolean locked = false;
-    private static ReteSearchEngine lockedInstance = null;
-
-    private boolean injective = false;
-    /**
-     * The reporter object.
-     */
-    static public final Reporter reporter =
-        Reporter.register(ReteSearchEngine.class);
-
-    /**
-     * The reporter for the transitionOccurred method
-     */
-    static public final Reporter transitionOccurredReporter =
-        reporter.register("transitionOccurred()");
-
-    static {
-        for (int injective = 0; injective <= 1; injective++) {
-            instances[injective] = new ReteSearchEngine(injective == 1);
-        }
+    public ReteSearchEngine(GraphGrammar grammar) {
+        this.network =
+            new ReteNetwork(grammar, grammar.getProperties().isInjective());
     }
-
-    /**
-     * Instructs the RETE engine to lock down all factory responses to a specific instance.
-     * 
-     * This method will not lock to the given instance if it is already locked to another one.
-     * @param engineInstance The engine instance that this search engine should be locked to.
-     * @return <code>true</code> if the engine has not already been locked,
-     * <code>false</code> otherwise.
-     */
-    public static boolean lockToInstance(ReteSearchEngine engineInstance) {
-        boolean result = false;
-        if (!ReteSearchEngine.locked) {
-            ReteSearchEngine.lockedInstance = engineInstance;
-            ReteSearchEngine.locked = true;
-            result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Instructs the engine to come out of the locked mode.
-     */
-    public static void unlock() {
-        ReteSearchEngine.locked = false;
-        ReteSearchEngine.lockedInstance = null;
-    }
-
-    private ReteSearchEngine(boolean injective) {
-        this.injective = injective;
-    }
-
-    /**
-     * Gets the singleton instance of the engine with the given
-     * injectivity property.
-     * 
-     * We don't support ignoreNeg for the moment. If the Engine has been locked,
-     * then the locked instance will only be used if it has the same
-     * injectivity property as requested through the <code>injective</code>
-     * parameter.
-     * 
-     * @param injective  Determines if the desired engine instance should perform
-     *                   injective matching.
-     * @param ignoreNeg  this parameter is ignored at the moment.
-     */
-    public static synchronized ReteSearchEngine getInstance(boolean injective,
-            boolean ignoreNeg) {
-        ReteSearchEngine result = instances[injective ? 1 : 0];
-        if ((ReteSearchEngine.locked)
-            && (ReteSearchEngine.lockedInstance.isInjective() == result.isInjective())) {
-            result = ReteSearchEngine.lockedInstance;
-        }
-        return result;
-    }
-
-    /**
-     * Creates a fresh instance of the engine for anyone who wants to 
-     * make sure their engine is not being updated by other threads.
-     * @param injective Determines if the desired engine instance should perform
-     *                  injective matching.
-     * @param ignoreNeg Look at the documentation for the parameter with the same name
-     *                  in the {@link ReteSearchEngine} constructor.
-     * @return a fresh instance of the engine.
-     */
-    public static ReteSearchEngine createFreshInstance(boolean injective,
-            boolean ignoreNeg) {
-        return new ReteSearchEngine(injective);
-    }
-
-    private ReteNetwork network;
 
     /**
      * @return The network object used by this engine.
      */
     public ReteNetwork getNetwork() {
         return this.network;
-    }
-
-    /**
-     * Sets up the RETE engine given a <code>GraphGrammar</code> 
-     * @param g the grammar to build the RETE network with
-     */
-    public synchronized void setUp(StoredGrammarView g) {
-        HostGraph oldGraph = null;
-        if (this.network != null) {
-            oldGraph = this.network.getState().getHostGraph();
-        }
-        this.network = new ReteNetwork(g, this.isInjective());
-        if (oldGraph != null) {
-            this.network.processGraph(oldGraph);
-        }
-    }
-
-    /**
-     * Tells the engine to set up its RETE network using the given grammar.
-     * 
-     * All prior matching state of the engine (if any) will be lost after calling this method.
-     * @param g The given grammar.
-     */
-    public synchronized void setUp(GraphGrammar g) {
-        this.network = new ReteNetwork(g, this.isInjective());
-    }
-
-    /**
-     * Populates the RETE network by processing the initial host graph state
-     * @param host the host graph to start with
-     */
-    public synchronized void initializeState(HostGraph host) {
-        if (this.network != null) {
-            this.network.processGraph(host);
-        } else {
-            throw new RuntimeException(
-                "Must set up the RETE engine before initializing the state.");
-        }
     }
 
     /**
@@ -223,16 +97,23 @@ public class ReteSearchEngine extends SearchEngine<MatchStrategy<TreeMatch>> {
     }
 
     @Override
-    public synchronized MatchStrategy<TreeMatch> createMatcher(
-            Condition condition, Collection<RuleNode> seedNodes,
-            Collection<RuleEdge> seedEdges) {
-        //this will get more complicated when we have complex conditions        
-        return new ReteStrategy(this, condition);
+    public synchronized ReteSearchStrategy createMatcher(Condition condition,
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
+        return new ReteSearchStrategy(this, condition);
     }
 
-    /** Indicates if the matchers this factory produces are injective. */
-    public boolean isInjective() {
-        return this.injective;
-    }
+    private final ReteNetwork network;
+
+    /**
+     * The reporter object.
+     */
+    static public final Reporter reporter =
+        Reporter.register(ReteSearchEngine.class);
+
+    /**
+     * The reporter for the transitionOccurred method
+     */
+    static public final Reporter transitionOccurredReporter =
+        reporter.register("transitionOccurred()");
 
 }

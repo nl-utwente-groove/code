@@ -17,7 +17,6 @@
 package groove.abstraction.lts;
 
 import groove.abstraction.Shape;
-import groove.control.CtrlCall;
 import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.lts.AbstractGraphState;
@@ -25,9 +24,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
-import groove.trans.Rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,8 +50,8 @@ public class ShapeState extends AbstractGraphState {
     protected final Set<GraphTransition> transitions =
         new HashSet<GraphTransition>();
     /** The outgoing transitions from this state. */
-    protected final Map<CtrlCall,Collection<GraphTransition>> transitionMap =
-        new HashMap<CtrlCall,Collection<GraphTransition>>();
+    protected final Map<RuleEvent,GraphTransition> transitionMap =
+        new HashMap<RuleEvent,GraphTransition>();
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -102,7 +99,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Map<CtrlCall,Collection<GraphTransition>> getTransitionMap() {
+    public Map<RuleEvent,GraphTransition> getTransitionMap() {
         return Collections.unmodifiableMap(this.transitionMap);
     }
 
@@ -110,13 +107,7 @@ public class ShapeState extends AbstractGraphState {
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeNextState : "Invalid transition type.";
-        Rule rule = transition.getEvent().getRule();
-        Collection<GraphTransition> ruleTrans = this.transitionMap.get(rule);
-        if (ruleTrans == null) {
-            this.transitionMap.put(transition.getCtrlTransition().getCall(),
-                ruleTrans = new ArrayList<GraphTransition>());
-        }
-        ruleTrans.add(transition);
+        this.transitionMap.put(transition.getEvent(), transition);
         return this.transitions.add(transition);
     }
 

@@ -3,7 +3,7 @@ package groove.match.plan;
 
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
@@ -50,7 +50,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     final public Record createRecord(
-            groove.match.plan.SearchPlanStrategy.Search search) {
+            groove.match.plan.PlanSearchStrategy.Search search) {
         if (isSingular(search)) {
             return createSingularRecord(search);
         } else {
@@ -95,7 +95,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.sourceFound = strategy.isNodeFound(this.source);
         this.sourceIx = strategy.getNodeIx(this.source);
         if (this.selfEdge) {

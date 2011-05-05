@@ -18,7 +18,7 @@ package groove.match.plan;
 
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -109,7 +109,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         // one would like the following assertion,
         // but since negative search items for the same edge also reserve the
         // index, the assertion may fail in case of a positive and negative test
@@ -136,7 +136,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     }
 
     final public Record createRecord(
-            groove.match.plan.SearchPlanStrategy.Search search) {
+            groove.match.plan.PlanSearchStrategy.Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();
@@ -326,19 +326,19 @@ class Edge2SearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
-            this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
+            this.sourceSeed = this.search.getNodeSeed(this.sourceIx);
+            this.targetSeed = this.search.getNodeSeed(this.targetIx);
         }
 
         @Override
         void init() {
-            this.sourceFind = this.sourcePreMatch;
+            this.sourceFind = this.sourceSeed;
             if (this.sourceFind == null && this.sourceFound) {
                 this.sourceFind = this.search.getNode(this.sourceIx);
                 assert this.sourceFind != null : String.format(
                     "Source node of %s not found", Edge2SearchItem.this.edge);
             }
-            this.targetFind = this.targetPreMatch;
+            this.targetFind = this.targetSeed;
             if (this.targetFind == null && this.targetFound) {
                 this.targetFind = this.search.getNode(this.targetIx);
                 assert this.targetFind != null : String.format(
@@ -493,8 +493,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         /** Indicates if the target is found before this item is invoked. */
         final private boolean targetFound;
 
-        private HostNode sourcePreMatch;
-        private HostNode targetPreMatch;
+        private HostNode sourceSeed;
+        private HostNode targetSeed;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the

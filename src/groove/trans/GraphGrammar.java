@@ -175,10 +175,6 @@ public class GraphGrammar {
         priorityRuleSet.add(rule);
         // add the rule to the map
         this.nameRuleMap.put(ruleName, rule);
-        // copy the label store to the rule, if it is set
-        if (this.labelStore != null) {
-            rule.setLabelStore(this.labelStore);
-        }
         return oldRuleForName;
     }
 
@@ -286,10 +282,7 @@ public class GraphGrammar {
     /** Sets the labels and subtypes used in this rule system. */
     public void setLabelStore(LabelStore store) {
         testFixed(false);
-        this.labelStore = store.clone();
-        for (Rule rule : getRules()) {
-            rule.setLabelStore(this.labelStore);
-        }
+        this.labelStore = store;
     }
 
     /** Returns the labels and subtypes of this rule system. */
@@ -330,6 +323,9 @@ public class GraphGrammar {
     public final void setType(TypeGraph type, Map<String,TypeGraph> typeMap) {
         this.type = type;
         this.typeMap = typeMap;
+        if (type != null) {
+            this.labelStore = type.getLabelStore();
+        }
     }
 
     /**

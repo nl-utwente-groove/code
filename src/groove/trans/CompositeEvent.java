@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeSet;
 
 /**
@@ -71,6 +70,11 @@ public class CompositeEvent extends
     }
 
     @Override
+    public RuleToHostMap getAnchorMap() {
+        return this.eventArray[0].getAnchorMap();
+    }
+
+    @Override
     public int getAnchorSize() {
         return this.eventArray[0].getAnchorSize();
     }
@@ -103,51 +107,22 @@ public class CompositeEvent extends
     }
 
     public Proof getMatch(HostGraph source) {
-        if (false) {
-            // the events are ordered according to rule level
-            // so we can build a stack of corresponding matches
-            Stack<Proof> matchStack = new Stack<Proof>();
-            for (BasicEvent event : this.eventArray) {
-                Proof match =
-                    new Proof(event.getRule(),
-                        event.getMatch(source).getPatternMap());
-                int[] eventLevel = event.getRule().getLevel();
-                int eventDepth = eventLevel.length;
-                assert eventDepth / 2 <= matchStack.size();
-                // pop the stack until the right nesting depth
-                while (eventDepth / 2 < matchStack.size()) {
-                    matchStack.pop();
-                }
-                // add this match to the match of the parent event
-                // (which is now on the top of the stack)
-                if (eventDepth > 0) {
-                    Proof parentMatch = matchStack.peek();
-                    assert eventDepth <= 2
-                        || parentMatch.getRule().getLevel()[eventDepth - 3] == eventLevel[eventDepth - 3];
-                    parentMatch.getSubProofs().add(match);
-                }
-                // add this match to the stack, to receive its sub-matches
-                matchStack.push(match);
+        Property<Proof> isMyMatch = new Property<Proof>() {
+            @Override
+            public boolean isSatisfied(Proof value) {
+                return value.newEvent(null).equals(CompositeEvent.this);
             }
-            return matchStack.get(0);
-        } else {
-            Property<Proof> isMyMatch = new Property<Proof>() {
-                @Override
-                public boolean isSatisfied(Proof value) {
-                    return value.newEvent(null).equals(CompositeEvent.this);
-                }
-            };
-            Proof result =
-                getRule().traverseMatches(source, null,
-                    Visitor.newFinder(isMyMatch));
-            if (result != null) {
-                return result;
-            }
-            // if we're here, we failed to reconstruct this event from
-            // any of the matches.
-            throw new IllegalArgumentException(String.format(
-                "Can't find match for event %s", this));
+        };
+        Proof result =
+            getRule().traverseMatches(source, null,
+                Visitor.newFinder(isMyMatch));
+        if (result != null) {
+            return result;
         }
+        // if we're here, we failed to reconstruct this event from
+        // any of the matches.
+        throw new IllegalArgumentException(String.format(
+            "Can't find match for event %s", this));
     }
 
     public MergeMap getMergeMap() {
@@ -185,34 +160,6 @@ public class CompositeEvent extends
             event.collectSimpleErasedEdges(result);
         }
         return result;
-    }
-
-    /**
-     * This method always returns <code>false</code> because it is quite hard to
-     * check universally matched sub-events against a new graph, especially
-     * since the universal information was lost in the conversion from rule
-     * match to rule event.
-     */
-    public boolean hasMatch(HostGraph source) {
-        return false;
-    }
-
-    /**
-     * Checks if the sub-events have matches in the given graph. This is
-     * <code>not</code> sufficient to make sure that the event as a whole
-     * matches! TODO has to be adapted now that the anchor no longer includes
-     * the root map images
-     */
-    boolean hasSubMatches(HostGraph source) {
-        for (RuleEvent event : this.eventArray) {
-            // the isGround test is necessary as long as we are not able to
-            // include the
-            // match of a parent event to provide images for the roots
-            if (event.getRule().isGround() && !event.hasMatch(source)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public int compareTo(RuleEvent other) {

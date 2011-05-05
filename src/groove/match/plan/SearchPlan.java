@@ -18,6 +18,7 @@ package groove.match.plan;
 
 import groove.rel.LabelVar;
 import groove.trans.Condition;
+import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -29,15 +30,32 @@ import java.util.Set;
 
 /** List of search items with backwards dependencies. */
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
-    /** Constructs a search plan with given injectivity. */
-    public SearchPlan(Condition condition, boolean injective) {
+    /** 
+     * Constructs a search plan with given injectivity. 
+     * @param seedNodes nodes whose image is pre-matched before invoking the search plan
+     * @param seedEdges edges whose image is pre-matched before invoking the search plan
+     */
+    public SearchPlan(Condition condition, Collection<RuleNode> seedNodes,
+            Collection<RuleEdge> seedEdges) {
         this.condition = condition;
-        this.injective = injective;
+        this.injective = condition.getSystemProperties().isInjective();
+        this.seedNodes = seedNodes;
+        this.seedEdges = seedEdges;
     }
 
     /** Returns the condition for which this is the search plan. */
     public final Condition getCondition() {
         return this.condition;
+    }
+
+    /** Returns the seed nodes for this search plan. */
+    public final Collection<RuleNode> getSeedNodes() {
+        return this.seedNodes;
+    }
+
+    /** Returns the seed edges for this search plan. */
+    public final Collection<RuleEdge> getSeedEdges() {
+        return this.seedEdges;
     }
 
     /** Constructs dependency information, in addition to appending the search item. */
@@ -128,6 +146,10 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
 
     /** The condition for which this is the search plan. */
     private final Condition condition;
+    /** The collection of nodes whose image is pre-matched before invoking the search plan. */
+    private final Collection<RuleNode> seedNodes;
+    /** The collection of edges whose image is pre-matched before invoking the search plan. */
+    private final Collection<RuleEdge> seedEdges;
     /** Direct dependencies of all search plan items. */
     private final List<Integer> dependencies = new ArrayList<Integer>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */

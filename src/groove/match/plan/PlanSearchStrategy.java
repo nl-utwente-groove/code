@@ -19,7 +19,8 @@ package groove.match.plan;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.MatchStrategy;
+import groove.match.SearchEngine;
+import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.trans.Condition;
@@ -45,19 +46,25 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 3288 $
  */
-public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
+public class PlanSearchStrategy implements SearchStrategy {
     /**
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
      */
-    public SearchPlanStrategy(SearchPlan plan) {
+    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
         this.condIxMap = new HashMap<Condition,Integer>();
+        this.engine = engine;
         this.plan = plan;
         this.injective = plan.isInjective();
+    }
+
+    @Override
+    public SearchEngine getEngine() {
+        return this.engine;
     }
 
     @Override
@@ -237,6 +244,8 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
 
     /** The fixed search object. */
     private Search search;
+    /** The engine used to create this strategy. */
+    private final PlanSearchEngine engine;
     /**
      * A list of domain elements, in the order in which they are to be matched.
      */
@@ -280,7 +289,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
 
     /** Reporter instance to profile matcher methods. */
     static private final Reporter reporter =
-        Reporter.register(SearchPlanStrategy.class);
+        Reporter.register(PlanSearchStrategy.class);
     /** Handle for profiling {@link Search#find()} */
     static public final Reporter searchFindReporter =
         reporter.register("Search.find()");
@@ -292,27 +301,27 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
         public Search() {
-            int planSize = SearchPlanStrategy.this.plan.size();
+            int planSize = PlanSearchStrategy.this.plan.size();
             this.records = new SearchItem.Record[planSize];
             this.influence = new SearchItem.Record[planSize][];
             this.influenceCount = new int[planSize];
             this.nodeImages =
-                new HostNode[SearchPlanStrategy.this.nodeKeys.length];
+                new HostNode[PlanSearchStrategy.this.nodeKeys.length];
             this.edgeImages =
-                new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
+                new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
             this.varImages =
-                new TypeLabel[SearchPlanStrategy.this.varKeys.length];
+                new TypeLabel[PlanSearchStrategy.this.varKeys.length];
             this.nodeSeeds =
-                new HostNode[SearchPlanStrategy.this.nodeKeys.length];
+                new HostNode[PlanSearchStrategy.this.nodeKeys.length];
             this.edgeSeeds =
-                new HostEdge[SearchPlanStrategy.this.edgeKeys.length];
+                new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
             this.varSeeds =
-                new TypeLabel[SearchPlanStrategy.this.varKeys.length];
+                new TypeLabel[PlanSearchStrategy.this.varKeys.length];
             this.subMatches =
-                new TreeMatch[SearchPlanStrategy.this.condIxMap.size()];
+                new TreeMatch[PlanSearchStrategy.this.condIxMap.size()];
         }
 
-        /** Initialises the search for a given host graph and anchor map. */
+        /** Initialises the search for a given host graph and seed map. */
         public void initialise(HostGraph host, RuleToHostMap seedMap) {
             this.host = host;
             if (isInjective()) {
@@ -359,7 +368,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
          */
         public boolean find() {
             searchFindReporter.start();
-            final int planSize = SearchPlanStrategy.this.plan.size();
+            final int planSize = PlanSearchStrategy.this.plan.size();
             boolean found = this.found;
             // if an image was found before, roll back the result
             // until the last relevant search item
@@ -386,7 +395,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
                     // go back to the last dependency to have any hope
                     // of finding a match
                     int dependency =
-                        SearchPlanStrategy.this.plan.getDependency(current);
+                        PlanSearchStrategy.this.plan.getDependency(current);
                     for (current--; current > dependency; current--) {
                         getRecord(current).repeat();
                     }
@@ -407,7 +416,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
         private SearchItem.Record getRecord(int current) {
             SearchItem.Record result = this.records[current];
             if (result == null) {
-                SearchItem item = SearchPlanStrategy.this.plan.get(current);
+                SearchItem item = PlanSearchStrategy.this.plan.get(current);
                 // make a new record
                 result = item.createRecord(this);
                 result.initialise(this.host);
@@ -415,7 +424,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
                 this.influence[current] =
                     new SearchItem.Record[this.influence.length - current];
                 int dependency =
-                    SearchPlanStrategy.this.plan.getDependency(current);
+                    PlanSearchStrategy.this.plan.getDependency(current);
                 assert dependency < current;
                 if (dependency >= 0) {
                     this.influence[dependency][this.influenceCount[dependency]] =
@@ -431,7 +440,7 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
 
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, HostNode image) {
-            RuleNode nodeKey = SearchPlanStrategy.this.nodeKeys[index];
+            RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
             assert image == null || this.nodeSeeds[index] == null : String.format(
                 "Assignment %s=%s replaces pre-matched image %s", nodeKey,
                 image, this.nodeSeeds[index]);
@@ -540,26 +549,26 @@ public class SearchPlanStrategy extends MatchStrategy<TreeMatch> {
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {
-                        patternMap.putNode(SearchPlanStrategy.this.nodeKeys[i],
+                        patternMap.putNode(PlanSearchStrategy.this.nodeKeys[i],
                             image);
                     }
                 }
                 for (int i = 0; i < this.edgeImages.length; i++) {
                     HostEdge image = this.edgeImages[i];
                     if (image != null) {
-                        patternMap.putEdge(SearchPlanStrategy.this.edgeKeys[i],
+                        patternMap.putEdge(PlanSearchStrategy.this.edgeKeys[i],
                             image);
                     }
                 }
                 for (int i = 0; i < this.varImages.length; i++) {
                     TypeLabel image = this.varImages[i];
                     if (image != null) {
-                        patternMap.putVar(SearchPlanStrategy.this.varKeys[i],
+                        patternMap.putVar(PlanSearchStrategy.this.varKeys[i],
                             image);
                     }
                 }
                 result =
-                    new TreeMatch(SearchPlanStrategy.this.plan.getCondition(),
+                    new TreeMatch(PlanSearchStrategy.this.plan.getCondition(),
                         patternMap);
                 for (int i = 0; i < this.subMatches.length; i++) {
                     result.addSubMatch(this.subMatches[i]);

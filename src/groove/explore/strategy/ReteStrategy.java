@@ -22,8 +22,8 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.match.SearchEngineFactory;
-import groove.match.SearchEngineFactory.EngineType;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.DeltaStore;
 import groove.util.Reporter;
@@ -75,25 +75,16 @@ public class ReteStrategy extends AbstractStrategy {
         clearPool();
         this.newStates.clear();
         //initializing the rete network
-        this.rete =
-            groove.match.rete.ReteSearchEngine.createFreshInstance(
-                gts.getGrammar().getProperties().isInjective(), false);
-        this.rete.setUp(gts.getGrammar());
-        this.rete.initializeState(gts.startState().getGraph());
-        this.oldType = SearchEngineFactory.getInstance().getCurrentEngineType();
-        SearchEngineFactory.getInstance().setCurrentEngineType(EngineType.RETE);
-        ReteSearchEngine.unlock();
-        boolean lockingSuccess = ReteSearchEngine.lockToInstance(this.rete);
-        assert lockingSuccess;
+        this.rete = new ReteSearchEngine(gts.getGrammar());
+        this.oldEngine = MatcherFactory.instance().getEngine();
+        MatcherFactory.instance().setEngine(this.rete);
     }
 
     /**
      * Does some clean-up for when the full exploration is finished.
      */
     protected void unprepare() {
-        //TODO ARASH: look at a similar todo comment in the corresponding method for ReteLinearStrategy
-        ReteSearchEngine.unlock();
-        SearchEngineFactory.getInstance().setCurrentEngineType(this.oldType);
+        MatcherFactory.instance().setEngine(this.oldEngine);
     }
 
     @Override
@@ -160,8 +151,6 @@ public class ReteStrategy extends AbstractStrategy {
     DeltaStore deltaAccumulator;
     /** Internal store of newly generated state. */
 
-    private EngineType oldType;
-
     /** Internal store of newly generated states. */
     private final Collection<GraphState> newStates =
         new ArrayList<GraphState>();
@@ -180,6 +169,8 @@ public class ReteStrategy extends AbstractStrategy {
     private final Stack<GraphState> stack = new Stack<GraphState>();
 
     private ReteSearchEngine rete;
+
+    private SearchEngine oldEngine;
 
     /**
      * The reporter object

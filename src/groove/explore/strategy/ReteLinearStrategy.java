@@ -22,8 +22,8 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
-import groove.match.SearchEngineFactory;
-import groove.match.SearchEngineFactory.EngineType;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.DeltaStore;
 import groove.trans.Proof;
@@ -115,16 +115,9 @@ public class ReteLinearStrategy extends AbstractStrategy {
         gts.addLTSListener(this.collector);
 
         //initializing the RETE network
-        this.rete =
-            groove.match.rete.ReteSearchEngine.createFreshInstance(
-                gts.getGrammar().getProperties().isInjective(), false);
-        this.rete.setUp(gts.getGrammar());
-        this.rete.initializeState(gts.startState().getGraph());
-        this.oldType = SearchEngineFactory.getInstance().getCurrentEngineType();
-        SearchEngineFactory.getInstance().setCurrentEngineType(EngineType.RETE);
-        ReteSearchEngine.unlock();
-        boolean lockingSuccess = ReteSearchEngine.lockToInstance(this.rete);
-        assert lockingSuccess;
+        this.rete = new ReteSearchEngine(gts.getGrammar());
+        this.oldEngine = MatcherFactory.instance().getEngine();
+        MatcherFactory.instance().setEngine(this.rete);
     }
 
     /**
@@ -136,8 +129,9 @@ public class ReteLinearStrategy extends AbstractStrategy {
         //will not be called. I think The AbstractStrategy should be changed so that
         //a notification is set to an strategy that it is abruptly stopped so as to
         //let the strategy do any clean-up necessary.
-        ReteSearchEngine.unlock();
-        SearchEngineFactory.getInstance().setCurrentEngineType(this.oldType);
+        //        ReteSearchEngine.unlock();
+        //        SearchEngineFactory.getInstance().setEngineType(this.oldType);
+        MatcherFactory.instance().setEngine(this.oldEngine);
     }
 
     // TODO AREND: I do not see the use of the ReteMatchSetCollector class
@@ -155,8 +149,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
     /** Collects states newly added to the GTS. */
     private final NewStateCollector collector = new NewStateCollector();
 
-    private EngineType oldType;
-
+    private SearchEngine oldEngine;
     private ReteSearchEngine rete;
 
     /** 

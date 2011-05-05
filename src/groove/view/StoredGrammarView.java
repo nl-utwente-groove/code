@@ -142,13 +142,19 @@ public class StoredGrammarView implements GrammarView, Observer {
         AspectGraph ruleGraph = getStore().getRules().get(name);
         if (ruleGraph != null) {
             result = ruleGraph.toRuleView(getProperties());
-            TypeGraph type = null;
+            boolean typed = false;
             try {
-                type = getTypeViewList().toModel();
+                TypeGraph type = getTypeViewList().toModel();
+                if (type != null) {
+                    result.setType(type);
+                    typed = true;
+                }
             } catch (FormatException e) {
-                // don't set the type graph
+                // do nothing
             }
-            result.setType(type);
+            if (!typed) {
+                result.setLabelStore(getLabelStore());
+            }
         }
         return result;
     }
@@ -239,9 +245,41 @@ public class StoredGrammarView implements GrammarView, Observer {
     /** Returns the labels occurring in this grammar view. */
     public final LabelStore getLabelStore() {
         if (this.labelStore == null) {
-            initGrammar();
+            this.labelStore = computeLabelStore();
         }
         return this.labelStore;
+    }
+
+    private LabelStore computeLabelStore() {
+        LabelStore result = null;
+        try {
+            TypeGraph type = getTypeViewList().toModel();
+            if (type != null) {
+                result = type.getLabelStore();
+            }
+        } catch (FormatException e) {
+            // do nothing
+        }
+        if (result == null) {
+            result = new LabelStore();
+            for (AspectGraph rule : getStore().getRules().values()) {
+                result.addLabels(rule.toView(getProperties()).getLabels());
+            }
+            for (AspectGraph graph : getStore().getGraphs().values()) {
+                result.addLabels(graph.toView(getProperties()).getLabels());
+            }
+            if (getStartGraphView() != null) {
+                GraphView graphView = getStartGraphView();
+                result.addLabels(graphView.getLabels());
+            }
+            try {
+                result.addDirectSubtypes(getProperties().getSubtypes());
+            } catch (FormatException exc) {
+                // do nothing
+            }
+            result.setFixed();
+        }
+        return result;
     }
 
     /** Delegates to {@link #toGrammar()}. */
@@ -349,26 +387,9 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         // set a label store (get it from the type graph if that exists)
         if (result.getType() == null) {
-            this.labelStore = new LabelStore();
-            for (String ruleName : getRuleNames()) {
-                RuleView ruleView = getRuleView(ruleName);
-                this.labelStore.addLabels(ruleView.getLabels());
-            }
-            // add types from all known graphs to label store
-            for (String graphName : getGraphNames()) {
-                GraphView graphView = getGraphView(graphName);
-                this.labelStore.addLabels(graphView.getLabels());
-            }
-            if (getStartGraphView() != null) {
-                GraphView graphView = getStartGraphView();
-                this.labelStore.addLabels(graphView.getLabels());
-            }
-            this.labelStore.addDirectSubtypes(getProperties().getSubtypes());
-            this.labelStore.setFixed();
-        } else {
-            this.labelStore = result.getType().getLabelStore();
+            result.setLabelStore(getLabelStore());
+            errors.addAll(getLabelStore().getErrors());
         }
-        result.setLabelStore(this.labelStore);
         // set rules
         for (String ruleName : getRuleNames()) {
             RuleView ruleView = getRuleView(ruleName);
@@ -627,7 +648,8 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
 
         /**
-         * @return the composite type graph from the view list.
+         * @return the composite type graph from the view list, or {@code null}
+         * if there are no active type views
          * @throws FormatException if any of the views has errors.
          * @throws IllegalArgumentException if the composition of types gives
          *         rise to typing cycles.

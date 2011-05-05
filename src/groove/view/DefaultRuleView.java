@@ -35,6 +35,7 @@ import groove.graph.AbstractGraph;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
+import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
@@ -43,6 +44,7 @@ import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.EdgeEmbargo;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -202,6 +204,7 @@ public class DefaultRuleView implements RuleView {
     public void setType(TypeGraph type) {
         if (this.type != type) {
             this.type = type;
+            this.labelStore = type.getLabelStore();
             invalidate();
         }
     }
@@ -214,6 +217,16 @@ public class DefaultRuleView implements RuleView {
     /** Indicates if this rule is typed. */
     boolean isTyped() {
         return this.type != null;
+    }
+
+    @Override
+    public void setLabelStore(LabelStore labelStore) {
+        if (isTyped()) {
+            // type and label store are mutually exclusive
+            throw new IllegalStateException();
+        }
+        this.labelStore = labelStore;
+        invalidate();
     }
 
     @Override
@@ -330,12 +343,13 @@ public class DefaultRuleView implements RuleView {
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        rule = (Rule) ruleTree.get(this.levelTree.getTopLevel());
+        rule = ruleTree.get(this.levelTree.getTopLevel()).getRule();
         if (rule != null) {
             rule.setPriority(getPriority());
             rule.setConfluent(isConfluent());
             rule.setTransitionLabel(getTransitionLabel());
             rule.setFormatString(getFormatString());
+            rule.setCheckDangling(getSystemProperties().isCheckDangling());
             Parameters parameters = new Parameters();
             try {
                 rule.setSignature(parameters.getSignature(),
@@ -421,8 +435,10 @@ public class DefaultRuleView implements RuleView {
 
     /** The view graph representation of the rule. */
     private final AspectGraph graph;
-    /** The graph for this view, if any. */
+    /** The type graph for this view, if any. */
     private TypeGraph type;
+    /** The label store for this view, if any. */
+    private LabelStore labelStore;
     /** The level tree for this rule view. */
     private LevelMap levelTree;
     /** Errors found while converting the view to a rule. */
@@ -1377,7 +1393,6 @@ public class DefaultRuleView implements RuleView {
         /**
          * Returns a rule graph that forms the intersection of the rule elements
          * of this and the parent level.
-         * Edges are only put in the intersection if they bind a label variable.
          */
         private RuleGraph getIntersection(RuleGraph parentLhs, RuleGraph myLhs) {
             RuleGraph result =
@@ -1388,8 +1403,7 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             for (RuleEdge edge : parentLhs.edgeSet()) {
-                if (myLhs.containsEdge(edge)
-                    && edge.label().getWildcardId() != null) {
+                if (myLhs.containsEdge(edge)) {
                     result.addEdge(edge);
                 }
             }
@@ -1543,17 +1557,11 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // the resulting rule
+            result = createCondition(getRootGraph(), this.lhs);
             if (this.index.isExistential()) {
-                result =
-                    createRule(this.index.getName(), this.lhs, this.rhs,
-                        this.ruleMorph, getRootGraph(), getCoRootMap());
-                if (!this.index.isOptional()) {
-                    result.setPositive();
-                }
-            } else {
-                result =
-                    createForall(this.lhs, getRootGraph(),
-                        this.index.getName(), this.index.isPositive());
+                Rule rule =
+                    createRule(result, this.rhs, this.ruleMorph, getCoRootMap());
+                result.setRule(rule);
             }
             // add the nacs to the rule
             // first add parent type edges for NAC nodes
@@ -1837,38 +1845,39 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Factory method for rules.
-         * @param name name of the new rule to be created
-         * @param lhs the left hand side graph
+         * @param condition name of the new rule to be created
          * @param rhs the right hand side graph
          * @param ruleMorphism morphism of the new rule to be created
-         * @param root root graph of the LHS
          * @param coRootMap map of creator nodes in the parent rule to creator
          *        nodes of this rule
          * @return the fresh rule created by the factory
          */
-        private Rule createRule(String name, RuleGraph lhs, RuleGraph rhs,
-                RuleGraphMorphism ruleMorphism, RuleGraph root,
-                RuleGraphMorphism coRootMap) {
+        private Rule createRule(Condition condition, RuleGraph rhs,
+                RuleGraphMorphism ruleMorphism, RuleGraphMorphism coRootMap) {
             Rule result =
-                new Rule(name, lhs, rhs, ruleMorphism, root, coRootMap,
-                    new GraphProperties(), getSystemProperties());
+                new Rule(condition, rhs, ruleMorphism, coRootMap,
+                    new GraphProperties());
             return result;
         }
 
         /**
          * Factory method for universal conditions.
-         * @param pattern target graph of the new condition
          * @param root root graph of the new condition
-         * @param name name of the new condition to be created
-         * @param positive if <code>true</code>, the condition should be matched
-         *        non-vacuously
+         * @param pattern target graph of the new condition
          * @return the fresh condition
          */
-        private Condition createForall(RuleGraph pattern, RuleGraph root,
-                String name, boolean positive) {
+        private Condition createCondition(RuleGraph root, RuleGraph pattern) {
+            Condition.Op op =
+                this.index.isExistential() ? Op.EXISTS : Op.FORALL;
+            boolean positive =
+                this.index.isExistential() ? !this.index.isOptional()
+                        : this.index.isPositive();
             Condition result =
-                new Condition(name, Condition.Op.FORALL, pattern, root,
+                new Condition(this.index.getName(), op, pattern, root,
                     getSystemProperties());
+            if (DefaultRuleView.this.labelStore != null) {
+                result.setLabelStore(DefaultRuleView.this.labelStore);
+            }
             if (positive) {
                 result.setPositive();
             }

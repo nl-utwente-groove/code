@@ -18,7 +18,7 @@ package groove.match.plan;
 
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -112,7 +112,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         // one would like the following assertion,
         // but since negative search items for the same edge also reserve the
         // index, the assertion may fail in case of a positive and negative test
@@ -132,7 +132,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     final public Record createRecord(
-            groove.match.plan.SearchPlanStrategy.Search search) {
+            groove.match.plan.PlanSearchStrategy.Search search) {
         if (isPreMatched(search)) {
             // the edge is unexpectedly pre-matched
             return createDummyRecord();

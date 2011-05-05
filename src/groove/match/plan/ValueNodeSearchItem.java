@@ -20,7 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.match.plan.SearchPlanStrategy.Search;
+import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostGraph;
 import groove.trans.RuleNode;
 
@@ -45,7 +45,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     }
 
     public ValueNodeRecord createRecord(
-            groove.match.plan.SearchPlanStrategy.Search matcher) {
+            groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new ValueNodeRecord(matcher);
     }
 
@@ -79,7 +79,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         return this.node;
     }
 
-    public void activate(SearchPlanStrategy strategy) {
+    public void activate(PlanSearchStrategy strategy) {
         this.nodeIx = strategy.getNodeIx(this.node);
     }
 

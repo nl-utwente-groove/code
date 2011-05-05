@@ -53,6 +53,14 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     public String getAnchorImageString();
 
     /** 
+     * Returns the anchor map of the event.
+     * The anchor map maps the rule anchor nodes and edges to 
+     * host elements.
+     * This always refers to the top level existential event. 
+     */
+    public RuleToHostMap getAnchorMap();
+
+    /** 
      * Returns the anchor image at a given position.
      * This always refers to the anchor of the top level existential event. 
      */
@@ -104,12 +112,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
             Iterator<HostNode> createdNodes);
 
     /**
-     * Indicates if a matching of this event's rule exists, based on the anchor
-     * map in this event.
-     */
-    public boolean hasMatch(HostGraph source);
-
-    /**
      * Returns a match of this event's rule, based on the anchor map in this
      * event. Returns <code>null</code> if no match exists.
      */
@@ -124,9 +126,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     public boolean conflicts(RuleEvent other);
 
     /**
-     * Factory method to create a rule application on a given source graph. The
-     * method does <i>not</i> check if the event is actually applicable to the
-     * host graph; for that, use {@link #hasMatch(HostGraph)} first.
+     * Factory method to create a rule application on a given source graph.
      */
     public RuleApplication newApplication(HostGraph source);
 

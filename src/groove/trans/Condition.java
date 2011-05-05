@@ -219,7 +219,7 @@ public class Condition implements Fixable {
         getSubConditions().add(condition);
         if (getRule() != null) {
             for (Rule subRule : condition.getTopRules()) {
-                getRule().addDirectSubRule(subRule);
+                getRule().addSubRule(subRule);
             }
         }
     }
@@ -243,7 +243,8 @@ public class Condition implements Fixable {
 
     /** Fixes this condition and all its subconditions. */
     public void setFixed() throws FormatException {
-        if (!isFixed()) {
+        if (!isFixed() && !this.fixing) {
+            this.fixing = true;
             for (Condition subCondition : getSubConditions()) {
                 subCondition.testFixed(true);
             }
@@ -255,6 +256,7 @@ public class Condition implements Fixable {
                     getRule().setFixed();
                 }
             }
+            this.fixing = false;
         }
     }
 
@@ -453,20 +455,36 @@ public class Condition implements Fixable {
 
     @Override
     public String toString() {
-        StringBuilder res =
-            new StringBuilder(String.format("%s condition %s: ",
-                getOp().getName(), getName()));
-        res.append(String.format("Target: %s", getPattern()));
-        if (!getRoot().isEmpty()) {
-            res.append(String.format("%nRoot graph: %s", getRoot()));
+        return toString("");
+    }
+
+    /** Returns a string description, indented with a certain prefix. */
+    public String toString(String prefix) {
+        StringBuilder result = new StringBuilder();
+        result.append(prefix);
+        result.append(String.format("%s condition %s", getOp().getName(),
+            getName()));
+        result.append('\n');
+        result.append(prefix);
+        result.append(" * Root:    " + getRoot());
+        result.append('\n');
+        result.append(prefix);
+        result.append(" * Pattern: " + getPattern());
+        if (hasRule()) {
+            result.append('\n');
+            result.append(prefix);
+            result.append(" * RHS:     " + getRule().rhs());
         }
         if (!getSubConditions().isEmpty()) {
-            res.append(String.format("%nSubconditions:"));
-            for (Condition subCondition : getSubConditions()) {
-                res.append(String.format("%n    %s", subCondition));
+            result.append('\n');
+            result.append(prefix);
+            result.append(" * Subconditions:");
+            for (Condition sub : getSubConditions()) {
+                result.append('\n');
+                result.append(sub.toString(prefix + "     "));
             }
         }
-        return res.toString();
+        return result.toString();
     }
 
     /** Returns the operator of this condition. */
@@ -505,6 +523,12 @@ public class Condition implements Fixable {
         return this.positive;
     }
 
+    /** Sets the associated rule of this condition. */
+    public void setRule(Rule rule) {
+        assert !isFixed();
+        this.rule = rule;
+    }
+
     /**
      * Indicates if there is a rule associated with this condition.
      * Only existential and universal conditions can have associated rules.
@@ -523,7 +547,7 @@ public class Condition implements Fixable {
      * if there is no associated rule.
      */
     public Rule getRule() {
-        return null;
+        return this.rule;
     }
 
     /** The operator of this condition. */
@@ -533,12 +557,17 @@ public class Condition implements Fixable {
      */
     private final String name;
 
+    /** The rule associated with this condition, if any. */
+    private Rule rule;
+
     /** The collection of sub-conditions of this condition. */
     private final Collection<Condition> subConditions =
         new ArrayList<Condition>();
 
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;
+    /** Flag indicating if this condition is in the process of fixing. */
+    private boolean fixing;
     /**
      * The root map of this condition, i.e., the element map from the root
      * graph to the pattern graph.

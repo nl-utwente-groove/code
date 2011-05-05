@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlCall;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Node;
@@ -74,7 +73,7 @@ public interface GraphState extends Node {
      * Returns an unmodifiable map from rules to the 
      * currently generated outgoing transitions.
      */
-    public Map<CtrlCall,Collection<GraphTransition>> getTransitionMap();
+    public Map<RuleEvent,GraphTransition> getTransitionMap();
 
     /** Returns the number of (currently generated) outgoing transitions. */
     public int getTransitionCount();
