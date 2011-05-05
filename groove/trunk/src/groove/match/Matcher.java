@@ -54,7 +54,7 @@ public class Matcher implements SearchStrategy {
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
         this.factory = factory;
         this.condition = condition;
-        if (seedNodes == null) {
+        if (seedNodes == null && condition.getOp().hasPattern()) {
             seedNodes = condition.getInputNodes();
             seedEdges = condition.getRoot().edgeSet();
         }

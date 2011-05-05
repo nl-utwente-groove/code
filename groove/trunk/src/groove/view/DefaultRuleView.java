@@ -20,7 +20,6 @@ package groove.view;
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EXISTS;
-import static groove.view.aspect.AspectKind.EXISTS_OPT;
 import static groove.view.aspect.AspectKind.FORALL_POS;
 import static groove.view.aspect.AspectKind.PARAM_BI;
 import static groove.view.aspect.AspectKind.PARAM_IN;
@@ -321,7 +320,14 @@ public class DefaultRuleView implements RuleView {
         // construct the rule tree and add parent rules
         try {
             for (Level level : this.levelTree.getLevels(true)) {
-                Condition condition = level.computeFlatRule();
+                Op operator = level.getIndex().getOperator();
+                Condition condition;
+                if (operator.isQuantifier()) {
+                    condition = level.computeFlatRule();
+                } else {
+                    condition =
+                        new Condition(level.getIndex().getName(), operator);
+                }
                 ruleTree.put(level, condition);
                 LevelIndex index = level.getIndex();
                 if (condition.hasRule() && !index.isTopLevel()) {
@@ -470,9 +476,11 @@ public class DefaultRuleView implements RuleView {
          * @param levelNode the view level node representing this level; may be
          *        <code>null</code> for an implicit or top level
          */
-        public LevelIndex(AspectKind quantifier, AspectNode levelNode) {
+        public LevelIndex(Condition.Op operator, boolean positive,
+                AspectNode levelNode) {
             assert levelNode == null || levelNode.getKind().isQuantifier();
-            this.quantifier = quantifier;
+            this.operator = operator;
+            this.positive = positive;
             this.levelNode = levelNode;
         }
 
@@ -564,7 +572,6 @@ public class DefaultRuleView implements RuleView {
                 result[i] = this.index.get(i);
             }
             return result;
-
         }
 
         /**
@@ -576,33 +583,16 @@ public class DefaultRuleView implements RuleView {
             return this.parent == null;
         }
 
-        /**
-         * Indicates whether this level is universal. May only be called after
-         * {@link #setParent(LevelIndex,int)}.
-         */
-        public boolean isUniversal() {
-            testFixed(true);
-            return this.quantifier.isForall();
-        }
-
-        /** Indicates whether this level is existential. */
-        public boolean isExistential() {
-            testFixed(true);
-            return this.quantifier.isExists();
+        /** Returns the conditional operator of this level. */
+        public Op getOperator() {
+            return this.operator;
         }
 
         /**
          * Indicates, for a universal level, if the level is positive.
          */
         public boolean isPositive() {
-            return this.quantifier == FORALL_POS;
-        }
-
-        /**
-         * Indicates, for an existential level, if the level is optional.
-         */
-        public boolean isOptional() {
-            return this.quantifier == EXISTS_OPT;
+            return this.positive;
         }
 
         @Override
@@ -622,7 +612,9 @@ public class DefaultRuleView implements RuleView {
         }
 
         /** The view node representing this quantification level. */
-        final AspectKind quantifier;
+        final Condition.Op operator;
+        /** Flag indicating that this level has to be matched more than once. */
+        final boolean positive;
         /** The view node representing this quantification level. */
         final AspectNode levelNode;
         /** The index uniquely identifying this level. */
@@ -643,7 +635,7 @@ public class DefaultRuleView implements RuleView {
             // First build an explicit tree of level nodes
             Map<LevelIndex,List<LevelIndex>> indexTree =
                 new HashMap<LevelIndex,List<LevelIndex>>();
-            this.topLevelIndex = createIndex(EXISTS, null, indexTree);
+            this.topLevelIndex = createIndex(Op.EXISTS, false, null, indexTree);
             // initialise the data structures
             this.metaIndexMap = new HashMap<AspectNode,LevelIndex>();
             this.nameIndexMap = new HashMap<String,LevelIndex>();
@@ -689,9 +681,9 @@ public class DefaultRuleView implements RuleView {
                 List<LevelIndex> children = indexTree.get(next);
                 // add an implicit existential sub-level to childless universal
                 // levels
-                if (next.isUniversal() && children.isEmpty()) {
+                if (next.getOperator() == Op.FORALL && children.isEmpty()) {
                     LevelIndex implicitChild =
-                        createIndex(EXISTS, null, indexTree);
+                        createIndex(Op.EXISTS, true, null, indexTree);
                     children.add(implicitChild);
                 }
                 for (int i = 0; i < children.size(); i++) {
@@ -733,8 +725,13 @@ public class DefaultRuleView implements RuleView {
                 Map<LevelIndex,List<LevelIndex>> indexTree) {
             LevelIndex result = this.metaIndexMap.get(metaNode);
             if (result == null) {
-                this.metaIndexMap.put(metaNode,
-                    result = createIndex(quantifier, metaNode, indexTree));
+                AspectKind kind = metaNode.getKind();
+                Condition.Op operator = kind.isExists() ? Op.EXISTS : Op.FORALL;
+                boolean positive = kind == EXISTS || kind == FORALL_POS;
+                this.metaIndexMap.put(
+                    metaNode,
+                    result =
+                        createIndex(operator, positive, metaNode, indexTree));
                 String name = metaNode.getLevelName();
                 if (name != null && name.length() > 0) {
                     this.nameIndexMap.put(name, result);
@@ -749,9 +746,9 @@ public class DefaultRuleView implements RuleView {
          * @param levelTree the tree of level indices
          * @return the fresh level index
          */
-        private LevelIndex createIndex(AspectKind quantifier,
+        private LevelIndex createIndex(Condition.Op operator, boolean positive,
                 AspectNode levelNode, Map<LevelIndex,List<LevelIndex>> levelTree) {
-            LevelIndex result = new LevelIndex(quantifier, levelNode);
+            LevelIndex result = new LevelIndex(operator, positive, levelNode);
             levelTree.put(result, new ArrayList<LevelIndex>());
             return result;
         }
@@ -1048,8 +1045,10 @@ public class DefaultRuleView implements RuleView {
          */
         public void addNode(AspectNode viewNode, RuleNode ruleNode) {
             testMode(LevelMode.TREE_SET);
-            // put the node on this level
-            this.viewToLevelMap.putNode(viewNode, ruleNode);
+            if (isForThisLevel(viewNode)) {
+                // put the node on this level
+                this.viewToLevelMap.putNode(viewNode, ruleNode);
+            }
             // put the node on the sublevels, if it is supposed to be there
             if (isForNextLevel(viewNode)) {
                 for (Level sublevel : this.children) {
@@ -1065,12 +1064,14 @@ public class DefaultRuleView implements RuleView {
          */
         public void addEdge(AspectEdge viewEdge, RuleEdge ruleEdge) {
             testMode(LevelMode.TREE_SET);
-            // put the edge on this level
-            this.viewToLevelMap.putEdge(viewEdge, ruleEdge);
-            // add end nodes to this and all parent levels, if
-            // they are not yet there
-            addNodeToParents(viewEdge.source(), ruleEdge.source());
-            addNodeToParents(viewEdge.target(), ruleEdge.target());
+            if (isForThisLevel(viewEdge)) {
+                // put the edge on this level
+                this.viewToLevelMap.putEdge(viewEdge, ruleEdge);
+                // add end nodes to this and all parent levels, if
+                // they are not yet there
+                addNodeToParents(viewEdge.source(), ruleEdge.source());
+                addNodeToParents(viewEdge.target(), ruleEdge.target());
+            }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(viewEdge)) {
                 for (Level sublevel : this.children) {
@@ -1096,7 +1097,6 @@ public class DefaultRuleView implements RuleView {
         /** Initialises the match count for this (universal) level. */
         public void setMatchCount(AspectNode matchCount,
                 VariableNode matchCountImage) {
-            assert getIndex().isUniversal();
             assert matchCountImage != null;
             this.matchCountImage = matchCountImage;
         }
@@ -1136,6 +1136,17 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
+         * Indicates if a given element should be included on the level on which
+         * it it is defined in the view. Node creators should not appear on
+         * universal levels since those get translated to conditions, not rules;
+         * instead they are pushed to the next (existential) sublevels.
+         * @param elem the element about which the question is asked
+         */
+        private boolean isForThisLevel(AspectElement elem) {
+            return this.index.getOperator().hasPattern();
+        }
+
+        /**
          * Indicates if a given element should occur on the sublevels of the
          * level on which it is defined in the view. This is the case for nodes
          * in injective rules (otherwise we cannot check injectivity) as well as
@@ -1145,7 +1156,9 @@ public class DefaultRuleView implements RuleView {
         private boolean isForNextLevel(AspectElement elem) {
             assert !elem.getKind().isMeta();
             boolean result = false;
-            if (elem instanceof AspectNode) {
+            if (!this.index.getOperator().hasPattern()) {
+                result = true;
+            } else if (elem instanceof AspectNode) {
                 // we need to push non-attribute nodes down in injective mode
                 // to be able to compare images of nodes at different levels
                 result =
@@ -1837,18 +1850,13 @@ public class DefaultRuleView implements RuleView {
          * @return the fresh condition
          */
         private Condition createCondition(RuleGraph root, RuleGraph pattern) {
-            Condition.Op op =
-                this.index.isExistential() ? Op.EXISTS : Op.FORALL;
-            boolean positive =
-                this.index.isExistential() ? !this.index.isOptional()
-                        : this.index.isPositive();
             Condition result =
-                new Condition(this.index.getName(), op, pattern, root,
-                    getSystemProperties());
+                new Condition(this.index.getName(), this.index.getOperator(),
+                    pattern, root, getSystemProperties());
             if (DefaultRuleView.this.labelStore != null) {
                 result.setLabelStore(DefaultRuleView.this.labelStore);
             }
-            if (positive) {
+            if (this.index.isPositive()) {
                 result.setPositive();
             }
             if (this.matchCountImage != null) {
