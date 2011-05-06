@@ -21,6 +21,9 @@ import groove.rel.RegExpr.Atom;
 import groove.rel.RegExpr.Wildcard;
 import groove.trans.HostEdge;
 import groove.util.TreeHashSet;
+
+import java.util.List;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -30,7 +33,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class SingleEdgePathChecker extends AbstractPathChecker {
+public abstract class SingleEdgePathChecker extends AbstractPathChecker
+        implements StateSubscriber {
 
     /**
      * edge path-checkers have memories to store their single-edge
@@ -49,6 +53,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker {
      */
     public SingleEdgePathChecker(ReteNetwork network, RegExpr expression) {
         super(network, expression);
+        this.getOwner().getState().subscribe(this);
         assert (expression instanceof Atom) || (expression instanceof Wildcard);
     }
 
@@ -61,6 +66,7 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker {
 
         RetePathMatch m = makeMatch(gEdge);
         if (action == Action.ADD) {
+            assert !this.memory.contains(m);
             this.memory.add(m);
             passDownMatchToSuccessors(m);
         } else { // action == Action.REMOVE            
@@ -115,6 +121,16 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker {
             RetePathMatch newMatch) {
         //This method will not be called for this type of n-node
         throw new NotImplementedException();
+    }
+
+    @Override
+    public List<? extends Object> initialize() {
+        return null;
+    }
+
+    @Override
+    public void clear() {
+        this.memory.clear();
     }
 
 }

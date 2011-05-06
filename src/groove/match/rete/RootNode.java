@@ -35,10 +35,13 @@ public class RootNode extends ReteNetworkNode {
     }
 
     @Override
-    public boolean addSuccessor(ReteNetworkNode nnode) {
-        boolean result =
+    public void addSuccessor(ReteNetworkNode nnode) {
+        boolean isValid =
             (nnode instanceof EdgeCheckerNode)
-                || (nnode instanceof NodeCheckerNode);
+                || (nnode instanceof NodeCheckerNode)
+                || (nnode instanceof SingleEdgePathChecker)
+                || (nnode instanceof EmptyPathChecker);
+        assert isValid;
         /*
          * check to see if n-node is of type g-node-checker or 
          * g-edge-checker. If it is, then if it is not already there 
@@ -47,11 +50,11 @@ public class RootNode extends ReteNetworkNode {
          * if the type is no of the above two, it should fail and
          * return false
          */
-        if (result && !isAlreadySuccessor(nnode)) {
+        if (isValid && !isAlreadySuccessor(nnode)) {
             getSuccessors().add(nnode);
             nnode.addAntecedent(this);
         }
-        return result;
+
     }
 
     /**
@@ -79,13 +82,19 @@ public class RootNode extends ReteNetworkNode {
     public void receiveEdge(HostEdge elem, Action action) {
         for (ReteNetworkNode nnode : this.getSuccessors()) {
             if (nnode instanceof EdgeCheckerNode) {
-                if (elem.label().equals(
-                    ((EdgeCheckerNode) nnode).getEdge().label())) {
-                    ((EdgeCheckerNode) nnode).receiveEdge(this, elem, action);
+                EdgeCheckerNode ec = (EdgeCheckerNode) nnode;
+                if (ec.isAcceptingLabel(elem.label())) {
+                    ec.receiveEdge(this, elem, action);
                 } else {
-                    assert !elem.label().equals(
-                        ((EdgeCheckerNode) nnode).getEdge().label());
+                    assert !elem.label().equals(ec.getEdge().label());
                 }
+            } else if (nnode instanceof AtomPathChecker) {
+                if (elem.label().text().equals(
+                    ((AtomPathChecker) nnode).getExpression().getAtomText())) {
+                    ((AtomPathChecker) nnode).receive(this, elem, action);
+                }
+            } else if (nnode instanceof WildcardPathChecker) {
+                ((WildcardPathChecker) nnode).receive(this, elem, action);
             }
         }
     }

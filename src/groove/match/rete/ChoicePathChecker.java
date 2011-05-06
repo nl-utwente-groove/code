@@ -39,7 +39,7 @@ public class ChoicePathChecker extends AbstractPathChecker {
     public void receive(ReteNetworkNode source, int repeatedIndex,
             RetePathMatch newMatch) {
         assert repeatedIndex < 2;
-        RetePathMatch m = new RetePathMatch(this, newMatch);
+        RetePathMatch m = newMatch.reoriginate(this);
         passDownMatchToSuccessors(m);
     }
 

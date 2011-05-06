@@ -102,12 +102,9 @@ public abstract class ReteNetworkNode {
      * parameter <code>suc</code> is of a type allowed to be the successor
      * of this n-node;      
      * @param suc the successor node to be added to the list of the successors of this. 
-     * @return <code>true</code> if successful and <code>false</code>
-     * if the <code>suc</code> is not a valid successor type.  
      */
-    public boolean addSuccessor(ReteNetworkNode suc) {
+    public void addSuccessor(ReteNetworkNode suc) {
         getSuccessors().add(suc);
-        return true;
     }
 
     /**

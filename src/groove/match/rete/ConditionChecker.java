@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.rel.LabelVar;
 import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
@@ -351,6 +352,21 @@ public class ConditionChecker extends ReteNetworkNode implements
     public void receive(HostEdge mu, Action action) {
         ReteSimpleMatch m =
             new ReteSimpleMatch(this, mu, this.getOwner().isInjective());
+        updateConflictSet(m, action);
+    }
+
+    /**
+     * This method is called by a wild-card edge checker node when the associated condition
+     * of this n-node has an LHS/Target consisting of only one edge.
+
+     * @param mu The edge in the host graph that needs to be added/removed to/from the conflict set.
+     * @param variable To variable to which the edge label is bound
+     * @param action Indicates if the given edge is going to be added or removed from the network.
+     */
+    public void receiveBoundEdge(HostEdge mu, LabelVar variable, Action action) {
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, mu, variable,
+                this.getOwner().isInjective());
         updateConflictSet(m, action);
     }
 

@@ -83,7 +83,8 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      *  
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.end().equals(right.start());
+        return left.isEmpty() || right.isEmpty()
+            || left.end().equals(right.start());
     }
 
     /**
@@ -91,7 +92,13 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      * rules of the associated operator.
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
-        return (RetePathMatch) left.merge(this, right, false);
+        if (!left.isEmpty() && !right.isEmpty()) {
+            return (RetePathMatch) left.merge(this, right, false);
+        } else if (!left.isEmpty()) {
+            return left.reoriginate(this);
+        } else {
+            return right.reoriginate(this);
+        }
     }
 
     @Override

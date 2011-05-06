@@ -41,15 +41,14 @@ public class RetePathMatch extends AbstractReteMatch {
      * Determines the length of the path (number of edges)
      * represented by this match.
      */
-    private int pathLength = 0;
+    protected int pathLength = 0;
 
-    /*
+    /**
      * Array consisting of the start
      * and end nodes of the path at indices 0, and 1
      * respectively.
-     *
      */
-    private HostNode[] units = null;
+    protected HostNode[] units = null;
 
     /**
      * Lazily evaluated set of nodes returned by the method
@@ -57,18 +56,17 @@ public class RetePathMatch extends AbstractReteMatch {
      * 
      * Warning: The lazy evaluation is not thread-safe.
      */
-    private Set<HostNode> nodes = null;
+    protected Set<HostNode> nodes = null;
 
     /**
      * For single-edge path matches this variable holds 
      * a reference to the associated host edge for equality checking. 
      */
-    private HostEdge associatedEdge = null;
-
-    private Map<LabelVar,TypeLabel> variableMappings = null;
+    protected HostEdge associatedEdge = null;
 
     private RetePathMatch(ReteNetworkNode origin) {
         super(origin, false);
+        this.valuation = new HashMap<LabelVar,TypeLabel>();
     }
 
     /**
@@ -80,6 +78,7 @@ public class RetePathMatch extends AbstractReteMatch {
         this.pathLength = 1;
         this.units = new HostNode[] {edge.source(), edge.target()};
         this.associatedEdge = edge;
+        this.valuation = new HashMap<LabelVar,TypeLabel>();
     }
 
     /**
@@ -92,13 +91,23 @@ public class RetePathMatch extends AbstractReteMatch {
      * @param origin The new origin
      * @param subMatch The given path match based on which a new one is to be created.
      */
-    public RetePathMatch(ReteNetworkNode origin, RetePathMatch subMatch) {
+    protected RetePathMatch(ReteNetworkNode origin, RetePathMatch subMatch) {
         super(origin, false);
         this.units = subMatch.units;
         this.pathLength = subMatch.pathLength;
-        this.variableMappings = subMatch.variableMappings;
+        this.valuation = subMatch.valuation;
         this.associatedEdge = subMatch.associatedEdge;
         subMatch.getSuperMatches().add(this);
+    }
+
+    /**
+     * Creates a new path match object from this object
+     * replacing the origin. 
+     * 
+     * @param newOrigin The new origin
+     */
+    public RetePathMatch reoriginate(ReteNetworkNode newOrigin) {
+        return new RetePathMatch(newOrigin, this);
     }
 
     @Override
@@ -148,6 +157,9 @@ public class RetePathMatch extends AbstractReteMatch {
             for (int i = 0; i < this.units.length; i++) {
                 HostNode n = this.units[i];
                 this.equivalentMap.putNode((RuleNode) pattern[i], n);
+            }
+            if (this.getValuation() != null) {
+                this.equivalentMap.getValuation().putAll(this.getValuation());
             }
         }
         return this.equivalentMap;
@@ -204,26 +216,6 @@ public class RetePathMatch extends AbstractReteMatch {
                 m.getOrigin())));
     }
 
-    @Override
-    public Map<LabelVar,TypeLabel> getValuation() {
-        return this.variableMappings;
-    }
-
-    @Override
-    public TypeLabel getVar(LabelVar var) {
-        return this.variableMappings.get(var);
-    }
-
-    @Override
-    public void putAllVar(Map<LabelVar,TypeLabel> valuation) {
-        this.variableMappings.putAll(valuation);
-    }
-
-    @Override
-    public TypeLabel putVar(LabelVar var, TypeLabel value) {
-        return this.variableMappings.put(var, value);
-    }
-
     /**
      * Concatenates this match object with another path match object.
      * 
@@ -257,8 +249,7 @@ public class RetePathMatch extends AbstractReteMatch {
                     new HostNode[] {this.units[0], (HostNode) mUnits[1]};
                 result.pathLength =
                     this.pathLength + ((RetePathMatch) m).pathLength;
-                result.variableMappings =
-                    (valuation != emptyMap) ? valuation : null;
+                result.valuation = (valuation != emptyMap) ? valuation : null;
                 hashCode();
                 this.getSuperMatches().add(result);
                 m.getSuperMatches().add(result);
@@ -268,20 +259,19 @@ public class RetePathMatch extends AbstractReteMatch {
     }
 
     /**
-     * Creates a new path match that is the inverse of a given match object, that is,
+     * Creates a new path match that is the inverse of a this match object, that is,
      * a path match in which the start and end points are the reversed of the given object.
      * 
-     * @param origin The RETE n-node with which the result should be associated.
-     * @param m The path match object to be inverted.   
+     * @param origin The RETE n-node with which the result should be associated.   
      * @return The inverted path match. 
      */
-    public static RetePathMatch inverse(ReteNetworkNode origin, RetePathMatch m) {
+    public RetePathMatch inverse(ReteNetworkNode origin) {
         RetePathMatch result = new RetePathMatch(origin);
-        result.units = new HostNode[] {m.units[1], m.units[0]};
-        result.pathLength = m.pathLength;
-        result.variableMappings = m.variableMappings;
+        result.units = new HostNode[] {this.units[1], this.units[0]};
+        result.pathLength = this.pathLength;
+        result.valuation = this.valuation;
         result.hashCode(); //refresh hash code
-        m.getSuperMatches().add(result);
+        this.getSuperMatches().add(result);
         return result;
     }
 
@@ -295,10 +285,9 @@ public class RetePathMatch extends AbstractReteMatch {
         result.pathLength = this.pathLength;
         result.hashCode = this.hashCode;
 
-        result.variableMappings =
-            (shallow) ? this.variableMappings : (this.variableMappings != null)
-                    ? new HashMap<LabelVar,TypeLabel>(this.variableMappings)
-                    : null;
+        result.valuation =
+            (shallow) ? this.valuation : (this.valuation != null)
+                    ? new HashMap<LabelVar,TypeLabel>(this.valuation) : null;
         return result;
     }
 
@@ -316,5 +305,118 @@ public class RetePathMatch extends AbstractReteMatch {
     public HostNode end() {
         assert (this.units != null) && (this.units.length == 2);
         return this.units[1];
+    }
+
+    /**
+     * @return <code>true</code> if this is an empty path match,
+     * <code>false</code> otherwise.
+     */
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "Path from %s to %s match %s |> %s",
+            this.start().toString(),
+            this.end().toString(),
+            ((AbstractPathChecker) this.getOrigin()).getExpression().toString(),
+            this.valuation.toString());
+    }
+
+    /**
+     * Represents an empty path match, equivalent of an empty word in regular
+     * expressions. 
+     * @author Arash Jalali
+     * @version $Revision $
+     */
+    public static class EmptyPathMatch extends RetePathMatch {
+
+        /**
+         * the empty units array is purposely set to the length of 2
+         * so that inverse operations would be possible.
+         * 
+         */
+        private static HostNode[] emptyUnits = new HostNode[] {null, null};
+
+        /**
+         * Creates an empty match for a given n-node as origin.
+         * 
+         * @param origin The n-node that produces/has produced this match.
+         */
+        public EmptyPathMatch(ReteNetworkNode origin) {
+            super(origin);
+            this.units = emptyUnits;
+        }
+
+        /**
+         * Creates an empty super-match from a given empty submatch.
+         * 
+         * This constructor is primarily used for empty matches that are
+         * passed down the RETE network which are required (like any other match
+         * in the RETE network) to have the proper origin.
+         * 
+         * @param origin The n-node that is to be the origin of the resulting match
+         * @param subMatch The empty sub-match that is to be linked to this newly
+         * created one by the way of domino-deletion threads. 
+         */
+        private EmptyPathMatch(ReteNetworkNode origin, EmptyPathMatch subMatch) {
+            super(origin, subMatch);
+        }
+
+        /**
+         * Creates a new path match object from this object
+         * replacing the origin. 
+         * 
+         * @param newOrigin The new origin
+         */
+        @Override
+        public RetePathMatch reoriginate(ReteNetworkNode newOrigin) {
+            return new EmptyPathMatch(newOrigin, this);
+        }
+
+        @Override
+        public RetePathMatch inverse(ReteNetworkNode origin) {
+            return this.reoriginate(origin);
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.getOrigin().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return (o instanceof EmptyPathMatch)
+                && this.getOrigin() == ((EmptyPathMatch) o).getOrigin();
+        }
+
+        @Override
+        public int compareTo(AbstractReteMatch o) {
+            if (o instanceof EmptyPathMatch) {
+                if (this.equals(o)) {
+                    return 0;
+                } else {
+                    return ((AbstractPathChecker) this.getOrigin()).getExpression().toString().compareTo(
+                        ((AbstractPathChecker) ((EmptyPathMatch) o).getOrigin()).getExpression().toString());
+                }
+            } else {
+                return -1;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                "Empty path matched by %s",
+                ((AbstractPathChecker) this.getOrigin()).getExpression().toString());
+        }
+
     }
 }
