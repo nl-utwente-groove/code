@@ -102,7 +102,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             throw new IllegalArgumentException(String.format(
                 "File '%s' is not a directory", file));
         }
-        if (!GRAMMAR_FILTER.accept(file)) {
+        if (!GRAMMAR_FILTER.acceptExtension(file)) {
             throw new IllegalArgumentException(String.format(
                 "File '%s' does not refer to a production system", file));
         }
@@ -837,6 +837,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 s.close();
             }
             properties.putAll(grammarProperties);
+            this.hasSystemPropertiesFile = true;
+        } else {
+            this.hasSystemPropertiesFile = false;
         }
         return properties;
     }
@@ -851,6 +854,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         } catch (FormatException e) {
             throw new IOException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return !this.hasSystemPropertiesFile && this.graphMap.isEmpty()
+            && this.typeMap.isEmpty() && this.ruleMap.isEmpty();
     }
 
     private void saveControl(String name, String program) throws IOException {
@@ -885,6 +894,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         } finally {
             propertiesWriter.close();
         }
+        this.hasSystemPropertiesFile = true;
     }
 
     /**
@@ -1024,6 +1034,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             super.notifyObservers(arg);
         }
     };
+    /** Flag whether this store contains a 'system.properties' file. */
+    private boolean hasSystemPropertiesFile = false;
 
     /** Saves the content of a given system store to file. */
     static public SystemStore save(File file, SystemStore store,

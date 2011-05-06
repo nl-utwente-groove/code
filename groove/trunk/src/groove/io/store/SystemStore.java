@@ -48,4 +48,7 @@ public interface SystemStore extends
          */
         int getChange();
     }
+
+    /** Checks if the store is empty (no graphs,rules,types,properties). */
+    public boolean isEmpty();
 }

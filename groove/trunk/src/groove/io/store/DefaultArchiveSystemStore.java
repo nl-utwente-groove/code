@@ -477,6 +477,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             grammarProperties.load(s);
             s.close();
             this.properties.putAll(grammarProperties);
+            this.hasSystemPropertiesFile = true;
+        } else {
+            this.hasSystemPropertiesFile = false;
         }
     }
 
@@ -533,6 +536,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             }
         }
         return result;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return !this.hasSystemPropertiesFile && this.graphMap.isEmpty()
+            && this.typeMap.isEmpty() && this.ruleMap.isEmpty();
     }
 
     /**
@@ -624,6 +633,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     private StoredGrammarView view;
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable();
+    /** Flag whether this store contains a 'system.properties' file. */
+    private boolean hasSystemPropertiesFile = false;
 
     /** Name of the JAR protocol and file extension. */
     static private final String JAR_PROTOCOL = FileType.JAR.getExtensionName();
