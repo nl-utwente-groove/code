@@ -25,6 +25,7 @@ import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
+import groove.rel.RegExpr;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.GraphGrammar;
@@ -37,6 +38,7 @@ import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
+import groove.util.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
@@ -74,6 +76,9 @@ public class ReteNetwork {
 
     private ArrayList<CompositeConditionChecker> compositeConditionCheckerNodes =
         new ArrayList<CompositeConditionChecker>();
+
+    private PathCheckerFactory pathCheckerFactory =
+        new PathCheckerFactory(this);
 
     private boolean injective = false;
 
@@ -154,7 +159,8 @@ public class ReteNetwork {
 
         Collection<RuleEdge> edgeList = getEdgeCollection(condition);
 
-        mapEdgesAndNodes(openList, edgeList, g.nodeSet());
+        Set<RuleEdge> emptyAndNegativePathEdges =
+            mapEdgesAndNodes(openList, edgeList, g.nodeSet());
 
         if (openList.size() > 0) {
             //generate subgraph-checkers
@@ -317,6 +323,10 @@ public class ReteNetwork {
                     openList.clear();
                     openList.add(disjointMerge);
                 }
+                if (emptyAndNegativePathEdges.size() > 0) {
+                    addEmptyWordAcceptingAndNegativePathCheckers(openList,
+                        emptyAndNegativePathEdges, false);
+                }
                 if (parent == null) {
                     result =
                         new ProductionNode(this, condition.getRule(),
@@ -362,6 +372,34 @@ public class ReteNetwork {
                 addConditionToNetwork(c, result);
             }
         }
+    }
+
+    private void addEmptyWordAcceptingAndNegativePathCheckers(
+            StaticMap openList, Set<RuleEdge> emptyPathEdges, boolean keepPrefix) {
+        assert openList.size() == 1;
+        for (RuleEdge e : emptyPathEdges) {
+            RegExpr exp = e.label().getMatchExpr();
+            ReteStaticMapping m1 = openList.get(0);
+            AbstractPathChecker pc =
+                this.pathCheckerFactory.getPathCheckerFor((exp.isNeg())
+                        ? exp.getNegOperand() : exp);
+            ReteStaticMapping m2 =
+                new ReteStaticMapping(pc, new RuleElement[] {e.source(),
+                    e.target()});
+            if (exp.isNeg()) {
+                NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
+                    new NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(
+                        this, m1, m2, keepPrefix);
+                m1 = ReteStaticMapping.combine(m1, m2, sg);
+            } else {
+                SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
+                    new SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(
+                        this, m1, m2, keepPrefix);
+                m1 = ReteStaticMapping.combine(m1, m2, sg);
+            }
+            openList.set(0, m1);
+        }
+        assert openList.size() == 1;
     }
 
     /**
@@ -422,25 +460,48 @@ public class ReteNetwork {
         return result;
     }
 
-    private void mapEdgesAndNodes(StaticMap openList,
+    /**
+     * Goes through the given edge-set and node-set and creates the proper
+     * static mappings and puts them on the given open list.
+     * 
+     * @return The set of host edges that were not mapped and were not put on 
+     * the open list so that they could be processed after everything else
+     * was processed in building the RETE network. This is usually the set of
+     * host edges whose label is a regular expression that can potentially
+     * produce empty path-matches or edges with a negation (!) operator in its label.
+     *  
+     */
+    private Set<RuleEdge> mapEdgesAndNodes(StaticMap openList,
             Collection<RuleEdge> edgeSet, Collection<RuleNode> nodeSet) {
 
+        Set<RuleEdge> result = new TreeHashSet<RuleEdge>();
         Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
         //Adding the required edge-checkers if needed.
         for (RuleEdge e : edgeSet) {
-            //TODO this call should be removed after all features of groove are implemented into RETE
-            checkEdgeForSupport(e);
-
-            EdgeCheckerNode edgeChecker = findEdgeCheckerForEdge(e);
-            if (edgeChecker == null) {
-                edgeChecker = new EdgeCheckerNode(this, e);
-                this.root.addSuccessor(edgeChecker);
+            ReteStaticMapping mapping = null;
+            if (e.label().isAtom() || e.label().isWildcard()) {
+                EdgeCheckerNode edgeChecker = findEdgeCheckerForEdge(e);
+                if (edgeChecker == null) {
+                    edgeChecker = new EdgeCheckerNode(this, e);
+                    this.root.addSuccessor(edgeChecker);
+                }
+                mapping =
+                    new ReteStaticMapping(edgeChecker, new RuleElement[] {e});
+            } else if (!e.label().getMatchExpr().isAcceptsEmptyWord()
+                && !e.label().getMatchExpr().isNeg()) {
+                AbstractPathChecker pathChecker =
+                    this.pathCheckerFactory.getPathCheckerFor(e.label().getMatchExpr());
+                mapping =
+                    new ReteStaticMapping(pathChecker, new RuleElement[] {
+                        e.source(), e.target()});
+            } else {
+                result.add(e);
             }
-            ReteStaticMapping mapping =
-                new ReteStaticMapping(edgeChecker, new RuleElement[] {e});
-            openList.add(mapping);
-            mappedLHSNodes.add(e.source());
-            mappedLHSNodes.add(e.target());
+            if (mapping != null) {
+                openList.add(mapping);
+                mappedLHSNodes.add(e.source());
+                mappedLHSNodes.add(e.target());
+            }
         }
         //Now we see if there are any unmatched nodes on the lhs
         //These are isolated nodes. We will use one node checker but each
@@ -454,6 +515,7 @@ public class ReteNetwork {
                 openList.add(mapping);
             }
         }
+        return result;
     }
 
     /**
@@ -528,6 +590,7 @@ public class ReteNetwork {
      * @param positiveConditionChecker This is the condition-checker for the positive
      *        condition that has negative sub-conditions.
      */
+    @SuppressWarnings("unchecked")
     private void processNacs(ReteStaticMapping lastSubgraphMapping,
             Set<Condition> nacs, ConditionChecker positiveConditionChecker) {
 
@@ -558,8 +621,9 @@ public class ReteNetwork {
                 openList.add(m1);
             }
 
-            mapEdgesAndNodes(openList, newNacGraph.edgeSet(),
-                newNacGraph.nodeSet());
+            Set<RuleEdge> emptyAcceptingAndNegativeEdges =
+                mapEdgesAndNodes(openList, newNacGraph.edgeSet(),
+                    newNacGraph.nodeSet());
             if (m1 == null) {
                 m1 = openList.get(0);
             }
@@ -570,17 +634,21 @@ public class ReteNetwork {
                     m2 = pickTheNextLargestCheckerNode(openList, byPassList);
                 }
                 SubgraphCheckerNode sg =
-                    new SubgraphCheckerNode(this, m1, m2, true);
+                    SubgraphCheckerNode.create(this, m1, m2, true);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
                 openList.set(0, m1);
                 byPassList.set(0, m1);
                 openList.remove(m2);
             }
+            if (emptyAcceptingAndNegativeEdges.size() > 0) {
+                addEmptyWordAcceptingAndNegativePathCheckers(openList,
+                    emptyAcceptingAndNegativeEdges, true);
+            }
+
             CompositeConditionChecker result =
                 new CompositeConditionChecker(this, nac,
                     positiveConditionChecker, openList.get(0));
             this.compositeConditionCheckerNodes.add(result);
-
         }
 
     }
@@ -611,25 +679,6 @@ public class ReteNetwork {
             this.root.addSuccessor(this.nodeChecker);
         }
         return this.nodeChecker;
-    }
-
-    //TODO ARASH: This method will have to be removed eventually once 
-    //we implement all features into RETE
-    /**
-     * Throws a {@link RuntimeException} if the given edge in <code>e</code>
-     * is not of the currently supported type.
-     * @param e The edge to be checked.
-     */
-    private void checkEdgeForSupport(RuleEdge e) {
-        if (!(e.label().isAtom())) {
-            throw new RuntimeException(
-                "The current RETE implementation does not support rules with edge labels of type "
-                    + e.label().getClass().toString());
-            //        } else if (!(e instanceof RuleEdge)) {
-            //            throw new RuntimeException(
-            //                "The current RETE implementation does not support rules with edges of type "
-            //                    + e.getClass().toString());
-        }
     }
 
     private ReteStaticMapping pickTheNextLargestCheckerNode(StaticMap openList,
@@ -783,6 +832,7 @@ public class ReteNetwork {
      */
     public void processGraph(HostGraph g) {
         this.getState().clearSubscribers();
+        this.getState().initializeSubscribers();
         ReteUpdateMode oldUpdateMode = this.getState().getUpdateMode();
         this.getState().updateMode = ReteUpdateMode.NORMAL;
         for (HostNode n : g.nodeSet()) {
@@ -923,6 +973,8 @@ public class ReteNetwork {
                 result.add(DefaultEdge.createEdge(source,
                     "--" + i + " " + e.toString(), source));
             }
+        } else {
+            result.add(DefaultEdge.createEdge(source, nnode.toString(), source));
         }
         DefaultEdge[] res = new DefaultEdge[result.size()];
         return result.toArray(res);
@@ -1003,6 +1055,7 @@ public class ReteNetwork {
             assert reteNode.getPattern().length == mappedTo.length;
         }
 
+        @SuppressWarnings("unchecked")
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
                 ReteStaticMapping otherMap, SubgraphCheckerNode suc) {
             assert oneMap.getNNode().getSuccessors().contains(suc)
@@ -1041,6 +1094,26 @@ public class ReteNetwork {
             RuleElement[] combinedElements =
                 new RuleElement[tempElementsList.size()];
             combinedElements = tempElementsList.toArray(combinedElements);
+
+            ReteStaticMapping result =
+                new ReteStaticMapping(suc, combinedElements);
+            return result;
+        }
+
+        @SuppressWarnings("unchecked")
+        public static ReteStaticMapping combine(ReteStaticMapping oneMap,
+                ReteStaticMapping otherMap,
+                NegativeFilterSubgraphCheckerNode suc) {
+
+            ReteStaticMapping left =
+                suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap
+                        : otherMap;
+            RuleElement[] combinedElements =
+                new RuleElement[left.getElements().length];
+            int i = 0;
+            for (; i < left.getElements().length; i++) {
+                combinedElements[i] = left.getElements()[i];
+            }
 
             ReteStaticMapping result =
                 new ReteStaticMapping(suc, combinedElements);
@@ -1151,7 +1224,7 @@ public class ReteNetwork {
         private HostGraph hostGraph;
         private Set<StateSubscriber> subscribers =
             new HashSet<StateSubscriber>();
-        private ReteUpdateMode updateMode = ReteUpdateMode.ONDEMAND;
+        private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {
             this.owner = owner;

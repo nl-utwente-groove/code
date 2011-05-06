@@ -35,9 +35,7 @@ public interface JoinStrategy<LeftMatchType extends AbstractReteMatch,RightMatch
      * <code>false</code> otherwise.
      * 
      */
-    public boolean test(
-            SubgraphCheckerNode<LeftMatchType,RightMatchType> subgraphChecker,
-            LeftMatchType left, RightMatchType right);
+    public boolean test(LeftMatchType left, RightMatchType right);
 
     /**
      * Should create a match that is the result of "join"-ing
@@ -51,7 +49,5 @@ public interface JoinStrategy<LeftMatchType extends AbstractReteMatch,RightMatch
      * @return The result of the join or <code>null</code> if the join fails for
      * any reason.
      */
-    public AbstractReteMatch construct(
-            SubgraphCheckerNode<LeftMatchType,RightMatchType> subgraphChecker,
-            LeftMatchType left, RightMatchType right);
+    public AbstractReteMatch construct(LeftMatchType left, RightMatchType right);
 }

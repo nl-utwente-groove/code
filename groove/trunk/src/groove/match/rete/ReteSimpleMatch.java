@@ -38,8 +38,6 @@ import java.util.Set;
  */
 public class ReteSimpleMatch extends AbstractReteMatch {
 
-    Map<LabelVar,TypeLabel> valuation = null;
-
     /** Host graph elements. */
     private HostElement[] units;
     /**
@@ -62,6 +60,35 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         subMatch.getSuperMatches().add(this);
         assert origin.getPattern().length == subMatch.getOrigin().getPattern().length;
         this.units = subMatch.getAllUnits();
+        this.valuation = subMatch.valuation;
+    }
+
+    /**
+     * Creates a new match object from a given sub-match copying all the units of the submatch
+     * and appending the given units
+     * 
+     * @param origin The n-node this match is associated with.
+     * @param injective Determines if this match is used in an engine with injective matching  
+     * @param subMatch The sub-match to be used.
+     * @param unitsToAppend The units to append to the match units of the create match
+     * object. It is assumed that <code>unitsToAppend.length + subMatch.getAllUnits().length == origin.getPattern().length</code>
+     */
+    public ReteSimpleMatch(ReteNetworkNode origin, boolean injective,
+            AbstractReteMatch subMatch, HostElement[] unitsToAppend) {
+        this(origin, injective);
+        HostElement[] subMatchUnits = subMatch.getAllUnits();
+        assert unitsToAppend.length + subMatchUnits.length == origin.getPattern().length;
+        this.specialPrefix = subMatch.specialPrefix;
+        this.valuation = subMatch.valuation;
+        subMatch.getSuperMatches().add(this);
+        this.units =
+            new HostElement[subMatchUnits.length + unitsToAppend.length];
+        for (int i = 0; i < subMatchUnits.length; i++) {
+            this.units[i] = subMatchUnits[i];
+        }
+        for (int i = 0; i < unitsToAppend.length; i++) {
+            this.units[i + subMatchUnits.length] = unitsToAppend[i];
+        }
     }
 
     /**
@@ -90,6 +117,25 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         this(origin, injective);
         this.units[0] = match;
         this.hashCode = match.hashCode();
+    }
+
+    /**
+     * Creates a singleton match consisting of one Edge match with the edge
+     * label assigned to the given variable.
+     * 
+     * @param origin The n-node to which this match belongs/is found by.
+     * @param match The matched edge.
+     * @param variable The variable that has to be bound to
+     *                     the label of the given <code>match</code> 
+     * @param injective Determines if this is an injectively found match.
+     */
+    public ReteSimpleMatch(ReteNetworkNode origin, HostEdge match,
+            LabelVar variable, boolean injective) {
+        this(origin, injective);
+        this.units[0] = match;
+        this.hashCode = match.hashCode();
+        this.valuation = new HashMap<LabelVar,TypeLabel>();
+        this.valuation.put(variable, match.label());
     }
 
     /**
@@ -370,6 +416,9 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                     this.equivalentMap.putNode(e1.target(), e2.target());
                 }
             }
+            if (this.getValuation() != null) {
+                this.equivalentMap.getValuation().putAll(this.getValuation());
+            }
         }
         return this.equivalentMap;
     }
@@ -381,33 +430,11 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         for (int i = 0; i < this.units.length; i++) {
             sb.append("[ " + this.units[i].toString() + "] ");
         }
+        if ((this.valuation != null)) {
+            sb.append(" |> " + this.valuation.toString());
+        }
         sb.append("]");
         return sb.toString();
-    }
-
-    @Override
-    public Map<LabelVar,TypeLabel> getValuation() {
-        return null;
-    }
-
-    @Override
-    public TypeLabel getVar(LabelVar var) {
-        return null;
-    }
-
-    @Override
-    public void putAllVar(Map<LabelVar,TypeLabel> valuation) {
-        // This method will do nothing for Simple matches.
-        // because simple matches are not supposed to have any
-        // variable bindings.
-    }
-
-    @Override
-    public TypeLabel putVar(LabelVar var, TypeLabel value) {
-        // This method will do nothing for Simple matches.
-        // because simple matches are not supposed to have any
-        // variable bindings.
-        return null;
     }
 
     @Override
@@ -418,7 +445,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     }
 
     /**
-     * Combines matches into one match. 
+     * Combines a simple match with any other type of matche into one match, preserving
+     * the prelim match's hash code. 
      * 
      * No injective conflict checking is performed. In other words, this method assumes
      * that merging the given sub-matches will result in a consistent bigger match.
@@ -459,6 +487,55 @@ public class ReteSimpleMatch extends AbstractReteMatch {
 
             assert m1.hashCode != 0;
             result.refreshHashCode(m1.hashCode, m1.units.length);
+            m1.getSuperMatches().add(result);
+            m2.getSuperMatches().add(result);
+            result.valuation = (valuation != emptyMap) ? valuation : null;
+        }
+        return result;
+    }
+
+    /**
+     * Combines two matches into one simple match.
+     * 
+     * No injective conflict checking is performed. In other words, this method assumes
+     * that merging the given sub-matches will result in a consistent bigger match.
+     *   
+     * @param origin The n-node that is to be set as the origin of the resulting merge.
+     * @param m1 The left match, the units of which will be in the beginning of the
+     *           units of the merged match.   
+     * @param m2 The right match, the units of which will be at the end of the
+     *           units of the merged match.
+     * @param injective Specifies if this is an injectively found match. 
+     * @param copyPrefix if {@literal true} then the special prefix link of m1 
+     *        (or m1 if it's prefix is null) will be copied to that of the result.
+     * @return A newly created match object containing the merge of m1 and m2
+     * if m1 and m2 do not conflict, {@literal null} otherwise. 
+     */
+    public static ReteSimpleMatch merge(ReteNetworkNode origin,
+            AbstractReteMatch m1, AbstractReteMatch m2, boolean injective,
+            boolean copyPrefix) {
+
+        ReteSimpleMatch result = null;
+        Map<LabelVar,TypeLabel> valuation = m1.mergeValuationsWith(m2);
+        if (valuation != null) {
+            HostElement[] m1Units = m1.getAllUnits();
+            result = new ReteSimpleMatch(origin, injective);
+            HostElement[] units2 = m2.getAllUnits();
+            if (copyPrefix) {
+                result.specialPrefix =
+                    (m1.specialPrefix != null) ? m1.specialPrefix : m1;
+            }
+            assert result.units.length == m1Units.length + units2.length;
+            int i = 0;
+            for (; i < m1Units.length; i++) {
+                result.units[i] = m1Units[i];
+            }
+
+            for (; i < result.units.length; i++) {
+                result.units[i] = units2[i - m1Units.length];
+            }
+
+            result.hashCode();
             m1.getSuperMatches().add(result);
             m2.getSuperMatches().add(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
@@ -515,6 +592,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         assert (source.specialPrefix == null)
             || (origin.getPattern().length == source.specialPrefix.getOrigin().getPattern().length);
         result.units = source.getAllUnits();
+        result.valuation = source.valuation;
         return result;
     }
 }

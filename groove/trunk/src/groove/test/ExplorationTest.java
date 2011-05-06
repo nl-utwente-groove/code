@@ -23,8 +23,8 @@ import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.lts.GTS;
-import groove.trans.HostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
@@ -111,6 +111,7 @@ public class ExplorationTest {
     @Test
     public void testFerryman() {
         testExploration("ferryman.gps", "start", "bfs", 114, 198);
+        testExploration("ferryman.gps", "start", "rete", 114, 198);
         testExploration("ferryman.gps", "start", "crule:eat", 40, 51);
     }
 
@@ -124,6 +125,7 @@ public class ExplorationTest {
     @Test
     public void testRegExpr() {
         testExploration("regexpr.gps", 16, 48);
+        testExploration("regexpr.gps", "start", "rete", 16, 48);
     }
 
     /** Tests the lose-nodes sample. */
@@ -145,6 +147,7 @@ public class ExplorationTest {
     @Test
     public void testVariables() {
         testExploration("variables.gps", "start-smaller", "bfs", 61, 176);
+        testExploration("variables.gps", "start-smaller", "rete", 61, 176);
     }
 
     /** Tests the counting sample. */

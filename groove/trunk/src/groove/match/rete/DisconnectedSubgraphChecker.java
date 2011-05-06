@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
@@ -113,6 +114,43 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
                 (HostEdge) mu, this.getOwner().isInjective())
                     : new ReteSimpleMatch(source, (HostNode) mu,
                         this.getOwner().isInjective());
+
+        if (action == Action.ADD) {
+            this.receive(source, repeatIndex, sg);
+        } else {
+            TreeHashSet<AbstractReteMatch> memory =
+                getPartialMatchesFor(source);
+            if (memory.contains(sg)) {
+                AbstractReteMatch m = sg;
+                sg = memory.put(sg);
+                memory.remove(m);
+                sg.dominoDelete(null);
+            }
+        }
+    }
+
+    /**
+     * Receives a matched edge during runtime from an wild-card EdgeChecker 
+     * antecedent and takes appropriate action according to the <code>action<code>
+     * parameter.
+     * 
+     * @param source The n-node that is calling this method
+     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
+     *        If <code>source</code> checks against more than one disjoint component, it will
+     *        repeat in the list of the current n-nodes antecedents. In such a case this
+     *        parameter specifies which of those components is calling this method, which
+     *        could be any value from 0 to k-1, which k is the number of 
+     *        times <code>source</code> occurs in the list of antecedents. 
+     *         
+     * @param mu The match object found by <code>source</code>.
+     * @param variable The variable which is to be bound to <code>mu</code>'s label.
+     * @param action Determines if the match is added or removed.
+     */
+    public void receiveBoundEdge(ReteNetworkNode source, int repeatIndex,
+            HostEdge mu, LabelVar variable, Action action) {
+        AbstractReteMatch sg =
+            new ReteSimpleMatch(source, mu, variable,
+                this.getOwner().isInjective());
 
         if (action == Action.ADD) {
             this.receive(source, repeatIndex, sg);

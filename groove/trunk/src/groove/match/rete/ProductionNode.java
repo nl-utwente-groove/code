@@ -53,7 +53,7 @@ public class ProductionNode extends ConditionChecker {
     }
 
     @Override
-    public boolean addSuccessor(ReteNetworkNode nnode) {
+    public void addSuccessor(ReteNetworkNode nnode) {
         throw new UnsupportedOperationException();
     }
 

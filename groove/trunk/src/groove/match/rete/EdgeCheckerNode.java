@@ -16,10 +16,13 @@
  */
 package groove.match.rete;
 
+import groove.graph.TypeLabel;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
+import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
+import groove.trans.RuleLabel;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -67,16 +70,16 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     }
 
     @Override
-    public boolean addSuccessor(ReteNetworkNode nnode) {
-        boolean result =
+    public void addSuccessor(ReteNetworkNode nnode) {
+        boolean isValid =
             (nnode instanceof SubgraphCheckerNode)
                 || (nnode instanceof ConditionChecker)
                 || (nnode instanceof DisconnectedSubgraphChecker);
 
-        if (result) {
-            result = super.addSuccessor(nnode);
+        assert isValid;
+        if (isValid) {
+            super.addSuccessor(nnode);
         }
-        return result;
     }
 
     /**
@@ -94,8 +97,28 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         RuleEdge e1 = this.getEdge();
         //condition 1: labels must match <-- commented out because we check this in the root
         //condition 2: if this is an edge checker for a loop then e should also be a loop
-        assert e.label().equals(e1.label());
+        assert (this.isWildcardEdge() && e1.label().getMatchExpr().getWildcardGuard().isSatisfied(
+            e.label()))
+            || (e1.label().text().equals(e.label().text()));
         return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
+    }
+
+    /**
+     * @return <code>true</code> if this edge-checker is checking for
+     * wild-card edges.
+     */
+    public boolean isWildcardEdge() {
+        return this.getEdge().label().isWildcard();
+    }
+
+    /**
+     * @return <code>true</code> if this edge-checker accepts 
+     * the given label (either by exact matching or through wild-card matching)
+     */
+    public boolean isAcceptingLabel(TypeLabel l) {
+        RuleLabel rl = this.getEdge().label();
+        return (this.isWildcardEdge() && rl.getWildcardGuard().isSatisfied(l))
+            || rl.text().equals(l.text());
     }
 
     /**
@@ -157,19 +180,38 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
 
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            if (n instanceof SubgraphCheckerNode) {
-                ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
-                    gEdge, action);
-            } else if (n instanceof ConditionChecker) {
-                ((ConditionChecker) n).receive(gEdge, action);
-            } else if (n instanceof DisconnectedSubgraphChecker) {
-                ((DisconnectedSubgraphChecker) n).receive(this,
-                    repeatedSuccessorIndex, gEdge, action);
+        if (this.isWildcardEdge()) {
+            LabelVar variable = this.getEdge().label().getWildcardId();
+            for (ReteNetworkNode n : this.getSuccessors()) {
+                repeatedSuccessorIndex =
+                    (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+                if (n instanceof SubgraphCheckerNode) {
+                    ((SubgraphCheckerNode) n).receiveBoundEdge(this,
+                        repeatedSuccessorIndex, gEdge, variable, action);
+                } else if (n instanceof ConditionChecker) {
+                    ((ConditionChecker) n).receiveBoundEdge(gEdge, variable,
+                        action);
+                } else if (n instanceof DisconnectedSubgraphChecker) {
+                    ((DisconnectedSubgraphChecker) n).receive(this,
+                        repeatedSuccessorIndex, gEdge, action);
+                }
+                previous = n;
             }
-            previous = n;
+        } else {
+            for (ReteNetworkNode n : this.getSuccessors()) {
+                repeatedSuccessorIndex =
+                    (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+                if (n instanceof SubgraphCheckerNode) {
+                    ((SubgraphCheckerNode) n).receive(this,
+                        repeatedSuccessorIndex, gEdge, action);
+                } else if (n instanceof ConditionChecker) {
+                    ((ConditionChecker) n).receive(gEdge, action);
+                } else if (n instanceof DisconnectedSubgraphChecker) {
+                    ((DisconnectedSubgraphChecker) n).receive(this,
+                        repeatedSuccessorIndex, gEdge, action);
+                }
+                previous = n;
+            }
         }
     }
 

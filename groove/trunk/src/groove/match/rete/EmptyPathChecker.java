@@ -16,15 +16,20 @@
  */
 package groove.match.rete;
 
+import groove.match.rete.RetePathMatch.EmptyPathMatch;
 import groove.rel.RegExpr.Empty;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
-public class EmptyPathChecker extends AbstractPathChecker {
+public class EmptyPathChecker extends AbstractPathChecker implements
+        StateSubscriber {
+
+    private EmptyPathMatch emptyMatch = new EmptyPathMatch(this);
 
     /**
      * maintains singleton instances per network.
@@ -37,8 +42,9 @@ public class EmptyPathChecker extends AbstractPathChecker {
      * specific to a given RETE network.
      * @param network The network to which is empty path-checker should belong.
      */
-    protected EmptyPathChecker(ReteNetwork network) {
+    private EmptyPathChecker(ReteNetwork network) {
         super(network, new Empty());
+        this.getOwner().getState().subscribe(this);
     }
 
     /**
@@ -84,7 +90,26 @@ public class EmptyPathChecker extends AbstractPathChecker {
 
     @Override
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        //TODO ARASH: maybe we should use this to propagate the empty match?
-        throw new UnsupportedOperationException();
+        assert m != null;
+        ReteNetworkNode previous = null;
+        int repeatedSuccessorIndex = 0;
+        for (ReteNetworkNode n : this.getSuccessors()) {
+            repeatedSuccessorIndex =
+                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+            giveNewMatchToSuccessor((RetePathMatch) m, n,
+                repeatedSuccessorIndex);
+            previous = n;
+        }
+    }
+
+    @Override
+    public void clear() {
+        //Left empty. Nothing to do.
+    }
+
+    @Override
+    public List<? extends Object> initialize() {
+        passDownMatchToSuccessors(this.emptyMatch);
+        return null;
     }
 }

@@ -68,6 +68,11 @@ public abstract class AbstractReteMatch implements
         new ArrayList<DominoEventListener>();
 
     /**
+     * Variable bindings
+     */
+    protected Map<LabelVar,TypeLabel> valuation = null;
+
+    /**
      * Calculated hashCode. 0 means it is not yet calculated
      * due to lazy evaluation based on the constituting units
      */
@@ -463,4 +468,23 @@ public abstract class AbstractReteMatch implements
         refreshHashCode(0, 0);
     }
 
+    @Override
+    public Map<LabelVar,TypeLabel> getValuation() {
+        return this.valuation;
+    }
+
+    @Override
+    public TypeLabel getVar(LabelVar var) {
+        return this.valuation.get(var);
+    }
+
+    @Override
+    public void putAllVar(Map<LabelVar,TypeLabel> valuation) {
+        this.valuation.putAll(valuation);
+    }
+
+    @Override
+    public TypeLabel putVar(LabelVar var, TypeLabel value) {
+        return this.valuation.put(var, value);
+    }
 }

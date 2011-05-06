@@ -47,12 +47,14 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
      *      
      */
     protected AbstractPathChecker(ReteNetwork network, RegExpr expression,
-            RuleNode[] endPoints) {
+            boolean isLoop) {
         super(network);
-        assert (network != null) && (expression != null) && (endPoints != null)
-            && (endPoints.length == 2);
+        assert (network != null) && (expression != null);
         this.expression = expression;
-        this.endPointsPattern = endPoints;
+        RuleFactory f = RuleFactory.instance();
+        RuleNode n1 = f.createNode(f.getMaxNodeNr());
+        RuleNode n2 = (isLoop) ? n1 : f.createNode(f.getMaxNodeNr());
+        this.endPointsPattern = new RuleNode[] {n1, n2};
     }
 
     /**
@@ -62,11 +64,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
      * @param expression regular expression for which this object is a path checker
      */
     public AbstractPathChecker(ReteNetwork network, RegExpr expression) {
-        this(network, expression, new RuleNode[] {
-            RuleFactory.instance().createNode(
-                RuleFactory.instance().getMaxNodeNr()),
-            RuleFactory.instance().createNode(
-                RuleFactory.instance().getMaxNodeNr())});
+        this(network, expression, false);
     }
 
     @Override
@@ -114,7 +112,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
 
     @Override
     public int size() {
-        return this.getExpression().getOperands().size();
+        return -this.getExpression().getOperands().size();
     }
 
     /**
@@ -137,6 +135,9 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
                 newMatch);
         } else if (n instanceof ConditionChecker) {
             ((ConditionChecker) n).receive(newMatch);
+        } else if (n instanceof SubgraphCheckerNode) {
+            ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
+                newMatch);
         } else if (n instanceof DisconnectedSubgraphChecker) {
             ((DisconnectedSubgraphChecker) n).receive(this,
                 repeatedSuccessorIndex, newMatch);
@@ -144,6 +145,11 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
             ((AbstractPathChecker) n).receive(this, repeatedSuccessorIndex,
                 newMatch);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "- Checker Path for: " + this.getExpression().toString();
     }
 
 }

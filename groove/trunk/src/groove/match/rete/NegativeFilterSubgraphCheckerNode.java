@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
+import groove.trans.RuleElement;
 import groove.util.TreeHashSet;
 
 import java.util.Collections;
@@ -48,9 +49,21 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
      * @param right The antecedent that sends down negative/inhibiter matches
      */
     public NegativeFilterSubgraphCheckerNode(ReteNetwork network,
-            ReteStaticMapping left, ReteStaticMapping right) {
-        super(network, left, right);
+            ReteStaticMapping left, ReteStaticMapping right, boolean keepPrefix) {
+        super(network, left, right, keepPrefix);
         this.inhibitionMap = this.new BidirectionalInhibitionMap();
+    }
+
+    @Override
+    protected void copyPatternsFromAntecedents() {
+        RuleElement[] leftAntecedentPattern =
+            this.getAntecedents().get(0).getPattern();
+        this.pattern = new RuleElement[leftAntecedentPattern.length];
+
+        for (int i = 0; i < leftAntecedentPattern.length; i++) {
+            this.pattern[i] = leftAntecedentPattern[i];
+        }
+
     }
 
     @Override
@@ -60,21 +73,54 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
         if (!(left.getNNode() instanceof AbstractPathChecker)
             && (right.getNNode() instanceof AbstractPathChecker)) {
             this.joinStrategy =
-                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<ReteSimpleMatch,RetePathMatch>() {
+                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractJoinWithPathStrategy<ReteSimpleMatch>(
+                    this) {
 
                     @Override
-                    public AbstractReteMatch construct(
-                            SubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> subgraphChecker,
-                            ReteSimpleMatch left, RetePathMatch right) {
+                    public AbstractReteMatch construct(ReteSimpleMatch left,
+                            RetePathMatch right) {
                         assert right == null;
-                        return new ReteSimpleMatch(subgraphChecker,
-                            subgraphChecker.getOwner().isInjective(), left);
+                        return new ReteSimpleMatch(this.subgraphChecker,
+                            this.subgraphChecker.getOwner().isInjective(), left);
                     }
 
                 };
         } else {
             throw new UnsupportedOperationException();
         }
+    }
+
+    //TODO ARASH: remove this once on-demand is properly implemented for this    
+    @Override
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
+        receiveAndProcess(source, repeatIndex, subgraph);
+    }
+
+    //TODO ARASH: remove this once on-demand is properly implemented for this
+    @Override
+    public boolean demandUpdate() {
+        boolean result = false;
+        if (!this.isUpToDate()) {
+            for (ReteNetworkNode nnode : this.getAntecedents()) {
+                result = result || nnode.demandUpdate();
+            }
+            setUpToDate(true);
+        }
+        return result;
+    }
+
+    @Override
+    protected boolean unbufferMatch(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
+        return false;
+    }
+
+    //TODO ARASH: remove this once on-demand is properly implemented for this
+    @Override
+    public int demandOneMatch() {
+        demandUpdate();
+        return 0;
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +155,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
 
         });
         for (LeftMatchType positiveMatch : this.leftMemory) {
-            if (this.joinStrategy.test(this, positiveMatch, subgraph)) {
+            if (this.joinStrategy.test(positiveMatch, subgraph)) {
                 if (this.inhibitionMap.getInhibitorsOf(positiveMatch).size() == 0) {
                     positiveMatch.dominoDeleteAfter();
                 }
@@ -124,12 +170,17 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
     private void negativeMatchRemoved(RightMatchType negativeMatch) {
         Set<AbstractReteMatch> positiveMatches =
             this.inhibitionMap.removeInhibitor(negativeMatch);
-        for (AbstractReteMatch positiveMatch : positiveMatches) {
-            if (this.inhibitionMap.getInhibitorsOf(positiveMatch).size() == 0) {
-                AbstractReteMatch combined =
-                    this.joinStrategy.construct(this,
-                        (LeftMatchType) positiveMatch, null);
-                passDownMatchToSuccessors(combined);
+        if (positiveMatches != null) {
+            for (AbstractReteMatch positiveMatch : positiveMatches) {
+                if (this.inhibitionMap.getInhibitorsOf(positiveMatch).size() == 0) {
+                    assert this.leftMemory.contains(positiveMatch);
+                    AbstractReteMatch combined =
+                        this.joinStrategy.construct(
+                            (LeftMatchType) positiveMatch, null);
+                    if (combined != null) {
+                        passDownMatchToSuccessors(combined);
+                    }
+                }
             }
         }
     }
@@ -162,7 +213,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
 
         boolean canBePassedDown = true;
         for (RightMatchType negativeMatch : this.rightMemory) {
-            if (this.joinStrategy.test(this, subgraph, negativeMatch)) {
+            if (this.joinStrategy.test(subgraph, negativeMatch)) {
                 canBePassedDown = false;
                 this.inhibitionMap.add(negativeMatch, subgraph);
             }
@@ -170,7 +221,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
         if (canBePassedDown) {
             result = 1;
             AbstractReteMatch combined =
-                this.joinStrategy.construct(this, subgraph, null);
+                this.joinStrategy.construct(subgraph, null);
             passDownMatchToSuccessors(combined);
         }
         return result;
@@ -272,7 +323,8 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
                 for (AbstractReteMatch positiveMatch : inhibitedPositiveMatches) {
                     Set<AbstractReteMatch> s =
                         this.positiveToNegative.get(positiveMatch);
-                    s.remove(inhibitor);
+                    boolean b = s.remove(inhibitor);
+                    assert b;
                     if (s.size() == 0) {
                         this.positiveToNegative.remove(positiveMatch);
                     }
@@ -295,16 +347,25 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
             Set<AbstractReteMatch> inhibitors =
                 this.positiveToNegative.get(positive);
             if (inhibitors != null) {
+                this.positiveToNegative.remove(positive);
                 for (AbstractReteMatch negative : inhibitors) {
                     Set<AbstractReteMatch> otherPositives =
                         this.negativeToPositive.get(negative);
+                    assert otherPositives != null;
                     otherPositives.remove(positive);
                     if (otherPositives.size() == 0) {
                         this.negativeToPositive.remove(negative);
                     }
+
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return super.toString().replaceAll("Subgraph Checker",
+            "Negative Filter");
     }
 
 }

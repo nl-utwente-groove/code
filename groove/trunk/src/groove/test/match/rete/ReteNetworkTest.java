@@ -21,6 +21,8 @@ import groove.match.rete.ProductionNode;
 import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSimpleMatch;
+import groove.rel.RegExpr;
+import groove.rel.RegExpr.Atom;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -82,6 +84,141 @@ public class ReteNetworkTest extends TestCase {
         GraphGrammar g = loadGrammar("petrinet.gps", "start");
         ReteNetwork network = new ReteNetwork(g, false);
         testNetworkStructure(network);
+    }
+
+    /**
+     * Testing the basic basic-regexp grammar for first step matches found - 1
+     */
+    public void testDynamicRegExp1() {
+        GraphGrammar g = loadGrammar("basic-regexp.gps", "g1");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("neg")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "neg2")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("rev")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("seq")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("neq")) {
+                assertEquals(pn.toString(), 2, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "star")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            }
+        }
+    }
+
+    /**
+     * Testing the basic basic-regexp grammar for first step matches found - 2
+     */
+    public void testDynamicRegExp2() {
+        GraphGrammar g = loadGrammar("basic-regexp.gps", "g2");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("neg")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "neg2")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("rev")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("seq")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("neq")) {
+                assertEquals(pn.toString(), 6, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "star")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            }
+
+        }
+    }
+
+    /**
+     * Testing the basic basic-regexp grammar for first step matches found - 3
+     */
+    public void testDynamicRegExp3() {
+        GraphGrammar g = loadGrammar("basic-regexp.gps", "g3");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("neg")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "neg2")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("rev")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("seq")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("neq")) {
+                assertEquals(pn.toString(), 12, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "star")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            }
+        }
+    }
+
+    /**
+     * Testing the basic basic-regexp grammar for first step matches found - 4
+     */
+    public void testDynamicRegExp4() {
+        GraphGrammar g = loadGrammar("basic-regexp.gps", "g4");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("neg")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "neg2")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("rev")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("seq")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("neq")) {
+                assertEquals(pn.toString(), 42, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "star")) {
+                assertEquals(pn.toString(), 3, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("var")) {
+                assertEquals(pn.toString(), 10, rmList.size());
+            }
+        }
+    }
+
+    private String printRegExp(RegExpr e) {
+        if (e instanceof Atom) {
+            return e.toString();
+        } else {
+            if (e.getOperands().size() == 2) {
+                return String.format(
+                    "(Expr: %s  Operand 1: %s ,  Operand 2: %s)",
+                    e.getOperator(), printRegExp(e.getOperands().get(0)),
+                    printRegExp(e.getOperands().get(1)));
+            } else if (e.getOperands().size() == 1) {
+                return String.format("(Expr: %s  Operand 1: %s)",
+                    e.getOperator(), printRegExp(e.getOperands().get(0)));
+            } else {
+                return String.format("(Expr: %s Operands: %s", e.getOperator(),
+                    e.getOperands().toString());
+            }
+
+        }
     }
 
     private void testNetworkStructure(ReteNetwork network) {
