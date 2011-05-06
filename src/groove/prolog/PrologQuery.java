@@ -35,6 +35,7 @@ import groove.prolog.annotation.Param;
 import groove.prolog.annotation.Signature;
 import groove.prolog.annotation.ToolTip;
 import groove.prolog.builtin.AlgebraPredicates;
+import groove.prolog.builtin.GraphPredicates;
 import groove.prolog.builtin.GroovePredicates;
 import groove.prolog.builtin.TypePredicates;
 import groove.prolog.exception.GroovePrologException;
@@ -61,10 +62,10 @@ public class PrologQuery {
      */
     public static final String GROOVE_PRO = "/groove/prolog/builtin/groove.pro";
 
-    /** Classes of predefined derived Groove predicates. */
+    /** Classes of predefined Groove predicates. */
     @SuppressWarnings("unchecked")
-    public static final Class<GroovePredicates>[] GROOVE_DER = new Class[] {
-        AlgebraPredicates.class, TypePredicates.class};
+    public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
+        AlgebraPredicates.class, GraphPredicates.class, TypePredicates.class};
 
     /**
      * The graph that will be queried.
@@ -277,7 +278,7 @@ public class PrologQuery {
                     new Term[] {AtomTerm.get(GROOVE_PRO)});
             this.env.ensureLoaded(term);
             // load the derived Groove predicates
-            for (Class<GroovePredicates> predicates : GROOVE_DER) {
+            for (Class<GroovePredicates> predicates : GROOVE_PREDS) {
                 this.toolTipMap.putAll(this.env.ensureLoaded(predicates));
             }
             this.grooveTags.addAll(this.env.getModule().getPredicateTags());

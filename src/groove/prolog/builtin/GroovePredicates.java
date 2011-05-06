@@ -49,17 +49,20 @@ abstract public class GroovePredicates {
 
     /** 
      * Invokes all methods annotated by {@link Signature}, and 
-     * returns the string that has been built up by successive
+     * returns the strings that have been built up by successive
      * invocations of {@link #s(String)}.
      */
-    public String get() {
-        if (this.text == null) {
-            this.text = new StringBuilder();
+    public Map<CompoundTermTag,String> getDefinitions() {
+        if (this.definitions == null) {
             this.toolTipMap = new HashMap<CompoundTermTag,String>();
+            this.definitions = new HashMap<CompoundTermTag,String>();
             for (Method method : getClass().getMethods()) {
                 if (method.isAnnotationPresent(Signature.class)) {
                     try {
+                        this.text = new StringBuilder();
                         method.invoke(this);
+                        this.definitions.put(getTag(method.getName()),
+                            this.text.toString());
                     } catch (IllegalAccessException e) {
                         throw new IllegalStateException(e.getMessage());
                     } catch (InvocationTargetException e) {
@@ -69,7 +72,7 @@ abstract public class GroovePredicates {
                 }
             }
         }
-        return this.text.toString();
+        return this.definitions;
     }
 
     /**
@@ -78,21 +81,25 @@ abstract public class GroovePredicates {
      */
     public Map<CompoundTermTag,String> getToolTipMap() {
         if (this.toolTipMap == null) {
-            get();
+            getDefinitions();
         }
         return this.toolTipMap;
     }
-
-    private StringBuilder text;
-    /** Mapping from predicates to tool tip text. */
-    private Map<CompoundTermTag,String> toolTipMap;
 
     /** 
      * Constructs the HMTL-formatted tool tip for a given predicate,
      * by trying to construct this from annotations of a given object.
      */
     private void addToolTipText(Method method) {
-        String methodName = method.getName();
+        CompoundTermTag tag = getTag(method.getName());
+        Signature sig = method.getAnnotation(Signature.class);
+        ToolTip tip = method.getAnnotation(ToolTip.class);
+        Param param = method.getAnnotation(Param.class);
+        this.toolTipMap.put(tag, createToolTipText(tag, sig, tip, param));
+    }
+
+    /** Converts a method name into a tag. */
+    private CompoundTermTag getTag(String methodName) {
         int arityPos = methodName.lastIndexOf('_');
         if (arityPos < 0) {
             throw new IllegalArgumentException(
@@ -110,12 +117,15 @@ abstract public class GroovePredicates {
                     "Predicate method name %s should end on '_i' (where i is the arity)",
                     methodName));
         }
-        CompoundTermTag tag = CompoundTermTag.get(functorName, arity);
-        Signature sig = method.getAnnotation(Signature.class);
-        ToolTip tip = method.getAnnotation(ToolTip.class);
-        Param param = method.getAnnotation(Param.class);
-        this.toolTipMap.put(tag, createToolTipText(tag, sig, tip, param));
+        return CompoundTermTag.get(functorName, arity);
     }
+
+    /** The text being built up by successive invocations of {@link #s(String)}. */
+    private StringBuilder text;
+    /** Mapping from predicates to the definition strings in the corresponding methods. */
+    private Map<CompoundTermTag,String> definitions;
+    /** Mapping from predicates to tool tip text. */
+    private Map<CompoundTermTag,String> toolTipMap;
 
     /** 
      * Constructs the HMTL-formatted tool tip for a given predicate,
