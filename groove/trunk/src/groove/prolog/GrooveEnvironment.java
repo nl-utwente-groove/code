@@ -18,6 +18,8 @@
  */
 package groove.prolog;
 
+import gnu.prolog.database.PredicateListener;
+import gnu.prolog.database.PredicateUpdatedEvent;
 import gnu.prolog.database.PrologTextLoader;
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
@@ -30,7 +32,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Subclass of the normal GNU Prolog Environment, contains a reference to a
@@ -97,15 +101,12 @@ public class GrooveEnvironment extends Environment {
     public Map<CompoundTermTag,String> ensureLoaded(
             Class<? extends GroovePredicates> source) {
         Map<CompoundTermTag,String> result = null;
-        //        if (isInitialized()) {
-        //            throw new IllegalStateException(
-        //                "no files can be loaded after inializtion was run");
-        //        }
         try {
             GroovePredicates instance = source.newInstance();
             // load the predicates
-            new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
-                instance.get()));
+            for (Map.Entry<CompoundTermTag,String> definition : instance.getDefinitions().entrySet()) {
+                ensureLoaded(source, definition.getKey(), definition.getValue());
+            }
             // retrieve the tool tip map
             result = instance.getToolTipMap();
         } catch (InstantiationException e) {
@@ -120,6 +121,30 @@ public class GrooveEnvironment extends Environment {
         return result;
     }
 
+    /**
+     * Loads the definitions from a single method in a given class.
+     */
+    private void ensureLoaded(Class<? extends GroovePredicates> source,
+            CompoundTermTag tag, String definition) {
+        DefinitionListener listener = new DefinitionListener();
+        getModule().addPredicateListener(listener);
+        new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
+            definition));
+        getModule().removePredicateListener(listener);
+        Set<CompoundTermTag> predicates = listener.getPredicates();
+        if (!predicates.contains(tag)) {
+            throw new IllegalArgumentException(String.format(
+                "%s#%s_%d does not define predicate %s",
+                source.getSimpleName(), tag.functor, tag.arity, tag));
+        }
+        predicates.remove(tag);
+        if (!predicates.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                "%s#%s_%d defines additional predicates %s",
+                source.getSimpleName(), tag.functor, tag.arity, predicates));
+        }
+    }
+
     /** Loads Prolog declarations from a named stream. */
     public synchronized void loadStream(Reader stream, String streamName) {
         if (isInitialized()) {
@@ -127,5 +152,21 @@ public class GrooveEnvironment extends Environment {
                 "no files can be loaded after inializtion was run");
         }
         new PrologTextLoader(getPrologTextLoaderState(), stream, streamName);
+    }
+
+    /** Listener that collects predicate definitions. */
+    private static class DefinitionListener implements PredicateListener {
+        @Override
+        public void predicateUpdated(PredicateUpdatedEvent evt) {
+            this.predicates.add(evt.getTag());
+        }
+
+        /** Returns the predicates that this listener has been informed of. */
+        public Set<CompoundTermTag> getPredicates() {
+            return this.predicates;
+        }
+
+        private Set<CompoundTermTag> predicates =
+            new HashSet<CompoundTermTag>();
     }
 }
