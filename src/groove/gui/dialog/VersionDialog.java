@@ -38,21 +38,20 @@ public class VersionDialog {
     public static boolean showNew(Component parent,
             SystemProperties grammarProperties) {
         String msg =
-            "The grammar you are trying to load was created with GROOVE\n"
-                + "version " + grammarProperties.getGrooveVersion()
-                + ", which is newer than this version "
-                + Version.getCurrentGrooveVersion()
-                + ".\nIf you try to open this grammar errors may occur.\n"
-                + "Try to load the grammar anyway?";
+            "<HTML><FONT color=#770000>Warning: </FONT>"
+                + "loading grammar from newer GROOVE version (<FONT color=#000077>"
+                + grammarProperties.getGrooveVersion() + "</FONT>, current is "
+                + "<FONT color=#000077>" + Version.getCurrentGrooveVersion()
+                + "</FONT>).\nOpening this grammar may cause errors. "
+                + "Continue anyway?\n\n";
         int buttonPressed =
-            JOptionPane.showConfirmDialog(parent, msg,
-                "Error loading the grammar", JOptionPane.YES_NO_OPTION);
+            JOptionPane.showConfirmDialog(parent, msg, "Warning: new grammar",
+                JOptionPane.YES_NO_OPTION);
         return buttonPressed == JOptionPane.YES_OPTION;
     }
 
     /**
-     * Shows the dialog for loading an older grammar version from a file
-     * (overwriting possible).
+     * Shows the dialog for loading an older grammar version.
      * @param parent the parent frame
      * @param grammarProperties the properties of the grammar being loaded
      * @return 0 if loading should continue, overwriting the current file,
@@ -61,20 +60,22 @@ public class VersionDialog {
      */
     public static int showOldFile(Component parent,
             SystemProperties grammarProperties) {
+        if (grammarProperties.getGrooveVersion().equals("0.0.0")) {
+            return showUnrecognizedFile(parent);
+        }
         String msg =
-            "The grammar you are trying to load was created with GROOVE "
-                + "version " + grammarProperties.getGrooveVersion()
-                + ", which is older \nthan this version "
-                + Version.getCurrentGrooveVersion()
-                + ". When the grammar is opened, it will be converted "
-                + "automatically, \nmaking it unusable in the old "
-                + grammarProperties.getGrooveVersion() + " version.\n\n";
-        String overwrite_text = "Overwrite";
-        String save_as_text = "Save As";
+            "<HTML><FONT color=#770000>Warning: </FONT>"
+                + "loading grammar from old GROOVE version (<FONT color=#000077>"
+                + grammarProperties.getGrooveVersion() + "</FONT>, current is "
+                + "<FONT color=#000077>" + Version.getCurrentGrooveVersion()
+                + "</FONT>).\nLoading this grammar will automatically convert "
+                + "it to the current version.\n\n";
+        String overwrite_text = "Convert";
+        String save_as_text = "Convert As";
         String cancel_text = "Cancel";
         String[] options = {overwrite_text, save_as_text, cancel_text};
         switch (JOptionPane.showOptionDialog(parent, msg,
-            "Warning! Loading old grammar", JOptionPane.YES_NO_CANCEL_OPTION,
+            "Warning: old grammar", JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
         case JOptionPane.YES_OPTION:
             return 0;
@@ -86,8 +87,33 @@ public class VersionDialog {
     }
 
     /**
-     * Shows the dialog for loading an older grammar version from a url
-     * (overwriting not possible).
+     * Shows the dialog for loading an unrecognized grammar version.
+     * @param parent the parent frame
+     * @return 0 if loading should continue, overwriting the current file,
+     *         -1 otherwise
+     */
+    public static int showUnrecognizedFile(Component parent) {
+        String msg =
+            "<HTML><FONT color=#770000>Warning: </FONT>"
+                + "loading unrecognized grammar version "
+                + "(no system properties file found).\n"
+                + "Loading this grammar will automatically convert "
+                + "it to the current version.\n\n";
+        String overwrite_text = "Convert";
+        String cancel_text = "Cancel";
+        String[] options = {overwrite_text, cancel_text};
+        switch (JOptionPane.showOptionDialog(parent, msg,
+            "Warning: old grammar", JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
+        case JOptionPane.YES_OPTION:
+            return 0;
+        default:
+            return -1;
+        }
+    }
+
+    /**
+     * Shows the dialog for loading an older zipped/url grammar version.
      * @param parent the parent frame
      * @param grammarProperties the properties of the grammar being loaded
      * @return true if loading should continue, creating a new local grammar,
@@ -96,14 +122,13 @@ public class VersionDialog {
     public static boolean showOldURL(Component parent,
             SystemProperties grammarProperties) {
         String msg =
-            "The grammar you are trying to load was created with GROOVE "
-                + "version " + grammarProperties.getGrooveVersion()
-                + ", which is older \nthan this version "
-                + Version.getCurrentGrooveVersion()
-                + ". When the grammar is opened, it will be converted "
-                + "automatically, \nmaking it unusable in the old "
-                + grammarProperties.getGrooveVersion() + " version.\n\n";
-        String save_as_text = "Save As";
+            "<HTML><FONT color=#770000>Warning: </FONT>"
+                + "loading grammar from old GROOVE version (<FONT color=#000077>"
+                + grammarProperties.getGrooveVersion() + "</FONT>, current is "
+                + "<FONT color=#000077>" + Version.getCurrentGrooveVersion()
+                + "</FONT>).\nLoading this grammar will automatically convert "
+                + "it (as a new grammar) to the current version.\n\n";
+        String save_as_text = "Convert As";
         String cancel_text = "Cancel";
         String[] options = {save_as_text, cancel_text};
         int buttonPressed =

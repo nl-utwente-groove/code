@@ -825,6 +825,11 @@ public class Simulator {
         // First we check if the versions are compatible.
         store.reload();
         SystemProperties props = store.getProperties();
+        if (store.isEmpty()) {
+            showErrorDialog(store.getLocation()
+                + " is not a GROOVE production system.", null);
+            return;
+        }
         String fileGrammarVersion = props.getGrammarVersion();
         int compare = Version.compareGrammarVersion(fileGrammarVersion);
         final boolean saveAfterLoading = (compare != 0);
