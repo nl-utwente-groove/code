@@ -45,8 +45,8 @@ public class VersionDialog {
                 + "</FONT>).\nOpening this grammar may cause errors. "
                 + "Continue anyway?\n\n";
         int buttonPressed =
-            JOptionPane.showConfirmDialog(parent, msg, "Warning: new grammar",
-                JOptionPane.YES_NO_OPTION);
+            JOptionPane.showConfirmDialog(parent, msg,
+                "Warning: loading new grammar", JOptionPane.YES_NO_OPTION);
         return buttonPressed == JOptionPane.YES_OPTION;
     }
 
@@ -75,7 +75,7 @@ public class VersionDialog {
         String cancel_text = "Cancel";
         String[] options = {overwrite_text, save_as_text, cancel_text};
         switch (JOptionPane.showOptionDialog(parent, msg,
-            "Warning: old grammar", JOptionPane.YES_NO_CANCEL_OPTION,
+            "Warning: loading old grammar", JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
         case JOptionPane.YES_OPTION:
             return 0;
@@ -103,7 +103,7 @@ public class VersionDialog {
         String cancel_text = "Cancel";
         String[] options = {overwrite_text, cancel_text};
         switch (JOptionPane.showOptionDialog(parent, msg,
-            "Warning: old grammar", JOptionPane.YES_NO_OPTION,
+            "Warning: loading unrecognized grammar", JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
         case JOptionPane.YES_OPTION:
             return 0;
@@ -133,7 +133,7 @@ public class VersionDialog {
         String[] options = {save_as_text, cancel_text};
         int buttonPressed =
             JOptionPane.showOptionDialog(parent, msg,
-                "Warning! Loading old grammar", JOptionPane.YES_NO_OPTION,
+                "Warning: loading old grammar", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, save_as_text);
         return buttonPressed == JOptionPane.YES_OPTION;
     }
