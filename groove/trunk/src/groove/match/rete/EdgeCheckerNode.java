@@ -19,6 +19,8 @@ package groove.match.rete;
 import groove.graph.TypeLabel;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.rel.LabelVar;
+import groove.rel.RegExpr;
+import groove.rel.RegExpr.Wildcard.LabelConstraint;
 import groove.trans.HostEdge;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
@@ -109,6 +111,26 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      */
     public boolean isWildcardEdge() {
         return this.getEdge().label().isWildcard();
+    }
+
+    /**
+     * @return <code>true</code> if this edge checker is a wild-card edge checker
+     * and if the wildcard is positive.
+     */
+    public boolean isPositiveWildcard() {
+        LabelConstraint lc =
+            ((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard();
+        return this.isWildcardEdge() && (lc == null || !lc.isNegated());
+    }
+
+    /**
+     * @return <code>true</code> if this edge checker is a guarded wild-card edge checker
+     *
+     */
+    public boolean isWildcardGuarded() {
+        return this.isWildcardEdge()
+            && (((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard() != null)
+            && (((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard().getLabels() != null);
     }
 
     /**

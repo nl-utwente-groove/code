@@ -16,15 +16,38 @@
  */
 package groove.match.rete;
 
+import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
+import groove.util.TreeHashSet;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
 public class RootNode extends ReteNetworkNode {
+
+    private Map<String,Set<EdgeCheckerNode>> positiveEdgeCheckers =
+        new HashMap<String,Set<EdgeCheckerNode>>();
+
+    private Set<EdgeCheckerNode> openEdgeCheckers =
+        new TreeHashSet<EdgeCheckerNode>();
+
+    private Set<EdgeCheckerNode> otherEdgeCheckers =
+        new TreeHashSet<EdgeCheckerNode>();
+
+    private Map<String,Set<SingleEdgePathChecker>> positivePathCheckers =
+        new HashMap<String,Set<SingleEdgePathChecker>>();
+
+    private Set<SingleEdgePathChecker> otherPathCheckers =
+        new TreeHashSet<SingleEdgePathChecker>();
+
+    private NodeCheckerNode theNodeChecker = null;
 
     /**
      * Creates a root n-node for a given RETE network.
@@ -38,7 +61,7 @@ public class RootNode extends ReteNetworkNode {
     public void addSuccessor(ReteNetworkNode nnode) {
         boolean isValid =
             (nnode instanceof EdgeCheckerNode)
-                || (nnode instanceof NodeCheckerNode)
+                || ((nnode instanceof NodeCheckerNode) && (this.theNodeChecker == null))
                 || (nnode instanceof SingleEdgePathChecker)
                 || (nnode instanceof EmptyPathChecker);
         assert isValid;
@@ -53,6 +76,27 @@ public class RootNode extends ReteNetworkNode {
         if (isValid && !isAlreadySuccessor(nnode)) {
             getSuccessors().add(nnode);
             nnode.addAntecedent(this);
+            if (nnode instanceof NodeCheckerNode) {
+                this.theNodeChecker = (NodeCheckerNode) nnode;
+            } else if (nnode instanceof EdgeCheckerNode) {
+                EdgeCheckerNode ec = (EdgeCheckerNode) nnode;
+                if (!ec.isWildcardEdge()
+                    || (ec.isPositiveWildcard() && ec.isWildcardGuarded())) {
+                    addPositiveEdgeChecker(ec);
+                } else if (ec.isWildcardEdge() && !ec.isPositiveWildcard()) {
+                    this.otherEdgeCheckers.add(ec);
+                } else if (ec.isWildcardEdge() && !ec.isWildcardGuarded()) {
+                    this.openEdgeCheckers.add(ec);
+                }
+            } else if (nnode instanceof SingleEdgePathChecker) {
+                SingleEdgePathChecker pathChecker =
+                    (SingleEdgePathChecker) nnode;
+                if (nnode instanceof AtomPathChecker) {
+                    this.addPositivePathChecker((AtomPathChecker) pathChecker);
+                } else {
+                    this.otherPathCheckers.add(pathChecker);
+                }
+            }
         }
 
     }
@@ -65,10 +109,8 @@ public class RootNode extends ReteNetworkNode {
      * @param action Determined if the given node is deleted or added.
      */
     public void receiveNode(HostNode elem, Action action) {
-        for (ReteNetworkNode nnode : this.getSuccessors()) {
-            if (nnode instanceof NodeCheckerNode) {
-                ((NodeCheckerNode) nnode).receiveNode(elem, action);
-            }
+        if (this.theNodeChecker != null) {
+            this.theNodeChecker.receiveNode(elem, action);
         }
     }
 
@@ -80,22 +122,34 @@ public class RootNode extends ReteNetworkNode {
      * @param action Determined if the given edge is deleted or added.
      */
     public void receiveEdge(HostEdge elem, Action action) {
-        for (ReteNetworkNode nnode : this.getSuccessors()) {
-            if (nnode instanceof EdgeCheckerNode) {
-                EdgeCheckerNode ec = (EdgeCheckerNode) nnode;
-                if (ec.isAcceptingLabel(elem.label())) {
-                    ec.receiveEdge(this, elem, action);
-                } else {
-                    assert !elem.label().equals(ec.getEdge().label());
-                }
-            } else if (nnode instanceof AtomPathChecker) {
-                if (elem.label().text().equals(
-                    ((AtomPathChecker) nnode).getExpression().getAtomText())) {
-                    ((AtomPathChecker) nnode).receive(this, elem, action);
-                }
-            } else if (nnode instanceof WildcardPathChecker) {
-                ((WildcardPathChecker) nnode).receive(this, elem, action);
+        Set<EdgeCheckerNode> edgeCheckers =
+            this.positiveEdgeCheckers.get(elem.label().text());
+        if (edgeCheckers != null) {
+
+            for (EdgeCheckerNode ec : edgeCheckers) {
+                assert ec.isAcceptingLabel(elem.label());
+                ec.receiveEdge(this, elem, action);
             }
+        }
+
+        for (EdgeCheckerNode ec : this.openEdgeCheckers) {
+            ec.receiveEdge(this, elem, action);
+        }
+        for (EdgeCheckerNode ec : this.otherEdgeCheckers) {
+            if (ec.isAcceptingLabel(elem.label())) {
+                ec.receiveEdge(this, elem, action);
+            }
+        }
+
+        Set<SingleEdgePathChecker> pathCheckers =
+            this.positivePathCheckers.get(elem.label().text());
+        if (pathCheckers != null) {
+            for (SingleEdgePathChecker pc : pathCheckers) {
+                pc.receive(this, elem, action);
+            }
+        }
+        for (SingleEdgePathChecker pc : this.otherPathCheckers) {
+            pc.receive(this, elem, action);
         }
     }
 
@@ -142,5 +196,44 @@ public class RootNode extends ReteNetworkNode {
     @Override
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
         throw new UnsupportedOperationException();
+    }
+
+    private void addPositiveEdgeChecker(EdgeCheckerNode edgeChecker) {
+        if (!edgeChecker.isWildcardEdge()) {
+            String atomLabel = edgeChecker.getEdge().label().text();
+            Set<EdgeCheckerNode> s = this.positiveEdgeCheckers.get(atomLabel);
+            if (s == null) {
+                s = new TreeHashSet<EdgeCheckerNode>();
+                this.positiveEdgeCheckers.put(atomLabel, s);
+            }
+            s.add(edgeChecker);
+        } else {
+            assert edgeChecker.isPositiveWildcard()
+                && edgeChecker.isWildcardGuarded();
+            Set<TypeLabel> labels =
+                edgeChecker.getEdge().label().getMatchExpr().getTypeLabels();
+            for (TypeLabel l : labels) {
+                String atomLabel = l.text();
+                Set<EdgeCheckerNode> s =
+                    this.positiveEdgeCheckers.get(atomLabel);
+                if (s == null) {
+                    s = new TreeHashSet<EdgeCheckerNode>();
+                    this.positiveEdgeCheckers.put(atomLabel, s);
+                }
+                s.add(edgeChecker);
+            }
+        }
+    }
+
+    private void addPositivePathChecker(AtomPathChecker pathChecker) {
+
+        String atomLabel = pathChecker.getExpression().getAtomText();
+        assert atomLabel != null;
+        Set<SingleEdgePathChecker> s = this.positivePathCheckers.get(atomLabel);
+        if (s == null) {
+            s = new TreeHashSet<SingleEdgePathChecker>();
+            this.positivePathCheckers.put(atomLabel, s);
+        }
+        s.add(pathChecker);
     }
 }
