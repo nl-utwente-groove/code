@@ -21,8 +21,6 @@ import groove.match.rete.ProductionNode;
 import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSimpleMatch;
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Atom;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -110,6 +108,14 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("var")) {
+                assertEquals(pn.toString(), 2, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard1")) {
+                assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard2")) {
+                assertEquals(pn.toString(), 0, rmList.size());
             }
         }
     }
@@ -138,6 +144,14 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("var")) {
+                assertEquals(pn.toString(), 3, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard1")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard2")) {
+                assertEquals(pn.toString(), 1, rmList.size());
             }
 
         }
@@ -167,6 +181,14 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals("var")) {
+                assertEquals(pn.toString(), 3, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard1")) {
+                assertEquals(pn.toString(), 1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard2")) {
+                assertEquals(pn.toString(), 1, rmList.size());
             }
         }
     }
@@ -197,27 +219,13 @@ public class ReteNetworkTest extends TestCase {
                 assertEquals(pn.toString(), 3, rmList.size());
             } else if (pn.getProductionRule().getName().toString().equals("var")) {
                 assertEquals(pn.toString(), 10, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard1")) {
+                assertEquals(pn.toString(), 2, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "wildcard2")) {
+                assertEquals(pn.toString(), 2, rmList.size());
             }
-        }
-    }
-
-    private String printRegExp(RegExpr e) {
-        if (e instanceof Atom) {
-            return e.toString();
-        } else {
-            if (e.getOperands().size() == 2) {
-                return String.format(
-                    "(Expr: %s  Operand 1: %s ,  Operand 2: %s)",
-                    e.getOperator(), printRegExp(e.getOperands().get(0)),
-                    printRegExp(e.getOperands().get(1)));
-            } else if (e.getOperands().size() == 1) {
-                return String.format("(Expr: %s  Operand 1: %s)",
-                    e.getOperator(), printRegExp(e.getOperands().get(0)));
-            } else {
-                return String.format("(Expr: %s Operands: %s", e.getOperator(),
-                    e.getOperands().toString());
-            }
-
         }
     }
 
