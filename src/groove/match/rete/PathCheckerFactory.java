@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- * Factory class that creates 
+ * Factory class that creates path-checkers for each regular expression
+ * making sure checkers for similar expressions are reused. 
  * @author Arash Jalali
  * @version $Revision $
  */
@@ -69,13 +70,7 @@ public class PathCheckerFactory {
             this.owner.getRoot().addSuccessor(result);
         } else if (exp.isChoice()) {
             operands = ((Choice) exp).getChoiceOperands();
-            if (operands.size() == 2) {
-                result =
-                    new ChoicePathChecker(this.owner, (RegExpr.Choice) exp);
-            } else {
-                result = buildBinaryTree(exp);
-                operands = Collections.emptyList();
-            }
+            result = new ChoicePathChecker(this.owner, (RegExpr.Choice) exp);
         } else if (exp.isInv()) {
             operands = new ArrayList<RegExpr>();
             operands.add(exp.getInvOperand());

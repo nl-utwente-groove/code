@@ -212,7 +212,8 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     public boolean equals(RetePathMatch m) {
         return (this == m)
-            || ((this.pathLength * m.pathLength == 1) && (this.associatedEdge.equals(m.associatedEdge) && this.getOrigin().equals(
+            || ((this.pathLength * m.pathLength == 1)
+                && (this.associatedEdge != null) && (this.associatedEdge.equals(m.associatedEdge) && this.getOrigin().equals(
                 m.getOrigin())));
     }
 

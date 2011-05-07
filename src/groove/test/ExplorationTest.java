@@ -107,6 +107,15 @@ public class ExplorationTest {
             268, 561);
     }
 
+    /** Tests the complete Car Platooning example 
+     */
+    @Test
+    public void testCarPlatooningFull() {
+        testExploration("car-platooning.gps", "start-03", "bfs", 268, 561);
+        testExploration("car-platooning.gps", "start-03", "dfs", 268, 561);
+        testExploration("car-platooning.gps", "start-03", "rete", 268, 561);
+    }
+
     /** Tests the ferryman sample. */
     @Test
     public void testFerryman() {
