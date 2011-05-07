@@ -25,6 +25,7 @@ import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
+import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.builtin.GroovePredicates;
 
@@ -95,7 +96,7 @@ public class GrooveEnvironment extends Environment {
     }
 
     /** 
-     * Loads all derived predicates from a given class.
+     * Loads all predicates defined in a given class.
      * Returns a map from loaded predicates to tool tip texts. 
      */
     public Map<CompoundTermTag,String> ensureLoaded(
@@ -122,7 +123,7 @@ public class GrooveEnvironment extends Environment {
     }
 
     /**
-     * Loads the definitions from a single method in a given class.
+     * Loads a single method definition, and tests the definition.
      */
     private void ensureLoaded(Class<? extends GroovePredicates> source,
             CompoundTermTag tag, String definition) {
@@ -134,14 +135,38 @@ public class GrooveEnvironment extends Environment {
         Set<CompoundTermTag> predicates = listener.getPredicates();
         if (!predicates.contains(tag)) {
             throw new IllegalArgumentException(String.format(
-                "%s#%s_%d does not define predicate %s",
-                source.getSimpleName(), tag.functor, tag.arity, tag));
+                "%s#%s_%d does not define predicate %s", source.getName(),
+                tag.functor, tag.arity, tag));
         }
         predicates.remove(tag);
         if (!predicates.isEmpty()) {
             throw new IllegalArgumentException(String.format(
-                "%s#%s_%d defines additional predicates %s",
-                source.getSimpleName(), tag.functor, tag.arity, predicates));
+                "%s#%s_%d defines additional predicates %s", source.getName(),
+                tag.functor, tag.arity, predicates));
+        }
+        // tests if the predicate relies on a non-existent or inappropriate class
+        String className =
+            getModule().getDefinedPredicate(tag).getJavaClassName();
+        if (className != null) {
+            try {
+                Class<?> builtInClass = Class.forName(className);
+                if (!PrologCode.class.isAssignableFrom(builtInClass)) {
+                    throw new IllegalArgumentException(String.format(
+                        "%s#%s_%d builds in class %s that does not subtype %s",
+                        source.getName(), tag.functor, tag.arity, className,
+                        PrologCode.class.getName()));
+                }
+                if (builtInClass.getAnnotation(Deprecated.class) != null) {
+                    throw new IllegalArgumentException(String.format(
+                        "%s#%s_%d builds in deprecated class %s",
+                        source.getName(), tag.functor, tag.arity, className,
+                        PrologCode.class.getName()));
+                }
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException(String.format(
+                    "%s#%s_%d builds in non-existing class %s",
+                    source.getName(), tag.functor, tag.arity, className));
+            }
         }
     }
 
