@@ -380,6 +380,24 @@ public class HTMLConverter {
             return text.toString();
         }
 
+        /**
+         * Strips the HTML tags from the string given.
+         * @param text the string to be analyzed.
+         * @return the input string unmodified if it did not contain the the
+         *         HTML tags or the string striped from the tags.
+         */
+        public String off(String text) {
+            int tagEndStart = text.indexOf(this.tagEnd);
+            int tagBeginStart = text.indexOf(this.tagBegin);
+            if (tagEndStart > -1 && tagBeginStart > -1) {
+                int end = tagEndStart + this.tagEnd.length();
+                text = text.substring(0, tagEndStart) + text.substring(end);
+                end = tagBeginStart + this.tagBegin.length();
+                text = text.substring(0, tagBeginStart) + text.substring(end);
+            }
+            return text;
+        }
+
         /** Start text of this tag. */
         public final String tagBegin;
         /** End text of this tag. */

@@ -635,12 +635,16 @@ public class PrologPanel extends JPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                this.manager.setDismissDelay(Integer.MAX_VALUE);
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                this.manager.setDismissDelay(this.standardDelay);
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
             }
 
             private final ToolTipManager manager =
