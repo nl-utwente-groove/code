@@ -1661,6 +1661,14 @@ abstract public class RegExpr { // implements VarSetSupport {
                 return this.labelSet;
             }
 
+            /**
+             * Determines if this label constraint is a negative constraint 
+             * like [^a,b,c].
+             */
+            public boolean isNegated() {
+                return this.negated;
+            }
+
             @Override
             public boolean isSatisfied(TypeLabel value) {
                 return this.kind == value.getRole()

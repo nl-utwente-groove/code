@@ -199,6 +199,7 @@ public class ExplorationTest {
     @Test
     public void testWildcards() {
         testExploration("wildcards.gps", 8, 12);
+        testExploration("wildcards.gps", "start", "rete", 8, 12);
     }
 
     /** tests the subtyping functionality. */
