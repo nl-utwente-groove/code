@@ -95,19 +95,23 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
      * otherwise returns the edge aspect descriptions
      */
     private JComponent createAspectList(boolean forNode) {
-        JList list = new JList();
+        final JList list = new JList();
         list.setCellRenderer(new MyCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
         list.setListData(createData(forNode).toArray());
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                this.manager.setDismissDelay(Integer.MAX_VALUE);
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                this.manager.setDismissDelay(this.standardDelay);
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
             }
 
             private final ToolTipManager manager =

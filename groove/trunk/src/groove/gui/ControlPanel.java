@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.control.CtrlAut;
+import groove.control.parse.CtrlDocumentation;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
@@ -24,8 +25,8 @@ import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.trans.GraphGrammar;
+import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.CtrlView;
@@ -39,8 +40,11 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -51,15 +55,24 @@ import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -86,8 +99,14 @@ public class ControlPanel extends JPanel implements SimulationListener {
         // fill in the GUI
         RTextScrollPane scroller =
             new RTextScrollPane(500, 400, getControlTextArea(), true);
-        this.add(createToolbar(), BorderLayout.NORTH);
-        this.add(scroller, BorderLayout.CENTER);
+        this.add(createToolbar(), BorderLayout.NORTH); // set up the split editor pane
+        JSplitPane splitPane =
+            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroller,
+                createDocPane());
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setResizeWeight(1.0);
+
+        this.add(splitPane, BorderLayout.CENTER);
         // add keyboard binding for Save key
         InputMap focusedInputMap =
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -97,6 +116,74 @@ public class ControlPanel extends JPanel implements SimulationListener {
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         // start listening
         simulator.addSimulationListener(this);
+    }
+
+    private JComponent createDocPane() {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        final JTree result = new JTree(root) {
+            @Override
+            public String getToolTipText(MouseEvent evt) {
+                if (getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                    return null;
+                }
+                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                Object userObject =
+                    ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
+                return getToolTip(userObject);
+            }
+        };
+        result.setRootVisible(false);
+        result.setShowsRootHandles(true);
+        DefaultTreeCellRenderer renderer =
+            (DefaultTreeCellRenderer) result.getCellRenderer();
+        renderer.setLeafIcon(null);
+        renderer.setClosedIcon(null);
+        renderer.setOpenIcon(null);
+        ToolTipManager.sharedInstance().registerComponent(result);
+        result.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
+            }
+
+            private final ToolTipManager manager =
+                ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
+        });
+        CtrlDocumentation doc = new CtrlDocumentation();
+        this.toolTipMap = doc.getToolTipMap();
+        // load the tree
+        for (Map.Entry<?,? extends List<?>> docEntry : doc.getDocMap().entrySet()) {
+            DefaultMutableTreeNode node =
+                new DefaultMutableTreeNode(docEntry.getKey());
+            for (Object rule : docEntry.getValue()) {
+                node.add(new DefaultMutableTreeNode(rule));
+            }
+            root.add(node);
+        }
+        ((DefaultTreeModel) result.getModel()).reload();
+        for (int i = 0; i < root.getChildCount(); i++) {
+            result.expandPath(new TreePath(
+                ((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
+        }
+        return new JScrollPane(result);
+    }
+
+    private String getToolTip(Object value) {
+        String result = null;
+        if (this.toolTipMap != null) {
+            result = this.toolTipMap.get(value);
+        }
+        return result;
     }
 
     private JToolBar createToolbar() {
@@ -344,6 +431,9 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
+
+    /** Tool type map for syntax help. */
+    private Map<?,String> toolTipMap;
 
     /**
      * Interface for objects that need to refresh their own status when actions
