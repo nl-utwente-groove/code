@@ -14,21 +14,19 @@
  *
  * $Id$
  */
-package groove.prolog.annotation;
+package groove.annotation;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
-/** Tool tip annotation for GROOVE-based Prolog predicates. */
+/** 
+ * Tool tip header annotation.
+ * The header is set on the first line, in boldface.
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface ToolTip {
+public @interface ToolTipHeader {
     /** 
-     * Value of the tool tip.
-     * The strings in the array are concatenated to form the main
-     * body of the tool tip. 
+     * Value of the tool tip header.
      */
-    String[] value();
+    String value();
 }

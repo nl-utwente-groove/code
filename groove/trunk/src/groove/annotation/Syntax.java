@@ -14,20 +14,18 @@
  *
  * $Id$
  */
-package groove.prolog.annotation;
+package groove.annotation;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /** 
- * Parameter documentation of a GROOVE Prolog predicate.
- * The value consists of a list of strings, each describing one parameter.
+ * Syntax description of a documentation entry.
+ * The value is a string typically consisting of keywords, parameters and
+ * BNF symbols.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface Param {
-    /** The list of parameter comments, ordered according to the parameters. */
-    String[] value();
+public @interface Syntax {
+    /** The syntax description line. */
+    String value();
 }

@@ -2260,17 +2260,19 @@ public class Simulator {
     /** Returns a dialog that will ask for a formula to be entered. */
     public StringDialog getLtlFormulaDialog() {
         if (this.ltlFormulaDialog == null) {
-            this.ltlFormulaDialog = new StringDialog("Enter the LTL Formula") {
-                @Override
-                public String parse(String text) throws FormatException {
-                    try {
-                        FormulaParser.parse(text).toLtlFormula();
-                    } catch (ParseException e) {
-                        throw new FormatException(e.getMessage());
+            this.ltlFormulaDialog =
+                new StringDialog("Enter the LTL Formula",
+                    FormulaParser.getDocMap(false)) {
+                    @Override
+                    public String parse(String text) throws FormatException {
+                        try {
+                            FormulaParser.parse(text).toLtlFormula();
+                        } catch (ParseException e) {
+                            throw new FormatException(e.getMessage());
+                        }
+                        return text;
                     }
-                    return text;
-                }
-            };
+                };
         }
         return this.ltlFormulaDialog;
     }
@@ -2278,17 +2280,19 @@ public class Simulator {
     /** Returns a dialog that will ask for a formula to be entered. */
     public StringDialog getCtlFormulaDialog() {
         if (this.ctlFormulaDialog == null) {
-            this.ctlFormulaDialog = new StringDialog("Enter the CTL Formula") {
-                @Override
-                public String parse(String text) throws FormatException {
-                    try {
-                        FormulaParser.parse(text).toCtlFormula();
-                    } catch (ParseException efe) {
-                        throw new FormatException(efe.getMessage());
+            this.ctlFormulaDialog =
+                new StringDialog("Enter the CTL Formula",
+                    FormulaParser.getDocMap(true)) {
+                    @Override
+                    public String parse(String text) throws FormatException {
+                        try {
+                            FormulaParser.parse(text).toCtlFormula();
+                        } catch (ParseException efe) {
+                            throw new FormatException(efe.getMessage());
+                        }
+                        return text;
                     }
-                    return text;
-                }
-            };
+                };
         }
         return this.ctlFormulaDialog;
     }

@@ -14,12 +14,10 @@
  *
  * $Id$
  */
-package groove.prolog.annotation;
+package groove.annotation;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /** 
  * Signature of a Prolog predicate.
@@ -37,7 +35,6 @@ import java.lang.annotation.Target;
  * <tr><td> <b>-</b> <td> The argument shall be a variable that will be instantiated
  * </table>
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Signature {
     /** The signature value. */

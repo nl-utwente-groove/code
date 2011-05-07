@@ -24,20 +24,29 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -52,19 +61,20 @@ import javax.swing.event.ListDataListener;
 abstract public class StringDialog {
     /**
      * Constructs an instance of the dialog for a given dialog title.
-     * @param parsed if the input string is to be parsed.
+     * @param docMap mapping from syntax documentation lines to (possibly {@code null}) associated tool tips.
      */
-    private StringDialog(String title, boolean parsed) {
+    public StringDialog(String title, Map<String,String> docMap) {
         this.history = new ArrayList<String>();
         this.title = title;
-        this.parsed = parsed;
+        this.docMap = docMap;
+        this.parsed = docMap != null;
     }
 
     /**
      * Constructs an instance of the dialog for a given dialog title.
      */
     public StringDialog(String title) {
-        this(title, true);
+        this(title, null);
     }
 
     /**
@@ -79,7 +89,7 @@ abstract public class StringDialog {
             this.history.clear();
             for (String value : storedValues) {
                 String parsedValue = parseText(value);
-                if (parsedValue != null) {
+                if (value != null && parsedValue != null) {
                     this.history.add(value);
                 }
             }
@@ -109,22 +119,58 @@ abstract public class StringDialog {
      */
     private JDialog createDialog(Component frame) {
         Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
-        Object[] panels;
+        JPanel input = new JPanel();
+        input.setLayout(new BorderLayout());
+        input.add(getChoiceBox(), BorderLayout.NORTH);
         // add an error label if there is a parser
-        if (!this.parsed) {
-            panels = new Object[] {getChoiceBox()};
-        } else {
+        if (this.parsed) {
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.add(getErrorLabel());
-            panels = new Object[] {getChoiceBox(), errorPanel};
+            input.add(errorPanel, BorderLayout.SOUTH);
+        }
+        JPanel main = new JPanel();
+        main.setLayout(new BorderLayout());
+        main.add(input, BorderLayout.CENTER);
+        if (this.parsed) {
+            main.add(createSyntaxPanel(), BorderLayout.EAST);
         }
         JOptionPane panel =
-            new JOptionPane(panels, JOptionPane.PLAIN_MESSAGE,
+            new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION, null, buttons);
         JDialog result = panel.createDialog(frame, this.title);
         result.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         result.addWindowListener(this.closeListener);
         return result;
+    }
+
+    private JComponent createSyntaxPanel() {
+        final JList list = new JList();
+        DefaultListModel model = new DefaultListModel();
+        for (Map.Entry<String,String> entry : this.docMap.entrySet()) {
+            model.addElement(entry.getKey());
+        }
+        list.setModel(model);
+        list.setCellRenderer(new MyCellRenderer(this.docMap));
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == list) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
+            }
+
+            private final ToolTipManager manager =
+                ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
+        });
+        return new JScrollPane(list);
     }
 
     /** Lazily creates and returns the combobox containing the current choices. */
@@ -246,6 +292,7 @@ abstract public class StringDialog {
     /** Label displaying the current error in the renaming (if any). */
     private JLabel errorLabel;
 
+    private final Map<String,String> docMap;
     /** The history list */
     private final List<String> history;
 
@@ -266,7 +313,7 @@ abstract public class StringDialog {
             this.result = parseText(resultObject);
             ok = this.result != null;
         }
-        if (ok) {
+        if (ok && resultObject != null) {
             this.history.remove(resultObject);
             this.history.add(0, resultObject);
         }
@@ -308,7 +355,7 @@ abstract public class StringDialog {
 
     /** Parser that leaves a given string unchanged. */
     public static final StringDialog createStringDialog(String title) {
-        return new StringDialog(title, false) {
+        return new StringDialog(title, null) {
             @Override
             protected String parse(String text) throws FormatException {
                 return text;
@@ -478,4 +525,26 @@ abstract public class StringDialog {
             }
         }
     }
+
+    /** Private cell renderer class that inserts the correct tool tips. */
+    private static class MyCellRenderer extends DefaultListCellRenderer {
+        MyCellRenderer(Map<String,String> tipMap) {
+            this.tipMap = tipMap;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            Component result =
+                super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+            if (result == this) {
+                setToolTipText(this.tipMap.get(value));
+            }
+            return result;
+        }
+
+        private final Map<String,String> tipMap;
+    }
+
 }

@@ -21,21 +21,23 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import static groove.io.HTMLConverter.TABLE_TAG_NAME;
 import gnu.prolog.term.CompoundTermTag;
+import groove.annotation.Help;
+import groove.annotation.ToolTipPars;
+import groove.annotation.Signature;
+import groove.annotation.ToolTipBody;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
-import groove.prolog.annotation.Param;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Abstract superclass for classes containing derived predicate declarations.
  * The predicate declarations should be added in the form of method declarations
- * annotated with {@link Signature} and optionally {@link ToolTip} and {@link Param}.
+ * annotated with {@link Signature} and optionally {@link ToolTipBody} and {@link ToolTipPars}.
  * The declarations themselves consist of a series of calls of {@link #s(String)}.
  * @author Arend Rensink
  * @version $Revision $
@@ -93,9 +95,9 @@ abstract public class GroovePredicates {
     private void addToolTipText(Method method) {
         CompoundTermTag tag = getTag(method.getName());
         Signature sig = method.getAnnotation(Signature.class);
-        ToolTip tip = method.getAnnotation(ToolTip.class);
-        Param param = method.getAnnotation(Param.class);
-        this.toolTipMap.put(tag, createToolTipText(tag, sig, tip, param));
+        ToolTipBody tip = method.getAnnotation(ToolTipBody.class);
+        ToolTipPars param = method.getAnnotation(ToolTipPars.class);
+        this.toolTipMap.put(tag, newCreateToolTipText(tag, sig, tip, param));
     }
 
     /** Converts a method name into a tag. */
@@ -131,8 +133,72 @@ abstract public class GroovePredicates {
      * Constructs the HMTL-formatted tool tip for a given predicate,
      * by trying to construct this from given annotation values.
      */
+    static public String newCreateToolTipText(CompoundTermTag tag,
+            Signature sigAnn, ToolTipBody toolTip, ToolTipPars param) {
+        String result = null;
+        if (sigAnn != null) {
+            String name = tag.functor.toString();
+            int arity = tag.arity;
+            String[] sigValue = sigAnn.value();
+            if (sigValue.length <= arity) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Malformed annotation %s for %s/%s: insufficient arguments",
+                        sigAnn, name, arity));
+            }
+            String[] headers = new String[sigValue.length - arity];
+            for (int i = 0; i < headers.length; i++) {
+                String io = sigValue[arity + i];
+                if (io.length() != arity) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "Malformed annodation %s for %s/%s: incorrect IO spec %s",
+                            sigAnn, name, arity, io));
+                }
+                StringBuilder sigText = new StringBuilder();
+                sigText.append(name);
+                sigText.append('(');
+                for (int p = 0; p < arity; p++) {
+                    if (p > 0) {
+                        sigText.append(", ");
+                    }
+                    sigText.append(Help.it(io.charAt(p) + sigValue[p]));
+                }
+                sigText.append(')');
+                headers[i] = sigText.toString();
+            }
+            String tip = "";
+            if (toolTip != null) {
+                StringBuilder tipText = new StringBuilder();
+                for (String line : toolTip.value()) {
+                    tipText.append(line);
+                    tipText.append(" ");
+                }
+                tip = tipText.toString();
+            }
+            Map<String,String> pars = new LinkedHashMap<String,String>();
+            if (param != null) {
+                String[] paramValue = param.value();
+                if (paramValue.length != arity) {
+                    throw new IllegalStateException(String.format(
+                        "Malformed annodation %s for %s/%s: wrong arity",
+                        param, name, arity));
+                }
+                for (int p = 0; p < arity; p++) {
+                    pars.put("#" + p, paramValue[p]);
+                }
+            }
+            result = Help.tip(tip, pars, headers);
+        }
+        return result;
+    }
+
+    /** 
+     * Constructs the HMTL-formatted tool tip for a given predicate,
+     * by trying to construct this from given annotation values.
+     */
     static public String createToolTipText(CompoundTermTag tag,
-            Signature sigAnn, ToolTip toolTip, Param param) {
+            Signature sigAnn, ToolTipBody toolTip, ToolTipPars param) {
         String result = null;
         if (sigAnn != null) {
             String name = tag.functor.toString();

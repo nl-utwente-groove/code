@@ -18,18 +18,40 @@
  */
 package groove.verify;
 
+import static groove.verify.FormulaParser.Token.ALWAYS;
+import static groove.verify.FormulaParser.Token.AND;
 import static groove.verify.FormulaParser.Token.ATOM;
+import static groove.verify.FormulaParser.Token.EQUIV;
+import static groove.verify.FormulaParser.Token.EVENTUALLY;
+import static groove.verify.FormulaParser.Token.EXISTS;
 import static groove.verify.FormulaParser.Token.FALSE;
+import static groove.verify.FormulaParser.Token.FOLLOWS;
+import static groove.verify.FormulaParser.Token.FORALL;
+import static groove.verify.FormulaParser.Token.IMPLIES;
 import static groove.verify.FormulaParser.Token.LPAR;
+import static groove.verify.FormulaParser.Token.NEXT;
 import static groove.verify.FormulaParser.Token.NOT;
+import static groove.verify.FormulaParser.Token.OR;
+import static groove.verify.FormulaParser.Token.RELEASE;
 import static groove.verify.FormulaParser.Token.RPAR;
+import static groove.verify.FormulaParser.Token.S_RELEASE;
 import static groove.verify.FormulaParser.Token.TRUE;
+import static groove.verify.FormulaParser.Token.UNTIL;
+import static groove.verify.FormulaParser.Token.W_UNTIL;
+import groove.annotation.Help;
+import groove.annotation.Syntax;
+import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipHeader;
+import groove.io.HTMLConverter;
 import groove.util.Pair;
 
+import java.lang.reflect.Field;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -56,6 +78,90 @@ public class FormulaParser {
         if (DEBUG) {
             System.out.println("Formula: " + result);
             System.out.print(result.toTree());
+        }
+        return result;
+    }
+
+    /** 
+     * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
+     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators. 
+     */
+    public static Map<String,String> getDocMap(boolean ctl) {
+        Map<String,String> result = new LinkedHashMap<String,String>();
+        Map<Token,String> tokenToSyntaxMap = new HashMap<Token,String>();
+        Map<Token,String> tokenToHeaderMap = new HashMap<Token,String>();
+        Map<Token,String> tokenToTipMap = new HashMap<Token,String>();
+        for (Field field : Token.class.getFields()) {
+            if (field.isEnumConstant()) {
+                Token token = nameToTokenMap.get(field.getName());
+                ToolTipBody tip = field.getAnnotation(ToolTipBody.class);
+                if (tip != null) {
+                    String[] tipArray = tip.value();
+                    StringBuilder tipText = new StringBuilder();
+                    for (int i = 0; i < tipArray.length; i++) {
+                        tipText.append(tipArray[i]);
+                        tipText.append(" ");
+                    }
+                    if (tipText.length() > 0) {
+                        tokenToTipMap.put(token, tipText.toString());
+                    }
+                }
+                Syntax syntax = field.getAnnotation(Syntax.class);
+                if (syntax != null) {
+                    tokenToSyntaxMap.put(token, syntax.value());
+                }
+                ToolTipHeader header = field.getAnnotation(ToolTipHeader.class);
+                if (header != null) {
+                    tokenToHeaderMap.put(token, header.value());
+                }
+            }
+        }
+        for (Token token : ctl ? CTLTokens : LTLTokens) {
+            String syntax = tokenToSyntaxMap.get(token);
+            String header = tokenToHeaderMap.get(token);
+            if (syntax == null) {
+                syntax = getSignature(token);
+            }
+            if (syntax != null) {
+                Pair<String,List<String>> parsed =
+                    Help.processTokensAndArgs(syntax, nameToSymbolMap);
+                String tip = tokenToTipMap.get(token);
+                if (tip == null && header != null) {
+                    tip = "";
+                }
+                if (tip != null) {
+                    tip =
+                        Help.html(Help.tip(
+                            String.format(tip, parsed.two().toArray()), header));
+                }
+                result.put(Help.html(parsed.one()), tip);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Constructs a signature for a temporal operator for which none is
+     * provided through annotations.
+     */
+    private static String getSignature(Token token) {
+        String result;
+        String op = token.name();
+        switch (token.getArity()) {
+        case -1:
+            result = (token == LPAR) ? "LPAR form RPAR" : null;
+            break;
+        case 0:
+            result = (token == ATOM) ? "prop" : op;
+            break;
+        case 1:
+            result = op + " form";
+            break;
+        case 2:
+            result = "form1 " + op + " form2";
+            break;
+        default:
+            throw new IllegalStateException();
         }
         return result;
     }
@@ -130,16 +236,35 @@ public class FormulaParser {
         return formula;
     }
 
-    /** Mapping from token symbols to tokens. */
-    private static Map<String,Token> tokenMap = new HashMap<String,Token>();
+    /** Mapping from token names to token values. */
+    private static Map<String,Token> nameToTokenMap =
+        new HashMap<String,Token>();
+    /** Mapping from token symbols to token values. */
+    private static Map<String,Token> symbolToTokenMap =
+        new HashMap<String,Token>();
+    /** Mapping from token names to HTML-formatted token strings. */
+    private static Map<String,String> nameToSymbolMap =
+        new HashMap<String,String>();
 
     static {
         for (Token token : EnumSet.allOf(Token.class)) {
-            tokenMap.put(token.getSymbol(), token);
+            symbolToTokenMap.put(token.getSymbol(), token);
+            nameToTokenMap.put(token.name(), token);
+            nameToSymbolMap.put(token.name(),
+                Help.bf(HTMLConverter.toHtml(token.getSymbol())));
         }
     }
 
     private final static boolean DEBUG = false;
+
+    /** Set of tokens that can occur in CTL formulas. */
+    private final static Set<Token> CTLTokens = EnumSet.of(ATOM, TRUE, FALSE,
+        NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, ALWAYS, EVENTUALLY,
+        FORALL, EXISTS, LPAR);
+    /** Set of tokens that can occur in LTL formulas. */
+    private final static Set<Token> LTLTokens = EnumSet.of(ATOM, TRUE, FALSE,
+        NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE,
+        S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
 
     /**
      * Input stream for the parser.
@@ -337,7 +462,7 @@ public class FormulaParser {
          */
         private Pair<Token,String> createToken(String symbol)
             throws ParseException {
-            Token token = tokenMap.get(symbol);
+            Token token = symbolToTokenMap.get(symbol);
             if (token == null) {
                 throw new ParseException("Can't parse token '%s'", symbol);
             }
@@ -383,43 +508,118 @@ public class FormulaParser {
     /** The kind (i.e., top level operator) of a formula. */
     static public enum Token {
         /** Atomic proposition. */
+        @Syntax("rule")
+        @ToolTipHeader("Atomic proposition")
+        @ToolTipBody({"Holds if %s is enabled in the current state.",
+            "Note that this does <i>not</i> mean that %1$s has just been executed."})
         ATOM("", 0, 7),
+
         /** True. */
+        @Syntax("TRUE")
+        @ToolTipHeader("True")
+        @ToolTipBody("Trivially holds in every state.")
         TRUE("true", 0, 7),
+
         /** False. */
+        @Syntax("FALSE")
+        @ToolTipHeader("FALSE")
+        @ToolTipBody("Always fails to hold.")
         FALSE("false", 0, 7),
+
         /** Negation. */
+        @Syntax("NOT form")
+        @ToolTipHeader("Negation")
+        @ToolTipBody("Holds if and only if %s does not hold.")
         NOT("!", 1, 6),
+
         /** Disjunction. */
+        @Syntax("form1 OR form2")
+        @ToolTipHeader("Disjunction")
+        @ToolTipBody("Either %s or %s (or both) holds.")
         OR("|", 2, 2),
+
         /** Conjunction. */
+        @Syntax("form1 AND form2")
+        @ToolTipHeader("Conjunction")
+        @ToolTipBody("Both %s and %s hold.")
         AND("&", 2, 3),
+
         /** Implication. */
+        @Syntax("pre IMPLIES post")
+        @ToolTipHeader("Implication")
+        @ToolTipBody({"Either%s fails to hold, or %s holds;",
+            "in other words, %1$s implies %2$s."})
         IMPLIES("->", 2, 1),
+
         /** Inverse implication. */
+        @Syntax("post FOLLOWS pre")
+        @ToolTipHeader("Inverse implication")
+        @ToolTipBody({"Either %2$s fails to hold, or %1$s holds;",
+            "in other words, %1$s is implied by %2$s."})
         FOLLOWS("<-", 2, 1),
+
         /** Equivalence. */
+        @Syntax("form1 EQUIV form2")
+        @ToolTipHeader("Equivalence")
+        @ToolTipBody("Either %s and %s both hold, or both fail to hold.")
         EQUIV("<->", 2, 1),
+
         /** Next-state. */
+        @Syntax("NEXT form")
+        @ToolTipHeader("Next")
+        @ToolTipBody({"In the next state of the current path, %s holds."})
         NEXT("X", 1, 6),
+
         /** Temporal until. */
+        @Syntax("first UNTIL second")
+        @ToolTipHeader("Until")
+        @ToolTipBody({"%1$s holds up until one state before %2$s holds,",
+            "and %2$s will indeed eventually hold."})
         UNTIL("U", 2, 4),
+
         /** Weak temporal until (second operand may never hold). */
+        @Syntax("first W_UNTIL second")
+        @ToolTipHeader("Weak until")
+        @ToolTipBody({
+            "Either %1$s holds up until one state before %2$s holds,",
+            "or %1$s holds forever."})
         W_UNTIL("W", 2, 4),
+
         /** Temporal release. */
         RELEASE("R", 2, 4),
+
         /** Strong temporal release (second operand must eventually hold). */
         S_RELEASE("M", 2, 4),
+
         /** Everywhere along a path. */
+        @Syntax("ALWAYS form")
+        @ToolTipHeader("Globally")
+        @ToolTipBody("In all states of the current path %s holds.")
         ALWAYS("G", 1, 6),
+
         /** Eventually along a path. */
+        @Syntax("EVENTUALLY form")
+        @ToolTipHeader("Eventually")
+        @ToolTipBody("There is a state of the current path in which %s holds.")
         EVENTUALLY("F", 1, 6),
+
         /** For all paths. */
+        @Syntax("FORALL form")
+        @ToolTipHeader("For all paths")
+        @ToolTipBody("Along all paths starting in the current state %s holds.")
         FORALL("A", 1, 3),
+
         /** There exists a path. */
+        @Syntax("EXISTS form")
+        @ToolTipHeader("For some path")
+        @ToolTipBody("There is a path, starting in the current state, along which %s holds.")
         EXISTS("E", 1, 3),
+
         /** Left parenthesis. */
+        @Syntax("LPAR form RPAR")
+        @ToolTipHeader("Bracketed formula")
         LPAR("("),
+
         /** Right parenthesis. */
         RPAR(")");
 

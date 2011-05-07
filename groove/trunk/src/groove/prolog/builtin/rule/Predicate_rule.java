@@ -23,9 +23,9 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.annotation.Signature;
+import groove.annotation.ToolTipBody;
 import groove.prolog.GrooveEnvironment;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
 import groove.prolog.builtin.trans.TransPrologCode;
 import groove.trans.Rule;
 
@@ -35,7 +35,7 @@ import groove.trans.Rule;
  * @author Lesley Wevers
  */
 @Signature({"RuleName", "Rule", "+?", "?+"})
-@ToolTip("Establishes the one-to-one relation between rule names and rules in the current grammar")
+@ToolTipBody("Establishes the one-to-one relation between rule names and rules in the current grammar")
 public class Predicate_rule extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,

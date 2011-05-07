@@ -27,11 +27,11 @@ import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
+import groove.annotation.ToolTipPars;
+import groove.annotation.Signature;
+import groove.annotation.ToolTipBody;
 import groove.graph.Graph;
 import groove.lts.GraphState;
-import groove.prolog.annotation.Param;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
 import groove.prolog.builtin.AlgebraPredicates;
 import groove.prolog.builtin.GraphPredicates;
 import groove.prolog.builtin.GroovePredicates;
@@ -314,8 +314,8 @@ public class PrologQuery {
             if (className != null) {
                 Class<?> cl = Class.forName(className);
                 Signature sigAnn = cl.getAnnotation(Signature.class);
-                ToolTip toolTipAnn = cl.getAnnotation(ToolTip.class);
-                Param paramAnn = cl.getAnnotation(Param.class);
+                ToolTipBody toolTipAnn = cl.getAnnotation(ToolTipBody.class);
+                ToolTipPars paramAnn = cl.getAnnotation(ToolTipPars.class);
                 result =
                     GroovePredicates.createToolTipText(tag, sigAnn, toolTipAnn,
                         paramAnn);
