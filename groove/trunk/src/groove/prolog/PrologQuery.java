@@ -21,8 +21,6 @@ package groove.prolog;
 import gnu.prolog.database.Predicate;
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
-import gnu.prolog.term.AtomTerm;
-import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.term.VariableTerm;
@@ -37,6 +35,9 @@ import groove.prolog.annotation.ToolTip;
 import groove.prolog.builtin.AlgebraPredicates;
 import groove.prolog.builtin.GraphPredicates;
 import groove.prolog.builtin.GroovePredicates;
+import groove.prolog.builtin.LtsPredicates;
+import groove.prolog.builtin.RulePredicates;
+import groove.prolog.builtin.TransPredicates;
 import groove.prolog.builtin.TypePredicates;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
@@ -57,15 +58,11 @@ import java.util.Set;
  * @author Michiel Hendriks
  */
 public class PrologQuery {
-    /**
-     * The groove prolog library, will always be included
-     */
-    public static final String GROOVE_PRO = "/groove/prolog/builtin/groove.pro";
-
     /** Classes of predefined Groove predicates. */
     @SuppressWarnings("unchecked")
     public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
-        AlgebraPredicates.class, GraphPredicates.class, TypePredicates.class};
+        AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
+        RulePredicates.class, TransPredicates.class, TypePredicates.class};
 
     /**
      * The graph that will be queried.
@@ -272,12 +269,6 @@ public class PrologQuery {
             this.env = new GrooveEnvironment(null, this.userOutput);
             this.env.setGrooveState(this.grooveState);
             this.prologTags.addAll(this.env.getModule().getPredicateTags());
-            // load the class-based Groove predicates
-            CompoundTerm term =
-                new CompoundTerm(AtomTerm.get("resource"),
-                    new Term[] {AtomTerm.get(GROOVE_PRO)});
-            this.env.ensureLoaded(term);
-            // load the derived Groove predicates
             for (Class<GroovePredicates> predicates : GROOVE_PREDS) {
                 this.toolTipMap.putAll(this.env.ensureLoaded(predicates));
             }

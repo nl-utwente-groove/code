@@ -139,7 +139,7 @@ abstract public class GroovePredicates {
             int arity = tag.arity;
             StringBuilder tip = new StringBuilder();
             String[] sigValue = sigAnn.value();
-            if (sigValue.length < arity) {
+            if (sigValue.length <= arity) {
                 throw new IllegalStateException(
                     String.format(
                         "Malformed annotation %s for %s/%s: insufficient arguments",

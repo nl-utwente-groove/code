@@ -17,7 +17,13 @@ import groove.prolog.annotation.Param;
 import groove.prolog.annotation.Signature;
 import groove.prolog.annotation.ToolTip;
 
-/** Algebra-related Groove predicates. */
+/** Algebra-related Groove predicates. 
+ * Documentation reading guide:
+ * <li> +     The argument shall be instantiated.
+ * <li> ?     The argument shall be instantiated or a variable.
+ * <li> @     The argument shall remain unaltered.
+ * <li> -     The argument shall be a variable that will be instantiated
+ */
 @SuppressWarnings("all")
 public class AlgebraPredicates extends GroovePredicates {
     @Signature({"Node", "@"})

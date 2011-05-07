@@ -20,7 +20,13 @@ import groove.prolog.annotation.Param;
 import groove.prolog.annotation.Signature;
 import groove.prolog.annotation.ToolTip;
 
-/** Graph-related GROOVE predicates. */
+/** Graph-related GROOVE predicates.
+ * Documentation reading guide:
+ * <li> +     The argument shall be instantiated.
+ * <li> ?     The argument shall be instantiated or a variable.
+ * <li> @     The argument shall remain unaltered.
+ * <li> -     The argument shall be a variable that will be instantiated
+ */
 @SuppressWarnings("all")
 public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "+"})
