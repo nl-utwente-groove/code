@@ -176,12 +176,14 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;
-        if (this.isWildcardEdge()) {
-            LabelVar variable = this.getEdge().label().getWildcardId();
+        LabelVar variable;
+        if (this.isWildcardEdge()
+            && ((variable = this.getEdge().label().getWildcardId()) != null)) {
             for (ReteNetworkNode n : this.getSuccessors()) {
                 repeatedSuccessorIndex =
                     (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
