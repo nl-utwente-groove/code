@@ -16,9 +16,9 @@
  */
 package groove.prolog.builtin;
 
-import groove.prolog.annotation.Param;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
+import groove.annotation.ToolTipPars;
+import groove.annotation.Signature;
+import groove.annotation.ToolTipBody;
 
 /** Rule-based GROOVE Prolog predicates.
  * Documentation reading guide:
@@ -44,33 +44,33 @@ public class RulePredicates extends GroovePredicates {
         s(":-build_in(rule_confluent/1,'groove.prolog.builtin.rule.Predicate_rule_confluent').");
     }
 
-    @ToolTip("Tests if the argument is a JavaObjectTerm with a Rule")
+    @ToolTipBody("Tests if the argument is a JavaObjectTerm with a Rule")
     @Signature({"RuleEvent", "+"})
     public void is_rule_1() {
         s(":-build_in(is_rule/1,'groove.prolog.builtin.rule.Predicate_is_rule').");
     }
 
-    @ToolTip("Retrieves the priority of the rule")
+    @ToolTipBody("Retrieves the priority of the rule")
     @Signature({"Rule", "Integer", "+?"})
-    @Param({"the rule", "the priority"})
+    @ToolTipPars({"the rule", "the priority"})
     //    % @see groove.trans.Rule#getPriority()
     public void rule_priority_2() {
         s(":-build_in(rule_priority/2, 'groove.prolog.builtin.rule.Predicate_rule_priority').");
     }
 
-    @ToolTip({"Retrieves the left hand side of this Rule.",
+    @ToolTipBody({"Retrieves the left hand side of this Rule.",
         "Note: this does not use the same nodes as the current graph."})
     @Signature({"Rule", "Graph", "+?"})
-    @Param({"the rule", "the graph"})
+    @ToolTipPars({"the rule", "the graph"})
     //    % @see groove.trans.Rule#getLhs()
     public void rule_lhs_2() {
         s(":-build_in(rule_lhs/2, 'groove.prolog.builtin.rule.Predicate_rule_lhs').");
     }
 
-    @ToolTip({"Retrieves the right hand side of this Rule.",
+    @ToolTipBody({"Retrieves the right hand side of this Rule.",
         "Note: this does not use the same nodes as the current graph."})
     @Signature({"Rule", "Graph", "+?"})
-    @Param({"the rule", "the graph"})
+    @ToolTipPars({"the rule", "the graph"})
     //    % @see groove.trans.Rule#getRhs()
     public void rule_rhs_2() {
         s(":-build_in(rule_rhs/2, 'groove.prolog.builtin.rule.Predicate_rule_rhs').");

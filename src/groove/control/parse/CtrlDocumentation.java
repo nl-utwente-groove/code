@@ -16,12 +16,14 @@
  */
 package groove.control.parse;
 
-import static groove.io.HTMLConverter.HTML_TAG;
-import static groove.io.HTMLConverter.ITALIC_TAG;
+import static groove.annotation.Help.bf;
+import static groove.annotation.Help.html;
+import static groove.annotation.Help.it;
+import static groove.annotation.Help.processTokens;
+import static groove.annotation.Help.processTokensAndArgs;
+import static groove.annotation.Help.tip;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
-import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -115,7 +117,7 @@ public class CtrlDocumentation {
             this.ruleToLinesMap.put(ruleLine, lines);
             this.nameToRuleMap.put(rule.name, ruleLine);
             if (comment != null) {
-                this.toolTipMap.put(ruleLine, comment);
+                this.toolTipMap.put(ruleLine, html(tip("", comment)));
             }
         }
     }
@@ -217,52 +219,32 @@ public class CtrlDocumentation {
     }
 
     /**
-     * Puts HTML tags around all entries, keeping the keys in the tool tip
-     * map in sync with the new values.
+     * Puts HTML tags around all entries.
      */
     private void convertToHtml() {
         for (Map.Entry<Line,List<Line>> entry : this.ruleToLinesMap.entrySet()) {
             List<Line> lines = entry.getValue();
             for (int i = 0; i < lines.size(); i++) {
                 Line line = lines.get(i);
-                Pair<String,List<String>> format = format(line.toString());
-                line.setText(HTML_TAG.on(format.one()));
+                Pair<String,List<String>> format =
+                    processTokensAndArgs(line.toString(), this.tokenMap);
+                line.setText(html(format.one()));
                 convertTipToHtml(line, format.two().toArray());
             }
             Line rule = entry.getKey();
-            rule.setText(HTML_TAG.on(STRONG_TAG.on(ITALIC_TAG.on(rule))));
-            convertTipToHtml(rule);
+            rule.setText(html(bf(it(rule))));
         }
     }
 
     /** 
-     * Changes the tool tip for a n old key value to a HTML-formatted
+     * Changes the tool tip for an old key value to a HTML-formatted
      * tool tip for a new key.
      */
     private void convertTipToHtml(Line key, Object... args) {
         // convert the corresponding tip, if any
         String tip = this.toolTipMap.get(key);
         if (tip != null) {
-            // substitute terminal tokens
-            StringBuilder tipBuild = new StringBuilder(tip);
-            for (int i = 0; i < tipBuild.length(); i++) {
-                char first = tipBuild.charAt(i);
-                if (Character.isJavaIdentifierStart(first)) {
-                    int start = i;
-                    int end = i + 1;
-                    while (end < tipBuild.length()
-                        && Character.isJavaIdentifierPart(tipBuild.charAt(end))) {
-                        end++;
-                    }
-                    String subst =
-                        this.tokenMap.get(tipBuild.substring(start, end));
-                    if (subst != null) {
-                        tipBuild.replace(start, end, subst);
-                        i += subst.length() - 1;
-                    }
-                }
-            }
-            tip = tipBuild.toString();
+            tip = processTokens(tip, this.tokenMap);
             // substitute nonterminal parameters
             try {
                 tip = String.format(tip, args);
@@ -271,37 +253,8 @@ public class CtrlDocumentation {
                     "Error in string format '%s' for arguments %s: %s", tip,
                     Arrays.toString(args), e.getMessage()));
             }
-            this.toolTipMap.put(key, HTML_TAG.on(DIV_TAG.on(tip)));
+            this.toolTipMap.put(key, html(tip(tip)));
         }
-    }
-
-    private Pair<String,List<String>> format(String rule) {
-        StringBuilder result = new StringBuilder();
-        List<String> args = new ArrayList<String>();
-        while (rule.length() > 0) {
-            char first = rule.charAt(0);
-            if (Character.isJavaIdentifierStart(first)) {
-                int ix = 1;
-                while (ix < rule.length()
-                    && Character.isJavaIdentifierPart(rule.charAt(ix))) {
-                    ix++;
-                }
-                String id = rule.substring(0, ix);
-                String token = this.tokenMap.get(id);
-                if (token == null) {
-                    String arg = ITALIC_TAG.on(id);
-                    result.append(arg);
-                    args.add(arg);
-                } else {
-                    result.append(token);
-                }
-                rule = rule.substring(ix);
-            } else {
-                result.append(first);
-                rule = rule.substring(1);
-            }
-        }
-        return Pair.newPair(result.toString(), args);
     }
 
     /** Flag indicating that the object has been initialised. */
@@ -341,8 +294,6 @@ public class CtrlDocumentation {
     /** The name of the grammar file providing the documentation. */
     public static final String CTRL_GRAMMAR_FILE =
         "groove/control/parse/Ctrl.g";
-    private static HTMLTag DIV_TAG =
-        HTMLConverter.createDivTag("width: 200px;");
 
     private class Line {
         public Line(String text) {

@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 package groove.prolog.builtin;
 
-import groove.prolog.annotation.Param;
-import groove.prolog.annotation.Signature;
-import groove.prolog.annotation.ToolTip;
+import groove.annotation.ToolTipPars;
+import groove.annotation.Signature;
+import groove.annotation.ToolTipBody;
 
 /** Algebra-related Groove predicates. 
  * Documentation reading guide:
@@ -27,24 +27,24 @@ import groove.prolog.annotation.ToolTip;
 @SuppressWarnings("all")
 public class AlgebraPredicates extends GroovePredicates {
     @Signature({"Node", "@"})
-    @ToolTip("Succeeds if the given term is a value node")
+    @ToolTipBody("Succeeds if the given term is a value node")
     public void is_valuenode_1() {
         s(":-build_in(is_valuenode/1,'groove.prolog.builtin.algebra.Predicate_is_valuenode').");
     }
 
     @Signature({"Node", "Term", "+?"})
-    @ToolTip({
+    @ToolTipBody({
         "Converts the value node's value to a prolog term. A string value is converted to an",
         "AtomicTerm, and integer and double value are converted to a IntegerTerm and FloatTerm",
         "respectively. All other values are converted to a JavaObjectTerm"})
-    @Param({"The value node", "The corresponding term"})
+    @ToolTipPars({"The value node", "The corresponding term"})
     public void convert_valuenode_2() {
         s(":-build_in(convert_valuenode/2,'groove.prolog.builtin.algebra.Predicate_convert_valuenode').");
     }
 
     @Signature({"Graph", "Node", "AttrName", "AttrValue", "+?+?"})
-    @ToolTip("Get all nodes with a given attribute")
-    @Param({"The graph", "The node with the given attribute",
+    @ToolTipBody("Get all nodes with a given attribute")
+    @ToolTipPars({"The graph", "The node with the given attribute",
         "The attribute name", "The value of the attribute"})
     public void node_with_attribute_4() {
         s("node_with_attribute(Graph,Node,AttrName,AttrValue):-");
