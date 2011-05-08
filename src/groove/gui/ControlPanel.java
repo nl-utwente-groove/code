@@ -17,7 +17,7 @@
 package groove.gui;
 
 import groove.control.CtrlAut;
-import groove.control.parse.CtrlDocumentation;
+import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
@@ -159,10 +159,10 @@ public class ControlPanel extends JPanel implements SimulationListener {
                 ToolTipManager.sharedInstance();
             private final int standardDelay = this.manager.getDismissDelay();
         });
-        CtrlDocumentation doc = new CtrlDocumentation();
+        CtrlDoc doc = new CtrlDoc();
         this.toolTipMap = doc.getToolTipMap();
         // load the tree
-        for (Map.Entry<?,? extends List<?>> docEntry : doc.getDocMap().entrySet()) {
+        for (Map.Entry<?,? extends List<?>> docEntry : doc.getItemTree().entrySet()) {
             DefaultMutableTreeNode node =
                 new DefaultMutableTreeNode(docEntry.getKey());
             for (Object rule : docEntry.getValue()) {

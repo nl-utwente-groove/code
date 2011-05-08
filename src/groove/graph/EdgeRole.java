@@ -16,12 +16,19 @@
  */
 package groove.graph;
 
+import groove.annotation.Help;
+import groove.annotation.Syntax;
+import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipHeader;
+import groove.annotation.ToolTipPars;
 import groove.util.Pair;
 import groove.view.aspect.AspectParser;
 
+import java.lang.reflect.Field;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -31,10 +38,24 @@ import java.util.Map;
  */
 public enum EdgeRole {
     /** An ordinary binary edge. */
+    @Syntax("label")
+    @ToolTipHeader("Binary edge")
+    @ToolTipBody("Represents a binary edge between nodes")
+    @ToolTipPars("the edge label")
     BINARY("binary", ""),
+
     /** A node type edge, i.e., a self-loop determining the type of a node. */
+    @Syntax("NODE_TYPE.COLON.label")
+    @ToolTipHeader("Node type")
+    @ToolTipBody("Represents a node type label")
+    @ToolTipPars("the type name")
     NODE_TYPE("node type", "type"),
+
     /** A flag edge, i.e., a self-loop that stands for a node property. */
+    @Syntax("FLAG.COLON.label")
+    @ToolTipHeader("Flag")
+    @ToolTipBody("Represents a node label (not a type)")
+    @ToolTipPars("the text of the flag")
     FLAG("flag", "flag");
 
     private EdgeRole(String description, String name) {
@@ -66,6 +87,11 @@ public enum EdgeRole {
             result = new String(resultChars);
         }
         return result;
+    }
+
+    /** Returns the documentation item for this edge role. */
+    public Pair<String,String> getDoc() {
+        return getRoleToDocMap().get(this);
     }
 
     private final String description;
@@ -111,15 +137,75 @@ public enum EdgeRole {
      */
     public static EdgeRole getRole(String name) {
         assert name.length() > 0;
-        return roleMap.get(name);
+        return symbolToRoleMap.get(name);
     }
 
+    /** Returns the documentation map for all edge roles. */
+    public static Map<EdgeRole,Pair<String,String>> getRoleToDocMap() {
+        if (roleToDocMap == null) {
+            roleToDocMap = computeRoleToDocMap();
+        }
+        return roleToDocMap;
+    }
+
+    /** Returns the documentation map for all edge roles. */
+    public static Map<String,String> getDocMap() {
+        if (docMap == null) {
+            docMap = new LinkedHashMap<String,String>();
+            for (Pair<String,String> doc : getRoleToDocMap().values()) {
+                docMap.put(doc.one(), doc.two());
+            }
+        }
+        return docMap;
+    }
+
+    /** Computes the documentation map for the edge roles. */
+    private static Map<EdgeRole,Pair<String,String>> computeRoleToDocMap() {
+        Map<EdgeRole,Pair<String,String>> result =
+            new EnumMap<EdgeRole,Pair<String,String>>(EdgeRole.class);
+        for (Field field : EdgeRole.class.getFields()) {
+            if (field.isEnumConstant()) {
+                EdgeRole role =
+                    symbolToRoleMap.get(nameToSymbolMap.get(field.getName()));
+                Help help = createHelp();
+                ToolTipBody body = field.getAnnotation(ToolTipBody.class);
+                if (body != null) {
+                    help.setBody(body.value());
+                }
+                ToolTipPars pars = field.getAnnotation(ToolTipPars.class);
+                if (pars != null) {
+                    help.setPars(pars.value());
+                }
+                Syntax syntax = field.getAnnotation(Syntax.class);
+                if (syntax != null) {
+                    help.setSyntax(syntax.value());
+                }
+                ToolTipHeader header = field.getAnnotation(ToolTipHeader.class);
+                if (header != null) {
+                    help.setHeader(header.value());
+                }
+                result.put(role, Pair.newPair(help.getItem(), help.getTip()));
+            }
+        }
+        return result;
+    }
+
+    /** Creates a help item based on the token map available for edge roles. */
+    public static Help createHelp() {
+        return new Help(nameToSymbolMap);
+    }
+
+    private static Map<String,String> docMap;
+    private static Map<EdgeRole,Pair<String,String>> roleToDocMap;
     /** Injective mapping from edge roles to indices. */
     private static Map<EdgeRole,Integer> indexMap =
         new EnumMap<EdgeRole,Integer>(EdgeRole.class);
-    /** Injective mapping from role names to edge roles. */
-    private static Map<String,EdgeRole> roleMap =
+    /** Injective mapping from role symbols to edge roles. */
+    private static Map<String,EdgeRole> symbolToRoleMap =
         new HashMap<String,EdgeRole>();
+    /** Injective mapping from role names to symbol text. */
+    private static Map<String,String> nameToSymbolMap =
+        new HashMap<String,String>();
     /** Array of edge roles, in the order of their indices. */
     private static final EdgeRole[] rolesArray = new EdgeRole[EnumSet.allOf(
         EdgeRole.class).size()];
@@ -127,9 +213,11 @@ public enum EdgeRole {
         int index = 0;
         for (EdgeRole role : EnumSet.allOf(EdgeRole.class)) {
             indexMap.put(role, index);
-            roleMap.put(role.getName(), role);
+            symbolToRoleMap.put(role.getName(), role);
             rolesArray[index] = role;
+            nameToSymbolMap.put(role.name(), role.getName());
             index++;
         }
+        nameToSymbolMap.put("COLON", "" + AspectParser.SEPARATOR);
     }
 }
