@@ -65,88 +65,88 @@ import java.util.LinkedList;
 
 // PARSER rules
 
-/** Main program. */
+/** @H Main program. */
 program
-  : //@ ( function | stat )*
-    // Main program, consisting of optional top-level statements and
-    // control function definitions. 
+  : //@S ( function | stat )*
+    //@B Main program, consisting of optional top-level statements and
+    //@B control function definitions. 
     (function|stat)*
     -> ^(PROGRAM ^(FUNCTIONS function*) ^(BLOCK stat*))
   ;
 
-/** Function declaration.
-  * The function will be inlined at every place it is called.
-  * Functions currently can have no parameters. 
+/** @H Function declaration.
+  * @B The function will be inlined at every place it is called.
+  * @B Functions currently can have no parameters. 
   */
 function
-  : //@ FUNCTION name LPAR RPAR block
-    // Declares the function %s, with body %s.
+  : //@S FUNCTION name LPAR RPAR block
+    //@B Declares the function %s, with body %s.
     FUNCTION^ ID LPAR! RPAR! block
     { helper.declareFunction($FUNCTION.tree); }
   ;
 
-/** Statement block. */
+/** @H Statement block. */
 block
-  : //@ LCURLY stat* RCURLY
-    // Possibly empty sequence of statements, surrounded by curly braces.
+  : //@S LCURLY stat* RCURLY
+    //@B Possibly empty sequence of statements, surrounded by curly braces.
     LCURLY stat* RCURLY -> ^(BLOCK stat*);
 
-/** Atomic statement. */
+/** @H Atomic statement. */
 stat
-	: //@ block
+	: //@S block
 	  block
-	| //@ ALAP stat
-	  // The body %s is repeated as long as it remains enabled.
-	  // Enabledness is determined by the first rule of the statement.
+	| //@S ALAP stat
+	  //@B The body %s is repeated as long as it remains enabled.
+	  //@B Enabledness is determined by the first rule of the statement.
 	  ALAP^ stat
-	| //@ WHILE LPAR cond RPAR stat
-	  // As long as the condition %1$s is successfully applied,
-	  // the body %2$s is repeated. 
-	  // <p>This is equivalent to "ALAP LCURLY %1$s SEMI %2$s RCURLY".
+	| //@S WHILE LPAR cond RPAR stat
+	  //@B As long as the condition %1$s is successfully applied,
+	  //@B the body %2$s is repeated. 
+	  //@B <p>This is equivalent to "ALAP LCURLY %1$s SEMI %2$s RCURLY".
 	  WHILE^ LPAR! cond RPAR! stat
-	| //@ UNTIL LPAR cond RPAR stat
-    // As long as the condition %2$s is disabled, the body %2$s is repeated. 
-    // Note that if this terminates, the last action is an application of %1$s.
+	| //@S UNTIL LPAR cond RPAR stat
+    //@B As long as the condition %2$s is disabled, the body %2$s is repeated. 
+    //@B Note that if this terminates, the last action is an application of %1$s.
     UNTIL^ LPAR! cond RPAR! stat
 	| DO stat 
-	  ( //@ DO stat WHILE LPAR cond RPAR
-      // Statement %s is executed repeatedly, as long as
-      // afterwards the condition %s is enabled.
-      // If enabled, %2$s is also executed.<p>
-      // Equivalent to "%1$s WHILE LPAR %2$s RPAR %1$s"
+	  ( //@S DO stat WHILE LPAR cond RPAR
+      //@B Statement %s is executed repeatedly, as long as
+      //@B afterwards the condition %s is enabled.
+      //@B If enabled, %2$s is also executed.<p>
+      //@B Equivalent to "%1$s WHILE LPAR %2$s RPAR %1$s"
       WHILE LPAR cond RPAR -> ^(BLOCK stat ^(WHILE cond stat))
-	  | //@ DO stat UNTIL LPAR cond RPAR
-      // Statement %s is executed repeatedly, as long as
-      // afterwards the condition %s is not enabled.
-      // Note that if this terminates, the last action is an application of
-      // %2$s.<p>
-      // Equivalent to "%1$s UNTIL LPAR %2$s RPAR %1$s"
+	  | //@S DO stat UNTIL LPAR cond RPAR
+      //@B Statement %s is executed repeatedly, as long as
+      //@B afterwards the condition %s is not enabled.
+      //@B Note that if this terminates, the last action is an application of
+      //@B %2$s.<p>
+      //@B Equivalent to "%1$s UNTIL LPAR %2$s RPAR %1$s"
     UNTIL LPAR cond RPAR -> ^(BLOCK stat ^(UNTIL cond stat))
 	  )
-  | //@ IF LPAR cond RPAR stat1 [ELSE stat2]
-    // If condition %1$s is enabled, it is executed and next
-    // %2$s is executed; otherwise, the optional %3$s is
-    // executed.
+  | //@S IF LPAR cond RPAR stat1 [ELSE stat2]
+    //@B If condition %1$s is enabled, it is executed and next
+    //@B %2$s is executed; otherwise, the optional %3$s is
+    //@B executed.
     IF^ LPAR! cond RPAR! stat ( (ELSE) => ELSE! stat )?
-  | //@ TRY stat1 [ELSE stat2]
-    // Statement %s is executed if it is enabled,
-    // otherwise the (optional) %s is executed.
+  | //@S TRY stat1 [ELSE stat2]
+    //@B Statement %s is executed if it is enabled,
+    //@B otherwise the (optional) %s is executed.
     TRY^ stat ( (ELSE) => ELSE! stat )?
-  | //@ CHOICE stat [OR stat]+
-    // Nondeterministic choice of statements.
+  | //@S CHOICE stat [OR stat]+
+    //@B Nondeterministic choice of statements.
     CHOICE^ stat ( (OR) => OR! stat)+
-	| //@ expr SEMI
-	  // An expression used as a statement.
+	| //@S expr SEMI
+	  //@B An expression used as a statement.
 	  expr SEMI!
-	| //@ var_decl SEMI
-	  // A variable declaration.
+	| //@S var_decl SEMI
+	  //@B A variable declaration.
 	  var_decl SEMI!
   ;
 
-/** Condition. */
+/** @H Condition. */
 cond
-	: //@ cond1 BAR cond2
-    // Nondeterministic choice between %s and %s.
+	: //@S cond1 BAR cond2
+    //@B Nondeterministic choice between %s and %s.
 	  cond_atom 
 	  ( (BAR cond_atom)+ -> ^(CHOICE cond_atom cond_atom+)
 	  | -> cond_atom
@@ -154,20 +154,20 @@ cond
 	;
 
 cond_atom
-	: //@ cond: TRUE
-	  // Condition that always succeeds.
+	: //@S cond: TRUE
+	  //@B Condition that always succeeds.
 	  TRUE
-  | //@ cond: call
-    // Tests the enabledness of a given function or rule.
-    // Note that the function or rule is in fact executed if enabled.
+  | //@S cond: call
+    //@B Tests the enabledness of a given function or rule.
+    //@B Note that the function or rule is in fact executed if enabled.
     call ;
 
-/** Expression. */
+/** @H Expression. */
 expr
-	: //@ expr1 BAR expr2
-	  // Nondeterministic choice between %s and %s.
-    // <p>Equivalent to "CHOICE %1$s SEMI OR %2$s SEMI",
-    // except that this is an expression and CHOICE is a statement.
+	: //@S expr1 BAR expr2
+	  //@B Nondeterministic choice between %s and %s.
+    //@B <p>Equivalent to "CHOICE %1$s SEMI OR %2$s SEMI",
+    //@B except that this is an expression and CHOICE is a statement.
 	  expr2
 	  ( (BAR expr2)+ -> ^(CHOICE expr2 expr2+)
 	  | -> expr2
@@ -175,87 +175,96 @@ expr
 	;
 
 expr2
-  : //@ expr: expr PLUS
-    // Nondeterministically executes %s one or more times. <p>
-    // Equivalent to "%1$s SEMI %1$s ASTERISK".
+  : //@S expr: expr PLUS
+    //@B Nondeterministically executes %s one or more times. <p>
+    //@B Equivalent to "%1$s SEMI %1$s ASTERISK".
     //
-    //@ expr: expr ASTERISK
-    // Nondeterministically executes %s zero or more times. <p>
-    // Note that this is <i>not</i> equivalent to "%1$s SHARP" or
-    // "ALAP %1$s SEMI".
+    //@S expr: expr ASTERISK
+    //@B Nondeterministically executes %s zero or more times. <p>
+    //@B Note that this is <i>not</i> equivalent to "%1$s SHARP" or
+    //@B "ALAP %1$s SEMI".
     e=expr_atom
     ( PLUS -> ^(BLOCK $e ^(STAR $e))
     | ASTERISK -> ^(STAR $e)
     | -> $e
     )
-  | //@ expr: SHARP expr
-    // Executes %s as long as possible.<p>    
-    // Equivalent to "ALAP %1$s SEMI",
-    // except that this is an expression and ALAP is a statement.
+  | //@S expr: SHARP expr
+    //@B Executes %s as long as possible.<p>    
+    //@B Equivalent to "ALAP %1$s SEMI",
+    //@B except that this is an expression and ALAP is a statement.
     SHARP expr_atom -> ^(ALAP expr_atom)
   ;
 
 expr_atom
-	: //@ expr: ANY
-	  // Execution of an arbitrary rule.
+	: //@S expr: ANY
+	  //@B Execution of an arbitrary rule.
 	  ANY
-	| //@ expr: OTHER
-	  // Execution of an arbitrary rule not explicitly occurring anywhere
-	  // in this control program.
+	| //@S expr: OTHER
+	  //@B Execution of an arbitrary rule not explicitly occurring anywhere
+	  //@B in this control program.
 	  OTHER
-	| //@ expr: LPAR expr RPAR
-	  // Bracketed expression.
+	| //@S expr: LPAR expr RPAR
+	  //@B Bracketed expression.
 	  LPAR! expr RPAR!
-	| //@ expr: call
-	  // Invokes a function or rule.
+	| //@S expr: call
+	  //@B Invokes a function or rule.
 	  call
 	; 
 
-/** Rule or function call. */
+/** @H Rule or function call. */
 call
-	: //@ name [ LPAR arg_list RPAR ]
-	  // Invokes a rule or function %s, with optional arguments %s.
+	: //@S name [ LPAR arg_list RPAR ]
+	  //@B Invokes a rule or function %s, with optional arguments %s.
+	  //@P the rule or function name
+	  //@P optional comma-separated list of arguments
 	  rule_name arg_list?
 	  -> ^(CALL[$rule_name] rule_name arg_list?)
 	;
 
-/** List of arguments for a rule or function call. */
+/** @H Argument list 
+  * @B List of arguments for a rule or function call. 
+  */
 arg_list
-  : //@ [ arg (COMMA arg)* ]
-    // Possibly empty, comma-separated list of arguments
+  : //@S [ arg (COMMA arg)* ]
+    //@B Possibly empty, comma-separated list of arguments
     LPAR (arg (COMMA arg)*)? RPAR
     -> ^(ARGS arg*)
   ;
 
-/** Argument for a rule or function call. */
+/** @H Argument
+  * @B Argument for a rule or function call. 
+  */
 arg
-  : //@ OUT id
-    // Output argument: variable %s will receive a value through the call.
+  : //@S OUT id
+    //@H Output argument
+    //@B Variable %s will receive a value through the call.
     OUT ID -> ^(ARG OUT ID)
-  | //@ id
-    // Input argument: variable %s must be bound to a value, which will be passed into the call.
+  | //@S id
+    //@H Input argument
+    //@B Variable %s must be bound to a value, which will be passed into the call.
     ID -> ^(ARG ID)
-  | //@ DONT_CARE
-    // Don't-care argument: the parameter will be bound to any node or value
+  | //@S DONT_CARE
+    //@H Don't-care argument
+    //@B The parameter does not affect the match or the control state.
     DONT_CARE -> ^(ARG DONT_CARE)   
   | literal -> ^(ARG literal)
   ;
 
 literal
-  : //@ arg: TRUE
-    // Boolean value for truth.
+  : //@S arg: TRUE
+    //@B Boolean value for truth.
     TRUE
-  | //@ arg: FALSE
-    // Boolean value for falsehood.
+  | //@S arg: FALSE
+    //@B Boolean value for falsehood.
     FALSE
-  | //@ arg: QUOTE text QUOTE
-    // String constant with value %s.
+  | //@S arg: QUOTE.text.QUOTE
+    //@B String constant with value %s.
     STRING_LIT
-  | //@ arg: number
-    // Integer constant with value %s.
+  | //@S arg: number
+    //@B Integer constant with value %s.
     INT_LIT
-  | //@ arg: number DOT number
-    // Real number constant.
+  | //@S arg: number DOT number
+    //@B Real number constant.
     REAL_LIT
   ;
 
@@ -265,29 +274,29 @@ rule_name
     -> { helper.toRuleName($ids) }
   ;
 
-/** Variable declaration. */
+/** @H Variable declaration. */
 var_decl
-	: //@ var_type id (COMMA id)*
-	  // Declares a list of variables, all of the same %s.
+	: //@S var_type id (COMMA id)*
+	  //@B Declares a list of variables, all of the same %s.
 	  var_type ID (COMMA ID)* -> ^(VAR var_type ID+)
 	;
 
-/** Variable type. */
+/** @H Variable type. */
 var_type
-	: //@ NODE
-	  // The type of all non-value nodes.
+	: //@S NODE
+	  //@B The type of all non-value nodes.
 	  NODE
-	| //@ BOOL
-	  // The type of boolean values.
+	| //@S BOOL
+	  //@B The type of boolean values.
 	  BOOL
-	| //@ STRING
-	  // The type of string values.
+	| //@S STRING
+	  //@B The type of string values.
 	  STRING
-	| //@ INT
-	  // The type of integer values.
+	| //@S INT
+	  //@B The type of integer values.
 	  INT
-	| //@ REAL
-	  // The type of real number values.
+	| //@S REAL
+	  //@B The type of real number values.
 	  REAL
 	;
 	
@@ -308,8 +317,8 @@ OR       : 'or';
 OTHER    : 'other';
 OUT	     : 'out';
 REAL     : 'real';
-STAR     : 'string';
-STRING   : 'star';
+STAR     : 'star';
+STRING   : 'string';
 TRY      : 'try';
 TRUE     : 'true';
 UNTIL    : 'until';

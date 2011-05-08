@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.annotation.Help;
 import groove.graph.GraphRole;
 import groove.util.Colors;
 import groove.util.Duo;
@@ -28,11 +29,14 @@ import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Distinguishes the aspects that can be found in a plain graph representation
@@ -331,24 +335,533 @@ public enum AspectKind {
         return nestedValueMap.get(name);
     }
 
+    /**
+     * Returns the documentation map for node aspects occurring for a given graph role.
+     * @return A mapping from syntax lines to associated tool tips.
+     */
+    public static Map<String,String> getNodeDocMap(GraphRole role) {
+        Map<String,String> result = nodeDocMapMap.get(role);
+        if (result == null) {
+            nodeDocMapMap.put(role, result = computeNodeDocMap(role));
+        }
+        return result;
+    }
+
+    /**
+     * Returns the documentation map for edge aspects occurring for a given graph role.
+     * @return A mapping from syntax lines to associated tool tips.
+     */
+    public static Map<String,String> getEdgeDocMap(GraphRole role) {
+        Map<String,String> result = edgeDocMapMap.get(role);
+        if (result == null) {
+            edgeDocMapMap.put(role, result = computeEdgeDocMap(role));
+        }
+        return result;
+    }
+
+    private static Map<String,String> computeNodeDocMap(GraphRole role) {
+        Map<String,String> result = new TreeMap<String,String>();
+        for (AspectKind kind : allowedNodeKinds.get(role)) {
+            Help help = computeHelp(kind, role, true, true);
+            if (help != null) {
+                result.put(help.getItem(), help.getTip());
+            }
+            help = computeHelp(kind, role, true, false);
+            if (help != null) {
+                result.put(help.getItem(), help.getTip());
+            }
+        }
+        return result;
+    }
+
+    private static Map<String,String> computeEdgeDocMap(GraphRole role) {
+        Map<String,String> result = new TreeMap<String,String>();
+        for (AspectKind kind : allowedEdgeKinds.get(role)) {
+            Help help = computeHelp(kind, role, false, true);
+            if (help != null) {
+                result.put(help.getItem(), help.getTip());
+            }
+        }
+        return result;
+    }
+
+    private static Help computeHelp(AspectKind kind, GraphRole role,
+            boolean forNode, boolean withLabel) {
+        String h = null;
+        String s = null;
+        List<String> b = new ArrayList<String>();
+        List<String> p = new ArrayList<String>();
+        String qBody =
+            "The optional %1$s denotes an associated quantifier level.";
+        String qPar = "optional associated quantifier level";
+        String flagPar =
+            "text of the flag; must consist of letters, digits, '$', '-' or '_'";
+        String edgePar =
+            "text of the edge; must consist of letters, digits, '$', '-' or '_'";
+        switch (kind) {
+        case ABSTRACT:
+            if (!forNode) {
+                s = "%s.COLON.label";
+                h = "Abstract edge type";
+                b.add("Declares an abstract %s-edge between node types.");
+                b.add("The edge can only occur between subtypes where it is redeclared concretely.");
+                p.add(edgePar);
+            } else if (withLabel) {
+                s = "%s.COLON.flag";
+                h = "Abstract flag";
+                b.add("Declares an abstract %s for a node type.");
+                b.add("The flag can only occur on subtypes where it is redeclared concretely.");
+                p.add(flagPar);
+            } else {
+                s = "%s.COLON";
+                h = "Abstract node type";
+                b.add("Declares a node type to be abstract.");
+                b.add("Only nodes of concrete subtypes can actually exist.");
+            }
+            break;
+
+        case ADDER:
+            if (!forNode) {
+                s = "%s[EQUALS.q]COLON.label";
+                h = "Conditional edge creator";
+                b.add("Tests for the absence of a %2$s-edge; creates it when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add(edgePar);
+            } else if (withLabel) {
+                s = "%s[EQUALS.q]COLON.flag";
+                h = "Conditional flag creator";
+                b.add("Tests for the absence of %2$s; creates it when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add(flagPar);
+            } else {
+                s = "%s.COLON";
+                h = "Conditional node creator";
+                b.add("Tests for the absence of a node; creates it when applied.");
+            }
+            break;
+        case ARGUMENT:
+            s = "%s.COLON.nr";
+            h = "Argument edge";
+            b.add("Projects a product node onto argument %s.");
+            p.add("argument number, ranging from 0 to the product node arity - 1");
+            break;
+
+        case BOOL:
+            if (!forNode) {
+                s = "%s.COLON.op";
+                h = "Boolean operator";
+                b.add("Applies operation %s from the BOOL signature");
+                b.add("to the arguments of the source PRODUCT node.");
+                p.add("boolean operator: one of " + ops(kind));
+            } else if (withLabel && role != GraphRole.TYPE) {
+                s = "%s.COLON.(TRUE|FALSE)";
+                h = "Boolean constant";
+                b.add("Represents a constant boolean value (TRUE or FALSE).");
+            } else if (role == GraphRole.TYPE) {
+                s = "%s.COLON";
+                h = "Boolean type node";
+                b.add("Represents the type of booleans.");
+            } else if (role == GraphRole.RULE) {
+                s = "%s.COLON";
+                h = "Boolean variable";
+                b.add("Declares a boolean-valued variable node.");
+            }
+            break;
+
+        case COLOR:
+            s = "%s.COLON.(rgb|name)";
+            h = "Node type colour";
+            b.add("Sets the colour of the nodes and outgoing edges of a type.");
+            p.add("comma-seperated list of three colour dimensions, with range 0..255");
+            p.add("color name");
+            break;
+
+        case COMPOSITE:
+            s = "%s.COLON.label";
+            h = "Composite edge property";
+            b.add("Declares an edge to be composite.");
+            b.add(Help.it("Currently unsupported."));
+            break;
+
+        case CONNECT:
+            s = "%s.COLON";
+            h = "Embargo choice";
+            b.add("Declares a choice between two negative application patterns.");
+            break;
+
+        case CREATOR:
+            if (!forNode) {
+                s = "%s[EQUALS.q]COLON.label";
+                h = "Edge creator";
+                b.add("Creates a %2$s-edge when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("label of the created edge");
+            } else if (withLabel) {
+                s = "%s[EQUALS.q]COLON.flag";
+                h = "Flag creator";
+                b.add("Creates a %2$s when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("created flag; should be preceded by FLAG COLON");
+            } else {
+                s = "%s.COLON";
+                h = "Node creator";
+                b.add("Creates a node when applied.");
+            }
+            break;
+
+        case EMBARGO:
+            if (!forNode) {
+                s = "%s[EQUALS.q]COLON.label";
+                h = "Edge embargo";
+                b.add("Tests for the absence of a %2$s-edge.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("label of the forbidden edge");
+            } else if (withLabel) {
+                s = "%s[EQUALS.q]COLON.flag";
+                h = "Flag embargo";
+                b.add("Tests for the absence of a %2$s.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("forbidden flag; should be preceded by FLAG COLON");
+            } else {
+                s = "%s.COLON";
+                h = "Node embargo";
+                b.add("Tests for the absence of a node.");
+            }
+            break;
+
+        case ERASER:
+            if (!forNode) {
+                s = "%s[EQUALS.q]COLON.label";
+                h = "Edge eraser";
+                b.add("Tests for the presence of a %2$s-edge; deletes it when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("label of the erased edge");
+            } else if (withLabel) {
+                s = "%s[EQUALS.q]COLON.flag";
+                h = "Flag eraser";
+                b.add("Tests for the presence of a %2$s; deletes it when applied.");
+                b.add(qBody);
+                p.add(qPar);
+                p.add("erased flag; should be preceded by FLAG COLON");
+            } else {
+                s = "%s.COLON";
+                h = "Node eraser";
+                b.add("Tests for the presence of a node; deletes it when applied.");
+            }
+            break;
+
+        case EXISTS:
+            s = "%s[EQUALS.q]COLON";
+            h = "Existential quantification";
+            b.add("Tests for the mandatory existence of a graph pattern.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
+            p.add("declared name for this quantifier level");
+            break;
+
+        case EXISTS_OPT:
+            s = "%s[EQUALS.q]COLON";
+            h = "Optional existential quantification";
+            b.add("Tests for the optional existence of a graph pattern.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
+            p.add("declared name for this quantifier level");
+            break;
+
+        case FORALL:
+            s = "%s[EQUALS.q]COLON";
+            h = "Universal quantification";
+            b.add("Matches all occurrences of a graph pattern.");
+            b.add("The actual number of occurrences is given by an optional outgoing COUNT-edge.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
+            p.add("declared name for this quantifier level");
+            break;
+
+        case FORALL_POS:
+            s = "%s[EQUALS.q]COLON";
+            h = "Non-vacuous universal quantification";
+            b.add("Matches all occurrences of a graph pattern, provided there is at least one.");
+            b.add("The actual number of occurrences is given by an optional outgoing COUNT-edge.");
+            b.add("Pattern nodes must have outgoing AT-edges to the quantifier.");
+            b.add("Pattern edges may be declared through the optional quantifier level %1$s.");
+            p.add("declared name for this quantifier level");
+            break;
+
+        case ID:
+            s = "%s.EQUALS.name.COLON";
+            h = "Node identifier";
+            b.add("Assigns an internal node identifier %s.");
+            p.add("the declared name for this node");
+            break;
+
+        case INT:
+            if (!forNode) {
+                s = "%s.COLON.op";
+                h = "Integer operator";
+                b.add("Applies operation %1$s from the INT signature");
+                b.add("to the arguments of the source PRODUCT node.");
+                p.add("integer operator: one of " + ops(kind));
+            } else if (withLabel && role != GraphRole.TYPE) {
+                s = "%s.COLON.nr";
+                h = "Integer constant";
+                b.add("Represents the constant integer value %1$s.");
+            } else if (role == GraphRole.TYPE) {
+                s = "%s.COLON";
+                h = "Integer type node";
+                b.add("Represents the type of integers.");
+            } else if (role == GraphRole.RULE) {
+                s = "INT.COLON";
+                h = "Integer variable";
+                b.add("Declares an integer-valued variable node.");
+            }
+            break;
+
+        case LET:
+            s = "%s.COLON.name.EQUALS.expr";
+            h = "Assignment";
+            b.add("Assigns the value of %2$s to the attribute %1$s.");
+            break;
+
+        case LITERAL:
+            s = "COLON.free";
+            h = "Literal edge label";
+            b.add("Specifies a %s-labelled edge, where %1$s may be an arbitrary string");
+            p.add("a string of arbitrary characters");
+            break;
+
+        case MULT_IN:
+            s = "%s.EQUALS[lo.DOT.DOT]hi COLON label";
+            h = "Incoming edge multiplicity.";
+            b.add("Constrains the number of incoming %3$s-edges for every node");
+            b.add("to at least %1$s (if specified) and at most %2$s");
+            b.add(Help.it("(This is currently unsupported."));
+            p.add("optional lower bound");
+            p.add("mandatory upper bound ('*' for unbounded)");
+            p.add("label of the incoming edge");
+            break;
+
+        case MULT_OUT:
+            s = "%s.EQUALS[lo.DOT.DOT]hi COLON label";
+            h = "Outgoing edge multiplicity.";
+            b.add("Constrains the number of outgoing %3$s-edges for every node");
+            b.add("to at least %1$s (if specified) and at most %2$s");
+            b.add(Help.it("(This is currently unsupported."));
+            p.add("optional lower bound");
+            p.add("mandatory upper bound ('*' for unbounded)");
+            p.add("label of the outgoing edge");
+            break;
+
+        case NESTED:
+            s = "[%s.COLON](AT|IN|COUNT)";
+            h = "Structural nesting edge";
+            b.add("Declares quantifier structure (the NESTED-prefix itself is optional):");
+            b.add("<li> IN nests one quantifier within another;");
+            b.add("<li> AT connects a graph pattern node to a quantifier;");
+            b.add("<li> COUNT points to the cardinality of a quantifier.");
+            break;
+
+        case NONE:
+            break;
+
+        case PARAM_BI:
+            if (withLabel) {
+                s = "%s.COLON.nr";
+                h = "Bidirectional rule parameter";
+                b.add("Declares bidirectional rule parameter %1$s (ranging from 0).");
+                b.add("When used from a control program this parameter may be instantiated with a concrete value,");
+                b.add("or be used as an output parameter, in which case the value");
+                b.add("is determined by the matching.");
+                p.add("the parameter number, ranging from 0");
+            } else {
+                s = "PARAM_BI.COLON";
+                h = "Anchor node";
+                b.add("Declares an explicit anchor node.");
+                b.add("This causes the node to be considered relevant in distinguishing matches");
+                b.add("even if it is not involved in any deletion, creation or merging.");
+            }
+            break;
+
+        case PARAM_IN:
+            s = "%s.COLON.nr";
+            h = "Rule input parameter";
+            b.add("Declares rule input parameter %s (ranging from 0).");
+            break;
+
+        case PARAM_OUT:
+            s = "%s.COLON.nr";
+            h = "Rule output parameter";
+            b.add("Declares rule output parameter %s (ranging from 0).");
+            break;
+
+        case PATH:
+            s = "%s.COLON.regexpr";
+            h = "Regular path expression";
+            b.add("Tests for a path satisfying the regular expression %1$s.");
+            p.add("regular expression; for the syntax, consult the appropriate tab.");
+            break;
+
+        case PRED:
+            s = "%s.COLON.constraint";
+            h = "Predicate expression";
+            b.add("Specifies an attribute constraint.");
+            b.add(Help.it("(This is in development, and will eventually replace the explicit value nodes"));
+            break;
+
+        case PRODUCT:
+            s = "%s.COLON";
+            h = "Product node";
+            b.add("Declares a product node, corresponding to a tuple of attribute nodes.");
+            break;
+
+        case READER:
+            if (!forNode) {
+                s = "%s.EQUALS.q.COLON.regexpr";
+                h = "Quantified reader edge";
+            } else if (withLabel) {
+                s = "%s.EQUALS.q.COLON.flag";
+                h = "Quantified reader flag";
+            }
+            b.add("Tests for the presence of %2$s on quantification level %1$s.");
+            p.add(qPar);
+            p.add("item tested for");
+            break;
+
+        case REAL:
+            if (!forNode) {
+                s = "%s.COLON.op";
+                h = "Real-valued operator";
+                b.add("Applies operation %1$s from the REAL signature");
+                b.add("to the arguments of the source PRODUCT node.");
+                p.add("real operator: one of " + ops(kind));
+            } else if (withLabel && role != GraphRole.TYPE) {
+                s = "%s.COLON.nr.DOT.nr";
+                h = "Real constant";
+                b.add("Represents the constant real value %1$s.%2$s.");
+            } else if (role == GraphRole.TYPE) {
+                s = "%s.COLON";
+                h = "Real type node";
+                b.add("Represents the type of reals.");
+            } else if (role == GraphRole.RULE) {
+                s = "%s.COLON";
+                h = "Real variable";
+                b.add("Declares a real-valued variable node.");
+            }
+            break;
+
+        case REMARK:
+            if (forNode) {
+                s = "%s.COLON";
+                b.add("Declares a remark node, to be used for documentation");
+            } else {
+                s = "%s.COLON.text";
+                b.add("Declares a remark edge with (free-formatted) text %1$s");
+            }
+            break;
+
+        case STRING:
+            if (!forNode) {
+                s = "%s.COLON.op";
+                h = "String operator";
+                b.add("Applies operation %1$s from the STRING signature");
+                b.add("to the arguments of the source PRODUCT node.");
+                p.add("real operator: one of " + ops(kind));
+            } else if (withLabel && role != GraphRole.TYPE) {
+                s = "%s.COLON.QUOTE.text.QUOTE";
+                h = "String constant";
+                b.add("Represents the constant string value %1$s.");
+            } else if (role == GraphRole.TYPE) {
+                s = "%s.COLON";
+                h = "String type node";
+                b.add("Represents the type of strings.");
+            } else if (role == GraphRole.RULE) {
+                s = "%s.COLON";
+                h = "String variable";
+                b.add("Declares a string-valued variable node.");
+            }
+            break;
+
+        case SUBTYPE:
+            s = "%s.COLON";
+            h = "Subtype declaration";
+            b.add("Declares the source type node to be a subtype of the target type node");
+            break;
+
+        case UNTYPED:
+            s = "%s.COLON";
+            h = "Untyped variable";
+            b.add("Declares an untyped attribute variable node");
+            break;
+
+        default:
+            throw new IllegalStateException();
+        }
+        Help result = null;
+        if (s != null) {
+            result = new Help(tokenMap);
+            result.setSyntax(String.format(s, kind.name()));
+            result.setHeader(h);
+            result.setBody(b);
+            result.setPars(p);
+        }
+        return result;
+    }
+
+    /** Returns a list of operations from a given signature. */
+    static private String ops(AspectKind kind) {
+        StringBuilder result = new StringBuilder();
+        assert kind.isTypedData();
+        for (String opName : Algebras.getOperatorNames(kind.getName())) {
+            if (result.length() > 0) {
+                result.append(", ");
+            }
+            result.append(Help.it(opName));
+        }
+        return result.toString();
+    }
+
+    /** For every relevant graph role the node syntax help entries. */
+    private static final Map<GraphRole,Map<String,String>> nodeDocMapMap =
+        new HashMap<GraphRole,Map<String,String>>();
+    /** For every relevant graph role the edge syntax help entries. */
+    private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
+        new HashMap<GraphRole,Map<String,String>>();
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap =
         new HashMap<String,AspectKind>();
     /** Static mapping from nested value texts to values. */
     private static final Map<String,NestedValue> nestedValueMap =
         new HashMap<String,NestedValue>();
+    /** Mapping from kind value names to symbols. */
+    private static final Map<String,String> tokenMap =
+        new HashMap<String,String>();
 
     static {
         // initialise the aspect kind map
         for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
+            tokenMap.put(kind.name(), kind.getName());
         }
         // initialise the nested value map
         for (NestedValue value : EnumSet.allOf(NestedValue.class)) {
             NestedValue oldValue = nestedValueMap.put(value.toString(), value);
             assert oldValue == null;
+            tokenMap.put(value.name(), value.toString());
         }
+        tokenMap.put("COLON", "" + AspectParser.SEPARATOR);
+        tokenMap.put("EQUALS", "" + AspectParser.ASSIGN);
+        tokenMap.put("DOT", ".");
+        tokenMap.put("QUOTE", "\"");
+        tokenMap.put("TRUE", "true");
+        tokenMap.put("FALSE", "false");
     }
 
     /** Set of role aspects. */

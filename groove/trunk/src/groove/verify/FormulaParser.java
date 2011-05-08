@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -87,81 +86,29 @@ public class FormulaParser {
      * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators. 
      */
     public static Map<String,String> getDocMap(boolean ctl) {
-        Map<String,String> result = new LinkedHashMap<String,String>();
-        Map<Token,String> tokenToSyntaxMap = new HashMap<Token,String>();
-        Map<Token,String> tokenToHeaderMap = new HashMap<Token,String>();
-        Map<Token,String> tokenToTipMap = new HashMap<Token,String>();
-        for (Field field : Token.class.getFields()) {
-            if (field.isEnumConstant()) {
-                Token token = nameToTokenMap.get(field.getName());
-                ToolTipBody tip = field.getAnnotation(ToolTipBody.class);
-                if (tip != null) {
-                    String[] tipArray = tip.value();
-                    StringBuilder tipText = new StringBuilder();
-                    for (int i = 0; i < tipArray.length; i++) {
-                        tipText.append(tipArray[i]);
-                        tipText.append(" ");
-                    }
-                    if (tipText.length() > 0) {
-                        tokenToTipMap.put(token, tipText.toString());
-                    }
-                }
-                Syntax syntax = field.getAnnotation(Syntax.class);
-                if (syntax != null) {
-                    tokenToSyntaxMap.put(token, syntax.value());
-                }
-                ToolTipHeader header = field.getAnnotation(ToolTipHeader.class);
-                if (header != null) {
-                    tokenToHeaderMap.put(token, header.value());
-                }
-            }
-        }
-        for (Token token : ctl ? CTLTokens : LTLTokens) {
-            String syntax = tokenToSyntaxMap.get(token);
-            String header = tokenToHeaderMap.get(token);
-            if (syntax == null) {
-                syntax = getSignature(token);
-            }
-            if (syntax != null) {
-                Pair<String,List<String>> parsed =
-                    Help.processTokensAndArgs(syntax, nameToSymbolMap);
-                String tip = tokenToTipMap.get(token);
-                if (tip == null && header != null) {
-                    tip = "";
-                }
-                if (tip != null) {
-                    tip =
-                        Help.html(Help.tip(
-                            String.format(tip, parsed.two().toArray()), header));
-                }
-                result.put(Help.html(parsed.one()), tip);
-            }
+        Map<String,String> result = docMapMap.get(ctl);
+        if (result == null) {
+            docMapMap.put(ctl, result = computeDocMap(ctl));
         }
         return result;
     }
 
-    /**
-     * Constructs a signature for a temporal operator for which none is
-     * provided through annotations.
+    /** 
+     * Computes a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.
+     * @param ctl if {@code true}, only CTL operators are reported; if {@code false}, only LTL operators. 
      */
-    private static String getSignature(Token token) {
-        String result;
-        String op = token.name();
-        switch (token.getArity()) {
-        case -1:
-            result = (token == LPAR) ? "LPAR form RPAR" : null;
-            break;
-        case 0:
-            result = (token == ATOM) ? "prop" : op;
-            break;
-        case 1:
-            result = op + " form";
-            break;
-        case 2:
-            result = "form1 " + op + " form2";
-            break;
-        default:
-            throw new IllegalStateException();
+    private static Map<String,String> computeDocMap(boolean ctl) {
+        Map<String,String> result = new LinkedHashMap<String,String>();
+        for (Field field : Token.class.getFields()) {
+            if (field.isEnumConstant()) {
+                Token token = nameToTokenMap.get(field.getName());
+                if ((ctl ? CTLTokens : LTLTokens).contains(token)) {
+                    Help help = Help.createHelp(field, nameToSymbolMap);
+                    if (help != null) {
+                        result.put(help.getItem(), help.getTip());
+                    }
+                }
+            }
         }
         return result;
     }
@@ -245,6 +192,8 @@ public class FormulaParser {
     /** Mapping from token names to HTML-formatted token strings. */
     private static Map<String,String> nameToSymbolMap =
         new HashMap<String,String>();
+    private static Map<Boolean,Map<String,String>> docMapMap =
+        new HashMap<Boolean,Map<String,String>>();
 
     static {
         for (Token token : EnumSet.allOf(Token.class)) {

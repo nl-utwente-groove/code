@@ -22,6 +22,11 @@ import static groove.util.ExprParser.LPAR_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
+import groove.annotation.Help;
+import groove.annotation.Syntax;
+import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipHeader;
+import groove.annotation.ToolTipPars;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
@@ -35,12 +40,15 @@ import groove.view.FormatException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Class implementing a regular expression.
@@ -819,30 +827,67 @@ abstract public class RegExpr { // implements VarSetSupport {
      * priority. In particular, atoms that have special meaning should come
      * before the {@link Atom}.
      */
-    static private final RegExpr[] prototypes =
-        new RegExpr[] {new Atom(), new Neg(), new Choice(), new Seq(),
-            new Inv(), new Star(), new Plus(), new Wildcard(), new Sharp(),
-            new Empty()};
+    static private final RegExpr[] prototypes = new RegExpr[] {new Atom(),
+        new Neg(), new Choice(), new Seq(), new Inv(), new Star(), new Plus(),
+        new Wildcard(), new Sharp(), new Empty()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in
      * order of increasing priority.
      */
     static private final List<String> operators;
+    /**
+     * Mapping from regular expression class names to operators.
+     */
+    static private final Map<String,String> opMap;
 
     static {
-        List<String> result = new LinkedList<String>();
+        operators = new LinkedList<String>();
+        opMap = new HashMap<String,String>();
         for (RegExpr prototype : prototypes) {
             if (!(prototype instanceof Atom)) {
-                result.add(prototype.getOperator());
+                operators.add(prototype.getOperator());
+                opMap.put(prototype.getClass().getSimpleName(),
+                    Help.bf(prototype.getOperator()));
             }
         }
-        operators = result;
+        opMap.put("LSQUARE", "[");
+        opMap.put("RSQUARE", "]");
+        opMap.put("COMMA", ",");
+        opMap.put("COLON", ":");
+        opMap.put("HAT", "^");
+        opMap.put("FLAG", "flag");
+        opMap.put("TYPE", "type");
     }
 
     /** Constant hash code characterising the class. */
     static private final int classHashCode =
         System.identityHashCode(RegExpr.class);
+
+    /**
+     * Returns a syntax helper mapping from syntax items
+     * to (possibly {@code null}) tool tips.
+     */
+    public static Map<String,String> getDocMap() {
+        if (docMap == null) {
+            docMap = computeDocMap();
+        }
+        return docMap;
+    }
+
+    private static Map<String,String> computeDocMap() {
+        Map<String,String> result = new TreeMap<String,String>();
+        for (Class<?> subClass : RegExpr.class.getClasses()) {
+            Help help = Help.createHelp(subClass, opMap);
+            if (help != null) {
+                result.put(help.getItem(), help.getTip());
+            }
+        }
+        return result;
+    }
+
+    /** Syntax helper map, from syntax items to associated tool tips. */
+    private static Map<String,String> docMap;
 
     /**
      * Abstract superclass for all regular expressions that are not constants.
@@ -1246,6 +1291,11 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Sequential composition operator. This is an infix operator that
      * concatenates its operands sequentially.
      */
+    @Syntax("expr1 %s expr2")
+    @ToolTipHeader("Concatenation")
+    @ToolTipBody({"Satisfied by a path <i>p</i> if it is the concatenation",
+        "of a path <i>p1</i> satisfying %1$s, followed by a path <i>p2</i>",
+        "satisfying %2$s"})
     static public class Seq extends Infix {
         /** Creates a sequential composition of a list of expressions. */
         public Seq(List<RegExpr> innerRegExps) {
@@ -1290,6 +1340,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Choice operator. This is an infix operator that offers a choice among its
      * operands.
      */
+    @Syntax("expr1 %s expr2")
+    @ToolTipHeader("Choice")
+    @ToolTipBody({"Satisfied by a path <i>p</i> if satisfies either %1$s or %2$s"})
     static public class Choice extends Infix {
         /** Creates a choice between a list of expressions. */
         public Choice(List<RegExpr> tokenList) {
@@ -1336,6 +1389,23 @@ abstract public class RegExpr { // implements VarSetSupport {
      * wildcard may contain an identifier, which then acts as a variable that
      * may be bound to a value when the expression is matched.
      */
+    @Syntax("[role COLON] %s [name] [ LSQUARE [HAT]label_list RSQUARE ]")
+    @ToolTipHeader("Label variable or wildcard")
+    @ToolTipBody({
+        "Satisfied by an edge if its label fulfils the following conditions:",
+        "<ul>", "<li> If the prefix %1$s is specified (either FLAG or TYPE)",
+        "then the label must have that role;",
+        "if it is absent, the edge must be binary.",
+        "<li> If a suffix of the form LSQUARE %3$s RSQUARE is specified",
+        "then the label must be one of the elements of %3$s.",
+        "<li> If a suffix of the form LSQUARE HAT %3$s RSQUARE is specified",
+        "then the label may <i>not</i> be one of the elements of %3$s.",
+        "</ul>", "The optional %2$s acts as a variable binding the label.",
+        "Multiple occurrences of %2$s in a rule must all be bound to the same label."})
+    @ToolTipPars({
+        "the optional role of the label: either FLAG or TYPE",
+        "the optional wildcard variable name",
+        "comma-separated list of labels, either containing or excluding the matched label"})
     static public class Wildcard extends Constant {
         /** Creates an instance without variable identifier. */
         public Wildcard() {
@@ -1710,6 +1780,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Constant expression that stands for all edges precisely matching
      * a given type label (rather than modulo subtyping).
      */
+    @Syntax("%s label")
+    @ToolTipHeader("Sharp type")
+    @ToolTipBody({"Satisfied only by the node type %s (and not by any subtype of it)"})
     static public class Sharp extends Constant {
         /** Creates an instance without variable identifier. */
         public Sharp() {
@@ -1821,6 +1894,9 @@ abstract public class RegExpr { // implements VarSetSupport {
     /**
      * Constant expression that stands for all reflexive pairs.
      */
+    @Syntax("%s")
+    @ToolTipHeader("Equality or merging")
+    @ToolTipBody({"Satisfied only by an empty path; i.e., a path not containing any edges."})
     static public class Empty extends Constant {
         /** Creates an instance of this expression. */
         public Empty() {
@@ -1863,6 +1939,14 @@ abstract public class RegExpr { // implements VarSetSupport {
      * Constant expression that stands for a fixed symbol. The symbol is know as
      * the <i>text</i> of the atom.
      */
+    @Syntax("[role COLON] label")
+    @ToolTipHeader("Single edge or label")
+    @ToolTipBody({
+        "Matched by a single edge labelled %2$s (if no %1$s is specified),",
+        "a %2$s-flag (if %1$s equals FLAG) or a %2$s-type (if %1$s equals TYPE).",
+        "In the latter case, any subtype of %2$s is also correct."})
+    @ToolTipPars({"optional role: either TYPE or FLAG",
+        "edge label; should be single-quoted if it contains non-identifier characters."})
     static public class Atom extends Constant {
         /**
          * Creates a new atomic expression, based on a given text.
@@ -2004,6 +2088,11 @@ abstract public class RegExpr { // implements VarSetSupport {
      * occurrences.
      * @see Plus
      */
+    @Syntax("expr %s")
+    @ToolTipHeader("Zero or more")
+    @ToolTipBody({
+        "Matched by a path <i>p</i> if it is the concatenation of multiple",
+        "fragments satisfying %1$s"})
     static public class Star extends Postfix {
         /** Creates the repetition of a given regular expression. */
         public Star(RegExpr operand) {
@@ -2041,6 +2130,11 @@ abstract public class RegExpr { // implements VarSetSupport {
      * occurrence.
      * @see Star
      */
+    @Syntax("expr %s")
+    @ToolTipHeader("One or more")
+    @ToolTipBody({
+        "Matched by a path <i>p</i> if it is the concatenation of at least one",
+        "fragment satisfying %1$s"})
     static public class Plus extends Postfix {
         /** Creates a non-empty repetition of a given regular expression. */
         public Plus(RegExpr operand) {
@@ -2078,6 +2172,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * its operand.
      * @see Neg
      */
+    @Syntax("%s expr")
+    @ToolTipHeader("Inversion")
+    @ToolTipBody({"Matched by a path <i>p</i> that, when traversed backwards, satisfies %1$s."})
     static public class Inv extends Prefix {
         /** Creates the inversion of a given regular expression. */
         public Inv(RegExpr operand) {
@@ -2115,6 +2212,9 @@ abstract public class RegExpr { // implements VarSetSupport {
      * everywhere where the operand does not apply.
      * @see Inv
      */
+    @Syntax("%s expr")
+    @ToolTipHeader("Negation")
+    @ToolTipBody({"Matched by any path <i>p</i> that does <i>not</i> satisfy %1$s."})
     static public class Neg extends Prefix {
         /** Creates the negation of a given regular expression. */
         public Neg(RegExpr operand) {

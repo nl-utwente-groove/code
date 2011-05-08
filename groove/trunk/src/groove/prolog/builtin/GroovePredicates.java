@@ -17,21 +17,17 @@
 package groove.prolog.builtin;
 
 import static groove.io.HTMLConverter.HTML_LINEBREAK;
-import static groove.io.HTMLConverter.HTML_TAG;
-import static groove.io.HTMLConverter.STRONG_TAG;
-import static groove.io.HTMLConverter.TABLE_TAG_NAME;
 import gnu.prolog.term.CompoundTermTag;
 import groove.annotation.Help;
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
-import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
+import groove.annotation.ToolTipPars;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -97,7 +93,8 @@ abstract public class GroovePredicates {
         Signature sig = method.getAnnotation(Signature.class);
         ToolTipBody tip = method.getAnnotation(ToolTipBody.class);
         ToolTipPars param = method.getAnnotation(ToolTipPars.class);
-        this.toolTipMap.put(tag, newCreateToolTipText(tag, sig, tip, param));
+        this.toolTipMap.put(tag,
+            newCreateToolTipText(tag, sig, tip, param).getTip());
     }
 
     /** Converts a method name into a tag. */
@@ -133,9 +130,9 @@ abstract public class GroovePredicates {
      * Constructs the HMTL-formatted tool tip for a given predicate,
      * by trying to construct this from given annotation values.
      */
-    static public String newCreateToolTipText(CompoundTermTag tag,
+    static public Help newCreateToolTipText(CompoundTermTag tag,
             Signature sigAnn, ToolTipBody toolTip, ToolTipPars param) {
-        String result = null;
+        Help result = new Help();
         if (sigAnn != null) {
             String name = tag.functor.toString();
             int arity = tag.arity;
@@ -146,9 +143,10 @@ abstract public class GroovePredicates {
                         "Malformed annotation %s for %s/%s: insufficient arguments",
                         sigAnn, name, arity));
             }
-            String[] headers = new String[sigValue.length - arity];
-            for (int i = 0; i < headers.length; i++) {
-                String io = sigValue[arity + i];
+            // construct the (multi-line) header
+            StringBuilder header = new StringBuilder();
+            for (int i = arity; i < sigValue.length; i++) {
+                String io = sigValue[i];
                 if (io.length() != arity) {
                     throw new IllegalStateException(
                         String.format(
@@ -165,107 +163,25 @@ abstract public class GroovePredicates {
                     sigText.append(Help.it(io.charAt(p) + sigValue[p]));
                 }
                 sigText.append(')');
-                headers[i] = sigText.toString();
+                if (header.length() > 0) {
+                    header.append(HTML_LINEBREAK);
+                }
+                header.append(sigText);
             }
-            String tip = "";
+            result.setHeader(header.toString());
             if (toolTip != null) {
-                StringBuilder tipText = new StringBuilder();
-                for (String line : toolTip.value()) {
-                    tipText.append(line);
-                    tipText.append(" ");
-                }
-                tip = tipText.toString();
+                result.setBody(toolTip.value());
             }
-            Map<String,String> pars = new LinkedHashMap<String,String>();
+            // collect the parameter names
+            List<String> parNames = new ArrayList<String>();
+            for (int p = 0; p < arity; p++) {
+                parNames.add(sigValue[p]);
+            }
+            result.setParNames(parNames);
             if (param != null) {
-                String[] paramValue = param.value();
-                if (paramValue.length != arity) {
-                    throw new IllegalStateException(String.format(
-                        "Malformed annodation %s for %s/%s: wrong arity",
-                        param, name, arity));
-                }
-                for (int p = 0; p < arity; p++) {
-                    pars.put("#" + p, paramValue[p]);
-                }
+                result.setPars(param.value());
             }
-            result = Help.tip(tip, pars, headers);
         }
         return result;
     }
-
-    /** 
-     * Constructs the HMTL-formatted tool tip for a given predicate,
-     * by trying to construct this from given annotation values.
-     */
-    static public String createToolTipText(CompoundTermTag tag,
-            Signature sigAnn, ToolTipBody toolTip, ToolTipPars param) {
-        String result = null;
-        if (sigAnn != null) {
-            String name = tag.functor.toString();
-            int arity = tag.arity;
-            StringBuilder tip = new StringBuilder();
-            String[] sigValue = sigAnn.value();
-            if (sigValue.length <= arity) {
-                throw new IllegalStateException(
-                    String.format(
-                        "Malformed annotation %s for %s/%s: insufficient arguments",
-                        sigAnn, name, arity));
-            }
-            for (int i = arity; i < sigValue.length; i++) {
-                String io = sigValue[i];
-                if (io.length() != arity) {
-                    throw new IllegalStateException(
-                        String.format(
-                            "Malformed annodation %s for %s/%s: incorrect IO spec %s",
-                            sigAnn, name, arity, io));
-                }
-                StringBuilder sigText = new StringBuilder();
-                sigText.append(name);
-                sigText.append('(');
-                for (int p = 0; p < arity; p++) {
-                    if (p > 0) {
-                        sigText.append(", ");
-                    }
-                    sigText.append(io.charAt(p));
-                    sigText.append(sigValue[p]);
-                }
-                sigText.append(')');
-                tip.append(STRONG_TAG.on(sigText));
-                tip.append(HTML_LINEBREAK);
-            }
-            if (toolTip != null) {
-                StringBuilder tipText = new StringBuilder();
-                for (String line : toolTip.value()) {
-                    tipText.append(line);
-                    tipText.append(" ");
-                }
-                tip.append(HTML_LINEBREAK);
-                tip.append(DIV_TAG.on(tipText));
-            }
-            if (param != null) {
-                String[] paramValue = param.value();
-                if (paramValue.length != arity) {
-                    throw new IllegalStateException(String.format(
-                        "Malformed annodation %s for %s/%s: wrong arity",
-                        param, name, arity));
-                }
-                StringBuilder paramText = new StringBuilder();
-                for (int p = 0; p < arity; p++) {
-                    paramText.append("<tr><th width=\"30\" align=\"right\">");
-                    paramText.append("#" + p);
-                    paramText.append("<td width=\"5\"><td> - ");
-                    paramText.append(paramValue[p]);
-                }
-                tip.append(HTML_LINEBREAK);
-                tip.append(TABLE_TAG.on(paramText));
-            }
-            result = HTML_TAG.on(tip).toString();
-        }
-        return result;
-    }
-
-    static private final HTMLTag DIV_TAG =
-        HTMLConverter.createDivTag("width: 300px;");
-    static private final HTMLTag TABLE_TAG = HTMLConverter.createHtmlTag(
-        TABLE_TAG_NAME, "cellpadding", "0");
 }

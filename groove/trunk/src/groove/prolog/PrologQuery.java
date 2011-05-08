@@ -18,7 +18,6 @@
  */
 package groove.prolog;
 
-import gnu.prolog.database.Predicate;
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
 import gnu.prolog.term.CompoundTermTag;
@@ -27,9 +26,6 @@ import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
-import groove.annotation.ToolTipPars;
-import groove.annotation.Signature;
-import groove.annotation.ToolTipBody;
 import groove.graph.Graph;
 import groove.lts.GraphState;
 import groove.prolog.builtin.AlgebraPredicates;
@@ -293,38 +289,7 @@ public class PrologQuery {
      * creating it first if necessary.
      */
     public String getToolTipText(CompoundTermTag tag) {
-        if (this.toolTipMap.containsKey(tag)) {
-            return this.toolTipMap.get(tag);
-        } else {
-            String result = createToolTipText(tag);
-            this.toolTipMap.put(tag, result);
-            return result;
-        }
-    }
-
-    /** 
-     * Constructs the HMTL-formatted tool tip for a given tag,
-     * by trying to construct this from the predicate class annotations.
-     */
-    private String createToolTipText(CompoundTermTag tag) {
-        String result = null;
-        try {
-            Predicate predicate = this.env.getModule().getDefinedPredicate(tag);
-            String className = predicate.getJavaClassName();
-            if (className != null) {
-                Class<?> cl = Class.forName(className);
-                Signature sigAnn = cl.getAnnotation(Signature.class);
-                ToolTipBody toolTipAnn = cl.getAnnotation(ToolTipBody.class);
-                ToolTipPars paramAnn = cl.getAnnotation(ToolTipPars.class);
-                result =
-                    GroovePredicates.createToolTipText(tag, sigAnn, toolTipAnn,
-                        paramAnn);
-            }
-        } catch (ClassNotFoundException e) {
-            // do nothing
-            return null;
-        }
-        return result;
+        return this.toolTipMap.get(tag);
     }
 
     /** The set of built-in Prolog predicates. */
