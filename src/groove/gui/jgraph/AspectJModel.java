@@ -30,6 +30,7 @@ import groove.gui.layout.LayoutMap;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatError;
+import groove.view.TypeView;
 import groove.view.View;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -195,7 +196,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         this.errorMap.clear();
         View<?> view = getGraph().toView(this.systemProperties);
-        if (this.type != null) {
+        if (this.type != null && !(view instanceof TypeView)) {
             view.setType(this.type);
         }
         for (FormatError error : view.getErrors()) {
