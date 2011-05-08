@@ -356,24 +356,30 @@ public class DefaultRuleView implements RuleView {
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        rule = ruleTree.get(this.levelTree.getTopLevel()).getRule();
-        if (rule != null) {
-            rule.setPriority(getPriority());
-            rule.setConfluent(isConfluent());
-            rule.setTransitionLabel(getTransitionLabel());
-            rule.setFormatString(getFormatString());
-            rule.setCheckDangling(getSystemProperties().isCheckDangling());
-            Parameters parameters = new Parameters();
-            try {
-                rule.setSignature(parameters.getSignature(),
-                    parameters.getHiddenPars());
-                rule.setFixed();
-                if (TO_RULE_DEBUG) {
-                    System.out.println("Constructed rule: " + rule);
+        // due to errors in the above, it might be that the
+        // rule tree is empty, in which case we shouldn't proceed
+        if (ruleTree.isEmpty()) {
+            rule = null;
+        } else {
+            rule = ruleTree.get(this.levelTree.getTopLevel()).getRule();
+            if (rule != null) {
+                rule.setPriority(getPriority());
+                rule.setConfluent(isConfluent());
+                rule.setTransitionLabel(getTransitionLabel());
+                rule.setFormatString(getFormatString());
+                rule.setCheckDangling(getSystemProperties().isCheckDangling());
+                Parameters parameters = new Parameters();
+                try {
+                    rule.setSignature(parameters.getSignature(),
+                        parameters.getHiddenPars());
+                    rule.setFixed();
+                    if (TO_RULE_DEBUG) {
+                        System.out.println("Constructed rule: " + rule);
+                    }
+                } catch (FormatException exc) {
+                    rule = null;
+                    errors.addAll(exc.getErrors());
                 }
-            } catch (FormatException exc) {
-                rule = null;
-                errors.addAll(exc.getErrors());
             }
         }
 
