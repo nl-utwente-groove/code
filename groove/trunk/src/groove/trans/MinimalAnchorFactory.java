@@ -17,12 +17,11 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
-import groove.graph.algebra.ValueNode;
+import groove.rel.LabelVar;
+import groove.rel.VarSupport;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,55 +45,37 @@ public class MinimalAnchorFactory implements AnchorFactory<Rule> {
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
-    public RuleElement[] newAnchors(Rule rule) {
-        Set<RuleElement> anchors =
-            new LinkedHashSet<RuleElement>(Arrays.asList(rule.getEraserNodes()));
-        Set<RuleNode> parameters = new LinkedHashSet<RuleNode>();
+    public RuleGraph newAnchor(Rule rule) {
+        RuleGraph result = rule.lhs().newGraph(rule.getName() + "-anchor");
+        result.addNodeSet(Arrays.asList(rule.getEraserNodes()));
         if (rule.isTop()) {
             Set<RuleNode> hiddenPars = rule.getHiddenPars();
             if (hiddenPars != null) {
-                parameters.addAll(hiddenPars);
+                result.addNodeSet(hiddenPars);
             }
             List<CtrlPar.Var> ruleSig = rule.getSignature();
             for (CtrlPar.Var rulePar : ruleSig) {
                 if (!rulePar.isCreator()) {
-                    parameters.add(rulePar.getRuleNode());
+                    result.addNode(rulePar.getRuleNode());
                 }
             }
         }
-        anchors.addAll(parameters);
-        // set of endpoints that we will remove again
-        Set<RuleNode> removableEnds = new HashSet<RuleNode>();
-        for (RuleEdge lhsVarEdge : rule.getSimpleVarEdges()) {
-            anchors.add(lhsVarEdge);
-            // if we have the edge in the anchors, its end nodes need not be
-            // there
-            removableEnds.add(lhsVarEdge.source());
-            removableEnds.add(lhsVarEdge.target());
-        }
+        // set of variables that need to be matched by variable-binding anchor edges
+        Set<LabelVar> modifierVars =
+            new HashSet<LabelVar>(rule.getModifierVars());
         for (RuleEdge eraserEdge : rule.getEraserEdges()) {
-            RuleNode source = eraserEdge.source();
-            RuleNode target = eraserEdge.target();
-            if (!(anchors.contains(source) && anchors.contains(target))) {
-                anchors.add(eraserEdge);
-                // if we have the edge in the anchors, its end nodes need not be
-                // there
-                removableEnds.add(source);
-                removableEnds.add(target);
+            result.addEdge(eraserEdge);
+            modifierVars.removeAll(VarSupport.getBoundVars(eraserEdge));
+        }
+        if (!modifierVars.isEmpty()) {
+            for (RuleEdge edge : rule.lhs().edgeSet()) {
+                if (new HashSet<LabelVar>(modifierVars).removeAll(VarSupport.getBoundVars(edge))) {
+                    result.addEdge(edge);
+                }
             }
         }
-        anchors.addAll(rule.getModifierEnds());
-        // remove all constant data nodes
-        Iterator<RuleElement> anchorIter = anchors.iterator();
-        while (anchorIter.hasNext()) {
-            if (anchorIter.next() instanceof ValueNode) {
-                anchorIter.remove();
-            }
-        }
-        // parameter anchors should never be removed
-        removableEnds.removeAll(parameters);
-        anchors.removeAll(removableEnds);
-        return anchors.toArray(new RuleElement[anchors.size()]);
+        result.addNodeSet(rule.getModifierEnds());
+        return result;
     }
 
     /**
