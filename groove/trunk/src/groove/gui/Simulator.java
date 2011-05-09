@@ -97,6 +97,7 @@ import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Duo;
 import groove.util.Groove;
+import groove.util.Pair;
 import groove.util.Version;
 import groove.verify.DefaultMarker;
 import groove.verify.Formula;
@@ -458,7 +459,7 @@ public class Simulator {
     private EditorPanel addEditorPanel(AspectGraph graph, boolean fresh) {
         final EditorPanel result = new EditorPanel(this, graph, fresh);
         getSimulatorPanel().add(result);
-        result.start();
+        result.start(graph);
         return result;
     }
 
@@ -467,6 +468,34 @@ public class Simulator {
         for (EditorPanel editor : getSimulatorPanel().getEditors()) {
             editor.setType();
         }
+    }
+
+    /** 
+     * Attempts to disposes the editor for certain aspect graphs, if any.
+     * This is done in response to a change in the graph outside the editor.
+     * @param graphs the graphs that are about to be changed and whose editor 
+     * therefore needs to be disposed
+     * @return {@code true} if the operation was not cancelled
+     */
+    boolean disposeEditors(AspectGraph... graphs) {
+        Set<Pair<GraphRole,String>> graphSet =
+            new HashSet<Pair<GraphRole,String>>();
+        for (AspectGraph graph : graphs) {
+            graphSet.add(Pair.newPair(graph.getRole(), graph.getName()));
+        }
+        boolean result = true;
+        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
+            AspectGraph graph = editor.getGraph();
+            if (graphSet.contains(Pair.newPair(graph.getRole(), graph.getName()))) {
+                if (editor.askAndSave()) {
+                    editor.dispose();
+                } else {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** 
@@ -502,6 +531,25 @@ public class Simulator {
         }
         return result;
     }
+
+    //
+    //    /** Carries through a graph renaming to a possible editor for that graph. */
+    //    private void renameEditors(AspectGraph graph, String newName) {
+    //        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
+    //            if (editor.getGraph() == graph) {
+    //                editor.rename(newName);
+    //            }
+    //        }
+    //    }
+    //
+    //    /** Carries through a graph (properties) change to a possible editor for that graph. */
+    //    private void changeEditors(AspectGraph oldGraph, AspectGraph newGraph) {
+    //        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
+    //            if (editor.getGraph() == oldGraph) {
+    //                editor.change(newGraph);
+    //            }
+    //        }
+    //    }
 
     /** Returns true if the Simulator is in abstraction mode. */
     private boolean isAbstractionMode() {
@@ -668,20 +716,14 @@ public class Simulator {
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
-    void doEnableRule() {
-        // Multiple selection
-        // Copy the selected rules to avoid concurrent modifications
-        List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
-        for (RuleView rule : rules) {
-            AspectGraph ruleGraph = rule.getAspectGraph();
-            GraphProperties properties =
-                GraphInfo.getProperties(ruleGraph, true).clone();
-            properties.setEnabled(!properties.isEnabled());
-            AspectGraph newRuleGraph = ruleGraph.clone();
-            GraphInfo.setProperties(newRuleGraph, properties);
-            newRuleGraph.setFixed();
-            doAddRule(newRuleGraph);
-        }
+    void doEnableRule(AspectGraph ruleGraph) {
+        GraphProperties properties =
+            GraphInfo.getProperties(ruleGraph, true).clone();
+        properties.setEnabled(!properties.isEnabled());
+        AspectGraph newRuleGraph = ruleGraph.clone();
+        GraphInfo.setProperties(newRuleGraph, properties);
+        newRuleGraph.setFixed();
+        doAddRule(newRuleGraph);
     }
 
     /**
@@ -3388,24 +3430,30 @@ public class Simulator {
             // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = getStateList().getSelectedGraphs();
+            // first collect the affected graphs and compose the question
+            AspectGraph[] graphs = new AspectGraph[selectedGraphs.size()];
             String question = "Delete graph(s) '%s'";
             for (int i = 0; i < selectedGraphs.size(); i++) {
                 String graphName = selectedGraphs.get(i);
-                if (graphName != null) {
-                    question = String.format(question, graphName);
-                    boolean isStartGraph =
-                        graphName.equals(getGrammarView().getStartGraphName());
-                    if (isStartGraph) {
-                        question = question + " (start graph)";
-                    }
-                    if (i < selectedGraphs.size() - 1) {
-                        question = question + ", '%s'";
-                    } else {
-                        question = question + "?";
-                    }
+                GraphView graphView = getGrammarView().getGraphView(graphName);
+                assert graphView != null : String.format(
+                    "Graph '%s' in graph list but not in grammar", graphName);
+                graphs[i] = graphView.getAspectGraph();
+                // compose the question
+                question = String.format(question, graphName);
+                boolean isStartGraph =
+                    graphName.equals(getGrammarView().getStartGraphName());
+                if (isStartGraph) {
+                    question = question + " (start graph)";
+                }
+                if (i < selectedGraphs.size() - 1) {
+                    question = question + ", '%s'";
+                } else {
+                    question = question + "?";
                 }
             }
-            if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)) {
+            if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)
+                && disposeEditors(graphs)) {
                 for (String graphName : selectedGraphs) {
                     doDeleteGraph(graphName);
                 }
@@ -3450,18 +3498,23 @@ public class Simulator {
             // Multiple selection
             String question = "Delete rule(s) '%s'";
             // copy the selected rules to avoid concurrent modifications
-            List<RuleView> rules = new ArrayList<RuleView>(getCurrentRuleSet());
-            for (int i = 0; i < rules.size(); i++) {
-                String ruleName = rules.get(i).getName();
+            List<RuleView> ruleViews =
+                new ArrayList<RuleView>(getCurrentRuleSet());
+            // collect the affected graphs and compose the question
+            AspectGraph[] rules = new AspectGraph[ruleViews.size()];
+            for (int i = 0; i < ruleViews.size(); i++) {
+                rules[i] = ruleViews.get(i).getAspectGraph();
+                String ruleName = ruleViews.get(i).getName();
                 question = String.format(question, ruleName);
-                if (i < rules.size() - 1) {
+                if (i < ruleViews.size() - 1) {
                     question = question + ", '%s'";
                 } else {
                     question = question + "?";
                 }
             }
-            if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
-                for (RuleView rule : rules) {
+            if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)
+                && disposeEditors(rules)) {
+                for (RuleView rule : ruleViews) {
                     doDeleteRule(rule.getName());
                 }
             }
@@ -3598,7 +3651,8 @@ public class Simulator {
                 new PropertiesDialog(dialogProperties,
                     GraphProperties.DEFAULT_USER_KEYS, true);
 
-            if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
+            if (dialog.showDialog(getFrame()) && confirmAbandon(false)
+                && disposeEditors(ruleGraphs)) {
 
                 // We go through the results of the dialog.
                 GraphProperties editedProperties =
@@ -3781,7 +3835,7 @@ public class Simulator {
     /**
      * Action that changes the enabledness status of the currently selected
      * rule.
-     * @see #doEnableRule()
+     * @see #doEnableRule(AspectGraph)
      */
     private class EnableRuleAction extends RefreshableAction {
         EnableRuleAction() {
@@ -3799,8 +3853,18 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(false)) {
-                doEnableRule();
+            // collect the selected rule graphs
+            AspectGraph[] ruleGraphs =
+                new AspectGraph[getCurrentRuleSet().size()];
+            int i = 0;
+            for (RuleView ruleView : getCurrentRuleSet()) {
+                ruleGraphs[i] = ruleView.getAspectGraph();
+                i++;
+            }
+            if (confirmAbandon(false) && disposeEditors(ruleGraphs)) {
+                for (AspectGraph ruleGraph : ruleGraphs) {
+                    doEnableRule(ruleGraph);
+                }
             }
         }
     }
@@ -4850,19 +4914,25 @@ public class Simulator {
             // Multiple selection
             // copy selected graph names
             List<String> selectedGraphs = getStateList().getSelectedGraphs();
-            for (String oldGraphName : selectedGraphs) {
-                if (oldGraphName != null) {
-                    GraphView graph =
-                        getGrammarView().getGraphView(oldGraphName);
-                    assert graph != null : String.format(
-                        "Graph '%s' in graph list but not in grammar",
-                        oldGraphName);
+            // first collect the affected graphs
+            AspectGraph[] hostGraphs = new AspectGraph[selectedGraphs.size()];
+            int i = 0;
+            for (String graphName : selectedGraphs) {
+                GraphView hostView = getGrammarView().getGraphView(graphName);
+                assert hostView != null : String.format(
+                    "Graph '%s' in graph list but not in grammar", graphName);
+                hostGraphs[i] = hostView.getAspectGraph();
+                i++;
+            }
+            if (disposeEditors(hostGraphs)) {
+                for (AspectGraph graph : hostGraphs) {
+                    String oldGraphName = graph.getName();
                     String newGraphName =
                         askNewGraphName("Select new graph name", oldGraphName,
                             false);
                     if (newGraphName != null
                         && !oldGraphName.equals(newGraphName)) {
-                        doRenameGraph(graph.getAspectGraph(), newGraphName);
+                        doRenameGraph(graph, newGraphName);
                     }
                 }
             }
@@ -4910,15 +4980,20 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (confirmAbandon(true)) {
+            // first collect the rule graphs involved
+            AspectGraph[] ruleGraphs =
+                new AspectGraph[getCurrentRuleSet().size()];
+            int i = 0;
+            for (RuleView ruleView : getCurrentRuleSet()) {
+                ruleGraphs[i] = ruleView.getAspectGraph();
+                i++;
+            }
+            if (confirmAbandon(true) && disposeEditors(ruleGraphs)) {
                 // Multiple selection
                 String newRuleName = null;
                 // copy the selected rules to avoid concurrent modifications
-                List<RuleView> rules =
-                    new ArrayList<RuleView>(getCurrentRuleSet());
-                for (RuleView rule : rules) {
-                    String oldRuleName = rule.getName();
-                    AspectGraph ruleGraph = rule.getAspectGraph();
+                for (AspectGraph ruleGraph : ruleGraphs) {
+                    String oldRuleName = ruleGraph.getName();
                     newRuleName =
                         askNewRuleName("Select new rule name",
                             oldRuleName.toString(), true);

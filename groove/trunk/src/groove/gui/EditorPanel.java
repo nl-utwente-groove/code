@@ -98,14 +98,13 @@ public class EditorPanel extends JPanel {
                     return graph.getRole();
                 }
             };
-        this.graph = graph;
         this.fresh = fresh;
     }
 
     /** Starts the editor with the graph passed in at construction time. */
-    public void start() {
+    public void start(AspectGraph graph) {
         this.editor.setTypeView(this.simulator.getTypeView());
-        this.editor.setGraph(this.graph, true);
+        this.editor.setGraph(graph, true);
         this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
         JSplitPane mainPanel = this.editor.getMainPanel();
@@ -123,7 +122,7 @@ public class EditorPanel extends JPanel {
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getGraph() {
-        return this.graph;
+        return getEditor().getGraph();
     }
 
     /** Changes the type graph in the editor,
@@ -146,6 +145,19 @@ public class EditorPanel extends JPanel {
     /** Indicates if the editor is currently saving changes. */
     public boolean isSaving() {
         return this.saving;
+    }
+
+    /** Changes the edited graph. */
+    public void change(AspectGraph newGraph) {
+        getEditor().setGraph(newGraph, false);
+    }
+
+    /** Renames the edited graph. */
+    public void rename(String newName) {
+        AspectGraph newGraph = getGraph().clone();
+        newGraph.setName(newName);
+        newGraph.setFixed();
+        getEditor().setGraph(newGraph, false);
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
@@ -300,8 +312,6 @@ public class EditorPanel extends JPanel {
 
     private JButton okButton;
     private JButton cancelButton;
-    /** The graph with which the editor has been initially set. */
-    private final AspectGraph graph;
     /** Flag indicating that this is a fresh graph, not already in the simulator. */
     private final boolean fresh;
     /** Options of this dialog. */
