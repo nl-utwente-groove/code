@@ -1678,8 +1678,11 @@ public class DefaultRuleView implements RuleView {
                 RuleNode rhsNode = this.ruleMorph.getNode(lhsNode);
                 // test if this is a reader node
                 if (rhsNode != null && !lhsType.isDataType()) {
+                    RuleLabel ruleLabelForLhsType =
+                        lhsTyping.isSharp(lhsNode) ? new RuleLabel(
+                            RegExpr.sharp(lhsType)) : new RuleLabel(lhsType);
                     RuleEdge lhsEdge =
-                        ruleFactory.createEdge(lhsNode, new RuleLabel(lhsType),
+                        ruleFactory.createEdge(lhsNode, ruleLabelForLhsType,
                             lhsNode);
                     // test if the type is deleted
                     // note that (in case of nested levels) the type edge
