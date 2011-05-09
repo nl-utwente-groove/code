@@ -17,6 +17,7 @@
 package groove.io.external;
 
 import groove.graph.DefaultGraph;
+import groove.graph.GraphRole;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
@@ -209,6 +210,7 @@ public class Importer {
                         DefaultGraph plainGraph = new DefaultGraph(graphName);
                         ((ExternalFileFormat<DefaultGraph>) extFormat).load(
                             plainGraph, graphFile);
+                        plainGraph.setRole(GraphRole.HOST);
                         graph = AspectGraph.newInstance(plainGraph);
                     }
                 }

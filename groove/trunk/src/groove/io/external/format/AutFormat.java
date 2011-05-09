@@ -109,8 +109,12 @@ public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
                     int target =
                         Integer.parseInt(line.substring(targetStart,
                             line.lastIndexOf(')')).trim());
-                    DefaultNode sourceNode = graph.addNode(source);
-                    DefaultNode targetNode = graph.addNode(target);
+                    DefaultNode sourceNode =
+                        graph.getFactory().createNode(source);
+                    graph.addNode(sourceNode);
+                    DefaultNode targetNode =
+                        graph.getFactory().createNode(target);
+                    graph.addNode(targetNode);
                     result.put("" + source, sourceNode);
                     result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);
