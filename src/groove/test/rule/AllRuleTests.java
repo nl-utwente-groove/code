@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
  * @version $Revision: 2891 $
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({RuleApplicationTest.class})
+@Suite.SuiteClasses({RuleApplicationTest.class, TypeCheckTest.class})
 public class AllRuleTests {
     // Empty by design.
 }
