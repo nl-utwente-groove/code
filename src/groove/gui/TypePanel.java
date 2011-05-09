@@ -428,8 +428,11 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
         public void actionPerformed(ActionEvent e) {
             String typeName = getSelectedType();
+            AspectGraph typeGraph =
+                getGrammarView().getTypeView(typeName).getAspectGraph();
             if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
-                String.format("Delete type graph '%s'?", typeName))) {
+                String.format("Delete type graph '%s'?", typeName))
+                && getSimulator().disposeEditors(typeGraph)) {
                 getNameListModel().selectMostAppropriateType();
                 getNameListModel().removeType(typeName, false);
                 getSimulator().doDeleteType(typeName);
@@ -610,12 +613,15 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     oldName, false);
             if (newName != null && !oldName.equals(newName)) {
                 TypeView type = getGrammarView().getTypeView(oldName);
-                boolean checked =
-                    getNameListModel().getElementByName(oldName).checked;
-                getNameListModel().removeType(oldName, true);
-                if (getSimulator().doRenameType(type.getAspectGraph(), newName)) {
-                    getNameListModel().checkType(newName, checked);
-                    getNameListModel().setSelectedType(newName);
+                if (getSimulator().disposeEditors(type.getAspectGraph())) {
+                    boolean checked =
+                        getNameListModel().getElementByName(oldName).checked;
+                    getNameListModel().removeType(oldName, true);
+                    if (getSimulator().doRenameType(type.getAspectGraph(),
+                        newName)) {
+                        getNameListModel().checkType(newName, checked);
+                        getNameListModel().setSelectedType(newName);
+                    }
                 }
             }
         }
