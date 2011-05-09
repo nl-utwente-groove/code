@@ -19,6 +19,8 @@ package groove.gui;
 import groove.control.CtrlAut;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
+import groove.gui.Simulator.GuiState;
+import groove.gui.Simulator.GuiState.Change;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.store.SystemStore;
@@ -85,7 +87,8 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-public class ControlPanel extends JPanel implements SimulationListener {
+public class ControlPanel extends JPanel implements SimulationListener,
+        NewSimulationListener {
     /**
      * @param simulator The Simulator the panel is added to.
      */
@@ -264,6 +267,19 @@ public class ControlPanel extends JPanel implements SimulationListener {
 
     public void startSimulationUpdate(GTS gts) {
         // nothing happens
+    }
+
+    @Override
+    public void update(GuiState source, GuiState oldState, Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            StoredGrammarView grammar = source.getGrammar();
+            if (!isControlSelected()
+                || !grammarHasControl(getSelectedControl())) {
+                String newName = grammar.getControlName();
+                setSelectedControl(grammarHasControl(newName) ? newName : null);
+            }
+            refreshAll();
+        }
     }
 
     /** Selects a line in the currently displayed control program, if possible. */
