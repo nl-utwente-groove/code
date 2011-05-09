@@ -21,6 +21,8 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
+import groove.gui.Simulator.GuiState;
+import groove.gui.Simulator.GuiState.Change;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
@@ -50,7 +52,7 @@ import javax.swing.JToolBar;
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements
-        SimulationListener {
+        SimulationListener, NewSimulationListener {
 
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
@@ -179,6 +181,35 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         setStateUpdate(transition.target());
+    }
+
+    @Override
+    public void update(GuiState source, GuiState oldState, Set<Change> changes) {
+        if (changes.contains(Change.GTS)) {
+            GTS gts = source.getGts();
+            setGTS(gts);
+            LTSJModel newModel = getJGraph().newModel();
+            getJGraph().setModel(newModel);
+            if (gts == null) {
+                getJGraph().getFilteredLabels().clear();
+            }
+            setEnabled(gts != null);
+            refreshStatus();
+        }
+        if (changes.contains(Change.STATE) || changes.contains(Change.TRANS)) {
+            GraphState state = source.getState();
+            GraphTransition transition = source.getTransition();
+            getJGraph().setActive(state, transition);
+            // we do layouting here because it's too expensive to do it
+            // every time a new state is added
+            if (this.ltsListener.stateAdded
+                && getJGraph().getLayouter() != null) {
+                getJGraph().freeze();
+                getJGraph().getLayouter().start(false);
+                this.ltsListener.stateAdded = false;
+            }
+            conditionalScrollTo(transition == null ? state : transition);
+        }
     }
 
     /**
