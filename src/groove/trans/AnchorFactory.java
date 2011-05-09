@@ -26,5 +26,5 @@ public interface AnchorFactory<R extends Rule> {
     /**
      * Factory method to create the anchors for a given rule.
      */
-    public RuleElement[] newAnchors(R rule);
+    public RuleGraph newAnchor(R rule);
 }

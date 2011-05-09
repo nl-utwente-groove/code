@@ -662,19 +662,10 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Initialises the anchor nodes and edges for this rule.
      */
     private void initAnchor() {
-        Collection<RuleElement> anchor =
-            new TreeSet<RuleElement>(
-                Arrays.asList(anchorFactory.newAnchors(this)));
-        List<RuleNode> nodeResult = new ArrayList<RuleNode>(anchor.size());
-        List<RuleEdge> edgeResult = new ArrayList<RuleEdge>(anchor.size());
-        for (RuleElement elem : anchor) {
-            if (elem instanceof RuleNode) {
-                nodeResult.add((RuleNode) elem);
-            } else {
-                edgeResult.add((RuleEdge) elem);
-            }
-        }
+        RuleGraph anchor = anchorFactory.newAnchor(this);
+        Set<RuleNode> nodeResult = new TreeSet<RuleNode>(anchor.nodeSet());
         this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
+        Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(anchor.edgeSet());
         this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
     }
 
@@ -909,7 +900,7 @@ public class Rule implements Fixable, Comparable<Rule> {
 
     /**
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
-     * edges or mergers, either in this rule or one of its sub-rules.
+     * edges or mergers.
      */
     final Set<RuleNode> getModifierEnds() {
         if (this.modifierEnds == null) {
@@ -920,7 +911,7 @@ public class Rule implements Fixable, Comparable<Rule> {
 
     /**
      * Computes the array of LHS nodes that are endpoints of eraser edges,
-     * creator edges or mergers, either in this rule or one of its sub-rules.
+     * creator edges or mergers.
      */
     private Set<RuleNode> computeModifierEnds() {
         Set<RuleNode> result = new HashSet<RuleNode>();
@@ -947,6 +938,30 @@ public class Rule implements Fixable, Comparable<Rule> {
         assert lhs().nodeSet().containsAll(result) : String.format(
             "LHS node set %s does not contain all anchors in %s",
             lhs().nodeSet(), result);
+        return result;
+    }
+
+    /**
+     * Returns an array of variables that are used in eraser or creator edges.
+     */
+    final Set<LabelVar> getModifierVars() {
+        if (this.modifierVars == null) {
+            this.modifierVars = computeModifierVars();
+        }
+        return this.modifierVars;
+    }
+
+    /**
+     * Computes the set of variables occurring in creator or eraser edges.
+     */
+    private Set<LabelVar> computeModifierVars() {
+        Set<LabelVar> result = new HashSet<LabelVar>();
+        // add the variables of creator edges
+        result.addAll(VarSupport.getAllVars(getCreatorGraph()));
+        // add the variables of eraser edges
+        for (RuleEdge eraserEdge : getEraserEdges()) {
+            result.addAll(VarSupport.getAllVars(eraserEdge));
+        }
         return result;
     }
 
@@ -1273,10 +1288,15 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleEdge[] varEdges;
     /**
-     * The lhs nodes that are end points of eraser edges, either in this rule or
-     * one of its sub-rules.
+     * The lhs nodes that are end points of eraser or creator edges or mergers,
+     * either in this rule or one of its sub-rules.
      */
     private Set<RuleNode> modifierEnds;
+    /**
+     * The lhs variables that occur in eraser or creator edges, either in this rule or
+     * one of its sub-rules.
+     */
+    private Set<LabelVar> modifierVars;
     /**
      * The LHS nodes that do not have any incident edges in the LHS.
      */

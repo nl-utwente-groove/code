@@ -38,12 +38,15 @@ import java.util.TreeSet;
 /**
  * Type of conditions over graphs.
  * A condition is a hierarchical structure, the levels of which are
- * alternating between existentially and universally matched patterns.
- * The patterns on different levels are connected by morphisms, which
- * may merge or rename nodes.
+ * essentially first-order operators, in particular existential or
+ * universal quantifiers. Each quantifier or negation has an associated 
+ * <i>pattern</i>, which is the graph that should be matched (existentially 
+ * or universally) on that level.
  * <p>
  * A condition consists of the following elements:
  * <ul>
+ * <li> The <i>operator</i>: this is the first-order logic operator. It is
+ * a value of type {@link Op}.
  * <li> The <i>root</i>: the parent graph in the condition hierarchy.
  * A condition can only be matched relative to a match of its root. A condition
  * is called <i>ground</i> if its root is the empty graph.
