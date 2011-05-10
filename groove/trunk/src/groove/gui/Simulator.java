@@ -533,25 +533,6 @@ public class Simulator {
         return result;
     }
 
-    //
-    //    /** Carries through a graph renaming to a possible editor for that graph. */
-    //    private void renameEditors(AspectGraph graph, String newName) {
-    //        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-    //            if (editor.getGraph() == graph) {
-    //                editor.rename(newName);
-    //            }
-    //        }
-    //    }
-    //
-    //    /** Carries through a graph (properties) change to a possible editor for that graph. */
-    //    private void changeEditors(AspectGraph oldGraph, AspectGraph newGraph) {
-    //        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-    //            if (editor.getGraph() == oldGraph) {
-    //                editor.change(newGraph);
-    //            }
-    //        }
-    //    }
-
     /** Returns true if the Simulator is in abstraction mode. */
     private boolean isAbstractionMode() {
         return this.isAbstractionMode;
@@ -626,8 +607,6 @@ public class Simulator {
             showErrorDialog(
                 String.format("Error while saving rule '%s'",
                     ruleAsGraph.getName()), exc);
-        } catch (UnsupportedOperationException u) {
-            showErrorDialog("Current grammar is read-only", u);
         }
         return result;
     }
@@ -662,14 +641,18 @@ public class Simulator {
     void doDeleteControl(String name) {
         boolean isCurrentControl =
             name.equals(getGrammarView().getControlName());
-        getGrammarStore().deleteControl(name);
-        // we only need to refresh the grammar if the deleted
-        // control program was the currently active one
-        if (isCurrentControl) {
-            updateGrammar();
-        } else {
-            // otherwise, we only need to update the control panel
-            getControlPanel().refreshAll();
+        try {
+            getGrammarStore().deleteControl(name);
+            // we only need to refresh the grammar if the deleted
+            // control program was the currently active one
+            if (isCurrentControl) {
+                updateGrammar();
+            } else {
+                // otherwise, we only need to update the control panel
+                getControlPanel().refreshAll();
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while deleting control", exc);
         }
     }
 
@@ -681,13 +664,17 @@ public class Simulator {
         // grammar
         boolean isStartGraph =
             name.equals(getGrammarView().getStartGraphName());
-        getGrammarStore().deleteGraph(name);
-        if (isStartGraph) {
-            // reset the start graph to null
-            getGrammarView().removeStartGraph();
-            updateGrammar();
-        } else {
-            refresh();
+        try {
+            getGrammarStore().deleteGraph(name);
+            if (isStartGraph) {
+                // reset the start graph to null
+                getGrammarView().removeStartGraph();
+                updateGrammar();
+            } else {
+                refresh();
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while deleting graph", exc);
         }
     }
 
@@ -705,14 +692,18 @@ public class Simulator {
     /** Removes a type graph from this grammar. */
     void doDeleteType(String name) {
         boolean isUsed = getGrammarView().getActiveTypeNames().contains(name);
-        getGrammarStore().deleteType(name);
-        // we only need to refresh the grammar if the deleted
-        // type graph was the currently active one
-        if (isUsed) {
-            updateGrammar();
-        } else {
-            // otherwise, we only need to update the type panel
-            getTypePanel().displayType();
+        try {
+            getGrammarStore().deleteType(name);
+            // we only need to refresh the grammar if the deleted
+            // type graph was the currently active one
+            if (isUsed) {
+                updateGrammar();
+            } else {
+                // otherwise, we only need to update the type panel
+                getTypePanel().displayType();
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while deleting type", exc);
         }
     }
 

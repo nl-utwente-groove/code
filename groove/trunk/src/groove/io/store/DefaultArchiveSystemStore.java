@@ -225,66 +225,60 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public String putControl(String name, String control)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+    public String putControl(String name, String control) throws IOException {
+        throw createImmutable();
     }
 
     @Override
-    public AspectGraph putGraph(AspectGraph graph)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+    public AspectGraph putGraph(AspectGraph graph) throws IOException {
+        throw createImmutable();
     }
 
     @Override
-    public void putProperties(SystemProperties properties)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+    public void putProperties(SystemProperties properties) throws IOException {
+        throw createImmutable();
     }
 
     @Override
-    public AspectGraph putRule(AspectGraph rule)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+    public AspectGraph putRule(AspectGraph rule) throws IOException {
+        throw createImmutable();
     }
 
     @Override
-    public AspectGraph putType(AspectGraph type)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+    public AspectGraph putType(AspectGraph type) throws IOException {
+        throw createImmutable();
     }
 
     @Override
     public AspectGraph renameGraph(String oldName, String newName)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+        throws IOException {
+        throw createImmutable();
     }
 
     @Override
     public AspectGraph renameRule(String oldName, String newName)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+        throws IOException {
+        throw createImmutable();
     }
 
     @Override
     public AspectGraph renameType(String oldName, String newName)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+        throws IOException {
+        throw createImmutable();
     }
 
     @Override
     public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
+        throws IOException {
+        throw createImmutable();
+    }
+
+    /** Creates an exception stating that the archive is immutable. */
+    private IOException createImmutable() {
+        return new IOException(
+            String.format(
+                "Archived grammar '%s' is immutable.%nSave locally to allow changes.",
+                getName()));
     }
 
     @Override
@@ -299,6 +293,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         // collect the relevant entries
         Map<String,ZipEntry> rules = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> graphs = new HashMap<String,ZipEntry>();
+        Map<String,ZipEntry> types = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> controls = new HashMap<String,ZipEntry>();
         ZipEntry properties = null;
         for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
@@ -330,6 +325,13 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                         assert oldEntry == null : String.format(
                             "Duplicate graph name '%s'", restName);
                     }
+                } else if (restName.endsWith(TYPE_FILTER.getExtension())) {
+                    // check if the entry is top level
+                    if (new File(restName).getParent() == null) {
+                        Object oldEntry = types.put(restName, entry);
+                        assert oldEntry == null : String.format(
+                            "Duplicate graph name '%s'", restName);
+                    }
                 } else if (restName.endsWith(CONTROL_FILTER.getExtension())) {
                     // check if the entry is top level
                     if (new File(restName).getParent() == null) {
@@ -346,7 +348,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         loadProperties(zipFile, properties);
         loadRules(zipFile, rules);
         loadGraphs(zipFile, graphs);
-        loadTypes(zipFile, graphs);
+        loadTypes(zipFile, types);
         loadControls(zipFile, controls);
         zipFile.close();
         notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
