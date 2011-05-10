@@ -16,15 +16,14 @@
  */
 package groove.gui;
 
-import groove.lts.GTS;
+import groove.gui.SimulatorModel.Change;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.util.Groove;
 import groove.util.History;
-import groove.view.StoredGrammarView;
 
 import java.awt.event.ActionEvent;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,19 +33,18 @@ import javax.swing.Action;
  * @version $Revision$ $Date: 2008-01-30 09:33:36 $
  * @author Arend Rensink
  */
-class UndoHistory implements SimulationListener {
+class UndoHistory implements SimulatorListener {
     /**
      * Creates a new, empty history log and registers this undo history as a
      * simulation listener.
      * @param simulator the "parent" simulator
      */
     public UndoHistory(Simulator simulator) {
-        // simulator.addSimulationListener(this);
         this.history = new History<HistoryAction>();
-        this.simulator = simulator;
-        simulator.addSimulationListener(this);
+        this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();
         this.redoAction = new ForwardAction();
+        simulator.addSimulatorListener(this);
     }
 
     /**
@@ -63,27 +61,21 @@ class UndoHistory implements SimulationListener {
         return this.undoAction;
     }
 
-    /**
-     * Clears the history.
-     */
-    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        this.history.clear();
-        setActionEnablings();
-        this.ignoreSimulationUpdates = false;
-    }
-
-    /** Clears the history and sets the start state. */
-    public synchronized void startSimulationUpdate(GTS gts) {
-        this.history.clear();
-        this.history.add(new SetStateAction(gts.startState()));
-        setActionEnablings();
-        this.ignoreSimulationUpdates = false;
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.STATE) && source.getState() != null) {
+            setStateUpdate(source.getState());
+        }
+        if (changes.contains(Change.TRANS) && source.getTransition() != null) {
+            setTransitionUpdate(source.getTransition());
+        }
     }
 
     /**
      * Adds a state to the history, if it is not already the current element.
      */
-    public synchronized void setStateUpdate(GraphState state) {
+    private synchronized void setStateUpdate(GraphState state) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetStateAction(state);
             if (this.history.isEmpty()
@@ -101,9 +93,8 @@ class UndoHistory implements SimulationListener {
      * element is selecting the source state of the transition, remove it (so we
      * don't get the selection of a state followed by the selection of an
      * outgoing transition, but only the latter).
-     * @see #applyTransitionUpdate(GraphTransition)
      */
-    public synchronized void setTransitionUpdate(GraphTransition transition) {
+    private synchronized void setTransitionUpdate(GraphTransition transition) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetTransitionAction(transition);
             // test if the previous history action was setting the source state
@@ -117,26 +108,6 @@ class UndoHistory implements SimulationListener {
             }
         }
         setActionEnablings();
-    }
-
-    /** Match updates have no effect on the history. */
-    public void setMatchUpdate(Proof match) {
-        // explicitly empty
-    }
-
-    /** Rule updates have no effect on the history. */
-    public void setRuleUpdate(String name) {
-        // explicitly empty
-    }
-
-    /**
-     * Adds the applied transition and its target state to the history.
-     */
-    public void applyTransitionUpdate(GraphTransition transition) {
-        setStateUpdate(transition.target());
-        // history.add(new TransitionElement(transition));
-        // history.add(transition.target());
-        // setActionEnablings();
     }
 
     /**
@@ -194,10 +165,10 @@ class UndoHistory implements SimulationListener {
      */
     protected void doHistoryAction(HistoryAction action) {
         if (action instanceof SetStateAction) {
-            this.simulator.setState(action.getState());
+            this.simulatorModel.setState(action.getState());
         } else {
             assert action instanceof SetTransitionAction;
-            this.simulator.setTransition(action.getTransition());
+            this.simulatorModel.setTransition(action.getTransition());
         }
     }
 
@@ -216,7 +187,7 @@ class UndoHistory implements SimulationListener {
      * The parent simulator.
      * @invariant simulator != null
      */
-    protected final Simulator simulator;
+    protected final SimulatorModel simulatorModel;
     /**
      * The (unique) undo action associated with this undo history.
      */

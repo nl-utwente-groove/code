@@ -19,19 +19,18 @@ package groove.gui;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.gui.SimulatorModel.Change;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleName;
 import groove.trans.SystemRecord;
 import groove.view.GrammarView;
 import groove.view.RuleView;
-import groove.view.StoredGrammarView;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -75,11 +74,11 @@ import javax.swing.tree.TreeSelectionModel;
  * @version $Revision$
  * @author Arend Rensink
  */
-public class RuleJTree extends JTree implements SimulationListener {
+public class RuleJTree extends JTree implements SimulatorListener {
     /** Creates an instance for a given simulator. */
     protected RuleJTree(final Simulator simulator) {
         this.simulator = simulator;
-        simulator.addSimulationListener(this);
+        simulator.addSimulatorListener(this);
         setRootVisible(false);
         setShowsRootHandles(true);
         setEnabled(false);
@@ -140,22 +139,6 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /**
-     * Fills the rule directory with rule nodes, based on a given rule system.
-     * Sets the current LTS to the grammar's LTS.
-     */
-    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        this.displayedGrammar = grammar;
-        if (grammar == null) {
-            this.clearAllMaps();
-            this.topDirectoryNode.removeAllChildren();
-            this.ruleDirectory.reload();
-        } else {
-            loadGrammar(grammar);
-        }
-        refresh();
-    }
-
-    /**
      * Loads the j-tree with the data of the given (non-<code>null</code>)
      * grammar.
      */
@@ -213,49 +196,20 @@ public class RuleJTree extends JTree implements SimulationListener {
         return result;
     }
 
-    /** Refreshes the view, to add match nodes. */
-    public synchronized void startSimulationUpdate(GTS gts) {
-        refresh();
-    }
-
-    /**
-     * Refreshes the available match nodes, based on a new state. The current
-     * LTS is inspected to find out the relevant derivations. Expands all rule
-     * nodes to show the available matches.
-     */
-    public synchronized void setStateUpdate(GraphState state) {
-        refresh();
-    }
-
-    /**
-     * Sets the tree selection to a given rule name. Does <i>not</i> trigger
-     * actions based on the selection change.
-     */
-    public synchronized void setRuleUpdate(String name) {
-        refresh();
-    }
-
-    /**
-     * Sets the tree selection to a given derivation. Does <i>not</i> trigger
-     * actions based on the selection change.
-     */
-    public synchronized void setTransitionUpdate(GraphTransition transition) {
-        refresh();
-    }
-
-    /**
-     * Sets the tree selection to a given derivation. Does <i>not</i> trigger
-     * actions based on the selection change.
-     */
-    public void setMatchUpdate(Proof match) {
-        refresh();
-    }
-
-    /**
-     * Sets the directory tree as in <tt>setStateUpdate</tt> for the currently
-     * selected derivation's cod state.
-     */
-    public synchronized void applyTransitionUpdate(GraphTransition transition) {
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            GrammarView grammar = source.getGrammar();
+            this.displayedGrammar = grammar;
+            if (grammar == null) {
+                this.clearAllMaps();
+                this.topDirectoryNode.removeAllChildren();
+                this.ruleDirectory.reload();
+            } else {
+                loadGrammar(grammar);
+            }
+        }
         refresh();
     }
 
@@ -360,28 +314,27 @@ public class RuleJTree extends JTree implements SimulationListener {
     protected void refresh() {
         boolean oldListenToSelectionChanges = this.listenToSelectionChanges;
         this.listenToSelectionChanges = false;
-        GraphState state = getCurrentState();
+        GraphState state = getState();
         if (state == null) {
             refreshMatchesClosed(Collections.<GraphTransition>emptySet());
         } else if (setDisplayedState(state)) {
             if (state.isClosed()) {
-                refreshMatchesClosed(getCurrentGTS().outEdgeSet(
-                    getCurrentState()));
+                refreshMatchesClosed(getGTS().outEdgeSet(getState()));
             } else {
-                SystemRecord record = getCurrentGTS().getRecord();
+                SystemRecord record = getGTS().getRecord();
                 Collection<? extends MatchResult> matches =
                     new MatchSetCollector(state, record,
-                        getCurrentGTS().checkDiamonds()).getMatchSet();
+                        getGTS().checkDiamonds()).getMatchSet();
                 refreshMatchesOpen(matches);
             }
         }
         DefaultMutableTreeNode treeNode = null;
-        if (getCurrentTransition() != null) {
-            treeNode = this.matchNodeMap.get(getCurrentTransition().getEvent());
-        } else if (getCurrentEvent() != null) {
-            treeNode = this.matchNodeMap.get(getCurrentEvent());
-        } else if (getCurrentRule() != null) {
-            treeNode = this.ruleNodeMap.get(getCurrentRule().getName());
+        if (getTransition() != null) {
+            treeNode = this.matchNodeMap.get(getTransition().getEvent());
+        } else if (getEvent() != null) {
+            treeNode = this.matchNodeMap.get(getEvent());
+        } else if (getRule() != null) {
+            treeNode = this.ruleNodeMap.get(getRule().getName());
         }
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
@@ -437,8 +390,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             this.matchNodeMap.put(match, matchNode);
         }
 
-        for (GraphTransition trans : getCurrentGTS().outEdgeSet(
-            getCurrentState())) {
+        for (GraphTransition trans : getGTS().outEdgeSet(getState())) {
             this.matchTransitionMap.put(trans.getEvent(), trans);
         }
     }
@@ -491,40 +443,40 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
-    protected GTS getCurrentGTS() {
-        return getSimulator().getGTS();
+    final GTS getGTS() {
+        return getSimulatorModel().getGts();
     }
 
     /**
      * Convenience method to retrieve the currently selected transition from the
      * simulator.
      */
-    private GraphTransition getCurrentTransition() {
-        return getSimulator().getCurrentTransition();
+    final GraphTransition getTransition() {
+        return getSimulatorModel().getTransition();
     }
 
     /**
      * Convenience method to retrieve the currently selected match from the
      * state panel
      */
-    private RuleEvent getCurrentEvent() {
-        return getSimulator().getCurrentEvent();
+    final RuleEvent getEvent() {
+        return getSimulatorModel().getEvent();
     }
 
     /**
      * Convenience method to retrieve the currently selected state from the
      * simulator.
      */
-    protected GraphState getCurrentState() {
-        return getSimulator().getCurrentState();
+    final GraphState getState() {
+        return getSimulatorModel().getState();
     }
 
     /**
      * Convenience method to retrieve the currently selected rule from the
      * simulator.
      */
-    private RuleView getCurrentRule() {
-        return getSimulator().getCurrentRule();
+    final RuleView getRule() {
+        return getSimulatorModel().getRule();
     }
 
     /**
@@ -599,6 +551,11 @@ public class RuleJTree extends JTree implements SimulationListener {
         return this.simulator;
     }
 
+    /** Convenience method to retrieve the simulator state. */
+    private final SimulatorModel getSimulatorModel() {
+        return this.simulator.getModel();
+    }
+
     /**
      * Switches the simulator to the state panel view, and
      * refreshes the actions.
@@ -620,8 +577,8 @@ public class RuleJTree extends JTree implements SimulationListener {
                 // selected tree node is a production rule (level 1
                 // node)
                 if (paths.length == 1) {
-                    getSimulator().setRule(
-                        ((RuleTreeNode) selectedNode).getRule().getName());
+                    getSimulatorModel().setRule(
+                        ((RuleTreeNode) selectedNode).getRule());
                     switchSimulatorToRulePanel();
                 }
             } else if (selectedNode instanceof MatchTreeNode) {
@@ -636,7 +593,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                     // occurring after setting the event; so look it
                     // up among the outgoing transitions
                     Iterator<GraphTransition> outTransitions =
-                        getCurrentState().getTransitionIter();
+                        getState().getTransitionIter();
                     while (outTransitions.hasNext()) {
                         GraphTransition outTrans = outTransitions.next();
                         if (outTrans.getEvent().equals(event)) {
@@ -647,9 +604,9 @@ public class RuleJTree extends JTree implements SimulationListener {
                     }
                 }
                 if (trans != null) {
-                    getSimulator().setTransition(trans);
+                    getSimulatorModel().setTransition(trans);
                 } else {
-                    getSimulator().setEvent(event);
+                    getSimulatorModel().setEvent(event);
                 }
                 if (getSimulator().getGraphPanel() != getSimulator().getLtsPanel()) {
                     getSimulator().switchTabs(getSimulator().getStatePanel());
@@ -722,8 +679,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
      * selected, and <tt>setDerivation</tt> if a match node is selected.
-     * @see Simulator#setRule
-     * @see Simulator#setTransition
+     * @see SimulatorModel#setRule
+     * @see SimulatorModel#setTransition
      */
     private class RuleSelectionListener implements TreeSelectionListener {
         /**
@@ -1012,7 +969,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 result = super.getBackgroundSelectionColor();
             } else {
                 result = SELECTION_NON_FOCUS_COLOR;
-                if (getCurrentGTS() == null) {
+                if (getGTS() == null) {
                     result = result.darker();
                 }
             }
@@ -1021,7 +978,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 
         @Override
         public Color getTextSelectionColor() {
-            if (RuleJTree.this.isFocusOwner() || getCurrentGTS() == null) {
+            if (RuleJTree.this.isFocusOwner() || getGTS() == null) {
                 return super.getTextSelectionColor();
             } else {
                 return Color.BLACK;

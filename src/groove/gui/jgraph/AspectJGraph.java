@@ -33,6 +33,8 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
+import groove.view.RuleView;
+import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
@@ -110,8 +112,7 @@ final public class AspectJGraph extends GraphJGraph {
     @Override
     public AspectJModel newModel() {
         SystemProperties properties =
-            this.editor == null
-                    ? this.simulator.getGrammarView().getProperties()
+            this.editor == null ? getGrammar().getProperties()
                     : this.editor.getProperties();
         AspectJModel result =
             new AspectJModel(AspectJVertex.getPrototype(this),
@@ -213,6 +214,11 @@ final public class AspectJGraph extends GraphJGraph {
         return this.simulator;
     }
 
+    /** Convenience method to retrieve the grammar view from the simulator. */
+    private StoredGrammarView getGrammar() {
+        return getSimulatorModel().getGrammar();
+    }
+
     /** 
      * Returns the editor with which this JGraph is associated.
      * May be {@code null} is the simulator is set instead.
@@ -248,19 +254,19 @@ final public class AspectJGraph extends GraphJGraph {
         if (this.simulator != null) {
             switch (getGraphRole()) {
             case HOST:
-                result.add(this.simulator.getApplyTransitionAction());
+                result.add(getSimulator().getApplyTransitionAction());
                 result.addSeparator();
-                result.add(this.simulator.getEditGraphAction());
+                result.add(getSimulator().getEditGraphAction());
                 break;
             case RULE:
                 JMenu setRuleMenu = createSetRuleMenu();
-                setRuleMenu.setEnabled(getSimulator().getGrammarView() != null);
+                setRuleMenu.setEnabled(getGrammar() != null);
                 result.add(setRuleMenu);
                 result.addSeparator();
-                result.add(this.simulator.getEditRuleAction());
+                result.add(getSimulator().getEditRuleAction());
                 break;
             case TYPE:
-                result.add(this.simulator.getEditTypeAction());
+                result.add(getSimulator().getEditTypeAction());
             }
         }
         addSubmenu(result, createEditMenu(atPoint));
@@ -319,8 +325,9 @@ final public class AspectJGraph extends GraphJGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (String ruleName : getSimulator().getGrammarView().getRuleNames()) {
-                        add(createSetRuleAction(ruleName));
+                    for (String ruleName : getGrammar().getRuleNames()) {
+                        add(createSetRuleAction(getGrammar().getRuleView(
+                            ruleName)));
                     }
                 }
             }
@@ -329,10 +336,10 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /** Action to change the display to a given (named) rule. */
-    private Action createSetRuleAction(final String ruleName) {
-        return new AbstractAction(ruleName.toString()) {
+    private Action createSetRuleAction(final RuleView rule) {
+        return new AbstractAction(rule.getName()) {
             public void actionPerformed(ActionEvent evt) {
-                getSimulator().setRule(ruleName);
+                getSimulatorModel().setRule(rule);
             }
         };
     }

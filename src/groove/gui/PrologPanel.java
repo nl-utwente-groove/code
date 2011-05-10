@@ -34,6 +34,7 @@ import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
+import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -875,12 +876,12 @@ public class PrologPanel extends JPanel {
      * Execute the given prolog query
      */
     public void executeQuery(String queryString) {
-        if (this.sim.getGrammarView() == null) {
+        if (getGrammar() == null) {
             this.results.setText("Please first load a grammar and select a start graph.");
             return;
         }
 
-        if (this.sim.getGrammarView().getStartGraphView() == null) {
+        if (getGrammar().getStartGraphView() == null) {
             this.results.setText("Please first select a start graph.");
             return;
         }
@@ -906,8 +907,8 @@ public class PrologPanel extends JPanel {
             this.results.setText("?- " + queryString + "\n");
 
             this.prolog.setGrooveState(new GrooveState(
-                this.sim.getGrammarView().toGrammar(), this.sim.getGTS(),
-                this.sim.getCurrentState(), this.sim.getCurrentEvent()));
+                getGrammar().toGrammar(), getSimulatorState().getGts(),
+                getSimulatorState().getState(), getSimulatorState().getEvent()));
 
             this.solutionCount = 0;
             processResults(this.prolog.newQuery(queryString));
@@ -1063,119 +1064,15 @@ public class PrologPanel extends JPanel {
         return true;
     }
 
-    //
-    //    /**
-    //     * Retrieves the tool tip text for a given predicate from a map,
-    //     * creating it first if necessary.
-    //     */
-    //    private String getToolTipText(CompoundTermTag tag) {
-    //        if (this.toolTipMap.containsKey(tag)) {
-    //            return this.toolTipMap.get(tag);
-    //        } else {
-    //            String result = createToolTipText(tag);
-    //            this.toolTipMap.put(tag, result);
-    //            return result;
-    //        }
-    //    }
-    //
-    //    /** 
-    //     * Constructs the HMTL-formatted tool tip for a given tag,
-    //     * by trying to construct this from the predicate class annotations.
-    //     */
-    //    private String createToolTipText(CompoundTermTag tag) {
-    //        String result = null;
-    //        try {
-    //            String name = tag.functor.value;
-    //            int arity = tag.arity;
-    //            Predicate predicate =
-    //                this.prolog.getEnvironment().getModule().getDefinedPredicate(
-    //                    tag);
-    //            String className = predicate.getJavaClassName();
-    //            if (className != null) {
-    //                Class<?> cl = Class.forName(className);
-    //                Signature sigAnn = cl.getAnnotation(Signature.class);
-    //                ToolTip toolTipAnn = cl.getAnnotation(ToolTip.class);
-    //                Param paramAnn = cl.getAnnotation(Param.class);
-    //                result =
-    //                    GroovePredicates.createToolTipText(name, arity, sigAnn,
-    //                        toolTipAnn, paramAnn);
-    //            }
-    //        } catch (ClassNotFoundException e) {
-    //            // do nothing
-    //            return null;
-    //        }
-    //        return result;
-    //    }
-    //
-    //    private String createToolTipText(String name, int arity, Class<?> cl) {
-    //        String result = null;
-    //        Signature sigAnn = cl.getAnnotation(Signature.class);
-    //        if (sigAnn != null) {
-    //            StringBuilder tip = new StringBuilder();
-    //            String[] sigValue = sigAnn.value();
-    //            if (sigValue.length < arity) {
-    //                throw new IllegalStateException(
-    //                    String.format(
-    //                        "Malformed annotation %s for %s/%s: insufficient arguments",
-    //                        sigAnn, name, arity));
-    //            }
-    //            for (int i = arity; i < sigValue.length; i++) {
-    //                String io = sigValue[i];
-    //                if (io.length() != arity) {
-    //                    throw new IllegalStateException(
-    //                        String.format(
-    //                            "Malformed annodation %s for %s/%s: incorrect IO spec %s",
-    //                            sigAnn, name, arity, io));
-    //                }
-    //                StringBuilder sig = new StringBuilder();
-    //                sig.append(name);
-    //                sig.append('(');
-    //                for (int p = 0; p < arity; p++) {
-    //                    if (p > 0) {
-    //                        sig.append(',');
-    //                    }
-    //                    sig.append(io.charAt(p));
-    //                    sig.append(sigValue[p]);
-    //                }
-    //                sig.append(')');
-    //                tip.append(STRONG_TAG.on(sig));
-    //                tip.append(HTML_LINEBREAK);
-    //            }
-    //
-    //            ToolTip toolTipAnn = cl.getAnnotation(ToolTip.class);
-    //            if (toolTipAnn != null) {
-    //                tip.append(HTML_LINEBREAK);
-    //                for (String line : toolTipAnn.value()) {
-    //                    tip.append(line);
-    //                    tip.append(" ");
-    //                }
-    //            }
-    //            Param paramAnn = cl.getAnnotation(Param.class);
-    //            if (paramAnn != null) {
-    //                String[] paramValue = paramAnn.value();
-    //                if (paramValue.length != arity) {
-    //                    throw new IllegalStateException(String.format(
-    //                        "Malformed annodation %s for %s/%s: wrong arity",
-    //                        paramAnn, name, arity));
-    //                }
-    //                for (int p = 0; p < arity; p++) {
-    //                    tip.append(HTML_LINEBREAK);
-    //                    tip.append("<li>");
-    //                    tip.append(STRONG_TAG.on("#" + p + " - "));
-    //                    tip.append(paramValue[p]);
-    //                }
-    //            }
-    //            result = HTML_TAG.on(DIV_TAG.on(tip)).toString();
-    //        }
-    //        return result;
-    //    }
-    //
-    //    /** Mapping from predicates to corresponding tool tips. */
-    //    private final Map<CompoundTermTag,String> toolTipMap =
-    //        new HashMap<CompoundTermTag,String>();
-    //
-    //    static private final HTMLTag DIV_TAG =
-    //        HTMLConverter.createDivTag("width: 300px;");
+    /** Convenience method to retrieve the simulator state. */
+    private SimulatorModel getSimulatorState() {
+        return this.sim.getModel();
+    }
+
+    /** Convenience method to retrieve the grammar view from the simulator. */
+    private StoredGrammarView getGrammar() {
+        return getSimulatorState().getGrammar();
+    }
 
     /**
      * Class used to redirect the standard output stream used by prolog to the

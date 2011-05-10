@@ -19,16 +19,11 @@ package groove.gui;
 import groove.control.CtrlAut;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
-import groove.gui.Simulator.GuiState;
-import groove.gui.Simulator.GuiState.Change;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.store.SystemStore;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.trans.GraphGrammar;
-import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.CtrlView;
@@ -87,8 +82,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-public class ControlPanel extends JPanel implements SimulationListener,
-        NewSimulationListener {
+public class ControlPanel extends JPanel implements SimulatorListener {
     /**
      * @param simulator The Simulator the panel is added to.
      */
@@ -118,7 +112,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
         getActionMap().put(Options.SAVE_ACTION_NAME, getSaveAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         // start listening
-        simulator.addSimulationListener(this);
+        simulator.addSimulatorListener(this);
     }
 
     private JComponent createDocPane() {
@@ -234,43 +228,9 @@ public class ControlPanel extends JPanel implements SimulationListener,
         }
     }
 
-    /**
-     * We do nothing when a transition is applied
-     */
-    public void applyTransitionUpdate(GraphTransition transition) {
-        // // do nothing
-    }
-
-    public void setGrammarUpdate(StoredGrammarView grammar) {
-        if (!isControlSelected() || !grammarHasControl(getSelectedControl())) {
-            String newName = grammar.getControlName();
-            setSelectedControl(grammarHasControl(newName) ? newName : null);
-        }
-        refreshAll();
-    }
-
-    public void setRuleUpdate(String name) {
-        // nothing happens
-    }
-
-    public void setStateUpdate(GraphState state) {
-        // nothing happens
-    }
-
-    public void setMatchUpdate(Proof match) {
-        // nothing happens
-    }
-
-    public void setTransitionUpdate(GraphTransition transition) {
-        // nothing happens
-    }
-
-    public void startSimulationUpdate(GTS gts) {
-        // nothing happens
-    }
-
     @Override
-    public void update(GuiState source, GuiState oldState, Set<Change> changes) {
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             StoredGrammarView grammar = source.getGrammar();
             if (!isControlSelected()
@@ -310,7 +270,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
 
     /** Indicates if the currently loaded grammar is modifiable. */
     private boolean isModifiable() {
-        SystemStore store = getSimulator().getGrammarStore();
+        SystemStore store = getGrammar().getStore();
         return store != null && store.isModifiable();
     }
 
@@ -318,8 +278,8 @@ public class ControlPanel extends JPanel implements SimulationListener,
      * Returns the current grammar view. Convenience method for
      * <code>getSimulator().getGrammarView()</code>.
      */
-    private StoredGrammarView getGrammarView() {
-        return getSimulator().getGrammarView();
+    private StoredGrammarView getGrammar() {
+        return getSimulatorModel().getGrammar();
     }
 
     /**
@@ -328,7 +288,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
      * <code>getGrammarView().getControlNames().contains(controlName)</code>
      */
     private boolean grammarHasControl(String controlName) {
-        return getGrammarView().getControlNames().contains(controlName);
+        return getGrammar().getControlNames().contains(controlName);
     }
 
     /**
@@ -370,7 +330,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
                 setDirty(false);
                 // if we cancelled editing a new control program
                 // the selected name should be reset
-                if (!getGrammarView().getControlNames().contains(
+                if (!getGrammar().getControlNames().contains(
                     getSelectedControl())) {
                     setSelectedControl(null);
                 }
@@ -440,6 +400,11 @@ public class ControlPanel extends JPanel implements SimulationListener,
     /** List of registered refreshables. */
     private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
 
+    /** Convenience method to retrieve the simulator model. */
+    private SimulatorModel getSimulatorModel() {
+        return getSimulator().getModel();
+    }
+
     /** Returns the simulator to which the control panel belongs. */
     private Simulator getSimulator() {
         return this.simulator;
@@ -500,11 +465,11 @@ public class ControlPanel extends JPanel implements SimulationListener,
         public void refresh() {
             removeActionListener(this.selectionListener);
             this.removeAllItems();
-            if (getGrammarView() == null) {
+            if (getGrammar() == null) {
                 setEnabled(false);
             } else {
                 Set<String> names =
-                    new TreeSet<String>(getGrammarView().getControlNames());
+                    new TreeSet<String>(getGrammar().getControlNames());
                 if (isControlSelected() && isEditing()) {
                     names.add(getSelectedControl());
                 }
@@ -598,16 +563,16 @@ public class ControlPanel extends JPanel implements SimulationListener,
                 // currently used control program
                 boolean enabled = isEditing();
                 if (!enabled && isControlSelected()
-                    && getGrammarView().isUseControl()) {
+                    && getGrammar().isUseControl()) {
                     enabled =
                         getSelectedControl().equals(
-                            getGrammarView().getControlName());
+                            getGrammar().getControlName());
                 }
                 setEnabled(enabled);
                 String program = "";
                 if (isControlSelected()) {
                     CtrlView cv =
-                        getGrammarView().getControlView(getSelectedControl());
+                        getGrammar().getControlView(getSelectedControl());
                     if (cv != null) {
                         program = cv.getProgram();
                     }
@@ -801,8 +766,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
 
         public void actionPerformed(ActionEvent arg0) {
             if (stopEditing(true)) {
-                SystemProperties oldProperties =
-                    getGrammarView().getProperties();
+                SystemProperties oldProperties = getGrammar().getProperties();
                 SystemProperties newProperties = oldProperties.clone();
                 newProperties.setUseControl(false);
                 getSimulator().doSaveProperties(newProperties);
@@ -811,8 +775,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().isUseControl());
+            setEnabled(getGrammar() != null && getGrammar().isUseControl());
         }
     }
 
@@ -844,7 +807,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
 
         /** Enables a control program with a given name. */
         public void doEnable(String controlName) {
-            SystemProperties oldProperties = getGrammarView().getProperties();
+            SystemProperties oldProperties = getGrammar().getProperties();
             SystemProperties newProperties = oldProperties.clone();
             newProperties.setUseControl(true);
             newProperties.setControlName(controlName);
@@ -854,7 +817,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
         @Override
         public void refresh() {
             setEnabled(isControlSelected()
-                && (!getGrammarView().isUseControl() || !getGrammarView().getControlName().equals(
+                && (!getGrammar().isUseControl() || !getGrammar().getControlName().equals(
                     getSelectedControl())));
         }
     }
@@ -931,7 +894,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(getGrammar() != null);
         }
     }
 
@@ -1017,15 +980,14 @@ public class ControlPanel extends JPanel implements SimulationListener,
         /** Convenience method to obtain the currently selected control automaton. */
         private CtrlAut getCtrlAut() throws FormatException {
             CtrlAut result = null;
-            StoredGrammarView grammarView = getGrammarView();
+            StoredGrammarView grammarView = getGrammar();
             if (grammarView != null) {
                 GraphGrammar grammar = grammarView.toGrammar();
                 CtrlView controlView =
                     grammarView.getControlView(getSelectedControl());
                 result =
-                    controlView == null
-                            ? grammar.getCtrlAut()
-                            : controlView.toCtrlAut(getGrammarView().toGrammar());
+                    controlView == null ? grammar.getCtrlAut()
+                            : controlView.toCtrlAut(getGrammar().toGrammar());
             }
             return result;
         }
@@ -1063,7 +1025,7 @@ public class ControlPanel extends JPanel implements SimulationListener,
                     String program = getControlTextArea().getText();
                     getDeleteAction().doDelete(oldName);
                     getSaveAction().doSave(newName, program);
-                    if (oldName.equals(getGrammarView().getControlName())) {
+                    if (oldName.equals(getGrammar().getControlName())) {
                         getEnableAction().doEnable(newName);
                     }
                     setSelectedControl(newName);

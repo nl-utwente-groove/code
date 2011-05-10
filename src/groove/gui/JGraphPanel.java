@@ -75,6 +75,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public JGraphPanel(JG jGraph, boolean withStatusBar) {
         super(false);
+        this.simulator = jGraph.getSimulator();
         setFocusable(false);
         setFocusCycleRoot(true);
         // right now we always want label panels; keep this option
@@ -396,6 +397,17 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         return options == null ? null : options.getItem(option);
     }
 
+    /** Returns the simulator of which this panel is part. */
+    protected final Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    /** Convenience method to retrieve the simulator model. */
+    protected final SimulatorModel getSimulatorModel() {
+        return getSimulator().getModel();
+    }
+
+    private final Simulator simulator;
     /**
      * The {@link GraphJGraph}on which this panel provides a view.
      */

@@ -23,15 +23,14 @@ import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.NestedDFSStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
+import groove.gui.SimulatorModel.Change;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.Proof;
-import groove.view.StoredGrammarView;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -43,7 +42,7 @@ import javax.swing.JMenuItem;
  * @author Iovka Boneva
  * @version $Revision $
  */
-public class ModelCheckingMenu extends JMenu implements SimulationListener {
+public class ModelCheckingMenu extends JMenu implements SimulatorListener {
 
     /**
      * Constructs an model-checking menu on top of a given simulator. The menu
@@ -65,7 +64,7 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
         super(Options.VERIFY_MENU_NAME);
         this.simulator = simulator;
         this.disableOnFinish = disableOnFinish;
-        simulator.addSimulationListener(this);
+        simulator.addSimulatorListener(this);
 
         createAddMenuItems();
     }
@@ -115,59 +114,27 @@ public class ModelCheckingMenu extends JMenu implements SimulationListener {
         menuItem.setToolTipText(scenario.getName());
     }
 
-    // ----------------------------- simulation listener methods
-    // -----------------------
     @Override
-    public void setGrammarUpdate(StoredGrammarView grammar) {
-        setStateUpdate(null);
-        // the lts's of the strategies in this menu are changed
-        // moreover, the conditions in condition strategies are reset
-        // furthermore, the enabling is (re)set
-        for (Action action : this.scenarioActionMap.values()) {
-            action.setEnabled(false);
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GTS)) {
+            GTS newGts = source.getGts();
+            this.gtsListener.set(newGts);
+            // the lts's of the strategies in this menu are changed
+            // moreover, the conditions in condition strategies are reset
+            // furthermore, the enabling is (re)set
+            for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
+                Action generateAction = entry.getValue();
+                generateAction.setEnabled(newGts != null);
+            }
         }
-    }
-
-    @Override
-    public void startSimulationUpdate(GTS gts) {
-        this.gtsListener.set(gts);
-        // the lts's of the strategies in this menu are changed
-        // moreover, the conditions in condition strategies are reset
-        // furthermore, the enabling is (re)set
-        for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
-            Action generateAction = entry.getValue();
-            generateAction.setEnabled(true);
+        if (changes.contains(Change.STATE) && source.getState() != null) {
+            for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
+                Scenario scenario = entry.getKey();
+                Action generateAction = entry.getValue();
+                generateAction.putValue(Action.NAME, scenario.getName());
+            }
         }
-        setStateUpdate(gts.startState());
-    }
-
-    @Override
-    public void setStateUpdate(GraphState state) {
-        for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
-            Scenario scenario = entry.getKey();
-            Action generateAction = entry.getValue();
-            generateAction.putValue(Action.NAME, scenario.getName());
-        }
-    }
-
-    @Override
-    public void setRuleUpdate(String name) {
-        // do nothing
-    }
-
-    @Override
-    public void setTransitionUpdate(GraphTransition transition) {
-        setStateUpdate(transition.source());
-    }
-
-    @Override
-    public void setMatchUpdate(Proof match) {
-        // nothing happens
-    }
-
-    @Override
-    public void applyTransitionUpdate(GraphTransition transition) {
-        setStateUpdate(transition.target());
     }
 
     /**

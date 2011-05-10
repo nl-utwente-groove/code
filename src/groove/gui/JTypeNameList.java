@@ -145,20 +145,20 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     @Override
     public void refresh() {
         this.removeListSelectionListener(this.selectionListener);
-        if (this.panel.getGrammarView() == null) {
+        if (this.panel.getGrammar() == null) {
             // No grammar. Disable the component. 
             this.setEnabled(false);
             this.setBackground(getColor(false));
         } else {
             Set<String> names =
-                new TreeSet<String>(this.panel.getGrammarView().getTypeNames());
+                new TreeSet<String>(this.panel.getGrammar().getTypeNames());
             if (!names.isEmpty()) {
                 this.setEnabled(true);
                 this.setBackground(getColor(true));
             }
             if (this.model.synchronizeModel(names)) {
                 List<String> types =
-                    this.panel.getGrammarView().getProperties().getTypeNames();
+                    this.panel.getGrammar().getProperties().getTypeNames();
                 this.model.setCheckedTypes(types);
                 this.model.selectMostAppropriateType();
             }

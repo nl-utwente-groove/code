@@ -17,6 +17,8 @@
 package groove.gui;
 
 import groove.graph.GraphRole;
+import groove.view.StoredGrammarView;
+import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -51,7 +53,7 @@ public class EditorPanel extends JPanel {
         this.options = simulator.getOptions();
         this.editor =
             new Editor(null, this.options,
-                simulator.getGrammarView().getProperties()) {
+                simulator.getModel().getGrammar().getProperties()) {
                 @Override
                 protected void doQuit() {
                     askAndSave();
@@ -103,7 +105,7 @@ public class EditorPanel extends JPanel {
 
     /** Starts the editor with the graph passed in at construction time. */
     public void start(AspectGraph graph) {
-        this.editor.setTypeView(this.simulator.getTypeView());
+        this.editor.setTypeView(getTypeView());
         this.editor.setGraph(graph, true);
         this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
@@ -129,7 +131,13 @@ public class EditorPanel extends JPanel {
      * according to the current type view in the simulator. 
      */
     public void setType() {
-        this.editor.setTypeView(this.simulator.getTypeView());
+        this.editor.setTypeView(getTypeView());
+    }
+
+    /** Returns the type graph associated with the grammar, if any. */
+    TypeViewList getTypeView() {
+        StoredGrammarView grammar = this.simulator.getModel().getGrammar();
+        return grammar == null ? null : grammar.getTypeViewList();
     }
 
     /** Returns the editor instance of this panel. */
@@ -265,7 +273,7 @@ public class EditorPanel extends JPanel {
      * Asks whether it is OK to stop the current simulation (if any).
      */
     private boolean confirmSave() {
-        if (this.simulator.getGTS() != null) {
+        if (this.simulator.getModel().getGts() != null) {
             BehaviourOption option =
                 (BehaviourOption) this.options.getItem(Options.STOP_SIMULATION_OPTION);
             if (option.getValue() == BehaviourOption.ASK) {

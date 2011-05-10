@@ -24,14 +24,11 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
 import groove.io.HTMLConverter;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleElement;
 import groove.trans.SystemProperties;
@@ -48,6 +45,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.JToolBar;
@@ -59,7 +57,7 @@ import javax.swing.JToolBar;
  * @version $Revision$
  */
 final public class RulePanel extends JGraphPanel<AspectJGraph> implements
-        SimulationListener {
+        SimulatorListener {
     /** Frame name when no rule is selected. */
     protected static final String INITIAL_FRAME_NAME = "No rule selected";
 
@@ -87,7 +85,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected void installListeners() {
         super.installListeners();
-        this.simulator.addSimulationListener(this);
+        this.simulator.addSimulatorListener(this);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
@@ -99,18 +97,28 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             public void update(Observable o, Object arg) {
                 assert arg instanceof LabelStore;
                 SystemProperties newProperties =
-                    RulePanel.this.simulator.getGrammarView().getProperties().clone();
+                    getGrammar().getProperties().clone();
                 newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
                 RulePanel.this.simulator.doSaveProperties(newProperties);
             }
         });
     }
 
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            setGrammarUpdate(source.getGrammar());
+        } else if (changes.contains(Change.RULE) && source.getRule() != null) {
+            displayRule(source.getRule().getName(), false);
+        }
+    }
+
     /**
      * Sets the frame to a given rule system. Resets the display, and creates
      * and stores a model for each rule in the system.
      */
-    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
+    private synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         // create a mapping from rule names to (fresh) rule models
         this.ruleJModelMap.clear();
         if (grammar != null) {
@@ -134,58 +142,8 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             }
         }
         // reset the display
-        RuleView currentRule = this.simulator.getCurrentRule();
+        RuleView currentRule = getSimulatorState().getRule();
         displayRule(currentRule == null ? null : currentRule.getName(), true);
-    }
-
-    /** Does nothing (according to contract, the grammar has already been set). */
-    public synchronized void startSimulationUpdate(GTS gts) {
-        // empty
-    }
-
-    /**
-     * Retrieves a named rule from this component's store, and puts it on
-     * display.
-     * @throws IllegalArgumentException if <code>name</code> is not a known rule
-     *         name
-     */
-    public synchronized void setRuleUpdate(String name) {
-        if (!this.ruleJModelMap.containsKey(name)) {
-            throw new IllegalArgumentException("Unknown rule: " + name);
-        }
-        displayRule(name, false);
-    }
-
-    /**
-     * Has no effect.
-     */
-    public synchronized void setStateUpdate(GraphState state) {
-        // nothing happens here
-    }
-
-    /**
-     * Has the effect of {@link #setRuleUpdate(String)} for the new
-     * transition's rule.
-     * @see #setRuleUpdate(String)
-     */
-    public synchronized void setTransitionUpdate(GraphTransition transition) {
-        setRuleUpdate(transition.getEvent().getRule().getName());
-    }
-
-    /**
-     * Has the effect of {@link #setRuleUpdate(String)} for the new match's
-     * rule.
-     * @see #setRuleUpdate(String)
-     */
-    public synchronized void setMatchUpdate(Proof match) {
-        setRuleUpdate(match.getRule().getName());
-    }
-
-    /**
-     * Has no effect.
-     */
-    public synchronized void applyTransitionUpdate(GraphTransition transition) {
-        // nothing happens here
     }
 
     /** 
@@ -215,7 +173,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
-        RuleView view = this.simulator.getCurrentRule();
+        RuleView view = getSimulatorState().getRule();
         if (view != null) {
             text.append("Rule ");
             text.append(HTMLConverter.STRONG_TAG.on(view.getName()));
@@ -263,6 +221,16 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         anchor.addAll(Arrays.asList(rule.getAnchorNodes()));
         anchor.addAll(Arrays.asList(rule.getAnchorEdges()));
         return Groove.toString(anchor.toArray(), "(", ")", ",");
+    }
+
+    /** Convenience method to retrieve the simulator state. */
+    private SimulatorModel getSimulatorState() {
+        return this.simulator.getModel();
+    }
+
+    /** Convenience method to retrieve the current grammar view. */
+    private StoredGrammarView getGrammar() {
+        return getSimulatorState().getGrammar();
     }
 
     /**

@@ -30,11 +30,11 @@ import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
 import groove.trans.DefaultHostGraph;
+import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
@@ -292,7 +292,6 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> {
 
     @Override
     public int edgeCount() {
-        assert this.transitionCount == edgeSet().size();
         return this.transitionCount;
     }
 
