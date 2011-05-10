@@ -16,10 +16,8 @@
  */
 package groove.gui;
 
+import groove.gui.SimulatorModel.Change;
 import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
@@ -56,13 +54,13 @@ import javax.swing.event.ListSelectionListener;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class StateJList extends JList implements SimulationListener {
+public class StateJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
     protected StateJList(final Simulator simulator) {
         this.simulator = simulator;
-        this.simulator.addSimulationListener(this);
+        this.simulator.addSimulatorListener(this);
         this.listModel = new DefaultListModel();
         setModel(this.listModel);
         this.setEnabled(false);
@@ -137,38 +135,21 @@ public class StateJList extends JList implements SimulationListener {
         return new MySelectionModel();
     }
 
-    public void applyTransitionUpdate(GraphTransition transition) {
-        refreshCurrentState(false);
-    }
-
-    public void setGrammarUpdate(StoredGrammarView grammar) {
-        this.removeAll();
-        if (grammar == null) {
-            setEnabled(false);
-        } else {
-            setEnabled(true);
-            refreshList(true);
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            this.removeAll();
+            if (source.getGrammar() == null) {
+                setEnabled(false);
+            } else {
+                setEnabled(true);
+                refreshList(true);
+            }
         }
-    }
-
-    public void setMatchUpdate(Proof match) {
-        refreshCurrentState(true);
-    }
-
-    public void setRuleUpdate(String name) {
-        // does nothing
-    }
-
-    public void setStateUpdate(GraphState state) {
-        refreshCurrentState(true);
-    }
-
-    public void setTransitionUpdate(GraphTransition transition) {
-        refreshCurrentState(true);
-    }
-
-    public void startSimulationUpdate(GTS gts) {
-        refreshCurrentState(false);
+        if (changes.contains(Change.STATE)) {
+            refreshCurrentState(!changes.contains(Change.GTS));
+        }
     }
 
     @Override
@@ -188,7 +169,7 @@ public class StateJList extends JList implements SimulationListener {
      *        to select the start graph.
      */
     public void refreshList(boolean keepSelection) {
-        setList(getGrammarView().getGraphNames(), keepSelection);
+        setList(getGrammar().getGraphNames(), keepSelection);
     }
 
     /** Returns the list of selected graph names. */
@@ -310,7 +291,7 @@ public class StateJList extends JList implements SimulationListener {
      */
     private void refreshCurrentState(boolean select) {
         String text;
-        if (this.simulator.getCurrentState() == null) {
+        if (getSimulatorState().getState() == null) {
             String startKey =
                 this.simulator.getStartSimulationAction().getValue(
                     Action.ACCELERATOR_KEY).toString();
@@ -320,7 +301,7 @@ public class StateJList extends JList implements SimulationListener {
         } else {
             text =
                 String.format("Simulation state: %s",
-                    this.simulator.getCurrentState());
+                    getSimulatorState().getState());
         }
         this.listModel.setElementAt(text, 0);
         if (select) {
@@ -341,8 +322,8 @@ public class StateJList extends JList implements SimulationListener {
      * Returns the current grammar view. Convenience method for
      * <code>getSimulator().getGrammarView()</code>.
      */
-    private StoredGrammarView getGrammarView() {
-        return getSimulator().getGrammarView();
+    private StoredGrammarView getGrammar() {
+        return getSimulator().getModel().getGrammar();
     }
 
     /**
@@ -350,18 +331,22 @@ public class StateJList extends JList implements SimulationListener {
      * <code>getGrammarView().getStartGraphName()</code>.
      */
     private final String getStartGraphName() {
-        return getGrammarView() == null ? null
-                : getGrammarView().getStartGraphName();
+        return getGrammar() == null ? null : getGrammar().getStartGraphName();
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
     private GTS getCurrentGTS() {
-        return getSimulator().getGTS();
+        return getSimulatorState().getGts();
     }
 
     /** Returns the simulator to which the state list belongs. */
     private Simulator getSimulator() {
         return this.simulator;
+    }
+
+    /** Returns the simulator to which the state list belongs. */
+    private SimulatorModel getSimulatorState() {
+        return getSimulator().getModel();
     }
 
     /**

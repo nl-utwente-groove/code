@@ -21,14 +21,11 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphRole;
 import groove.gui.JTypeNameList.CheckBoxListModel;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
 import groove.io.store.SystemStore;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -42,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -58,7 +56,7 @@ import javax.swing.SwingUtilities;
  * @version $Revision $
  */
 public class TypePanel extends JGraphPanel<AspectJGraph> implements
-        SimulationListener {
+        SimulatorListener {
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
      * instantiates all necessary variables.
@@ -66,10 +64,9 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     public TypePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.TYPE), true);
-        this.simulator = simulator;
         setFocusable(false);
         initialise();
-        simulator.addSimulationListener(this);
+        simulator.addSimulatorListener(this);
         setEnabled(false);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
@@ -80,7 +77,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(createButton(getNewAction()));
         result.add(createButton(getEditAction()));
-        result.add(this.simulator.getSaveGraphAction());
+        result.add(getSimulator().getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -111,62 +108,33 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         return result;
     }
 
-    /** Does nothing (according to contract, the grammar has already been set). */
-    public synchronized void startSimulationUpdate(GTS gts) {
-        // nothing happens
-    }
-
-    public synchronized void setStateUpdate(GraphState state) {
-        // nothing happens
-    }
-
-    public synchronized void setTransitionUpdate(GraphTransition trans) {
-        // nothing happens
-    }
-
-    public void setMatchUpdate(Proof match) {
-        // nothing happens
-    }
-
-    public synchronized void applyTransitionUpdate(GraphTransition transition) {
-        // nothing happens
-    }
-
-    public synchronized void setRuleUpdate(String rule) {
-        // nothing happens
-    }
-
-    /**
-     * This method is executed when the grammar in the Simulator is updated. It
-     * basically executes one of the following 3 actions: - If no valid grammar
-     * is loaded, all fields are disabled. - If a grammar is loaded for which a
-     * type graph is saved already, this saved type graph is loaded. - If a
-     * grammar is loaded for which no saved type graph exists, all fields are
-     * disabled, except the "create type graph" button, which can be used to
-     * compute a new type graph.
-     */
-    public synchronized void setGrammarUpdate(StoredGrammarView grammar) {
-        this.typeJModelMap.clear();
-        if (grammar != null) {
-            getJGraph().setModel(null);
-            getNameList().refresh();
-            // set either the type or the label store of the associated JGraph
-            if (grammar.getActiveTypeNames().isEmpty()) {
-                getJGraph().setLabelStore(grammar.getLabelStore());
-            } else {
-                try {
-                    getJGraph().setType(grammar.toModel().getType(), null);
-                } catch (FormatException e) {
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            StoredGrammarView grammar = source.getGrammar();
+            this.typeJModelMap.clear();
+            if (grammar != null) {
+                getJGraph().setModel(null);
+                getNameList().refresh();
+                // set either the type or the label store of the associated JGraph
+                if (grammar.getActiveTypeNames().isEmpty()) {
                     getJGraph().setLabelStore(grammar.getLabelStore());
+                } else {
+                    try {
+                        getJGraph().setType(grammar.toModel().getType(), null);
+                    } catch (FormatException e) {
+                        getJGraph().setLabelStore(grammar.getLabelStore());
+                    }
                 }
             }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    displayType();
+                }
+            });
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                displayType();
-            }
-        });
     }
 
     /**
@@ -174,7 +142,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     public void doSaveProperties() {
         List<String> checkedTypes = getNameListModel().getCheckedTypes();
-        SystemProperties oldProperties = getGrammarView().getProperties();
+        SystemProperties oldProperties = getGrammar().getProperties();
         SystemProperties newProperties = oldProperties.clone();
         newProperties.setTypeNames(checkedTypes);
         getSimulator().doSaveProperties(newProperties);
@@ -186,7 +154,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      * <code>getGrammarView().getTypeNames().contains(typeName)</code>
      */
     private boolean grammarHasType(String typeName) {
-        return getGrammarView().getTypeNames().contains(typeName);
+        return getGrammar().getTypeNames().contains(typeName);
     }
 
     /**
@@ -252,7 +220,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Sets the model according to the currently selected type. */
     public void displayType() {
         AspectJModel newModel =
-            isTypeSelected() ? getTypeJModel(getGrammarView().getTypeView(
+            isTypeSelected() ? getTypeJModel(getGrammar().getTypeView(
                 getSelectedType())) : getJGraph().newModel();
         if (newModel.getGraph() == null) {
             setEnabled(false);
@@ -274,7 +242,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Indicates if the currently loaded grammar is modifiable. */
     boolean isModifiable() {
-        SystemStore store = getSimulator().getGrammarStore();
+        SystemStore store = getGrammar().getStore();
         return store != null && store.isModifiable();
     }
 
@@ -282,17 +250,9 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      * Returns the current grammar view. Convenience method for
      * <code>getSimulator().getGrammarView()</code>.
      */
-    StoredGrammarView getGrammarView() {
-        return getSimulator().getGrammarView();
+    StoredGrammarView getGrammar() {
+        return getSimulatorModel().getGrammar();
     }
-
-    /** Returns the simulator object. */
-    Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    /** The simulator to which this panel belongs. */
-    private final Simulator simulator;
 
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
@@ -385,7 +345,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, true);
             if (newName != null) {
-                TypeView oldTypeView = getGrammarView().getTypeView(oldName);
+                TypeView oldTypeView = getGrammar().getTypeView(oldName);
                 AspectGraph newType =
                     oldTypeView.getAspectGraph().rename(newName);
                 getSimulator().doAddType(newType);
@@ -429,7 +389,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         public void actionPerformed(ActionEvent e) {
             String typeName = getSelectedType();
             AspectGraph typeGraph =
-                getGrammarView().getTypeView(typeName).getAspectGraph();
+                getGrammar().getTypeView(typeName).getAspectGraph();
             if (getSimulator().confirmBehaviour(Options.DELETE_TYPE_OPTION,
                 String.format("Delete type graph '%s'?", typeName))
                 && getSimulator().disposeEditors(typeGraph)) {
@@ -533,8 +493,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
         public void actionPerformed(ActionEvent e) {
             final AspectGraph initType =
-                getGrammarView().getTypeView(getSelectedType()).getAspectGraph();
-            TypePanel.this.simulator.handleEditGraph(initType, false);
+                getGrammar().getTypeView(getSelectedType()).getAspectGraph();
+            getSimulator().handleEditGraph(initType, false);
         }
 
         @Override
@@ -573,13 +533,13 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     Groove.DEFAULT_TYPE_NAME, true);
             if (typeName != null) {
                 AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
-                TypePanel.this.simulator.handleEditGraph(initType, true);
+                getSimulator().handleEditGraph(initType, true);
             }
         }
 
         @Override
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(getGrammar() != null);
         }
     }
 
@@ -612,7 +572,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 getSimulator().askNewTypeName("Select new type graph name",
                     oldName, false);
             if (newName != null && !oldName.equals(newName)) {
-                TypeView type = getGrammarView().getTypeView(oldName);
+                TypeView type = getGrammar().getTypeView(oldName);
                 if (getSimulator().disposeEditors(type.getAspectGraph())) {
                     boolean checked =
                         getNameListModel().getElementByName(oldName).checked;

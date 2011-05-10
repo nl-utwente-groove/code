@@ -16,8 +16,7 @@
  */
 package groove.gui;
 
-import groove.gui.Simulator.GuiState;
-import groove.gui.Simulator.GuiState.Change;
+import groove.gui.SimulatorModel.Change;
 
 import java.util.Set;
 
@@ -25,12 +24,12 @@ import java.util.Set;
  * Observer interface for simulation.
  * @see Simulator
  */
-public interface NewSimulationListener {
+public interface SimulatorListener {
     /**
      * Reports an update in the state of the simulator.
      * @param source the state object originating the update
-     * @param oldState previous GUI state
+     * @param oldModel previous GUI state
      * @param changes set of changes made since the previous state
      */
-    void update(GuiState source, GuiState oldState, Set<Change> changes);
+    void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes);
 }

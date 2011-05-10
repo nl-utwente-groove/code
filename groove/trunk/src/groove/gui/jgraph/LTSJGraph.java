@@ -204,42 +204,35 @@ public class LTSJGraph extends GraphJGraph {
     public void setActive(GraphState state, GraphTransition trans) {
         Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
         GraphTransition previousTrans = this.activeTransition;
-        if (previousTrans != trans) {
-            this.activeTransition = trans;
-            if (previousTrans != null) {
-                LTSJCell jCell =
-                    (LTSJCell) getModel().getJCellForEdge(previousTrans);
-                assert jCell != null : String.format(
-                    "No image for %s in jModel", previousTrans);
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
-                }
+        this.activeTransition = trans;
+        if (previousTrans != null) {
+            LTSJCell jCell =
+                (LTSJCell) getModel().getJCellForEdge(previousTrans);
+            if (jCell != null && jCell.setActive(false)) {
+                changedCells.add(jCell);
             }
-            if (trans != null) {
-                LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
-                assert jCell != null : String.format(
-                    "No image for %s in jModel", trans);
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
-                }
+        }
+        if (trans != null) {
+            LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
+            assert jCell != null : String.format("No image for %s in jModel",
+                trans);
+            if (jCell.setActive(true)) {
+                changedCells.add(jCell);
             }
         }
         GraphState previousState = this.activeState;
-        if (state != previousState) {
-            this.activeState = state;
-            if (previousState != null) {
-                LTSJVertex jCell =
-                    (LTSJVertex) getModel().getJCellForNode(previousState);
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
-                }
+        this.activeState = state;
+        if (previousState != null) {
+            LTSJVertex jCell =
+                (LTSJVertex) getModel().getJCellForNode(previousState);
+            if (jCell != null && jCell.setActive(false)) {
+                changedCells.add(jCell);
             }
-            if (state != null) {
-                LTSJVertex jCell =
-                    (LTSJVertex) getModel().getJCellForNode(state);
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
-                }
+        }
+        if (state != null) {
+            LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(state);
+            if (jCell.setActive(true)) {
+                changedCells.add(jCell);
             }
         }
         if (!changedCells.isEmpty()) {
@@ -269,9 +262,9 @@ public class LTSJGraph extends GraphJGraph {
     /** Initialises and returns the action to scroll to the active state or transition. */
     private Action getScrollToCurrentAction() {
         if (getActiveTransition() == null) {
-            this.scrollToCurrentAction.setState(this.simulator.getCurrentState());
+            this.scrollToCurrentAction.setState(getSimulatorModel().getState());
         } else {
-            this.scrollToCurrentAction.setTransition(this.simulator.getCurrentTransition());
+            this.scrollToCurrentAction.setTransition(getSimulatorModel().getTransition());
         }
         return this.scrollToCurrentAction;
     }
@@ -350,10 +343,10 @@ public class LTSJGraph extends GraphJGraph {
      */
     public class ScrollToCurrentAction extends AbstractAction {
         public void actionPerformed(ActionEvent evt) {
-            if (getSimulator().getCurrentState() == null) {
-                scrollTo(getSimulator().getCurrentTransition());
+            if (getSimulatorModel().getState() == null) {
+                scrollTo(getSimulatorModel().getTransition());
             } else {
-                scrollTo(getSimulator().getCurrentState());
+                scrollTo(getSimulatorModel().getState());
             }
         }
 

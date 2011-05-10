@@ -43,7 +43,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
     public Map<String,String> generateOptions(Simulator simulator) {
 
         // Get the grammar from the simulator.
-        GrammarView grammar = simulator.getGrammarView();
+        GrammarView grammar = simulator.getModel().getGrammar();
 
         // Get all the rule names from the grammar.
         Set<String> ruleNames = grammar.getRuleNames();

@@ -31,6 +31,7 @@ import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.gui.ZoomMenu;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
@@ -206,13 +207,18 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * May return {@code null} if the simulator is not set.
      */
     SystemProperties getProperties() {
-        return getSimulator() == null ? null
-                : getSimulator().getGrammarView().getProperties();
+        return getSimulatorModel() == null ? null
+                : getSimulatorModel().getGrammar().getProperties();
     }
 
     /** Returns the simulator associated with this {@link GraphJGraph}, if any. */
     public Simulator getSimulator() {
         return null;
+    }
+
+    /** Convenience method to retrieve the state of the simulator, if any. */
+    final protected SimulatorModel getSimulatorModel() {
+        return getSimulator() == null ? null : getSimulator().getModel();
     }
 
     /**

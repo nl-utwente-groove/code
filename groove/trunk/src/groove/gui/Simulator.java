@@ -55,6 +55,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.ExplorationDialog;
@@ -72,7 +73,6 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
@@ -91,7 +91,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.Proof;
 import groove.trans.RuleEvent;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -109,7 +108,6 @@ import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
-import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -131,7 +129,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -184,11 +181,14 @@ import apple.dts.samplecode.osxadapter.OSXAdapter;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Simulator {
+public class Simulator implements SimulatorListener {
     /**
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
+        this.model = new SimulatorModel();
+        this.model.setUndoManager(getUndoManager());
+        this.model.addListener(this);
         getFrame();
         setDefaultExploration(new Exploration());
     }
@@ -247,132 +247,6 @@ public class Simulator {
     }
 
     /**
-     * Returns the currently loaded graph grammar, or <tt>null</tt> if none is
-     * loaded.
-     */
-    public StoredGrammarView getGrammarView() {
-        return this.grammarView;
-    }
-
-    /**
-     * Returns the store backing up the currently loaded graph grammar, or
-     * <tt>null</tt> if no grammar view is loaded.
-     */
-    public SystemStore getGrammarStore() {
-        return getGrammarView() == null ? null : getGrammarView().getStore();
-    }
-
-    /** Returns the type graph associated with the grammar, if any. */
-    TypeViewList getTypeView() {
-        return getGrammarView() == null ? null
-                : getGrammarView().getTypeViewList();
-    }
-
-    /**
-     * Sets the {@link #grammarView} and {@link #currentRuleName} fields.
-     */
-    private void setGrammarView(StoredGrammarView grammar) {
-        if (this.grammarView != grammar) {
-            getUndoManager().discardAllEdits();
-            if (this.grammarView != null) {
-                this.grammarView.getStore().removeUndoableEditListener(
-                    getUndoManager());
-            }
-            this.grammarView = grammar;
-            if (this.grammarView != null) {
-                this.grammarView.getStore().addUndoableEditListener(
-                    getUndoManager());
-            }
-        }
-    }
-
-    /**
-     * Returns the currently set GTS, or <tt>null</tt> if none is set.
-     */
-    public GTS getGTS() {
-        return this.currentGTS;
-    }
-
-    /**
-     * Sets the current GTS to a given GTS, possibly <code>null</code>. If the
-     * new GTS is not <code>null</code>, also sets the current state to the GTS'
-     * start state. In any case, sets the current transition to
-     * <code>null</code>.
-     * @return <code>true</code> if the new GTS is different from the previous
-     */
-    private boolean setGTS(GTS gts) {
-        boolean result = this.currentGTS == gts;
-        this.currentGTS = gts;
-        this.currentTransition = null;
-        this.currentEvent = null;
-        this.currentState = gts == null ? null : gts.startState();
-        this.explorationStats = null;
-        return result;
-    }
-
-    /**
-     * Returns the currently selected state, or <tt>null</tt> if none is
-     * selected. The selected state is the one displayed in the state panel.
-     * @see StatePanel#getJModel()
-     */
-    public GraphState getCurrentState() {
-        return this.currentState;
-    }
-
-    /**
-     * Sets the current state field to a given state, and the current transition
-     * field to <code>null</code>.
-     * @return <code>true</code> if the new state is different from the previous
-     */
-    private boolean setCurrentState(GraphState state) {
-        boolean result = this.currentState != state;
-        this.currentState = state;
-        this.currentTransition = null;
-        this.currentEvent = null;
-        return result;
-    }
-
-    /**
-     * Returns the currently selected transition, or <tt>null</tt> if none is
-     * selected. The selected state is the one selected in the rule tree and
-     * emphasized in the state panel.
-     */
-    public GraphTransition getCurrentTransition() {
-        return this.currentTransition;
-    }
-
-    /**
-     * Sets the currently selected transition to a given value (possibly
-     * <code>null</code>). If the new transition is not <code>null</code>, also
-     * sets the current state to the new transition's source state.
-     * @return <code>true</code> if the new transition is different from the
-     *         previous
-     */
-    private boolean setCurrentTransition(GraphTransition transition) {
-        boolean result = this.currentTransition != transition;
-        this.currentTransition = transition;
-        if (transition != null) {
-            this.currentState = transition.source();
-            this.currentEvent = transition.getEvent();
-        }
-        return result;
-    }
-
-    /** Returns the currently selected match */
-    public RuleEvent getCurrentEvent() {
-        return this.currentEvent;
-    }
-
-    /**
-     * Sets the currently selected match.
-     */
-    private boolean setCurrentEvent(RuleEvent event) {
-        boolean result = this.currentEvent != event;
-        this.currentEvent = event;
-        return result;
-    }
-
-    /**
      * Returns the internally stored default exploration.
      */
     public Exploration getDefaultExploration() {
@@ -394,32 +268,12 @@ public class Simulator {
     }
 
     /**
-     * Returns the currently selected rule, or <tt>null</tt> if none is
-     * selected. The selected rule is the one displayed in the rule panel.
-     */
-    public RuleView getCurrentRule() {
-        return getGrammarView() == null ? null : getGrammarView().getRuleView(
-            this.currentRuleName);
-    }
-
-    /**
      * Returns the currently selected rule set, or <tt>null</tt> if none is
      * selected.
      */
     public List<RuleView> getCurrentRuleSet() {
         return this.ruleJTree == null ? Collections.<RuleView>emptyList()
                 : this.ruleJTree.getSelectedRules();
-    }
-
-    /**
-     * Sets the currently selected rule to a given value (possibly
-     * <code>null</code>).
-     * @return <code>true</code> if the new rule is different from the previous
-     */
-    private boolean setCurrentRule(RuleView rule) {
-        boolean result = this.getCurrentRule() != rule;
-        this.currentRuleName = rule == null ? null : rule.getName();
-        return result;
     }
 
     /** Returns (after lazily creating) the undo history for this simulator. */
@@ -549,13 +403,13 @@ public class Simulator {
     boolean doAddControl(String name, String program) {
         boolean result = false;
         try {
-            getGrammarStore().putControl(name, program);
+            this.model.getStore().putControl(name, program);
             boolean isCurrentControl =
-                name.equals(getGrammarView().getControlName());
+                name.equals(this.model.getGrammar().getControlName());
             // we only need to refresh the grammar if the added
             // control program is the currently active one
             if (isCurrentControl) {
-                updateGrammar();
+                startSimulation();
             } else {
                 // otherwise, we only need to update the control panel
                 getControlPanel().refreshAll();
@@ -574,10 +428,11 @@ public class Simulator {
     boolean doAddGraph(AspectGraph graph) {
         boolean result = false;
         try {
-            getGrammarStore().putGraph(graph);
+            this.model.getStore().putGraph(graph);
             result = true;
-            if (graph.getName().equals(getGrammarView().getStartGraphName())) {
-                updateGrammar();
+            if (graph.getName().equals(
+                this.model.getGrammar().getStartGraphName())) {
+                startSimulation();
             } else {
                 refresh();
             }
@@ -599,9 +454,9 @@ public class Simulator {
     boolean doAddRule(AspectGraph ruleAsGraph) {
         boolean result = false;
         try {
-            getGrammarStore().putRule(ruleAsGraph);
+            this.model.getStore().putRule(ruleAsGraph);
             ruleAsGraph.invalidateView();
-            updateGrammar();
+            startSimulation();
             result = true;
         } catch (IOException exc) {
             showErrorDialog(
@@ -620,10 +475,10 @@ public class Simulator {
     boolean doAddType(AspectGraph typeGraph) {
         boolean result = false;
         try {
-            getGrammarStore().putType(typeGraph);
-            if (getGrammarView().getActiveTypeNames().contains(
+            this.model.getStore().putType(typeGraph);
+            if (this.model.getGrammar().getActiveTypeNames().contains(
                 typeGraph.getName())) {
-                updateGrammar();
+                startSimulation();
             } else {
                 // otherwise, we only need to update the type panel
                 getTypePanel().displayType();
@@ -640,13 +495,13 @@ public class Simulator {
     /** Removes a control program from this grammar. */
     void doDeleteControl(String name) {
         boolean isCurrentControl =
-            name.equals(getGrammarView().getControlName());
+            name.equals(this.model.getGrammar().getControlName());
         try {
-            getGrammarStore().deleteControl(name);
+            this.model.getStore().deleteControl(name);
             // we only need to refresh the grammar if the deleted
             // control program was the currently active one
             if (isCurrentControl) {
-                updateGrammar();
+                startSimulation();
             } else {
                 // otherwise, we only need to update the control panel
                 getControlPanel().refreshAll();
@@ -663,13 +518,13 @@ public class Simulator {
         // test now if this is the start state, before it is deleted from the
         // grammar
         boolean isStartGraph =
-            name.equals(getGrammarView().getStartGraphName());
+            name.equals(this.model.getGrammar().getStartGraphName());
         try {
-            getGrammarStore().deleteGraph(name);
+            this.model.getStore().deleteGraph(name);
             if (isStartGraph) {
                 // reset the start graph to null
-                getGrammarView().removeStartGraph();
-                updateGrammar();
+                this.model.getGrammar().removeStartGraph();
+                startSimulation();
             } else {
                 refresh();
             }
@@ -683,21 +538,22 @@ public class Simulator {
      * grammar view.
      */
     void doDeleteRule(String name) {
-        AspectGraph rule = getGrammarStore().deleteRule(name);
+        AspectGraph rule = this.model.getStore().deleteRule(name);
         if (rule != null) {
-            updateGrammar();
+            startSimulation();
         }
     }
 
     /** Removes a type graph from this grammar. */
     void doDeleteType(String name) {
-        boolean isUsed = getGrammarView().getActiveTypeNames().contains(name);
+        boolean isUsed =
+            this.model.getGrammar().getActiveTypeNames().contains(name);
         try {
-            getGrammarStore().deleteType(name);
+            this.model.getStore().deleteType(name);
             // we only need to refresh the grammar if the deleted
             // type graph was the currently active one
             if (isUsed) {
-                updateGrammar();
+                startSimulation();
             } else {
                 // otherwise, we only need to update the type panel
                 getTypePanel().displayType();
@@ -735,6 +591,8 @@ public class Simulator {
             ((ModelCheckingScenario) scenario).setProperty(property);
         }
 
+        GTS gts = getModel().getGts();
+        GraphState state = getModel().getState();
         /*
          * When a (LTL) BoundedModelCheckingScenario is started, also prompt the
          * user to enter a boundary (via a BoundedModelCheckingDialog).
@@ -742,7 +600,7 @@ public class Simulator {
         if (scenario.getStrategy() instanceof BoundedModelCheckingStrategy) {
             BoundedModelCheckingDialog dialog =
                 new BoundedModelCheckingDialog();
-            dialog.setGrammar(getGTS().getGrammar());
+            dialog.setGrammar(gts.getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
@@ -751,11 +609,12 @@ public class Simulator {
             ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
         }
 
-        scenario.prepare(getGTS(), getCurrentState());
+        scenario.prepare(gts, state);
         LTSJModel ltsJModel = getLtsPanel().getJModel();
         synchronized (ltsJModel) {
             // unhook the lts' jmodel from the lts, for efficiency's sake
-            getGTS().removeLTSListener(ltsJModel);
+            gts.removeLTSListener(ltsJModel);
+            int size = gts.size();
             // disable rule application for the time being
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
@@ -763,16 +622,18 @@ public class Simulator {
             Thread generateThread = new LaunchThread(scenario);
             // go!
             generateThread.start();
-            // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.loadGraph(ltsJModel.getGraph());
-            // re-enable rule application
-            getApplyTransitionAction().setEnabled(applyEnabled);
-            // reset lts display visibility
-            switchTabs(getLtsPanel());
-        }
-        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-        if (ltsJGraph.getLayouter() != null) {
-            ltsJGraph.getLayouter().start(false);
+            if (gts.size() == size) {
+                // the exploration had no effect
+                gts.addLTSListener(ltsJModel);
+            } else {
+                // get the lts' jmodel back on line and re-synchronize its state
+                ltsJModel.loadGraph(ltsJModel.getGraph());
+                // re-enable rule application
+                getApplyTransitionAction().setEnabled(applyEnabled);
+                // reset lts display visibility
+                switchTabs(getLtsPanel());
+                getModel().setGts(gts);
+            }
         }
     }
 
@@ -941,8 +802,8 @@ public class Simulator {
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            setGrammarView(grammar);
-                            updateGrammar();
+                            Simulator.this.model.setGrammar(grammar);
+                            startSimulation();
                             grammar.getProperties().setCurrentVersionProperties();
                             if (saveAfterLoading && newGrammarFile != null) {
                                 doSaveGrammar(newGrammarFile,
@@ -972,8 +833,8 @@ public class Simulator {
     void doLoadStartGraph(File file) {
         try {
             AspectGraph startGraph = unmarshalGraph(file);
-            getGrammarView().setStartGraph(startGraph);
-            updateGrammar();
+            this.model.getGrammar().setStartGraph(startGraph);
+            startSimulation();
         } catch (IOException exc) {
             showErrorDialog(
                 "Could not load start graph from " + file.getName(), exc);
@@ -985,8 +846,8 @@ public class Simulator {
      * the LTS.
      */
     void doLoadStartGraph(String name) {
-        getGrammarView().setStartGraph(name);
-        updateGrammar();
+        this.model.getGrammar().setStartGraph(name);
+        startSimulation();
     }
 
     /**
@@ -999,8 +860,8 @@ public class Simulator {
             if (saveEditors(true)) {
                 StoredGrammarView grammar =
                     StoredGrammarView.newInstance(grammarFile, true);
-                setGrammarView(grammar);
-                updateGrammar();
+                this.model.setGrammar(grammar);
+                startSimulation();
             }
         } catch (IllegalArgumentException exc) {
             showErrorDialog(
@@ -1038,14 +899,14 @@ public class Simulator {
      * confirmation. Has no effect if no grammar is currently loaded.
      */
     void doRefreshGrammar() {
-        if (getGrammarStore() != null) {
+        if (this.model.getStore() != null) {
             try {
-                getGrammarStore().reload();
+                this.model.getStore().reload();
                 getUndoManager().discardAllEdits();
-                updateGrammar();
+                startSimulation();
             } catch (IOException exc) {
                 showErrorDialog("Error while refreshing grammar from "
-                    + getGrammarStore().getLocation(), exc);
+                    + this.model.getStore().getLocation(), exc);
             }
         }
     }
@@ -1053,8 +914,8 @@ public class Simulator {
     /** Replaces all occurrences of a given label into another label. */
     void doRelabel(TypeLabel oldLabel, TypeLabel newLabel) {
         try {
-            getGrammarStore().relabel(oldLabel, newLabel);
-            updateGrammar();
+            this.model.getStore().relabel(oldLabel, newLabel);
+            startSimulation();
         } catch (IOException exc) {
             showErrorDialog(String.format(
                 "Error while renaming '%s' into '%s':", oldLabel, newLabel),
@@ -1064,10 +925,10 @@ public class Simulator {
 
     /** Renumbers the nodes in all graphs from {@code 0} upwards. */
     void doRenumber() {
-        if (getGrammarStore() instanceof DefaultFileSystemStore) {
+        if (this.model.getStore() instanceof DefaultFileSystemStore) {
             try {
-                ((DefaultFileSystemStore) getGrammarStore()).renumber();
-                updateGrammar();
+                ((DefaultFileSystemStore) this.model.getStore()).renumber();
+                startSimulation();
             } catch (IOException exc) {
                 showErrorDialog("Error while renumbering", exc);
             }
@@ -1082,15 +943,15 @@ public class Simulator {
         String oldName = graph.getName();
         // test now if this is the start state, before it is deleted from the
         // grammar
-        String startGraphName = getGrammarView().getStartGraphName();
+        String startGraphName = this.model.getGrammar().getStartGraphName();
         boolean isStartGraph =
             oldName.equals(startGraphName) || newName.equals(startGraphName);
         try {
-            getGrammarStore().renameGraph(oldName, newName);
+            this.model.getStore().renameGraph(oldName, newName);
             if (isStartGraph) {
                 // reset the start graph to the renamed graph
-                getGrammarView().setStartGraph(newName);
-                updateGrammar();
+                this.model.getGrammar().setStartGraph(newName);
+                startSimulation();
             } else {
                 refresh();
             }
@@ -1107,8 +968,8 @@ public class Simulator {
     void doRenameRule(AspectGraph graph, String newName) {
         String oldName = graph.getName();
         try {
-            getGrammarStore().renameRule(oldName, newName);
-            updateGrammar();
+            this.model.getStore().renameRule(oldName, newName);
+            startSimulation();
         } catch (IOException exc) {
             showErrorDialog(
                 String.format("Error while renaming rule '%s'", oldName), exc);
@@ -1124,11 +985,11 @@ public class Simulator {
         // test now if this is the type graph, before it is deleted from the
         // grammar
         boolean isTypeGraph =
-            getGrammarView().getActiveTypeNames().contains(oldName);
+            this.model.getGrammar().getActiveTypeNames().contains(oldName);
         try {
-            getGrammarStore().renameType(oldName, newName);
+            this.model.getStore().renameType(oldName, newName);
             if (isTypeGraph) {
-                updateGrammar();
+                startSimulation();
             } else {
                 // otherwise, we only need to update the type panel
                 getTypePanel().displayType();
@@ -1158,8 +1019,10 @@ public class Simulator {
             }
         }
         synchronized (ltsJModel) {
+            GTS gts = getModel().getGts();
+            int size = gts.size();
             // unhook the lts' jmodel from the lts, for efficiency's sake
-            getGTS().removeLTSListener(ltsJModel);
+            gts.removeLTSListener(ltsJModel);
             // disable rule application for the time being
             boolean applyEnabled = getApplyTransitionAction().isEnabled();
             getApplyTransitionAction().setEnabled(false);
@@ -1169,18 +1032,20 @@ public class Simulator {
             this.getExplorationStats().start();
             generateThread.start();
             this.getExplorationStats().stop();
-            // collect the result states
-            getGTS().setResult(exploration.getLastResult());
-            // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.loadGraph(ltsJModel.getGraph());
-            // re-enable rule application
-            getApplyTransitionAction().setEnabled(applyEnabled);
-            // reset lts display visibility
-            switchTabs(getLtsPanel());
-        }
-        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-        if (ltsJGraph.getLayouter() != null) {
-            ltsJGraph.getLayouter().start(false);
+            if (gts.size() == size) {
+                // the exploration had no effect
+                gts.addLTSListener(ltsJModel);
+            } else {
+                // collect the result states
+                gts.setResult(exploration.getLastResult());
+                // get the lts' jmodel back on line and re-synchronize its state
+                ltsJModel.loadGraph(ltsJModel.getGraph());
+                // re-enable rule application
+                getApplyTransitionAction().setEnabled(applyEnabled);
+                // reset lts display visibility
+                switchTabs(getLtsPanel());
+                getModel().setGts(gts);
+            }
         }
     }
 
@@ -1212,19 +1077,21 @@ public class Simulator {
         try {
             if (saveEditors(true)) {
                 SystemStore newStore =
-                    getGrammarStore().save(grammarFile, clearDir);
+                    this.model.getStore().save(grammarFile, clearDir);
                 StoredGrammarView newView = newStore.toGrammarView();
-                String startGraphName = getGrammarView().getStartGraphName();
-                GraphView startGraphView = getGrammarView().getStartGraphView();
+                String startGraphName =
+                    this.model.getGrammar().getStartGraphName();
+                GraphView startGraphView =
+                    this.model.getGrammar().getStartGraphView();
                 if (startGraphName != null) {
                     newView.setStartGraph(startGraphName);
                 } else if (startGraphView != null) {
                     newView.setStartGraph(startGraphView.getAspectGraph());
                 }
-                setGrammarView(newView);
+                this.model.setGrammar(newView);
                 setTitle();
                 getGrammarFileChooser().setSelectedFile(grammarFile);
-                updateGrammar();
+                startSimulation();
             }
         } catch (IOException exc) {
             showErrorDialog("Error while saving grammar to " + grammarFile, exc);
@@ -1234,8 +1101,8 @@ public class Simulator {
     /** Saves a given system properties object. */
     void doSaveProperties(SystemProperties newProperties) {
         try {
-            getGrammarStore().putProperties(newProperties);
-            updateGrammar();
+            this.model.getStore().putProperties(newProperties);
+            startSimulation();
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
         }
@@ -1249,25 +1116,23 @@ public class Simulator {
         return this.aspectLoader;
     }
 
-    /**
-     * Sets a new graph transition system. Invokes
-     * {@link #fireSetGrammar(StoredGrammarView)} to notify all observers of the
-     * change.
-     * 
-     * @see #fireSetGrammar(StoredGrammarView)
-     */
-    public synchronized void updateGrammar() {
-        setGTS(null);
-        fireSetGrammar(getGrammarView());
-        changeEditorTypes();
-        refresh();
-        List<FormatError> grammarErrors = getGrammarView().getErrors();
-        setErrors(grammarErrors);
-        if (grammarErrors.isEmpty() && !isEditorDirty()
-            && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            startSimulation();
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            changeEditorTypes();
+            refresh();
+            List<FormatError> grammarErrors =
+                this.model.getGrammar().getErrors();
+            setErrors(grammarErrors);
+            //            if (grammarErrors.isEmpty() && !isEditorDirty()
+            //                && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+            //                startSimulation();
+            //            }
+            this.history.updateLoadGrammar();
+        } else {
+            refreshActions();
         }
-        this.history.updateLoadGrammar();
     }
 
     /**
@@ -1287,26 +1152,23 @@ public class Simulator {
     }
 
     /**
-     * Sets a new graph transition system. Invokes
-     * {@link #fireStartSimulation(GTS)} to notify all observers of the change.
-     * 
-     * @see #fireSetGrammar(StoredGrammarView)
+     * Sets a new graph transition system.
      */
     public synchronized boolean startSimulation() {
         boolean result = false;
-        if (saveEditors(false)) {
+        boolean start =
+            this.model.getGrammar().getErrors().isEmpty() && !isEditorDirty()
+                && confirmBehaviourOption(START_SIMULATION_OPTION);
+        if (start && saveEditors(false)) {
             try {
                 GTS gts;
                 if (this.isAbstractionMode()) {
-                    gts = new AGTS(getGrammarView().toGrammar());
+                    gts = new AGTS(this.model.getGrammar().toGrammar());
                 } else {
-                    gts = new GTS(getGrammarView().toGrammar());
+                    gts = new GTS(this.model.getGrammar().toGrammar());
                 }
                 gts.getRecord().setRandomAccess(true);
-                setGTS(gts);
-                fireStartSimulation(getGTS());
-                refresh();
-                result = true;
+                result = getModel().setGts(gts);
             } catch (FormatException exc) {
                 showErrorDialog("Error while starting simulation", exc);
             }
@@ -1314,96 +1176,24 @@ public class Simulator {
         return result;
     }
 
-    /**
-     * Sets the current state graph to a given state. Adds the previous state or
-     * active derivation to the history. Invokes <tt>notifySetState(state)</tt>
-     * to notify all observers of the change.
-     * 
-     * @param state the new state
-     * @see #fireSetState(GraphState)
-     */
-    public synchronized void setState(GraphState state) {
-        setCurrentState(state);
-        fireSetState(state);
-        refreshActions();
-    }
-
     /** Fully explores a given state of the GTS. */
     public synchronized void exploreState(GraphState state) {
-        getExploreStateStrategy().prepare(getGTS(), state);
+        getExploreStateStrategy().prepare(getModel().getGts(), state);
         getExploreStateStrategy().next();
-        setState(state);
-    }
-
-    /**
-     * Sets the current production rule. Invokes <tt>notifySetRule(name)</tt> to
-     * notify all observers of the change. The current derivation (if any) is
-     * thereby deactivated.
-     * @param name the name of the new rule
-     * @require name != null
-     * @see #fireSetRule(String)
-     */
-    public synchronized void setRule(String name) {
-        setCurrentRule(getGrammarView().getRuleView(name));
-        setCurrentTransition(null);
-        setCurrentEvent(null);
-        fireSetRule(name);
-        refreshActions();
-    }
-
-    /**
-     * Activates a given derivation, given directly or via its corresponding
-     * match. Adds the previous state or derivation to the history. Invokes
-     * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
-     * @param transition the derivation to be activated. May be null if
-     *        <code>match</code> does not correspond to any transition in the
-     *        LTS
-     * @see #fireSetTransition(GraphTransition)
-     */
-    public synchronized void setTransition(GraphTransition transition) {
-        if (transition != null) {
-            if (setCurrentTransition(transition)) {
-                String ruleName = transition.getEvent().getRule().getName();
-                setCurrentRule(getGrammarView().getRuleView(ruleName));
-                setCurrentEvent(transition.getEvent());
-            }
-            fireSetTransition(getCurrentTransition());
-        }
-        refreshActions();
-    }
-
-    /**
-     * Activates a given match. Invokes {@link #fireSetMatch(Proof)} to
-     * notify all observers of the change.
-     * @param event the match to be activated.
-     * @see #fireSetTransition(GraphTransition)
-     */
-    public synchronized void setEvent(RuleEvent event) {
-        if (!event.equals(getCurrentEvent())) {
-            assert event != null : "The match and the transition cannot be both null.";
-            String ruleName = event.getRule().getName();
-            setCurrentRule(getGrammarView().getRuleView(ruleName));
-            setCurrentTransition(null);
-            setCurrentEvent(event);
-            fireSetMatch(event.getMatch(getCurrentState().getGraph()));
-            refreshActions();
-        }
+        getModel().setGts(getModel().getGts());
     }
 
     /**
      * Applies a match to the current state. The current state is set to the
-     * derivation's target, and the current derivation to null. Invokes
-     * <tt>notifyApplyTransition()</tt> to notify all observers of the change.
-     * @see #fireApplyTransition(GraphTransition)
+     * derivation's target, and the current derivation to null.
      */
     public synchronized void applyMatch() {
-        if (getCurrentEvent() != null) {
+        RuleEvent event = getModel().getEvent();
+        if (event != null) {
             GraphTransition result =
-                getEventApplier().apply(getCurrentState(), getCurrentEvent());
+                getEventApplier().apply(getModel().getState(), event);
             if (result != null) {
-                setCurrentState(result.target());
-                fireApplyTransition(result);
-                refreshActions();
+                getModel().setState(result.target());
             }
         }
     }
@@ -1413,8 +1203,8 @@ public class Simulator {
      * on, the listener will be notified.
      * @param listener the listener to be added
      */
-    public synchronized void addSimulationListener(SimulationListener listener) {
-        this.listeners.add(listener);
+    public synchronized void addSimulatorListener(SimulatorListener listener) {
+        getModel().addListener(listener);
     }
 
     /**
@@ -1422,9 +1212,8 @@ public class Simulator {
      * moment on, the listener will no longer be notified.
      * @param listener the listener to be removed
      */
-    public synchronized void removeSimulationListener(
-            SimulationListener listener) {
-        this.listeners.remove(listener);
+    public synchronized void removeSimulatorListener(SimulatorListener listener) {
+        getModel().removeListener(listener);
     }
 
     /**
@@ -1633,7 +1422,7 @@ public class Simulator {
                             switch (errorGraph.getRole()) {
                             case RULE:
                                 panel = getRulePanel();
-                                setRule(name);
+                                getModel().setRule(name);
                                 break;
                             case HOST:
                                 panel = getStatePanel();
@@ -1747,7 +1536,8 @@ public class Simulator {
      */
     public ExplorationStatistics getExplorationStats() {
         if (this.explorationStats == null) {
-            this.explorationStats = new ExplorationStatistics(this.getGTS());
+            this.explorationStats =
+                new ExplorationStatistics(getModel().getGts());
             this.explorationStats.configureForSimulator();
         }
         return this.explorationStats;
@@ -2265,8 +2055,7 @@ public class Simulator {
      */
     File getLastGrammarFile() {
         File result = null;
-        SystemStore store =
-            getGrammarView() == null ? null : getGrammarView().getStore();
+        SystemStore store = this.model.getStore();
         Object location = store == null ? null : store.getLocation();
         if (location instanceof File) {
             result = (File) location;
@@ -2342,134 +2131,6 @@ public class Simulator {
     }
 
     /**
-     * Notifies all listeners of a new graph grammar. As a result,
-     * {@link SimulationListener#setGrammarUpdate(StoredGrammarView)}is invoked
-     * on all currently registered listeners. This method should not be called
-     * directly: use {@link #updateGrammar()}instead.
-     * @see SimulationListener#setGrammarUpdate(StoredGrammarView)
-     */
-    private synchronized void fireSetGrammar(StoredGrammarView grammar) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.setGrammarUpdate(grammar);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of the start of a new active simulation. As a
-     * result, {@link SimulationListener#startSimulationUpdate(GTS)} is invoked
-     * on all currently registered listeners. This method should not be called
-     * directly: use {@link #startSimulation()}instead.
-     * @see SimulationListener#startSimulationUpdate(GTS)
-     */
-    private synchronized void fireStartSimulation(GTS gts) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.startSimulationUpdate(gts);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of a new state. As a result,
-     * {@link SimulationListener#setStateUpdate(GraphState)}is invoked on all
-     * currently registered listeners. This method should not be called
-     * directly: use {@link #setState(GraphState)}instead.
-     * @see SimulationListener#setStateUpdate(GraphState)
-     * @see #setState(GraphState)
-     */
-    private synchronized void fireSetState(GraphState state) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.setStateUpdate(state);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of a new rule. As a result,
-     * {@link SimulationListener#setRuleUpdate(String)}is invoked on all
-     * currently registered listeners. This method should not be called
-     * directly: use {@link #setRule(String)}instead.
-     * 
-     * @see SimulationListener#setRuleUpdate(String)
-     * @see #setRule(String)
-     */
-    private synchronized void fireSetRule(String name) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.setRuleUpdate(name);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of a newly selected match. As a result,
-     * {@link SimulationListener#setMatchUpdate(Proof)}is invoked on all
-     * currently registered listeners. This method should not be called
-     * directly: use {@link #setEvent(RuleEvent)} instead.
-     * 
-     * @see SimulationListener#setMatchUpdate(Proof)
-     */
-    private synchronized void fireSetMatch(Proof match) {
-        assert match != null;
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.setMatchUpdate(match);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of a new derivation. As a result,
-     * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is invoked
-     * on all currently registered listeners. This method should not be called
-     * directly: use {@link #setTransition(GraphTransition)} instead.
-     * 
-     * @see SimulationListener#setTransitionUpdate(GraphTransition)
-     * @see #setTransition(GraphTransition)
-     */
-    private synchronized void fireSetTransition(GraphTransition transition) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.setTransitionUpdate(transition);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
-     * Notifies all listeners of the application of the current derivation. As a
-     * result, {@link SimulationListener#applyTransitionUpdate(GraphTransition)}
-     * is invoked on all currently registered listeners. This method should not
-     * be called directly: use {@link #applyMatch()}instead.
-     * @param transition the transition that has been applied
-     * @see SimulationListener#applyTransitionUpdate(GraphTransition)
-     * @see #applyMatch()
-     */
-    private synchronized void fireApplyTransition(GraphTransition transition) {
-        if (!this.updating) {
-            this.updating = true;
-            for (SimulationListener listener : this.listeners) {
-                listener.applyTransitionUpdate(transition);
-            }
-            this.updating = false;
-        }
-    }
-
-    /**
      * Refreshes the title bar, layout and actions.
      */
     public void refresh() {
@@ -2483,19 +2144,20 @@ public class Simulator {
      */
     private void setTitle() {
         StringBuffer title = new StringBuffer();
-        if (getGrammarView() != null && getGrammarView().getName() != null) {
-            title.append(getGrammarView().getName());
-            GraphView startGraph = getGrammarView().getStartGraphView();
+        StoredGrammarView grammar = this.model.getGrammar();
+        if (grammar != null && grammar.getName() != null) {
+            title.append(grammar.getName());
+            GraphView startGraph = grammar.getStartGraphView();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());
             }
-            if (getGrammarView().isUseControl()) {
+            if (grammar.isUseControl()) {
                 title.append(" | ");
-                title.append(getGrammarView().getControlName());
+                title.append(grammar.getControlName());
 
             }
-            if (!getGrammarStore().isModifiable()) {
+            if (!grammar.getStore().isModifiable()) {
                 title.append(" (read-only)");
             }
             title.append(" - ");
@@ -2509,9 +2171,10 @@ public class Simulator {
      * Returns the state generator for the current GTS, if any.
      */
     private RuleEventApplier getEventApplier() {
-        if (this.eventApplier == null || this.eventApplier.getGTS() != getGTS()) {
-            if (getGTS() != null) {
-                this.eventApplier = new MatchApplier(getGTS());
+        GTS gts = getModel().getGts();
+        if (this.eventApplier == null || this.eventApplier.getGTS() != gts) {
+            if (gts != null) {
+                this.eventApplier = new MatchApplier(gts);
             }
         }
         return this.eventApplier;
@@ -2520,17 +2183,17 @@ public class Simulator {
     /**
      * If a simulation is active, asks through a dialog whether it may be
      * abandoned.
-     * @param setGrammar flag indicating that {@link #updateGrammar()} is to be
+     * @param setGrammar flag indicating that {@link #startSimulation()} is to be
      *        called with the current grammar, in case the simulation is
      *        abandoned
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
     boolean confirmAbandon(boolean setGrammar) {
         boolean result;
-        if (getGTS() != null) {
+        if (getModel().getGts() != null) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             if (result && setGrammar) {
-                updateGrammar();
+                startSimulation();
             }
         } else {
             result = true;
@@ -2560,9 +2223,9 @@ public class Simulator {
      * current start graph.
      */
     boolean confirmLoadStartState(String stateName) {
-        if (getGrammarView().getStartGraphView() == null) {
+        if (this.model.getGrammar().getStartGraphView() == null) {
             return true;
-        } else if (stateName.equals(getGrammarView().getStartGraphName())) {
+        } else if (stateName.equals(this.model.getGrammar().getStartGraphName())) {
             return true;
         } else {
             String question =
@@ -2655,8 +2318,8 @@ public class Simulator {
      */
     String askNewRuleName(String title, String name, boolean mustBeFresh) {
         FreshNameDialog<String> ruleNameDialog =
-            new FreshNameDialog<String>(getGrammarView().getRuleNames(), name,
-                mustBeFresh) {
+            new FreshNameDialog<String>(this.model.getGrammar().getRuleNames(),
+                name, mustBeFresh) {
                 @Override
                 protected String createName(String name) {
                     return name;
@@ -2677,7 +2340,7 @@ public class Simulator {
      *         <code>null</code>
      */
     String askNewGraphName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = getGrammarView().getGraphNames();
+        Set<String> existingNames = this.model.getGrammar().getGraphNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -2700,7 +2363,7 @@ public class Simulator {
      *         <code>null</code>
      */
     String askNewControlName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = getGrammarView().getControlNames();
+        Set<String> existingNames = this.model.getGrammar().getControlNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -2723,7 +2386,7 @@ public class Simulator {
      *         <code>null</code>
      */
     String askNewTypeName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = getGrammarView().getTypeNames();
+        Set<String> existingNames = this.model.getGrammar().getTypeNames();
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -2744,7 +2407,7 @@ public class Simulator {
      */
     private Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
         RelabelDialog dialog =
-            new RelabelDialog(getGrammarView().getLabelStore(), oldLabel);
+            new RelabelDialog(this.model.getGrammar().getLabelStore(), oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
             return new Duo<TypeLabel>(dialog.getOldLabel(),
                 dialog.getNewLabel());
@@ -2767,44 +2430,18 @@ public class Simulator {
         return this.options;
     }
 
+    /** Returns the object holding the internal state of the simulator. */
+    public final SimulatorModel getModel() {
+        return this.model;
+    }
+
     /**
      * The options object of this simulator.
      */
     private Options options;
 
-    /**
-     * The underlying graph grammar of this simulator. If <tt>null</tt>, no
-     * grammar has been loaded.
-     */
-    private StoredGrammarView grammarView;
-
-    /**
-     * The current graph transition system.
-     */
-    private GTS currentGTS;
-
-    /**
-     * The currently selected state graph.
-     */
-    private GraphState currentState;
-
-    /**
-     * The currently selected production rule.
-     */
-    private String currentRuleName;
-
-    /**
-     * The currently activated derivation.
-     * @invariant currentTransition == null ||
-     *            currentTransition.source().equals(currentState) &&
-     *            currentTransition.rule().equals(currentRule)
-     */
-    private GraphTransition currentTransition;
-
-    /**
-     * The currently selected match.
-     */
-    private RuleEvent currentEvent;
+    /** the internal state of the simulator. */
+    private final SimulatorModel model;
 
     /**
      * The default exploration to be performed. This value is either the
@@ -2818,9 +2455,6 @@ public class Simulator {
     private RuleEventApplier eventApplier;
 
     private ExploreStateStrategy exploreStateStrategy;
-
-    /** Flag to indicate that one of the simulation events is underway. */
-    private boolean updating;
 
     /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
@@ -2847,13 +2481,6 @@ public class Simulator {
      * Dialog for entering temporal formulae.
      */
     private StringDialog ctlFormulaDialog;
-
-    /**
-     * Set of registered simulation listeners.
-     * @invariant <tt>listeners \subseteq SimulationListener</tt>
-     */
-    private final Set<SimulationListener> listeners =
-        new HashSet<SimulationListener>();
 
     /** Current set of refreshables of this simulator. */
     private final Set<Refreshable> refreshables = new HashSet<Refreshable>();
@@ -3134,7 +2761,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentEvent() != null);
+            setEnabled(getModel().getEvent() != null);
         }
     }
 
@@ -3204,14 +2831,16 @@ public class Simulator {
             String property = getCtlFormulaDialog().showDialog(getFrame());
             if (property != null) {
                 boolean doCheck = true;
-                if (getGTS().hasOpenStates() && this.full) {
+                GTS gts = getModel().getGts();
+                if (gts.hasOpenStates() && this.full) {
                     startSimulation();
                     doRunExploration(getDefaultExploration(), false);
-                    doCheck = !getGTS().hasOpenStates();
+                    doCheck = !gts.hasOpenStates();
                 }
                 if (doCheck) {
                     try {
-                        doCheckProperty(FormulaParser.parse(property).toCtlFormula());
+                        doCheckProperty(gts,
+                            FormulaParser.parse(property).toCtlFormula());
                     } catch (ParseException e) {
                         // the property has already been parsed by the dialog
                         assert false;
@@ -3220,8 +2849,8 @@ public class Simulator {
             }
         }
 
-        private void doCheckProperty(Formula formula) {
-            DefaultMarker modelChecker = new DefaultMarker(formula, getGTS());
+        private void doCheckProperty(GTS gts, Formula formula) {
+            DefaultMarker modelChecker = new DefaultMarker(formula, gts);
             modelChecker.verify();
             int counterExampleCount = modelChecker.getCount(false);
             List<GraphState> counterExamples =
@@ -3244,7 +2873,7 @@ public class Simulator {
                             "The property '%s' fails to hold in the %d highlighted states",
                             formula, counterExampleCount);
                 } else if (modelChecker.hasValue(false)) {
-                    counterExamples.add(getGTS().startState());
+                    counterExamples.add(gts.startState());
                     message =
                         String.format(
                             "The property '%s' fails to hold in the initial state",
@@ -3261,7 +2890,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGTS() != null);
+            setEnabled(getModel().getGts() != null);
         }
 
         private final boolean full;
@@ -3291,8 +2920,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarStore() != null
-                && getGrammarStore().isModifiable()
+            setEnabled(Simulator.this.model.getStore() != null
+                && Simulator.this.model.getStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
@@ -3310,7 +2939,8 @@ public class Simulator {
             for (String oldGraphName : selectedGraphs) {
                 if (oldGraphName != null) {
                     GraphView oldGraphView =
-                        getGrammarView().getGraphView(oldGraphName);
+                        Simulator.this.model.getGrammar().getGraphView(
+                            oldGraphName);
                     String newGraphName =
                         askNewGraphName("Select new graph name", oldGraphName,
                             true);
@@ -3347,8 +2977,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentRule() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(getModel().getRule() != null
+                && Simulator.this.model.getStore().isModifiable());
 
             if (getGraphPanel() == getRulePanel()) {
                 getCopyMenuItem().setAction(this);
@@ -3378,7 +3008,7 @@ public class Simulator {
                 }
                 // select last copied rule
                 if (savedRule != null) {
-                    setRule(savedRule);
+                    getModel().setRule(savedRule);
                 }
             }
         }
@@ -3409,8 +3039,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarStore() != null
-                && getGrammarStore().isModifiable()
+            setEnabled(Simulator.this.model.getStore() != null
+                && Simulator.this.model.getStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
@@ -3427,14 +3057,15 @@ public class Simulator {
             String question = "Delete graph(s) '%s'";
             for (int i = 0; i < selectedGraphs.size(); i++) {
                 String graphName = selectedGraphs.get(i);
-                GraphView graphView = getGrammarView().getGraphView(graphName);
+                GraphView graphView =
+                    Simulator.this.model.getGrammar().getGraphView(graphName);
                 assert graphView != null : String.format(
                     "Graph '%s' in graph list but not in grammar", graphName);
                 graphs[i] = graphView.getAspectGraph();
                 // compose the question
                 question = String.format(question, graphName);
                 boolean isStartGraph =
-                    graphName.equals(getGrammarView().getStartGraphName());
+                    graphName.equals(Simulator.this.model.getGrammar().getStartGraphName());
                 if (isStartGraph) {
                     question = question + " (start graph)";
                 }
@@ -3478,8 +3109,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentRule() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(getModel().getRule() != null
+                && Simulator.this.model.getStore().isModifiable());
 
             if (getGraphPanel() == getRulePanel()) {
                 getDeleteMenuItem().setAction(this);
@@ -3597,8 +3228,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentRule() != null
-                && getGrammarStore().isModifiable()
+            setEnabled(getModel().getRule() != null
+                && Simulator.this.model.getStore().isModifiable()
                 && getCurrentRuleSet().size() == 1);
         }
 
@@ -3678,7 +3309,7 @@ public class Simulator {
                         AspectGraph newGraph = ruleGraphs[i].clone();
                         GraphInfo.setProperties(newGraph, ruleProperties[i]);
                         newGraph.setFixed();
-                        getGrammarStore().putRule(newGraph);
+                        Simulator.this.model.getStore().putRule(newGraph);
                         ruleGraphs[i].invalidateView();
                     } catch (IOException exc) {
                         showErrorDialog(String.format(
@@ -3690,7 +3321,7 @@ public class Simulator {
                 }
                 // We are done with the rule changes.
                 // Update the grammar, but just once.. :P
-                updateGrammar();
+                startSimulation();
             }
         }
     }
@@ -3728,7 +3359,8 @@ public class Simulator {
          */
         public void refresh() {
             boolean enabled =
-                getCurrentRule() != null && getGrammarStore().isModifiable()
+                getModel().getRule() != null
+                    && Simulator.this.model.getStore().isModifiable()
                     && getCurrentRuleSet().size() == 1;
             if (enabled != isEnabled()) {
                 setEnabled(enabled);
@@ -3746,7 +3378,7 @@ public class Simulator {
          * @require <tt>getCurrentRule != null</tt>.
          */
         public void actionPerformed(ActionEvent e) {
-            handleEditGraph(getCurrentRule().getAspectGraph(), false);
+            handleEditGraph(getModel().getRule().getAspectGraph(), false);
         }
     }
 
@@ -3777,8 +3409,8 @@ public class Simulator {
          * graph.
          */
         public void actionPerformed(ActionEvent e) {
-            StoredGrammarView grammar = getGrammarView();
-            Properties systemProperties = grammar.getProperties();
+            Properties systemProperties =
+                Simulator.this.model.getGrammar().getProperties();
             PropertiesDialog dialog =
                 new PropertiesDialog(systemProperties,
                     SystemProperties.DEFAULT_KEYS, true);
@@ -3794,8 +3426,8 @@ public class Simulator {
          * system properties.
          */
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable());
         }
     }
 
@@ -3835,9 +3467,10 @@ public class Simulator {
         }
 
         public void refresh() {
-            boolean ruleSelected = getCurrentRule() != null;
-            setEnabled(ruleSelected && getGrammarStore().isModifiable());
-            if (ruleSelected && getCurrentRule().isEnabled()) {
+            boolean ruleSelected = getModel().getRule() != null;
+            setEnabled(ruleSelected
+                && Simulator.this.model.getStore().isModifiable());
+            if (ruleSelected && getModel().getRule().isEnabled()) {
                 putValue(NAME, Options.DISABLE_RULE_ACTION_NAME);
             } else {
                 putValue(NAME, Options.ENABLE_RULE_ACTION_NAME);
@@ -3893,9 +3526,9 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null
-                && getGrammarView().getErrors().isEmpty());
+            StoredGrammarView grammar = Simulator.this.model.getGrammar();
+            setEnabled(grammar != null && grammar.getStartGraphView() != null
+                && grammar.getErrors().isEmpty());
         }
     }
 
@@ -3929,9 +3562,9 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null
-                && getGrammarView().getErrors().isEmpty());
+            StoredGrammarView grammar = Simulator.this.model.getGrammar();
+            setEnabled(grammar != null && grammar.getStartGraphView() != null
+                && grammar.getErrors().isEmpty());
         }
     }
 
@@ -3966,9 +3599,9 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarView().getStartGraphView() != null
-                && getGrammarView().getErrors().isEmpty());
+            StoredGrammarView grammar = Simulator.this.model.getGrammar();
+            setEnabled(grammar != null && grammar.getStartGraphView() != null
+                && grammar.getErrors().isEmpty());
         }
     }
 
@@ -4006,7 +3639,7 @@ public class Simulator {
                 boolean showStart = dialog.showStart();
                 boolean showOpen = dialog.showOpen();
 
-                GTS gts = Simulator.this.getGTS();
+                GTS gts = getModel().getGts();
 
                 DefaultGraph lts =
                     gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
@@ -4037,7 +3670,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGTS() != null);
+            setEnabled(getModel().getGts() != null);
         }
     }
 
@@ -4078,7 +3711,7 @@ public class Simulator {
     /**
      * Action for setting the initial state of the LTS as current state.
      * @see GTS#startState()
-     * @see Simulator#setState(GraphState)
+     * @see SimulatorModel#setState(GraphState)
      */
     private class GotoStartStateAction extends RefreshableAction {
         /** Constructs an instance of the action. */
@@ -4088,11 +3721,11 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            setState(getGTS().startState());
+            getModel().setState(getModel().getGts().startState());
         }
 
         public void refresh() {
-            setEnabled(getGTS() != null);
+            setEnabled(getModel().getGts() != null);
         }
     }
 
@@ -4156,7 +3789,9 @@ public class Simulator {
 
         @Override
         public void doAction() {
-            GTS gts = getGTS();
+            SimulatorModel simState = Simulator.this.getModel();
+            GTS gts = simState.getGts();
+            GraphState state = simState.getState();
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
 
@@ -4164,7 +3799,7 @@ public class Simulator {
                 this.scenario.play();
             } else {
                 try {
-                    this.exploration.play(getGTS(), getCurrentState());
+                    this.exploration.play(gts, state);
                 } catch (FormatException exc) {
                     String[] options = {"Yes", "No"};
                     String message =
@@ -4182,7 +3817,7 @@ public class Simulator {
                         Exploration newExplore = new Exploration();
                         setDefaultExploration(newExplore);
                         try {
-                            newExplore.play(getGTS(), getCurrentState());
+                            newExplore.play(gts, state);
                         } catch (FormatException e) {
                             showErrorDialog("Error: cannot parse exploration.",
                                 e);
@@ -4339,7 +3974,7 @@ public class Simulator {
          * grammar is currently loaded.
          */
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(Simulator.this.model.getGrammar() != null);
         }
     }
 
@@ -4394,22 +4029,22 @@ public class Simulator {
          * grammar is currently loaded.
          */
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(Simulator.this.model.getGrammar() != null);
         }
 
         private void importRule(AspectGraph rule) {
             String ruleName = rule.getName();
-            if (getGrammarView().getRuleView(ruleName) == null
+            if (getModel().getGrammar().getRuleView(ruleName) == null
                 || confirmOverwriteRule(ruleName)) {
                 if (doAddRule(rule)) {
-                    setRule(ruleName);
+                    getModel().setRule(ruleName);
                 }
             }
         }
 
         private void importState(AspectGraph state) {
             String stateName = state.getName();
-            if (getGrammarView().getGraphView(stateName) == null
+            if (getModel().getGrammar().getGraphView(stateName) == null
                 || confirmOverwriteGraph(stateName)) {
                 doAddGraph(state);
             }
@@ -4417,14 +4052,14 @@ public class Simulator {
 
         private void importType(AspectGraph type) {
             String typeName = type.getName();
-            if (getGrammarView().getTypeView(typeName) == null
+            if (getModel().getGrammar().getTypeView(typeName) == null
                 || confirmOverwriteType(typeName)) {
                 doAddType(type);
             }
         }
 
         private void importControl(String name, String program) {
-            if (getGrammarView().getControlView(name) == null
+            if (getModel().getGrammar().getControlView(name) == null
                 || confirmOverwriteControl(name)) {
                 if (doAddControl(name, program)) {
                     getControlPanel().setSelectedControl(name);
@@ -4596,8 +4231,8 @@ public class Simulator {
 
         /** Enabled if there is a grammar loaded. */
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable());
         }
     }
 
@@ -4633,8 +4268,8 @@ public class Simulator {
 
         /** Enabled if there is a grammar loaded. */
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable());
         }
     }
 
@@ -4705,7 +4340,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             getUndoManager().redo();
-            updateGrammar();
+            startSimulation();
         }
 
         public void refresh() {
@@ -4755,7 +4390,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(Simulator.this.model.getGrammar() != null);
         }
     }
 
@@ -4782,8 +4417,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable());
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4821,9 +4456,9 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable()
-                && !getGrammarView().getLabelStore().getLabels().isEmpty());
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable()
+                && !Simulator.this.model.getGrammar().getLabelStore().getLabels().isEmpty());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -4893,8 +4528,8 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null
-                && getGrammarStore().isModifiable()
+            setEnabled(Simulator.this.model.getGrammar() != null
+                && Simulator.this.model.getStore().isModifiable()
                 && !getStateList().getSelectedGraphs().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
@@ -4910,7 +4545,8 @@ public class Simulator {
             AspectGraph[] hostGraphs = new AspectGraph[selectedGraphs.size()];
             int i = 0;
             for (String graphName : selectedGraphs) {
-                GraphView hostView = getGrammarView().getGraphView(graphName);
+                GraphView hostView =
+                    Simulator.this.model.getGrammar().getGraphView(graphName);
                 assert hostView != null : String.format(
                     "Graph '%s' in graph list but not in grammar", graphName);
                 hostGraphs[i] = hostView.getAspectGraph();
@@ -4965,7 +4601,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getCurrentRule() != null);
+            setEnabled(getModel().getRule() != null);
             if (getGraphPanel() == getRulePanel()) {
                 getRenameMenuItem().setAction(this);
             }
@@ -4994,7 +4630,7 @@ public class Simulator {
                     }
                 }
                 if (newRuleName != null) {
-                    setRule(newRuleName);
+                    getModel().setRule(newRuleName);
                 }
             }
         }
@@ -5038,7 +4674,7 @@ public class Simulator {
         }
 
         public void refresh() {
-            setEnabled(getGrammarView() != null);
+            setEnabled(Simulator.this.model.getGrammar() != null);
         }
     }
 
@@ -5110,7 +4746,7 @@ public class Simulator {
                 ExtensionFilter filter) throws IOException {
             // find out if this is within the grammar directory
             String name = null;
-            Object location = getGrammarView().getStore().getLocation();
+            Object location = Simulator.this.model.getStore().getLocation();
             if (location instanceof File) {
                 String locationPath = ((File) location).getCanonicalPath();
                 String selectedPath =
@@ -5202,7 +4838,8 @@ public class Simulator {
             GrooveFileChooser chooser =
                 GrooveFileChooser.getFileChooser(filter);
             String name = getControlPanel().getSelectedControl();
-            String program = getGrammarView().getControlView(name).getProgram();
+            String program =
+                Simulator.this.model.getGrammar().getControlView(name).getProgram();
             chooser.setSelectedFile(new File(name));
             File selectedFile = SaveDialog.show(chooser, getFrame(), null);
             // now save, if so required
@@ -5232,11 +4869,11 @@ public class Simulator {
                     putValue(SHORT_DESCRIPTION, Options.SAVE_GRAPH_ACTION_NAME);
                 }
             } else if (getGraphPanel() == getRulePanel()) {
-                setEnabled(getCurrentRule() != null);
+                setEnabled(getModel().getRule() != null);
                 putValue(NAME, Options.SAVE_RULE_ACTION_NAME);
                 putValue(SHORT_DESCRIPTION, Options.SAVE_RULE_ACTION_NAME);
             } else if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getGTS() != null);
+                setEnabled(getModel().getGts() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
                 putValue(SHORT_DESCRIPTION, Options.SAVE_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getTypePanel()) {
@@ -5352,7 +4989,8 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             Color initColour =
-                getGrammarView().getLabelStore().getColor(this.label);
+                Simulator.this.model.getGrammar().getLabelStore().getColor(
+                    this.label);
             if (initColour != null) {
                 this.chooser.setColor(initColour);
             }
@@ -5382,9 +5020,9 @@ public class Simulator {
                     assert false;
                 }
             }
-            for (String typeViewName : getGrammarView().getActiveTypeNames()) {
+            for (String typeViewName : Simulator.this.model.getGrammar().getActiveTypeNames()) {
                 AspectGraph typeView =
-                    getGrammarView().getTypeView(typeViewName).getAspectGraph();
+                    Simulator.this.model.getGrammar().getTypeView(typeViewName).getAspectGraph();
                 AspectGraph newTypeView =
                     typeView.colour(this.label, colourAspect);
                 if (newTypeView != typeView) {
@@ -5440,7 +5078,7 @@ public class Simulator {
 
         private void refresh() {
             super.setEnabled(this.label != null
-                && !getGrammarView().getActiveTypeNames().isEmpty());
+                && !Simulator.this.model.getGrammar().getActiveTypeNames().isEmpty());
         }
 
         /** The label for which a colour is chosen; may be {@code null}. */
@@ -5510,8 +5148,8 @@ public class Simulator {
 
         public void refresh() {
             boolean enabled =
-                getGrammarView() != null
-                    && getGrammarView().getErrors().isEmpty();
+                Simulator.this.model.getGrammar() != null
+                    && Simulator.this.model.getGrammar().getErrors().isEmpty();
             setEnabled(enabled);
         }
     }
@@ -5548,8 +5186,8 @@ public class Simulator {
                 simulator.setAbstractionMode(true);
                 this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
                 Multiplicity.initMultStore();
-                simulator.removeSimulationListener(simulator.getRuleTree());
-                simulator.removeSimulationListener(simulator.getStatePanel());
+                simulator.removeSimulatorListener(simulator.getRuleTree());
+                simulator.removeSimulatorListener(simulator.getStatePanel());
                 simulator.ruleJTree = null;
                 simulator.ruleTreePanel.setViewportView(simulator.getRuleTree());
                 simulator.statePanel = null;
@@ -5561,8 +5199,8 @@ public class Simulator {
 
         public void refresh() {
             boolean enabled =
-                getGrammarView() != null
-                    && getGrammarView().getErrors().isEmpty();
+                Simulator.this.model.getGrammar() != null
+                    && Simulator.this.model.getGrammar().getErrors().isEmpty();
             setEnabled(enabled);
         }
     }
@@ -5596,7 +5234,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             getUndoManager().undo();
-            updateGrammar();
+            startSimulation();
         }
 
         public void refresh() {
@@ -5608,462 +5246,6 @@ public class Simulator {
                 setEnabled(false);
                 putValue(Action.NAME, Options.UNDO_ACTION_NAME);
             }
-        }
-    }
-
-    /**
-     * Collection of values that make up the state of the GUI of
-     * the {@link Simulator}.
-     * GUI state changes (such as selections) should be made through
-     * a transaction on this object.
-     */
-    public static class GuiState implements Cloneable {
-        /** 
-         * Starts a transaction.
-         * This is only allowed if no transaction is currently underway.
-         * @param owner owner of the transaction
-         */
-        public void start(Object owner) {
-            if (this.owner != null) {
-                throw new IllegalStateException();
-            }
-            this.owner = owner;
-            this.old = clone();
-            this.changes = new HashSet<Change>();
-        }
-
-        /** 
-         * Ends a transaction and notifies all listeners.
-         * This is only allowed if there is a transaction underway,
-         * by the same owner.
-         * @param owner owner of the transaction
-         */
-        public void finish(Object owner) {
-            if (this.owner == null || !this.owner.equals(owner)) {
-                throw new IllegalStateException();
-            }
-            if (!this.changes.isEmpty()) {
-                fireUpdate();
-            }
-            this.old = null;
-            this.changes = null;
-            this.owner = null;
-        }
-
-        /** 
-         * Aborts a transaction and rolls back without notification.
-         * This is only allowed if there is a transaction underway,
-         * by the same owner.
-         * @param owner owner of the transaction
-         */
-        public void abort(Object owner) {
-            if (this.owner == null || !this.owner.equals(owner)) {
-                throw new IllegalStateException();
-            }
-            // reset all values
-            this.event = this.old.event;
-            this.grammar = this.old.grammar;
-            this.gts = this.old.gts;
-            this.host = this.old.host;
-            this.hostSet = this.old.hostSet;
-            this.rule = this.old.rule;
-            this.ruleSet = this.old.ruleSet;
-            this.state = this.old.state;
-            this.transition = this.old.transition;
-            this.owner = null;
-            this.old = null;
-            this.changes = null;
-        }
-
-        /** Returns the active GTS, if any. */
-        public final GTS getGts() {
-            return this.gts;
-        }
-
-        /** 
-         * Changes the active GTS.
-         * If the new GTS is different from the old, this has the side effects of
-         * <li> setting the state to the start state of the new GTS,
-         * or to {@code null} if the new GTS is {@code null}
-         * <li> setting the transition to {@code null}
-         * <li> setting the event to {@code null}
-         * @param gts the new GTS; may be {@code null}
-         * @return if {@code true}, the GTS was really changed
-         * @see #setState(GraphState)
-         */
-        public final boolean setGts(GTS gts) {
-            testActive();
-            boolean result = (this.gts == gts);
-            if (result) {
-                this.gts = gts;
-                this.changes.add(Change.GTS);
-                setState(gts == null ? null : gts.startState(), true);
-            }
-            return result;
-        }
-
-        /** Returns the currently selected state, if any. */
-        public final GraphState getState() {
-            return this.state;
-        }
-
-        /** 
-         * Changes the selected state.
-         * If the new state is different from the old, the transition
-         * and event are set to {@code null}.
-         * @return if {@code true}, the state was really changed
-         * @see #setTransition(GraphTransition)
-         * @see #setEvent(RuleEvent)
-         */
-        public final boolean setState(GraphState state) {
-            return setState(state, true);
-        }
-
-        /** 
-         * Changes the selected state.
-         * If the new state is different from the old, the transition
-         * and event are set to {@code null}.
-         * @param propagate if {@code false}, do not propagate the
-         * change to the transition and event.
-         * @return if {@code true}, the state was really changed
-         */
-        private final boolean setState(GraphState state, boolean propagate) {
-            testActive();
-            boolean result = (state != this.state);
-            if (result) {
-                this.state = state;
-                this.changes.add(Change.STATE);
-                if (propagate) {
-                    setTransition(null, false);
-                    setEvent(null);
-                }
-            }
-            return result;
-        }
-
-        /** Returns the currently selected transition, if any. */
-        public final GraphTransition getTransition() {
-            return this.transition;
-        }
-
-        /** 
-         * Changes the selected transition.
-         * If the new transition is different from the old, and not
-         * {@code null}, also changes the state and the event 
-         * to the source state and the event of the new transition.
-         * @return if {@code true}, the transition was really changed
-         * @see #setState(GraphState)
-         * @see #setEvent(RuleEvent)
-         */
-        public final boolean setTransition(GraphTransition trans) {
-            return setTransition(trans, true);
-        }
-
-        /** 
-         * Changes the selected transition.
-         * If the new transition is different from the old, and not
-         * {@code null}, also changes the state and the event 
-         * to the source state and the event of the new transition.
-         * @return if {@code true}, the transition was really changed
-         */
-        private final boolean setTransition(GraphTransition trans,
-                boolean propagate) {
-            testActive();
-            boolean result = (trans != this.transition);
-            if (result) {
-                this.transition = trans;
-                this.changes.add(Change.TRANS);
-                if (trans != null && propagate) {
-                    setState(trans.source(), false);
-                    setEvent(trans.getEvent());
-                }
-            }
-            return result;
-        }
-
-        /** Returns the currently selected event. */
-        public final RuleEvent getEvent() {
-            return this.event;
-        }
-
-        /** 
-         * Changes the selected event.
-         * @return if {@code true}, the event was really changed
-         */
-        public final boolean setEvent(RuleEvent event) {
-            testActive();
-            boolean result = (event != this.event);
-            if (result) {
-                this.event = event;
-                this.changes.add(Change.EVENT);
-            }
-            return result;
-        }
-
-        /**
-         * Returns the currently loaded graph grammar, if any.
-         */
-        public final StoredGrammarView getGrammar() {
-            return this.grammar;
-        }
-
-        /** Updates the state according to a given grammar. */
-        public final void setGrammar(StoredGrammarView grammar) {
-            testActive();
-            // if the grammar view is a different object,
-            // do not attempt to keep the host graph and rule selections
-            boolean changed = (grammar != this.grammar);
-            this.grammar = grammar;
-            this.changes.add(Change.GRAMMAR);
-            setGts(null);
-            if (changed) {
-                setHostSet(Collections.<GraphView>emptySet());
-                setRuleSet(Collections.<RuleView>emptySet());
-            } else {
-                // restrict the selected host graphs to those that are (still)
-                // in the grammar
-                Collection<GraphView> newHostSet =
-                    new LinkedHashSet<GraphView>();
-                for (String hostName : grammar.getGraphNames()) {
-                    newHostSet.add(grammar.getGraphView(hostName));
-                }
-                newHostSet.retainAll(this.hostSet);
-                setHostSet(newHostSet);
-                // restrict the selected rules to those that are (still)
-                // in the grammar
-                Collection<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
-                for (String ruleName : grammar.getRuleNames()) {
-                    newRuleSet.add(grammar.getRuleView(ruleName));
-                }
-                newRuleSet.retainAll(this.ruleSet);
-                setRuleSet(newRuleSet);
-            }
-        }
-
-        /** Returns the currently selected host graph. */
-        public final GraphView getHost() {
-            return this.host;
-        }
-
-        /** Changes the currently selected host.
-         * @return if {@code true}, the host was actually changed.
-         */
-        public final boolean setHost(GraphView host) {
-            testActive();
-            boolean result = (host != this.host);
-            if (result) {
-                this.host = host;
-                this.changes.add(Change.HOST);
-            }
-            return result;
-        }
-
-        /** 
-         * Returns the currently selected host graph list.
-         */
-        public final Collection<GraphView> getHostSet() {
-            return this.hostSet;
-        }
-
-        /** 
-         * Changes the currently selected host graph list.
-         * May also change the selected host graph.
-         * @return if {@code true}, actually made the change.
-         * @see #setHost(GraphView)
-         */
-        public final boolean setHostSet(Collection<GraphView> hostSet) {
-            testActive();
-            boolean result = !hostSet.equals(this.hostSet);
-            if (result) {
-                this.hostSet = hostSet;
-                this.changes.add(Change.HOST_SET);
-                if (!hostSet.contains(getHost())) {
-                    if (hostSet.isEmpty()) {
-                        setHost(null);
-                    } else {
-                        setHost(hostSet.iterator().next());
-                    }
-                }
-            }
-            return result;
-        }
-
-        /** Returns the currently selected rule. */
-        public final RuleView getRule() {
-            return this.rule;
-        }
-
-        /** Changes the currently selected rule.
-         * @return if {@code true}, the rule was actually changed.
-         */
-        public final boolean setRule(RuleView rule) {
-            testActive();
-            boolean result = (rule != this.rule);
-            if (result) {
-                this.rule = rule;
-                this.changes.add(Change.RULE);
-            }
-            return result;
-        }
-
-        /** 
-         * Returns the currently selected rule set.
-         */
-        public final Collection<RuleView> getRuleSet() {
-            return this.ruleSet;
-        }
-
-        /** 
-         * Changes the currently selected rule set.
-         * If the set has size 0 or 1, also changes the selected rule.
-         * @return if {@code true}, actually made the change.
-         * @see #setRule(RuleView)
-         */
-        public final boolean setRuleSet(Collection<RuleView> ruleSet) {
-            testActive();
-            boolean result = !ruleSet.equals(this.ruleSet);
-            if (result) {
-                this.ruleSet = ruleSet;
-                this.changes.add(Change.RULE_SET);
-                if (!ruleSet.contains(getRule())) {
-                    if (ruleSet.isEmpty()) {
-                        setRule(null);
-                    } else {
-                        setRule(ruleSet.iterator().next());
-                    }
-                }
-            }
-            return result;
-        }
-
-        @Override
-        protected GuiState clone() {
-            GuiState result = null;
-            try {
-                result = (GuiState) super.clone();
-                result.hostSet = new ArrayList<GraphView>(this.hostSet);
-                result.ruleSet = new ArrayList<RuleView>(this.ruleSet);
-            } catch (CloneNotSupportedException e) {
-                assert false;
-            }
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "GuiState [gts=" + this.gts + ", state=" + this.state
-                + ", transition=" + this.transition + ", event=" + this.event
-                + ", grammar=" + this.grammar + ", host=" + this.host
-                + ", hostSet=" + this.hostSet + ", rule=" + this.rule
-                + ", ruleSet=" + this.ruleSet + ", changes=" + this.changes
-                + "]";
-        }
-
-        private void testActive() {
-            if (this.owner == null) {
-                throw new IllegalStateException("No transition is active");
-            }
-        }
-
-        /** Adds a given simulation listener to the list. */
-        public void addListener(NewSimulationListener listener) {
-            if (!this.listeners.contains(listener)) {
-                this.listeners.add(listener);
-            }
-        }
-
-        /** Removes a given listener from the list. */
-        public void removeListener(NewSimulationListener listener) {
-            this.listeners.remove(listener);
-        }
-
-        /** 
-         * Notifies all listeners of the changes involved in the current
-         * transaction.
-         */
-        protected void fireUpdate() {
-            testActive();
-            for (NewSimulationListener listener : this.listeners) {
-                listener.update(this, this.old, this.changes);
-            }
-        }
-
-        /** Owner of the current change transaction, if any. */
-        private Object owner;
-        /** Frozen GUI state, if there is a transaction underway. */
-        private GuiState old;
-        /** Set of changes made in the current transaction. */
-        private Set<Change> changes;
-        /** Currently active GTS. */
-        private GTS gts;
-        /** Currently selected state. */
-        private GraphState state;
-        /** Currently selected transition. */
-        private GraphTransition transition;
-        /** Currently selected rule event. */
-        private RuleEvent event;
-        /** Currently loaded grammar. */
-        private StoredGrammarView grammar;
-        /** Currently selected host graph view. */
-        private GraphView host;
-        /** Multiple selection of host graph views. */
-        private Collection<GraphView> hostSet;
-        /** Currently selected rule view. */
-        private RuleView rule;
-        /** Multiple selection of rule views. */
-        private Collection<RuleView> ruleSet;
-
-        /** Array of listeners. */
-        private final List<NewSimulationListener> listeners =
-            new ArrayList<NewSimulationListener>();
-
-        /** Change type. */
-        public enum Change {
-            /** 
-             * The GTS has changed.
-             * @see GuiState#getGts()
-             */
-            GTS,
-            /** 
-             * The selected state has changed.
-             * @see GuiState#getState()
-             */
-            STATE,
-            /** 
-             * The selected transition has changed.
-             * @see GuiState#getTransition()
-             */
-            TRANS,
-            /** 
-             * The selected event has changed.
-             * @see GuiState#getEvent()
-             */
-            EVENT,
-            /** 
-             * The loaded grammar has changed.
-             * @see GuiState#getGrammar()
-             */
-            GRAMMAR,
-            /** 
-             * The selected host graph has changed.
-             * @see GuiState#getHost()
-             */
-            HOST,
-            /** 
-             * The selected set of host graphs has changed.
-             * @see GuiState#getHostSet()
-             */
-            HOST_SET,
-            /** 
-             * The selected rule has changed.
-             * @see GuiState#getRule()
-             */
-            RULE,
-            /** 
-             * The selected rule set has changed.
-             * @see GuiState#getRuleSet()
-             */
-            RULE_SET;
         }
     }
 
@@ -6105,8 +5287,9 @@ public class Simulator {
          */
         public void updateLoadGrammar() {
             try {
-                Object location = getGrammarStore().getLocation();
-                String startGraphName = getGrammarView().getStartGraphName();
+                Object location = Simulator.this.model.getStore().getLocation();
+                String startGraphName =
+                    Simulator.this.model.getGrammar().getStartGraphName();
                 LoadAction newAction =
                     new LoadAction(location.toString(), startGraphName);
                 this.history.remove(newAction);
