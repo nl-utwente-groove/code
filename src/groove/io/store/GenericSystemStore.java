@@ -100,7 +100,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         there was no such graph
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public G deleteGraph(String name) throws UnsupportedOperationException;
+    public G deleteGraph(String name) throws IOException;
 
     /**
      * Adds or replaces a graph in the store.
@@ -110,8 +110,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the graph
      */
-    public G putGraph(G graph) throws UnsupportedOperationException,
-        IOException;
+    public G putGraph(G graph) throws IOException;
 
     /**
      * Renames a graph in the store.
@@ -132,7 +131,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         if there was no such type
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public T deleteType(String name) throws UnsupportedOperationException;
+    public T deleteType(String name) throws IOException;
 
     /**
      * Adds or replaces a type graph in the store.
@@ -142,7 +141,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the type graph
      */
-    public T putType(T type) throws UnsupportedOperationException, IOException;
+    public T putType(T type) throws IOException;
 
     /**
      * Renames a type graph in the store.
@@ -153,8 +152,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws IOException if an error occurred while storing the renamed graph
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public T renameType(String oldName, String newName)
-        throws UnsupportedOperationException, IOException;
+    public T renameType(String oldName, String newName) throws IOException;
 
     /**
      * Deletes a control program from the store. Also resets the control program
@@ -165,8 +163,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         there was no such program
      * @throws UnsupportedOperationException if the store is immutable
      */
-    public String deleteControl(String name)
-        throws UnsupportedOperationException;
+    public String deleteControl(String name) throws IOException;
 
     /**
      * Adds or replaces a control program in the store.
@@ -177,8 +174,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws IOException if an error occurred while storing the control
      *         program
      */
-    public String putControl(String name, C control)
-        throws UnsupportedOperationException, IOException;
+    public String putControl(String name, C control) throws IOException;
 
     /**
      * Replaces the system properties in the store
@@ -186,8 +182,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the properties
      */
-    public void putProperties(SystemProperties properties)
-        throws UnsupportedOperationException, IOException;
+    public void putProperties(SystemProperties properties) throws IOException;
 
     /**
      * Changes a label into another in all relevant elements of the store.
@@ -195,7 +190,7 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws IOException if an error occurred while storing the properties
      */
     public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
-        throws UnsupportedOperationException, IOException;
+        throws IOException;
 
     /**
      * Reloads all data from the persistent storage into this store. Should be
