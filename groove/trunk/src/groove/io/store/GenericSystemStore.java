@@ -51,36 +51,23 @@ public interface GenericSystemStore<R,G,T,C> {
     /** Immutable view on the rulename-to-rule map in the store. */
     public Map<String,R> getRules();
 
-    /** Immutable view on the name-to-graph map in the store. */
-    public Map<String,G> getGraphs();
-
-    /** Immutable view on the name-to-control-program map in the store. */
-    public Map<String,C> getControls();
-
-    /** Immutable view on the name-to-type map in the store. */
-    public Map<String,T> getTypes();
-
-    /** The system properties object in the store (non-null). */
-    public SystemProperties getProperties();
+    /**
+     * Adds or replaces a rule in the store.
+     * @param rule the rule to be added (non-null)
+     * @return the old rule with the name of <code>rule</code>, if any;
+     *         <code>null</code> otherwise
+     * @throws IOException if an error occurred while storing the rule
+     */
+    public R putRule(R rule) throws IOException;
 
     /**
      * Deletes a rule from the store.
      * @param name name of the rule to be deleted (non-null)
      * @return the rule with name <code>name</code>, or <code>null</code> if
      *         there was no such rule
-     * @throws UnsupportedOperationException if the store is immutable
+     * @throws IOException if the store is immutable
      */
-    public R deleteRule(String name) throws UnsupportedOperationException;
-
-    /**
-     * Adds or replaces a rule in the store.
-     * @param rule the rule to be added (non-null)
-     * @return the old rule with the name of <code>rule</code>, if any;
-     *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the store is immutable
-     * @throws IOException if an error occurred while storing the rule
-     */
-    public R putRule(R rule) throws UnsupportedOperationException, IOException;
+    public R deleteRule(String name) throws IOException;
 
     /**
      * Renames a rule in the store.
@@ -89,28 +76,29 @@ public interface GenericSystemStore<R,G,T,C> {
      * @return the renamed rule, or <code>null</code> if no rule named
      *         <code>oldName</code> existed
      * @throws IOException if an error occurred while storing the renamed rule
-     * @throws UnsupportedOperationException if the store is immutable
      */
     public R renameRule(String oldName, String newName) throws IOException;
 
-    /**
-     * Deletes a graph from the store.
-     * @param name name of the graph to be deleted
-     * @return the graph with name <code>name</code>, or <code>null</code> if
-     *         there was no such graph
-     * @throws UnsupportedOperationException if the store is immutable
-     */
-    public G deleteGraph(String name) throws IOException;
+    /** Immutable view on the name-to-graph map in the store. */
+    public Map<String,G> getGraphs();
 
     /**
      * Adds or replaces a graph in the store.
      * @param graph the graph to be added
      * @return the old graph with the name of <code>graph</code>, if any;
      *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the graph
      */
     public G putGraph(G graph) throws IOException;
+
+    /**
+     * Deletes a graph from the store.
+     * @param name name of the graph to be deleted
+     * @return the graph with name <code>name</code>, or <code>null</code> if
+     *         there was no such graph
+     * @throws IOException if the store is immutable
+     */
+    public G deleteGraph(String name) throws IOException;
 
     /**
      * Renames a graph in the store.
@@ -119,26 +107,63 @@ public interface GenericSystemStore<R,G,T,C> {
      * @return the renamed graph, or <code>null</code> if no graph named
      *         <code>oldName</code> existed
      * @throws IOException if an error occurred while storing the renamed graph
-     * @throws UnsupportedOperationException if the store is immutable
      */
     public G renameGraph(String oldName, String newName) throws IOException;
 
+    /** Immutable view on the name-to-control-program map in the store. */
+    public Map<String,C> getControls();
+
     /**
-     * Deletes a type graph from the store. Also resets the type graph name in
-     * the system properties, if it was set to the deleted type graph.
-     * @param name name of the type graph to be deleted
-     * @return the type graph with name <code>name</code>, or <code>null</code>
-     *         if there was no such type
-     * @throws UnsupportedOperationException if the store is immutable
+     * Adds or replaces a control program in the store.
+     * @param control the control program to be added
+     * @return the old control program with name <code>name</code>, if any;
+     *         <code>null</code> otherwise
+     * @throws IOException if an error occurred while storing the control
+     *         program
      */
-    public T deleteType(String name) throws IOException;
+    public String putControl(String name, C control) throws IOException;
+
+    /**
+     * Deletes a control program from the store. Also resets the control program
+     * in the system properties and disables control if the deleted program was
+     * the currently set control program.
+     * @param name name of the control program to be deleted
+     * @return the program with name <code>name</code>, or <code>null</code> if
+     *         there was no such program
+     * @throws IOException if the store is immutable
+     */
+    public String deleteControl(String name) throws IOException;
+
+    /** Immutable view on the name-to-prolog-program map in the store. */
+    public Map<String,C> getProlog();
+
+    /**
+     * Adds or replaces a prolog program in the store.
+     * @param prolog the prolog program to be added
+     * @return the old prolog program with name <code>name</code>, if any;
+     *         <code>null</code> otherwise
+     * @throws IOException if an error occurred while storing the prolog
+     *         program
+     */
+    public String putProlog(String name, C prolog) throws IOException;
+
+    /**
+     * Deletes a prolog program from the store.
+     * @param name name of the prolog program to be deleted
+     * @return the program with name <code>name</code>, or <code>null</code> if
+     *         there was no such program
+     * @throws IOException if the store is immutable
+     */
+    public String deleteProlog(String name) throws IOException;
+
+    /** Immutable view on the name-to-type map in the store. */
+    public Map<String,T> getTypes();
 
     /**
      * Adds or replaces a type graph in the store.
      * @param type the type graph to be added
      * @return the old type graph with the name of <code>graph</code>, if any;
      *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the type graph
      */
     public T putType(T type) throws IOException;
@@ -150,43 +175,31 @@ public interface GenericSystemStore<R,G,T,C> {
      * @return the renamed type graph, or <code>null</code> if no graph named
      *         <code>oldName</code> existed
      * @throws IOException if an error occurred while storing the renamed graph
-     * @throws UnsupportedOperationException if the store is immutable
      */
     public T renameType(String oldName, String newName) throws IOException;
 
     /**
-     * Deletes a control program from the store. Also resets the control program
-     * in the system properties and disables control if the deleted program was
-     * the currently set control program.
-     * @param name name of the control program to be deleted
-     * @return the program with name <code>name</code>, or <code>null</code> if
-     *         there was no such program
-     * @throws UnsupportedOperationException if the store is immutable
+     * Deletes a type graph from the store. Also resets the type graph name in
+     * the system properties, if it was set to the deleted type graph.
+     * @param name name of the type graph to be deleted
+     * @return the type graph with name <code>name</code>, or <code>null</code>
+     *         if there was no such type
+     * @throws IOException if the store is immutable
      */
-    public String deleteControl(String name) throws IOException;
+    public T deleteType(String name) throws IOException;
 
-    /**
-     * Adds or replaces a control program in the store.
-     * @param control the control program to be added
-     * @return the old control program with name <code>name</code>, if any;
-     *         <code>null</code> otherwise
-     * @throws UnsupportedOperationException if the store is immutable
-     * @throws IOException if an error occurred while storing the control
-     *         program
-     */
-    public String putControl(String name, C control) throws IOException;
+    /** The system properties object in the store (non-null). */
+    public SystemProperties getProperties();
 
     /**
      * Replaces the system properties in the store
      * @param properties the new system properties object
-     * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the properties
      */
     public void putProperties(SystemProperties properties) throws IOException;
 
     /**
      * Changes a label into another in all relevant elements of the store.
-     * @throws UnsupportedOperationException if the store is immutable
      * @throws IOException if an error occurred while storing the properties
      */
     public void relabel(TypeLabel oldLabel, TypeLabel newLabel)
@@ -213,7 +226,7 @@ public interface GenericSystemStore<R,G,T,C> {
     /**
      * Indicates if this store can be modified. If the store cannot be modified,
      * all the operations that attempt to modify it will throw
-     * {@link UnsupportedOperationException}s.
+     * {@link IOException}s.
      * @return <code>true</code> if the store is modifiable
      */
     public boolean isModifiable();

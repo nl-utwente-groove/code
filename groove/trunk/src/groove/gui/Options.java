@@ -185,6 +185,8 @@ public class Options implements Cloneable {
     public static final String COPY_CONTROL_ACTION_NAME = "Copy Control";
     /** Name of the "Copy Graph" action. */
     public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
+    /** Copy prolog action name */
+    public static final String COPY_PROLOG_ACTION_NAME = "Copy Prolog";
     /** Copy rule action name */
     public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
     /** Name of the "Copy Type Graph" action. */
@@ -200,6 +202,8 @@ public class Options implements Cloneable {
     public static final String DELETE_CONTROL_ACTION_NAME = "Delete Control";
     /** Delete graph action name */
     public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
+    /** Delete prolog program action name */
+    public static final String DELETE_PROLOG_ACTION_NAME = "Delete Prolog";
     /** Delete rule action name */
     public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
     /** Delete type graph action name */
@@ -220,6 +224,8 @@ public class Options implements Cloneable {
     public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edit label action name */
     static public final String EDIT_LABEL_ACTION = "Edit Label";
+    /** Edit prolog action name */
+    public static final String EDIT_PROLOG_ACTION_NAME = "Edit Prolog ...";
     /** Edit rule action name */
     public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
@@ -289,6 +295,8 @@ public class Options implements Cloneable {
     public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
     /** New grammar action name */
     public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar ...";
+    /** New prolog action name */
+    public static final String NEW_PROLOG_ACTION_NAME = "New Prolog";
     /** New rule action name */
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** New type action name */
@@ -316,6 +324,8 @@ public class Options implements Cloneable {
     public static final String RENAME_CONTROL_ACTION_NAME = "Rename Control";
     /** Graph rename action name */
     public static final String RENAME_GRAPH_ACTION_NAME = "Rename Graph";
+    /** Prolog rename action name */
+    public static final String RENAME_PROLOG_ACTION_NAME = "Rename Prolog";
     /** Rule rename action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /** Type rename action name */

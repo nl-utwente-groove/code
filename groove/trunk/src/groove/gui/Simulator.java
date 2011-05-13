@@ -538,9 +538,13 @@ public class Simulator implements SimulatorListener {
      * grammar view.
      */
     void doDeleteRule(String name) {
-        AspectGraph rule = this.model.getStore().deleteRule(name);
-        if (rule != null) {
-            startSimulation();
+        try {
+            AspectGraph rule = this.model.getStore().deleteRule(name);
+            if (rule != null) {
+                startSimulation();
+            }
+        } catch (IOException exc) {
+            showErrorDialog("Error while deleting rule", exc);
         }
     }
 
