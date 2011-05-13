@@ -23,7 +23,7 @@ import javax.swing.undo.UndoableEdit;
 /**
  * Instance of the generic system store where both the graph and the rule
  * representations are {@link AspectGraph}s.
- * @author Arend
+ * @author Arend Rensink
  * @version $Revision $
  */
 public interface SystemStore extends
@@ -38,12 +38,14 @@ public interface SystemStore extends
     static public final int GRAPH_CHANGE = 0x8;
     /** Value used in notifying changes to the type map. */
     static public final int TYPE_CHANGE = 0x10;
+    /** Value used in notifying changes to in the prolog programs. */
+    static public final int PROLOG_CHANGE = 0x20;
 
     /** Edit object for system stores. */
     public interface Edit extends UndoableEdit {
         /**
          * Returns a value that is an OR of {@link #RULE_CHANGE},
-         * {@link #GRAPH_CHANGE}, {@link #TYPE_CHANGE}, {@link #CONTROL_CHANGE}
+         * {@link #GRAPH_CHANGE}, {@link #TYPE_CHANGE}, {@link #CONTROL_CHANGE}, {@link #PROLOG_CHANGE}
          * and {@link #PROPERTIES_CHANGE}.
          */
         int getChange();

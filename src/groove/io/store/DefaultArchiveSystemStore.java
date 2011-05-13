@@ -20,6 +20,7 @@ import static groove.io.FileType.CONTROL_FILTER;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.LAYOUT_FILTER;
+import static groove.io.FileType.PROLOG_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
@@ -169,64 +170,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public String deleteControl(String name) {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph deleteGraph(String name) {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph deleteRule(String name)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph deleteType(String name)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public Map<String,String> getControls() {
-        testInit();
-        return Collections.unmodifiableMap(this.controlMap);
-    }
-
-    @Override
     public Map<String,AspectGraph> getGraphs() {
         testInit();
         return Collections.unmodifiableMap(this.graphMap);
-    }
-
-    @Override
-    public SystemProperties getProperties() {
-        testInit();
-        return this.properties;
-    }
-
-    @Override
-    public Map<String,AspectGraph> getRules() {
-        testInit();
-        return Collections.unmodifiableMap(this.ruleMap);
-    }
-
-    @Override
-    public Map<String,AspectGraph> getTypes() {
-        testInit();
-        return Collections.unmodifiableMap(this.typeMap);
-    }
-
-    @Override
-    public String putControl(String name, String control) throws IOException {
-        throw createImmutable();
     }
 
     @Override
@@ -235,18 +181,9 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public void putProperties(SystemProperties properties) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public AspectGraph putRule(AspectGraph rule) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public AspectGraph putType(AspectGraph type) throws IOException {
-        throw createImmutable();
+    public AspectGraph deleteGraph(String name) throws IOException {
+        throw new IOException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
     }
 
     @Override
@@ -256,14 +193,91 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public Map<String,AspectGraph> getRules() {
+        testInit();
+        return Collections.unmodifiableMap(this.ruleMap);
+    }
+
+    @Override
+    public AspectGraph putRule(AspectGraph rule) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public AspectGraph deleteRule(String name) throws IOException {
+        throw new IOException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
     public AspectGraph renameRule(String oldName, String newName)
         throws IOException {
         throw createImmutable();
     }
 
     @Override
+    public Map<String,AspectGraph> getTypes() {
+        testInit();
+        return Collections.unmodifiableMap(this.typeMap);
+    }
+
+    @Override
+    public AspectGraph putType(AspectGraph type) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public AspectGraph deleteType(String name) throws IOException {
+        throw new IOException(String.format(
+            "Archived grammar '%s' is immutable", getName()));
+    }
+
+    @Override
     public AspectGraph renameType(String oldName, String newName)
         throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public Map<String,String> getControls() {
+        testInit();
+        return Collections.unmodifiableMap(this.controlMap);
+    }
+
+    @Override
+    public String putControl(String name, String control) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public String deleteControl(String name) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public Map<String,String> getProlog() {
+        testInit();
+        return Collections.unmodifiableMap(this.prologMap);
+    }
+
+    @Override
+    public String putProlog(String name, String control) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public String deleteProlog(String name) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public SystemProperties getProperties() {
+        testInit();
+        return this.properties;
+    }
+
+    @Override
+    public void putProperties(SystemProperties properties) throws IOException {
         throw createImmutable();
     }
 
@@ -295,6 +309,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         Map<String,ZipEntry> graphs = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> types = new HashMap<String,ZipEntry>();
         Map<String,ZipEntry> controls = new HashMap<String,ZipEntry>();
+        Map<String,ZipEntry> prolog = new HashMap<String,ZipEntry>();
         ZipEntry properties = null;
         for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
             ZipEntry entry = entries.nextElement();
@@ -339,6 +354,13 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                         assert oldEntry == null : String.format(
                             "Duplicate control name '%s'", restName);
                     }
+                } else if (restName.endsWith(PROLOG_FILTER.getExtension())) {
+                    // check if the entry is top level
+                    if (new File(restName).getParent() == null) {
+                        Object oldEntry = prolog.put(restName, entry);
+                        assert oldEntry == null : String.format(
+                            "Duplicate control name '%s'", restName);
+                    }
                 } else if (restName.endsWith(LAYOUT_FILTER.getExtension())) {
                     String objectName = LAYOUT_FILTER.stripExtension(restName);
                     this.layoutEntryMap.put(objectName, entry);
@@ -350,10 +372,11 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         loadGraphs(zipFile, graphs);
         loadTypes(zipFile, types);
         loadControls(zipFile, controls);
+        loadProlog(zipFile, prolog);
         zipFile.close();
         notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
             | SystemStore.TYPE_CHANGE | SystemStore.GRAPH_CHANGE
-            | SystemStore.CONTROL_CHANGE);
+            | SystemStore.CONTROL_CHANGE | SystemStore.PROLOG_CHANGE);
         this.initialised = true;
     }
 
@@ -443,6 +466,33 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /**
+     * Loads the named prolog programs from a zip file, using the prepared map
+     * from program names to zip entries.
+     */
+    private void loadProlog(ZipFile file, Map<String,ZipEntry> prologMap)
+        throws IOException {
+        this.prologMap.clear();
+        for (Map.Entry<String,ZipEntry> prologEntry : prologMap.entrySet()) {
+            String prologName =
+                PROLOG_FILTER.stripExtension(prologEntry.getKey());
+            InputStream in = file.getInputStream(prologEntry.getValue());
+            // read the program in as a single string
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(in));
+            StringBuilder program = new StringBuilder();
+            String nextLine = reader.readLine();
+            while (nextLine != null) {
+                program.append(nextLine);
+                program.append("\n");
+                nextLine = reader.readLine();
+            }
+            reader.close();
+            /* Store the control program */
+            this.prologMap.put(prologName, program.toString());
+        }
+    }
+
+    /**
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
      */
@@ -467,6 +517,17 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /**
+     * Loads the named graphs from a zip file, using the prepared map from graph
+     * names to zip entries.
+     */
+    private void loadTypes(ZipFile file, Map<String,ZipEntry> graphs)
+        throws IOException {
+        this.typeMap.clear();
+        this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
+            GraphRole.TYPE));
+    }
+
+    /**
      * Loads the properties file from file (if any), and assigns the properties
      * to {@link #properties}.
      */
@@ -483,17 +544,6 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         } else {
             this.hasSystemPropertiesFile = false;
         }
-    }
-
-    /**
-     * Loads the named graphs from a zip file, using the prepared map from graph
-     * names to zip entries.
-     */
-    private void loadTypes(ZipFile file, Map<String,ZipEntry> graphs)
-        throws IOException {
-        this.typeMap.clear();
-        this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
-            GraphRole.TYPE));
     }
 
     /**
@@ -608,6 +658,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         new HashMap<String,AspectGraph>();
     /** The name-to-control-program map of the source. */
     private final Map<String,String> controlMap = new HashMap<String,String>();
+    /** The name-to-control-program map of the source. */
+    private final Map<String,String> prologMap = new HashMap<String,String>();
     /** Map from entry name to layout entry. */
     private final Map<String,ZipEntry> layoutEntryMap =
         new HashMap<String,ZipEntry>();
