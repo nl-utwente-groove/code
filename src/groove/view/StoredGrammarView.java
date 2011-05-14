@@ -103,21 +103,27 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(this.controlMap.keySet());
     }
 
-    public Set<String> getGraphNames() {
-        return Collections.unmodifiableSet(getStore().getGraphs().keySet());
-    }
-
-    public Set<String> getRuleNames() {
-        return Collections.unmodifiableSet(getStore().getRules().keySet());
-    }
-
-    /** Returns a list of all available type graph names. */
-    public Set<String> getTypeNames() {
-        return Collections.unmodifiableSet(getStore().getTypes().keySet());
-    }
-
     public CtrlView getControlView(String name) {
         return this.controlMap.get(name);
+    }
+
+    /**
+     * Returns the name of the control program to be used if control is 
+     * enabled, or {@code null} otherwise. This is taken
+     * from the system properties.
+     */
+    public String getControlName() {
+        return getProperties().isUseControl()
+                ? getProperties().getControlName() : null;
+    }
+
+    @Override
+    public CtrlView getControlView() {
+        return isUseControl() ? getControlView(getControlName()) : null;
+    }
+
+    public Set<String> getGraphNames() {
+        return Collections.unmodifiableSet(getStore().getGraphs().keySet());
     }
 
     public GraphView getGraphView(String name) {
@@ -134,6 +140,19 @@ public class StoredGrammarView implements GrammarView, Observer {
             result.setType(type);
         }
         return result;
+    }
+
+    /** Returns a list of all available control program names. */
+    public Set<String> getPrologNames() {
+        return Collections.unmodifiableSet(this.prologMap.keySet());
+    }
+
+    public PrologView getPrologView(String name) {
+        return this.prologMap.get(name);
+    }
+
+    public Set<String> getRuleNames() {
+        return Collections.unmodifiableSet(getStore().getRules().keySet());
     }
 
     /** Convenience method to obtain a rule by the string version of its rule name. */
@@ -159,6 +178,11 @@ public class StoredGrammarView implements GrammarView, Observer {
         return result;
     }
 
+    /** Returns a list of all available type graph names. */
+    public Set<String> getTypeNames() {
+        return Collections.unmodifiableSet(getStore().getTypes().keySet());
+    }
+
     public TypeView getTypeView(String name) {
         AspectGraph typeGraph = getStore().getTypes().get(name);
         return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
@@ -182,21 +206,6 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     public List<String> getActiveTypeNames() {
         return getProperties().getTypeNames();
-    }
-
-    /**
-     * Returns the name of the control program to be used if control is 
-     * enabled, or {@code null} otherwise. This is taken
-     * from the system properties.
-     */
-    public String getControlName() {
-        return getProperties().isUseControl()
-                ? getProperties().getControlName() : null;
-    }
-
-    @Override
-    public CtrlView getControlView() {
-        return isUseControl() ? getControlView(getControlName()) : null;
     }
 
     public String getStartGraphName() {
@@ -502,6 +511,9 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Mapping from control names to views on the corresponding automata. */
     final Map<String,CtrlView> controlMap = new HashMap<String,CtrlView>();
+
+    /** Mapping from prolog names to views on the corresponding views. */
+    final Map<String,PrologView> prologMap = new HashMap<String,PrologView>();
 
     /** The store backing this view. */
     private final SystemStore store;

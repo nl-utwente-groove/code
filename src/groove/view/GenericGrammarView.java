@@ -34,44 +34,8 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
     /** Returns the name of the rule system. */
     public String getName();
 
-    /** Returns the (fixed) properties of the rule system. */
-    public SystemProperties getProperties();
-
     /** Returns a list of all available control program names. */
     public Set<String> getControlNames();
-
-    /** Returns an unmodifiable view on the set of graph names in this grammar. */
-    public Set<String> getGraphNames();
-
-    /** Returns an unmodifiable view on the set of rule names in this grammar. */
-    public Set<String> getRuleNames();
-
-    /**
-     * Returns an unmodifiable view on the set of type graph names in this
-     * grammar.
-     */
-    public Set<String> getTypeNames();
-
-    /**
-     * Returns the rule view for a given rule name.
-     * @return the rule view for rule <code>name</code>, or <code>null</code> if
-     *         there is no such rule.
-     */
-    public RV getRuleView(String name);
-
-    /**
-     * Returns the graph view for a given graph name.
-     * @return the graph view for graph <code>name</code>, or <code>null</code>
-     *         if there is no such graph.
-     */
-    public GV getGraphView(String name);
-
-    /**
-     * Returns the type graph view for a given graph name.
-     * @return the type graph view for type <code>name</code>, or
-     *         <code>null</code> if there is no such graph.
-     */
-    public TV getTypeView(String name);
 
     /**
      * Returns the control view associated with a given (named) control program.
@@ -87,6 +51,27 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
      *         is no control program loaded.
      */
     public CV getControlView();
+
+    /** Returns a list of all available prolog program names. */
+    public Set<String> getPrologNames();
+
+    /**
+     * Returns the prolog view associated with a given (named) prolog program.
+     * @param name the name of the prolog program to return the view of;
+     * @return the corresponding prolog view, or <code>null</code> if
+     *         no program by that name exists
+     */
+    public PrologView getPrologView(String name);
+
+    /** Returns an unmodifiable view on the set of graph names in this grammar. */
+    public Set<String> getGraphNames();
+
+    /**
+     * Returns the graph view for a given graph name.
+     * @return the graph view for graph <code>name</code>, or <code>null</code>
+     *         if there is no such graph.
+     */
+    public GV getGraphView(String name);
 
     /**
      * Returns the start graph of this grammar view.
@@ -110,6 +95,32 @@ public interface GenericGrammarView<GV extends View<? extends HostGraph>,RV exte
      *        <code>null</code> if the start graph should be unset
      */
     public void setStartGraph(String name);
+
+    /** Returns an unmodifiable view on the set of rule names in this grammar. */
+    public Set<String> getRuleNames();
+
+    /**
+     * Returns the rule view for a given rule name.
+     * @return the rule view for rule <code>name</code>, or <code>null</code> if
+     *         there is no such rule.
+     */
+    public RV getRuleView(String name);
+
+    /**
+     * Returns an unmodifiable view on the set of type graph names in this
+     * grammar.
+     */
+    public Set<String> getTypeNames();
+
+    /**
+     * Returns the type graph view for a given graph name.
+     * @return the type graph view for type <code>name</code>, or
+     *         <code>null</code> if there is no such graph.
+     */
+    public TV getTypeView(String name);
+
+    /** Returns the (fixed) properties of the rule system. */
+    public SystemProperties getProperties();
 
     /** Unsets the start graph. */
     public void removeStartGraph();
