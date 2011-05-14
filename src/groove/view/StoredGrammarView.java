@@ -500,11 +500,25 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
     }
 
+    /**
+     * Reloads the prolog map from the backing {@link SystemStore}.
+     */
+    private void loadPrologMap() {
+        this.prologMap.clear();
+        for (Map.Entry<String,String> storedRuleEntry : this.store.getProlog().entrySet()) {
+            this.prologMap.put(storedRuleEntry.getKey(), new PrologView(
+                storedRuleEntry.getValue(), storedRuleEntry.getKey()));
+        }
+    }
+
     @Override
     public void update(Observable source, Object edit) {
         int change = ((SystemStore.Edit) edit).getChange();
         if ((change & SystemStore.CONTROL_CHANGE) > 0) {
             loadControlMap();
+        }
+        if ((change & SystemStore.PROLOG_CHANGE) > 0) {
+            loadPrologMap();
         }
         invalidate();
     }

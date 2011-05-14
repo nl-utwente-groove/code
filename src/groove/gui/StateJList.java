@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.lts.GTS;
+import groove.view.GraphView;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
@@ -31,6 +32,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -66,8 +69,10 @@ public class StateJList extends JList implements SimulatorListener {
         this.setEnabled(false);
         this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new MyCellRenderer());
-        this.addMouseListener(new MyMouseListener());
-        addListSelectionListener(new MySelectionListener());
+        installListeners();
+    }
+
+    private void installListeners() {
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -79,12 +84,36 @@ public class StateJList extends JList implements SimulatorListener {
                 StateJList.this.repaint();
             }
         });
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                switchSimulatorToStatePanel();
-            }
-        });
+        addMouseListener(new MyMouseListener());
+        this.listListeners =
+            new ListSelectionListener[] {new MySelectionListener()};
+        activateListeners();
+    }
+
+    private void activateListeners() {
+        if (this.listening) {
+            throw new IllegalStateException();
+        }
+        for (ListSelectionListener listener : this.listListeners) {
+            addListSelectionListener(listener);
+        }
+        this.listListeners = null;
+        this.listening = true;
+    }
+
+    /**
+     * Removes all list selection listeners. The listeners should be added back
+     * later using {@link #activateListeners()}
+     */
+    private void suspendListeners() {
+        if (!this.listening) {
+            throw new IllegalStateException();
+        }
+        this.listListeners = getListSelectionListeners();
+        for (ListSelectionListener listener : this.listListeners) {
+            removeListSelectionListener(listener);
+        }
+        this.listening = false;
     }
 
     /**
@@ -138,17 +167,57 @@ public class StateJList extends JList implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
             this.removeAll();
             if (source.getGrammar() == null) {
                 setEnabled(false);
             } else {
                 setEnabled(true);
-                refreshList(true);
+                setList(source.getHostSet());
             }
         }
         if (changes.contains(Change.STATE)) {
             refreshCurrentState(!changes.contains(Change.GTS));
+        }
+        activateListeners();
+    }
+
+    /**
+     * Sets the list of names to a given set.
+     * @param selection the set of names to be selected
+     */
+    private void setList(Collection<GraphView> selection) {
+        Object[] hostNames = getGrammar().getGraphNames().toArray();
+        Arrays.sort(hostNames);
+        // turn the selection into a set of names
+        Set<String> selectionNames = new HashSet<String>();
+        for (GraphView hostView : selection) {
+            selectionNames.add(hostView.getName());
+        }
+        int[] selectedIndices = new int[selection.size()];
+        int selectedCount = 0;
+        this.listModel.clear();
+        // add the empty string, later to be replaced by the
+        // current state indicator
+        this.listModel.addElement("");
+        for (int i = 0; i < hostNames.length; i++) {
+            Object name = hostNames[i];
+            this.listModel.addElement(name);
+            if (selectionNames.contains(name)) {
+                selectedIndices[selectedCount] = i + 1;
+                selectedCount++;
+            }
+        }
+        refreshCurrentState(false);
+        if (selectedCount == 0) {
+            if (getStartGraphName() != null) {
+                setSelectedValue(getStartGraphName(), true);
+            } else {
+                clearSelection();
+            }
+        } else {
+            setSelectedIndices(selectedIndices);
         }
     }
 
@@ -160,20 +229,8 @@ public class StateJList extends JList implements SimulatorListener {
         }
     }
 
-    /**
-     * Refreshes the list of names by reloading it from the current grammar.
-     * Either the currently selected item is kept, or the start graph is
-     * selected (if it is among the graphs in the list).
-     * @param keepSelection keepSelection if <code>true</code>, attempts to
-     *        reselect the name selected before refreshing; otherwise, attempts
-     *        to select the start graph.
-     */
-    public void refreshList(boolean keepSelection) {
-        setList(getGrammar().getGraphNames(), keepSelection);
-    }
-
     /** Returns the list of selected graph names. */
-    public List<String> getSelectedGraphs() {
+    private List<String> getSelectedGraphs() {
         List<String> result = new ArrayList<String>();
         int[] selection = getSelectedIndices();
         for (int i = 0; i < selection.length; i++) {
@@ -199,93 +256,6 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     /**
-     * Removes all list selection listeners. The listeners should be added back
-     * later using {@link #restoreListeners()}
-     */
-    private void suspendListeners() {
-        if (this.listeners != null) {
-            throw new IllegalStateException(
-                "Listeners should have been restored");
-        }
-        this.listeners = getListSelectionListeners();
-        for (ListSelectionListener listener : this.listeners) {
-            removeListSelectionListener(listener);
-        }
-    }
-
-    /**
-     * Adds all suspended list selection listeners. This should be called after
-     * a previous call of {@link #suspendListeners()}.
-     */
-    private void restoreListeners() {
-        if (this.listeners == null) {
-            throw new IllegalStateException(
-                "Listeners should have been suspended");
-        }
-        for (ListSelectionListener listener : this.listeners) {
-            addListSelectionListener(listener);
-        }
-        this.listeners = null;
-    }
-
-    /**
-     * Sets the list of names to a given set.
-     * @param names the set of names to be displayed; will be ordered before
-     *        display
-     * @param keepSelection if <code>true</code>, attempts to reselect the name
-     *        selected before refreshing.
-     */
-    private void setList(Set<String> names, boolean keepSelection) {
-        int[] currentIndices = getSelectedIndices();
-        Object[] currentSelection = getSelectedValues();
-        Object[] sortedNames = names.toArray();
-        Arrays.sort(sortedNames);
-        suspendListeners();
-        this.listModel.clear();
-        // add the empty string, later to be replaced by the
-        // current state indicator
-        this.listModel.addElement("");
-        for (Object name : sortedNames) {
-            this.listModel.addElement(name);
-        }
-        refreshCurrentState(false);
-        int[] newSelection = new int[currentIndices.length];
-        int newSelectionCount = 0;
-        if (keepSelection) {
-            for (int i = 0; i < currentIndices.length; i++) {
-                int newIndex;
-                if (currentIndices[i] > 0) {
-                    // look up this value in the new names
-                    newIndex =
-                        Arrays.asList(sortedNames).indexOf(currentSelection[i]);
-                    // increase index by one to account for state entry
-                    if (newIndex >= 0) {
-                        newIndex++;
-                    }
-                } else {
-                    // this must have been the state entry; index is 0
-                    newIndex = 0;
-                }
-                if (newIndex >= 0) {
-                    newSelection[newSelectionCount] = newIndex;
-                    newSelectionCount++;
-                }
-            }
-        }
-        if (currentIndices.length == 0 && newSelectionCount == 0) {
-            restoreListeners();
-            if (getStartGraphName() != null) {
-                setSelectedValue(getStartGraphName(), true);
-            } else {
-                clearSelection();
-            }
-        } else {
-            setSelectedIndices(newSelection);
-            restoreListeners();
-        }
-    }
-
-    /**
      * Refreshes the value of the current state item of the state list.
      * @param select if <code>true</code>, select the current state item
      */
@@ -307,9 +277,9 @@ public class StateJList extends JList implements SimulatorListener {
         if (select) {
             // set the selection to the first element (the simulation state
             // indicator)
-            suspendListeners();
+            //            suspendListeners();
             setSelectedIndex(0);
-            restoreListeners();
+            //            restoreListeners();
         }
         repaint();
     }
@@ -319,8 +289,7 @@ public class StateJList extends JList implements SimulatorListener {
     // --------------
 
     /**
-     * Returns the current grammar view. Convenience method for
-     * <code>getSimulator().getGrammarView()</code>.
+     * Returns the current grammar view from the simulator.
      */
     private StoredGrammarView getGrammar() {
         return getSimulator().getModel().getGrammar();
@@ -366,12 +335,13 @@ public class StateJList extends JList implements SimulatorListener {
     /** The list model used in this class. */
     private final DefaultListModel listModel;
 
+    private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
      * @see #suspendListeners()
-     * @see #restoreListeners()
+     * @see #activateListeners()
      */
-    private ListSelectionListener[] listeners;
+    private ListSelectionListener[] listListeners;
     /**
      * The background colour of this component when it is enabled.
      */
@@ -418,11 +388,17 @@ public class StateJList extends JList implements SimulatorListener {
                 }
             }
         }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            switchSimulatorToStatePanel();
+        }
     }
 
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            getSimulatorState().setHostSet(getSelectedGraphs());
             switchSimulatorToStatePanel();
         }
     }

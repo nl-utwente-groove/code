@@ -165,6 +165,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     public void setSelectedType(String name) {
         this.getNameListModel().setSelectedType(name);
+        displayType();
     }
 
     /**
@@ -204,21 +205,13 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /**
      * Registers a refreshable.
-     * @see #refreshActions()
      */
     protected void addRefreshable(Refreshable refreshable) {
         this.refreshables.add(refreshable);
     }
 
-    /** Refreshes all registered actions. */
-    public void refreshActions() {
-        for (Refreshable refreshable : this.refreshables) {
-            refreshable.refresh();
-        }
-    }
-
     /** Sets the model according to the currently selected type. */
-    public void displayType() {
+    private void displayType() {
         AspectJModel newModel =
             isTypeSelected() ? getTypeJModel(getGrammar().getTypeView(
                 getSelectedType())) : getJGraph().newModel();
@@ -233,7 +226,9 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             this.jGraph.setModel(newModel);
         }
         setEnabled(isEnabled());
-        refreshActions();
+        for (Refreshable refreshable : this.refreshables) {
+            refreshable.refresh();
+        }
         refreshStatus();
     }
 

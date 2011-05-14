@@ -106,14 +106,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             Set<Change> changes) {
         if (changes.contains(Change.GTS)) {
             GTS gts = source.getGts();
-            //            if (gts == oldGts) {
-            //                // we merely have to layout and show the active state and transition
-            //                // we do layouting here because it's too expensive to do it
-            //                // every time a new state is added
-            //                getJGraph().freeze();
-            //                getJGraph().getLayouter().start(false);
-            //                getJGraph().setActive(source.getState(), source.getTransition());
-            //            } else 
             if (gts == null) {
                 LTSJModel newModel = getJGraph().newModel();
                 getJGraph().getFilteredLabels().clear();
@@ -129,7 +121,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                 }
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
-                getJGraph().setActive(source.getState(), source.getTransition());
+                getJGraph().setActive(source.getState(),
+                    source.getTransition());
                 setEnabled(true);
             }
             refreshStatus();
@@ -138,13 +131,17 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             GraphState state = source.getState();
             GraphTransition transition = source.getTransition();
             getJGraph().setActive(state, transition);
-            //            // we do layouting here because it's too expensive to do it
-            //            // every time a new state is added
-            //            if (this.ltsListener.stateAdded
-            //                && getJGraph().getLayouter() != null) {
-            //                getJGraph().freeze();
-            //                getJGraph().getLayouter().start(false);
-            //                this.ltsListener.stateAdded = false;
+            //            List<Object> selectedCells = new ArrayList<Object>();
+            //            if (source.getSelectedState() != null) {
+            //                selectedCells.add(getJGraph().getModel().getJCellForNode(
+            //                    source.getSelectedState()));
+            //            }
+            //            if (source.getSelectedTransition() != null) {
+            //                selectedCells.add(getJGraph().getModel().getJCellForEdge(
+            //                    source.getSelectedTransition()));
+            //            }
+            //            if (!selectedCells.isEmpty()) {
+            //                getJGraph().setSelectionCells(selectedCells.toArray());
             //            }
             conditionalScrollTo(transition == null ? state : transition);
         }
