@@ -422,6 +422,21 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
+     * Adds a prolog program to this grammar.
+     * @return <code>true</code> if saving the control program has succeeded
+     */
+    boolean doAddProlog(String name, String program) {
+        boolean result = false;
+        try {
+            this.model.getStore().putProlog(name, program);
+            result = true;
+        } catch (IOException exc) {
+            showErrorDialog("Error storing control program " + name, exc);
+        }
+        return result;
+    }
+
+    /**
      * Adds a given graph to the graphs in this grammar
      * @return <code>true</code> if saving the graph has succeeded
      */
@@ -508,6 +523,15 @@ public class Simulator implements SimulatorListener {
             }
         } catch (IOException exc) {
             showErrorDialog("Error while deleting control", exc);
+        }
+    }
+
+    /** Removes a prolog program from this grammar. */
+    void doDeleteProlog(String name) {
+        try {
+            this.model.getStore().deleteProlog(name);
+        } catch (IOException exc) {
+            showErrorDialog("Error while deleting prolog program " + name, exc);
         }
     }
 
@@ -1066,6 +1090,26 @@ public class Simulator implements SimulatorListener {
     boolean doSaveControl(String controlProgram, File file) {
         try {
             CtrlView.store(controlProgram, new FileOutputStream(file));
+            return true;
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving to " + file, exc);
+            return false;
+        }
+    }
+
+    /**
+     * Attempts to save a prolog program to a file. Failure to do so will be
+     * reported in an error dialog. The return value indicates if the attempt
+     * was successful.
+     * @param prolog string containing a (parsable) control program
+     *        (non-null)
+     * @param file target file; will be overwritten if already existing
+     *        (non-null)
+     * @return <code>true</code> if the program was successfully saved
+     */
+    boolean doSaveProlog(String prolog, File file) {
+        try {
+            CtrlView.store(prolog, new FileOutputStream(file));
             return true;
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
