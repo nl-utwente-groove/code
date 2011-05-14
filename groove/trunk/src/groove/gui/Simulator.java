@@ -91,6 +91,7 @@ import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.GraphGrammar;
 import groove.trans.RuleEvent;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -403,16 +404,14 @@ public class Simulator implements SimulatorListener {
     boolean doAddControl(String name, String program) {
         boolean result = false;
         try {
-            this.model.getStore().putControl(name, program);
-            boolean isCurrentControl =
-                name.equals(this.model.getGrammar().getControlName());
+            StoredGrammarView grammar = getModel().getGrammar();
+            grammar.getStore().putControl(name, program);
+            boolean isCurrentControl = name.equals(grammar.getControlName());
+            getModel().refreshGrammar(isCurrentControl);
             // we only need to refresh the grammar if the added
             // control program is the currently active one
             if (isCurrentControl) {
                 startSimulation();
-            } else {
-                // otherwise, we only need to update the control panel
-                getControlPanel().refreshAll();
             }
             result = true;
         } catch (IOException exc) {
@@ -443,13 +442,13 @@ public class Simulator implements SimulatorListener {
     boolean doAddGraph(AspectGraph graph) {
         boolean result = false;
         try {
-            this.model.getStore().putGraph(graph);
-            result = true;
-            if (graph.getName().equals(
-                this.model.getGrammar().getStartGraphName())) {
+            StoredGrammarView grammar = getModel().getGrammar();
+            grammar.getStore().putGraph(graph);
+            boolean isStartGraph =
+                graph.getName().equals(grammar.getStartGraphName());
+            getModel().refreshGrammar(isStartGraph);
+            if (isStartGraph) {
                 startSimulation();
-            } else {
-                refresh();
             }
             result = true;
         } catch (IOException exc) {
@@ -469,8 +468,8 @@ public class Simulator implements SimulatorListener {
     boolean doAddRule(AspectGraph ruleAsGraph) {
         boolean result = false;
         try {
-            this.model.getStore().putRule(ruleAsGraph);
-            ruleAsGraph.invalidateView();
+            getModel().getStore().putRule(ruleAsGraph);
+            getModel().refreshGrammar(true);
             startSimulation();
             result = true;
         } catch (IOException exc) {
@@ -490,13 +489,13 @@ public class Simulator implements SimulatorListener {
     boolean doAddType(AspectGraph typeGraph) {
         boolean result = false;
         try {
-            this.model.getStore().putType(typeGraph);
-            if (this.model.getGrammar().getActiveTypeNames().contains(
-                typeGraph.getName())) {
+            StoredGrammarView grammar = getModel().getGrammar();
+            grammar.getStore().putType(typeGraph);
+            boolean isActiveType =
+                grammar.getActiveTypeNames().contains(typeGraph.getName());
+            getModel().refreshGrammar(isActiveType);
+            if (isActiveType) {
                 startSimulation();
-            } else {
-                // otherwise, we only need to update the type panel
-                getTypePanel().displayType();
             }
             result = true;
         } catch (IOException exc) {
@@ -509,17 +508,15 @@ public class Simulator implements SimulatorListener {
 
     /** Removes a control program from this grammar. */
     void doDeleteControl(String name) {
-        boolean isCurrentControl =
-            name.equals(this.model.getGrammar().getControlName());
+        StoredGrammarView grammar = getModel().getGrammar();
+        boolean isCurrentControl = name.equals(grammar.getControlName());
         try {
-            this.model.getStore().deleteControl(name);
+            grammar.getStore().deleteControl(name);
+            getModel().refreshGrammar(isCurrentControl);
             // we only need to refresh the grammar if the deleted
             // control program was the currently active one
             if (isCurrentControl) {
                 startSimulation();
-            } else {
-                // otherwise, we only need to update the control panel
-                getControlPanel().refreshAll();
             }
         } catch (IOException exc) {
             showErrorDialog("Error while deleting control", exc);
@@ -541,16 +538,15 @@ public class Simulator implements SimulatorListener {
     void doDeleteGraph(String name) {
         // test now if this is the start state, before it is deleted from the
         // grammar
-        boolean isStartGraph =
-            name.equals(this.model.getGrammar().getStartGraphName());
+        StoredGrammarView grammar = this.model.getGrammar();
+        boolean isStartGraph = name.equals(grammar.getStartGraphName());
         try {
-            this.model.getStore().deleteGraph(name);
+            grammar.getStore().deleteGraph(name);
+            getModel().refreshGrammar(isStartGraph);
             if (isStartGraph) {
                 // reset the start graph to null
-                this.model.getGrammar().removeStartGraph();
+                grammar.removeStartGraph();
                 startSimulation();
-            } else {
-                refresh();
             }
         } catch (IOException exc) {
             showErrorDialog("Error while deleting graph", exc);
@@ -563,8 +559,11 @@ public class Simulator implements SimulatorListener {
      */
     void doDeleteRule(String name) {
         try {
+            StoredGrammarView grammar = getModel().getGrammar();
+            boolean isEnabled = grammar.getRuleView(name).isEnabled();
             AspectGraph rule = this.model.getStore().deleteRule(name);
-            if (rule != null) {
+            getModel().refreshGrammar(isEnabled);
+            if (rule != null || isEnabled) {
                 startSimulation();
             }
         } catch (IOException exc) {
@@ -574,17 +573,15 @@ public class Simulator implements SimulatorListener {
 
     /** Removes a type graph from this grammar. */
     void doDeleteType(String name) {
-        boolean isUsed =
-            this.model.getGrammar().getActiveTypeNames().contains(name);
+        StoredGrammarView grammar = this.model.getGrammar();
+        boolean isUsed = grammar.getActiveTypeNames().contains(name);
         try {
-            this.model.getStore().deleteType(name);
+            grammar.getStore().deleteType(name);
+            getModel().refreshGrammar(isUsed);
             // we only need to refresh the grammar if the deleted
             // type graph was the currently active one
             if (isUsed) {
                 startSimulation();
-            } else {
-                // otherwise, we only need to update the type panel
-                getTypePanel().displayType();
             }
         } catch (IOException exc) {
             showErrorDialog("Error while deleting type", exc);
@@ -830,7 +827,7 @@ public class Simulator implements SimulatorListener {
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            Simulator.this.model.setGrammar(grammar);
+                            getModel().setGrammar(grammar);
                             startSimulation();
                             grammar.getProperties().setCurrentVersionProperties();
                             if (saveAfterLoading && newGrammarFile != null) {
@@ -861,7 +858,8 @@ public class Simulator implements SimulatorListener {
     void doLoadStartGraph(File file) {
         try {
             AspectGraph startGraph = unmarshalGraph(file);
-            this.model.getGrammar().setStartGraph(startGraph);
+            getModel().getGrammar().setStartGraph(startGraph);
+            getModel().refreshGrammar(true);
             startSimulation();
         } catch (IOException exc) {
             showErrorDialog(
@@ -874,7 +872,8 @@ public class Simulator implements SimulatorListener {
      * the LTS.
      */
     void doLoadStartGraph(String name) {
-        this.model.getGrammar().setStartGraph(name);
+        getModel().getGrammar().setStartGraph(name);
+        getModel().refreshGrammar(true);
         startSimulation();
     }
 
@@ -888,7 +887,7 @@ public class Simulator implements SimulatorListener {
             if (saveEditors(true)) {
                 StoredGrammarView grammar =
                     StoredGrammarView.newInstance(grammarFile, true);
-                this.model.setGrammar(grammar);
+                getModel().setGrammar(grammar);
                 startSimulation();
             }
         } catch (IllegalArgumentException exc) {
@@ -927,10 +926,11 @@ public class Simulator implements SimulatorListener {
      * confirmation. Has no effect if no grammar is currently loaded.
      */
     void doRefreshGrammar() {
-        if (this.model.getStore() != null) {
+        if (getModel().getStore() != null) {
             try {
-                this.model.getStore().reload();
+                getModel().getStore().reload();
                 getUndoManager().discardAllEdits();
+                getModel().refreshGrammar(true);
                 startSimulation();
             } catch (IOException exc) {
                 showErrorDialog("Error while refreshing grammar from "
@@ -942,7 +942,8 @@ public class Simulator implements SimulatorListener {
     /** Replaces all occurrences of a given label into another label. */
     void doRelabel(TypeLabel oldLabel, TypeLabel newLabel) {
         try {
-            this.model.getStore().relabel(oldLabel, newLabel);
+            getModel().getStore().relabel(oldLabel, newLabel);
+            getModel().refreshGrammar(true);
             startSimulation();
         } catch (IOException exc) {
             showErrorDialog(String.format(
@@ -953,9 +954,10 @@ public class Simulator implements SimulatorListener {
 
     /** Renumbers the nodes in all graphs from {@code 0} upwards. */
     void doRenumber() {
-        if (this.model.getStore() instanceof DefaultFileSystemStore) {
+        if (getModel().getStore() instanceof DefaultFileSystemStore) {
             try {
-                ((DefaultFileSystemStore) this.model.getStore()).renumber();
+                ((DefaultFileSystemStore) getModel().getStore()).renumber();
+                getModel().refreshGrammar(true);
                 startSimulation();
             } catch (IOException exc) {
                 showErrorDialog("Error while renumbering", exc);
@@ -971,17 +973,19 @@ public class Simulator implements SimulatorListener {
         String oldName = graph.getName();
         // test now if this is the start state, before it is deleted from the
         // grammar
-        String startGraphName = this.model.getGrammar().getStartGraphName();
+        StoredGrammarView grammar = getModel().getGrammar();
+        String startGraphName = grammar.getStartGraphName();
         boolean isStartGraph =
             oldName.equals(startGraphName) || newName.equals(startGraphName);
         try {
-            this.model.getStore().renameGraph(oldName, newName);
+            grammar.getStore().renameGraph(oldName, newName);
             if (isStartGraph) {
                 // reset the start graph to the renamed graph
-                this.model.getGrammar().setStartGraph(newName);
+                grammar.setStartGraph(newName);
+                getModel().refreshGrammar(true);
                 startSimulation();
             } else {
-                refresh();
+                getModel().refreshGrammar(false);
             }
         } catch (IOException exc) {
             showErrorDialog(
@@ -997,6 +1001,7 @@ public class Simulator implements SimulatorListener {
         String oldName = graph.getName();
         try {
             this.model.getStore().renameRule(oldName, newName);
+            getModel().refreshGrammar(true);
             startSimulation();
         } catch (IOException exc) {
             showErrorDialog(
@@ -1010,17 +1015,15 @@ public class Simulator implements SimulatorListener {
     boolean doRenameType(AspectGraph graph, String newName) {
         boolean result = false;
         String oldName = graph.getName();
+        StoredGrammarView grammar = getModel().getGrammar();
         // test now if this is the type graph, before it is deleted from the
         // grammar
-        boolean isTypeGraph =
-            this.model.getGrammar().getActiveTypeNames().contains(oldName);
+        boolean isTypeGraph = grammar.getActiveTypeNames().contains(oldName);
         try {
-            this.model.getStore().renameType(oldName, newName);
+            grammar.getStore().renameType(oldName, newName);
+            getModel().refreshGrammar(isTypeGraph);
             if (isTypeGraph) {
                 startSimulation();
-            } else {
-                // otherwise, we only need to update the type panel
-                getTypePanel().displayType();
             }
             result = true;
         } catch (IOException exc) {
@@ -1136,7 +1139,7 @@ public class Simulator implements SimulatorListener {
                 } else if (startGraphView != null) {
                     newView.setStartGraph(startGraphView.getAspectGraph());
                 }
-                this.model.setGrammar(newView);
+                getModel().setGrammar(newView);
                 setTitle();
                 getGrammarFileChooser().setSelectedFile(grammarFile);
                 startSimulation();
@@ -1149,7 +1152,8 @@ public class Simulator implements SimulatorListener {
     /** Saves a given system properties object. */
     void doSaveProperties(SystemProperties newProperties) {
         try {
-            this.model.getStore().putProperties(newProperties);
+            getModel().getStore().putProperties(newProperties);
+            getModel().refreshGrammar(true);
             startSimulation();
         } catch (IOException exc) {
             showErrorDialog("Error while saving edited properties", exc);
@@ -1169,18 +1173,13 @@ public class Simulator implements SimulatorListener {
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             changeEditorTypes();
-            refresh();
+            setTitle();
             List<FormatError> grammarErrors =
                 this.model.getGrammar().getErrors();
             setErrors(grammarErrors);
-            //            if (grammarErrors.isEmpty() && !isEditorDirty()
-            //                && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            //                startSimulation();
-            //            }
             this.history.updateLoadGrammar();
-        } else {
-            refreshActions();
         }
+        refreshActions();
     }
 
     /**
@@ -1203,25 +1202,24 @@ public class Simulator implements SimulatorListener {
      * Sets a new graph transition system.
      */
     public synchronized boolean startSimulation() {
-        boolean result = false;
-        boolean start =
-            this.model.getGrammar().getErrors().isEmpty() && !isEditorDirty()
-                && confirmBehaviourOption(START_SIMULATION_OPTION);
-        if (start && saveEditors(false)) {
-            try {
-                GTS gts;
+        GTS gts = null;
+        try {
+            GraphGrammar grammar = getModel().getGrammar().toGrammar();
+            boolean start =
+                !isEditorDirty()
+                    && confirmBehaviourOption(START_SIMULATION_OPTION);
+            if (start) {
                 if (this.isAbstractionMode()) {
-                    gts = new AGTS(this.model.getGrammar().toGrammar());
+                    gts = new AGTS(grammar);
                 } else {
-                    gts = new GTS(this.model.getGrammar().toGrammar());
+                    gts = new GTS(grammar);
                 }
                 gts.getRecord().setRandomAccess(true);
-                result = getModel().setGts(gts);
-            } catch (FormatException exc) {
-                showErrorDialog("Error while starting simulation", exc);
             }
+        } catch (FormatException exc) {
+            // the grammar has errors; don't start the simulation
         }
-        return result;
+        return getModel().setGts(gts);
     }
 
     /** Fully explores a given state of the GTS. */
@@ -1474,7 +1472,7 @@ public class Simulator implements SimulatorListener {
                                 break;
                             case HOST:
                                 panel = getStatePanel();
-                                getStateList().setSelectedValue(name, true);
+                                getModel().setHost(name);
                                 break;
                             case TYPE:
                                 panel = getTypePanel();
@@ -1720,8 +1718,6 @@ public class Simulator implements SimulatorListener {
         for (Refreshable action : this.refreshables) {
             action.refresh();
         }
-        getControlPanel().refreshAll();
-        getTypePanel().refreshActions();
     }
 
     /**
@@ -2176,15 +2172,6 @@ public class Simulator implements SimulatorListener {
             this.exploreStateStrategy = new ExploreStateStrategy();
         }
         return this.exploreStateStrategy;
-    }
-
-    /**
-     * Refreshes the title bar, layout and actions.
-     */
-    public void refresh() {
-        setTitle();
-        getStateList().refreshList(true);
-        refreshActions();
     }
 
     /**
@@ -2970,7 +2957,7 @@ public class Simulator implements SimulatorListener {
         public void refresh() {
             setEnabled(Simulator.this.model.getStore() != null
                 && Simulator.this.model.getStore().isModifiable()
-                && !getStateList().getSelectedGraphs().isEmpty());
+                && !getModel().getHostSet().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
                 getCopyMenuItem().setAction(this);
@@ -2978,24 +2965,13 @@ public class Simulator implements SimulatorListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // Multiple selection
-            // copy selected graph names
-            List<String> selectedGraphs = new ArrayList<String>();
-            for (Object name : getStateList().getSelectedValues()) {
-                selectedGraphs.add((String) name);
-            }
-            for (String oldGraphName : selectedGraphs) {
-                if (oldGraphName != null) {
-                    GraphView oldGraphView =
-                        Simulator.this.model.getGrammar().getGraphView(
-                            oldGraphName);
-                    String newGraphName =
-                        askNewGraphName("Select new graph name", oldGraphName,
-                            true);
-                    if (newGraphName != null) {
-                        doAddGraph(oldGraphView.getAspectGraph().rename(
-                            newGraphName));
-                    }
+            for (GraphView oldGraphView : getModel().getHostSet()) {
+                String newGraphName =
+                    askNewGraphName("Select new graph name",
+                        oldGraphView.getName(), true);
+                if (newGraphName != null) {
+                    doAddGraph(oldGraphView.getAspectGraph().rename(
+                        newGraphName));
                 }
             }
         }
@@ -3089,7 +3065,7 @@ public class Simulator implements SimulatorListener {
         public void refresh() {
             setEnabled(Simulator.this.model.getStore() != null
                 && Simulator.this.model.getStore().isModifiable()
-                && !getStateList().getSelectedGraphs().isEmpty());
+                && !getModel().getHostSet().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
                 getDeleteMenuItem().setAction(this);
@@ -3099,34 +3075,32 @@ public class Simulator implements SimulatorListener {
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
-            List<String> selectedGraphs = getStateList().getSelectedGraphs();
+            Collection<GraphView> selectedGraphs = getModel().getHostSet();
             // first collect the affected graphs and compose the question
             AspectGraph[] graphs = new AspectGraph[selectedGraphs.size()];
             String question = "Delete graph(s) '%s'";
-            for (int i = 0; i < selectedGraphs.size(); i++) {
-                String graphName = selectedGraphs.get(i);
-                GraphView graphView =
-                    Simulator.this.model.getGrammar().getGraphView(graphName);
-                assert graphView != null : String.format(
-                    "Graph '%s' in graph list but not in grammar", graphName);
-                graphs[i] = graphView.getAspectGraph();
+            int count = 0;
+            for (GraphView graphView : selectedGraphs) {
+                String graphName = graphView.getName();
+                graphs[count] = graphView.getAspectGraph();
                 // compose the question
                 question = String.format(question, graphName);
                 boolean isStartGraph =
-                    graphName.equals(Simulator.this.model.getGrammar().getStartGraphName());
+                    graphView.equals(Simulator.this.model.getGrammar().getStartGraphView());
                 if (isStartGraph) {
                     question = question + " (start graph)";
                 }
-                if (i < selectedGraphs.size() - 1) {
+                if (count < selectedGraphs.size() - 1) {
                     question = question + ", '%s'";
                 } else {
                     question = question + "?";
                 }
+                count++;
             }
             if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)
                 && disposeEditors(graphs)) {
-                for (String graphName : selectedGraphs) {
-                    doDeleteGraph(graphName);
+                for (GraphView graphView : selectedGraphs) {
+                    doDeleteGraph(graphView.getName());
                 }
             }
         }
@@ -4388,6 +4362,7 @@ public class Simulator implements SimulatorListener {
 
         public void actionPerformed(ActionEvent evt) {
             getUndoManager().redo();
+            getModel().refreshGrammar(true);
             startSimulation();
         }
 
@@ -4578,7 +4553,7 @@ public class Simulator implements SimulatorListener {
         public void refresh() {
             setEnabled(Simulator.this.model.getGrammar() != null
                 && Simulator.this.model.getStore().isModifiable()
-                && !getStateList().getSelectedGraphs().isEmpty());
+                && !getModel().getHostSet().isEmpty());
 
             if (getGraphPanel() == getStatePanel()) {
                 getRenameMenuItem().setAction(this);
@@ -4588,17 +4563,13 @@ public class Simulator implements SimulatorListener {
         public void actionPerformed(ActionEvent e) {
             // Multiple selection
             // copy selected graph names
-            List<String> selectedGraphs = getStateList().getSelectedGraphs();
+            Collection<GraphView> selectedGraphs = getModel().getHostSet();
             // first collect the affected graphs
             AspectGraph[] hostGraphs = new AspectGraph[selectedGraphs.size()];
-            int i = 0;
-            for (String graphName : selectedGraphs) {
-                GraphView hostView =
-                    Simulator.this.model.getGrammar().getGraphView(graphName);
-                assert hostView != null : String.format(
-                    "Graph '%s' in graph list but not in grammar", graphName);
-                hostGraphs[i] = hostView.getAspectGraph();
-                i++;
+            int count = 0;
+            for (GraphView hostView : selectedGraphs) {
+                hostGraphs[count] = hostView.getAspectGraph();
+                count++;
             }
             if (disposeEditors(hostGraphs)) {
                 for (AspectGraph graph : hostGraphs) {
@@ -5157,12 +5128,12 @@ public class Simulator implements SimulatorListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String selection = (String) getStateList().getSelectedValue();
+            String selection = getModel().getHost().getName();
             doLoadStartGraph(selection);
         }
 
         public void refresh() {
-            setEnabled(getStateList().getSelectedGraphs().size() == 1);
+            setEnabled(getModel().getHost() != null);
         }
     }
 
@@ -5282,6 +5253,7 @@ public class Simulator implements SimulatorListener {
 
         public void actionPerformed(ActionEvent evt) {
             getUndoManager().undo();
+            getModel().refreshGrammar(true);
             startSimulation();
         }
 

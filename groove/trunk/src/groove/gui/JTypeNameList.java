@@ -127,7 +127,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                     ListItem item =
                         JTypeNameList.this.model.getElementAt(index);
                     JTypeNameList.this.panel.setSelectedType(item.dataItem);
-                    JTypeNameList.this.panel.displayType();
                 }
             }
         };

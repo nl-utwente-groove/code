@@ -32,6 +32,28 @@ public class SimulatorModel implements Cloneable {
         return this.gts;
     }
 
+    /**
+     * Refreshes the GTS by firing an update event if any changes occurred 
+     * since the GTS was last set or refreshed.
+     */
+    public final boolean refreshGts() {
+        start();
+        doRefreshGts();
+        return finish();
+    }
+
+    /**
+     * Refreshes the GTS.
+     */
+    private final boolean doRefreshGts() {
+        boolean result = this.ltsListener.isChanged();
+        if (result) {
+            this.ltsListener.clear();
+            this.changes.add(Change.GTS);
+        }
+        return result;
+    }
+
     /** 
      * Sets the active GTS and fires an update event when this results in a change.
      * If the new GTS is different from the old, this has the side effects of
@@ -45,35 +67,41 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setGts(GTS gts) {
         start();
-        doSetGts(gts, true);
+        if (doSetGts(gts)) {
+            doSetState(gts == null ? null : gts.startState());
+            doSetTransition(null);
+            doSetEvent(null);
+        } else if (this.ltsListener.isChanged()) {
+            this.ltsListener.clear();
+            this.changes.add(Change.GTS);
+        }
         return finish();
     }
 
     /** 
-     * Changes the active GTS. Optionally propagates the changes
-     * to other model fields.
-     * @param propagate if {@code true}, the change is propagated
-     * and a notification event is fired
+     * Changes the active GTS.
      * @see #setGts(GTS)
      */
-    private final void doSetGts(GTS gts, boolean propagate) {
-        if (this.gts != gts || this.ltsListener.isChanged()) {
-            if (propagate && this.gts != gts) {
-                doSetState(gts == null ? null : gts.startState(), true);
-            }
+    private final boolean doSetGts(GTS gts) {
+        boolean result = this.gts != gts;
+        if (result) {
             if (this.gts != null) {
                 this.gts.removeLTSListener(this.ltsListener);
             }
-            this.gts = gts;
-            if (this.gts != null) {
-                this.gts.addLTSListener(this.ltsListener);
+            if (gts != null) {
+                gts.addLTSListener(this.ltsListener);
             }
             this.ltsListener.clear();
+            this.gts = gts;
             this.changes.add(Change.GTS);
         }
+        return result;
     }
 
-    /** Returns the currently selected state, if any. */
+    /** 
+     * Returns the currently active state, if any.
+     * The the GTS is set, there is always an active transition.
+     */
     public final GraphState getState() {
         return this.state;
     }
@@ -88,28 +116,29 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setState(GraphState state) {
         start();
-        doSetState(state, true);
+        doRefreshGts();
+        if (doSetState(state)) {
+            doSetTransition(null);
+            doSetEvent(null);
+        }
         return finish();
     }
 
     /** 
      * Does the work for {@link #setState(GraphState)}, except
      * for firing the update.
-     * @param propagate if {@code false}, do not propagate the
-     * change to the transition and event.
      */
-    private final void doSetState(GraphState state, boolean propagate) {
-        if (state != this.state) {
+    private final boolean doSetState(GraphState state) {
+        // never reset the active state as long as there is a GTS
+        boolean result = state != this.state;
+        if (result) {
             this.state = state;
             this.changes.add(Change.STATE);
-            if (propagate) {
-                doSetTransition(null, false);
-                doSetEvent(null);
-            }
         }
+        return result;
     }
 
-    /** Returns the currently selected transition, if any. */
+    /** Returns the currently active transition, if any. */
     public final GraphTransition getTransition() {
         return this.transition;
     }
@@ -125,7 +154,11 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setTransition(GraphTransition trans) {
         start();
-        doSetTransition(trans, true);
+        if (doSetTransition(trans) && trans != null) {
+            doSetState(trans.source());
+            doSetEvent(trans.getEvent());
+            doSetRule(this.grammar.getRuleView(trans.getEvent().getRule().getName()));
+        }
         return finish();
     }
 
@@ -135,15 +168,13 @@ public class SimulatorModel implements Cloneable {
      * {@code null}, also changes the state and the event 
      * to the source state and the event of the new transition.
      */
-    private final void doSetTransition(GraphTransition trans, boolean propagate) {
-        if (trans != this.transition) {
+    private final boolean doSetTransition(GraphTransition trans) {
+        boolean result = trans != this.transition;
+        if (result) {
             this.transition = trans;
             this.changes.add(Change.TRANS);
-            if (trans != null && propagate) {
-                doSetState(trans.source(), false);
-                doSetEvent(trans.getEvent());
-            }
         }
+        return result;
     }
 
     /** Returns the currently selected event. */
@@ -152,23 +183,31 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Changes the selected event, and fires an update event.
+     * Changes the selected rule event, and fires an update event.
+     * If the event is changed to a non-null event, also sets the rule.
      * @return if {@code true}, the event was really changed
+     * @see #setRule(RuleView)
      */
     public final boolean setEvent(RuleEvent event) {
         start();
-        doSetEvent(event);
+        if (doSetEvent(event) && event != null) {
+            doSetRule(this.grammar.getRuleView(event.getRule().getName()));
+        }
+        doSetTransition(null);
         return finish();
     }
 
     /** 
-     * Changes the selected event.
+     * Changes the selected event and, if the event is propagated,
+     * possibly the rule.
      */
-    private final void doSetEvent(RuleEvent event) {
-        if (event != this.event) {
+    private final boolean doSetEvent(RuleEvent event) {
+        boolean result = event != this.event;
+        if (result) {
             this.event = event;
             this.changes.add(Change.EVENT);
         }
+        return result;
     }
 
     /**
@@ -185,18 +224,64 @@ public class SimulatorModel implements Cloneable {
         return this.grammar == null ? null : this.grammar.getStore();
     }
 
-    /** Updates the state according to a given grammar. */
-    public final void setGrammar(StoredGrammarView grammar) {
+    /** 
+     * Checks for changes in the currently loaded grammar view, 
+     * and calls an update event if required.
+     * Should be called after any change in the grammar view or
+     * underlying store.
+     */
+    public final void refreshGrammar(boolean reset) {
         start();
-        doSetGrammar(grammar, true);
+        this.changes.add(Change.GRAMMAR);
+        // restrict the selected host graphs to those that are (still)
+        // in the grammar
+        Collection<GraphView> newHostSet = new LinkedHashSet<GraphView>();
+        for (String hostName : this.grammar.getGraphNames()) {
+            newHostSet.add(this.grammar.getGraphView(hostName));
+        }
+        newHostSet.retainAll(this.hostSet);
+        doSetHostSet(newHostSet);
+        if (this.host != null && !newHostSet.contains(this.host)) {
+            boolean hostValid =
+                this.grammar.getGraphNames().contains(this.host.getName());
+            doSetHost(hostValid ? this.host : null);
+        }
+        // restrict the selected rules to those that are (still)
+        // in the grammar
+        Collection<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
+        for (String ruleName : this.grammar.getRuleNames()) {
+            newRuleSet.add(this.grammar.getRuleView(ruleName));
+        }
+        newRuleSet.retainAll(this.ruleSet);
+        doSetRuleSet(newRuleSet);
+        if (this.rule != null && !newRuleSet.contains(this.rule)) {
+            boolean ruleValid =
+                this.grammar.getRuleNames().contains(this.rule.getName());
+            doSetRule(ruleValid ? this.rule : null);
+        }
+        if (reset) {
+            doSetGts(null);
+        }
         finish();
     }
 
     /** Updates the state according to a given grammar. */
-    private final void doSetGrammar(StoredGrammarView grammar, boolean propagate) {
-        boolean changed = (grammar != this.grammar);
+    public final void setGrammar(StoredGrammarView grammar) {
+        start();
+        if (doSetGrammar(grammar)) {
+            // reset the GTS in any case
+            doSetGts(null);
+            doSetHostSet(Collections.<GraphView>emptySet());
+            doSetRuleSet(Collections.<RuleView>emptySet());
+        }
+        finish();
+    }
+
+    /** Updates the state according to a given grammar. */
+    private final boolean doSetGrammar(StoredGrammarView grammar) {
+        boolean result = (grammar != this.grammar);
         // transfer the undo manager to the new grammar
-        if (changed && this.undoManager != null) {
+        if (result && this.undoManager != null) {
             this.undoManager.discardAllEdits();
             if (this.grammar != null) {
                 this.grammar.getStore().removeUndoableEditListener(
@@ -210,36 +295,21 @@ public class SimulatorModel implements Cloneable {
         // do not attempt to keep the host graph and rule selections
         this.grammar = grammar;
         this.changes.add(Change.GRAMMAR);
-        if (propagate) {
-            doSetGts(null, false);
-            if (changed) {
-                doSetHostSet(Collections.<GraphView>emptySet());
-                doSetRuleSet(Collections.<RuleView>emptySet());
-            } else {
-                // restrict the selected host graphs to those that are (still)
-                // in the grammar
-                Collection<GraphView> newHostSet =
-                    new LinkedHashSet<GraphView>();
-                for (String hostName : grammar.getGraphNames()) {
-                    newHostSet.add(grammar.getGraphView(hostName));
-                }
-                newHostSet.retainAll(this.hostSet);
-                doSetHostSet(newHostSet);
-                // restrict the selected rules to those that are (still)
-                // in the grammar
-                Collection<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
-                for (String ruleName : grammar.getRuleNames()) {
-                    newRuleSet.add(grammar.getRuleView(ruleName));
-                }
-                newRuleSet.retainAll(this.ruleSet);
-                doSetRuleSet(newRuleSet);
-            }
-        }
+        return result;
     }
 
-    /** Returns the currently selected host graph. */
+    /** 
+     * Returns the currently selected host graph.
+     */
     public final GraphView getHost() {
         return this.host;
+    }
+
+    /** Changes the currently selected host, based on the graph name.
+     * @return if {@code true}, the host was actually changed.
+     */
+    public final boolean setHost(String name) {
+        return setHost(this.grammar.getGraphView(name));
     }
 
     /** Changes the currently selected host.
@@ -253,12 +323,16 @@ public class SimulatorModel implements Cloneable {
 
     /** Changes the currently selected host.
      */
-    private final void doSetHost(GraphView host) {
+    private final boolean doSetHost(GraphView host) {
         boolean result = (host != this.host);
         if (result) {
             this.host = host;
             this.changes.add(Change.HOST);
+            //            if (propagate) {
+            //                doSetState(host == null ? this.activeState : null);
+            //            }
         }
+        return result;
     }
 
     /** 
@@ -274,9 +348,19 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, actually made the change.
      * @see #setHost(GraphView)
      */
-    public final boolean setHostSet(Collection<GraphView> hostSet) {
+    public final boolean setHostSet(Collection<String> hostNameSet) {
         start();
-        doSetHostSet(hostSet);
+        List<GraphView> hostSet = new ArrayList<GraphView>();
+        for (String hostName : hostNameSet) {
+            hostSet.add(this.grammar.getGraphView(hostName));
+        }
+        if (doSetHostSet(hostSet) && !hostNameSet.contains(getHost())) {
+            if (hostNameSet.isEmpty()) {
+                doSetHost(null);
+            } else {
+                doSetHost(hostSet.iterator().next());
+            }
+        }
         return finish();
     }
 
@@ -285,18 +369,13 @@ public class SimulatorModel implements Cloneable {
      * May also change the selected host graph.
      * @see #setHost(GraphView)
      */
-    private final void doSetHostSet(Collection<GraphView> hostSet) {
-        if (!hostSet.equals(this.hostSet)) {
+    private final boolean doSetHostSet(Collection<GraphView> hostSet) {
+        boolean result = !hostSet.equals(this.hostSet);
+        if (result) {
             this.hostSet = hostSet;
             this.changes.add(Change.HOST_SET);
-            if (!hostSet.contains(getHost())) {
-                if (hostSet.isEmpty()) {
-                    doSetHost(null);
-                } else {
-                    doSetHost(hostSet.iterator().next());
-                }
-            }
         }
+        return result;
     }
 
     /** Returns the currently selected rule. */
@@ -322,17 +401,25 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setRule(RuleView rule) {
         start();
-        doSetRule(rule);
+        if (doSetRule(rule)) {
+            doSetTransition(null);
+            doSetEvent(null);
+        }
         return finish();
     }
 
-    /** Changes the currently selected rule.
+    /**
+     * Changes the currently selected rule and records the change,
+     * if the new rule is different from the old.
+     * @return {@code true} if a change was actually made
      */
-    private final void doSetRule(RuleView rule) {
-        if (rule != this.rule) {
+    private final boolean doSetRule(RuleView rule) {
+        boolean result = rule != this.rule;
+        if (result) {
             this.rule = rule;
             this.changes.add(Change.RULE);
         }
+        return result;
     }
 
     /** 
@@ -350,27 +437,29 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setRuleSet(Collection<RuleView> ruleSet) {
         start();
-        doSetRuleSet(ruleSet);
+        if (doSetRuleSet(ruleSet) && !ruleSet.contains(getRule())) {
+            if (ruleSet.isEmpty()) {
+                doSetRule(null);
+            } else {
+                doSetRule(ruleSet.iterator().next());
+            }
+        }
         return finish();
     }
 
     /** 
-     * Changes the currently selected rule set.
-     * If the set has size 0 or 1, also changes the selected rule.
+     * Changes the currently selected rule set and records the change,
+     * if the new rule set differs from the old.
+     * @return {@code true} if a change was actually made
      * @see #setRule(RuleView)
      */
-    private final void doSetRuleSet(Collection<RuleView> ruleSet) {
-        if (!ruleSet.equals(this.ruleSet)) {
+    private final boolean doSetRuleSet(Collection<RuleView> ruleSet) {
+        boolean result = !ruleSet.equals(this.ruleSet);
+        if (result) {
             this.ruleSet = ruleSet;
             this.changes.add(Change.RULE_SET);
-            if (!ruleSet.contains(getRule())) {
-                if (ruleSet.isEmpty()) {
-                    doSetRule(null);
-                } else {
-                    doSetRule(ruleSet.iterator().next());
-                }
-            }
         }
+        return result;
     }
 
     @Override
@@ -381,13 +470,6 @@ public class SimulatorModel implements Cloneable {
             + ", hostSet=" + this.hostSet + ", rule=" + this.rule
             + ", ruleSet=" + this.ruleSet + ", changes=" + this.changes + "]";
     }
-
-    //
-    //    private void testActive() {
-    //        if (this.owner == null) {
-    //            throw new IllegalStateException("No transition is active");
-    //        }
-    //    }
 
     /** Adds a given simulation listener to the list. */
     public void addListener(SimulatorListener listener) {
@@ -471,7 +553,8 @@ public class SimulatorModel implements Cloneable {
      * transaction.
      */
     private void fireUpdate() {
-        for (SimulatorListener listener : this.listeners) {
+        for (SimulatorListener listener : new ArrayList<SimulatorListener>(
+            this.listeners)) {
             listener.update(this, this.old, this.changes);
         }
     }
@@ -482,9 +565,9 @@ public class SimulatorModel implements Cloneable {
     private Set<SimulatorModel.Change> changes;
     /** Currently active GTS. */
     private GTS gts;
-    /** Currently selected state. */
+    /** Currently active state. */
     private GraphState state;
-    /** Currently selected transition. */
+    /** Currently active transition. */
     private GraphTransition transition;
     /** Currently selected rule event. */
     private RuleEvent event;
@@ -514,12 +597,12 @@ public class SimulatorModel implements Cloneable {
          */
         GTS,
         /** 
-         * The selected state has changed.
+         * The selected and/or active state has changed.
          * @see SimulatorModel#getState()
          */
         STATE,
         /** 
-         * The selected transition has changed.
+         * The selected and/or active transition has changed.
          * @see SimulatorModel#getTransition()
          */
         TRANS,

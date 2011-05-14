@@ -65,8 +65,6 @@ import java.util.Set;
 
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -80,7 +78,7 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision$
  */
 public class StatePanel extends JGraphPanel<AspectJGraph> implements
-        ListSelectionListener, SimulatorListener {
+        SimulatorListener {
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
 
@@ -110,21 +108,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected void installListeners() {
         super.installListeners();
-        getSimulator().addSimulatorListener(this);
-        getSimulator().getStateList().addListSelectionListener(this);
-        addRefreshListener(SHOW_NODE_IDS_OPTION);
-        addRefreshListener(SHOW_ASPECTS_OPTION);
-        addRefreshListener(SHOW_ANCHORS_OPTION);
-        addRefreshListener(SHOW_REMARKS_OPTION);
-        addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-        // make sure that removals from the selection model
-        // also deselect the match
-        getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
+        this.simulatorListener = this;
+        this.graphSelectionListener = new GraphSelectionListener() {
             @Override
             public void valueChanged(GraphSelectionEvent e) {
-                if (!StatePanel.this.changing
-                    && StatePanel.this.selectedMatch != null) {
+                if (StatePanel.this.selectedMatch != null) {
                     // change only if cells were removed
                     boolean removed = false;
                     Object[] cells = e.getCells();
@@ -136,8 +124,15 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     }
                 }
             }
-        });
-        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
+        };
+        activateListeners();
+        addRefreshListener(SHOW_NODE_IDS_OPTION);
+        addRefreshListener(SHOW_ASPECTS_OPTION);
+        addRefreshListener(SHOW_ANCHORS_OPTION);
+        addRefreshListener(SHOW_REMARKS_OPTION);
+        addRefreshListener(SHOW_VALUE_NODES_OPTION);
+        addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
+        getLabelTree().addLabelStoreObserver(new Observer() {
             @Override
             public void update(Observable o, Object arg) {
                 assert arg instanceof LabelStore;
@@ -152,6 +147,36 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 });
             }
         });
+    }
+
+    /**
+     * Activates all listeners.
+     */
+    private void activateListeners() {
+        if (this.listening) {
+            throw new IllegalStateException();
+        }
+        getSimulator().addSimulatorListener(this.simulatorListener);
+        //        getSimulator().getStateList().addListSelectionListener(
+        //            this.listSelectionListener);
+        // make sure that removals from the selection model
+        // also deselect the match
+        getJGraph().addGraphSelectionListener(this.graphSelectionListener);
+        this.listening = true;
+    }
+
+    /**
+     * Suspend all listening activity to avoid dependent updates.
+     */
+    private void suspendListeners() {
+        if (!this.listening) {
+            throw new IllegalStateException();
+        }
+        getSimulator().removeSimulatorListener(this.simulatorListener);
+        // make sure that removals from the selection model
+        // also deselect the match
+        getJGraph().removeGraphSelectionListener(this.graphSelectionListener);
+        this.listening = false;
     }
 
     /**
@@ -171,11 +196,54 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.jGraph.setModel(newModel);
     }
 
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        suspendListeners();
+        if (changes.contains(Change.GRAMMAR)) {
+            setGrammar(source.getGrammar());
+        } else if (changes.contains(Change.GTS)) {
+            startSimulation(source.getGts());
+        } else if (changes.contains(Change.STATE)) {
+            GraphState newState = source.getState();
+            if (newState == null) {
+                clearSelectedMatch(true);
+            } else {
+                GraphTransition transition = oldModel.getTransition();
+                GraphState target =
+                    transition == null ? null : transition.target();
+                if (target == newState) {
+                    HostGraphMorphism morphism = transition.getMorphism();
+                    copyLayout(getAspectMap(transition.source()),
+                        getAspectMap(newState), morphism);
+                }
+                // set the graph model to the new state
+                setStateModel(newState);
+            }
+        } else if (changes.contains(Change.HOST)) {
+            if (source.getHost() == null) {
+                setStateModel(source.getState());
+            } else {
+                setGraphModel(source.getHost());
+            }
+        }
+        if (changes.contains(Change.EVENT)) {
+            if (source.getEvent() == null) {
+                clearSelectedMatch(true);
+            } else {
+                selectMatch(source.getEvent().getMatch(
+                    source.getState().getGraph()));
+            }
+        }
+        refreshStatus();
+        activateListeners();
+    }
+
     /**
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
-    private synchronized void setGrammarUpdate(StoredGrammarView grammar) {
+    private void setGrammar(StoredGrammarView grammar) {
         this.stateToAspectMap.clear();
         this.graphToJModel.clear();
         this.selectedState = null;
@@ -210,13 +278,12 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             } else {
                 getJGraph().setLabelStore(grammar.getLabelStore());
             }
-            GraphView startGraphView = grammar.getStartGraphView();
-            setGraphModel(startGraphView.getName());
+            setGraphModel(grammar.getStartGraphView());
         }
         refreshStatus();
     }
 
-    private synchronized void startSimulationUpdate(GTS gts) {
+    private void startSimulation(GTS gts) {
         // clear the states from the aspect and model maps
         for (HostToAspectMap aspectMap : this.stateToAspectMap.values()) {
             this.graphToJModel.remove(aspectMap.getAspectGraph());
@@ -224,7 +291,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.stateToAspectMap.clear();
         // only change the displayed model if we are currently displaying a
         // state
-        if (this.selectedGraph == null) {
+        if (isShowingState()) {
             setStateModel(gts.startState());
         }
         refreshStatus();
@@ -234,7 +301,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Emphasise the given match.
      * @param match the match to be emphasised (non-null)
      */
-    private void setMatchUpdate(Proof match) {
+    private void selectMatch(Proof match) {
         assert match != null : "Match update should not be called with empty match";
         setStateModel(getSimulatorModel().getState());
         AspectJModel jModel = getJModel();
@@ -254,81 +321,25 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 emphElems.add(jCell);
             }
         }
-        assert !this.changing;
-        this.changing = true;
-        this.jGraph.setSelectionCells(emphElems.toArray());
-        this.changing = false;
+        getJGraph().setSelectionCells(emphElems.toArray());
         this.selectedMatch = match;
         refreshStatus();
-    }
-
-    @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        if (changes.contains(Change.GRAMMAR)) {
-            setGrammarUpdate(source.getGrammar());
-        } else if (changes.contains(Change.GTS)) {
-            startSimulationUpdate(source.getGts());
-        } else if (changes.contains(Change.STATE)) {
-            GraphState newState = source.getState();
-            if (newState == null) {
-                if (clearSelectedMatch(true)) {
-                    refreshStatus();
-                }
-            } else {
-                GraphTransition transition = oldModel.getTransition();
-                GraphState target =
-                    transition == null ? null : transition.target();
-                if (target == newState) {
-                    HostGraphMorphism morphism = transition.getMorphism();
-                    copyLayout(getAspectMap(transition.source()),
-                        getAspectMap(newState), morphism);
-                }
-                // set the graph model to the new state
-                setStateModel(newState);
-            }
-        }
-        if (changes.contains(Change.EVENT)) {
-            if (source.getEvent() == null) {
-                if (clearSelectedMatch(true)) {
-                    refreshStatus();
-                }
-            } else {
-                setMatchUpdate(source.getEvent().getMatch(
-                    source.getState().getGraph()));
-            }
-        }
-        refreshStatus();
-    }
-
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
-        assert e.getSource() == getStateList();
-        int[] selection = getStateList().getSelectedIndices();
-        if (selection.length == 1) {
-            if (selection[0] == 0) {
-                setStateModel(getSimulatorModel().getState());
-            } else {
-                setGraphModel((String) getStateList().getSelectedValue());
-            }
-        }
     }
 
     /** Indicates if the panel is currently showing a state (rather than
      * one of the host graphs in the grammar view).
      */
     public boolean isShowingState() {
-        return this.selectedState != null;
+        return this.selectedGraph == null;
     }
 
     /**
      * Changes the display to the graph with a given name, if there is such a
      * graph in the current grammar.
      */
-    private void setGraphModel(String graphName) {
-        GraphView graphView = getGrammar().getGraphView(graphName);
-        if (graphView != null && graphName != this.selectedGraph) {
-            this.selectedGraph = graphName;
+    private void setGraphModel(GraphView graphView) {
+        if (graphView != null && graphView != this.selectedGraph) {
+            this.selectedGraph = graphView;
             this.selectedState = null;
             setJModel(getAspectJModel(graphView.getAspectGraph()));
             setEnabled(true);
@@ -358,14 +369,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      *  otherwise it should be preserved
      */
     private boolean clearSelectedMatch(boolean clear) {
-        boolean result = !this.changing && this.selectedMatch != null;
+        boolean result = this.listening && this.selectedMatch != null;
         if (result) {
-            this.changing = true;
             this.selectedMatch = null;
             if (clear) {
                 getJGraph().clearSelection();
             }
-            this.changing = false;
+            getSimulatorModel().setEvent(null);
+            refreshStatus();
         }
         return result;
     }
@@ -378,7 +389,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         StringBuilder result = new StringBuilder();
         if (this.selectedGraph != null) {
             result.append("Graph: ");
-            result.append(HTMLConverter.STRONG_TAG.on(this.selectedGraph));
+            result.append(HTMLConverter.STRONG_TAG.on(this.selectedGraph.getName()));
         } else if (this.selectedState != null) {
             result.append(FRAME_NAME);
             result.append(": ");
@@ -561,14 +572,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         }
     }
 
-    /**
-     * Returns the state list associated with the simulator. Convenience method
-     * for <code>getSimulator().getStateList()</code>.
-     */
-    private StateJList getStateList() {
-        return getSimulator().getStateList();
-    }
-
     /** Convenience method to retrieve the current grammar view. */
     private StoredGrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
@@ -598,16 +601,17 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      */
     private final Map<GraphState,HostToAspectMap> stateToAspectMap =
         new HashMap<GraphState,HostToAspectMap>();
+
+    /** Flag indicating that the listeners are activated. */
+    private boolean listening;
+    private SimulatorListener simulatorListener;
+    private GraphSelectionListener graphSelectionListener;
+
     /** The currently emphasised match (nullable). */
     private Proof selectedMatch;
 
     /** Either {@code null} or the graph currently showing in the panel. */
-    private String selectedGraph;
+    private GraphView selectedGraph;
     /** Either {@code null} or the state currently showing in the panel. */
     private GraphState selectedState;
-    /** 
-     * Flag indicating that a status change in the simulator is initiated
-     * from this object (so we shouldn't react to it)
-     */
-    private boolean changing;
 }

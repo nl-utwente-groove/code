@@ -219,12 +219,10 @@ public class DefaultRuleView implements RuleView {
 
     @Override
     public void setLabelStore(LabelStore labelStore) {
-        if (isTyped()) {
-            // type and label store are mutually exclusive
-            throw new IllegalStateException();
-        }
+        // reset the type graph
+        this.type = null;
         this.labelStore = labelStore;
-        // the label store is not really used int he construction of the rule
+        // the label store is not really used in the construction of the rule
         // so we don't have to invalidate but can set the store directly 
         if (this.rule != null) {
             this.rule.getCondition().setLabelStore(labelStore);
