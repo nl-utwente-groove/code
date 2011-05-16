@@ -426,7 +426,9 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 for (String controlName : names) {
                     addItem(controlName);
                 }
-                setSelectedItem(getSelectedControl().getName());
+                if (isControlSelected()) {
+                    setSelectedItem(getSelectedControl().getName());
+                }
                 setEnabled(getItemCount() > 0);
             }
             addActionListener(this.selectionListener);
