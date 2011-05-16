@@ -494,7 +494,7 @@ public class LtlStrategy extends AbstractStrategy {
             this.initialLocation = buchiGraph.getInitial();
         } catch (ParseException e) {
             throw new IllegalStateException(String.format(
-                "Property %s not parsed correctly", property), e);
+                "Error in property '%s'", property), e);
         }
     }
 

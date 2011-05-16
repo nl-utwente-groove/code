@@ -34,7 +34,7 @@ public class GraphNodeSizeBoundary extends Boundary {
      * @param graphSizeBoundary value that defined the boundary
      */
     public GraphNodeSizeBoundary(int graphSizeBoundary, int step) {
-        this.graphSizeBoundary = graphSizeBoundary;
+        this.size = graphSizeBoundary;
         this.step = step;
     }
 
@@ -42,18 +42,18 @@ public class GraphNodeSizeBoundary extends Boundary {
     public boolean crossingBoundary(ProductTransition transition,
             boolean traverse) {
         boolean result =
-            transition.target().getGraphState().getGraph().nodeCount() > this.graphSizeBoundary;
+            transition.target().getGraphState().getGraph().nodeCount() > this.size;
         return result;
     }
 
     /** Returns whether the given graph's size crosses this boundary. */
     public boolean crossingBoundary(HostGraph graph) {
-        return graph.nodeCount() > this.graphSizeBoundary;
+        return graph.nodeCount() > this.size;
     }
 
     @Override
     public void increase() {
-        this.graphSizeBoundary += this.step;
+        this.size += this.step;
     }
 
     @Override
@@ -73,8 +73,13 @@ public class GraphNodeSizeBoundary extends Boundary {
         return ModelChecking.CURRENT_ITERATION;
     }
 
+    @Override
+    public String toString() {
+        return "" + this.size + "," + this.step;
+    }
+
     /** the graph-size of graphs allowed for exploration */
-    private int graphSizeBoundary;
+    private int size;
     /** the value with which to increase the boundary with */
     private final int step;
 }

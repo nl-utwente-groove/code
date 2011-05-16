@@ -78,8 +78,7 @@ public class Exploration {
      */
     public Exploration(StrategyValue strategy, AcceptorValue acceptor,
             int nrResults) {
-        this(new Serialized(strategy.getKeyword()), new Serialized(
-            acceptor.getKeyword()), nrResults);
+        this(strategy.toSerialized(), acceptor.toSerialized(), nrResults);
     }
 
     /**

@@ -16,14 +16,10 @@
  */
 package groove.gui;
 
-import groove.explore.ModelCheckingScenario;
-import groove.explore.strategy.BoundedLtlStrategy;
-import groove.explore.strategy.BoundedPocketLtlStrategy;
-import groove.explore.strategy.LtlStrategy;
+import groove.explore.StrategyValue;
 import groove.gui.SimulatorModel.Change;
-import groove.lts.GTS;
-import groove.lts.GTSAdapter;
-import groove.lts.GraphState;
+import groove.gui.action.CheckLTLAction;
+import groove.gui.action.SimulatorAction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,23 +43,11 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * @param simulator the associated simulator
      */
     public ModelCheckingMenu(Simulator simulator) {
-        this(simulator, true);
-    }
-
-    /**
-     * Constructs a model-checking menu on top of a given simulator. The menu
-     * will optionally disable as soon as all states are closed.
-     * @param simulator the associated simulator
-     * @param disableOnFinish <tt>true</tt> if the menu is to be disabled when
-     *        the last state is closed
-     */
-    public ModelCheckingMenu(Simulator simulator, boolean disableOnFinish) {
         super(Options.VERIFY_MENU_NAME);
         this.simulator = simulator;
-        this.disableOnFinish = disableOnFinish;
-        simulator.getModel().addListener(this);
-
         createAddMenuItems();
+        refreshActions(true);
+        simulator.getModel().addListener(this);
     }
 
     /**
@@ -71,63 +55,38 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * exploration scenarios.
      */
     protected void createAddMenuItems() {
-        ModelCheckingScenario scenario =
-            new ModelCheckingScenario(new LtlStrategy(),
-                Options.CHECK_LTL_ACTION_NAME);
-        addScenarioHandler(scenario);
-
-        scenario =
-            new ModelCheckingScenario(new BoundedLtlStrategy(),
-                Options.CHECK_LTL_BOUNDED_ACTION_NAME);
-        addScenarioHandler(scenario);
-
-        scenario =
-            new ModelCheckingScenario(new BoundedPocketLtlStrategy(),
-                Options.CHECK_LTL_POCKET_ACTION_NAME);
-        addScenarioHandler(scenario);
+        addScenarioHandler(StrategyValue.LTL, Options.CHECK_LTL_ACTION_NAME);
+        addScenarioHandler(StrategyValue.LTL_BOUNDED,
+            Options.CHECK_LTL_BOUNDED_ACTION_NAME);
+        addScenarioHandler(StrategyValue.LTL_POCKET,
+            Options.CHECK_LTL_POCKET_ACTION_NAME);
     }
 
     /**
      * Adds an explication strategy action to the end of this menu.
-     * @param scenario the new exploration strategy
+     * @param strategyType the new exploration strategy
      */
-    public void addScenarioHandler(ModelCheckingScenario scenario) {
-        Action generateAction =
-            this.simulator.getLaunchScenarioAction(scenario);
+    public void addScenarioHandler(StrategyValue strategyType, String name) {
+        SimulatorAction generateAction =
+            new CheckLTLAction(this.simulator, strategyType, name);
         generateAction.setEnabled(false);
-        this.scenarioActionMap.put(scenario, generateAction);
+        this.scenarioActionMap.put(strategyType, generateAction);
         JMenuItem menuItem = add(generateAction);
-        menuItem.setToolTipText(scenario.getName());
+        menuItem.setToolTipText(strategyType.getDescription());
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         if (changes.contains(Change.GTS)) {
-            GTS newGts = source.getGts();
-            this.gtsListener.set(newGts);
-            // the lts's of the strategies in this menu are changed
-            // moreover, the conditions in condition strategies are reset
-            // furthermore, the enabling is (re)set
-            for (Map.Entry<ModelCheckingScenario,Action> entry : this.scenarioActionMap.entrySet()) {
-                Action generateAction = entry.getValue();
-                generateAction.setEnabled(newGts != null);
-            }
-        }
-        if (changes.contains(Change.STATE) && source.getState() != null) {
-            for (Map.Entry<ModelCheckingScenario,Action> entry : this.scenarioActionMap.entrySet()) {
-                ModelCheckingScenario scenario = entry.getKey();
-                Action generateAction = entry.getValue();
-                generateAction.putValue(Action.NAME, scenario.getName());
-            }
+            refreshActions(source.getGts() != null);
         }
     }
 
-    /**
-     * @return Returns the disableOnFinish.
-     */
-    final boolean isDisableOnFinish() {
-        return this.disableOnFinish;
+    private void refreshActions(boolean enabled) {
+        for (Action generateAction : this.scenarioActionMap.values()) {
+            generateAction.setEnabled(enabled);
+        }
     }
 
     /**
@@ -135,58 +94,9 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      */
     protected final Simulator simulator;
     /**
-     * Indicates if the menu should be disable after the last LTS state has
-     * closed.
-     */
-    protected final boolean disableOnFinish;
-    /**
      * Mapping from exploration strategies to {@link Action}s resulting in that
      * strategy.
      */
-    private final Map<ModelCheckingScenario,Action> scenarioActionMap =
-        new HashMap<ModelCheckingScenario,Action>();
-    /** The (permanent) GTS listener associated with this menu. */
-    private final GTSListener gtsListener = new GTSListener();
-
-    /** Listener that can be refreshed with the current GTS. */
-    private class GTSListener extends GTSAdapter {
-        /** Empty constructor with the correct visibility. */
-        GTSListener() {
-            // empty
-        }
-
-        /** Sets the GTS to listen to. */
-        public void set(GTS newGTS) {
-            if (this.gts != null) {
-                this.gts.removeLTSListener(this);
-            }
-            this.gts = newGTS;
-            if (this.gts != null) {
-                this.gts.addLTSListener(this);
-                this.openStateCount = this.gts.openStateCount();
-                setEnabled(true);
-            }
-        }
-
-        @Override
-        public void closeUpdate(GTS lts, GraphState explored) {
-            assert lts == this.gts;
-            this.openStateCount--;
-            assert this.openStateCount == this.gts.openStateCount();
-            if (this.openStateCount == 0 && !isDisableOnFinish()) {
-                setEnabled(false);
-            }
-        }
-
-        /** If the added element is a state, increases the open state count. */
-        @Override
-        public void addUpdate(GTS gts, GraphState state) {
-            this.openStateCount++;
-        }
-
-        /** The GTS this listener currently listens to. */
-        private GTS gts;
-        /** The number of open states of the currently loaded LTS (if any). */
-        private int openStateCount;
-    }
+    private final Map<StrategyValue,SimulatorAction> scenarioActionMap =
+        new HashMap<StrategyValue,SimulatorAction>();
 }

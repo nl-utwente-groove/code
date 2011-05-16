@@ -16,6 +16,7 @@
  */
 package groove.explore;
 
+import groove.explore.encode.Serialized;
 import groove.util.Version;
 
 /**
@@ -41,4 +42,7 @@ public interface ParsableValue {
      * @return {@code true} if this value is for development versions only.
      */
     public boolean isDevelopment();
+
+    /** Converts this value to a {@link Serialized} object. */
+    public Serialized toSerialized();
 }

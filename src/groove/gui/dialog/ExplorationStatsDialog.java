@@ -98,7 +98,8 @@ public class ExplorationStatsDialog extends JDialog implements ActionListener {
         // Get the message and the stack trace from the exception and put them
         // in text pane.
 
-        String info = this.simulator.getExplorationStats().getReport();
+        String info =
+            this.simulator.getModel().getExplorationStats().getReport();
         infoPane.setText(info);
 
         // Pane to create the scroll bars.

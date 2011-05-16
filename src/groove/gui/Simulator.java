@@ -35,8 +35,6 @@ import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.abstraction.lts.AGTS;
 import groove.explore.Exploration;
-import groove.explore.ModelCheckingScenario;
-import groove.explore.util.ExplorationStatistics;
 import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
@@ -45,7 +43,6 @@ import groove.gui.action.ApplyTransitionAction;
 import groove.gui.action.CheckCTLAction;
 import groove.gui.action.CopyHostAction;
 import groove.gui.action.CopyRuleAction;
-import groove.gui.action.DefaultExplorationAction;
 import groove.gui.action.DeleteHostAction;
 import groove.gui.action.DeleteRuleAction;
 import groove.gui.action.EditHostOrStateAction;
@@ -55,9 +52,9 @@ import groove.gui.action.EditSystemPropertiesAction;
 import groove.gui.action.EnableRuleAction;
 import groove.gui.action.ExplorationDialogAction;
 import groove.gui.action.ExplorationStatsDialogAction;
+import groove.gui.action.ExploreAction;
 import groove.gui.action.GotoStartStateAction;
 import groove.gui.action.ImportAction;
-import groove.gui.action.LaunchScenarioAction;
 import groove.gui.action.LoadGrammarAction;
 import groove.gui.action.LoadGrammarFromHistoryAction;
 import groove.gui.action.LoadGrammarFromURLAction;
@@ -89,7 +86,6 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
-import groove.io.HTMLConverter;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.lts.GTS;
@@ -173,7 +169,6 @@ public class Simulator implements SimulatorListener {
         this.model.setUndoManager(getUndoManager());
         this.model.addListener(this);
         getFrame();
-        setDefaultExploration(new Exploration());
         refreshActions();
     }
 
@@ -222,27 +217,6 @@ public class Simulator implements SimulatorListener {
         getFrame().pack();
         groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
-    }
-
-    /**
-     * Returns the internally stored default exploration.
-     */
-    public Exploration getDefaultExploration() {
-        return this.defaultExploration;
-    }
-
-    /**
-     * Sets the internally stored default exploration.
-     * @param exploration may not be null
-     */
-    public void setDefaultExploration(Exploration exploration) {
-        this.defaultExploration = exploration;
-        String toolTipText =
-            HTMLConverter.HTML_TAG.on(String.format("%s (%s)",
-                Options.DEFAULT_EXPLORATION_ACTION_NAME,
-                HTMLConverter.STRONG_TAG.on(exploration.getIdentifier())));
-        getDefaultExplorationAction().putValue(Action.SHORT_DESCRIPTION,
-            toolTipText);
     }
 
     /** Returns (after lazily creating) the undo history for this simulator. */
@@ -506,10 +480,15 @@ public class Simulator implements SimulatorListener {
     /**
      * Run a given exploration. Can be called from outside the Simulator.
      * @param exploration the exploration strategy to be used
+     * @param setResult TODO
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void doRunExploration(Exploration exploration, boolean emphasise) {
-        setDefaultExploration(exploration);
+    public void doRunExploration(Exploration exploration, boolean setResult,
+            boolean emphasise) {
+        getModel().setExploration(exploration);
+        // disable rule application for the time being
+        boolean applyEnabled = getApplyTransitionAction().isEnabled();
+        getApplyTransitionAction().setEnabled(false);
         LTSJModel ltsJModel = getLtsPanel().getJModel();
         if (ltsJModel == null) {
             if (startSimulation()) {
@@ -523,30 +502,34 @@ public class Simulator implements SimulatorListener {
             int size = gts.size();
             // unhook the lts' jmodel from the lts, for efficiency's sake
             gts.removeLTSListener(ltsJModel);
-            // disable rule application for the time being
-            boolean applyEnabled = getApplyTransitionAction().isEnabled();
-            getApplyTransitionAction().setEnabled(false);
             // create a thread to do the work in the background
-            Thread generateThread = new LaunchThread(exploration, emphasise);
+            Thread generateThread = new ExploreThread(this, exploration);
             // go!
-            this.getExplorationStats().start();
+            getModel().getExplorationStats().start();
             generateThread.start();
-            this.getExplorationStats().stop();
-            if (gts.size() == size) {
-                // the exploration had no effect
-                gts.addLTSListener(ltsJModel);
-            } else {
-                // collect the result states
+            getModel().getExplorationStats().stop();
+            gts.addLTSListener(ltsJModel);
+            // collect the result states
+            if (setResult) {
                 gts.setResult(exploration.getLastResult());
+            }
+            if (gts.size() != size) {
                 // get the lts' jmodel back on line and re-synchronize its state
-                ltsJModel.loadGraph(ltsJModel.getGraph());
-                // re-enable rule application
-                getApplyTransitionAction().setEnabled(applyEnabled);
-                // reset lts display visibility
-                switchTabs(getLtsPanel());
-                getModel().setGts(gts);
+                ltsJModel.loadGraph(gts);
+            }
+            // re-enable rule application
+            // reset lts display visibility
+            switchTabs(getLtsPanel());
+            getModel().setGts(gts);
+            // emphasise the result states, if required
+            if (emphasise) {
+                Collection<GraphState> result =
+                    exploration.getLastResult().getValue();
+                getLtsPanel().emphasiseStates(
+                    new ArrayList<GraphState>(result), true);
             }
         }
+        getApplyTransitionAction().setEnabled(applyEnabled);
     }
 
     /**
@@ -947,19 +930,6 @@ public class Simulator implements SimulatorListener {
             this.ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.ltsPanel;
-    }
-
-    /**
-     * Returns the exploration statistics object associated with the current
-     * GTS.
-     */
-    public ExplorationStatistics getExplorationStats() {
-        if (this.explorationStats == null) {
-            this.explorationStats =
-                new ExplorationStatistics(getModel().getGts());
-            this.explorationStats.configureForSimulator();
-        }
-        return this.explorationStats;
     }
 
     /**
@@ -1386,7 +1356,7 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(this.getDefaultExplorationAction());
+        result.add(this.getExploreAction());
         result.add(this.getExplorationDialogAction());
 
         result.addSeparator();
@@ -1406,7 +1376,7 @@ public class Simulator implements SimulatorListener {
         result.add(getCheckCTLAction(true));
         result.add(getCheckCTLAction(false));
         result.addSeparator();
-        JMenu mcScenarioMenu = new ModelCheckingMenu(this, false);
+        JMenu mcScenarioMenu = new ModelCheckingMenu(this);
         for (Component menuComponent : mcScenarioMenu.getMenuComponents()) {
             result.add(menuComponent);
         }
@@ -1615,29 +1585,6 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Enters a dialog that results in a type graph that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing names
-     * @return a type graph not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    String askNewTypeName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = this.model.getGrammar().getTypeNames();
-        FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
-                @Override
-                protected String createName(String name) {
-                    return name;
-                }
-            };
-        nameDialog.showDialog(getFrame(), title);
-        return nameDialog.getName();
-    }
-
-    /**
      * Returns the options object associated with the simulator.
      */
     public Options getOptions() {
@@ -1663,14 +1610,6 @@ public class Simulator implements SimulatorListener {
 
     /** the internal state of the simulator. */
     final SimulatorModel model;
-
-    /**
-     * The default exploration to be performed. This value is either the
-     * previous exploration, or the default constructor of the Exploration class
-     * (=breadth first). This value may never be null (and must be initialized
-     * explicitly).
-     */
-    private Exploration defaultExploration;
 
     /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
@@ -1717,9 +1656,6 @@ public class Simulator implements SimulatorListener {
 
     /** History of recently opened grammars. */
     private History history;
-
-    /** Statistics for the last exploration performed. */
-    private ExplorationStatistics explorationStats;
 
     /** Menu for externally provided actions. */
     private JMenu externalMenu;
@@ -2002,19 +1938,19 @@ public class Simulator implements SimulatorListener {
      * Returns the 'default exploration' action that is associated with the
      * simulator.
      */
-    public DefaultExplorationAction getDefaultExplorationAction() {
+    public ExploreAction getExploreAction() {
         // lazily create the action
-        if (this.defaultExplorationAction == null) {
-            this.defaultExplorationAction = new DefaultExplorationAction(this);
+        if (this.exploreAction == null) {
+            this.exploreAction = new ExploreAction(this);
         }
 
-        return this.defaultExplorationAction;
+        return this.exploreAction;
     }
 
     /**
      * The 'default exploration' action (variable).
      */
-    private DefaultExplorationAction defaultExplorationAction;
+    private ExploreAction exploreAction;
 
     /**
      * Returns the exploration dialog action permanently associated with this
@@ -2099,13 +2035,6 @@ public class Simulator implements SimulatorListener {
      * The go-to start state action permanently associated with this simulator.
      */
     private GotoStartStateAction gotoStartStateAction;
-
-    /** Creates an action associated to a scenario handler. */
-    public LaunchScenarioAction getLaunchScenarioAction(
-            ModelCheckingScenario scenario) {
-        // no reuse: the action depends on the scenario
-        return new LaunchScenarioAction(this, scenario);
-    }
 
     /**
      * Returns the start graph load action permanently associated with this
@@ -2555,43 +2484,17 @@ public class Simulator implements SimulatorListener {
      * Class that spawns a thread to perform a long-lasting action, while
      * displaying a dialog that can interrupt the thread.
      */
-    abstract private class CancellableThread extends Thread {
+    public static class ExploreThread extends Thread {
         /**
-         * Constructs an action that can be canceled through a dialog.
-         * @param parentComponent the parent for the cancel dialog
-         * @param cancelDialogTitle the title of the cancel dialog
+         * Constructs a generate thread for a given exploration strategy.
+         * @param exploration the exploration handler of this thread
          */
-        public CancellableThread(Component parentComponent,
-                String cancelDialogTitle) {
-            this.cancelDialog =
-                createCancelDialog(parentComponent, cancelDialogTitle);
+        public ExploreThread(Simulator simulator, Exploration exploration) {
+            this.simulator = simulator;
+            this.cancelDialog = createCancelDialog();
+            this.exploration = exploration;
+            this.progressListener = createProgressListener();
         }
-
-        /**
-         * Calls {@link #doAction()}, then disposes the cancel dialog.
-         */
-        @Override
-        final public void run() {
-            doAction();
-            synchronized (this.cancelDialog) {
-                // wait for the cancel dialog to become visible
-                // (this is necessary if the doAction was actually very fast)
-                while (!this.cancelDialog.isVisible()) {
-                    try {
-                        this.cancelDialog.wait(10);
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
-                }
-                this.cancelDialog.setVisible(false);
-            }
-        }
-
-        /**
-         * Method that should contain the code to be executed in parallel. It is
-         * invoked as a callback method from {@link #run()}.
-         */
-        abstract protected void doAction();
 
         @Override
         public void start() {
@@ -2607,176 +2510,92 @@ public class Simulator implements SimulatorListener {
             synchronized (this.cancelDialog) {
                 this.cancelDialog.dispose();
             }
-            finish();
         }
 
         /**
-         * Every thread might perform some tasks after the action finished.
+         * Runs the exploration as a parallel thread;
+         * then hides the cancel dialog invisible, causing the event
+         * dispatch thread to continue. 
          */
-        public abstract void finish();
-
-        /**
-         * Hook to give subclasses the opportunity to put something on the
-         * cancel dialog. Note that this callback method is invoked at
-         * construction time, so should not make reference to instance
-         * variables.
-         */
-        protected Object createCancelDialogContent() {
-            return new JLabel();
+        @Override
+        final public void run() {
+            SimulatorModel simulatorModel = this.simulator.getModel();
+            GTS gts = simulatorModel.getGts();
+            GraphState state = simulatorModel.getState();
+            displayProgress(gts);
+            gts.addLTSListener(this.progressListener);
+            try {
+                this.exploration.play(gts, state);
+            } catch (FormatException exc) {
+                String[] options = {"Yes", "No"};
+                String message =
+                    "The last exploration is no longer valid in the "
+                        + "current grammar. \n" + "Cannot apply '"
+                        + this.exploration.getIdentifier() + "'.\n\n"
+                        + "Use Breadth-First Exploration instead?\n";
+                int response =
+                    JOptionPane.showOptionDialog(this.simulator.getFrame(),
+                        message, "Invalid Exploration",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (response == JOptionPane.OK_OPTION) {
+                    Exploration newExplore = new Exploration();
+                    simulatorModel.setExploration(newExplore);
+                    try {
+                        newExplore.play(gts, state);
+                    } catch (FormatException e) {
+                        this.simulator.showErrorDialog(
+                            "Error: cannot parse exploration.", e);
+                    }
+                }
+            }
+            gts.removeLTSListener(this.progressListener);
+            synchronized (this.cancelDialog) {
+                // wait for the cancel dialog to become visible
+                // (this is necessary if the doAction was actually very fast)
+                while (!this.cancelDialog.isVisible()) {
+                    try {
+                        this.cancelDialog.wait(10);
+                    } catch (InterruptedException e) {
+                        // do nothing
+                    }
+                }
+                this.cancelDialog.setVisible(false);
+            }
         }
 
         /**
          * Creates a modal dialog that will interrupt this thread, when the
          * cancel button is pressed.
-         * @param parentComponent the parent for the dialog
-         * @param title the title of the dialog
          */
-        private JDialog createCancelDialog(Component parentComponent,
-                String title) {
+        private JDialog createCancelDialog() {
             JDialog result;
             // create message dialog
             JOptionPane message =
-                new JOptionPane(createCancelDialogContent(),
-                    JOptionPane.PLAIN_MESSAGE);
+                new JOptionPane(new Object[] {getStateCountLabel(),
+                    getTransitionCountLabel()}, JOptionPane.PLAIN_MESSAGE);
             JButton cancelButton = new JButton("Cancel");
             // add a button to interrupt the generation process and
             // wait for the thread to finish and rejoin this one
             cancelButton.addActionListener(createCancelListener());
             message.setOptions(new Object[] {cancelButton});
-            result = message.createDialog(parentComponent, title);
+            result =
+                message.createDialog(this.simulator.getLtsPanel(),
+                    "Exploring state space");
             result.pack();
             return result;
         }
 
         /**
-         * Returns a listener to this {@link CancellableThread} that interrupts
+         * Returns a listener to this {@link ExploreThread} that interrupts
          * the thread and waits for it to rejoin this thread.
          */
         private ActionListener createCancelListener() {
             return new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    CancellableThread.this.interrupt();
+                    ExploreThread.this.interrupt();
                 }
             };
-        }
-
-        /** Dialog for cancelling the thread. */
-        private final JDialog cancelDialog;
-    }
-
-    /**
-     * Thread class to wrap the exploration of the simulator's current GTS.
-     * Either operates on a scenario (only used from the Generator, will be
-     * removed!) or an exploration.
-     */
-    public class LaunchThread extends CancellableThread {
-        /**
-         * Constructs a generate thread for a given (model checking) scenario.
-         * @param scenario the scenario handler of this thread
-         */
-        public LaunchThread(ModelCheckingScenario scenario) {
-            super(getLtsPanel(), "Exploring state space");
-            this.scenario = scenario;
-            this.exploration = null;
-            this.progressListener = createProgressListener();
-            this.emphasise = true;
-        }
-
-        /**
-         * Constructs a generate thread for a given exploration strategy.
-         * @param exploration the exploration handler of this thread
-         * @param emphasise if {@code true}, the result of the exploration should
-         * be emphasised
-         */
-        LaunchThread(Exploration exploration, boolean emphasise) {
-            super(getLtsPanel(), "Exploring state space");
-            this.scenario = null;
-            this.exploration = exploration;
-            this.emphasise = emphasise;
-            this.progressListener = createProgressListener();
-        }
-
-        @Override
-        public void doAction() {
-            SimulatorModel simState = Simulator.this.getModel();
-            GTS gts = simState.getGts();
-            GraphState state = simState.getState();
-            displayProgress(gts);
-            gts.addLTSListener(this.progressListener);
-
-            if (this.exploration == null) {
-                this.scenario.play();
-            } else {
-                try {
-                    this.exploration.play(gts, state);
-                } catch (FormatException exc) {
-                    String[] options = {"Yes", "No"};
-                    String message =
-                        "The last exploration is no longer valid in the "
-                            + "current grammar. \n" + "Cannot apply '"
-                            + this.exploration.getIdentifier() + "'.\n\n"
-                            + "Use Breadth-First Exploration instead?\n";
-                    int response =
-                        JOptionPane.showOptionDialog(Simulator.this.getFrame(),
-                            message, "Invalid Exploration",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, null, options,
-                            options[0]);
-                    if (response == JOptionPane.OK_OPTION) {
-                        Exploration newExplore = new Exploration();
-                        setDefaultExploration(newExplore);
-                        try {
-                            newExplore.play(gts, state);
-                        } catch (FormatException e) {
-                            showErrorDialog("Error: cannot parse exploration.",
-                                e);
-                        }
-                    }
-                }
-            }
-            gts.removeLTSListener(this.progressListener);
-        }
-
-        @Override
-        public void finish() {
-            Collection<GraphState> result;
-
-            if (this.exploration == null) {
-                result = this.scenario.getResult().getValue();
-            } else {
-                result = this.exploration.getLastResult().getValue();
-            }
-
-            final List<GraphState> states = new ArrayList<GraphState>(result);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (LaunchThread.this.emphasise) {
-                        getLtsPanel().emphasiseStates(states, true);
-                    }
-                    if (LaunchThread.this.exploration == null) {
-                        String property =
-                            LaunchThread.this.scenario.getProperty();
-                        if (states.isEmpty()) {
-                            JOptionPane.showMessageDialog(getFrame(),
-                                String.format(
-                                    "The property %s holds for this LTS",
-                                    property));
-                        } else {
-                            JOptionPane.showMessageDialog(getFrame(),
-                                String.format(
-                                    "A counter-example to %s is highlighted",
-                                    property));
-                        }
-                    }
-                }
-            });
-        }
-
-        /** This implementation returns the state and transition count labels. */
-        @Override
-        protected Object createCancelDialogContent() {
-            return new Object[] {getStateCountLabel(),
-                getTransitionCountLabel()};
         }
 
         /**
@@ -2830,12 +2649,11 @@ public class Simulator implements SimulatorListener {
             getTransitionCountLabel().setText("Transitions: " + gts.edgeCount());
         }
 
-        /** LTS generation strategy of this thread. (old version) */
-        private final ModelCheckingScenario scenario;
+        private final Simulator simulator;
+        /** Dialog for cancelling the thread. */
+        private final JDialog cancelDialog;
         /** LTS generation strategy of this thread. (new version) */
         private final Exploration exploration;
-        /** Flag indicating if the result states should be emphasised after exploration */
-        private final boolean emphasise;
         /** Progress listener for the generate thread. */
         private final GTSListener progressListener;
         /** Label displaying the number of states generated so far. */

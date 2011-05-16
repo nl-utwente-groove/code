@@ -4,6 +4,7 @@ import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedRuleFormula;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.EncodedType;
+import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
@@ -85,6 +86,11 @@ public enum AcceptorValue implements ParsableValue {
     /** Returns the description of this acceptor value. */
     public String getDescription() {
         return this.description;
+    }
+
+    @Override
+    public Serialized toSerialized() {
+        return new Serialized(getKeyword());
     }
 
     @Override
