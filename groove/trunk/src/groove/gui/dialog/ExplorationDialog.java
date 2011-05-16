@@ -161,7 +161,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         strategyEnumerator.addListener(this);
         this.strategyEditor = strategyEnumerator.createEditor(simulator);
         Serialized defaultStrategy =
-            this.simulator.getDefaultExploration().getStrategy();
+            this.simulator.getModel().getExploration().getStrategy();
 
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator =
@@ -173,7 +173,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         acceptorEnumerator.addListener(this);
         this.acceptorEditor = acceptorEnumerator.createEditor(simulator);
         Serialized defaultAcceptor =
-            this.simulator.getDefaultExploration().getAcceptor();
+            this.simulator.getModel().getExploration().getAcceptor();
 
         // Initialize the editors with the stored default.
         this.strategyEditor.setCurrentValue(defaultStrategy);
@@ -207,11 +207,9 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
     }
 
-    /*
+    /**
      * The run action. Gets the current selection (strategy, acceptor and
      * result), constructs an exploration out of its, and then runs it.
-     * NOTE: simulator.doRunExploration will remember the exploration as the
-     * default for the next explore.
      */
     private void doExploration() {
         Serialized strategy = this.strategyEditor.getCurrentValue();
@@ -225,7 +223,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         Exploration exploration =
             new Exploration(strategy, acceptor, nrResults);
         closeDialog();
-        this.simulator.doRunExploration(exploration, true);
+        this.simulator.doRunExploration(exploration, true, true);
     }
 
     /*
@@ -271,7 +269,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
     private ResultPanel createResultPanel() {
         this.resultPanel =
             new ResultPanel(RESULT_TOOLTIP,
-                this.simulator.getDefaultExploration().getNrResults());
+                this.simulator.getModel().getExploration().getNrResults());
         return this.resultPanel;
     }
 

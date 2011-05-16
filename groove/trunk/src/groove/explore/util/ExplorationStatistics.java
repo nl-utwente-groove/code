@@ -26,10 +26,10 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.RuleApplication;
-import groove.trans.HostFactory;
 import groove.trans.BasicEvent;
+import groove.trans.HostFactory;
 import groove.trans.Rule;
+import groove.trans.RuleApplication;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -68,7 +68,7 @@ public class ExplorationStatistics {
     /** Amount of memory used at the moment at which exploration was started. */
     private long startUsedMemory;
 
-    private GTS gts;
+    private final GTS gts;
     private StringBuilder sb;
     private Formatter fm;
     private int verbosity = VerbosityOption.MEDIUM_VERBOSITY;
@@ -89,9 +89,10 @@ public class ExplorationStatistics {
         this.fm = new Formatter(this.sb);
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
+    /** Returns the GTS permanently associated with this statistics object. */
+    public final GTS getGts() {
+        return this.gts;
+    }
 
     /** Configures the object to produce output to be used by the Simulator. */
     public void configureForSimulator() {

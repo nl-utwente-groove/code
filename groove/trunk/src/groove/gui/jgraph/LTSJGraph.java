@@ -134,7 +134,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createExploreMenu() {
         JMenu result = new JMenu("Explore");
         result.add(this.simulator.getApplyTransitionAction());
-        result.add(this.simulator.getDefaultExplorationAction());
+        result.add(this.simulator.getExploreAction());
         result.add(this.simulator.getExplorationDialogAction());
         result.add(createCheckerMenu());
         return result;

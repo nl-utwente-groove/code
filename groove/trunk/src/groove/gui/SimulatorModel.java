@@ -1,6 +1,8 @@
 package groove.gui;
 
+import groove.explore.Exploration;
 import groove.explore.strategy.ExploreStateStrategy;
+import groove.explore.util.ExplorationStatistics;
 import groove.explore.util.MatchApplier;
 import groove.explore.util.RuleEventApplier;
 import groove.graph.GraphInfo;
@@ -1002,7 +1004,7 @@ public class SimulatorModel implements Cloneable {
 
     /** Returns true if the simulator is in abstraction mode. */
     public boolean isAbstractionMode() {
-        return this.isAbstractionMode;
+        return this.abstractionMode;
     }
 
     /** 
@@ -1010,7 +1012,35 @@ public class SimulatorModel implements Cloneable {
      * @param value if {@code true}, the simulator is set to abstract.
      */
     public void setAbstractionMode(boolean value) {
-        this.isAbstractionMode = value;
+        this.abstractionMode = value;
+    }
+
+    /**
+     * Returns the internally stored default exploration.
+     */
+    public Exploration getExploration() {
+        return this.exploration;
+    }
+
+    /**
+     * Sets the internally stored default exploration.
+     * @param exploration may not be null
+     */
+    public void setExploration(Exploration exploration) {
+        this.exploration = exploration;
+    }
+
+    /**
+     * Returns the exploration statistics object associated with the current
+     * GTS.
+     */
+    public ExplorationStatistics getExplorationStats() {
+        if (this.explorationStats == null
+            || this.explorationStats.getGts() != getGts()) {
+            this.explorationStats = new ExplorationStatistics(getGts());
+            this.explorationStats.configureForSimulator();
+        }
+        return this.explorationStats;
     }
 
     @Override
@@ -1112,6 +1142,19 @@ public class SimulatorModel implements Cloneable {
     private CtrlView control;
     /** Currently selected prolog view. */
     private PrologView prolog;
+
+    /**
+     * The default exploration to be performed. This value is either the
+     * previous exploration, or the default constructor of the Exploration class
+     * (=breadth first). This value may never be null (and must be initialized
+     * explicitly).
+     */
+    private Exploration exploration = new Exploration();
+    /** Statistics for the last exploration performed. */
+    private ExplorationStatistics explorationStats;
+
+    /** Flag to indicate that the Simulator is in abstraction mode. */
+    private boolean abstractionMode = false;
     /** Array of listeners. */
     private final List<SimulatorListener> listeners =
         new ArrayList<SimulatorListener>();
@@ -1119,8 +1162,6 @@ public class SimulatorModel implements Cloneable {
     private final MyLTSListener ltsListener = new MyLTSListener();
     /** Undo manager listening to the grammar store. */
     private UndoManager undoManager;
-    /** Flag to indicate that the Simulator is in abstraction mode. */
-    private boolean isAbstractionMode = false;
 
     /**
      * Returns the state generator for the current GTS, if any.

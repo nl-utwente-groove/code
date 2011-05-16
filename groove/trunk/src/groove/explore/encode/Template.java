@@ -119,6 +119,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         this.visibility = visibility;
     }
 
+    /** Creates a serialized object based on this template,
+     * in which the template arguments are instantiated by the
+     * string representation of values passed in as parameters.
+     * @param args the values for the template arguments; must
+     * be parsable as valid arguments.
+     */
+    abstract public Serialized toSerialized(Object... args);
+
     /**
      * Creates the type-specific editor (see class TemplateEditor below).
      */
@@ -302,6 +310,12 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             return create();
         }
 
+        @Override
+        public Serialized toSerialized(Object... args) {
+            assert args.length == 0;
+            return getValue().toSerialized();
+        }
+
         /**
          * Typed version of the parse method. To be implemented by subclass.
          */
@@ -352,6 +366,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             }
 
             return create(v1);
+        }
+
+        @Override
+        public Serialized toSerialized(Object... args) {
+            assert args.length == 1;
+            Serialized result = getValue().toSerialized();
+            result.setArgument(this.name1, args[0].toString());
+            return result;
         }
 
         /**
@@ -418,6 +440,15 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             }
 
             return create(v1, v2);
+        }
+
+        @Override
+        public Serialized toSerialized(Object... args) {
+            assert args.length == 2;
+            Serialized result = getValue().toSerialized();
+            result.setArgument(this.name1, args[0].toString());
+            result.setArgument(this.name2, args[1].toString());
+            return result;
         }
 
         /**

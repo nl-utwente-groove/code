@@ -18,13 +18,18 @@
 package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
+import groove.explore.AcceptorValue;
+import groove.explore.Exploration;
 import groove.explore.Generator;
-import groove.explore.ModelCheckingScenario;
-import groove.explore.strategy.LtlStrategy;
+import groove.explore.StrategyValue;
+import groove.explore.encode.Serialized;
 import groove.lts.GTS;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import junit.framework.Assert;
 
 import org.junit.Test;
 
@@ -36,7 +41,6 @@ import org.junit.Test;
 public class LTLTest {
     /** Transistion system used by this test. */
     private GTS gts;
-    private ModelCheckingScenario scenario;
 
     /**
      * Tests whether the circular buffer fulfils certain properties and whether
@@ -74,17 +78,20 @@ public class LTLTest {
         Generator generator = new Generator(list);
         generator.start();
         this.gts = generator.getGTS();
-        LtlStrategy strategy = new LtlStrategy();
-        this.scenario = new ModelCheckingScenario(strategy, "");
     }
 
     /** Tests the number of counterexamples in the current;y
      * set GTS for a given formula. */
     private void testFormula(String formula, boolean succeed) {
-        // all states satisfy the following property
-        this.scenario.setProperty(formula);
-        this.scenario.prepare(this.gts);
-        this.scenario.play();
-        assertEquals(succeed, this.scenario.getResult().getValue().isEmpty());
+        Serialized strategy =
+            StrategyValue.LTL.getTemplate().toSerialized(formula);
+        Exploration exploration =
+            new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        try {
+            exploration.play(this.gts, this.gts.startState());
+        } catch (FormatException e) {
+            Assert.fail();
+        }
+        assertEquals(succeed, exploration.getLastResult().getValue().isEmpty());
     }
 }

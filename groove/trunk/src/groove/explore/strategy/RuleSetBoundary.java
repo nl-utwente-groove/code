@@ -86,6 +86,18 @@ public class RuleSetBoundary extends Boundary {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (Rule rule : this.ruleSetBoundary) {
+            if (result.length() > 0) {
+                result.append(",");
+            }
+            result.append(rule.getName());
+        }
+        return result.toString();
+    }
+
     /** the set of rules that are initially forbidden to apply */
     private final Set<Rule> ruleSetBoundary = new HashSet<Rule>();
 }
