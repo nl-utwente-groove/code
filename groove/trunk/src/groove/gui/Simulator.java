@@ -505,7 +505,7 @@ public class Simulator implements SimulatorListener {
 
     /**
      * Run a given exploration. Can be called from outside the Simulator.
-     * @param exploration - the exploration strategy to be used
+     * @param exploration the exploration strategy to be used
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
     public void doRunExploration(Exploration exploration, boolean emphasise) {
@@ -2753,17 +2753,20 @@ public class Simulator implements SimulatorListener {
                     if (LaunchThread.this.emphasise) {
                         getLtsPanel().emphasiseStates(states, true);
                     }
-                    String property =
-                        (LaunchThread.this.scenario).getProperty();
-                    if (states.isEmpty()) {
-                        JOptionPane.showMessageDialog(getFrame(),
-                            String.format("The property %s holds for this LTS",
-                                property));
-                    } else {
-                        JOptionPane.showMessageDialog(getFrame(),
-                            String.format(
-                                "A counter-example to %s is highlighted",
-                                property));
+                    if (LaunchThread.this.exploration == null) {
+                        String property =
+                            LaunchThread.this.scenario.getProperty();
+                        if (states.isEmpty()) {
+                            JOptionPane.showMessageDialog(getFrame(),
+                                String.format(
+                                    "The property %s holds for this LTS",
+                                    property));
+                        } else {
+                            JOptionPane.showMessageDialog(getFrame(),
+                                String.format(
+                                    "A counter-example to %s is highlighted",
+                                    property));
+                        }
                     }
                 }
             });
