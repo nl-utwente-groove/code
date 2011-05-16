@@ -12,14 +12,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: BoundedNestedDFSStrategy.java,v 1.6 2008/03/05 11:01:56 rensink Exp $
+ * $Id: DefaultBoundedModelCheckingStrategy.java,v 1.1 2008/03/04 14:44:25
+ * kastenberg Exp $
  */
 package groove.explore.strategy;
 
-import groove.explore.result.CycleAcceptor;
 import groove.explore.util.RandomChooserInSequence;
 import groove.graph.EdgeRole;
-import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
@@ -30,23 +29,29 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * This depth-first strategy represents the blue search of a nested depth-first
- * search for finding counter-examples for an LTL formula. On backtracking it
- * closes the explored states. Closing a state potentially starts a red search,
- * depending on whether the closed state is accepting or not. This is taken care
- * of by the accompanying {@link CycleAcceptor}.
- * 
- * This bounded version deviates from the usual Nested DFS in the way of setting
- * the next state to be explored. If a potential next state crosses the
- * boundary, an other next state is selected. Checking whether the system has
- * been fully checked is done by the method
- * {@link BoundedModelCheckingStrategy#finished()}.
+ * This class provides some default implementations for a bounded model checking
+ * strategy, such as setting the boundary and collecting the boundary graphs.
  * 
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BoundedNestedDFSStrategy extends
-        AbstractBoundedModelCheckingStrategy<GraphState> {
+public class BoundedLtlStrategy extends LtlStrategy {
+    /**
+     * Sets the boundary specification used in the strategy.
+     * @param boundary the boundary specification to use
+     */
+    public void setBoundary(Boundary boundary) {
+        this.boundary = boundary;
+    }
+
+    /**
+     * Returns the boundary specification used in the strategy.
+     * @return the boundary specification
+     */
+    public Boundary getBoundary() {
+        return this.boundary;
+    }
+
     /**
      * The next step makes atomic the full exploration of a state.
      */
@@ -146,19 +151,8 @@ public class BoundedNestedDFSStrategy extends
     }
 
     /**
-     * @param transition may be null
+     * Sets the state from which to start the next iteration.
      */
-    protected void processFinalState(BuchiTransition transition) {
-        if (transition == null) {
-            // exclude the current state from further analysis
-            // mark it red
-            getAtBuchiState().setColour(ModelChecking.RED);
-        } else {
-            addProductTransition(null, transition.target());
-        }
-    }
-
-    @Override
     protected void setNextStartState() {
         // increase the boundary
         getBoundary().increase();
@@ -341,13 +335,11 @@ public class BoundedNestedDFSStrategy extends
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * groove.explore.strategy.DefaultBoundedModelCheckingStrategy#finished()
+    /**
+     * Checks whether all states have been fully explored.
+     * @return <tt>true</tt> if there are states left, <tt>false</tt>
+     *         otherwise
      */
-    @Override
     public boolean finished() {
         if (ModelChecking.CURRENT_ITERATION > ModelChecking.MAX_ITERATIONS) {
             return true;
@@ -377,4 +369,9 @@ public class BoundedNestedDFSStrategy extends
 
         return result;
     }
+
+    /**
+     * The boundary to be used.
+     */
+    private Boundary boundary;
 }

@@ -19,12 +19,10 @@ package groove.gui.dialog;
 
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
-import groove.explore.strategy.RuleSetBorderBoundary;
-import groove.explore.strategy.RuleSetStartBoundary;
+import groove.explore.strategy.RuleSetBoundary;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.Rule;
 import groove.trans.GraphGrammar;
-import groove.verify.ModelChecking;
+import groove.trans.Rule;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -292,13 +290,8 @@ public class BoundedModelCheckingDialog {
                     String ruleName = selectedRuleNamesIter.next();
                     selectedRules.add(BoundedModelCheckingDialog.this.grammar.getRule(ruleName));
                 }
-                if (ModelChecking.START_FROM_BORDER_STATES) {
-                    BoundedModelCheckingDialog.this.boundary =
-                        new RuleSetBorderBoundary(selectedRules);
-                } else {
-                    BoundedModelCheckingDialog.this.boundary =
-                        new RuleSetStartBoundary(selectedRules);
-                }
+                BoundedModelCheckingDialog.this.boundary =
+                    new RuleSetBoundary(selectedRules);
             }
         }
     }

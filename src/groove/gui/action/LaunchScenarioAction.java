@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import groove.explore.ModelCheckingScenario;
 import groove.explore.strategy.Boundary;
-import groove.explore.strategy.BoundedModelCheckingStrategy;
+import groove.explore.strategy.BoundedLtlStrategy;
 import groove.gui.Simulator;
 import groove.gui.dialog.BoundedModelCheckingDialog;
 import groove.gui.dialog.StringDialog;
@@ -57,7 +57,7 @@ public class LaunchScenarioAction extends SimulatorAction {
          * When a (LTL) BoundedModelCheckingScenario is started, also prompt the
          * user to enter a boundary (via a BoundedModelCheckingDialog).
          */
-        if (scenario.getStrategy() instanceof BoundedModelCheckingStrategy) {
+        if (scenario.getStrategy() instanceof BoundedLtlStrategy) {
             BoundedModelCheckingDialog dialog =
                 new BoundedModelCheckingDialog();
             dialog.setGrammar(gts.getGrammar());
@@ -66,7 +66,7 @@ public class LaunchScenarioAction extends SimulatorAction {
             if (boundary == null) {
                 return;
             }
-            ((BoundedModelCheckingStrategy) scenario.getStrategy()).setBoundary(boundary);
+            ((BoundedLtlStrategy) scenario.getStrategy()).setBoundary(boundary);
         }
 
         scenario.prepare(gts, state);

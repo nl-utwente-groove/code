@@ -1,11 +1,10 @@
 package groove.gui.action;
 
-import groove.explore.AcceptorEnumerator;
-import groove.explore.StrategyEnumerator;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.view.StoredGrammarView;
+
 
 /** Action to open the Exploration Dialog. */
 public class ExplorationDialogAction extends SimulatorAction {
@@ -16,8 +15,8 @@ public class ExplorationDialogAction extends SimulatorAction {
 
     @Override
     protected boolean doAction() {
-        new ExplorationDialog(StrategyEnumerator.MASK_CONCRETE,
-            AcceptorEnumerator.MASK_CONCRETE, getSimulator(), getFrame());
+        new ExplorationDialog(getSimulator(),
+            getFrame());
         return false;
     }
 

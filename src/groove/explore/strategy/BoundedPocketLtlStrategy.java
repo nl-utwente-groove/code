@@ -29,7 +29,8 @@ import groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
+public class BoundedPocketLtlStrategy extends
+        BoundedLtlStrategy {
     @Override
     protected void processFinalState(BuchiTransition transition) {
         addProductTransition(null, transition.target());

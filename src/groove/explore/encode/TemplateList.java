@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.explore.encode.Template.Visibility;
+import groove.explore.ParsableValue;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
@@ -28,7 +28,9 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
@@ -60,7 +62,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     /** List of listeners connected to this list */
     private ArrayList<TemplateListListener> listeners;
     /** Mask for the subset of templates that are available in the editor. */
-    private int mask = 0; // 0 behaves as 'use everything'
+    private Set<? extends ParsableValue> mask;
 
     /**
      * Constructor. Initializes an identifier and tool-tip for the type A.
@@ -83,8 +85,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     /**
      * Setter for the mask.
      */
-    public void setMask(int mask) {
+    public void setMask(Set<? extends ParsableValue> mask) {
         this.mask = mask;
+        Iterator<Template<A>> iter = this.templates.iterator();
+        while (iter.hasNext()) {
+            if (!mask.contains(iter.next().getValue())) {
+                iter.remove();
+            }
+        }
     }
 
     /**
@@ -92,8 +100,10 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with respect to the already stored templates.
      */
     protected void addTemplate(Template<A> template) {
-        boolean fresh = this.templates.add(template);
-        assert fresh;
+        if (this.mask == null || this.mask.contains(template.getValue())) {
+            boolean fresh = this.templates.add(template);
+            assert fresh;
+        }
     }
 
     /**
@@ -124,7 +134,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(GraphGrammar rules, Serialized source) throws FormatException {
+    public A parse(GraphGrammar rules, Serialized source)
+        throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
                 return template.parse(rules, source);
@@ -208,14 +219,12 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             this.templateKeywords = new ArrayList<String>(nrTemplates);
             this.templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
-                if ((template.getMask() & TemplateList.this.mask) == TemplateList.this.mask) {
-                    if (Version.isDevelopmentVersion()
-                        || template.getVisibility() == Visibility.ALL) {
-                        this.templateKeywords.add(template.getKeyword());
-                        this.templateNames.add(template.getName());
-                        this.editors.put(template.getKeyword(),
-                            template.createEditor(simulator));
-                    }
+                if (Version.isDevelopmentVersion()
+                    || !template.getValue().isDevelopment()) {
+                    this.templateKeywords.add(template.getKeyword());
+                    this.templateNames.add(template.getName());
+                    this.editors.put(template.getKeyword(),
+                        template.createEditor(simulator));
                 }
             }
         }

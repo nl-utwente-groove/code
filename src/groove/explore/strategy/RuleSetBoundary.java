@@ -17,6 +17,7 @@
 package groove.explore.strategy;
 
 import groove.trans.Rule;
+import groove.verify.ModelChecking;
 import groove.verify.ProductTransition;
 
 import java.util.HashSet;
@@ -29,7 +30,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public abstract class RuleSetBoundary extends AbstractBoundary {
+public class RuleSetBoundary extends Boundary {
 
     /**
      * {@link RuleSetBoundary} constructor.
@@ -48,24 +49,27 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
         return this.ruleSetBoundary.add(rule);
     }
 
+    @Override
     public boolean crossingBoundary(ProductTransition transition,
             boolean traverse) {
-
+        boolean result = false;
         // if the underlying transition is null, this transition
         // represents a final transition and does therefore
         // not cross any boundary
-        if (transition.graphTransition() == null) {
-            return false;
-        } else {
-            Rule rule = transition.rule();
-            if (!containsRule(rule)) {
-                return false;
-            } else {
-                return true;
+        if (transition.graphTransition() != null
+            && containsRule(transition.rule())) {
+            // this is a forbidden rule
+            // the current depth now determines whether we may
+            // traverse this transition, or not
+            result = currentDepth() >= ModelChecking.CURRENT_ITERATION - 2;
+            if (!result && traverse) {
+                increaseDepth();
             }
         }
+        return result;
     }
 
+    @Override
     public void increase() {
         // do nothing
     }
@@ -73,6 +77,13 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
     /** Returns whether this boundary contains the given rule. */
     public boolean containsRule(Rule rule) {
         return this.ruleSetBoundary.contains(rule);
+    }
+
+    @Override
+    public void backtrackTransition(ProductTransition transition) {
+        if (transition.rule() != null && containsRule(transition.rule())) {
+            decreaseDepth();
+        }
     }
 
     /** the set of rules that are initially forbidden to apply */

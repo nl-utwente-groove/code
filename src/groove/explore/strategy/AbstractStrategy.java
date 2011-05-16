@@ -39,8 +39,7 @@ public abstract class AbstractStrategy implements Strategy {
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
         this.applier = null;
-        this.atState =
-            this.startState = state == null ? gts.startState() : state;
+        this.atState = state == null ? gts.startState() : state;
         MatcherFactory.instance().setDefaultEngine();
     }
 
@@ -61,14 +60,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected GTS getGTS() {
         return this.gts;
-    }
-
-    /**
-     * The state where the strategy starts exploring.
-     * @return The state where the strategy starts exploring.
-     */
-    protected final GraphState startState() {
-        return this.startState;
     }
 
     /**
@@ -125,18 +116,16 @@ public abstract class AbstractStrategy implements Strategy {
         return new MatchApplier(this.gts);
     }
 
-    /** Default implementation; does nothing. */
     public void addGTSListener(Acceptor listener) {
         getGTS().addLTSListener(listener);
     }
 
-    /** Default implementation; does nothing. */
     public void removeGTSListener(Acceptor listener) {
         getGTS().removeLTSListener(listener);
     }
 
     /** Convenience method to retrieve the GTS' system record. */
-    protected SystemRecord getRecord() {
+    final protected SystemRecord getRecord() {
         return getGTS().getRecord();
     }
 
@@ -146,8 +135,6 @@ public abstract class AbstractStrategy implements Strategy {
     private RuleEventApplier applier;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
-    /** The state where the strategy starts exploring. */
-    private GraphState startState;
     /** The state that will be explored by the next call of {@link #next()}. */
     protected GraphState atState;
     /**

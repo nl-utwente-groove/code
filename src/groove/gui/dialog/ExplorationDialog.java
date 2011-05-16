@@ -17,8 +17,10 @@
 package groove.gui.dialog;
 
 import groove.explore.AcceptorEnumerator;
+import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
+import groove.explore.StrategyValue;
 import groove.explore.encode.EncodedTypeEditor;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList.TemplateListListener;
@@ -37,6 +39,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -105,13 +110,10 @@ public class ExplorationDialog extends JDialog implements ActionListener,
 
     /**
      * Create the dialog.
-     * @param strategyMask - mask for determining the strategies to be displayed
-     * @param acceptorMask - mask for determining the acceptors to be displayed
      * @param simulator - reference to the simulator
      * @param owner - reference to the parent GUI component
      */
-    public ExplorationDialog(int strategyMask, int acceptorMask,
-            Simulator simulator, JFrame owner) {
+    public ExplorationDialog(Simulator simulator, JFrame owner) {
 
         // Open a modal dialog, which cannot be resized or closed.
         super(owner, Options.EXPLORATION_DIALOG_ACTION_NAME, true);
@@ -152,6 +154,9 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
             StrategyEnumerator.getInstance();
+        Set<StrategyValue> strategyMask =
+            new HashSet<StrategyValue>(EnumSet.allOf(StrategyValue.class));
+        strategyMask.removeAll(StrategyValue.LTL_STRATEGIES);
         strategyEnumerator.setMask(strategyMask);
         strategyEnumerator.addListener(this);
         this.strategyEditor = strategyEnumerator.createEditor(simulator);
@@ -161,6 +166,9 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator =
             AcceptorEnumerator.getInstance();
+        Set<AcceptorValue> acceptorMask =
+            new HashSet<AcceptorValue>(EnumSet.allOf(AcceptorValue.class));
+        acceptorMask.remove(AcceptorValue.CYCLE);
         acceptorEnumerator.setMask(acceptorMask);
         acceptorEnumerator.addListener(this);
         this.acceptorEditor = acceptorEnumerator.createEditor(simulator);

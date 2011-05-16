@@ -17,11 +17,9 @@
 package groove.gui;
 
 import groove.explore.ModelCheckingScenario;
-import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
-import groove.explore.strategy.BoundedNestedDFSStrategy;
-import groove.explore.strategy.NestedDFSStrategy;
-import groove.explore.strategy.OptimizedBoundedNestedDFSPocketStrategy;
-import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
+import groove.explore.strategy.BoundedLtlStrategy;
+import groove.explore.strategy.BoundedPocketLtlStrategy;
+import groove.explore.strategy.LtlStrategy;
 import groove.gui.SimulatorModel.Change;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -74,29 +72,18 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      */
     protected void createAddMenuItems() {
         ModelCheckingScenario scenario =
-            new ModelCheckingScenario(new NestedDFSStrategy(),
+            new ModelCheckingScenario(new LtlStrategy(),
                 Options.CHECK_LTL_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            new ModelCheckingScenario(new BoundedNestedDFSStrategy(),
+            new ModelCheckingScenario(new BoundedLtlStrategy(),
                 Options.CHECK_LTL_BOUNDED_ACTION_NAME);
         addScenarioHandler(scenario);
 
         scenario =
-            new ModelCheckingScenario(new BoundedNestedDFSPocketStrategy(),
+            new ModelCheckingScenario(new BoundedPocketLtlStrategy(),
                 Options.CHECK_LTL_POCKET_ACTION_NAME);
-        addScenarioHandler(scenario);
-
-        scenario =
-            new ModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(),
-                Options.CHECK_LTL_OPTIMIZED_ACTION_NAME);
-        addScenarioHandler(scenario);
-
-        scenario =
-            new ModelCheckingScenario(
-                new OptimizedBoundedNestedDFSPocketStrategy(),
-                Options.CHECK_LTL_OPTMIZED_POCKET_ACTION_NAME);
         addScenarioHandler(scenario);
     }
 

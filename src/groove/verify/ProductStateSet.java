@@ -22,11 +22,9 @@ import groove.graph.iso.IsoChecker;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
-import groove.util.FilterIterator;
 import groove.util.TreeHashSet;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -121,20 +119,6 @@ public class ProductStateSet {
     public boolean hasOpenStates() {
         int openStateCount = openStateCount();
         return openStateCount > 0;
-    }
-
-    /**
-     * Returns an iterator over the set of currently open states. Equivalent to
-     * <code>getOpenStates().iterator()</code>.
-     * @see #hasOpenStates()
-     */
-    public Iterator<ProductState> getOpenStateIter() {
-        return new FilterIterator<ProductState>(this.stateSet.iterator()) {
-            @Override
-            protected boolean approves(Object obj) {
-                return !((GraphState) obj).isClosed();
-            }
-        };
     }
 
     /** Returns the number of not fully expored states. */

@@ -114,7 +114,7 @@ public class StringConsumer {
      * identifier.
      */
     private boolean isIdentChar(char c) {
-        return (Character.isLetterOrDigit(c) || c == '_' || c == '$');
+        return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '-');
     }
 
     /**

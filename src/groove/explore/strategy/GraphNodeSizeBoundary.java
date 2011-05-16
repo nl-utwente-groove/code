@@ -27,7 +27,7 @@ import groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-20 08:37:54 $
  */
-public class GraphNodeSizeBoundary extends AbstractBoundary {
+public class GraphNodeSizeBoundary extends Boundary {
 
     /**
      * {@link GraphNodeSizeBoundary} constructor.
@@ -38,10 +38,7 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
         this.step = step;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.explore.strategy.Boundary#crossingBoundary(groove.lts.GraphTransition)
-     */
+    @Override
     public boolean crossingBoundary(ProductTransition transition,
             boolean traverse) {
         boolean result =
@@ -54,10 +51,7 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
         return graph.nodeCount() > this.graphSizeBoundary;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see groove.explore.strategy.Boundary#increase()
-     */
+    @Override
     public void increase() {
         this.graphSizeBoundary += this.step;
     }

@@ -20,8 +20,7 @@ package groove.test.verify;
 import static org.junit.Assert.assertEquals;
 import groove.explore.Generator;
 import groove.explore.ModelCheckingScenario;
-import groove.explore.strategy.ModelCheckingStrategy;
-import groove.explore.strategy.NestedDFSStrategy;
+import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public class LTLTest {
         Generator generator = new Generator(list);
         generator.start();
         this.gts = generator.getGTS();
-        ModelCheckingStrategy strategy = new NestedDFSStrategy();
+        LtlStrategy strategy = new LtlStrategy();
         this.scenario = new ModelCheckingScenario(strategy, "");
     }
 
