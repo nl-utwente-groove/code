@@ -12,21 +12,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * $Id: Boundary.java,v 1.2 2008/02/20 09:28:55 kastenberg Exp $
+ * $Id$
  */
 package groove.explore.strategy;
 
+import groove.verify.ModelChecking;
 import groove.verify.ProductTransition;
 
 /**
- * This interface facilitates a model checking strategy of using a boundary such
- * that states reached by transitions crossing the boundary will not be taken
- * into account (yet).
+ * Abstract implementation for boundaries.
  * 
  * @author Harmen Kastenberg
- * @version $Revision$
+ * @version $Revision $
  */
-public interface Boundary {
+public abstract class Boundary {
     /**
      * Checks whether the given transition crosses the boundary. If so, it
      * return <tt>true</tt>, otherwise <tt>false</tt>.
@@ -38,40 +37,61 @@ public interface Boundary {
      * @return <tt>true</tt> if the transition crosses the boundary,
      *         <tt>false</tt> otherwise
      */
-    public boolean crossingBoundary(ProductTransition transition,
+    abstract public boolean crossingBoundary(ProductTransition transition,
             boolean traverse);
-
-    /**
-     * Backtrack the given transition.
-     * @param transition the backtracked transition
-     */
-    public void backtrackTransition(ProductTransition transition);
 
     /**
      * Increases the boundary.
      */
-    public void increase();
+    abstract public void increase();
 
     /**
      * Returns the current depth of the exploration, in terms of
      * boundary-crossing transition on the current path.
      * @return the number of boundary-crossing transitions in the current path
      */
-    public int currentDepth();
+    public int currentDepth() {
+        return this.currentDepth;
+    }
 
     /**
      * Set the value of the current depth.
      * @param value the new value
      */
-    public void setCurrentDepth(int value);
-
-    /**
-     * Increase the <code>currentDepth</code>.
-     */
-    public void increaseDepth();
+    public void setCurrentDepth(int value) {
+        this.currentDepth = value;
+    }
 
     /**
      * Decrease the <code>currentDepth</code>.
      */
-    public void decreaseDepth();
+    public void decreaseDepth() {
+        this.currentDepth--;
+        assert (this.currentDepth >= 0) : "The value of currentDepth should not be negative.";
+    }
+
+    /**
+     * Increase the <code>currentDepth</code>.
+     */
+    public void increaseDepth() {
+        this.currentDepth++;
+        assert (this.currentDepth <= ModelChecking.CURRENT_ITERATION) : "the number of boundary-crossing transitions ("
+            + this.currentDepth
+            + ") in the current path exceeded the maximum ("
+            + ModelChecking.CURRENT_ITERATION + ")";
+    }
+
+    /**
+     * Backtrack the given transition.
+     * @param transition the backtracked transition
+     */
+    public void backtrackTransition(ProductTransition transition) {
+        // by default, do nothing
+    }
+
+    /**
+     * container for the number of boundary-crossing transitions in the current
+     * path
+     */
+    private int currentDepth = 0;
 }

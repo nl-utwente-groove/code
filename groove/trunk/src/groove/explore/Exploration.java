@@ -18,7 +18,9 @@ package groove.explore;
 
 import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
+import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
+import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -89,17 +91,41 @@ public class Exploration {
     }
 
     /**
-     * Getter for the strategy.
+     * Getter for the serialised strategy.
      */
     public Serialized getStrategy() {
         return this.strategy;
     }
 
     /**
-     * Getter for the acceptor.
+     * Returns the strategy, instantiated for a given graph grammar.
+     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * strategy.
+     */
+    public Strategy getParsedStrategy(GraphGrammar grammar)
+        throws FormatException {
+        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
+    }
+
+    /**
+     * Getter for the serialised acceptor.
      */
     public Serialized getAcceptor() {
         return this.acceptor;
+    }
+
+    /**
+     * Returns the acceptor, instantiated for a given graph grammar.
+     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * acceptor.
+     */
+    public Acceptor getParsedAcceptor(GraphGrammar grammar)
+        throws FormatException {
+        if (getParsedStrategy(grammar) instanceof LtlStrategy) {
+            return new CycleAcceptor();
+        } else {
+            return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
+        }
     }
 
     /**
@@ -148,8 +174,8 @@ public class Exploration {
      * @throws FormatException if the rule system is not compatible
      */
     public void test(GraphGrammar rules) throws FormatException {
-        StrategyEnumerator.parseStrategy(rules, this.strategy);
-        AcceptorEnumerator.parseAcceptor(rules, this.acceptor);
+        getParsedStrategy(rules);
+        getParsedAcceptor(rules);
     }
 
     /**
@@ -162,14 +188,12 @@ public class Exploration {
      * @see #test(GraphGrammar)
      */
     final public void play(GTS gts, GraphState state) throws FormatException {
-        GraphGrammar rules = gts.getGrammar().getRuleSystem();
+        GraphGrammar grammar = gts.getGrammar();
         // parse the strategy
-        Strategy parsedStrategy =
-            StrategyEnumerator.parseStrategy(rules, this.strategy);
+        Strategy parsedStrategy = getParsedStrategy(grammar);
 
         // parse the acceptor
-        Acceptor parsedAcceptor =
-            AcceptorEnumerator.parseAcceptor(rules, this.acceptor);
+        Acceptor parsedAcceptor = getParsedAcceptor(grammar);
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));

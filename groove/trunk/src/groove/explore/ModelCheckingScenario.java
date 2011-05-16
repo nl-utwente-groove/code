@@ -20,8 +20,8 @@ import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.Boundary;
-import groove.explore.strategy.BoundedModelCheckingStrategy;
-import groove.explore.strategy.ModelCheckingStrategy;
+import groove.explore.strategy.BoundedLtlStrategy;
+import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
@@ -34,9 +34,9 @@ public class ModelCheckingScenario {
     /**
      * Creates a new named instance from a given strategy and acceptor.
      */
-    public ModelCheckingScenario(ModelCheckingStrategy strategy, String name) {
+    public ModelCheckingScenario(LtlStrategy strategy, String name) {
         this.strategy = strategy;
-        this.acceptor = new CycleAcceptor(strategy);
+        this.acceptor = new CycleAcceptor();
         this.name = name;
     }
 
@@ -100,8 +100,8 @@ public class ModelCheckingScenario {
      */
     public void prepare(GTS gts, GraphState state) {
         getStrategy().setProperty(getProperty());
-        if (getStrategy() instanceof BoundedModelCheckingStrategy) {
-            ((BoundedModelCheckingStrategy) getStrategy()).setBoundary(getBoundary());
+        if (getStrategy() instanceof BoundedLtlStrategy) {
+            ((BoundedLtlStrategy) getStrategy()).setBoundary(getBoundary());
         }
         // model checking always starts at the initial state
         assert this.acceptor != null && this.strategy != null : "The scenario is not correctly initialized with a result, a strategy and an acceptor.";
@@ -171,7 +171,7 @@ public class ModelCheckingScenario {
     }
 
     /** Returns the strategy this scenario uses. */
-    public ModelCheckingStrategy getStrategy() {
+    public LtlStrategy getStrategy() {
         return this.strategy;
     }
 
@@ -185,7 +185,7 @@ public class ModelCheckingScenario {
 
     /**
      * Sets the boundary for model checking (in case the strategy is a
-     * {@link BoundedModelCheckingStrategy}).
+     * {@link BoundedLtlStrategy}).
      */
     public void setBoundary(Boundary boundary) {
         this.boundary = boundary;
@@ -215,14 +215,14 @@ public class ModelCheckingScenario {
     /**
      * The strategy used by this scenario.
      */
-    private final ModelCheckingStrategy strategy;
+    private final LtlStrategy strategy;
     /** Name of this scenario. */
     private final String name;
     /** Reporter for profiling information. */
     static private final Reporter playReporter = Exploration.playReporter;
     /**
      * The boundary for model checking, in case the strategy is a
-     * {@link BoundedModelCheckingStrategy}.
+     * {@link BoundedLtlStrategy}.
      */
     private Boundary boundary;
     /** The property to be model checked. */

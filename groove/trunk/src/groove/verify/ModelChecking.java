@@ -79,8 +79,6 @@ public class ModelChecking {
     /** constant specifying the maximal number of iterations to be performed */
     public static int CURRENT_ITERATION = 0;
     /** constant specifying the maximal amount of time to spend */
-    public static long MINUTES = -1;
-    /** constant specifying the maximal amount of time to spend */
     public static long MAX_TIME = 0;
     /** constant specifying the maximal amount of time to spend */
     public static boolean START_FROM_BORDER_STATES = false;

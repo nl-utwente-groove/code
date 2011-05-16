@@ -343,13 +343,6 @@ public class GraphGrammar {
     }
 
     /**
-     * Returns the rule system that is part of this graph grammar.
-     */
-    public GraphGrammar getRuleSystem() {
-        return this;
-    }
-
-    /**
      * Changes or sets the start graph of this graph grammar. This is only
      * allowed if the grammar is not yet fixed, as indicated by
      * {@link #isFixed()}.

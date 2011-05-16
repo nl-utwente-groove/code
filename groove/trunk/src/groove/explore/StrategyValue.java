@@ -1,15 +1,19 @@
 package groove.explore;
 
 import groove.abstraction.ShapeBFSStrategy;
+import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
 import groove.explore.encode.EncodedInt;
+import groove.explore.encode.EncodedLtlProperty;
 import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.EncodedType;
 import groove.explore.encode.Template;
 import groove.explore.encode.Template.Template0;
 import groove.explore.encode.Template.Template1;
 import groove.explore.encode.Template.Template2;
+import groove.explore.prettyparse.PAll;
+import groove.explore.prettyparse.PChoice;
 import groove.explore.prettyparse.PIdentifier;
 import groove.explore.prettyparse.PLiteral;
 import groove.explore.prettyparse.PNumber;
@@ -22,10 +26,14 @@ import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.BFSStrategy;
+import groove.explore.strategy.Boundary;
+import groove.explore.strategy.BoundedLtlStrategy;
+import groove.explore.strategy.BoundedPocketLtlStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
 import groove.explore.strategy.ReteRandomLinearStrategy;
@@ -34,10 +42,12 @@ import groove.explore.strategy.Strategy;
 import groove.graph.TypeLabel;
 import groove.trans.Rule;
 
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 /** Symbolic values for the implemented strategies. */
-public enum StrategyValue {
+public enum StrategyValue implements ParsableValue {
     /** Depth-first RETE strategy. */
     RETE("rete", "Rete Strategy (DFS based)",
             "This strategy finds all possible transitions from the Rete "
@@ -95,7 +105,23 @@ public enum StrategyValue {
                 + "All other states are explored normally."),
     /** Shape exploration strategy. */
     SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
-            "This strategy is used for abstract state space exploration.");
+            "This strategy is used for abstract state space exploration."),
+    /** Shape exploration strategy. */
+    LTL("ltl", "LTL Model Checking",
+            "Nested Depth-First Search for a given LTL formula."),
+    /** Shape exploration strategy. */
+    LTL_BOUNDED(
+            "ltlbounded",
+            "Bounded LTL Model Checking",
+            "Nested Depth-First Search for a given LTL formula,"
+                + "using incremental bounds based on graph size or rule applications"),
+    /** Shape exploration strategy. */
+    LTL_POCKET(
+            "ltlpocket",
+            "Pocket LTL Model Checking",
+            "Nested Depth-First Search for a given LTL formula,"
+                + "using incremental bounds based on graph size or rule applications"
+                + "and optimised to avoid reexploring connected components ('pockets')");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -116,6 +142,11 @@ public enum StrategyValue {
     /** Returns the description of this acceptor value. */
     public String getDescription() {
         return this.description;
+    }
+
+    @Override
+    public boolean isDevelopment() {
+        return DEVELOPMENT_ONLY_STRATEGIES.contains(this);
     }
 
     /** Creates the appropriate template for this strategy. */
@@ -245,6 +276,53 @@ public enum StrategyValue {
                 }
             };
 
+        case LTL:
+            return new MyTemplate1<String>(new PAll("prop"), "prop",
+                new EncodedLtlProperty()) {
+                @Override
+                public Strategy create(String property) {
+                    LtlStrategy result = new LtlStrategy();
+                    result.setProperty(property);
+                    return result;
+                }
+            };
+
+        case LTL_BOUNDED:
+            SerializedParser boundParser =
+                new PSeparated(new PChoice(new PIdentifier("rule"),
+                    new PNumber("value")), new PLiteral(",", "comma"));
+            SerializedParser parser =
+                new PSequence(boundParser, new PLiteral(";", "semi"), new PAll(
+                    "prop"));
+            return new MyTemplate2<String,Boundary>(parser, "prop",
+                new EncodedLtlProperty(), "bound", new EncodedBoundary()) {
+                @Override
+                public Strategy create(String property, Boundary bound) {
+                    BoundedLtlStrategy result = new BoundedLtlStrategy();
+                    result.setProperty(property);
+                    result.setBoundary(bound);
+                    return result;
+                }
+            };
+
+        case LTL_POCKET:
+            boundParser =
+                new PSeparated(new PChoice(new PIdentifier("rule"),
+                    new PNumber("value")), new PLiteral(",", "comma"));
+            parser =
+                new PSequence(boundParser, new PLiteral(";", "semi"), new PAll(
+                    "prop"));
+            return new MyTemplate2<String,Boundary>(parser, "prop",
+                new EncodedLtlProperty(), "bound", new EncodedBoundary()) {
+                @Override
+                public Strategy create(String property, Boundary bound) {
+                    BoundedLtlStrategy result = new BoundedPocketLtlStrategy();
+                    result.setProperty(property);
+                    result.setBoundary(bound);
+                    return result;
+                }
+            };
+
         default:
             // we can't come here
             throw new IllegalStateException();
@@ -255,12 +333,17 @@ public enum StrategyValue {
     private final String name;
     private final String description;
 
+    /** Set of model checking strategies. */
+    public final static Set<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL,
+        LTL_BOUNDED, LTL_POCKET);
+    /** Special mask for development strategies only. Treated specially. */
+    public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
+        EnumSet.of(SHAPE_BFS, RETE, RETE_LINEAR, RETE_RANDOM);
+
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Strategy> {
         public MyTemplate0() {
-            super(StrategyValue.this.getKeyword(),
-                StrategyValue.this.getName(),
-                StrategyValue.this.getDescription());
+            super(StrategyValue.this);
         }
     }
 
@@ -268,9 +351,7 @@ public enum StrategyValue {
     abstract private class MyTemplate1<T1> extends Template1<Strategy,T1> {
         public MyTemplate1(SerializedParser parser, String name,
                 EncodedType<T1,String> type) {
-            super(StrategyValue.this.getKeyword(),
-                StrategyValue.this.getName(),
-                StrategyValue.this.getDescription(), parser, name, type);
+            super(StrategyValue.this, parser, name, type);
         }
     }
 
@@ -279,10 +360,7 @@ public enum StrategyValue {
         public MyTemplate2(SerializedParser parser, String name1,
                 EncodedType<T1,String> type1, String name2,
                 EncodedType<T2,String> type2) {
-            super(StrategyValue.this.getKeyword(),
-                StrategyValue.this.getName(),
-                StrategyValue.this.getDescription(), parser, name1, type1,
-                name2, type2);
+            super(StrategyValue.this, parser, name1, type1, name2, type2);
         }
     }
 }

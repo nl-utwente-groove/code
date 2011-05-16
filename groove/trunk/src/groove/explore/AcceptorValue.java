@@ -15,6 +15,7 @@ import groove.explore.prettyparse.PSequence;
 import groove.explore.prettyparse.SerializedParser;
 import groove.explore.result.Acceptor;
 import groove.explore.result.AnyStateAcceptor;
+import groove.explore.result.CycleAcceptor;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.NoStateAcceptor;
 import groove.explore.result.Predicate;
@@ -23,7 +24,7 @@ import groove.lts.GraphState;
 import groove.trans.Rule;
 
 /** Symbolic values for the implemented acceptors. */
-public enum AcceptorValue {
+public enum AcceptorValue implements ParsableValue {
     /** Acceptor for final states. */
     FINAL("final", "Final States",
             "This acceptor succeeds when a state is added to the LTS that is "
@@ -53,6 +54,14 @@ public enum AcceptorValue {
     /** Acceptor for arbitrary states. */
     ANY("any", "Any State",
             "This acceptor succeeds whenever a state is added to the LTS."),
+    /** Acceptor for cycles. */
+    CYCLE(
+            "cycle",
+            "Cycles",
+            "This acceptor listens to pairs of graph states and Büchi states,"
+                + "and succeeds when a pair is added that lies on a cycle with an"
+                + "accepting Büchi state. Should only be used in conjunction with "
+                + "LTL model checking."),
     /** Acceptor that does not accept any states. */
     NONE("none", "No State",
             "This acceptor always fails whenever a state is added to the LTS.");
@@ -78,6 +87,11 @@ public enum AcceptorValue {
         return this.description;
     }
 
+    @Override
+    public boolean isDevelopment() {
+        return false;
+    }
+
     /** Creates the appropriate template for this acceptor. */
     public Template<Acceptor> getTemplate() {
         switch (this) {
@@ -86,6 +100,14 @@ public enum AcceptorValue {
                 @Override
                 public Acceptor create() {
                     return new AnyStateAcceptor();
+                }
+            };
+
+        case CYCLE:
+            return new MyTemplate0() {
+                @Override
+                public Acceptor create() {
+                    return new CycleAcceptor();
                 }
             };
 
@@ -157,9 +179,7 @@ public enum AcceptorValue {
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Acceptor> {
         public MyTemplate0() {
-            super(AcceptorValue.this.getKeyword(),
-                AcceptorValue.this.getName(),
-                AcceptorValue.this.getDescription());
+            super(AcceptorValue.this);
         }
     }
 
@@ -167,9 +187,7 @@ public enum AcceptorValue {
     abstract private class MyTemplate1<T1> extends Template1<Acceptor,T1> {
         public MyTemplate1(SerializedParser parser, String name,
                 EncodedType<T1,String> type) {
-            super(AcceptorValue.this.getKeyword(),
-                AcceptorValue.this.getName(),
-                AcceptorValue.this.getDescription(), parser, name, type);
+            super(AcceptorValue.this, parser, name, type);
         }
     }
 
@@ -178,10 +196,7 @@ public enum AcceptorValue {
         public MyTemplate2(SerializedParser parser, String name1,
                 EncodedType<T1,String> type1, String name2,
                 EncodedType<T2,String> type2) {
-            super(AcceptorValue.this.getKeyword(),
-                AcceptorValue.this.getName(),
-                AcceptorValue.this.getDescription(), parser, name1, type1,
-                name2, type2);
+            super(AcceptorValue.this, parser, name1, type1, name2, type2);
         }
     }
 }

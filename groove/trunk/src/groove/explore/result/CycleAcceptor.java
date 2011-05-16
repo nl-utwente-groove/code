@@ -17,7 +17,7 @@
 
 package groove.explore.result;
 
-import groove.explore.strategy.ModelCheckingStrategy;
+import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.verify.ModelChecking;
@@ -41,10 +41,21 @@ import java.util.Collection;
  */
 public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Creates a new acceptor with a 1-bounded {@link Result}. */
-    public CycleAcceptor(ModelCheckingStrategy strategy) {
+    public CycleAcceptor() {
         super(new CycleResult());
+    }
+
+    /** Sets the strategy to which this acceptor listens,
+     * and which it invokes for the nested search.
+     */
+    public void setStrategy(LtlStrategy strategy) {
         this.strategy = strategy;
         this.strategy.setResult(getResult());
+    }
+
+    @Override
+    public void setResult(Result result) {
+        // resist attempts to change the result: do nothing
     }
 
     @Override
@@ -104,11 +115,11 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
      */
     @Override
     public Acceptor newInstance() {
-        CycleAcceptor result = new CycleAcceptor(this.strategy);
+        CycleAcceptor result = new CycleAcceptor();
         return result;
     }
 
-    private final ModelCheckingStrategy strategy;
+    private LtlStrategy strategy;
 
     /** 
      * Type of the result object for the {@link CycleAcceptor}.

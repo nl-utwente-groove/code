@@ -18,7 +18,6 @@ package groove.explore;
 
 import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
-import groove.explore.encode.Template.Visibility;
 import groove.explore.encode.TemplateList;
 import groove.explore.strategy.Strategy;
 import groove.trans.GraphGrammar;
@@ -45,22 +44,6 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
         super("exploration strategy", STRATEGY_TOOLTIP);
         for (StrategyValue value : EnumSet.allOf(StrategyValue.class)) {
             Template<Strategy> template = value.getTemplate();
-            int mask;
-            switch (value) {
-            case RETE:
-            case RETE_LINEAR:
-            case RETE_RANDOM:
-            case SHAPE_BFS:
-                mask = MASK_CONCRETE | MASK_DEVELOPMENT_ONLY;
-                if ((mask & MASK_DEVELOPMENT_ONLY) == MASK_DEVELOPMENT_ONLY) {
-                    template.setVisibility(Visibility.DEVELOPMENT_ONLY);
-                    mask = mask - MASK_DEVELOPMENT_ONLY;
-                }
-                break;
-            default:
-                mask = MASK_DEFAULT;
-            }
-            template.setMask(mask);
             addTemplate(template);
         }
     }
@@ -82,16 +65,6 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
     /** The singleton instance of this class. */
     private final static StrategyEnumerator INSTANCE = new StrategyEnumerator();
-    /** Mask for strategies that are only enabled in 'concrete' mode. */
-    public final static int MASK_CONCRETE = 1;
-    /** Mask for strategies that are only enabled in 'abstraction' mode. */
-    public final static int MASK_ABSTRACT = 2;
-    /** Special mask for development strategies only. Treated specially. */
-    public final static int MASK_DEVELOPMENT_ONLY = 4;
-    /** Mask for strategies that are enabled in all modes. */
-    public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
-    /** Mask that is used by default. */
-    public final static int MASK_DEFAULT = MASK_CONCRETE;
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
         + "<B>1.</B> Which of the applicable transitions will be taken; "

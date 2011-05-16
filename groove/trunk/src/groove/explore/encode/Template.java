@@ -16,6 +16,7 @@
  */
 package groove.explore.encode;
 
+import groove.explore.ParsableValue;
 import groove.explore.prettyparse.SerializedParser;
 import groove.explore.prettyparse.StringConsumer;
 import groove.gui.Simulator;
@@ -42,15 +43,8 @@ import javax.swing.SpringLayout;
  * @author Maarten de Mol
  */
 public abstract class Template<A> implements EncodedType<A,Serialized> {
-
-    /** Serialized keyword. */
-    private final String keyword;
-    /** Template name. */
-    private final String name;
-    /** Template explanation. */
-    private final String explanation;
-    /** Template mask. Must be set manually, outside constructor. */
-    private int mask;
+    /** Enumerator value for the template. */
+    private final ParsableValue value;
     /** Template visibility. Defaults to always visible. */
     private Visibility visibility = Visibility.ALL;
 
@@ -74,11 +68,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * and an array of argument names. The types of the arguments have to be
      * set later by calls to setArgumentType().
      */
-    public Template(String keyword, String name, String explanation,
-            SerializedParser commandlineParser, String... argumentNames) {
-        this.keyword = keyword;
-        this.name = name;
-        this.explanation = explanation;
+    public Template(ParsableValue value, SerializedParser commandlineParser,
+            String... argumentNames) {
+        this.value = value;
         this.commandlineParser = commandlineParser;
         this.argumentNames = argumentNames;
         this.argumentTypes = new TreeMap<String,EncodedType<?,String>>();
@@ -93,31 +85,24 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
+     * Returns the enumeration value for which this is the template.
+     */
+    public ParsableValue getValue() {
+        return this.value;
+    }
+
+    /**
      * Getter for the keyword.
      */
     public String getKeyword() {
-        return this.keyword;
+        return getValue().getKeyword();
     }
 
     /**
      * Getter for the name.
      */
     public String getName() {
-        return this.name;
-    }
-
-    /**
-     * Getter for the mask.
-     */
-    public int getMask() {
-        return this.mask;
-    }
-
-    /**
-     * Setter for the mask.
-     */
-    public void setMask(int mask) {
-        this.mask = mask;
+        return getValue().getName();
     }
 
     /**
@@ -156,10 +141,10 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     Serialized parseCommandline(String text) {
         StringConsumer stream = new StringConsumer(text);
-        if (!stream.consumeLiteral(this.keyword)) {
+        if (!stream.consumeLiteral(getKeyword())) {
             return null;
         }
-        Serialized result = new Serialized(this.keyword);
+        Serialized result = new Serialized(getKeyword());
         if (this.argumentNames.length == 0) {
             if (stream.isEmpty()) {
                 return result;
@@ -183,13 +168,13 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      */
     String describeCommandlineGrammar() {
         StringBuffer desc = new StringBuffer();
-        desc.append(this.keyword);
+        desc.append(getKeyword());
         if (this.argumentNames.length != 0) {
             desc.append(":");
             desc.append(this.commandlineParser.describeGrammar());
         }
         desc.append(" - ");
-        desc.append(this.name);
+        desc.append(getName());
         return desc.toString();
     }
 
@@ -224,18 +209,18 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         private void addName() {
             add(new JLabel("<HTML><B><U><FONT color="
-                + ExplorationDialog.INFO_COLOR + ">" + Template.this.name
+                + ExplorationDialog.INFO_COLOR + ">" + getName()
                 + ":</FONT></U></B></HTML>"));
         }
 
         private void addExplanation() {
             add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + ">" + Template.this.explanation + "</FONT></HTML>"));
+                + ">" + getValue().getDescription() + "</FONT></HTML>"));
         }
 
         private void addKeyword() {
             add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + ">" + "Keyword for commandline: <B>" + Template.this.keyword
+                + ">" + "Keyword for commandline: <B>" + getKeyword()
                 + "</B>.</FONT></HTML>"));
         }
 
@@ -250,13 +235,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addArgument(String argName, Simulator simulator) {
-            this.editors.put(
-                argName,
-                Template.this.argumentTypes.get(argName).createEditor(simulator));
-
+            EncodedTypeEditor<?,String> editor =
+                Template.this.argumentTypes.get(argName).createEditor(simulator);
             JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             line.setBackground(ExplorationDialog.INFO_BG_COLOR);
-            line.add(this.editors.get(argName));
+            if (editor != null) {
+                this.editors.put(argName, editor);
+                line.add(editor);
+            }
             line.add(Box.createRigidArea(new Dimension(5, 0)));
             line.add(new JLabel("<HTML><B><FONT color="
                 + ExplorationDialog.INFO_COLOR + ">(" + argName
@@ -266,20 +252,20 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         @Override
         public Serialized getCurrentValue() {
-            Serialized value = new Serialized(Template.this.keyword);
-            for (String argName : Template.this.argumentNames) {
-                String argValue = this.editors.get(argName).getCurrentValue();
+            Serialized value = new Serialized(getKeyword());
+            for (Map.Entry<String,EncodedTypeEditor<?,String>> entry : this.editors.entrySet()) {
+                String argValue = entry.getValue().getCurrentValue();
                 if (argValue == null) {
                     return null;
                 }
-                value.setArgument(argName, argValue);
+                value.setArgument(entry.getKey(), argValue);
             }
             return value;
         }
 
         @Override
         public void setCurrentValue(Serialized value) {
-            if (!value.getKeyword().equals(Template.this.keyword)) {
+            if (!value.getKeyword().equals(getKeyword())) {
                 return;
             }
             for (String argName : Template.this.argumentNames) {
@@ -302,8 +288,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         /**
          * Localized creation of the Template class (with no arguments).
          */
-        public Template0(String keyword, String name, String explanation) {
-            super(keyword, name, explanation, null);
+        public Template0(ParsableValue value) {
+            super(value, null);
         }
 
         @Override
@@ -339,10 +325,10 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         /**
          * Localized creation of the Template class (with 1 argument).
          */
-        public Template1(String keyword, String name, String explanation,
+        public Template1(ParsableValue value,
                 SerializedParser commandlineParser, String arg1Name,
                 EncodedType<P1,String> arg1Type) {
-            super(keyword, name, explanation, commandlineParser, arg1Name);
+            super(value, commandlineParser, arg1Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
             setArgumentType(arg1Name, arg1Type);
@@ -393,12 +379,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         /**
          * Localized creation of the Template class (with 1 argument).
          */
-        public Template2(String keyword, String name, String explanation,
+        public Template2(ParsableValue value,
                 SerializedParser commandlineParser, String arg1Name,
                 EncodedType<P1,String> arg1Type, String arg2Name,
                 EncodedType<P2,String> arg2Type) {
-            super(keyword, name, explanation, commandlineParser, arg1Name,
-                arg2Name);
+            super(value, commandlineParser, arg1Name, arg2Name);
             this.type1 = arg1Type;
             this.name1 = arg1Name;
             setArgumentType(arg1Name, arg1Type);

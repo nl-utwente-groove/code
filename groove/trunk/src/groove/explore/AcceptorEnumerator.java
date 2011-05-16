@@ -18,7 +18,6 @@ package groove.explore;
 
 import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
-import groove.explore.encode.Template.Visibility;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.trans.GraphGrammar;
@@ -45,21 +44,6 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
         super("acceptor", ACCEPTOR_TOOLTIP);
         for (AcceptorValue value : EnumSet.allOf(AcceptorValue.class)) {
             Template<Acceptor> template = value.getTemplate();
-            int mask;
-            switch (value) {
-            case FINAL:
-            case ANY:
-            case NONE:
-                mask = MASK_ALL;
-                if ((mask & MASK_DEVELOPMENT_ONLY) == MASK_DEVELOPMENT_ONLY) {
-                    template.setVisibility(Visibility.DEVELOPMENT_ONLY);
-                    mask = mask - MASK_DEVELOPMENT_ONLY;
-                }
-                break;
-            default:
-                mask = MASK_DEFAULT;
-            }
-            template.setMask(mask);
             addTemplate(template);
         }
     }
@@ -79,18 +63,9 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
         return getInstance().parse(rules, source);
     }
 
+    /** Singleton instance of this class. */
     private static final AcceptorEnumerator INSTANCE = new AcceptorEnumerator();
 
-    /** Mask for strategies that are only enabled in 'concrete' mode. */
-    public final static int MASK_CONCRETE = 1;
-    /** Mask for strategies that are only enabled in 'abstraction' mode. */
-    public final static int MASK_ABSTRACT = 2;
-    /** Special mask for development strategies only. Treated specially. */
-    public final static int MASK_DEVELOPMENT_ONLY = 4;
-    /** Mask for strategies that are enabled in all modes. */
-    public final static int MASK_ALL = MASK_CONCRETE | MASK_ABSTRACT;
-    /** Mask that is used by default. */
-    public final static int MASK_DEFAULT = MASK_CONCRETE;
     private static final String ACCEPTOR_TOOLTIP = "<HTML>"
         + "An acceptor is a predicate that is applied each time the LTS is "
         + "updated<I>*</I>.<BR>"
