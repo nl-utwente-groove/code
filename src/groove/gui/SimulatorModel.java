@@ -1,15 +1,29 @@
 package groove.gui;
 
+import groove.explore.strategy.ExploreStateStrategy;
+import groove.explore.util.MatchApplier;
+import groove.explore.util.RuleEventApplier;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
+import groove.graph.TypeLabel;
+import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
+import groove.trans.SystemProperties;
+import groove.view.CtrlView;
 import groove.view.GraphView;
+import groove.view.PrologView;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
+import groove.view.TypeView;
+import groove.view.aspect.AspectGraph;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +41,386 @@ import javax.swing.undo.UndoManager;
  * a transaction on this object.
  */
 public class SimulatorModel implements Cloneable {
+    /**
+     * Adds a given host graph to the host graphs in this grammar
+     * @param hostGraph the new host graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddHost(AspectGraph hostGraph) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        grammar.getStore().putGraph(hostGraph);
+        boolean result =
+            hostGraph.getName().equals(grammar.getStartGraphName());
+        refreshGrammar(result);
+        setHost(hostGraph.getName());
+        return result;
+    }
+
+    /**
+     * Deletes a host graph from the grammar view.
+     * @param hostName name of the host graph to be deleted
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doDeleteHost(String hostName) throws IOException {
+        // test now if this is the start state, before it is deleted from the
+        // grammar
+        StoredGrammarView grammar = getGrammar();
+        boolean result = hostName.equals(grammar.getStartGraphName());
+        grammar.getStore().deleteGraph(hostName);
+        refreshGrammar(result);
+        if (result) {
+            // reset the start graph to null
+            grammar.removeStartGraph();
+        }
+        return result;
+    }
+
+    /**
+     * Renames one of the graphs in the graph list. If the graph was the start
+     * graph, uses the renamed graph again as start graph.
+     * @param graph the old host graph
+     * @param newName new name for the host graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the rename action failed
+     */
+    public boolean doRenameHost(AspectGraph graph, String newName)
+        throws IOException {
+        String oldName = graph.getName();
+        // test now if this is the start state, before it is deleted from the
+        // grammar
+        StoredGrammarView grammar = getGrammar();
+        String startGraphName = grammar.getStartGraphName();
+        boolean result =
+            oldName.equals(startGraphName) || newName.equals(startGraphName);
+        getStore().renameGraph(oldName, newName);
+        if (result) {
+            // reset the start graph to the renamed graph
+            grammar.setStartGraph(newName);
+        }
+        refreshGrammar(result);
+        return result;
+    }
+
+    /**
+     * Saves an aspect graph as a rule under a given name, and puts the rule
+     * into the current grammar view.
+     * @param ruleGraph the new rule, given as an aspect graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddRule(AspectGraph ruleGraph) throws IOException {
+        AspectGraph oldGraph = getStore().putRule(ruleGraph);
+        boolean result =
+            GraphProperties.isEnabled(ruleGraph)
+                || GraphProperties.isEnabled(oldGraph);
+        refreshGrammar(result);
+        setRule(ruleGraph.getName());
+        return result;
+    }
+
+    /**
+     * Deletes a rule from the grammar and the file system, and resets the
+     * grammar view.
+     * @param name name of the rule to be deleted
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doDeleteRule(String name) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        boolean result = grammar.getRuleView(name).isEnabled();
+        AspectGraph rule = getStore().deleteRule(name);
+        result |= GraphProperties.isEnabled(rule);
+        refreshGrammar(result);
+        return result;
+    }
+
+    /** Inverts the enabledness of the current rule, and stores the result.
+     * @param ruleGraph rule whose enabledness should be changed
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doEnableRule(AspectGraph ruleGraph) throws IOException {
+        GraphProperties properties =
+            GraphInfo.getProperties(ruleGraph, true).clone();
+        properties.setEnabled(!properties.isEnabled());
+        AspectGraph newRuleGraph = ruleGraph.clone();
+        GraphInfo.setProperties(newRuleGraph, properties);
+        newRuleGraph.setFixed();
+        return doAddRule(newRuleGraph);
+    }
+
+    /**
+     * Renames one of the rules in the grammar.
+     * @param ruleGraph rule to be renamed
+     * @param newName new name for the rule
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the rename action failed
+     */
+    public boolean doRenameRule(AspectGraph ruleGraph, String newName)
+        throws IOException {
+        boolean result = GraphProperties.isEnabled(ruleGraph);
+        String oldName = ruleGraph.getName();
+        getStore().renameRule(oldName, newName);
+        refreshGrammar(result);
+        return result;
+    }
+
+    /**
+     * Adds a control program to this grammar.
+     * @param name the name of the control program
+     * @param program the control program text
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddControl(String name, String program) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        boolean result = name.equals(grammar.getControlName());
+        grammar.getStore().putControl(name, program);
+        refreshGrammar(result);
+        setControl(name);
+        return result;
+    }
+
+    /** 
+     * Removes a control program from this grammar. 
+     * @param name name of the prolog program
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doDeleteControl(String name) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        boolean result = name.equals(grammar.getControlName());
+        grammar.getStore().deleteControl(name);
+        refreshGrammar(result);
+        return result;
+    }
+
+    /**
+     * Renames one of the control programs in the grammar.
+     * @param oldName old name of the program
+     * @param newName new name for the program
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the rename action failed
+     */
+    public boolean doRenameControl(String oldName, String newName)
+        throws IOException {
+        assert getGrammar().getControlNames().contains(oldName);
+        assert !getGrammar().getControlNames().contains(newName);
+        boolean result = oldName.equals(getGrammar().getControlName());
+        getStore().renameControl(oldName, newName);
+        refreshGrammar(result);
+        return result;
+    }
+
+    /**
+     * Adds a prolog program to this grammar.
+     * @param name the name of the prolog program
+     * @param program the prolog program text
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddProlog(String name, String program) throws IOException {
+        getStore().putProlog(name, program);
+        return false;
+    }
+
+    /** 
+     * Removes a prolog program from this grammar.
+     * @param name name of the prolog program
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doDeleteProlog(String name) throws IOException {
+        getStore().deleteProlog(name);
+        return false;
+    }
+
+    /**
+     * Saves an aspect graph as a type graph under a given name, and puts the
+     * type graph into the current grammar view.
+     * @param typeGraph the new type, given as an aspect graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddType(AspectGraph typeGraph) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        boolean result =
+            grammar.getActiveTypeNames().contains(typeGraph.getName());
+        grammar.getStore().putType(typeGraph);
+        refreshGrammar(result);
+        setType(typeGraph.getName());
+        return result;
+    }
+
+    /** 
+     * Removes a type graph from this grammar. 
+     * @param name name of the type graph to be deleted
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the delete action failed
+     */
+    public boolean doDeleteType(String name) throws IOException {
+        StoredGrammarView grammar = getGrammar();
+        boolean result = grammar.getActiveTypeNames().contains(name);
+        grammar.getStore().deleteType(name);
+        refreshGrammar(result);
+        // we only need to refresh the grammar if the deleted
+        // type graph was the currently active one
+        return result;
+    }
+
+    /**
+     * Renames a given type graph.
+     * @param graph the type graph to be renamed
+     * @param newName new name for the type graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the rename action failed
+     */
+    public boolean doRenameType(AspectGraph graph, String newName)
+        throws IOException {
+        String oldName = graph.getName();
+        // test now if this is the type graph, before it is deleted from the
+        // grammar
+        boolean result = getGrammar().getActiveTypeNames().contains(oldName);
+        getStore().renameType(oldName, newName);
+        refreshGrammar(result);
+        if (oldName.equals(getType().getName())) {
+            setType(newName);
+        }
+        return result;
+    }
+
+    /**
+     * Saves a changed list of active types in the system properties.
+     */
+    public boolean doSetActiveTypes(List<String> activeTypes)
+        throws IOException {
+        SystemProperties oldProperties = getGrammar().getProperties();
+        SystemProperties newProperties = oldProperties.clone();
+        newProperties.setTypeNames(activeTypes);
+        doSetProperties(newProperties);
+        return true;
+    }
+
+    /**
+     * Changes the system properties.
+     * @param newProperties the properties to be saved
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the save action failed
+     */
+    public boolean doSetProperties(SystemProperties newProperties)
+        throws IOException {
+        getStore().putProperties(newProperties);
+        refreshGrammar(true);
+        return true;
+    }
+
+    /**
+     * Sets a given host graph as start state. This results in a reset of
+     * the LTS.
+     * @param graph the new start graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     */
+    public boolean doSetStartGraph(AspectGraph graph) {
+        getGrammar().setStartGraph(graph);
+        refreshGrammar(true);
+        return true;
+    }
+
+    /**
+     * Sets a graph with given name as start state. This results in a reset of
+     * the LTS.
+     * @param name name of the new start graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     */
+    public boolean doSetStartGraph(String name) {
+        getGrammar().setStartGraph(name);
+        refreshGrammar(true);
+        return true;
+    }
+
+    /**
+     * Creates an empty grammar and an empty directory, and sets it in the
+     * simulator.
+     * @param grammarFile the grammar file to be used
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the create action failed
+     */
+    public boolean doNewGrammar(File grammarFile) throws IOException {
+        StoredGrammarView grammar =
+            StoredGrammarView.newInstance(grammarFile, true);
+        setGrammar(grammar);
+        return true;
+    }
+
+    /**
+     * Refreshes the currently loaded grammar, if any. Does not ask for
+     * confirmation. Has no effect if no grammar is currently loaded.
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the create action failed
+     */
+    public boolean doRefreshGrammar() throws IOException {
+        boolean result = false;
+        if (getStore() != null) {
+            getStore().reload();
+            refreshGrammar(true);
+            result = true;
+        }
+        return result;
+    }
+
+    /** 
+     * Replaces all occurrences of a given label into another label, throughout
+     * the grammar.
+     * @param oldLabel the label to be renamed
+     * @param newLabel the replacement label
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the relabel action failed 
+     */
+    public boolean doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
+        throws IOException {
+        getStore().relabel(oldLabel, newLabel);
+        refreshGrammar(true);
+        return true;
+    }
+
+    /** 
+     * Renumbers the nodes in all graphs from {@code 0} upwards.
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doRenumber() throws IOException {
+        boolean result = false;
+        if (getStore() instanceof DefaultFileSystemStore) {
+            ((DefaultFileSystemStore) getStore()).renumber();
+            refreshGrammar(true);
+            result = true;
+        }
+        return result;
+    }
+
+    /** Fully explores a given state of the GTS. */
+    public void exploreState(GraphState state) {
+        getExploreStateStrategy().prepare(getGts(), state);
+        getExploreStateStrategy().next();
+        setGts(getGts());
+    }
+
+    /**
+     * Applies a match to the current state. The current state is set to the
+     * derivation's target, and the current derivation to null.
+     */
+    public void applyMatch() {
+        RuleEvent event = getEvent();
+        if (event != null) {
+            GraphTransition result = getEventApplier().apply(getState(), event);
+            if (result != null) {
+                setState(result.target());
+            }
+        }
+    }
+
     /** Returns the active GTS, if any. */
     public final GTS getGts() {
         return this.gts;
@@ -233,34 +627,33 @@ public class SimulatorModel implements Cloneable {
     public final void refreshGrammar(boolean reset) {
         start();
         this.changes.add(Change.GRAMMAR);
+        StoredGrammarView grammar = this.grammar;
         // restrict the selected host graphs to those that are (still)
         // in the grammar
-        Collection<GraphView> newHostSet = new LinkedHashSet<GraphView>();
-        for (String hostName : this.grammar.getGraphNames()) {
-            newHostSet.add(this.grammar.getGraphView(hostName));
+        Set<GraphView> newHostSet = new LinkedHashSet<GraphView>(this.hostSet);
+        Set<GraphView> grammarHostSet = new HashSet<GraphView>();
+        for (String hostName : grammar.getGraphNames()) {
+            grammarHostSet.add(grammar.getGraphView(hostName));
         }
-        newHostSet.retainAll(this.hostSet);
+        newHostSet.retainAll(grammarHostSet);
         doSetHostSet(newHostSet);
-        if (this.host != null && !newHostSet.contains(this.host)) {
-            boolean hostValid =
-                this.grammar.getGraphNames().contains(this.host.getName());
-            doSetHost(hostValid ? this.host : null);
-        }
         // restrict the selected rules to those that are (still)
         // in the grammar
-        Collection<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
-        for (String ruleName : this.grammar.getRuleNames()) {
-            newRuleSet.add(this.grammar.getRuleView(ruleName));
+        Collection<RuleView> newRuleSet =
+            new LinkedHashSet<RuleView>(this.ruleSet);
+        Set<RuleView> grammarRuleSet = new HashSet<RuleView>();
+        for (String ruleName : grammar.getRuleNames()) {
+            grammarRuleSet.add(grammar.getRuleView(ruleName));
         }
-        newRuleSet.retainAll(this.ruleSet);
+        newRuleSet.retainAll(grammarRuleSet);
         doSetRuleSet(newRuleSet);
-        if (this.rule != null && !newRuleSet.contains(this.rule)) {
-            boolean ruleValid =
-                this.grammar.getRuleNames().contains(this.rule.getName());
-            doSetRule(ruleValid ? this.rule : null);
-        }
+        doSetControl();
+        doSetType();
         if (reset) {
             doSetGts(null);
+            doSetState(null);
+            doSetTransition(null);
+            doSetEvent(null);
         }
         finish();
     }
@@ -271,9 +664,14 @@ public class SimulatorModel implements Cloneable {
         if (doSetGrammar(grammar)) {
             // reset the GTS in any case
             doSetGts(null);
+            doSetState(null);
+            doSetTransition(null);
+            doSetEvent(null);
             doSetHostSet(Collections.<GraphView>emptySet());
             doSetRuleSet(Collections.<RuleView>emptySet());
         }
+        doSetControl();
+        doSetType();
         finish();
     }
 
@@ -299,10 +697,10 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Returns the currently selected host graph.
+     * Returns the first of the currently selected host graphs.
      */
     public final GraphView getHost() {
-        return this.host;
+        return this.hostSet.isEmpty() ? null : this.hostSet.iterator().next();
     }
 
     /** Changes the currently selected host, based on the graph name.
@@ -317,22 +715,8 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setHost(GraphView host) {
         start();
-        doSetHost(host);
+        doSetHostSet(Collections.singleton(host));
         return finish();
-    }
-
-    /** Changes the currently selected host.
-     */
-    private final boolean doSetHost(GraphView host) {
-        boolean result = (host != this.host);
-        if (result) {
-            this.host = host;
-            this.changes.add(Change.HOST);
-            //            if (propagate) {
-            //                doSetState(host == null ? this.activeState : null);
-            //            }
-        }
-        return result;
     }
 
     /** 
@@ -354,13 +738,7 @@ public class SimulatorModel implements Cloneable {
         for (String hostName : hostNameSet) {
             hostSet.add(this.grammar.getGraphView(hostName));
         }
-        if (doSetHostSet(hostSet) && !hostNameSet.contains(getHost())) {
-            if (hostNameSet.isEmpty()) {
-                doSetHost(null);
-            } else {
-                doSetHost(hostSet.iterator().next());
-            }
-        }
+        doSetHostSet(hostSet);
         return finish();
     }
 
@@ -372,15 +750,18 @@ public class SimulatorModel implements Cloneable {
     private final boolean doSetHostSet(Collection<GraphView> hostSet) {
         boolean result = !hostSet.equals(this.hostSet);
         if (result) {
-            this.hostSet = hostSet;
-            this.changes.add(Change.HOST_SET);
+            // keep the current set in the same order
+            this.hostSet = new LinkedHashSet<GraphView>(this.hostSet);
+            this.hostSet.retainAll(hostSet);
+            this.hostSet.addAll(hostSet);
+            this.changes.add(Change.HOST);
         }
         return result;
     }
 
     /** Returns the currently selected rule. */
     public final RuleView getRule() {
-        return this.rule;
+        return this.ruleSet.isEmpty() ? null : this.ruleSet.iterator().next();
     }
 
     /** Changes the currently selected rule, based on the rule name.
@@ -408,20 +789,6 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /**
-     * Changes the currently selected rule and records the change,
-     * if the new rule is different from the old.
-     * @return {@code true} if a change was actually made
-     */
-    private final boolean doSetRule(RuleView rule) {
-        boolean result = rule != this.rule;
-        if (result) {
-            this.rule = rule;
-            this.changes.add(Change.RULE);
-        }
-        return result;
-    }
-
     /** 
      * Returns the currently selected rule set.
      */
@@ -437,14 +804,12 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setRuleSet(Collection<RuleView> ruleSet) {
         start();
-        if (doSetRuleSet(ruleSet) && !ruleSet.contains(getRule())) {
-            if (ruleSet.isEmpty()) {
-                doSetRule(null);
-            } else {
-                doSetRule(ruleSet.iterator().next());
-            }
-        }
+        doSetRuleSet(ruleSet);
         return finish();
+    }
+
+    private final boolean doSetRule(RuleView rule) {
+        return doSetRuleSet(Collections.singleton(rule));
     }
 
     /** 
@@ -456,18 +821,203 @@ public class SimulatorModel implements Cloneable {
     private final boolean doSetRuleSet(Collection<RuleView> ruleSet) {
         boolean result = !ruleSet.equals(this.ruleSet);
         if (result) {
-            this.ruleSet = ruleSet;
-            this.changes.add(Change.RULE_SET);
+            this.ruleSet = new LinkedHashSet<RuleView>(this.ruleSet);
+            this.ruleSet.retainAll(ruleSet);
+            this.ruleSet.addAll(ruleSet);
+            this.changes.add(Change.RULE);
         }
         return result;
+    }
+
+    /** Returns the currently selected type graph. */
+    public final TypeView getType() {
+        return this.type;
+    }
+
+    /** Changes the currently selected type graph, based on the type name.
+     * @return if {@code true}, the rule was actually changed.
+     */
+    public final boolean setType(String typeName) {
+        if (typeName == null) {
+            return setType((TypeView) null);
+        } else {
+            TypeView type = getGrammar().getTypeView(typeName);
+            assert type != null;
+            return setType(type);
+        }
+    }
+
+    /**
+     * Changes the currently selected type graph.
+     * @return if {@code true}, the type was actually changed.
+     */
+    public final boolean setType(TypeView type) {
+        start();
+        doSetType(type);
+        return finish();
+    }
+
+    /**
+     * Changes the currently selected type graph and records the change,
+     * if the new type graph is different from the old.
+     * @return {@code true} if a change was actually made
+     */
+    private final boolean doSetType(TypeView type) {
+        boolean result = type != this.type;
+        if (result) {
+            this.type = type;
+            this.changes.add(Change.TYPE);
+        }
+        return result;
+    }
+
+    /** 
+     * Sets the selected type graph, by using the current value if
+     * that exists in the current grammar, or choosing the best value from the
+     * type graphs available in the grammar otherwise. Only sets {@code null} 
+     * if the grammar has no type graphs.
+     */
+    private final void doSetType() {
+        StoredGrammarView grammar = this.grammar;
+        TypeView type = this.type;
+        if (type == null || !type.equals(grammar.getTypeView(type.getName()))) {
+            String newTypeName = null;
+            if (!grammar.getActiveTypeNames().isEmpty()) {
+                // preferably get the type view from the active types
+                newTypeName = grammar.getActiveTypeNames().iterator().next();
+            } else if (!grammar.getTypeNames().isEmpty()) {
+                // if there are none, take any type
+                newTypeName = grammar.getTypeNames().iterator().next();
+            }
+            TypeView newType =
+                newTypeName == null ? null : grammar.getTypeView(newTypeName);
+            doSetType(newType);
+        }
+    }
+
+    /** Returns the currently selected control program. */
+    public final CtrlView getControl() {
+        return this.control;
+    }
+
+    /** Changes the currently selected control program, based on the program name.
+     * @return if {@code true}, the program was actually changed.
+     */
+    public final boolean setControl(String controlName) {
+        if (controlName == null) {
+            return setControl((CtrlView) null);
+        } else {
+            CtrlView control = getGrammar().getControlView(controlName);
+            assert control != null;
+            return setControl(control);
+        }
+    }
+
+    /**
+     * Changes the currently selected control program.
+     * @return if {@code true}, the program was actually changed.
+     */
+    public final boolean setControl(CtrlView type) {
+        start();
+        doSetControl(type);
+        return finish();
+    }
+
+    /**
+     * Changes the currently selected control program and records the change,
+     * if the new type program is different from the old.
+     * @return {@code true} if a change was actually made
+     */
+    private final boolean doSetControl(CtrlView control) {
+        boolean result = control != this.control;
+        if (result) {
+            this.control = control;
+            this.changes.add(Change.CONTROL);
+        }
+        return result;
+    }
+
+    /** 
+     * Sets the selected control field, by using the current value if
+     * that exists in the current grammar, or choosing the best value from the
+     * control programs available in the grammar otherwise. Only sets {@code null} 
+     * if the grammar has no control programs.
+     */
+    private final void doSetControl() {
+        // check the selected control view
+        StoredGrammarView grammar = this.grammar;
+        CtrlView control = this.control;
+        if (control == null
+            || !control.equals(grammar.getControlView(control.getName()))) {
+            CtrlView newControl = grammar.getControlView();
+            if (newControl == null && !grammar.getControlNames().isEmpty()) {
+                String newName = grammar.getControlNames().iterator().next();
+                newControl = grammar.getControlView(newName);
+            }
+            doSetControl(newControl);
+        }
+    }
+
+    /** Returns the currently selected type graph. */
+    public final TypeView getProlog() {
+        return this.type;
+    }
+
+    /** Changes the currently selected prolog program, based on the program name.
+     * @return if {@code true}, the program was actually changed.
+     */
+    public final boolean setProlog(String prologName) {
+        if (prologName == null) {
+            return setProlog((PrologView) null);
+        } else {
+            PrologView prolog = getGrammar().getPrologView(prologName);
+            assert prolog != null;
+            return setProlog(prolog);
+        }
+    }
+
+    /**
+     * Changes the currently selected prolog program.
+     * @return if {@code true}, the program was actually changed.
+     */
+    public final boolean setProlog(PrologView prolog) {
+        start();
+        doSetProlog(prolog);
+        return finish();
+    }
+
+    /**
+     * Changes the currently selected prolog program and records the change,
+     * if the new program is different from the old.
+     * @return {@code true} if a change was actually made
+     */
+    private final boolean doSetProlog(PrologView prolog) {
+        boolean result = prolog != this.prolog;
+        if (result) {
+            this.prolog = prolog;
+            this.changes.add(Change.PROLOG);
+        }
+        return result;
+    }
+
+    /** Returns true if the simulator is in abstraction mode. */
+    public boolean isAbstractionMode() {
+        return this.isAbstractionMode;
+    }
+
+    /** 
+     * Sets the abstraction mode.
+     * @param value if {@code true}, the simulator is set to abstract.
+     */
+    public void setAbstractionMode(boolean value) {
+        this.isAbstractionMode = value;
     }
 
     @Override
     public String toString() {
         return "GuiState [gts=" + this.gts + ", state=" + this.state
             + ", transition=" + this.transition + ", event=" + this.event
-            + ", grammar=" + this.grammar + ", host=" + this.host
-            + ", hostSet=" + this.hostSet + ", rule=" + this.rule
+            + ", grammar=" + this.grammar + ", hostSet=" + this.hostSet
             + ", ruleSet=" + this.ruleSet + ", changes=" + this.changes + "]";
     }
 
@@ -514,27 +1064,6 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** 
-     * Aborts a transaction and rolls back without notification.
-     * This is only allowed if there is a transaction underway,
-     * by the same owner.
-     */
-    private void abort() {
-        assert this.old != null;
-        // reset all values
-        this.event = this.old.event;
-        this.grammar = this.old.grammar;
-        this.gts = this.old.gts;
-        this.host = this.old.host;
-        this.hostSet = this.old.hostSet;
-        this.rule = this.old.rule;
-        this.ruleSet = this.old.ruleSet;
-        this.state = this.old.state;
-        this.transition = this.old.transition;
-        this.old = null;
-        this.changes = null;
-    }
-
     @Override
     protected SimulatorModel clone() {
         SimulatorModel result = null;
@@ -573,21 +1102,53 @@ public class SimulatorModel implements Cloneable {
     private RuleEvent event;
     /** Currently loaded grammar. */
     private StoredGrammarView grammar;
-    /** Currently selected host graph view. */
-    private GraphView host;
     /** Multiple selection of host graph views. */
     private Collection<GraphView> hostSet = Collections.emptyList();
-    /** Currently selected rule view. */
-    private RuleView rule;
     /** Multiple selection of rule views. */
     private Collection<RuleView> ruleSet = Collections.emptyList();
-
+    /** Currently selected type view. */
+    private TypeView type;
+    /** Currently selected control view. */
+    private CtrlView control;
+    /** Currently selected prolog view. */
+    private PrologView prolog;
     /** Array of listeners. */
     private final List<SimulatorListener> listeners =
         new ArrayList<SimulatorListener>();
 
+    private final MyLTSListener ltsListener = new MyLTSListener();
     /** Undo manager listening to the grammar store. */
     private UndoManager undoManager;
+    /** Flag to indicate that the Simulator is in abstraction mode. */
+    private boolean isAbstractionMode = false;
+
+    /**
+     * Returns the state generator for the current GTS, if any.
+     */
+    private RuleEventApplier getEventApplier() {
+        GTS gts = getGts();
+        if (this.eventApplier == null || this.eventApplier.getGTS() != gts) {
+            if (gts != null) {
+                this.eventApplier = new MatchApplier(gts);
+            }
+        }
+        return this.eventApplier;
+    }
+
+    /** The rule event applier for the current GTS. */
+    private RuleEventApplier eventApplier;
+
+    /**
+     * @return the explore-strategy for exploring a single state
+     */
+    private ExploreStateStrategy getExploreStateStrategy() {
+        if (this.exploreStateStrategy == null) {
+            this.exploreStateStrategy = new ExploreStateStrategy();
+        }
+        return this.exploreStateStrategy;
+    }
+
+    private ExploreStateStrategy exploreStateStrategy;
 
     /** Change type. */
     public enum Change {
@@ -616,29 +1177,31 @@ public class SimulatorModel implements Cloneable {
          * @see SimulatorModel#getGrammar()
          */
         GRAMMAR,
-        /** 
-         * The selected host graph has changed.
-         * @see SimulatorModel#getHost()
+        /**
+         * The selected type graph has changed.
          */
-        HOST,
+        TYPE,
         /** 
          * The selected set of host graphs has changed.
+         * @see SimulatorModel#getHost()
          * @see SimulatorModel#getHostSet()
          */
-        HOST_SET,
-        /** 
-         * The selected rule has changed.
-         * @see SimulatorModel#getRule()
+        HOST,
+        /**
+         * The selected control program has changed.
          */
-        RULE,
+        CONTROL,
+        /**
+         * The selected prolog program has changed.
+         */
+        PROLOG,
         /** 
          * The selected rule set has changed.
+         * @see SimulatorModel#getRule()
          * @see SimulatorModel#getRuleSet()
          */
-        RULE_SET;
+        RULE,
     }
-
-    private final MyLTSListener ltsListener = new MyLTSListener();
 
     /**
      * LTS listener to observe changes to the GTS.

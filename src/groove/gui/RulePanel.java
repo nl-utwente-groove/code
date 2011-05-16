@@ -37,6 +37,7 @@ import groove.view.FormatException;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -85,7 +86,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected void installListeners() {
         super.installListeners();
-        this.simulator.addSimulatorListener(this);
+        getSimulatorModel().addListener(this);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
@@ -99,7 +100,12 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
                 SystemProperties newProperties =
                     getGrammar().getProperties().clone();
                 newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
-                RulePanel.this.simulator.doSaveProperties(newProperties);
+                try {
+                    getSimulator().getModel().doSetProperties(newProperties);
+                } catch (IOException exc) {
+                    getSimulator().showErrorDialog(
+                        "Error while modifying type hierarchy", exc);
+                }
             }
         });
     }

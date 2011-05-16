@@ -30,7 +30,7 @@ import groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ModelCheckingScenario implements Scenario {
+public class ModelCheckingScenario {
     /**
      * Creates a new named instance from a given strategy and acceptor.
      */
@@ -40,6 +40,12 @@ public class ModelCheckingScenario implements Scenario {
         this.name = name;
     }
 
+    /**
+     * Plays the scenario on a given GTS, yielding a result. Convenience method
+     * for {@link #prepare(GTS, GraphState)} with the GTS' initial state as
+     * start state for the scenario.
+     * @see #prepare(GTS, GraphState)
+     */
     public void prepare(GTS gts) {
         prepare(gts, null);
     }
@@ -52,6 +58,10 @@ public class ModelCheckingScenario implements Scenario {
         return this.acceptor.getResult();
     }
 
+    /**
+     * Indicates whether the last invocation of {@link #prepare(GTS)} was
+     * interrupted.
+     */
     public boolean isInterrupted() {
         return this.interrupted;
     }
@@ -61,6 +71,7 @@ public class ModelCheckingScenario implements Scenario {
         return this.acceptor;
     }
 
+    /** Returns then name of this scenario. */
     public String getName() {
         return this.name;
     }
@@ -76,7 +87,17 @@ public class ModelCheckingScenario implements Scenario {
         return this.gts;
     }
 
-    @Override
+    /**
+     * Plays the scenario on a given GTS and state, yielding a result. The
+     * method returns when there are no more states to explore, or when the
+     * result is done (according to {@link Result#done()}), or when the thread
+     * is interrupted.
+     * @param gts the GTS to play the scenario on
+     * @param state the start state for the scenario; if <code>null</code>,
+     * the GTS start state is used
+     * @see Result#done()
+     * @see #isInterrupted()
+     */
     public void prepare(GTS gts, GraphState state) {
         getStrategy().setProperty(getProperty());
         if (getStrategy() instanceof BoundedModelCheckingStrategy) {
@@ -91,7 +112,17 @@ public class ModelCheckingScenario implements Scenario {
         this.strategy.prepare(gts, gts.startState());
     }
 
-    @Override
+    /**
+     * Plays the scenario on the GTS and state for which it was prepared with
+     * the last call to {@link #prepare(GTS)} or
+     * {@link #prepare(GTS, GraphState)}. The method returns when there are no
+     * more states to explore, or when the result is done (according to
+     * {@link Result#done()}), or when the thread is interrupted.
+     * @return the result of the scenario. This may be partial if the thread was
+     *         interrupted.
+     * @see Result#done()
+     * @see #isInterrupted()
+     */
     public Result play() {
         playReporter.start();
 
@@ -139,7 +170,7 @@ public class ModelCheckingScenario implements Scenario {
         }
     }
 
-    @Override
+    /** Returns the strategy this scenario uses. */
     public ModelCheckingStrategy getStrategy() {
         return this.strategy;
     }

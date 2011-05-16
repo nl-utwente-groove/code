@@ -44,7 +44,7 @@ class UndoHistory implements SimulatorListener {
         this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();
         this.redoAction = new ForwardAction();
-        simulator.addSimulatorListener(this);
+        this.simulatorModel.addListener(this);
     }
 
     /**

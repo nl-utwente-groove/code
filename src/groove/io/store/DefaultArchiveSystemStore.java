@@ -255,6 +255,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
+    public String renameControl(String oldName, String newName)
+        throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
     public Map<String,String> getProlog() {
         testInit();
         return Collections.unmodifiableMap(this.prologMap);
@@ -267,6 +273,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
 
     @Override
     public String deleteProlog(String name) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public String renameProlog(String oldName, String newName)
+        throws IOException {
         throw createImmutable();
     }
 

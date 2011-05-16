@@ -220,7 +220,10 @@ public class DefaultRuleView implements RuleView {
     @Override
     public void setLabelStore(LabelStore labelStore) {
         // reset the type graph
-        this.type = null;
+        if (isTyped()) {
+            this.type = null;
+            invalidate();
+        }
         this.labelStore = labelStore;
         // the label store is not really used in the construction of the rule
         // so we don't have to invalidate but can set the store directly 

@@ -178,7 +178,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public String deleteControl(String name) {
+    public String deleteControl(String name) throws IOException {
         String result = null;
         DeleteControlEdit deleteEdit = doDeleteControl(name);
         if (deleteEdit != null) {
@@ -193,7 +193,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Implements the functionality of the {@link #deleteControl(String)}
      * method. Returns a corresponding undoable edit.
      */
-    private DeleteControlEdit doDeleteControl(String name) {
+    private DeleteControlEdit doDeleteControl(String name) throws IOException {
         DeleteControlEdit result = null;
         testInit();
         String control = this.controlMap.remove(name);
@@ -207,10 +207,49 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 newProps = getProperties().clone();
                 newProps.setUseControl(false);
                 newProps.setControlName("");
+                doPutProperties(newProps);
             }
             result = new DeleteControlEdit(name, control, oldProps, newProps);
         }
         return result;
+    }
+
+    @Override
+    public String renameControl(String oldName, String newName)
+        throws IOException {
+        String result = null;
+        RenameControlEdit edit = doRenameControl(oldName, newName);
+        if (edit != null) {
+            edit.checkAndSetVersion();
+            postEdit(edit);
+            result = edit.getOldControl();
+        }
+        return result;
+    }
+
+    /**
+     * Implements the functionality of {@link #renameRule(String, String)}.
+     * Returns an undoable edit wrapping this functionality.
+     */
+    private RenameControlEdit doRenameControl(String oldName, String newName)
+        throws IOException {
+        testInit();
+        String control = this.controlMap.remove(oldName);
+        assert control != null;
+        createControlFile(oldName).renameTo(createControlFile(newName));
+        String oldControl = this.controlMap.put(newName, control);
+        assert oldControl == null;
+        SystemProperties oldProps = null;
+        SystemProperties newProps = null;
+        String activeControl = getProperties().getControlName();
+        if (oldName.equals(activeControl)) {
+            oldProps = getProperties();
+            newProps = getProperties().clone();
+            newProps.setControlName(newName);
+            doPutProperties(newProps);
+        }
+        return new RenameControlEdit(oldName, newName, oldProps, newProps,
+            control);
     }
 
     @Override
@@ -268,6 +307,32 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             result = new DeletePrologEdit(name, prolog);
         }
         return result;
+    }
+
+    @Override
+    public String renameProlog(String oldName, String newName) {
+        String result = null;
+        RenamePrologEdit edit = doRenameProlog(oldName, newName);
+        if (edit != null) {
+            edit.checkAndSetVersion();
+            postEdit(edit);
+            result = edit.getOldProlog();
+        }
+        return result;
+    }
+
+    /**
+     * Implements the functionality of {@link #renameRule(String, String)}.
+     * Returns an undoable edit wrapping this functionality.
+     */
+    private RenamePrologEdit doRenameProlog(String oldName, String newName) {
+        testInit();
+        String prolog = this.prologMap.remove(oldName);
+        assert prolog != null;
+        createPrologFile(oldName).renameTo(createPrologFile(newName));
+        String oldProlog = this.prologMap.put(newName, prolog);
+        assert oldProlog == null;
+        return new RenamePrologEdit(oldName, newName, prolog);
     }
 
     @Override
@@ -492,7 +557,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph deleteType(String name) {
+    public AspectGraph deleteType(String name) throws IOException {
         AspectGraph result = null;
         DeleteTypeEdit edit = doDeleteType(name);
         if (edit != null) {
@@ -507,7 +572,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Implements the functionality of the {@link #deleteType(String)} method.
      * Returns a corresponding undoable edit.
      */
-    private DeleteTypeEdit doDeleteType(String name) {
+    private DeleteTypeEdit doDeleteType(String name) throws IOException {
         DeleteTypeEdit result = null;
         testInit();
         AspectGraph type = this.typeMap.remove(name);
@@ -516,11 +581,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             // change the type-related system properties, if necessary
             SystemProperties oldProps = null;
             SystemProperties newProps = null;
-            ArrayList<String> types = getProperties().getTypeNames();
+            List<String> types =
+                new ArrayList<String>(getProperties().getTypeNames());
             if (types.remove(name)) {
                 oldProps = getProperties();
                 newProps = getProperties().clone();
                 newProps.setTypeNames(types);
+                doPutProperties(newProps);
             }
             result = new DeleteTypeEdit(type, oldProps, newProps);
         }
@@ -552,9 +619,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         boolean edited = false;
         AspectGraph oldType = null;
         if (type != null) {
-            oldType = this.typeMap.put(newName, type);
             this.marshaller.deleteGraph(createTypeFile(oldName));
             type = type.rename(newName);
+            oldType = this.typeMap.put(newName, type);
             this.marshaller.marshalGraph(type.toPlainGraph(),
                 createTypeFile(newName));
             edited = true;
@@ -566,12 +633,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         if (edited) {
             SystemProperties oldProps = null;
             SystemProperties newProps = null;
-            List<String> types = getProperties().getTypeNames();
+            List<String> types =
+                new ArrayList<String>(getProperties().getTypeNames());
             if (types.remove(oldName)) {
                 oldProps = getProperties();
                 newProps = getProperties().clone();
                 types.add(newName);
                 newProps.setTypeNames(types);
+                doPutProperties(newProps);
             }
             result =
                 new RenameTypeEdit(oldName, newName, oldType, oldProps,
@@ -1347,14 +1416,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (this.oldControl == null) {
-                doDeleteControl(this.name);
-            } else {
-                try {
+            try {
+                if (this.oldControl == null) {
+                    doDeleteControl(this.name);
+                } else {
                     doPutControl(this.name, this.oldControl);
-                } catch (IOException exc) {
-                    throw new CannotUndoException();
                 }
+            } catch (IOException exc) {
+                throw new CannotUndoException();
             }
             notifyObservers(this);
         }
@@ -1425,6 +1494,69 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final String name;
         /** The deleted control program. */
         private final String control;
+        /** The old system properties; possibly {@code null}. */
+        private final SystemProperties oldProps;
+        /** The new system properties; possibly {@code null}. */
+        private final SystemProperties newProps;
+    }
+
+    /** Edit consisting of the renaming of a control program. */
+    private class RenameControlEdit extends MyEdit {
+        public RenameControlEdit(String oldName, String newName,
+                SystemProperties oldProps, SystemProperties newProps,
+                String oldControl) {
+            super(CONTROL_CHANGE);
+            this.oldName = oldName;
+            this.newName = newName;
+            this.oldProps = oldProps;
+            this.newProps = newProps;
+            this.oldControl = oldControl;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return Options.RENAME_RULE_ACTION_NAME;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            try {
+                if (this.newProps != null) {
+                    doPutProperties(this.newProps);
+                }
+                doRenameControl(this.oldName, this.newName);
+                notifyObservers(this);
+            } catch (IOException exc) {
+                throw new CannotRedoException();
+            }
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            try {
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
+                doRenameControl(this.newName, this.oldName);
+                notifyObservers(this);
+            } catch (IOException exc) {
+                throw new CannotUndoException();
+            }
+        }
+
+        /** Returns the text of the renamed control program. */
+        public final String getOldControl() {
+            return this.oldControl;
+        }
+
+        /** The old name of the renamed control program. */
+        private final String oldName;
+        /** The new name of the renamed control program. */
+        private final String newName;
+        /** The text of the renamed control program. */
+        private final String oldControl;
         /** The old system properties; possibly {@code null}. */
         private final SystemProperties oldProps;
         /** The new system properties; possibly {@code null}. */
@@ -1525,6 +1657,47 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final String name;
         /** The deleted control program. */
         private final String prolog;
+    }
+
+    /** Edit consisting of the renaming of a prolog program. */
+    private class RenamePrologEdit extends MyEdit {
+        public RenamePrologEdit(String oldName, String newName, String oldProlog) {
+            super(CONTROL_CHANGE);
+            this.oldName = oldName;
+            this.newName = newName;
+            this.oldProlog = oldProlog;
+        }
+
+        @Override
+        public String getPresentationName() {
+            return Options.RENAME_RULE_ACTION_NAME;
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            super.redo();
+            doRenameProlog(this.oldName, this.newName);
+            notifyObservers(this);
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            super.undo();
+            doRenameProlog(this.newName, this.oldName);
+            notifyObservers(this);
+        }
+
+        /** Returns the text of the renamed prolog program. */
+        public final String getOldProlog() {
+            return this.oldProlog;
+        }
+
+        /** The old name of the renamed prolog program. */
+        private final String oldName;
+        /** The new name of the renamed prolog program. */
+        private final String newName;
+        /** The text of the renamed prolog program. */
+        private final String oldProlog;
     }
 
     /** Edit consisting of the addition (or replacement) of a graph. */
@@ -1841,14 +2014,14 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (this.oldType == null) {
-                doDeleteType(this.newType.getName());
-            } else {
-                try {
+            try {
+                if (this.oldType == null) {
+                    doDeleteType(this.newType.getName());
+                } else {
                     doPutType(this.oldType);
-                } catch (IOException exc) {
-                    throw new CannotUndoException();
                 }
+            } catch (IOException exc) {
+                throw new CannotUndoException();
             }
             notifyObservers(this);
         }
