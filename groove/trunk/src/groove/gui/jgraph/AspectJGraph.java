@@ -256,7 +256,7 @@ final public class AspectJGraph extends GraphJGraph {
             case HOST:
                 result.add(getSimulator().getApplyTransitionAction());
                 result.addSeparator();
-                result.add(getSimulator().getEditGraphAction());
+                result.add(getSimulator().getEditHostOrStateAction());
                 break;
             case RULE:
                 JMenu setRuleMenu = createSetRuleMenu();
@@ -349,7 +349,7 @@ final public class AspectJGraph extends GraphJGraph {
         switch (getGraphRole()) {
         case HOST:
             if (getSimulator() != null
-                && getSimulator().getStatePanel().isShowingState()) {
+                && getSimulator().getModel().getHost() != null) {
                 return Options.EXPORT_STATE_ACTION_NAME;
             } else {
                 return Options.EXPORT_GRAPH_ACTION_NAME;

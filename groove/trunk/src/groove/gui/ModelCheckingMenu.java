@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.explore.ModelCheckingScenario;
-import groove.explore.Scenario;
 import groove.explore.strategy.BoundedNestedDFSPocketStrategy;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.NestedDFSStrategy;
@@ -64,7 +63,7 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
         super(Options.VERIFY_MENU_NAME);
         this.simulator = simulator;
         this.disableOnFinish = disableOnFinish;
-        simulator.addSimulatorListener(this);
+        simulator.getModel().addListener(this);
 
         createAddMenuItems();
     }
@@ -74,7 +73,7 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * exploration scenarios.
      */
     protected void createAddMenuItems() {
-        Scenario scenario =
+        ModelCheckingScenario scenario =
             new ModelCheckingScenario(new NestedDFSStrategy(),
                 Options.CHECK_LTL_ACTION_NAME);
         addScenarioHandler(scenario);
@@ -105,7 +104,7 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * Adds an explication strategy action to the end of this menu.
      * @param scenario the new exploration strategy
      */
-    public void addScenarioHandler(Scenario scenario) {
+    public void addScenarioHandler(ModelCheckingScenario scenario) {
         Action generateAction =
             this.simulator.getLaunchScenarioAction(scenario);
         generateAction.setEnabled(false);
@@ -123,14 +122,14 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
             // the lts's of the strategies in this menu are changed
             // moreover, the conditions in condition strategies are reset
             // furthermore, the enabling is (re)set
-            for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
+            for (Map.Entry<ModelCheckingScenario,Action> entry : this.scenarioActionMap.entrySet()) {
                 Action generateAction = entry.getValue();
                 generateAction.setEnabled(newGts != null);
             }
         }
         if (changes.contains(Change.STATE) && source.getState() != null) {
-            for (Map.Entry<Scenario,Action> entry : this.scenarioActionMap.entrySet()) {
-                Scenario scenario = entry.getKey();
+            for (Map.Entry<ModelCheckingScenario,Action> entry : this.scenarioActionMap.entrySet()) {
+                ModelCheckingScenario scenario = entry.getKey();
                 Action generateAction = entry.getValue();
                 generateAction.putValue(Action.NAME, scenario.getName());
             }
@@ -157,8 +156,8 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * Mapping from exploration strategies to {@link Action}s resulting in that
      * strategy.
      */
-    private final Map<Scenario,Action> scenarioActionMap =
-        new HashMap<Scenario,Action>();
+    private final Map<ModelCheckingScenario,Action> scenarioActionMap =
+        new HashMap<ModelCheckingScenario,Action>();
     /** The (permanent) GTS listener associated with this menu. */
     private final GTSListener gtsListener = new GTSListener();
 

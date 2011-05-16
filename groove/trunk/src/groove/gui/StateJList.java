@@ -63,7 +63,6 @@ public class StateJList extends JList implements SimulatorListener {
      */
     protected StateJList(final Simulator simulator) {
         this.simulator = simulator;
-        this.simulator.addSimulatorListener(this);
         this.listModel = new DefaultListModel();
         setModel(this.listModel);
         this.setEnabled(false);
@@ -73,6 +72,7 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     private void installListeners() {
+        getSimulatorModel().addListener(this);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -139,15 +139,15 @@ public class StateJList extends JList implements SimulatorListener {
      */
     protected JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
-        result.add(this.simulator.getNewGraphAction());
+        result.add(this.simulator.getNewHostAction());
         result.setFocusable(false);
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
         if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(this.simulator.getEditGraphAction());
+            result.add(this.simulator.getEditHostOrStateAction());
             result.addSeparator();
             result.add(this.simulator.getCopyGraphAction());
-            result.add(this.simulator.getDeleteGraphAction());
+            result.add(this.simulator.getDeleteHostAction());
             result.add(this.simulator.getRenameGraphAction());
             result.addSeparator();
             result.add(this.simulator.getSetStartGraphAction());
@@ -178,7 +178,7 @@ public class StateJList extends JList implements SimulatorListener {
             }
         }
         if (changes.contains(Change.STATE)) {
-            refreshCurrentState(!changes.contains(Change.GTS));
+            refreshCurrentState(source.getHost() == null);
         }
         activateListeners();
     }
@@ -261,7 +261,7 @@ public class StateJList extends JList implements SimulatorListener {
      */
     private void refreshCurrentState(boolean select) {
         String text;
-        if (getSimulatorState().getState() == null) {
+        if (getSimulatorModel().getState() == null) {
             String startKey =
                 this.simulator.getStartSimulationAction().getValue(
                     Action.ACCELERATOR_KEY).toString();
@@ -271,15 +271,11 @@ public class StateJList extends JList implements SimulatorListener {
         } else {
             text =
                 String.format("Simulation state: %s",
-                    getSimulatorState().getState());
+                    getSimulatorModel().getState());
         }
         this.listModel.setElementAt(text, 0);
         if (select) {
-            // set the selection to the first element (the simulation state
-            // indicator)
-            //            suspendListeners();
             setSelectedIndex(0);
-            //            restoreListeners();
         }
         repaint();
     }
@@ -305,7 +301,7 @@ public class StateJList extends JList implements SimulatorListener {
 
     /** Convenience method to retrieve the current GTS from the simulator. */
     private GTS getCurrentGTS() {
-        return getSimulatorState().getGts();
+        return getSimulatorModel().getGts();
     }
 
     /** Returns the simulator to which the state list belongs. */
@@ -314,7 +310,7 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     /** Returns the simulator to which the state list belongs. */
-    private SimulatorModel getSimulatorState() {
+    private SimulatorModel getSimulatorModel() {
         return getSimulator().getModel();
     }
 
@@ -384,7 +380,10 @@ public class StateJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
-                    getSimulator().doLoadStartGraph((String) getSelectedValue());
+                    if (getSimulator().getModel().doSetStartGraph(
+                        (String) getSelectedValue())) {
+                        getSimulator().startSimulation();
+                    }
                 }
             }
         }
@@ -398,7 +397,7 @@ public class StateJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorState().setHostSet(getSelectedGraphs());
+            getSimulatorModel().setHostSet(getSelectedGraphs());
             switchSimulatorToStatePanel();
         }
     }

@@ -16,6 +16,9 @@
  */
 package groove.gui;
 
+import groove.view.StoredGrammarView;
+import groove.view.TypeView;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -24,6 +27,7 @@ import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,15 +46,13 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * Customized GUI component that implements a list of type graph names with
  * check boxes.
  * @author Eduardo Zambon
  */
-public class JTypeNameList extends JList implements TypePanel.Refreshable {
+public class JTypeNameList extends JList {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -93,7 +95,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
     /** The panel showing the type graphs. */
     protected final TypePanel panel;
     private final CheckBoxListModel model;
-    private final ListSelectionListener selectionListener;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -114,55 +115,36 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         this.setLayoutOrientation(JList.VERTICAL_WRAP);
         this.setVisibleRowCount(1);
 
-        this.selectionListener = new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    // This event is referencing the previously selected value,
-                    // ignore it and wait for the event with the new value.
-                    return;
-                }
-                int index = JTypeNameList.this.getSelectedIndex();
-                if (index >= 0) {
-                    ListItem item =
-                        JTypeNameList.this.model.getElementAt(index);
-                    JTypeNameList.this.panel.setSelectedType(item.dataItem);
-                }
-            }
-        };
-        this.addListSelectionListener(this.selectionListener);
-
         this.addMouseListener(new MouseListener());
         this.setCellRenderer(new CellRenderer());
-        this.panel.addRefreshable(this);
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    @Override
-    public void refresh() {
-        this.removeListSelectionListener(this.selectionListener);
-        if (this.panel.getGrammar() == null) {
+    /** Reads in the type names and enabled types, and creates the name list. */
+    public void refreshTypes() {
+        StoredGrammarView grammar = this.panel.getSimulatorModel().getGrammar();
+        if (grammar == null) {
             // No grammar. Disable the component. 
             this.setEnabled(false);
             this.setBackground(getColor(false));
         } else {
-            Set<String> names =
-                new TreeSet<String>(this.panel.getGrammar().getTypeNames());
+            Set<String> names = new TreeSet<String>(grammar.getTypeNames());
             if (!names.isEmpty()) {
                 this.setEnabled(true);
                 this.setBackground(getColor(true));
             }
-            if (this.model.synchronizeModel(names)) {
-                List<String> types =
-                    this.panel.getGrammar().getProperties().getTypeNames();
-                this.model.setCheckedTypes(types);
-                this.model.selectMostAppropriateType();
+            this.model.synchronizeModel(names);
+            this.model.setCheckedTypes(grammar.getActiveTypeNames());
+            TypeView type = this.panel.getSimulatorModel().getType();
+            if (type != null) {
+                setSelectedIndex(this.model.getIndexByName(type.getName()));
+            } else {
+                clearSelection();
             }
         }
-        this.addListSelectionListener(this.selectionListener);
     }
 
     @Override
@@ -263,15 +245,17 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
 
         /**
          * @param name the name of the element to look for.
-         * @return the corresponding index of the item, -1 if not found.
+         * @return the index of the corresponding list item, -1 if not found.
          */
         public int getIndexByName(String name) {
-            for (int i = 0; i < this.getSize(); i++) {
+            int result = -1;
+            for (int i = 0; i < this.items.size(); i++) {
                 if (this.items.get(i).dataItem.equals(name)) {
-                    return i;
+                    result = i;
+                    break;
                 }
             }
-            return -1;
+            return result;
         }
 
         /**
@@ -292,21 +276,14 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
          * @param types the types to check.
          */
         public void setCheckedTypes(List<String> types) {
-            this.uncheckAll();
+            for (ListItem item : this.items) {
+                item.checked = false;
+            }
             for (String type : types) {
                 ListItem item = this.getElementByName(type);
                 if (item != null) {
                     item.checked = true;
                 }
-            }
-        }
-
-        /**
-         * Checks all elements of the list.
-         */
-        public void checkAll() {
-            for (ListItem item : this.items) {
-                item.checked = true;
             }
         }
 
@@ -321,15 +298,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 }
             }
             return true;
-        }
-
-        /**
-         * Unchecks all elements of the list.
-         */
-        public void uncheckAll() {
-            for (ListItem item : this.items) {
-                item.checked = false;
-            }
         }
 
         /**
@@ -358,43 +326,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
         }
 
         /**
-         * Removes the given type name from the list.
-         * @param typeName the name of the graph to remove.
-         * @param saveProp flag indicating if the properties should be saved.
-         */
-        public void removeType(String typeName, boolean saveProp) {
-            int index = this.getIndexByName(typeName);
-            if (index >= 0) {
-                this.items.remove(index);
-                if (getSelectedIndex() == index) {
-                    clearSelection();
-                }
-                if (saveProp) {
-                    JTypeNameList.this.panel.doSaveProperties();
-                }
-            }
-        }
-
-        /**
-         * Adds a new type name to the list.
-         * @param typeName the name of the type graph.
-         * @param checked flag indicating if the item should start checked.
-         * @param saveProp flag indicating if the properties should be saved.
-         */
-        public void addType(String typeName, boolean checked, boolean saveProp) {
-            ListItem item = this.getElementByName(typeName);
-            if (item == null) {
-                item = new ListItem(typeName, checked);
-                this.items.add(item);
-            } else {
-                item.checked = checked;
-            }
-            if (saveProp) {
-                JTypeNameList.this.panel.doSaveProperties();
-            }
-        }
-
-        /**
          * @return true is the item selected in the list is checked,
          *         false otherwise.
          */
@@ -404,72 +335,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 return item.checked;
             } else {
                 return false;
-            }
-        }
-
-        /**
-         * @return the name of the type graph selected in the list.
-         */
-        public String getSelectedType() {
-            ListItem item = getSelectedItem();
-            if (item != null) {
-                return item.dataItem;
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * Sets the selection of the list to the given type graph.
-         * @param typeName the name of the type graph.
-         */
-        public void setSelectedType(String typeName) {
-            int index = this.getIndexByName(typeName);
-            if (index >= 0) {
-                JTypeNameList.this.setSelectedIndex(index);
-            } else {
-                JTypeNameList.this.clearSelection();
-            }
-        }
-
-        /**
-         * Sets the check box of the item.
-         * @param typeName the type graph name.
-         * @param checked flag to indicate if the check box is ticked.
-         */
-        public void checkType(String typeName, boolean checked) {
-            ListItem item = this.getElementByName(typeName);
-            if (item != null) {
-                item.checked = checked;
-                JTypeNameList.this.panel.doSaveProperties();
-            }
-        }
-
-        /**
-         * Sets the selection of the list to the most appropriate element.
-         * If the list already has a selection, it is unchanged.
-         * If not, it first tries to set the selection to the first checked
-         * element of the list. If there are no checked elements, then it tries
-         * to set the selection to the first element of the list.
-         */
-        public void selectMostAppropriateType() {
-            int index = JTypeNameList.this.getSelectedIndex();
-            if (index == -1) {
-                // There is no selected item. We need to choose one.
-                // First we try to get the first checked item.
-                List<String> checkedTypes = this.getCheckedTypes();
-                if (!checkedTypes.isEmpty()) {
-                    // We have at least one checked type. Just use the first.
-                    this.setSelectedType(checkedTypes.get(0));
-                } else {
-                    // There are no checked types. Look for any type in
-                    // the grammar.
-                    if (this.getSize() > 0) {
-                        // We have at least one type in the grammar. Just use
-                        // the first.
-                        this.setSelectedType(this.items.get(0).dataItem);
-                    }
-                }
             }
         }
 
@@ -504,7 +369,6 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
             this.items.addAll(toAdd);
 
             if (modelChanged) {
-                JTypeNameList.this.clearSelection();
                 this.fireContentsChanged(this, 0, this.items.size() - 1);
             }
 
@@ -671,10 +535,17 @@ public class JTypeNameList extends JList implements TypePanel.Refreshable {
                 // Toggle check box.
                 int index = locationToIndex(e.getPoint());
                 if (index != -1) {
-                    ListItem item =
-                        JTypeNameList.this.model.getElementAt(index);
+                    ListItem item = getModel().getElementAt(index);
                     item.checked = !item.checked;
-                    JTypeNameList.this.panel.doSaveProperties();
+                    Simulator simulator =
+                        JTypeNameList.this.panel.getSimulator();
+                    try {
+                        simulator.getModel().doSetActiveTypes(
+                            getModel().getCheckedTypes());
+                    } catch (IOException exc) {
+                        simulator.showErrorDialog(
+                            "Error while modifying type graph composition", exc);
+                    }
                 }
             }
         }

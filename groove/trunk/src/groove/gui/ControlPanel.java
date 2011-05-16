@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
         getActionMap().put(Options.SAVE_ACTION_NAME, getSaveAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         // start listening
-        simulator.addSimulatorListener(this);
+        simulator.getModel().addListener(this);
     }
 
     private JComponent createDocPane() {
@@ -231,13 +232,8 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (changes.contains(Change.GRAMMAR)) {
-            StoredGrammarView grammar = source.getGrammar();
-            if (!isControlSelected()
-                || !grammarHasControl(getSelectedControl())) {
-                String newName = grammar.getControlName();
-                setSelectedControl(grammarHasControl(newName) ? newName : null);
-            }
+        if (changes.contains(Change.GRAMMAR)
+            || changes.contains(Change.CONTROL)) {
             refreshAll();
         }
     }
@@ -254,7 +250,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     private boolean confirmAbandon() {
         boolean result = true;
         if (isDirty()) {
-            String name = getSelectedControl();
+            String name = getSelectedControl().getName();
             int answer =
                 JOptionPane.showConfirmDialog(this,
                     String.format("Save changes in '%s'?", name), null,
@@ -275,47 +271,23 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /**
-     * Returns the current grammar view. Convenience method for
-     * <code>getSimulator().getGrammarView()</code>.
+     * Convenience method to return the current grammar view.
      */
     private StoredGrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
     /**
-     * Convenience method to test if the current grammar has a control program
-     * by a given name. Equivalent to
-     * <code>getGrammarView().getControlNames().contains(controlName)</code>
+     * Convenience method to return the currently selected control view.
      */
-    private boolean grammarHasControl(String controlName) {
-        return getGrammar().getControlNames().contains(controlName);
+    public final CtrlView getSelectedControl() {
+        return getSimulatorModel().getControl();
     }
 
-    /**
-     * Selects a control program for viewing.
-     * @param name the control program to be viewed; either <code>null</code> if
-     *        there is no control program in the current grammar, or an existing
-     *        name in the control names of the current grammar.
-     */
-    public void setSelectedControl(String name) {
-        this.selectedControl = name;
-    }
-
-    /**
-     * Indicates the currently selected control program name
-     * @return either <code>null</code> or an existing control program name
-     */
-    public final String getSelectedControl() {
-        return this.selectedControl;
-    }
-
-    /** Convenience method to indicate if a control name has been selected. */
+    /** Convenience method to indicate if a control view has been selected. */
     public final boolean isControlSelected() {
         return getSelectedControl() != null;
     }
-
-    /** Name of the currently visible control program. */
-    private String selectedControl;
 
     /**
      * Stops the current editing action, if any.
@@ -328,12 +300,6 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             if (!confirm || confirmAbandon()) {
                 this.editing = false;
                 setDirty(false);
-                // if we cancelled editing a new control program
-                // the selected name should be reset
-                if (!getGrammar().getControlNames().contains(
-                    getSelectedControl())) {
-                    setSelectedControl(null);
-                }
                 getParent().requestFocusInWindow();
                 refreshAll();
             } else {
@@ -391,7 +357,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /** Refreshes all registered refreshables. */
-    public void refreshAll() {
+    private void refreshAll() {
         for (Refreshable refreshable : this.refreshables) {
             refreshable.refresh();
         }
@@ -415,18 +381,6 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
-
-    /**
-     * Interface for objects that need to refresh their own status when actions
-     * on the control panel occur.
-     */
-    private interface Refreshable {
-        /**
-         * Callback method to give the implementing object a chance to refresh
-         * its status.
-         */
-        public void refresh();
-    }
 
     /** Lazily creates and returns the field displaying the control name. */
     private JComboBox getNameField() {
@@ -452,8 +406,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 public void actionPerformed(ActionEvent e) {
                     String selectedItem = (String) getSelectedItem();
                     if (selectedItem != null && stopEditing(true)) {
-                        setSelectedControl(selectedItem);
-                        refreshAll();
+                        getSimulatorModel().setControl(selectedItem);
                     }
                 }
             };
@@ -470,13 +423,10 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             } else {
                 Set<String> names =
                     new TreeSet<String>(getGrammar().getControlNames());
-                if (isControlSelected() && isEditing()) {
-                    names.add(getSelectedControl());
-                }
                 for (String controlName : names) {
                     addItem(controlName);
                 }
-                setSelectedItem(getSelectedControl());
+                setSelectedItem(getSelectedControl().getName());
                 setEnabled(getItemCount() > 0);
             }
             addActionListener(this.selectionListener);
@@ -562,17 +512,15 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 // if it is actually being edited, or if it is the
                 // currently used control program
                 boolean enabled = isEditing();
-                if (!enabled && isControlSelected()
-                    && getGrammar().isUseControl()) {
+                if (!enabled && isControlSelected()) {
                     enabled =
                         getSelectedControl().equals(
-                            getGrammar().getControlName());
+                            getGrammar().getControlView());
                 }
                 setEnabled(enabled);
                 String program = "";
                 if (isControlSelected()) {
-                    CtrlView cv =
-                        getGrammar().getControlView(getSelectedControl());
+                    CtrlView cv = getSelectedControl();
                     if (cv != null) {
                         program = cv.getProgram();
                     }
@@ -667,14 +615,13 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
-                String oldName = getSelectedControl();
+                String oldName = getSelectedControl().getName();
                 String newName =
                     getSimulator().askNewControlName(
                         "Select new control program name", oldName, true);
                 if (newName != null) {
                     getSaveAction().doSave(newName,
                         getControlTextArea().getText());
-                    setSelectedControl(newName);
                     refreshAll();
                 }
             }
@@ -682,8 +629,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected()
-                && grammarHasControl(getSelectedControl()));
+            setEnabled(isControlSelected());
             if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
                 getSimulator().getCopyMenuItem().setAction(this);
             }
@@ -712,7 +658,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String controlName = getSelectedControl();
+            String controlName = getSelectedControl().getName();
             if (getSimulator().confirmBehaviour(Options.DELETE_CONTROL_OPTION,
                 String.format("Delete control program '%s'?", controlName))) {
                 stopEditing(false);
@@ -720,24 +666,22 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 if (itemNr == getNameField().getItemCount()) {
                     itemNr -= 2;
                 }
-                String newName =
-                    itemNr >= 0 ? (String) getNameField().getItemAt(itemNr)
-                            : null;
-                doDelete(controlName);
-                setSelectedControl(newName);
-                refreshAll();
+                try {
+                    if (getSimulatorModel().doDeleteControl(controlName)) {
+                        getSimulator().startSimulation();
+                    }
+                } catch (IOException exc) {
+                    getSimulator().showErrorDialog(
+                        String.format(
+                            "Error while deleting control program '%s'",
+                            controlName), exc);
+                }
             }
-        }
-
-        /** Deletes a given control program from the grammar. */
-        public void doDelete(String controlName) {
-            getSimulator().doDeleteControl(controlName);
         }
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected()
-                && grammarHasControl(getSelectedControl()));
+            setEnabled(isControlSelected());
             if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
                 getSimulator().getDeleteMenuItem().setAction(this);
             }
@@ -764,12 +708,17 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             super(Options.DISABLE_CONTROL_ACTION_NAME, Icons.DISABLE_ICON);
         }
 
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(ActionEvent a) {
             if (stopEditing(true)) {
                 SystemProperties oldProperties = getGrammar().getProperties();
                 SystemProperties newProperties = oldProperties.clone();
                 newProperties.setUseControl(false);
-                getSimulator().doSaveProperties(newProperties);
+                try {
+                    getSimulator().getModel().doSetProperties(newProperties);
+                } catch (IOException exc) {
+                    getSimulator().showErrorDialog(
+                        "Error while disabling control", exc);
+                }
             }
         }
 
@@ -801,7 +750,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
         public void actionPerformed(ActionEvent evt) {
             if (stopEditing(true)) {
-                doEnable(getSelectedControl());
+                doEnable(getSelectedControl().getName());
             }
         }
 
@@ -811,7 +760,12 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             SystemProperties newProperties = oldProperties.clone();
             newProperties.setUseControl(true);
             newProperties.setControlName(controlName);
-            getSimulator().doSaveProperties(newProperties);
+            try {
+                getSimulator().getModel().doSetProperties(newProperties);
+            } catch (IOException exc) {
+                getSimulator().showErrorDialog(
+                    "Error while enabling control program " + controlName, exc);
+            }
         }
 
         @Override
@@ -883,11 +837,15 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                     getSimulator().askNewControlName(
                         "Select control program name",
                         Groove.DEFAULT_CONTROL_NAME, true);
-                if (newName != null) {
-                    setSelectedControl(newName);
-                    ControlPanel.this.controlTextArea.setText("");
-                    setDirty(true);
-                    startEditing();
+                try {
+                    if (newName != null) {
+                        getSimulatorModel().doAddControl(newName, "");
+                        setDirty(true);
+                        startEditing();
+                    }
+                } catch (IOException exc) {
+                    getSimulator().showErrorDialog(
+                        "Error creating new control program " + newName, exc);
                 }
             }
         }
@@ -983,8 +941,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             StoredGrammarView grammarView = getGrammar();
             if (grammarView != null) {
                 GraphGrammar grammar = grammarView.toGrammar();
-                CtrlView controlView =
-                    grammarView.getControlView(getSelectedControl());
+                CtrlView controlView = getSelectedControl();
                 result =
                     controlView == null ? grammar.getCtrlAut()
                             : controlView.toCtrlAut(getGrammar().toGrammar());
@@ -1017,27 +974,26 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
         public void actionPerformed(ActionEvent e) {
             if (stopEditing(true)) {
-                String oldName = getSelectedControl();
+                String oldName = getSelectedControl().getName();
                 String newName =
                     getSimulator().askNewControlName(
                         "Select control program name", oldName, false);
                 if (newName != null) {
-                    String program = getControlTextArea().getText();
-                    getDeleteAction().doDelete(oldName);
-                    getSaveAction().doSave(newName, program);
-                    if (oldName.equals(getGrammar().getControlName())) {
-                        getEnableAction().doEnable(newName);
+                    try {
+                        getSimulatorModel().doRenameControl(oldName, newName);
+                    } catch (IOException exc) {
+                        getSimulator().showErrorDialog(
+                            String.format(
+                                "Error while renaming control program '%s' into '%s'",
+                                oldName, newName), exc);
                     }
-                    setSelectedControl(newName);
-                    refreshAll();
                 }
             }
         }
 
         @Override
         public void refresh() {
-            setEnabled(isControlSelected()
-                && grammarHasControl(getSelectedControl()));
+            setEnabled(isControlSelected());
             if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
                 getSimulator().getRenameMenuItem().setAction(this);
             }
@@ -1066,14 +1022,20 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
         public void actionPerformed(ActionEvent e) {
             if (isDirty()) {
-                doSave(getSelectedControl(), getControlTextArea().getText());
+                doSave(getSelectedControl().getName(),
+                    getControlTextArea().getText());
                 stopEditing(false);
             }
         }
 
         /** Executes the save action. */
         public void doSave(String name, String program) {
-            getSimulator().doAddControl(name, program);
+            try {
+                getSimulator().getModel().doAddControl(name, program);
+            } catch (IOException exc) {
+                getSimulator().showErrorDialog(
+                    "Error storing control program " + name, exc);
+            }
         }
 
         @Override

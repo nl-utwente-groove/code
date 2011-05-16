@@ -23,6 +23,7 @@ import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -249,23 +250,31 @@ public class EditorPanel extends JPanel {
      */
     void doSave() {
         if (this.editor.isDirty()) {
+            boolean gtsChanged = false;
             this.saving = true;
-            boolean success = false;
-            switch (this.editor.getRole()) {
-            case HOST:
-                success = this.simulator.doAddGraph(this.editor.getGraph());
-                break;
-            case RULE:
-                success = this.simulator.doAddRule(this.editor.getGraph());
-                break;
-            case TYPE:
-                success = this.simulator.doAddType(this.editor.getGraph());
-                break;
-            }
-            if (success) {
+            AspectGraph graph = this.editor.getGraph();
+            try {
+                switch (graph.getRole()) {
+                case HOST:
+                    gtsChanged = this.simulator.getModel().doAddHost(graph);
+                    break;
+                case RULE:
+                    gtsChanged = this.simulator.getModel().doAddRule(graph);
+                    break;
+                case TYPE:
+                    gtsChanged = this.simulator.getModel().doAddType(graph);
+                    break;
+                }
                 this.editor.setDirty(false);
+            } catch (IOException exc) {
+                this.simulator.showErrorDialog(
+                    String.format("Error while saving edited graph '%s'",
+                        graph.getName()), exc);
             }
             this.saving = false;
+            if (gtsChanged) {
+                this.simulator.startSimulation();
+            }
         }
     }
 

@@ -602,12 +602,10 @@ public class StoredGrammarView implements GrammarView, Observer {
      * @param file the file to load the grammar from
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given file
-     * @throws IOException if a store can be created but not loaded
+     * @throws IOException if an error occurred while creating the store
      */
     static public StoredGrammarView newInstance(File file, boolean create)
-        throws IllegalArgumentException, IOException {
+        throws IOException {
         return newInstance(file, null, create);
     }
 
@@ -618,9 +616,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *        default start graph name is used
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given file
-     * @throws IOException if a store can be created but not loaded
+     * @throws IOException if an error occurred while creating the store
      */
     static public StoredGrammarView newInstance(File file,
             String startGraphName, boolean create) throws IOException {

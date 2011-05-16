@@ -76,7 +76,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
-        getSimulator().addSimulatorListener(this);
+        getSimulatorModel().addListener(this);
     }
 
     @Override
@@ -121,8 +121,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                 }
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
-                getJGraph().setActive(source.getState(),
-                    source.getTransition());
+                getJGraph().setActive(source.getState(), source.getTransition());
                 setEnabled(true);
             }
             refreshStatus();
@@ -231,7 +230,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * @param inTransitions flag to indicate that the canonical incoming transition
      * should also be highlighted.
      */
-    protected void emphasiseStates(List<GraphState> counterExamples,
+    public void emphasiseStates(List<GraphState> counterExamples,
             boolean inTransitions) {
         // reset lts display visibility
         if (this.isVisible) {
@@ -355,7 +354,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getSimulator().exploreState(node);
+                            getSimulatorModel().exploreState(node);
                         }
                     }
                 }

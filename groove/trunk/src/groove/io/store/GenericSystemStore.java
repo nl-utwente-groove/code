@@ -134,6 +134,19 @@ public interface GenericSystemStore<R,G,T,C> {
      */
     public String deleteControl(String name) throws IOException;
 
+    /**
+     * Renames a control program in the store.
+     * @param oldName the name of the control program to be renamed
+     * (an existing control name)
+     * @param newName the intended new name of the control program
+     * (a non-existing control name, non-null)
+     * @return the (renamed) control program
+     * @throws IOException if an error occurred while storing the renamed 
+     * control program
+     */
+    public String renameControl(String oldName, String newName)
+        throws IOException;
+
     /** Immutable view on the name-to-prolog-program map in the store. */
     public Map<String,C> getProlog();
 
@@ -155,6 +168,19 @@ public interface GenericSystemStore<R,G,T,C> {
      * @throws IOException if the store is immutable
      */
     public String deleteProlog(String name) throws IOException;
+
+    /**
+     * Renames a prolog program in the store.
+     * @param oldName the name of the program to be renamed 
+     * (an existing prolog name)
+     * @param newName the intended new name of the program 
+     * (a non-existing prolog name, non-null)
+     * @return the (renamed) prolog program
+     * @throws IOException if an error occurred while storing the renamed 
+     * prolog program
+     */
+    public String renameProlog(String oldName, String newName)
+        throws IOException;
 
     /** Immutable view on the name-to-type map in the store. */
     public Map<String,T> getTypes();

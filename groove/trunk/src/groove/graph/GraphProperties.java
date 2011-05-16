@@ -352,6 +352,9 @@ public class GraphProperties extends Properties {
      * @see #isEnabled()
      */
     static public boolean isEnabled(Graph<?,?> graph) {
+        if (graph == null) {
+            return false;
+        }
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
             return true;
