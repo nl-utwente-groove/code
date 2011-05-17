@@ -217,7 +217,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         private void addName() {
             add(new JLabel("<HTML><B><U><FONT color="
-                + ExplorationDialog.INFO_COLOR + ">" + getName()
+                + ExplorationDialog.INFO_COLOR + ">" + Template.this.getName()
                 + ":</FONT></U></B></HTML>"));
         }
 
