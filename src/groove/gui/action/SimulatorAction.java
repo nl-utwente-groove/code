@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.Refreshable;
@@ -74,6 +75,30 @@ public abstract class SimulatorAction extends AbstractAction implements
         if (doAction()) {
             this.simulator.startSimulation();
         }
+    }
+
+    /**
+     * Enters a dialog that results in a control name that does not yet occur in
+     * the current grammar, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing names
+     * @return a control name not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    final protected String askNewControlName(String title, String name,
+            boolean mustBeFresh) {
+        Set<String> existingNames = getModel().getGrammar().getControlNames();
+        FreshNameDialog<String> nameDialog =
+            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
+                @Override
+                protected String createName(String name) {
+                    return name;
+                }
+            };
+        nameDialog.showDialog(getFrame(), title);
+        return nameDialog.getName();
     }
 
     /**
@@ -180,7 +205,20 @@ public abstract class SimulatorAction extends AbstractAction implements
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
     final protected boolean confirmAbandon() {
-        return getSimulator().confirmAbandon();
+        boolean result;
+        if (getModel().getGts() != null) {
+            result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
+        } else {
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Checks if a given option is confirmed.
+     */
+    final protected boolean confirmBehaviourOption(String option) {
+        return confirmBehaviour(option, null);
     }
 
     /**

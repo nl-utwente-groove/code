@@ -79,7 +79,6 @@ import groove.gui.action.StartSimulationAction;
 import groove.gui.action.ToggleExplorationStateAction;
 import groove.gui.action.UndoSimulatorAction;
 import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.VersionDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
@@ -464,7 +463,12 @@ public class Simulator implements SimulatorListener {
         if (result) {
             groove.gui.UserSettings.synchSettings(this.frame);
             // Saves the current user settings.
-            if (confirmAbandon()) {
+            if (getModel().getGts() != null) {
+                result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
+            } else {
+                result = true;
+            }
+            if (result) {
                 getFrame().dispose();
                 // try to persist the user preferences
                 try {
@@ -1507,34 +1511,11 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * If a simulation is active, asks through a dialog whether it may be
-     * abandoned.
-     * @return <tt>true</tt> if the current grammar may be abandoned
-     */
-    public boolean confirmAbandon() {
-        boolean result;
-        if (getModel().getGts() != null) {
-            result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
-        } else {
-            result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Checks if a given option is confirmed. The question can be set
-     * explicitly.
-     */
-    boolean confirmBehaviour(String option, String question) {
-        BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
-        return menu.confirm(getFrame(), question);
-    }
-
-    /**
      * Checks if a given option is confirmed.
      */
     boolean confirmBehaviourOption(String option) {
-        return confirmBehaviour(option, null);
+        BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
+        return menu.confirm(getFrame(), null);
     }
 
     /**
@@ -1559,29 +1540,6 @@ public class Simulator implements SimulatorListener {
      */
     void showErrorDialog(String message, Throwable exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
-    }
-
-    /**
-     * Enters a dialog that results in a control name that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing names
-     * @return a control name not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    String askNewControlName(String title, String name, boolean mustBeFresh) {
-        Set<String> existingNames = this.model.getGrammar().getControlNames();
-        FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
-                @Override
-                protected String createName(String name) {
-                    return name;
-                }
-            };
-        nameDialog.showDialog(getFrame(), title);
-        return nameDialog.getName();
     }
 
     /**

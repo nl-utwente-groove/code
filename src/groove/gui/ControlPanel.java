@@ -20,12 +20,19 @@ import groove.control.CtrlAut;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.action.CancelControlEditAction;
+import groove.gui.action.CopyControlAction;
+import groove.gui.action.DeleteControlAction;
+import groove.gui.action.DisableControlAction;
+import groove.gui.action.EditControlAction;
+import groove.gui.action.EnableControlAction;
+import groove.gui.action.NewControlAction;
+import groove.gui.action.RenameControlAction;
+import groove.gui.action.SaveControlAction;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.store.SystemStore;
 import groove.trans.GraphGrammar;
-import groove.trans.SystemProperties;
-import groove.util.Groove;
 import groove.view.CtrlView;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -39,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,8 +116,9 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_ACTION_NAME);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(Options.SAVE_ACTION_NAME, getSaveAction());
-        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
+        getActionMap().put(Options.SAVE_ACTION_NAME, getSaveControlAction());
+        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
+            getCancelControlEditAction());
         // start listening
         simulator.getModel().addListener(this);
     }
@@ -187,22 +194,22 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     private JToolBar createToolbar() {
         JToolBar result = new JToolBar();
         result.setFloatable(false);
-        result.add(createButton(getNewAction()));
+        result.add(createButton(getNewControlAction()));
         result.add(createButton(getEditAction()));
-        result.add(createButton(getSaveAction()));
-        result.add(createButton(getCancelAction()));
+        result.add(createButton(getSaveControlAction()));
+        result.add(createButton(getCancelControlEditAction()));
         result.addSeparator();
-        result.add(createButton(getCopyAction()));
-        result.add(createButton(getDeleteAction()));
-        result.add(createButton(getRenameAction()));
+        result.add(createButton(getCopyControlAction()));
+        result.add(createButton(getDeleteControlAction()));
+        result.add(createButton(getRenameControlAction()));
         result.addSeparator();
         result.add(new JLabel("Name: "));
         result.add(getNameField());
         result.addSeparator();
         // result.add(createButton(getPreviewAction()));
         result.add(createButton(getCtrlPreviewAction()));
-        result.add(createButton(getDisableAction()));
-        result.add(createButton(getEnableAction()));
+        result.add(createButton(getDisableControlAction()));
+        result.add(createButton(getEnableControlAction()));
         return result;
     }
 
@@ -256,7 +263,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                     String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
-                getSaveAction().doSave(name, getControlTextArea().getText());
+                getSaveControlAction().doSave(name);
             } else {
                 result = answer == JOptionPane.NO_OPTION;
             }
@@ -265,7 +272,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /** Indicates if the currently loaded grammar is modifiable. */
-    private boolean isModifiable() {
+    public boolean isModifiable() {
         SystemStore store = getGrammar().getStore();
         return store != null && store.isModifiable();
     }
@@ -294,7 +301,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * @param confirm indicates if the user should be asked for confirmation
      * @return if editing was indeed stopped
      */
-    private boolean stopEditing(boolean confirm) {
+    public boolean stopEditing(boolean confirm) {
         boolean result = true;
         if (isEditing()) {
             if (!confirm || confirmAbandon()) {
@@ -315,7 +322,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * Starts a new editing action. Cancels the current editing action if
      * necessary.
      */
-    private void startEditing() {
+    public void startEditing() {
         assert !isEditing();
         this.editing = true;
         refreshAll();
@@ -325,7 +332,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * Indicates the current editing mode.
      * @return if <code>true</code>, an editing action is going on.
      */
-    private boolean isEditing() {
+    public boolean isEditing() {
         return this.editing;
     }
 
@@ -336,12 +343,12 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * Returns the dirty status of the editor.
      * @return <code>true</code> if the editor is dirty.
      */
-    private final boolean isDirty() {
+    public final boolean isDirty() {
         return this.dirty;
     }
 
     /** Sets the status of the editor. */
-    private final void setDirty(boolean dirty) {
+    public final void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
 
@@ -372,7 +379,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /** Returns the simulator to which the control panel belongs. */
-    private Simulator getSimulator() {
+    public Simulator getSimulator() {
         return this.simulator;
     }
 
@@ -383,7 +390,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     private Map<?,String> toolTipMap;
 
     /** Lazily creates and returns the field displaying the control name. */
-    private JComboBox getNameField() {
+    public JComboBox getNameField() {
         if (this.nameField == null) {
             this.nameField = new ControlNameField();
             this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -438,7 +445,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /** Lazily creates and returns the area displaying the control program. */
-    private ControlTextArea getControlTextArea() {
+    public ControlTextArea getControlTextArea() {
         if (this.controlTextArea == null) {
             this.controlTextArea = new ControlTextArea();
         }
@@ -448,8 +455,9 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     /** Panel showing the control program. */
     private ControlTextArea controlTextArea;
 
-    private class ControlTextArea extends RSyntaxTextArea implements
-            Refreshable {
+    /** Text area that holds the current control program. */
+    public class ControlTextArea extends RSyntaxTextArea implements Refreshable {
+        /** Constructs an instance of this class. */
         public ControlTextArea() {
             super(new RSyntaxDocument("gcl"));
             // RSyntaxDocument document = new RSyntaxDocument("gcl");
@@ -564,303 +572,103 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link CancelAction}.
+     * {@link CancelControlEditAction}.
      */
-    private CancelAction getCancelAction() {
-        if (this.cancelAction == null) {
-            this.cancelAction = new CancelAction();
+    private CancelControlEditAction getCancelControlEditAction() {
+        if (this.cancelControlEditAction == null) {
+            this.cancelControlEditAction = new CancelControlEditAction(this);
         }
-        return this.cancelAction;
+        return this.cancelControlEditAction;
     }
 
     /** Singular instance of the CancelAction. */
-    private CancelAction cancelAction;
-
-    /**
-     * Action to cancel editing the currently displayed control program.
-     */
-    private class CancelAction extends RefreshableAction {
-        public CancelAction() {
-            super(Options.CANCEL_EDIT_ACTION_NAME, Icons.CANCEL_ICON);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            stopEditing(true);
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isEditing());
-        }
-    }
+    private CancelControlEditAction cancelControlEditAction;
 
     /**
      * Lazily creates and returns the singleton instance of the CopyAction.
      */
-    private CopyAction getCopyAction() {
-        if (this.copyAction == null) {
-            this.copyAction = new CopyAction();
+    private CopyControlAction getCopyControlAction() {
+        if (this.copyControlAction == null) {
+            this.copyControlAction = new CopyControlAction(this);
         }
-        return this.copyAction;
+        return this.copyControlAction;
     }
 
     /** Singular instance of the CopyAction. */
-    private CopyAction copyAction;
-
-    /**
-     * Action to copy the currently displayed control program.
-     */
-    private class CopyAction extends RefreshableAction {
-        public CopyAction() {
-            super(Options.COPY_CONTROL_ACTION_NAME, Icons.COPY_ICON);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (stopEditing(true)) {
-                String oldName = getSelectedControl().getName();
-                String newName =
-                    getSimulator().askNewControlName(
-                        "Select new control program name", oldName, true);
-                if (newName != null) {
-                    getSaveAction().doSave(newName,
-                        getControlTextArea().getText());
-                    refreshAll();
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isControlSelected());
-            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
-                getSimulator().getCopyMenuItem().setAction(this);
-            }
-        }
-    }
+    private CopyControlAction copyControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the DeleteAction.
      */
-    private DeleteAction getDeleteAction() {
-        if (this.deleteAction == null) {
-            this.deleteAction = new DeleteAction();
+    private DeleteControlAction getDeleteControlAction() {
+        if (this.deleteControlAction == null) {
+            this.deleteControlAction = new DeleteControlAction(this);
         }
-        return this.deleteAction;
+        return this.deleteControlAction;
     }
 
     /** Singular instance of the DeleteAction. */
-    private DeleteAction deleteAction;
-
-    /**
-     * Action to delete the currently displayed control program.
-     */
-    private class DeleteAction extends RefreshableAction {
-        public DeleteAction() {
-            super(Options.DELETE_CONTROL_ACTION_NAME, Icons.DELETE_ICON);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String controlName = getSelectedControl().getName();
-            if (getSimulator().confirmBehaviour(Options.DELETE_CONTROL_OPTION,
-                String.format("Delete control program '%s'?", controlName))) {
-                stopEditing(false);
-                int itemNr = getNameField().getSelectedIndex() + 1;
-                if (itemNr == getNameField().getItemCount()) {
-                    itemNr -= 2;
-                }
-                try {
-                    if (getSimulatorModel().doDeleteControl(controlName)) {
-                        getSimulator().startSimulation();
-                    }
-                } catch (IOException exc) {
-                    getSimulator().showErrorDialog(
-                        String.format(
-                            "Error while deleting control program '%s'",
-                            controlName), exc);
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isControlSelected());
-            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
-                getSimulator().getDeleteMenuItem().setAction(this);
-            }
-        }
-    }
+    private DeleteControlAction deleteControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
-    private DisableAction getDisableAction() {
-        if (this.disableAction == null) {
-            this.disableAction = new DisableAction();
+    private DisableControlAction getDisableControlAction() {
+        if (this.disableControlAction == null) {
+            this.disableControlAction = new DisableControlAction(this);
         }
-        return this.disableAction;
+        return this.disableControlAction;
     }
 
     /** Singular instance of the EnableAction. */
-    private DisableAction disableAction;
-
-    /** Action to disable the currently displayed control program. */
-    private class DisableAction extends RefreshableAction {
-        public DisableAction() {
-            super(Options.DISABLE_CONTROL_ACTION_NAME, Icons.DISABLE_ICON);
-        }
-
-        public void actionPerformed(ActionEvent a) {
-            if (stopEditing(true)) {
-                SystemProperties oldProperties = getGrammar().getProperties();
-                SystemProperties newProperties = oldProperties.clone();
-                newProperties.setUseControl(false);
-                try {
-                    getSimulator().getModel().doSetProperties(newProperties);
-                } catch (IOException exc) {
-                    getSimulator().showErrorDialog(
-                        "Error while disabling control", exc);
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(getGrammar() != null && getGrammar().isUseControl());
-        }
-    }
+    private DisableControlAction disableControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
-    private EnableAction getEnableAction() {
-        if (this.enableAction == null) {
-            this.enableAction = new EnableAction();
+    private EnableControlAction getEnableControlAction() {
+        if (this.enableControlAction == null) {
+            this.enableControlAction = new EnableControlAction(this);
         }
-        return this.enableAction;
+        return this.enableControlAction;
     }
 
     /** Singular instance of the EnableAction. */
-    private EnableAction enableAction;
-
-    /** Action to enable the currently displayed control program. */
-    private class EnableAction extends RefreshableAction {
-        public EnableAction() {
-            super(Options.ENABLE_CONTROL_ACTION_NAME, Icons.ENABLE_ICON);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            if (stopEditing(true)) {
-                doEnable(getSelectedControl().getName());
-            }
-        }
-
-        /** Enables a control program with a given name. */
-        public void doEnable(String controlName) {
-            SystemProperties oldProperties = getGrammar().getProperties();
-            SystemProperties newProperties = oldProperties.clone();
-            newProperties.setUseControl(true);
-            newProperties.setControlName(controlName);
-            try {
-                getSimulator().getModel().doSetProperties(newProperties);
-            } catch (IOException exc) {
-                getSimulator().showErrorDialog(
-                    "Error while enabling control program " + controlName, exc);
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isControlSelected()
-                && (!getGrammar().isUseControl() || !getGrammar().getControlName().equals(
-                    getSelectedControl())));
-        }
-    }
+    private EnableControlAction enableControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
-    private EditAction getEditAction() {
-        if (this.editAction == null) {
-            this.editAction = new EditAction();
+    private EditControlAction getEditAction() {
+        if (this.editControlAction == null) {
+            this.editControlAction = new EditControlAction(this);
         }
-        return this.editAction;
+        return this.editControlAction;
     }
 
     /** Singular instance of the EditAction. */
-    private EditAction editAction;
-
-    /** Action to start editing the currently displayed control program. */
-    private class EditAction extends RefreshableAction {
-        public EditAction() {
-            super(Options.EDIT_CONTROL_ACTION_NAME, Icons.EDIT_ICON);
-            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            startEditing();
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isControlSelected() && isModifiable() && !isEditing());
-            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
-                getSimulator().getEditMenuItem().setAction(this);
-            }
-        }
-    }
+    private EditControlAction editControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
-    private NewAction getNewAction() {
-        if (this.newAction == null) {
-            this.newAction = new NewAction();
+    private NewControlAction getNewControlAction() {
+        if (this.newControlAction == null) {
+            this.newControlAction = new NewControlAction(this);
         }
-        return this.newAction;
+        return this.newControlAction;
     }
 
     /** Singular instance of the NewAction. */
-    private NewAction newAction;
-
-    /** Action to create and start editing a new control program. */
-    private class NewAction extends RefreshableAction {
-        public NewAction() {
-            super(Options.NEW_CONTROL_ACTION_NAME, Icons.NEW_ICON);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (stopEditing(true)) {
-                String newName =
-                    getSimulator().askNewControlName(
-                        "Select control program name",
-                        Groove.DEFAULT_CONTROL_NAME, true);
-                try {
-                    if (newName != null) {
-                        getSimulatorModel().doAddControl(newName, "");
-                        setDirty(true);
-                        startEditing();
-                    }
-                } catch (IOException exc) {
-                    getSimulator().showErrorDialog(
-                        "Error creating new control program " + newName, exc);
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(getGrammar() != null);
-        }
-    }
+    private NewControlAction newControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
     private CtrlPreviewAction getCtrlPreviewAction() {
         if (this.ctrlPreviewAction == null) {
@@ -875,7 +683,8 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     /**
      * Creates a dialog showing the control automaton.
      */
-    private class CtrlPreviewAction extends RefreshableAction {
+    public class CtrlPreviewAction extends RefreshableAction {
+        /** Constructs a new action, for a given control panel. */
         public CtrlPreviewAction() {
             super(Options.PREVIEW_CONTROL_ACTION_NAME, Icons.CONTROL_MODE_ICON);
         }
@@ -954,97 +763,31 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link RenameAction}.
+     * {@link RenameControlAction}.
      */
-    private RenameAction getRenameAction() {
-        if (this.renameAction == null) {
-            this.renameAction = new RenameAction();
+    private RenameControlAction getRenameControlAction() {
+        if (this.renameControlAction == null) {
+            this.renameControlAction = new RenameControlAction(this);
         }
-        return this.renameAction;
+        return this.renameControlAction;
     }
 
     /** Singular instance of the RenameAction. */
-    private RenameAction renameAction;
-
-    /**
-     * Action to rename the currently displayed control program.
-     */
-    private class RenameAction extends RefreshableAction {
-        public RenameAction() {
-            super(Options.RENAME_CONTROL_ACTION_NAME, Icons.RENAME_ICON);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (stopEditing(true)) {
-                String oldName = getSelectedControl().getName();
-                String newName =
-                    getSimulator().askNewControlName(
-                        "Select control program name", oldName, false);
-                if (newName != null) {
-                    try {
-                        getSimulatorModel().doRenameControl(oldName, newName);
-                    } catch (IOException exc) {
-                        getSimulator().showErrorDialog(
-                            String.format(
-                                "Error while renaming control program '%s' into '%s'",
-                                oldName, newName), exc);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isControlSelected());
-            if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
-                getSimulator().getRenameMenuItem().setAction(this);
-            }
-        }
-    }
+    private RenameControlAction renameControlAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewAction}.
+     * {@link NewControlAction}.
      */
-    private SaveAction getSaveAction() {
-        if (this.saveAction == null) {
-            this.saveAction = new SaveAction();
+    public SaveControlAction getSaveControlAction() {
+        if (this.saveControlAction == null) {
+            this.saveControlAction = new SaveControlAction(this);
         }
-        return this.saveAction;
+        return this.saveControlAction;
     }
 
     /** Singular instance of the SaveAction. */
-    private SaveAction saveAction;
-
-    private class SaveAction extends RefreshableAction {
-        public SaveAction() {
-            super(Options.SAVE_CONTROL_ACTION_NAME, Icons.SAVE_ICON);
-            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (isDirty()) {
-                doSave(getSelectedControl().getName(),
-                    getControlTextArea().getText());
-                stopEditing(false);
-            }
-        }
-
-        /** Executes the save action. */
-        public void doSave(String name, String program) {
-            try {
-                getSimulator().getModel().doAddControl(name, program);
-            } catch (IOException exc) {
-                getSimulator().showErrorDialog(
-                    "Error storing control program " + name, exc);
-            }
-        }
-
-        @Override
-        public void refresh() {
-            setEnabled(isEditing());
-        }
-    }
+    private SaveControlAction saveControlAction;
 
     private static JTextField enabledField = new JTextField();
     private static JTextField disabledField = new JTextField();
