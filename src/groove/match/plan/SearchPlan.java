@@ -71,6 +71,8 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         usedVars.addAll(e.bindsVars());
         for (int i = 0; i < position; i++) {
             // set a dependency if the item at position i binds a required node or variable
+            // NOTE: the use of the non-short-circuit logic operator '|' is
+            // intentional!
             if (usedNodes.removeAll(get(i).bindsNodes())
                 | usedVars.removeAll(get(i).bindsVars())) {
                 depend = i;

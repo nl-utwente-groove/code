@@ -107,7 +107,7 @@ abstract public class StringDialog {
             String[] storedValues =
                 new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
             for (int i = 0; i < storedValues.length; i++) {
-                storedValues[i] = this.history.get(i).toString();
+                storedValues[i] = this.history.get(i);
             }
             Options.storeUserPrefs(this.title, storedValues);
         }

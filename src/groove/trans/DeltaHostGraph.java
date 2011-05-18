@@ -44,7 +44,7 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
-        HostGraph {
+        HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
      * the elements of the graph.

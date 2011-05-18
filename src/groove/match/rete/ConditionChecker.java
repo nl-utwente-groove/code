@@ -501,6 +501,8 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     @Override
     public boolean equals(ReteNetworkNode node) {
+        // TODO ARASH. EDUARDO says:
+        // Is this correct? It seems an infinite recursive loop...
         return (node instanceof ConditionChecker) && this.equals(node);
     }
 
@@ -513,8 +515,8 @@ public class ConditionChecker extends ReteNetworkNode implements
     public String toString() {
         StringBuilder res =
             new StringBuilder(String.format("Name %s: ",
-                this.condition.getName() != null
-                        ? this.condition.getName().toString() : "null"));
+                this.condition.getName() != null ? this.condition.getName()
+                        : "null"));
         res.append(String.format("The conflict set size: %s",
             getConflictSet().size()));
         int i = 0;

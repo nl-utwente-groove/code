@@ -42,7 +42,8 @@ import org.jgraph.graph.GraphConstants;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition> {
+public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
+        implements Cloneable {
     private BuchiGraph(String name) {
         super(name);
     }

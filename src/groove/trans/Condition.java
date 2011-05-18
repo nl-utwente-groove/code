@@ -101,8 +101,8 @@ public class Condition implements Fixable {
         this.op = operator;
         this.name = name;
         this.root =
-            root == null ? pattern.newGraph((name == null ? "root"
-                    : name.toString() + "-root")) : root;
+            root == null ? pattern.newGraph((name == null ? "root" : name
+                + "-root")) : root;
         this.pattern = pattern;
         this.systemProperties = properties;
     }

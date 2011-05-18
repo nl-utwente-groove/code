@@ -637,5 +637,5 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /** Separator between supertype and the list of subtypes. */
     static public final char SUPERTYPE_SYMBOL = '>';
     /** Temporary flag for testing the node type colour functionality. */
-    static public boolean RANDOM_COLORS = false;
+    static public final boolean RANDOM_COLORS = false;
 }

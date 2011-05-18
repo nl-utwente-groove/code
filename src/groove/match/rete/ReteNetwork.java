@@ -102,9 +102,8 @@ public class ReteNetwork {
             try {
                 rules.add(grammarView.getRuleView(rn).toModel());
             } catch (FormatException ex) {
-                throw new RuntimeException(
-                    String.format("Failed to add rule %s to the RETE network.",
-                        rn.toString()));
+                throw new RuntimeException(String.format(
+                    "Failed to add rule %s to the RETE network.", rn));
             }
         }
         this.build(rules);
@@ -958,8 +957,7 @@ public class ReteNetwork {
                 + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
                 source));
             result.add(DefaultEdge.createEdge(source, "-"
-                + ((ProductionNode) nnode).getCondition().getName().toString(),
-                source));
+                + ((ProductionNode) nnode).getCondition().getName(), source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
                 result.add(DefaultEdge.createEdge(source,

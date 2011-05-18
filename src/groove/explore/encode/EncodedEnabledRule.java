@@ -53,7 +53,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();
         for (String ruleName : ruleNames) {
             if (grammar.getRuleView(ruleName).isEnabled()) {
-                enabledRules.put(ruleName.toString(), ruleName.toString());
+                enabledRules.put(ruleName, ruleName);
             }
         }
 

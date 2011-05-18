@@ -75,7 +75,7 @@ public class ModelChecking {
     /** constant specifying whether to mark pocket-states */
     public static boolean MARK_POCKET_STATES;
     /** constant specifying the maximal number of iterations to be performed */
-    public static int MAX_ITERATIONS = -1;
+    public static final int MAX_ITERATIONS = -1;
     /** constant specifying the maximal number of iterations to be performed */
     public static int CURRENT_ITERATION = 0;
     /** constant specifying the maximal amount of time to spend */

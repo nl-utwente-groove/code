@@ -54,7 +54,8 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
+public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> implements
+        Cloneable {
     /**
      * Constructs a new control automaton.
      * The start state and final state are automatically initialised.

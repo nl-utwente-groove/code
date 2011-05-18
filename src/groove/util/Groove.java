@@ -43,9 +43,9 @@ import java.util.StringTokenizer;
  */
 public class Groove {
     /** Toggle this flag to shift between native Look'n'Feel and old one. */
-    public static boolean USE_NATIVE_LNF = false;
+    public static final boolean USE_NATIVE_LNF = false;
     /** Toggle this flag to include the Prolog tab in the Simulator. */
-    public static boolean INCLUDE_PROLOG = true;
+    public static final boolean INCLUDE_PROLOG = true;
 
     /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
@@ -467,15 +467,15 @@ public class Groove {
     // Platform dependent information.
 
     /** Detect if we are on Windows.  */
-    public static boolean IS_PLATFORM_WINDOWS =
-        System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+    public static final boolean IS_PLATFORM_WINDOWS = System.getProperty(
+        "os.name").toLowerCase().indexOf("windows") > -1;
 
     /** Detect if we are on Mac.  */
-    public static boolean IS_PLATFORM_MAC =
+    public static final boolean IS_PLATFORM_MAC =
         System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
 
     /** Detect if we are on Linux.  */
-    public static boolean IS_PLATFORM_LINUX =
-        System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+    public static final boolean IS_PLATFORM_LINUX = System.getProperty(
+        "os.name").toLowerCase().indexOf("linux") > -1;
 
 }
