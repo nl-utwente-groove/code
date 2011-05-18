@@ -36,7 +36,6 @@ public class ExploreAction extends SimulatorAction {
         super(simulator, Options.DEFAULT_EXPLORATION_ACTION_NAME,
             Icons.FORWARD_ICON);
         putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
-        this.ltsPanel = simulator.getLtsPanel();
     }
 
     @Override
@@ -58,10 +57,10 @@ public class ExploreAction extends SimulatorAction {
         // disable rule application for the time being
         boolean applyEnabled = applyAction.isEnabled();
         applyAction.setEnabled(false);
-        LTSJModel ltsJModel = this.ltsPanel.getJModel();
+        LTSJModel ltsJModel = getLTSPanel().getJModel();
         if (ltsJModel == null) {
             if (getModel().setGts()) {
-                ltsJModel = this.ltsPanel.getJModel();
+                ltsJModel = getLTSPanel().getJModel();
             } else {
                 return;
             }
@@ -88,13 +87,13 @@ public class ExploreAction extends SimulatorAction {
             }
             // re-enable rule application
             // reset lts display visibility
-            getSimulator().switchTabs(this.ltsPanel);
+            getSimulator().switchTabs(getLTSPanel());
             getModel().setGts(gts);
             // emphasise the result states, if required
             if (emphasise) {
                 Collection<GraphState> result =
                     exploration.getLastResult().getValue();
-                this.ltsPanel.emphasiseStates(
+                getLTSPanel().emphasiseStates(
                     new ArrayList<GraphState>(result), true);
             }
         }
@@ -114,7 +113,10 @@ public class ExploreAction extends SimulatorAction {
         putValue(Action.SHORT_DESCRIPTION, toolTipText);
     }
 
-    private final LTSPanel ltsPanel;
+    /** Convenience method to retrieve the LTS panel. */
+    private final LTSPanel getLTSPanel() {
+        return getSimulator().getLtsPanel();
+    }
 
     /**
      * Class that spawns a thread to perform a long-lasting action, while
@@ -213,8 +215,7 @@ public class ExploreAction extends SimulatorAction {
             cancelButton.addActionListener(createCancelListener());
             message.setOptions(new Object[] {cancelButton});
             result =
-                message.createDialog(ExploreAction.this.ltsPanel,
-                    "Exploring state space");
+                message.createDialog(getLTSPanel(), "Exploring state space");
             result.pack();
             return result;
         }
