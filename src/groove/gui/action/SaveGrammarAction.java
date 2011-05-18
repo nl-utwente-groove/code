@@ -2,6 +2,9 @@ package groove.gui.action;
 
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.io.store.SystemStore;
+import groove.view.GraphView;
+import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +30,40 @@ public class SaveGrammarAction extends SimulatorAction {
             File selectedFile = getGrammarFileChooser(false).getSelectedFile();
             if (confirmOverwriteGrammar(selectedFile)) {
                 try {
-                    result |= getSimulator().doSaveGrammar(selectedFile, true);
+                    result |= save(selectedFile, true);
                 } catch (IOException exc) {
                     showErrorDialog("Error while saving grammar to "
                         + selectedFile, exc);
                 }
             }
+        }
+        return result;
+    }
+
+    /**
+     * Saves the current grammar to a given file.
+     * @param grammarFile the grammar file to be used
+     * @throws IOException if the save action failed
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     */
+    public boolean save(File grammarFile, boolean clearDir) throws IOException {
+        boolean result = false;
+        if (getSimulator().saveEditors(true)) {
+            SystemStore newStore =
+                getModel().getStore().save(grammarFile, clearDir);
+            StoredGrammarView newView = newStore.toGrammarView();
+            String startGraphName = getModel().getGrammar().getStartGraphName();
+            GraphView startGraphView =
+                getModel().getGrammar().getStartGraphView();
+            if (startGraphName != null) {
+                newView.setStartGraph(startGraphName);
+            } else if (startGraphView != null) {
+                newView.setStartGraph(startGraphView.getAspectGraph());
+            }
+            getModel().setGrammar(newView);
+            getSimulator().setTitle();
+            getGrammarFileChooser().setSelectedFile(grammarFile);
+            result = true;
         }
         return result;
     }

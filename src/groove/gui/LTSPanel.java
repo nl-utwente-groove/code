@@ -338,7 +338,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                 && evt.getButton() == MouseEvent.BUTTON1) {
                 if (!isEnabled()
                     && getSimulator().getStartSimulationAction().isEnabled()) {
-                    getSimulator().startSimulation();
+                    getSimulator().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
                     getSimulator().switchTabs(getSimulator().getStatePanel());
                 } else {

@@ -70,8 +70,18 @@ public abstract class SimulatorAction extends AbstractAction implements
         setEnabled(true);
     }
 
+    /** Delegates to {@link #execute()}. */
     @Override
     public void actionPerformed(ActionEvent e) {
+        execute();
+    }
+
+    /** 
+     * Method to execute the action encapsulated by this class.
+     * This implementation calls {@link #doAction()} and, if that is
+     * successful, starts the simulation. 
+     */
+    public void execute() {
         if (doAction()) {
             this.simulator.startSimulation();
         }
@@ -293,6 +303,13 @@ public abstract class SimulatorAction extends AbstractAction implements
         } else {
             return true;
         }
+    }
+
+    /**
+     * Returns the file chooser for rule (GPR) files, lazily creating it first.
+     */
+    final protected JFileChooser getRuleFileChooser() {
+        return GrooveFileChooser.getFileChooser(FileType.RULE_FILTER);
     }
 
     /**

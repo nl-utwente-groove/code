@@ -19,8 +19,8 @@ public class CopyControlAction extends ControlAction {
         if (getPanel().stopEditing(true)) {
             String oldName = getModel().getControl().getName();
             String newName =
-                askNewControlName("Select new control program name",
-                    oldName, true);
+                askNewControlName("Select new control program name", oldName,
+                    true);
             if (newName != null) {
                 result = getPanel().getSaveControlAction().doAction();
             }

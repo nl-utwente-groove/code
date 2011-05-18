@@ -250,19 +250,19 @@ public class EditorPanel extends JPanel {
      */
     void doSave() {
         if (this.editor.isDirty()) {
-            boolean gtsChanged = false;
+            boolean grammarChanged = false;
             this.saving = true;
             AspectGraph graph = this.editor.getGraph();
             try {
                 switch (graph.getRole()) {
                 case HOST:
-                    gtsChanged = this.simulator.getModel().doAddHost(graph);
+                    grammarChanged = this.simulator.getModel().doAddHost(graph);
                     break;
                 case RULE:
-                    gtsChanged = this.simulator.getModel().doAddRule(graph);
+                    grammarChanged = this.simulator.getModel().doAddRule(graph);
                     break;
                 case TYPE:
-                    gtsChanged = this.simulator.getModel().doAddType(graph);
+                    grammarChanged = this.simulator.getModel().doAddType(graph);
                     break;
                 }
                 this.editor.setDirty(false);
@@ -272,7 +272,7 @@ public class EditorPanel extends JPanel {
                         graph.getName()), exc);
             }
             this.saving = false;
-            if (gtsChanged) {
+            if (grammarChanged) {
                 this.simulator.startSimulation();
             }
         }

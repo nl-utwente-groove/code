@@ -382,7 +382,7 @@ public class StateJList extends JList implements SimulatorListener {
                 if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
                     if (getSimulator().getModel().doSetStartGraph(
                         (String) getSelectedValue())) {
-                        getSimulator().startSimulation();
+                        getSimulator().getStartSimulationAction().execute();
                     }
                 }
             }

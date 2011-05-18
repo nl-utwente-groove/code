@@ -63,7 +63,8 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
         boolean result = false;
         try {
             result =
-                getSimulator().doLoadGrammar(this.store, this.startGraphName);
+                getSimulator().getLoadGrammarAction().load(this.store,
+                    this.startGraphName);
         } catch (IOException e) {
             showErrorDialog("Can't load grammar: ", e);
         }

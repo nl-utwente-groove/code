@@ -43,8 +43,8 @@ public class NewGrammarAction extends SimulatorAction {
                         if (response == JOptionPane.OK_OPTION) {
                             try {
                                 result =
-                                    getSimulator().doLoadGrammar(selectedFile,
-                                        null);
+                                    getSimulator().getLoadGrammarAction().load(
+                                        selectedFile, null);
                             } catch (IOException exc) {
                                 showErrorDialog(exc.getMessage(), exc);
                             }
