@@ -19,16 +19,7 @@ package groove.gui;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.CancelControlEditAction;
-import groove.gui.action.ControlPreviewAction;
-import groove.gui.action.CopyControlAction;
-import groove.gui.action.DeleteControlAction;
-import groove.gui.action.DisableControlAction;
-import groove.gui.action.EditControlAction;
-import groove.gui.action.EnableControlAction;
-import groove.gui.action.NewControlAction;
-import groove.gui.action.RenameControlAction;
-import groove.gui.action.SaveControlAction;
+import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.io.store.SystemStore;
 import groove.view.CtrlView;
@@ -82,17 +73,24 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-public class ControlPanel extends JPanel implements SimulatorListener {
+final public class ControlPanel extends JPanel implements SimulatorListener {
     /**
      * @param simulator The Simulator the panel is added to.
      */
     public ControlPanel(Simulator simulator) {
-        super();
         this.simulator = simulator;
         // create the layout for this JPanel
         this.setLayout(new BorderLayout());
         this.setFocusable(false);
         this.setFocusCycleRoot(true);
+    }
+
+    /**
+     * Initialises the GUI.
+     * Should be called after the constructor, and
+     * before using the object in any way.
+     */
+    public void initialise() {
         // fill in the GUI
         RTextScrollPane scroller =
             new RTextScrollPane(500, 400, getControlTextArea(), true);
@@ -109,11 +107,12 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_ACTION_NAME);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(Options.SAVE_ACTION_NAME, getSaveControlAction());
+        getActionMap().put(Options.SAVE_ACTION_NAME,
+            getActions().getSaveControlAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-            getCancelControlEditAction());
+            getActions().getCancelEditControlAction());
         // start listening
-        simulator.getModel().addListener(this);
+        this.simulator.getModel().addListener(this);
     }
 
     private JComponent createDocPane() {
@@ -187,22 +186,22 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     private JToolBar createToolbar() {
         JToolBar result = new JToolBar();
         result.setFloatable(false);
-        result.add(createButton(getNewControlAction()));
-        result.add(createButton(getEditAction()));
-        result.add(createButton(getSaveControlAction()));
-        result.add(createButton(getCancelControlEditAction()));
+        result.add(createButton(getActions().getNewControlAction()));
+        result.add(createButton(getActions().getEditAction()));
+        result.add(createButton(getActions().getSaveControlAction()));
+        result.add(createButton(getActions().getCancelEditControlAction()));
         result.addSeparator();
-        result.add(createButton(getCopyControlAction()));
-        result.add(createButton(getDeleteControlAction()));
-        result.add(createButton(getRenameControlAction()));
+        result.add(createButton(getActions().getCopyControlAction()));
+        result.add(createButton(getActions().getDeleteControlAction()));
+        result.add(createButton(getActions().getRenameControlAction()));
         result.addSeparator();
         result.add(new JLabel("Name: "));
         result.add(getNameField());
         result.addSeparator();
         // result.add(createButton(getPreviewAction()));
-        result.add(createButton(getControlPreviewAction()));
-        result.add(createButton(getDisableControlAction()));
-        result.add(createButton(getEnableControlAction()));
+        result.add(createButton(getActions().getPreviewControlAction()));
+        result.add(createButton(getActions().getDisableControlAction()));
+        result.add(createButton(getActions().getEnableControlAction()));
         return result;
     }
 
@@ -256,7 +255,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                     String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
-                getSaveControlAction().doSave(name);
+                getActions().getSaveControlAction().doSave(name);
             } else {
                 result = answer == JOptionPane.NO_OPTION;
             }
@@ -371,6 +370,11 @@ public class ControlPanel extends JPanel implements SimulatorListener {
         return getSimulator().getModel();
     }
 
+    /** Convenience method to return the action store. */
+    private ActionStore getActions() {
+        return getSimulator().getActions();
+    }
+
     /** Returns the simulator to which the control panel belongs. */
     public Simulator getSimulator() {
         return this.simulator;
@@ -381,144 +385,6 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link CancelControlEditAction}.
-     */
-    private CancelControlEditAction getCancelControlEditAction() {
-        if (this.cancelControlEditAction == null) {
-            this.cancelControlEditAction = new CancelControlEditAction(this);
-        }
-        return this.cancelControlEditAction;
-    }
-
-    /** Singular instance of the CancelAction. */
-    private CancelControlEditAction cancelControlEditAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the CopyAction.
-     */
-    private CopyControlAction getCopyControlAction() {
-        if (this.copyControlAction == null) {
-            this.copyControlAction = new CopyControlAction(this);
-        }
-        return this.copyControlAction;
-    }
-
-    /** Singular instance of the CopyAction. */
-    private CopyControlAction copyControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the DeleteAction.
-     */
-    private DeleteControlAction getDeleteControlAction() {
-        if (this.deleteControlAction == null) {
-            this.deleteControlAction = new DeleteControlAction(this);
-        }
-        return this.deleteControlAction;
-    }
-
-    /** Singular instance of the DeleteAction. */
-    private DeleteControlAction deleteControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    private DisableControlAction getDisableControlAction() {
-        if (this.disableControlAction == null) {
-            this.disableControlAction = new DisableControlAction(this);
-        }
-        return this.disableControlAction;
-    }
-
-    /** Singular instance of the EnableAction. */
-    private DisableControlAction disableControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    private EnableControlAction getEnableControlAction() {
-        if (this.enableControlAction == null) {
-            this.enableControlAction = new EnableControlAction(this);
-        }
-        return this.enableControlAction;
-    }
-
-    /** Singular instance of the EnableAction. */
-    private EnableControlAction enableControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    private EditControlAction getEditAction() {
-        if (this.editControlAction == null) {
-            this.editControlAction = new EditControlAction(this);
-        }
-        return this.editControlAction;
-    }
-
-    /** Singular instance of the EditAction. */
-    private EditControlAction editControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    private NewControlAction getNewControlAction() {
-        if (this.newControlAction == null) {
-            this.newControlAction = new NewControlAction(this);
-        }
-        return this.newControlAction;
-    }
-
-    /** Singular instance of the NewAction. */
-    private NewControlAction newControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    private ControlPreviewAction getControlPreviewAction() {
-        if (this.controlPreviewAction == null) {
-            this.controlPreviewAction = new ControlPreviewAction(this);
-        }
-        return this.controlPreviewAction;
-    }
-
-    /** Singular instance of the CtrlPreviewAction. */
-    private ControlPreviewAction controlPreviewAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameControlAction}.
-     */
-    private RenameControlAction getRenameControlAction() {
-        if (this.renameControlAction == null) {
-            this.renameControlAction = new RenameControlAction(this);
-        }
-        return this.renameControlAction;
-    }
-
-    /** Singular instance of the RenameAction. */
-    private RenameControlAction renameControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    public SaveControlAction getSaveControlAction() {
-        if (this.saveControlAction == null) {
-            this.saveControlAction = new SaveControlAction(this);
-        }
-        return this.saveControlAction;
-    }
-
-    /** Singular instance of the SaveAction. */
-    private SaveControlAction saveControlAction;
 
     /** Lazily creates and returns the field displaying the control name. */
     public JComboBox getNameField() {
@@ -551,7 +417,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             addActionListener(this.selectionListener);
             addRefreshable(this);
         }
-    
+
         @Override
         public void refresh() {
             removeActionListener(this.selectionListener);
@@ -571,7 +437,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             }
             addActionListener(this.selectionListener);
         }
-    
+
         private final ActionListener selectionListener;
     }
 
@@ -600,17 +466,17 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 public void removeUpdate(DocumentEvent e) {
                     notifyEdit();
                 }
-    
+
                 @Override
                 public void insertUpdate(DocumentEvent e) {
                     notifyEdit();
                 }
-    
+
                 @Override
                 public void changedUpdate(DocumentEvent e) {
                     notifyEdit();
                 }
-    
+
                 private void notifyEdit() {
                     setDirty(true);
                     ControlTextArea.this.listenToRefresh = false;
@@ -621,13 +487,13 @@ public class ControlPanel extends JPanel implements SimulatorListener {
             getDocument().addDocumentListener(this.changeListener);
             addRefreshable(this);
         }
-    
+
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
             setBackground();
         }
-    
+
         private void setBackground() {
             if (isEnabled()) {
                 setBackground(isEditable() ? JAttr.EDITOR_BACKGROUND
@@ -636,7 +502,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 setBackground(DISABLED_COLOUR);
             }
         }
-    
+
         @Override
         public void refresh() {
             // if the text area has focus, don't do any refreshing
@@ -674,7 +540,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 getDocument().addDocumentListener(this.changeListener);
             }
         }
-    
+
         /** Selects a line in the currently displayed control program, if possible. */
         public void selectLine(int lineNr) {
             try {
@@ -684,11 +550,12 @@ public class ControlPanel extends JPanel implements SimulatorListener {
                 // do nothing
             }
         }
-    
+
         private final DocumentListener changeListener;
         /** Flag indicating if refresh actions should be currently listened to. */
         private boolean listenToRefresh = true;
     }
+
     private static JTextField enabledField = new JTextField();
     private static JTextField disabledField = new JTextField();
     static {

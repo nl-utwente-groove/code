@@ -20,6 +20,7 @@ import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
+import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
@@ -445,13 +446,13 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
-        Simulator simulator = getJGraph().getSimulator();
+        ActionStore actions = getJGraph().getSimulator().getActions();
         if (selectedValues != null && selectedValues.length == 1
-            && simulator != null) {
-            result.add(simulator.getRelabelAction());
+            && actions != null) {
+            result.add(actions.getRelabelAction());
             if (getJGraph() instanceof AspectJGraph
-                && simulator.getSelectColorAction().isEnabled()) {
-                result.add(simulator.getSelectColorAction());
+                && actions.getSelectColorAction().isEnabled()) {
+                result.add(actions.getSelectColorAction());
             }
             result.addSeparator();
         }

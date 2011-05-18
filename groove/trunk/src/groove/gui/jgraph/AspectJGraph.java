@@ -254,19 +254,19 @@ final public class AspectJGraph extends GraphJGraph {
         if (this.simulator != null) {
             switch (getGraphRole()) {
             case HOST:
-                result.add(getSimulator().getApplyTransitionAction());
+                result.add(getActions().getApplyTransitionAction());
                 result.addSeparator();
-                result.add(getSimulator().getEditHostOrStateAction());
+                result.add(getActions().getEditHostOrStateAction());
                 break;
             case RULE:
                 JMenu setRuleMenu = createSetRuleMenu();
                 setRuleMenu.setEnabled(getGrammar() != null);
                 result.add(setRuleMenu);
                 result.addSeparator();
-                result.add(getSimulator().getEditRuleAction());
+                result.add(getActions().getEditRuleAction());
                 break;
             case TYPE:
-                result.add(getSimulator().getEditTypeAction());
+                result.add(getActions().getEditTypeAction());
             }
         }
         addSubmenu(result, createEditMenu(atPoint));
@@ -279,7 +279,7 @@ final public class AspectJGraph extends GraphJGraph {
         // add a save graph action as the first action
         JMenu result = new JMenu();
         if (getSimulator() != null && getGraphRole() == GraphRole.HOST) {
-            result.add(getSimulator().getSaveHostGraphAction());
+            result.add(getActions().getSaveHostGraphAction());
         }
         addMenuItems(result, super.createExportMenu());
         return result;

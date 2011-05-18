@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
+import groove.gui.action.ActionStore;
 import groove.lts.GTS;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
@@ -139,18 +140,18 @@ public class StateJList extends JList implements SimulatorListener {
      */
     protected JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
-        result.add(this.simulator.getNewHostAction());
+        result.add(getActions().getNewHostAction());
         result.setFocusable(false);
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
         if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(this.simulator.getEditHostOrStateAction());
+            result.add(getActions().getEditHostOrStateAction());
             result.addSeparator();
-            result.add(this.simulator.getCopyGraphAction());
-            result.add(this.simulator.getDeleteHostAction());
-            result.add(this.simulator.getRenameGraphAction());
+            result.add(getActions().getCopyGraphAction());
+            result.add(getActions().getDeleteHostAction());
+            result.add(getActions().getRenameGraphAction());
             result.addSeparator();
-            result.add(this.simulator.getSetStartGraphAction());
+            result.add(getActions().getSetStartGraphAction());
         }
         return result;
     }
@@ -263,7 +264,7 @@ public class StateJList extends JList implements SimulatorListener {
         String text;
         if (getSimulatorModel().getState() == null) {
             String startKey =
-                this.simulator.getStartSimulationAction().getValue(
+                getActions().getStartSimulationAction().getValue(
                     Action.ACCELERATOR_KEY).toString();
             text =
                 String.format("Press %s to start simulation",
@@ -312,6 +313,11 @@ public class StateJList extends JList implements SimulatorListener {
     /** Returns the simulator to which the state list belongs. */
     private SimulatorModel getSimulatorModel() {
         return getSimulator().getModel();
+    }
+
+    /** Returns the simulator to which the state list belongs. */
+    private ActionStore getActions() {
+        return getSimulator().getActions();
     }
 
     /**
@@ -382,7 +388,7 @@ public class StateJList extends JList implements SimulatorListener {
                 if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
                     if (getSimulator().getModel().doSetStartGraph(
                         (String) getSelectedValue())) {
-                        getSimulator().getStartSimulationAction().execute();
+                        getActions().getStartSimulationAction().execute();
                     }
                 }
             }

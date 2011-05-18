@@ -30,13 +30,12 @@ public class CheckCTLAction extends SimulatorAction {
 
     @Override
     protected boolean doAction() {
-        String property =
-            getCtlFormulaDialog().showDialog(getSimulator().getFrame());
+        String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;
             GTS gts = getModel().getGts();
             if (gts.hasOpenStates() && this.full && getModel().setGts()) {
-                getSimulator().getExploreAction().explore(
+                getActions().getExploreAction().explore(
                     getModel().getExploration(), true, false);
                 doCheck = !gts.hasOpenStates();
             }

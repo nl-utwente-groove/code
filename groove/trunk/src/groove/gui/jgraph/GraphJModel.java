@@ -71,6 +71,11 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         return super.getRoots();
     }
 
+    /** Returns the size of the graph, as a sum of the number of nodes and edges. */
+    public int size() {
+        return this.nodeJCellMap.size() + this.edgeJCellMap.size();
+    }
+
     /**
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */

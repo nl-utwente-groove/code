@@ -124,7 +124,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
         if (getActiveState() != null) {
-            result.add(getSimulator().getSaveHostGraphAction());
+            result.add(getActions().getSaveHostGraphAction());
         }
         addMenuItems(result, super.createExportMenu());
         return result;
@@ -133,9 +133,9 @@ public class LTSJGraph extends GraphJGraph {
     /** Creates a state exploration sub-menu. */
     public JMenu createExploreMenu() {
         JMenu result = new JMenu("Explore");
-        result.add(this.simulator.getApplyTransitionAction());
-        result.add(this.simulator.getExploreAction());
-        result.add(this.simulator.getExplorationDialogAction());
+        result.add(getActions().getApplyTransitionAction());
+        result.add(getActions().getExploreAction());
+        result.add(getActions().getExplorationDialogAction());
         result.add(createCheckerMenu());
         return result;
     }
@@ -143,7 +143,7 @@ public class LTSJGraph extends GraphJGraph {
     /** Creates a traversal sub-menu. */
     public JMenu createGotoMenu() {
         JMenu result = new JMenu("Go To");
-        result.add(this.simulator.getGotoStartStateAction());
+        result.add(getActions().getGotoStartStateAction());
         result.add(getScrollToCurrentAction());
         return result;
     }
@@ -237,6 +237,10 @@ public class LTSJGraph extends GraphJGraph {
         }
         if (!changedCells.isEmpty()) {
             refreshCells(changedCells);
+        }
+        Element elem = state == null ? trans : state;
+        if (elem != null) {
+            scrollTo(elem);
         }
     }
 

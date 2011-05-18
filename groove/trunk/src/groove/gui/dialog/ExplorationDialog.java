@@ -223,7 +223,8 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         Exploration exploration =
             new Exploration(strategy, acceptor, nrResults);
         closeDialog();
-        this.simulator.getExploreAction().explore(exploration, true, true);
+        this.simulator.getActions().getExploreAction().explore(exploration,
+            true, true);
     }
 
     /*

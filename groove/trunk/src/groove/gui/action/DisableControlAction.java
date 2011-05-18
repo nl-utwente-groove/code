@@ -1,24 +1,24 @@
 package groove.gui.action;
 
-import groove.gui.ControlPanel;
 import groove.gui.Icons;
 import groove.gui.Options;
+import groove.gui.Simulator;
 import groove.trans.SystemProperties;
 
 import java.io.IOException;
 
 /** Action to disable the currently displayed control program. */
-public class DisableControlAction extends ControlAction {
+public class DisableControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
-    public DisableControlAction(ControlPanel panel) {
-        super(panel, Options.DISABLE_CONTROL_ACTION_NAME,
+    public DisableControlAction(Simulator simulator) {
+        super(simulator, Options.DISABLE_CONTROL_ACTION_NAME,
             Icons.DISABLE_ICON);
     }
 
     @Override
     protected boolean doAction() {
         boolean result = false;
-        if (getPanel().stopEditing(true)) {
+        if (getControlPanel().stopEditing(true)) {
             SystemProperties oldProperties =
                 getModel().getGrammar().getProperties();
             SystemProperties newProperties = oldProperties.clone();

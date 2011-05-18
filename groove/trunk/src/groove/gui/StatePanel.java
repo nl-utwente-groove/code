@@ -37,6 +37,7 @@ import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph.HostToAspectMap;
@@ -97,9 +98,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
-        result.add(getSimulator().getNewHostAction());
-        result.add(getSimulator().getEditHostOrStateAction());
-        result.add(getSimulator().getSaveGraphAction());
+        result.add(getActions().getNewHostAction());
+        result.add(getActions().getEditHostOrStateAction());
+        result.add(getActions().getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -143,7 +144,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                     @Override
                     public void run() {
                         try {
-                            getSimulator().getModel().doSetProperties(newProperties);
+                            getSimulator().getModel().doSetProperties(
+                                newProperties);
                         } catch (IOException exc) {
                             getSimulator().showErrorDialog(
                                 "Error while modifying type hierarchy", exc);
@@ -231,11 +233,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 setGraphModel(source.getHost());
             }
         }
-        if (changes.contains(Change.EVENT)) {
-            if (source.getEvent() == null) {
+        if (changes.contains(Change.MATCH)) {
+            if (source.getMatch() == null) {
                 clearSelectedMatch(true);
             } else {
-                selectMatch(source.getEvent().getMatch(
+                selectMatch(source.getMatch().getEvent().getMatch(
                     source.getState().getGraph()));
             }
         }
@@ -369,7 +371,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             if (clear) {
                 getJGraph().clearSelection();
             }
-            getSimulatorModel().setEvent(null);
+            getSimulatorModel().setMatch(null);
             refreshStatus();
         }
         return result;
@@ -388,14 +390,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             result.append(FRAME_NAME);
             result.append(": ");
             result.append(HTMLConverter.STRONG_TAG.on(getSimulatorModel().getState().toString()));
-            GraphTransition trans = getSimulatorModel().getTransition();
-            if (trans != null) {
+            MatchResult match = getSimulatorModel().getMatch();
+            if (match != null) {
                 if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
                     result.append(String.format(" (with match %s)",
-                        trans.getEvent()));
+                        match.getEvent()));
                 } else {
                     result.append(String.format(" (with match of %s)",
-                        trans.getEvent().getRule().getName()));
+                        match.getEvent().getRule().getName()));
                 }
             }
         } else {

@@ -37,50 +37,10 @@ import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
-import groove.gui.action.ApplyTransitionAction;
-import groove.gui.action.CheckCTLAction;
-import groove.gui.action.CopyHostAction;
-import groove.gui.action.CopyRuleAction;
-import groove.gui.action.DeleteHostAction;
-import groove.gui.action.DeleteRuleAction;
-import groove.gui.action.EditHostOrStateAction;
-import groove.gui.action.EditRuleAction;
-import groove.gui.action.EditRulePropertiesAction;
-import groove.gui.action.EditSystemPropertiesAction;
-import groove.gui.action.EnableRuleAction;
-import groove.gui.action.ExplorationDialogAction;
-import groove.gui.action.ExplorationStatsDialogAction;
-import groove.gui.action.ExploreAction;
-import groove.gui.action.GotoStartStateAction;
-import groove.gui.action.ImportAction;
-import groove.gui.action.LoadGrammarAction;
-import groove.gui.action.LoadGrammarFromHistoryAction;
-import groove.gui.action.LoadGrammarFromURLAction;
-import groove.gui.action.LoadStartGraphAction;
-import groove.gui.action.NewGrammarAction;
-import groove.gui.action.NewHostAction;
-import groove.gui.action.NewRuleAction;
-import groove.gui.action.QuitAction;
-import groove.gui.action.RedoSimulatorAction;
-import groove.gui.action.RefreshGrammarAction;
-import groove.gui.action.RelabelGrammarAction;
-import groove.gui.action.RenameHostAction;
-import groove.gui.action.RenameRuleAction;
-import groove.gui.action.RenumberGrammarAction;
-import groove.gui.action.SaveGrammarAction;
-import groove.gui.action.SaveHostAction;
-import groove.gui.action.SaveLTSAsAction;
-import groove.gui.action.SaveSimulatorAction;
-import groove.gui.action.SelectColorAction;
-import groove.gui.action.SetStartGraphAction;
-import groove.gui.action.SimulatorAction;
-import groove.gui.action.StartSimulationAction;
-import groove.gui.action.ToggleExplorationStateAction;
-import groove.gui.action.UndoSimulatorAction;
+import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
-import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatError;
@@ -126,9 +86,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
@@ -143,9 +100,10 @@ public class Simulator implements SimulatorListener {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
+        this.actions = new ActionStore(this);
         this.model = new SimulatorModel();
-        this.model.setUndoManager(getUndoManager());
         this.model.addListener(this);
+        this.undoManager = new SimulatorUndoManager(this);
         getFrame();
         refreshActions();
     }
@@ -178,7 +136,8 @@ public class Simulator implements SimulatorListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        getLoadGrammarAction().load(location, startGraphName);
+                        Simulator.this.actions.getLoadGrammarAction().load(
+                            location, startGraphName);
                     } catch (IOException exc) {
                         showErrorDialog(exc.getMessage(), exc);
                     }
@@ -197,8 +156,13 @@ public class Simulator implements SimulatorListener {
         getFrame().setVisible(true);
     }
 
+    /** Returns the store of actions for this simulator. */
+    public ActionStore getActions() {
+        return this.actions;
+    }
+
     /** Returns (after lazily creating) the undo history for this simulator. */
-    private UndoHistory getSimulationHistory() {
+    public UndoHistory getSimulationHistory() {
         if (this.undoHistory == null) {
             this.undoHistory = new UndoHistory(this);
         }
@@ -317,10 +281,6 @@ public class Simulator implements SimulatorListener {
             List<FormatError> grammarErrors =
                 getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
-            this.history.updateLoadGrammar();
-            if (source.getGrammar() != oldModel.getGrammar()) {
-                getUndoManager().discardAllEdits();
-            }
         }
         refreshActions();
     }
@@ -382,7 +342,7 @@ public class Simulator implements SimulatorListener {
             this.frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    getQuitAction().execute();
+                    Simulator.this.actions.getQuitAction().execute();
                 }
             });
             this.frame.setJMenuBar(createMenuBar());
@@ -473,12 +433,12 @@ public class Simulator implements SimulatorListener {
     private JToolBar createRuleTreeToolBar() {
         JToolBar result = createToolBar();
         result.setFloatable(false);
-        result.add(getNewRuleAction());
-        result.add(getEditRuleAction());
+        result.add(this.actions.getNewRuleAction());
+        result.add(this.actions.getEditRuleAction());
         result.addSeparator();
-        result.add(getCopyRuleAction());
-        result.add(getDeleteRuleAction());
-        result.add(getRenameRuleAction());
+        result.add(this.actions.getCopyRuleAction());
+        result.add(this.actions.getDeleteRuleAction());
+        result.add(this.actions.getRenameRuleAction());
         return result;
     }
 
@@ -518,14 +478,14 @@ public class Simulator implements SimulatorListener {
     private JToolBar createStatesListToolBar() {
         JToolBar result = createToolBar();
         result.setFloatable(false);
-        result.add(getNewHostAction());
-        result.add(getEditHostOrStateAction());
+        result.add(this.actions.getNewHostAction());
+        result.add(this.actions.getEditHostOrStateAction());
         result.addSeparator();
-        result.add(getCopyGraphAction());
-        result.add(getDeleteHostAction());
-        result.add(getRenameGraphAction());
+        result.add(this.actions.getCopyGraphAction());
+        result.add(this.actions.getDeleteHostAction());
+        result.add(this.actions.getRenameGraphAction());
         result.addSeparator();
-        result.add(getSetStartGraphAction());
+        result.add(this.actions.getSetStartGraphAction());
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(result);
         return result;
@@ -634,6 +594,7 @@ public class Simulator implements SimulatorListener {
     public ControlPanel getControlPanel() {
         if (this.controlPanel == null) {
             this.controlPanel = new ControlPanel(this);
+            this.controlPanel.initialise();
             this.controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.controlPanel;
@@ -863,42 +824,42 @@ public class Simulator implements SimulatorListener {
         JMenu result = new JMenu(Options.FILE_MENU_NAME);
         result.setMnemonic(Options.FILE_MENU_MNEMONIC);
 
-        result.add(new JMenuItem(getNewGrammarAction()));
+        result.add(new JMenuItem(this.actions.getNewGrammarAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getLoadGrammarAction()));
-        result.add(new JMenuItem(getLoadGrammarFromURLAction()));
+        result.add(new JMenuItem(this.actions.getLoadGrammarAction()));
+        result.add(new JMenuItem(this.actions.getLoadGrammarFromURLAction()));
         result.add(createOpenRecentMenu());
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getLoadStartGraphAction()));
+        result.add(new JMenuItem(this.actions.getLoadStartGraphAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getSaveGrammarAction()));
-        result.add(new JMenuItem(getSaveGraphAction()));
+        result.add(new JMenuItem(this.actions.getSaveGrammarAction()));
+        result.add(new JMenuItem(this.actions.getSaveGraphAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getImportAction()));
+        result.add(new JMenuItem(this.actions.getImportAction()));
         result.add(getExportGraphMenuItem());
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getRefreshGrammarAction()));
+        result.add(new JMenuItem(this.actions.getRefreshGrammarAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(getQuitAction()));
+        result.add(new JMenuItem(this.actions.getQuitAction()));
 
         return result;
     }
 
     private JMenu createOpenRecentMenu() {
         if (this.history == null) {
-            this.history = new History();
+            this.history = new SimulatorHistory(this);
         }
         return this.history.getOpenRecentMenu();
     }
@@ -910,14 +871,14 @@ public class Simulator implements SimulatorListener {
         JMenu result = new JMenu(Options.EDIT_MENU_NAME);
 
         result.setMnemonic(Options.EDIT_MENU_MNEMONIC);
-        result.add(getUndoAction());
-        result.add(getRedoAction());
+        result.add(this.actions.getUndoAction());
+        result.add(this.actions.getRedoAction());
 
         result.addSeparator();
 
-        result.add(getNewHostAction());
-        result.add(getNewRuleAction());
-        result.add(getNewTypeAction());
+        result.add(this.actions.getNewHostAction());
+        result.add(this.actions.getNewRuleAction());
+        result.add(this.actions.getNewTypeAction());
 
         result.addSeparator();
 
@@ -928,14 +889,14 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(getRelabelAction());
-        result.add(getRenumberAction());
+        result.add(this.actions.getRelabelAction());
+        result.add(this.actions.getRenumberAction());
 
         result.addSeparator();
 
-        result.add(getEnableRuleAction());
-        result.add(getEditRulePropertiesAction());
-        result.add(getEditSystemPropertiesAction());
+        result.add(this.actions.getEnableRuleAction());
+        result.add(this.actions.getEditRulePropertiesAction());
+        result.add(this.actions.getEditSystemPropertiesAction());
 
         return result;
     }
@@ -948,10 +909,10 @@ public class Simulator implements SimulatorListener {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(getEditHostOrStateAction());
+            this.editGraphItem.setAction(this.actions.getEditHostOrStateAction());
             // give the rule edit action a chance to replace the graph edit
             // action
-            getEditRuleAction();
+            this.actions.getEditRuleAction();
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
@@ -965,7 +926,7 @@ public class Simulator implements SimulatorListener {
         if (this.copyGraphItem == null) {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
-            this.copyGraphItem.setAction(getCopyGraphAction());
+            this.copyGraphItem.setAction(this.actions.getCopyGraphAction());
         }
         return this.copyGraphItem;
     }
@@ -978,7 +939,7 @@ public class Simulator implements SimulatorListener {
         if (this.deleteGraphItem == null) {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
-            this.deleteGraphItem.setAction(getDeleteHostAction());
+            this.deleteGraphItem.setAction(this.actions.getDeleteHostAction());
         }
         return this.deleteGraphItem;
     }
@@ -991,10 +952,10 @@ public class Simulator implements SimulatorListener {
         if (this.renameGraphItem == null) {
             this.renameGraphItem = new JMenuItem();
             // load the graph rename action as default
-            this.renameGraphItem.setAction(getRenameGraphAction());
+            this.renameGraphItem.setAction(this.actions.getRenameGraphAction());
             // give the rule rename action a chance to replace the graph rename
             // action
-            getRenameRuleAction();
+            this.actions.getRenameRuleAction();
             this.renameGraphItem.setAccelerator(Options.RENAME_KEY);
         }
         return this.renameGraphItem;
@@ -1079,26 +1040,26 @@ public class Simulator implements SimulatorListener {
 
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
         result.setText(Options.EXPLORE_MENU_NAME);
-        result.add(new JMenuItem(getBackAction()));
-        result.add(new JMenuItem(getForwardAction()));
+        result.add(new JMenuItem(this.actions.getBackAction()));
+        result.add(new JMenuItem(this.actions.getForwardAction()));
 
         result.addSeparator();
 
-        result.add(new JMenuItem(this.getStartSimulationAction()));
+        result.add(new JMenuItem(this.actions.getStartSimulationAction()));
         // EDUARDO: Uncomment to enable abstraction.
         // result.add(new JMenuItem(this.getToggleExplorationStateAction()));
-        result.add(new JMenuItem(this.getApplyTransitionAction()));
-        result.add(new JMenuItem(this.getGotoStartStateAction()));
+        result.add(new JMenuItem(this.actions.getApplyTransitionAction()));
+        result.add(new JMenuItem(this.actions.getGotoStartStateAction()));
 
         result.addSeparator();
 
-        result.add(this.getExploreAction());
-        result.add(this.getExplorationDialogAction());
+        result.add(this.actions.getExploreAction());
+        result.add(this.actions.getExplorationDialogAction());
 
         result.addSeparator();
 
-        result.add(this.getExplorationStatsDialogAction());
-        result.add(new JMenuItem(getSaveLTSAsAction()));
+        result.add(this.actions.getExplorationStatsDialogAction());
+        result.add(new JMenuItem(this.actions.getSaveLTSAsAction()));
 
         return result;
     }
@@ -1109,8 +1070,8 @@ public class Simulator implements SimulatorListener {
     private JMenu createVerifyMenu() {
         JMenu result = new JMenu(Options.VERIFY_MENU_NAME);
         result.setMnemonic(Options.VERIFY_MENU_MNEMONIC);
-        result.add(getCheckCTLAction(true));
-        result.add(getCheckCTLAction(false));
+        result.add(this.actions.getCheckCTLAction(true));
+        result.add(this.actions.getCheckCTLAction(false));
         result.addSeparator();
         JMenu mcScenarioMenu = new ModelCheckingMenu(this);
         for (Component menuComponent : mcScenarioMenu.getMenuComponents()) {
@@ -1255,6 +1216,8 @@ public class Simulator implements SimulatorListener {
     /** the internal state of the simulator. */
     private final SimulatorModel model;
 
+    /** Store of all simulator-related actions. */
+    private final ActionStore actions;
     /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
 
@@ -1299,7 +1262,7 @@ public class Simulator implements SimulatorListener {
     private SimulatorPanel simulatorPanel;
 
     /** History of recently opened grammars. */
-    private History history;
+    private SimulatorHistory history;
 
     /** Menu for externally provided actions. */
     private JMenu externalMenu;
@@ -1324,805 +1287,7 @@ public class Simulator implements SimulatorListener {
     }
 
     /** The undo manager of this simulator. */
-    private final UndoManager undoManager = new UndoManager() {
-        @Override
-        public void undoableEditHappened(UndoableEditEvent e) {
-            super.undoableEditHappened(e);
-            refreshActions();
-        }
-
-        @Override
-        public synchronized void discardAllEdits() {
-            super.discardAllEdits();
-            refreshActions();
-        }
-
-        @Override
-        public synchronized void redo() throws CannotRedoException {
-            super.redo();
-            refreshActions();
-        }
-
-        @Override
-        public synchronized void undo() throws CannotUndoException {
-            super.undo();
-            refreshActions();
-        }
-
-        private void refreshActions() {
-            getUndoAction().refresh();
-            getRedoAction().refresh();
-        }
-    };
-
-    /**
-     * Returns the transition application action permanently associated with
-     * this simulator.
-     */
-    public ApplyTransitionAction getApplyTransitionAction() {
-        if (this.applyTransitionAction == null) {
-            this.applyTransitionAction = new ApplyTransitionAction(this);
-        }
-        return this.applyTransitionAction;
-    }
-
-    /**
-     * The transition application action permanently associated with this
-     * simulator.
-     */
-    private ApplyTransitionAction applyTransitionAction;
-
-    /**
-     * Returns the back simulation action permanently associated with this
-     * simulator.
-     */
-    public Action getBackAction() {
-        if (this.backAction == null) {
-            this.backAction = getSimulationHistory().getBackAction();
-            addAccelerator(this.backAction);
-        }
-        return this.backAction;
-    }
-
-    /** The back simulation action permanently associated with this simulator. */
-    private Action backAction;
-
-    /**
-     * Returns the CTL formula providing action permanently associated with this
-     * simulator.
-     * @param full if {@code true}, the action first generates the full state
-     * space.
-     */
-    public Action getCheckCTLAction(boolean full) {
-        CheckCTLAction result =
-            full ? this.checkCTLFreshAction : this.checkCTLAsIsAction;
-        if (result == null) {
-            result = new CheckCTLAction(this, full);
-            if (full) {
-                this.checkCTLFreshAction = result;
-            } else {
-                this.checkCTLAsIsAction = result;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Action to check a CTL property on a fully explored state space.
-     */
-    private CheckCTLAction checkCTLFreshAction;
-
-    /**
-     * Action to check a CTL property on the current state space.
-     */
-    private CheckCTLAction checkCTLAsIsAction;
-
-    /**
-     * Returns the graph copying action permanently associated with this
-     * simulator.
-     */
-    public CopyHostAction getCopyGraphAction() {
-        // lazily create the action
-        if (this.copyGraphAction == null) {
-            this.copyGraphAction = new CopyHostAction(this);
-        }
-        return this.copyGraphAction;
-    }
-
-    /**
-     * The graph copying action permanently associated with this simulator.
-     */
-    private CopyHostAction copyGraphAction;
-
-    /**
-     * Returns the rule copying action permanently associated with this
-     * simulator.
-     */
-    public CopyRuleAction getCopyRuleAction() {
-        // lazily create the action
-        if (this.copyRuleAction == null) {
-            this.copyRuleAction = new CopyRuleAction(this);
-        }
-        return this.copyRuleAction;
-    }
-
-    /**
-     * The rule copying action permanently associated with this simulator.
-     */
-    private CopyRuleAction copyRuleAction;
-
-    /**
-     * Returns the graph deletion action permanently associated with this
-     * simulator.
-     */
-    public DeleteHostAction getDeleteHostAction() {
-        // lazily create the action
-        if (this.deleteHostAction == null) {
-            this.deleteHostAction = new DeleteHostAction(this);
-        }
-        return this.deleteHostAction;
-    }
-
-    /**
-     * The graph deletion action permanently associated with this simulator.
-     */
-    private DeleteHostAction deleteHostAction;
-
-    /**
-     * Returns the rule deletion action permanently associated with this
-     * simulator.
-     */
-    public DeleteRuleAction getDeleteRuleAction() {
-        // lazily create the action
-        if (this.deleteRuleAction == null) {
-            this.deleteRuleAction = new DeleteRuleAction(this);
-        }
-        return this.deleteRuleAction;
-    }
-
-    /**
-     * The rule deletion action permanently associated with this simulator.
-     */
-    private DeleteRuleAction deleteRuleAction;
-
-    /**
-     * Lazily creates and returns the state edit action permanently associated
-     * with this simulator.
-     */
-    public EditHostOrStateAction getEditHostOrStateAction() {
-        // lazily create the action
-        if (this.editHostOrStateAction == null) {
-            this.editHostOrStateAction = new EditHostOrStateAction(this);
-        }
-        return this.editHostOrStateAction;
-    }
-
-    /**
-     * The state edit action permanently associated with this simulator.
-     */
-    private EditHostOrStateAction editHostOrStateAction;
-
-    /**
-     * Returns the properties edit action permanently associated with this
-     * simulator.
-     */
-    public EditRulePropertiesAction getEditRulePropertiesAction() {
-        // lazily create the action
-        if (this.editRulePropertiesAction == null) {
-            this.editRulePropertiesAction = new EditRulePropertiesAction(this);
-        }
-        return this.editRulePropertiesAction;
-    }
-
-    /**
-     * The rule properties edit action permanently associated with this
-     * simulator.
-     */
-    private EditRulePropertiesAction editRulePropertiesAction;
-
-    /**
-     * Lazily creates and returns the rule edit action permanently associated
-     * with this simulator.
-     */
-    public EditRuleAction getEditRuleAction() {
-        // lazily create the action
-        if (this.editRuleAction == null) {
-            this.editRuleAction = new EditRuleAction(this);
-        }
-        return this.editRuleAction;
-    }
-
-    /**
-     * The rule edit action permanently associated with this simulator.
-     */
-    private EditRuleAction editRuleAction;
-
-    /** Returns the action to show the system properties of the current grammar. */
-    public Action getEditSystemPropertiesAction() {
-        // lazily create the action
-        if (this.editSystemPropertiesAction == null) {
-            this.editSystemPropertiesAction =
-                new EditSystemPropertiesAction(this);
-        }
-        return this.editSystemPropertiesAction;
-    }
-
-    /**
-     * The action to show the system properties of the currently selected
-     * grammar.
-     */
-    private EditSystemPropertiesAction editSystemPropertiesAction;
-
-    /**
-     * Lazily creates and returns the type edit action permanently associated
-     * with this simulator.
-     */
-    public Action getEditTypeAction() {
-        return getTypePanel().getEditTypeAction();
-    }
-
-    /**
-     * Returns the rule enabling action permanently associated with this
-     * simulator.
-     */
-    public EnableRuleAction getEnableRuleAction() {
-        // lazily create the action
-        if (this.enableRuleAction == null) {
-            this.enableRuleAction = new EnableRuleAction(this);
-        }
-        return this.enableRuleAction;
-    }
-
-    /**
-     * The rule enabling action permanently associated with this simulator.
-     */
-    private EnableRuleAction enableRuleAction;
-
-    /**
-     * Returns the 'default exploration' action that is associated with the
-     * simulator.
-     */
-    public ExploreAction getExploreAction() {
-        // lazily create the action
-        if (this.exploreAction == null) {
-            this.exploreAction = new ExploreAction(this);
-        }
-
-        return this.exploreAction;
-    }
-
-    /**
-     * The 'default exploration' action (variable).
-     */
-    private ExploreAction exploreAction;
-
-    /**
-     * Returns the exploration dialog action permanently associated with this
-     * simulator.
-     */
-    public ExplorationDialogAction getExplorationDialogAction() {
-        // lazily create the action
-        if (this.explorationDialogAction == null) {
-            this.explorationDialogAction = new ExplorationDialogAction(this);
-        }
-        return this.explorationDialogAction;
-    }
-
-    /**
-     * The exploration dialog action permanently associated with this simulator.
-     */
-    private ExplorationDialogAction explorationDialogAction;
-
-    /**
-     * Returns the exploration statistics dialog action permanently associated
-     * with this simulator.
-     */
-    public ExplorationStatsDialogAction getExplorationStatsDialogAction() {
-        // lazily create the action
-        if (this.explorationStatsDialogAction == null) {
-            this.explorationStatsDialogAction =
-                new ExplorationStatsDialogAction(this);
-        }
-        return this.explorationStatsDialogAction;
-    }
-
-    /**
-     * The exploration statistics dialog action permanently associated with
-     * this simulator.
-     */
-    private ExplorationStatsDialogAction explorationStatsDialogAction;
-
-    /**
-     * Returns the Save LTS As action permanently associated with this simulator.
-     */
-    public SaveLTSAsAction getSaveLTSAsAction() {
-        // lazily create the action
-        if (this.saveLtsAsAction == null) {
-            this.saveLtsAsAction = new SaveLTSAsAction(this);
-        }
-        return this.saveLtsAsAction;
-    }
-
-    /** The LTS Save As action permanently associated with this simulator. */
-    private SaveLTSAsAction saveLtsAsAction;
-
-    /**
-     * Returns the forward (= repeat) simulation action permanently associated
-     * with this simulator.
-     */
-    public Action getForwardAction() {
-        if (this.forwardAction == null) {
-            this.forwardAction = getSimulationHistory().getForwardAction();
-            addAccelerator(this.forwardAction);
-        }
-        return this.forwardAction;
-    }
-
-    /**
-     * The forward simulation action permanently associated with this simulator.
-     */
-    private Action forwardAction;
-
-    /**
-     * Returns the go-to start state action permanently associated with this
-     * simulator.
-     */
-    public GotoStartStateAction getGotoStartStateAction() {
-        // lazily create the action
-        if (this.gotoStartStateAction == null) {
-            this.gotoStartStateAction = new GotoStartStateAction(this);
-        }
-        return this.gotoStartStateAction;
-    }
-
-    /**
-     * The go-to start state action permanently associated with this simulator.
-     */
-    private GotoStartStateAction gotoStartStateAction;
-
-    /**
-     * Returns the start graph load action permanently associated with this
-     * simulator.
-     */
-    public LoadStartGraphAction getLoadStartGraphAction() {
-        // lazily create the action
-        if (this.loadStartGraphAction == null) {
-            this.loadStartGraphAction = new LoadStartGraphAction(this);
-        }
-        return this.loadStartGraphAction;
-    }
-
-    /** The start state load action permanently associated with this simulator. */
-    private LoadStartGraphAction loadStartGraphAction;
-
-    /** Returns the import action permanently associated with this simulator. */
-    public ImportAction getImportAction() {
-        // lazily create the action
-        if (this.importAction == null) {
-            this.importAction = new ImportAction(this);
-        }
-        return this.importAction;
-    }
-
-    /** The import action permanently associated with this simulator. */
-    private ImportAction importAction;
-
-    /**
-     * Returns the grammar load action permanently associated with this
-     * simulator.
-     */
-    public LoadGrammarAction getLoadGrammarAction() {
-        // lazily create the action
-        if (this.loadGrammarAction == null) {
-            this.loadGrammarAction = new LoadGrammarAction(this);
-        }
-        return this.loadGrammarAction;
-    }
-
-    /** The grammar load action permanently associated with this simulator. */
-    private LoadGrammarAction loadGrammarAction;
-
-    /**
-     * Returns the grammar load action permanently associated with this
-     * simulator.
-     */
-    public Action getLoadGrammarFromURLAction() {
-        // lazily create the action
-        if (this.loadGrammarFromURLAction == null) {
-            this.loadGrammarFromURLAction = new LoadGrammarFromURLAction(this);
-        }
-        return this.loadGrammarFromURLAction;
-    }
-
-    /** The grammar load action permanently associated with this simulator. */
-    private LoadGrammarFromURLAction loadGrammarFromURLAction;
-
-    /**
-     * Returns the rule system creation action permanently associated with this
-     * simulator.
-     */
-    public NewGrammarAction getNewGrammarAction() {
-        // lazily create the action
-        if (this.newGrammarAction == null) {
-            this.newGrammarAction = new NewGrammarAction(this);
-        }
-        return this.newGrammarAction;
-    }
-
-    /**
-     * The rule system creation action permanently associated with this
-     * simulator.
-     */
-    private NewGrammarAction newGrammarAction;
-
-    /**
-     * Returns the graph creation action permanently associated with this
-     * simulator.
-     */
-    public NewHostAction getNewHostAction() {
-        // lazily create the action
-        if (this.newHostAction == null) {
-            this.newHostAction = new NewHostAction(this);
-        }
-        return this.newHostAction;
-    }
-
-    /**
-     * The graph creation action permanently associated with this simulator.
-     */
-    private NewHostAction newHostAction;
-
-    /**
-     * Returns the rule creation action permanently associated with this
-     * simulator.
-     */
-    public NewRuleAction getNewRuleAction() {
-        // lazily create the action
-        if (this.newRuleAction == null) {
-            this.newRuleAction = new NewRuleAction(this);
-        }
-        return this.newRuleAction;
-    }
-
-    /**
-     * The rule creation action permanently associated with this simulator.
-     */
-    private NewRuleAction newRuleAction;
-
-    /**
-     * Returns the rule creation action permanently associated with this
-     * simulator.
-     */
-    public Action getNewTypeAction() {
-        return getTypePanel().getNewTypeAction();
-    }
-
-    /** Returns the quit action permanently associated with this simulator. */
-    public SimulatorAction getQuitAction() {
-        // lazily create the action
-        if (this.quitAction == null) {
-            this.quitAction = new QuitAction(this);
-        }
-        return this.quitAction;
-    }
-
-    /**
-     * The quit action permanently associated with this simulator.
-     */
-    private QuitAction quitAction;
-
-    /**
-     * Returns the redo action permanently associated with this simulator.
-     */
-    public RedoSimulatorAction getRedoAction() {
-        if (this.redoAction == null) {
-            this.redoAction = new RedoSimulatorAction(this);
-        }
-        return this.redoAction;
-    }
-
-    /**
-     * The redo permanently associated with this simulator.
-     */
-    private RedoSimulatorAction redoAction;
-
-    /**
-     * Returns the grammar refresh action permanently associated with this
-     * simulator.
-     */
-    public RefreshGrammarAction getRefreshGrammarAction() {
-        // lazily create the action
-        if (this.refreshGrammarAction == null) {
-            this.refreshGrammarAction = new RefreshGrammarAction(this);
-        }
-        return this.refreshGrammarAction;
-    }
-
-    /** The grammar refresh action permanently associated with this simulator. */
-    private RefreshGrammarAction refreshGrammarAction;
-
-    /**
-     * Returns the renumbering action permanently associated with this
-     * simulator.
-     */
-    public RenumberGrammarAction getRenumberAction() {
-        // lazily create the action
-        if (this.renumberAction == null) {
-            this.renumberAction = new RenumberGrammarAction(this);
-        }
-        return this.renumberAction;
-    }
-
-    /**
-     * The renumbering action permanently associated with this simulator.
-     */
-    private RenumberGrammarAction renumberAction;
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RelabelGrammarAction getRelabelAction() {
-        // lazily create the action
-        if (this.relabelAction == null) {
-            this.relabelAction = new RelabelGrammarAction(this);
-        }
-        return this.relabelAction;
-    }
-
-    /**
-     * The graph renaming action permanently associated with this simulator.
-     */
-    private RelabelGrammarAction relabelAction;
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameHostAction getRenameGraphAction() {
-        // lazily create the action
-        if (this.renameGraphAction == null) {
-            this.renameGraphAction = new RenameHostAction(this);
-        }
-        return this.renameGraphAction;
-    }
-
-    /**
-     * The graph renaming action permanently associated with this simulator.
-     */
-    private RenameHostAction renameGraphAction;
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameRuleAction getRenameRuleAction() {
-        // lazily create the action
-        if (this.renameRuleAction == null) {
-            this.renameRuleAction = new RenameRuleAction(this);
-        }
-        return this.renameRuleAction;
-    }
-
-    /**
-     * The rule renaming action permanently associated with this simulator.
-     */
-    private RenameRuleAction renameRuleAction;
-
-    /**
-     * Returns the graph save action permanently associated with this simulator.
-     */
-    public SaveGrammarAction getSaveGrammarAction() {
-        // lazily create the action
-        if (this.saveGrammarAction == null) {
-            this.saveGrammarAction = new SaveGrammarAction(this);
-        }
-        return this.saveGrammarAction;
-    }
-
-    /**
-     * The grammar save action permanently associated with this simulator.
-     */
-    private SaveGrammarAction saveGrammarAction;
-
-    /**
-     * Returns the graph save action permanently associated with this simulator.
-     */
-    public SaveSimulatorAction getSaveGraphAction() {
-        // lazily create the action
-        if (this.saveGraphAction == null) {
-            this.saveGraphAction = new SaveSimulatorAction(this);
-        }
-        return this.saveGraphAction;
-    }
-
-    /**
-     * The state save action permanently associated with this simulator.
-     */
-    private SaveSimulatorAction saveGraphAction;
-
-    /**
-     * Returns the host graph save action permanently associated with this simulator.
-     */
-    public SaveHostAction getSaveHostGraphAction() {
-        // lazily create the action
-        if (this.saveHostGraphAction == null) {
-            this.saveHostGraphAction = new SaveHostAction(this);
-        }
-        return this.saveHostGraphAction;
-    }
-
-    /**
-     * The host graph save action permanently associated with this simulator.
-     */
-    private SaveHostAction saveHostGraphAction;
-
-    /**
-     * Returns the undo action permanently associated with this simulator.
-     */
-    public Action getSelectColorAction() {
-        if (this.selectColorAction == null) {
-            this.selectColorAction = new SelectColorAction(this);
-        }
-        return this.selectColorAction;
-    }
-
-    /**
-     * The undo action permanently associated with this simulator.
-     */
-    private SelectColorAction selectColorAction;
-
-    /**
-     * Lazily creates and returns an instance of SetStartGraphAction.
-     */
-    public Action getSetStartGraphAction() {
-        // lazily create the action
-        if (this.setStartGraphAction == null) {
-            this.setStartGraphAction = new SetStartGraphAction(this);
-        }
-        return this.setStartGraphAction;
-    }
-
-    /** Singleton instance of {@link SetStartGraphAction}. */
-    private SetStartGraphAction setStartGraphAction;
-
-    /**
-     * Lazily creates and returns an instance of
-     * {@link StartSimulationAction}.
-     */
-    public SimulatorAction getStartSimulationAction() {
-        // lazily create the action
-        if (this.startSimulationAction == null) {
-            this.startSimulationAction = new StartSimulationAction(this);
-        }
-        return this.startSimulationAction;
-    }
-
-    /** The action to start a new simulation. */
-    private StartSimulationAction startSimulationAction;
-
-    /**
-     * Lazily creates and returns an instance of
-     * {@link ToggleExplorationStateAction}.
-     */
-    public Action getToggleExplorationStateAction() {
-        if (this.toggleExplorationStateAction == null) {
-            this.toggleExplorationStateAction =
-                new ToggleExplorationStateAction(this);
-        }
-        return this.toggleExplorationStateAction;
-    }
-
-    /** The action to toggle between concrete and abstract exploration. */
-    private ToggleExplorationStateAction toggleExplorationStateAction;
-
-    /**
-     * Returns the undo action permanently associated with this simulator.
-     */
-    public UndoSimulatorAction getUndoAction() {
-        if (this.undoAction == null) {
-            this.undoAction = new UndoSimulatorAction(this);
-        }
-        return this.undoAction;
-    }
-
-    /**
-     * The undo action permanently associated with this simulator.
-     */
-    private UndoSimulatorAction undoAction;
-
-    /** Class wrapping a menu of recently opened files. */
-    private class History {
-
-        /** Constructs a fresh history instance. */
-        public History() {
-            String[] savedLocations =
-                Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(
-                    ",");
-            for (String location : savedLocations) {
-                try {
-                    this.history.add(new LoadGrammarFromHistoryAction(
-                        Simulator.this, location, null));
-                } catch (IOException exc) {
-                    // if we can't load from a location, just
-                    // omit it from the history
-                }
-            }
-
-            this.menu.setText(Options.OPEN_RECENT_MENU_NAME);
-            this.menu.setMnemonic(Options.OPEN_RECENT_MENU_MNEMONIC);
-
-            synchMenu();
-        }
-
-        /**
-         * Returns a JMenu that will reflect the current history. The menu is
-         * updated when a grammar is loaded.
-         */
-        public JMenu getOpenRecentMenu() {
-            return this.menu;
-        }
-
-        /**
-         * This method is called when a grammar is loaded, to update the history
-         * of loaded grammars. This class will deal with any updates that have
-         * to be made accordingly
-         */
-        public void updateLoadGrammar() {
-            try {
-                Object location = getModel().getStore().getLocation();
-                String startGraphName =
-                    getModel().getGrammar().getStartGraphName();
-                LoadGrammarFromHistoryAction newAction =
-                    new LoadGrammarFromHistoryAction(Simulator.this,
-                        location.toString(), startGraphName);
-                this.history.remove(newAction);
-                this.history.add(0, newAction);
-                // trimming list to 10 elements
-                while (this.history.size() > 10) {
-                    this.history.remove(10);
-                }
-                synch();
-            } catch (IOException exc) {
-                // if we can't load from a location, just
-                // omit it from the history
-            }
-        }
-
-        private void synch() {
-            synchPrefs();
-            synchMenu();
-        }
-
-        private void synchPrefs() {
-            String newStr = makeHistoryString();
-            Options.userPrefs.put(SystemProperties.HISTORY_KEY, newStr);
-        }
-
-        private void synchMenu() {
-            this.menu.removeAll();
-            for (LoadGrammarFromHistoryAction action : this.history) {
-                this.menu.add(action);
-            }
-        }
-
-        private String makeHistoryString() {
-            StringBuilder result = new StringBuilder();
-            for (LoadGrammarFromHistoryAction action : this.history) {
-                if (result.length() > 0) {
-                    result.append(",");
-                }
-                result.append(action.getLocation());
-            }
-            return result.toString();
-        }
-
-        /** Menu of history items. */
-        private final JMenu menu = new JMenu();
-        /** List of load actions corresponding to the history items. */
-        private final ArrayList<LoadGrammarFromHistoryAction> history =
-            new ArrayList<LoadGrammarFromHistoryAction>();
-    }
+    private final UndoManager undoManager;
 
     /**
      * Starts a simulator, optionally setting the graph production system and

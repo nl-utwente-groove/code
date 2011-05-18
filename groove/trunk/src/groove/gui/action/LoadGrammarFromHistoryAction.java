@@ -18,7 +18,6 @@ package groove.gui.action;
 
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
 
 import java.io.IOException;
 
@@ -37,20 +36,6 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
      * 
      */
     public LoadGrammarFromHistoryAction(Simulator simulator, String location,
-            String startGraphName) throws IOException {
-        this(simulator, location, startGraphName,
-            SystemStoreFactory.newStore(location));
-    }
-
-    /**
-     * Constructs an action that will load a grammar from a predefined
-     * location.
-     * @param location the location to load from; non-null
-     * @param startGraphName name of the start graph to be loaded; if
-     *        <code>null</code>, the default will be used.
-     * 
-     */
-    private LoadGrammarFromHistoryAction(Simulator simulator, String location,
             String startGraphName, SystemStore store) {
         super(simulator, store.toString(), null);
         this.location = location;
@@ -63,7 +48,7 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
         boolean result = false;
         try {
             result =
-                getSimulator().getLoadGrammarAction().load(this.store,
+                getActions().getLoadGrammarAction().load(this.store,
                     this.startGraphName);
         } catch (IOException e) {
             showErrorDialog("Can't load grammar: ", e);
