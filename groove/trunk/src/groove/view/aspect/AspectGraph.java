@@ -60,8 +60,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge>
-        implements Cloneable {
+public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Creates an empty graph, with a given name and graph role.

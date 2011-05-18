@@ -197,19 +197,10 @@ public class BoundedModelCheckingDialog {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<String>();
         for (Rule rule : grammar.getRules()) {
-            this.ruleNames.add(rule.getName().toString());
+            this.ruleNames.add(rule.getName());
         }
     }
 
-    //
-    // /**
-    // * The bound to be set through the dialog.
-    // */
-    // private int bound;
-    // /**
-    // * The delta to be set through the dialog.
-    // */
-    // private int delta;
     /**
      * The graph-grammar from which to obtain the rules.
      */

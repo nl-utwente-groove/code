@@ -72,7 +72,7 @@ public class AspectGxl implements Xml<AspectGraph> {
             // override the role that was loaded from the file.
             plainGraph.setRole(GraphRole.HOST);
         }
-        plainGraph.setName(extractName(file.getName().toString()));
+        plainGraph.setName(extractName(file.getName()));
         return AspectGraph.newInstance(plainGraph);
     }
 

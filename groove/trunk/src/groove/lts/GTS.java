@@ -59,7 +59,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AbstractGraph<GraphState,GraphTransition> {
+public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
+        Cloneable {
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)

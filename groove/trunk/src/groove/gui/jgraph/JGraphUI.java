@@ -679,9 +679,6 @@ public class JGraphUI extends BasicGraphUI {
 
         /** Returns the cloned and upscaled bounds of a vertex view. */
         Rectangle2D getScreenBounds(JVertexView vertex) {
-            if (vertex == null) {
-                System.out.println("vertex");
-            }
             return this.canvas.toScreen((Rectangle2D) vertex.getBounds().clone());
         }
 

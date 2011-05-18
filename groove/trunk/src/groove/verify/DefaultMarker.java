@@ -86,7 +86,7 @@ public class DefaultMarker {
                 // check whether this transition corresponds to an atomic
                 // proposition of the source state
                 Integer atomIndex =
-                    this.ruleAtoms.get(transition.getEvent().getRule().getName().toString());
+                    this.ruleAtoms.get(transition.getEvent().getRule().getName());
                 if (atomIndex != null) {
                     this.marking[atomIndex].set(stateNr);
                 }

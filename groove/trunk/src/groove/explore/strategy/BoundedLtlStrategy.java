@@ -187,7 +187,6 @@ public class BoundedLtlStrategy extends LtlStrategy {
                         // target-state is already explored in previous
                         // iterations
                         // the transition must be traversed
-                        outTransition.rule().getName().toString();
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
                             setAtBuchiState(newState);
                             setLastTransition(outTransition);

@@ -60,7 +60,7 @@ import javax.swing.JToolBar;
 final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         SimulatorListener {
     /** Frame name when no rule is selected. */
-    protected static final String INITIAL_FRAME_NAME = "No rule selected";
+    private static final String INITIAL_FRAME_NAME = "No rule selected";
 
     /**
      * Constructs a new rule frame on the basis of a given graph.
@@ -144,7 +144,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
                 RuleView ruleView = grammar.getRuleView(ruleName);
                 AspectJModel jModel = getJGraph().newModel();
                 jModel.loadGraph(ruleView.getAspectGraph());
-                this.ruleJModelMap.put(ruleName.toString(), jModel);
+                this.ruleJModelMap.put(ruleName, jModel);
             }
         }
         // reset the display
@@ -214,7 +214,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             ruleQueue.add(rule);
             while (!ruleQueue.isEmpty()) {
                 Rule next = ruleQueue.poll();
-                result.add(next.getName().toString() + toAnchorString(next));
+                result.add(next.getName() + toAnchorString(next));
                 ruleQueue.addAll(next.getSubRules());
             }
             return Groove.toString(result.toArray());

@@ -162,7 +162,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     public String getTransitionLabel() {
         String result = this.ruleProperties.getTransitionLabel();
         if (result == null) {
-            result = getName().toString();
+            result = getName();
         }
         return result;
     }

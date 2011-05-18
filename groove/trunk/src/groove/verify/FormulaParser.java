@@ -428,7 +428,7 @@ public class FormulaParser {
             } else if (text.equals(FALSE.getSymbol())) {
                 return new Pair<Token,String>(FALSE, null);
             } else {
-                return new Pair<Token,String>(ATOM, text.toString());
+                return new Pair<Token,String>(ATOM, text);
             }
         }
 

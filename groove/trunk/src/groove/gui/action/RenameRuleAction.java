@@ -71,9 +71,7 @@ public class RenameRuleAction extends SimulatorAction {
             // copy the selected rules to avoid concurrent modifications
             for (AspectGraph ruleGraph : ruleGraphs) {
                 String oldName = ruleGraph.getName();
-                newName =
-                    askNewRuleName("Select new rule name", oldName.toString(),
-                        true);
+                newName = askNewRuleName("Select new rule name", oldName, true);
                 if (newName != null) {
                     try {
                         result |=

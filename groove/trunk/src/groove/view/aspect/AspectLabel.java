@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectLabel extends AbstractLabel implements Cloneable {
+public class AspectLabel extends AbstractLabel {
     /**
      * Constructs an initially empty label, for a graph with a particular role.
      */

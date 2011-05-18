@@ -42,7 +42,7 @@ public class Predicate_rule extends TransPrologCode {
             Term[] args) throws PrologException {
         try {
             Rule rl = (Rule) ((JavaObjectTerm) args[1]).value;
-            Term res = AtomTerm.get(rl.getName().toString());
+            Term res = AtomTerm.get(rl.getName());
             return interpreter.unify(args[0], res);
         } catch (Exception e) {
             try {

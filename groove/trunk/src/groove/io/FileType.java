@@ -81,12 +81,12 @@ public enum FileType {
     KTH(".kth", "Simple KTH files");
 
     /** Enumeration of importable native files. */
-    public static EnumSet<FileType> importNative = EnumSet.of(RULE, STATE,
-        TYPE, CONTROL);
+    public static final EnumSet<FileType> importNative = EnumSet.of(RULE,
+        STATE, TYPE, CONTROL);
 
     // Composite enumerations.
 
-    private static Map<EnumSet<FileType>,String> compositeDescriptions =
+    private static final Map<EnumSet<FileType>,String> compositeDescriptions =
         new HashMap<EnumSet<FileType>,String>();
 
     /** Returns the description associated with the given enum of file types. */
@@ -95,7 +95,8 @@ public enum FileType {
     }
 
     /** Enum of graph files. */
-    public static EnumSet<FileType> graphs = EnumSet.of(STATE, RULE, TYPE, GXL);
+    public static final EnumSet<FileType> graphs = EnumSet.of(STATE, RULE,
+        TYPE, GXL);
     static {
         compositeDescriptions.put(graphs, String.format(
             "Graph files (*%s, *%s, *%s, *%s)", STATE.getExtension(),
@@ -103,7 +104,8 @@ public enum FileType {
     }
 
     /** Enum of grammar files. */
-    public static EnumSet<FileType> grammars = EnumSet.of(GRAMMAR, ZIP, JAR);
+    public static final EnumSet<FileType> grammars = EnumSet.of(GRAMMAR, ZIP,
+        JAR);
     static {
         compositeDescriptions.put(
             grammars,
@@ -112,7 +114,7 @@ public enum FileType {
     }
 
     /** Enum of Prolog files. */
-    public static EnumSet<FileType> prolog = EnumSet.of(PROLOG1, PROLOG2);
+    public static final EnumSet<FileType> prolog = EnumSet.of(PROLOG1, PROLOG2);
     static {
         compositeDescriptions.put(prolog, String.format(
             "Prolog files (*%s, *%s)", PROLOG1.getExtension(),
@@ -120,7 +122,7 @@ public enum FileType {
     }
 
     /** Enum of host graphs. */
-    public static EnumSet<FileType> hosts = EnumSet.of(STATE, GXL);
+    public static final EnumSet<FileType> hosts = EnumSet.of(STATE, GXL);
     static {
         compositeDescriptions.put(
             hosts,

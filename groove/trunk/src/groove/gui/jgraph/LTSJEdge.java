@@ -59,7 +59,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
             if (getJGraph().isShowAnchors()) {
                 description = trans.getEvent().toString();
             } else {
-                description = trans.getEvent().getRule().getName().toString();
+                description = trans.getEvent().getRule().getName();
             }
             displayedLabels[labelIndex] =
                 HTMLConverter.STRONG_TAG.on(description, true);
