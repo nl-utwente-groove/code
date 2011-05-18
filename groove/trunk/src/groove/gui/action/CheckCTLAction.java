@@ -35,10 +35,9 @@ public class CheckCTLAction extends SimulatorAction {
         if (property != null) {
             boolean doCheck = true;
             GTS gts = getModel().getGts();
-            if (gts.hasOpenStates() && this.full) {
-                getSimulator().startSimulation();
-                getSimulator().doRunExploration(getModel().getExploration(),
-                    true, false);
+            if (gts.hasOpenStates() && this.full && getModel().setGts()) {
+                getSimulator().getExploreAction().explore(
+                    getModel().getExploration(), true, false);
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {

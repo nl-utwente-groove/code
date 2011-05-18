@@ -33,8 +33,6 @@ import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
-import groove.abstraction.lts.AGTS;
-import groove.explore.Exploration;
 import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
@@ -75,30 +73,17 @@ import groove.gui.action.SaveLTSAsAction;
 import groove.gui.action.SaveSimulatorAction;
 import groove.gui.action.SelectColorAction;
 import groove.gui.action.SetStartGraphAction;
+import groove.gui.action.SimulatorAction;
 import groove.gui.action.StartSimulationAction;
 import groove.gui.action.ToggleExplorationStateAction;
 import groove.gui.action.UndoSimulatorAction;
 import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.VersionDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.LTSJModel;
-import groove.io.FileType;
-import groove.io.GrooveFileChooser;
-import groove.io.store.SystemStore;
-import groove.io.store.SystemStoreFactory;
-import groove.lts.GTS;
-import groove.lts.GTSAdapter;
-import groove.lts.GTSListener;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.Version;
 import groove.view.FormatError;
-import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
@@ -112,16 +97,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -130,8 +111,6 @@ import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -199,7 +178,7 @@ public class Simulator implements SimulatorListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        doLoadGrammar(location, startGraphName);
+                        getLoadGrammarAction().load(location, startGraphName);
                     } catch (IOException exc) {
                         showErrorDialog(exc.getMessage(), exc);
                     }
@@ -329,242 +308,6 @@ public class Simulator implements SimulatorListener {
         return result;
     }
 
-    /**
-     * Loads in a grammar from a given file.
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the load action failed
-     */
-    public boolean doLoadGrammar(File grammarFile, String startGraphName)
-        throws IOException {
-        boolean result = false;
-        // Load the grammar.
-        final SystemStore store =
-            SystemStoreFactory.newStore(grammarFile, false);
-        result = doLoadGrammar(store, startGraphName);
-        // now we know loading succeeded, we can set the current
-        // names & files
-        getGrammarFileChooser().setSelectedFile(grammarFile);
-        getRuleFileChooser().setCurrentDirectory(grammarFile);
-        if (startGraphName != null) {
-            File startFile = new File(grammarFile, startGraphName);
-            getStateFileChooser().setSelectedFile(startFile);
-        } else {
-            // make sure the selected file from an old grammar is
-            // unselected
-            getStateFileChooser().setSelectedFile(null);
-            // make sure the dialog for open state opens at the
-            // grammar location
-            getStateFileChooser().setCurrentDirectory(grammarFile);
-        }
-        return result;
-    }
-
-    /**
-     * Loads in a given system store.
-     */
-    public boolean doLoadGrammar(final SystemStore store,
-            final String startGraphName) throws IOException {
-        if (!saveEditors(true)) {
-            return false;
-        }
-
-        // First we check if the versions are compatible.
-        store.reload();
-        SystemProperties props = store.getProperties();
-        if (store.isEmpty()) {
-            showErrorDialog(store.getLocation()
-                + " is not a GROOVE production system.", null);
-            return false;
-        }
-        String fileGrammarVersion = props.getGrammarVersion();
-        int compare = Version.compareGrammarVersion(fileGrammarVersion);
-        final boolean saveAfterLoading = (compare != 0);
-        final File newGrammarFile;
-        if (compare < 0) {
-            // Trying to load a newer grammar.
-            if (!VersionDialog.showNew(this.getFrame(), props)) {
-                return false;
-            }
-            newGrammarFile = null;
-        } else if (compare > 0 && store.getLocation() instanceof File) {
-            // Trying to load an older grammar from a file.
-            File grammarFile = (File) store.getLocation();
-            switch (VersionDialog.showOldFile(this.getFrame(), props)) {
-            case 0: // save and overwrite
-                newGrammarFile = grammarFile;
-                break;
-            case 1: // save under different name
-                newGrammarFile = selectSaveAs(grammarFile);
-                if (newGrammarFile == null) {
-                    return false;
-                }
-                break;
-            default: // cancel
-                return false;
-            }
-        } else if (compare > 0) {
-            // Trying to load an older grammar from a URL.
-            if (!VersionDialog.showOldURL(this.getFrame(), props)) {
-                return false;
-            }
-            newGrammarFile = selectSaveAs(null);
-            if (newGrammarFile == null) {
-                return false;
-            }
-        } else {
-            // Loading an up-to-date grammar.
-            newGrammarFile = null;
-        }
-        // store.reload(); - MdM - moved to version check code
-        final StoredGrammarView grammar = store.toGrammarView();
-        if (startGraphName != null) {
-            grammar.setStartGraph(startGraphName);
-        }
-        getModel().setGrammar(grammar);
-        grammar.getProperties().setCurrentVersionProperties();
-        if (saveAfterLoading && newGrammarFile != null) {
-            doSaveGrammar(newGrammarFile,
-                !newGrammarFile.equals(store.getLocation()));
-        }
-        return true;
-    }
-
-    /** 
-     * Helper method for doLoadGrammar. Asks the user to select a new name for
-     * saving the grammar after it has been loaded (and converted).
-     */
-    private File selectSaveAs(File oldGrammarFile) {
-        if (oldGrammarFile != null) {
-            getGrammarFileChooser().getSelectedFile();
-            getGrammarFileChooser().setSelectedFile(oldGrammarFile);
-        }
-        int result = getGrammarFileChooser().showSaveDialog(getFrame());
-        if (result != JFileChooser.APPROVE_OPTION) {
-            return null;
-        }
-        File selected = getGrammarFileChooser().getSelectedFile();
-        if (selected.exists()) {
-            if (confirmOverwriteGrammar(selected)) {
-                return selected;
-            } else {
-                return selectSaveAs(oldGrammarFile);
-            }
-        } else {
-            return selected;
-        }
-    }
-
-    /**
-     * Ends the program. Return value is used on MacOS to signal that quitting
-     * itself is successful. 
-     */
-    public boolean doQuit() {
-        boolean result = saveEditors(true);
-        if (result) {
-            groove.gui.UserSettings.synchSettings(this.frame);
-            // Saves the current user settings.
-            if (getModel().getGts() != null) {
-                result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
-            } else {
-                result = true;
-            }
-            if (result) {
-                getFrame().dispose();
-                // try to persist the user preferences
-                try {
-                    Preferences.userRoot().flush();
-                } catch (BackingStoreException e) {
-                    // do nothing if the backing store is inaccessible
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Run a given exploration. Can be called from outside the Simulator.
-     * @param exploration the exploration strategy to be used
-     * @param setResult TODO
-     * @param emphasise if {@code true}, the result of the exploration will be emphasised
-     */
-    public void doRunExploration(Exploration exploration, boolean setResult,
-            boolean emphasise) {
-        getModel().setExploration(exploration);
-        // disable rule application for the time being
-        boolean applyEnabled = getApplyTransitionAction().isEnabled();
-        getApplyTransitionAction().setEnabled(false);
-        LTSJModel ltsJModel = getLtsPanel().getJModel();
-        if (ltsJModel == null) {
-            if (startSimulation()) {
-                ltsJModel = getLtsPanel().getJModel();
-            } else {
-                return;
-            }
-        }
-        synchronized (ltsJModel) {
-            GTS gts = getModel().getGts();
-            int size = gts.size();
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-            gts.removeLTSListener(ltsJModel);
-            // create a thread to do the work in the background
-            Thread generateThread = new ExploreThread(this, exploration);
-            // go!
-            getModel().getExplorationStats().start();
-            generateThread.start();
-            getModel().getExplorationStats().stop();
-            gts.addLTSListener(ltsJModel);
-            // collect the result states
-            if (setResult) {
-                gts.setResult(exploration.getLastResult());
-            }
-            if (gts.size() != size) {
-                // get the lts' jmodel back on line and re-synchronize its state
-                ltsJModel.loadGraph(gts);
-            }
-            // re-enable rule application
-            // reset lts display visibility
-            switchTabs(getLtsPanel());
-            getModel().setGts(gts);
-            // emphasise the result states, if required
-            if (emphasise) {
-                Collection<GraphState> result =
-                    exploration.getLastResult().getValue();
-                getLtsPanel().emphasiseStates(
-                    new ArrayList<GraphState>(result), true);
-            }
-        }
-        getApplyTransitionAction().setEnabled(applyEnabled);
-    }
-
-    /**
-     * Saves the current grammar to a given file.
-     * @param grammarFile the grammar file to be used
-     * @throws IOException if the save action failed
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     */
-    public boolean doSaveGrammar(File grammarFile, boolean clearDir)
-        throws IOException {
-        boolean result = false;
-        if (saveEditors(true)) {
-            SystemStore newStore =
-                this.model.getStore().save(grammarFile, clearDir);
-            StoredGrammarView newView = newStore.toGrammarView();
-            String startGraphName = this.model.getGrammar().getStartGraphName();
-            GraphView startGraphView =
-                this.model.getGrammar().getStartGraphView();
-            if (startGraphName != null) {
-                newView.setStartGraph(startGraphName);
-            } else if (startGraphView != null) {
-                newView.setStartGraph(startGraphView.getAspectGraph());
-            }
-            getModel().setGrammar(newView);
-            setTitle();
-            getGrammarFileChooser().setSelectedFile(grammarFile);
-            result = true;
-        }
-        return result;
-    }
-
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
@@ -572,7 +315,7 @@ public class Simulator implements SimulatorListener {
             changeEditorTypes();
             setTitle();
             List<FormatError> grammarErrors =
-                this.model.getGrammar().getErrors();
+                getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
             this.history.updateLoadGrammar();
             if (source.getGrammar() != oldModel.getGrammar()) {
@@ -602,24 +345,13 @@ public class Simulator implements SimulatorListener {
      * Sets a new graph transition system.
      */
     public synchronized boolean startSimulation() {
-        GTS gts = null;
-        try {
-            GraphGrammar grammar = getModel().getGrammar().toGrammar();
-            boolean start =
-                !isEditorDirty()
-                    && confirmBehaviourOption(START_SIMULATION_OPTION);
-            if (start) {
-                if (getModel().isAbstractionMode()) {
-                    gts = new AGTS(grammar);
-                } else {
-                    gts = new GTS(grammar);
-                }
-                gts.getRecord().setRandomAccess(true);
-            }
-        } catch (FormatException exc) {
-            // the grammar has errors; don't start the simulation
+        boolean result = false;
+        boolean start =
+            !isEditorDirty() && confirmBehaviourOption(START_SIMULATION_OPTION);
+        if (start) {
+            result = getModel().setGts();
         }
-        return getModel().setGts(gts);
+        return result;
     }
 
     /**
@@ -650,7 +382,7 @@ public class Simulator implements SimulatorListener {
             this.frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    doQuit();
+                    getQuitAction().execute();
                 }
             });
             this.frame.setJMenuBar(createMenuBar());
@@ -1436,58 +1168,12 @@ public class Simulator implements SimulatorListener {
         return result;
     }
 
-    JFileChooser getGrammarFileChooser() {
-        return this.getGrammarFileChooser(false);
-    }
-
-    /**
-     * Returns the file chooser for grammar (GPS) files, lazily creating it
-     * first.
-     */
-    JFileChooser getGrammarFileChooser(boolean includeArchives) {
-        if (includeArchives) {
-            return GrooveFileChooser.getFileChooser(FileType.GRAMMARS_FILTER);
-        } else {
-            return GrooveFileChooser.getFileChooser(FileType.GRAMMAR_FILTER);
-        }
-    }
-
-    /**
-     * Returns the last file from which a grammar was loaded.
-     */
-    File getLastGrammarFile() {
-        File result = null;
-        SystemStore store = this.model.getStore();
-        Object location = store == null ? null : store.getLocation();
-        if (location instanceof File) {
-            result = (File) location;
-        } else if (location instanceof URL) {
-            result = Groove.toFile((URL) location);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the file chooser for state (GST or GXL) files, lazily creating it
-     * first.
-     */
-    JFileChooser getStateFileChooser() {
-        return GrooveFileChooser.getFileChooser(FileType.HOSTS_FILTER);
-    }
-
-    /**
-     * Returns the file chooser for rule (GPR) files, lazily creating it first.
-     */
-    JFileChooser getRuleFileChooser() {
-        return GrooveFileChooser.getFileChooser(FileType.RULE_FILTER);
-    }
-
     /**
      * Sets the title of the frame to a given title.
      */
-    private void setTitle() {
+    public void setTitle() {
         StringBuffer title = new StringBuffer();
-        StoredGrammarView grammar = this.model.getGrammar();
+        StoredGrammarView grammar = getModel().getGrammar();
         if (grammar != null && grammar.getName() != null) {
             title.append(grammar.getName());
             GraphView startGraph = grammar.getStartGraphView();
@@ -1567,7 +1253,7 @@ public class Simulator implements SimulatorListener {
     private Options options;
 
     /** the internal state of the simulator. */
-    final SimulatorModel model;
+    private final SimulatorModel model;
 
     /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
@@ -2025,7 +1711,7 @@ public class Simulator implements SimulatorListener {
      * Returns the grammar load action permanently associated with this
      * simulator.
      */
-    public Action getLoadGrammarAction() {
+    public LoadGrammarAction getLoadGrammarAction() {
         // lazily create the action
         if (this.loadGrammarAction == null) {
             this.loadGrammarAction = new LoadGrammarAction(this);
@@ -2112,7 +1798,7 @@ public class Simulator implements SimulatorListener {
     }
 
     /** Returns the quit action permanently associated with this simulator. */
-    public Action getQuitAction() {
+    public SimulatorAction getQuitAction() {
         // lazily create the action
         if (this.quitAction == null) {
             this.quitAction = new QuitAction(this);
@@ -2304,7 +1990,7 @@ public class Simulator implements SimulatorListener {
      * Lazily creates and returns an instance of
      * {@link StartSimulationAction}.
      */
-    public Action getStartSimulationAction() {
+    public SimulatorAction getStartSimulationAction() {
         // lazily create the action
         if (this.startSimulationAction == null) {
             this.startSimulationAction = new StartSimulationAction(this);
@@ -2384,9 +2070,9 @@ public class Simulator implements SimulatorListener {
          */
         public void updateLoadGrammar() {
             try {
-                Object location = Simulator.this.model.getStore().getLocation();
+                Object location = getModel().getStore().getLocation();
                 String startGraphName =
-                    Simulator.this.model.getGrammar().getStartGraphName();
+                    getModel().getGrammar().getStartGraphName();
                 LoadGrammarFromHistoryAction newAction =
                     new LoadGrammarFromHistoryAction(Simulator.this,
                         location.toString(), startGraphName);
@@ -2436,188 +2122,6 @@ public class Simulator implements SimulatorListener {
         /** List of load actions corresponding to the history items. */
         private final ArrayList<LoadGrammarFromHistoryAction> history =
             new ArrayList<LoadGrammarFromHistoryAction>();
-    }
-
-    /**
-     * Class that spawns a thread to perform a long-lasting action, while
-     * displaying a dialog that can interrupt the thread.
-     */
-    public static class ExploreThread extends Thread {
-        /**
-         * Constructs a generate thread for a given exploration strategy.
-         * @param exploration the exploration handler of this thread
-         */
-        public ExploreThread(Simulator simulator, Exploration exploration) {
-            this.simulator = simulator;
-            this.cancelDialog = createCancelDialog();
-            this.exploration = exploration;
-            this.progressListener = createProgressListener();
-        }
-
-        @Override
-        public void start() {
-            super.start();
-            // make dialog visible
-            this.cancelDialog.setVisible(true);
-            // wait for the thread to return
-            try {
-                this.join();
-            } catch (InterruptedException exc) {
-                // thread is done
-            }
-            synchronized (this.cancelDialog) {
-                this.cancelDialog.dispose();
-            }
-        }
-
-        /**
-         * Runs the exploration as a parallel thread;
-         * then hides the cancel dialog invisible, causing the event
-         * dispatch thread to continue. 
-         */
-        @Override
-        final public void run() {
-            SimulatorModel simulatorModel = this.simulator.getModel();
-            GTS gts = simulatorModel.getGts();
-            GraphState state = simulatorModel.getState();
-            displayProgress(gts);
-            gts.addLTSListener(this.progressListener);
-            try {
-                this.exploration.play(gts, state);
-            } catch (FormatException exc) {
-                String[] options = {"Yes", "No"};
-                String message =
-                    "The last exploration is no longer valid in the "
-                        + "current grammar. \n" + "Cannot apply '"
-                        + this.exploration.getIdentifier() + "'.\n\n"
-                        + "Use Breadth-First Exploration instead?\n";
-                int response =
-                    JOptionPane.showOptionDialog(this.simulator.getFrame(),
-                        message, "Invalid Exploration",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-                if (response == JOptionPane.OK_OPTION) {
-                    Exploration newExplore = new Exploration();
-                    simulatorModel.setExploration(newExplore);
-                    try {
-                        newExplore.play(gts, state);
-                    } catch (FormatException e) {
-                        this.simulator.showErrorDialog(
-                            "Error: cannot parse exploration.", e);
-                    }
-                }
-            }
-            gts.removeLTSListener(this.progressListener);
-            synchronized (this.cancelDialog) {
-                // wait for the cancel dialog to become visible
-                // (this is necessary if the doAction was actually very fast)
-                while (!this.cancelDialog.isVisible()) {
-                    try {
-                        this.cancelDialog.wait(10);
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
-                }
-                this.cancelDialog.setVisible(false);
-            }
-        }
-
-        /**
-         * Creates a modal dialog that will interrupt this thread, when the
-         * cancel button is pressed.
-         */
-        private JDialog createCancelDialog() {
-            JDialog result;
-            // create message dialog
-            JOptionPane message =
-                new JOptionPane(new Object[] {getStateCountLabel(),
-                    getTransitionCountLabel()}, JOptionPane.PLAIN_MESSAGE);
-            JButton cancelButton = new JButton("Cancel");
-            // add a button to interrupt the generation process and
-            // wait for the thread to finish and rejoin this one
-            cancelButton.addActionListener(createCancelListener());
-            message.setOptions(new Object[] {cancelButton});
-            result =
-                message.createDialog(this.simulator.getLtsPanel(),
-                    "Exploring state space");
-            result.pack();
-            return result;
-        }
-
-        /**
-         * Returns a listener to this {@link ExploreThread} that interrupts
-         * the thread and waits for it to rejoin this thread.
-         */
-        private ActionListener createCancelListener() {
-            return new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    ExploreThread.this.interrupt();
-                }
-            };
-        }
-
-        /**
-         * Creates a graph listener that displays the progress of the generate
-         * thread on the cancel dialog.
-         */
-        private GTSListener createProgressListener() {
-            return new GTSAdapter() {
-                @Override
-                public void addUpdate(GTS gts, GraphState state) {
-                    displayProgress(gts);
-                }
-
-                @Override
-                public void addUpdate(GTS gts, GraphTransition transition) {
-                    displayProgress(gts);
-                }
-            };
-        }
-
-        /**
-         * Returns the {@link JLabel} used to display the state count in the
-         * cencel dialog; first creates the label if that is not yet done.
-         */
-        private JLabel getStateCountLabel() {
-            // lazily create the label
-            if (this.stateCountLabel == null) {
-                this.stateCountLabel = new JLabel();
-            }
-            return this.stateCountLabel;
-        }
-
-        /**
-         * Returns the {@link JLabel} used to display the state count in the
-         * cencel dialog; first creates the label if that is not yet done.
-         */
-        private JLabel getTransitionCountLabel() {
-            // lazily create the label
-            if (this.transitionCountLabel == null) {
-                this.transitionCountLabel = new JLabel();
-            }
-            return this.transitionCountLabel;
-        }
-
-        /**
-         * Displays the number of lts states and transitions in the message
-         * dialog.
-         */
-        void displayProgress(GTS gts) {
-            getStateCountLabel().setText("States: " + gts.nodeCount());
-            getTransitionCountLabel().setText("Transitions: " + gts.edgeCount());
-        }
-
-        private final Simulator simulator;
-        /** Dialog for cancelling the thread. */
-        private final JDialog cancelDialog;
-        /** LTS generation strategy of this thread. (new version) */
-        private final Exploration exploration;
-        /** Progress listener for the generate thread. */
-        private final GTSListener progressListener;
-        /** Label displaying the number of states generated so far. */
-        private JLabel transitionCountLabel;
-        /** Label displaying the number of transitions generated so far. */
-        private JLabel stateCountLabel;
     }
 
     /**

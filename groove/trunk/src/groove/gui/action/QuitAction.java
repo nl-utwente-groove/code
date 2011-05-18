@@ -1,11 +1,14 @@
 package groove.gui.action;
 
+import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
 /**
  * Action for quitting the simulator.
- * @see Simulator#doQuit()
  */
 public class QuitAction extends SimulatorAction {
     /** Constructs an instance of the action. */
@@ -16,7 +19,25 @@ public class QuitAction extends SimulatorAction {
 
     @Override
     protected boolean doAction() {
-        getSimulator().doQuit();
-        return false;
+        boolean result = getSimulator().saveEditors(true);
+        if (result) {
+            groove.gui.UserSettings.synchSettings(getFrame());
+            // Saves the current user settings.
+            if (getModel().getGts() != null) {
+                result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
+            } else {
+                result = true;
+            }
+            if (result) {
+                getFrame().dispose();
+                // try to persist the user preferences
+                try {
+                    Preferences.userRoot().flush();
+                } catch (BackingStoreException e) {
+                    // do nothing if the backing store is inaccessible
+                }
+            }
+        }
+        return result;
     }
 }

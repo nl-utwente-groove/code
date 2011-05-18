@@ -1,5 +1,6 @@
 package groove.gui;
 
+import groove.abstraction.lts.AGTS;
 import groove.explore.Exploration;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
@@ -14,9 +15,11 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.GraphGrammar;
 import groove.trans.RuleEvent;
 import groove.trans.SystemProperties;
 import groove.view.CtrlView;
+import groove.view.FormatException;
 import groove.view.GraphView;
 import groove.view.PrologView;
 import groove.view.RuleView;
@@ -472,6 +475,32 @@ public class SimulatorModel implements Cloneable {
             this.changes.add(Change.GTS);
         }
         return finish();
+    }
+
+    /** 
+     * Creates a fresh GTS and fires an update event.
+     * This has the side effects of
+     * <li> setting the state to the start state of the new GTS,
+     * or to {@code null} if the new GTS is {@code null}
+     * <li> setting the transition to {@code null}
+     * <li> setting the event to {@code null}
+     * @return {@code true} if the GTS could be created and set
+     * @see #setGts(GTS)
+     */
+    public final boolean setGts() {
+        try {
+            GraphGrammar grammar = getGrammar().toGrammar();
+            GTS gts;
+            if (isAbstractionMode()) {
+                gts = new AGTS(grammar);
+            } else {
+                gts = new GTS(grammar);
+            }
+            gts.getRecord().setRandomAccess(true);
+            return setGts(gts);
+        } catch (FormatException e) {
+            return setGts(null);
+        }
     }
 
     /** 
