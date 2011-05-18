@@ -18,6 +18,10 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.SimulatorModel.Change.GRAMMAR;
+import static groove.gui.SimulatorModel.Change.GTS;
+import static groove.gui.SimulatorModel.Change.MATCH;
+import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.gui.SimulatorModel.Change;
@@ -31,6 +35,7 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.view.StoredGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -39,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -75,7 +81,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
-        getSimulatorModel().addListener(this);
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
 
     @Override
@@ -103,13 +109,23 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (changes.contains(Change.GTS)) {
+        if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
                 LTSJModel newLtsModel = getJGraph().newModel();
                 getJGraph().getFilteredLabels().clear();
                 getJGraph().setModel(newLtsModel);
                 setEnabled(false);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        StoredGrammarView grammar =
+                            getSimulatorModel().getGrammar();
+                        if (grammar != null && grammar.getErrors().isEmpty()) {
+                            getActions().getStartSimulationAction().execute();
+                        }
+                    }
+                });
             } else {
                 LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
@@ -136,8 +152,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                 }
             }
             refreshStatus();
-        } else if (changes.contains(Change.STATE)
-            || changes.contains(Change.MATCH)) {
+        } else if (changes.contains(STATE) || changes.contains(MATCH)) {
             GraphState state = source.getState();
             GraphTransition transition = source.getTransition();
             getJGraph().setActive(state, transition);

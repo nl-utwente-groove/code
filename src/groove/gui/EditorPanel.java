@@ -43,11 +43,8 @@ public class EditorPanel extends JPanel {
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param simulator the simulator on which this panel is placed
      * @param graph the input graph for the editor
-     * @param fresh if {@code true}, the graph is fresh (and therefore the
-     * editor is immediately dirty)
      */
-    public EditorPanel(Simulator simulator, final AspectGraph graph,
-            boolean fresh) {
+    public EditorPanel(Simulator simulator, final AspectGraph graph) {
         setName(graph.getName());
         setFocusCycleRoot(true);
         this.simulator = simulator;
@@ -101,14 +98,12 @@ public class EditorPanel extends JPanel {
                     return graph.getRole();
                 }
             };
-        this.fresh = fresh;
     }
 
     /** Starts the editor with the graph passed in at construction time. */
     public void start(AspectGraph graph) {
         this.editor.setTypeView(getTypeView());
         this.editor.setGraph(graph, true);
-        this.editor.setDirty(this.fresh);
         setLayout(new BorderLayout());
         JSplitPane mainPanel = this.editor.getMainPanel();
         mainPanel.setBorder(null);
@@ -250,19 +245,18 @@ public class EditorPanel extends JPanel {
      */
     void doSave() {
         if (this.editor.isDirty()) {
-            boolean grammarChanged = false;
             this.saving = true;
             AspectGraph graph = this.editor.getGraph();
             try {
                 switch (graph.getRole()) {
                 case HOST:
-                    grammarChanged = this.simulator.getModel().doAddHost(graph);
+                    this.simulator.getModel().doAddHost(graph);
                     break;
                 case RULE:
-                    grammarChanged = this.simulator.getModel().doAddRule(graph);
+                    this.simulator.getModel().doAddRule(graph);
                     break;
                 case TYPE:
-                    grammarChanged = this.simulator.getModel().doAddType(graph);
+                    this.simulator.getModel().doAddType(graph);
                     break;
                 }
                 this.editor.setDirty(false);
@@ -272,9 +266,6 @@ public class EditorPanel extends JPanel {
                         graph.getName()), exc);
             }
             this.saving = false;
-            if (grammarChanged) {
-                this.simulator.startSimulation();
-            }
         }
     }
 
@@ -315,22 +306,21 @@ public class EditorPanel extends JPanel {
 
     /** Switches the view in the simulator to the graph being edited here. */
     private void switchToEditedGraph() {
+        SimulatorModel model = this.simulator.getModel();
         switch (getEditor().getRole()) {
         case HOST:
-            this.simulator.getStateList().setSelectedGraph(getName());
+            model.setHost(getName());
             break;
         case RULE:
-            this.simulator.getRuleTree().setSelectedRule(getName());
+            model.setRule(getName());
             break;
         case TYPE:
-            this.simulator.getTypePanel().setSelectedType(getName());
+            model.setType(getName());
         }
     }
 
     private JButton okButton;
     private JButton cancelButton;
-    /** Flag indicating that this is a fresh graph, not already in the simulator. */
-    private final boolean fresh;
     /** Options of this dialog. */
     private final Options options;
     /** The simulator to which the panel reports. */

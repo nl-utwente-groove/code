@@ -39,7 +39,7 @@ public class ExploreAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         explore(getModel().getExploration(), true, true);
         return false;
     }
@@ -168,7 +168,7 @@ public class ExploreAction extends SimulatorAction {
                     try {
                         newExplore.play(gts, state);
                     } catch (FormatException e) {
-                        showErrorDialog("Error: cannot parse exploration.", e);
+                        showErrorDialog(e, "Error: cannot parse exploration.");
                     }
                 }
             }

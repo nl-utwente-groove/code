@@ -47,7 +47,7 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
         this.simulator = simulator;
         createAddMenuItems();
         refreshActions(true);
-        simulator.getModel().addListener(this);
+        simulator.getModel().addListener(this, Change.GTS);
     }
 
     /**

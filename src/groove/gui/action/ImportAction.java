@@ -20,7 +20,7 @@ public class ImportAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         Importer importer = Importer.getInstance();
         int approve = importer.showDialog(getFrame(), true);
@@ -41,7 +41,7 @@ public class ImportAction extends SimulatorAction {
                     }
                 }
             } catch (IOException e) {
-                showErrorDialog("Error importing file", e);
+                showErrorDialog(e, "Error importing file");
             }
         }
         return result;

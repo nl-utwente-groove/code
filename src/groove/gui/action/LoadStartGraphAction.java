@@ -20,7 +20,7 @@ public class LoadStartGraphAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // stateFileChooser.setSelectedFile(currentStartStateFile);
         int approve = getStateFileChooser().showOpenDialog(getFrame());
@@ -33,7 +33,7 @@ public class LoadStartGraphAction extends SimulatorAction {
                 result = getSimulator().getModel().doSetStartGraph(startGraph);
             } catch (IOException exc) {
                 showErrorDialog(
-                    "Could not load start graph from " + file.getName(), exc);
+                    exc, "Could not load start graph from " + file.getName());
             }
         }
         return result;

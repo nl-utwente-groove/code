@@ -7,6 +7,10 @@ import groove.gui.Simulator;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
+import java.io.IOException;
+
+import javax.swing.SwingUtilities;
+
 /** Action to create and start editing a new type graph. */
 public class NewTypeAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
@@ -15,13 +19,24 @@ public class NewTypeAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         String typeName =
             askNewTypeName("Select type graph name", Groove.DEFAULT_TYPE_NAME,
                 true);
         if (typeName != null) {
-            AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
-            getSimulator().handleEditGraph(initType, true);
+            final AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
+            try {
+                getModel().doAddType(initType);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getPanel().editGraph(initType);
+                    }
+                });
+            } catch (IOException e) {
+                showErrorDialog(e, "Error creating new type graph '%s'",
+                    typeName);
+            }
         }
         return false;
     }

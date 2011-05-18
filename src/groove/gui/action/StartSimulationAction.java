@@ -16,6 +16,7 @@
  */
 package groove.gui.action;
 
+import static groove.gui.Options.START_SIMULATION_OPTION;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -32,8 +33,17 @@ public class StartSimulationAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
-        return confirmAbandon();
+    public boolean execute() {
+        boolean result = false;
+        if (confirmAbandon()) {
+            boolean start =
+                !getPanel().isEditorDirty()
+                    && confirmBehaviourOption(START_SIMULATION_OPTION);
+            if (start) {
+                result = getModel().setGts();
+            }
+        }
+        return result;
     }
 
     @Override

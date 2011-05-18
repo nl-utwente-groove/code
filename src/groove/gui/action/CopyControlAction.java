@@ -14,7 +14,7 @@ public class CopyControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getControlPanel().stopEditing(true)) {
             String oldName = getModel().getControl().getName();
@@ -22,7 +22,7 @@ public class CopyControlAction extends SimulatorAction {
                 askNewControlName("Select new control program name", oldName,
                     true);
             if (newName != null) {
-                result = getActions().getSaveControlAction().doAction();
+                result = getActions().getSaveControlAction().execute();
             }
         }
         return result;

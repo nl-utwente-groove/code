@@ -17,7 +17,7 @@ public class EnableControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getControlPanel().stopEditing(true)) {
             String controlName = getModel().getControl().getName();
@@ -29,8 +29,8 @@ public class EnableControlAction extends SimulatorAction {
             try {
                 result = getModel().doSetProperties(newProperties);
             } catch (IOException exc) {
-                showErrorDialog("Error while enabling control program "
-                    + controlName, exc);
+                showErrorDialog(exc, "Error while enabling control program "
+                        + controlName);
             }
         }
         return result;

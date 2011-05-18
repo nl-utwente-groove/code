@@ -47,7 +47,7 @@ public class CopyHostAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         for (GraphView oldHostView : getModel().getHostSet()) {
             String oldName = oldHostView.getName();
@@ -59,9 +59,9 @@ public class CopyHostAction extends SimulatorAction {
                         getModel().doAddHost(
                             oldHostView.getAspectGraph().rename(newName));
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
-                        "Error while copying host graph '%s' to '%s'", oldName,
-                        newName), exc);
+                    showErrorDialog(exc, String.format(
+                            "Error while copying host graph '%s' to '%s'", oldName,
+                            newName));
                 }
             }
         }

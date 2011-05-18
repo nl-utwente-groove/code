@@ -15,7 +15,7 @@ public class CancelEditControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         getControlPanel().stopEditing(true);
         return false;
     }

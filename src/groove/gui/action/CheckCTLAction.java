@@ -29,7 +29,7 @@ public class CheckCTLAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;

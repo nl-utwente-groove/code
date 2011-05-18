@@ -38,12 +38,12 @@ public class RenumberGrammarAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         try {
             result = getModel().doRenumber();
         } catch (IOException exc) {
-            showErrorDialog("Error while renumbering", exc);
+            showErrorDialog(exc, "Error while renumbering");
         }
         return result;
     }

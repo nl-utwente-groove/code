@@ -85,7 +85,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected void installListeners() {
         super.installListeners();
-        getSimulatorModel().addListener(this);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.RULE);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);

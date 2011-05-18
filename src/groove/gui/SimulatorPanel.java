@@ -16,7 +16,13 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
+import groove.gui.SimulatorModel.Change;
 import groove.util.Groove;
+import groove.util.Pair;
+import groove.view.StoredGrammarView;
+import groove.view.View;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -27,8 +33,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -44,31 +52,30 @@ import javax.swing.event.ChangeListener;
  * Offers functionality for detaching and reattaching components in 
  * separate windows. 
  */
-public class SimulatorPanel extends JTabbedPane {
+public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
     public SimulatorPanel(final Simulator simulator) {
-        add(simulator.getStatePanel(), Icons.GRAPH_FRAME_ICON,
-            Icons.GRAPH_FILE_ICON, "Current graph state");
-        add(simulator.getRulePanel(), Icons.RULE_FRAME_ICON,
-            Icons.RULE_FILE_ICON, "Selected rule");
-        add(simulator.getLtsPanel(), Icons.LTS_FRAME_ICON, null,
-            "Labelled transition system");
-        add(simulator.getControlPanel(), Icons.CONTROL_FRAME_ICON,
-            Icons.CONTROL_FILE_ICON, "Control specification");
-        add(simulator.getTypePanel(), Icons.TYPE_FRAME_ICON,
-            Icons.TYPE_FILE_ICON, "Type graph");
+        this.simulator = simulator;
+        add(TabKind.GRAPH, simulator.getStatePanel());
+        add(TabKind.RULE, simulator.getRulePanel());
+        add(TabKind.LTS, simulator.getLtsPanel());
+        add(TabKind.CONTROL, simulator.getControlPanel());
+        add(TabKind.TYPE, simulator.getTypePanel());
         if (Groove.INCLUDE_PROLOG) {
-            add(simulator.getPrologPanel(), Icons.PROLOG_FRAME_ICON, null,
-                "Prolog");
+            add(TabKind.PROLOG, simulator.getPrologPanel());
         }
+        installListeners();
+        simulator.getModel().addListener(this, Change.GRAMMAR, Change.TAB);
+        setVisible(true);
+    }
 
-        // add the change listener only now, as otherwise the add actions
-        // above will trigger it
-        addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent evt) {
-                simulator.refreshActions();
-            }
-        });
+    private void add(TabKind kind, Component component) {
+        this.tabKindMap.put(component, kind);
+        this.tabbedPanelMap.put(kind, component);
+        addTab(null, kind.getTabIcon(), component, kind.getName());
+    }
+
+    private void installListeners() {
         // adds a mouse listener that offers a popup menu with a detach action
         addMouseListener(new MouseAdapter() {
             @Override
@@ -81,17 +88,68 @@ public class SimulatorPanel extends JTabbedPane {
                 }
             }
         });
-        setVisible(true);
+        // add the change listener only now, as otherwise the add actions
+        // above will trigger it
+        this.tabListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent evt) {
+                SimulatorPanel.this.simulator.getActions().refreshActions();
+            }
+        };
+        activateListeners();
     }
 
-    private void add(Component component, ImageIcon tabIcon,
-            ImageIcon frameIcon, String title) {
-        this.seqNrMap.put(component, this.tabList.size());
-        this.tabList.add(component);
-        this.tabIconMap.put(component, tabIcon);
-        this.frameIconMap.put(component, frameIcon);
-        this.titleMap.put(component, title);
-        addTab(null, tabIcon, component, title);
+    /** Activates the listeners that could cause a cyclic listener dependency. */
+    private void activateListeners() {
+        addChangeListener(this.tabListener);
+    }
+
+    /** Suspends the listeners that could cause a cyclic listener dependency. */
+    private void suspendListeners() {
+        removeChangeListener(this.tabListener);
+    }
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        suspendListeners();
+        if (changes.contains(Change.GRAMMAR)) {
+            for (EditorPanel editor : getEditors()) {
+                // test if the graph being edited is still in the grammar;
+                // if not, silently dispose it - it's too late to do anything else!
+                AspectGraph graph = editor.getGraph();
+                StoredGrammarView grammar =
+                    this.simulator.getModel().getGrammar();
+                View<?> view = null;
+                switch (graph.getRole()) {
+                case HOST:
+                    view = grammar.getGraphView(graph.getName());
+                    break;
+                case RULE:
+                    view = grammar.getRuleView(graph.getName());
+                    break;
+                case TYPE:
+                    view = grammar.getTypeView(graph.getName());
+                    break;
+                default:
+                    assert false;
+                }
+                if (view != null) {
+                    editor.setType();
+                } else {
+                    editor.dispose();
+                }
+            }
+        }
+        if (changes.contains(Change.TAB)) {
+            setSelectedComponent(this.tabbedPanelMap.get(source.getTabKind()));
+        }
+        activateListeners();
+    }
+
+    /** Returns the kind of tab on top of the tabbed pane. */
+    public TabKind getSelectedTab() {
+        TabKind result = this.tabKindMap.get(getSelectedComponent());
+        return result == null ? TabKind.EDITOR : result;
     }
 
     /** Reattaches a component at its proper place. */
@@ -99,24 +157,25 @@ public class SimulatorPanel extends JTabbedPane {
         if (component instanceof EditorPanel) {
             add((EditorPanel) component);
         } else {
-            int mySeqNr = this.seqNrMap.get(component);
+            TabKind myKind = this.tabKindMap.get(component);
             int index;
             for (index = 0; index < getTabCount(); index++) {
-                Integer otherSeqNr = this.seqNrMap.get(getComponentAt(index));
-                if (otherSeqNr == null || otherSeqNr > mySeqNr) {
+                TabKind otherKind = this.tabKindMap.get(getComponentAt(index));
+                if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                     // insert here
                     break;
                 }
             }
-            insertTab(null, this.tabIconMap.get(component), component,
-                this.titleMap.get(component), index);
+            insertTab(null, myKind.getTabIcon(), component, myKind.getName(),
+                index);
         }
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
     public void detach(Component component) {
         revertSelection();
-        new JGraphWindow(component);
+        TabKind kind = this.tabKindMap.get(component);
+        new JGraphWindow(kind == null ? TabKind.EDITOR : kind, component);
     }
 
     /** Adds a tab for a given editor panel. */
@@ -209,16 +268,109 @@ public class SimulatorPanel extends JTabbedPane {
         }
     }
 
-    /** List of components that can appear on this panel. */
-    private final List<Component> tabList = new ArrayList<Component>();
-    private final Map<Component,ImageIcon> tabIconMap =
-        new HashMap<Component,ImageIcon>();
-    private final Map<Component,Integer> seqNrMap =
-        new HashMap<Component,Integer>();
-    private final Map<Component,ImageIcon> frameIconMap =
-        new HashMap<Component,ImageIcon>();
-    private final Map<Component,String> titleMap =
-        new HashMap<Component,String>();
+    /** 
+     * Adds an editor panel for the given graph, or selects the 
+     * one that already exists.
+     */
+    public void editGraph(final AspectGraph graph) {
+        EditorPanel result = null;
+        // look if an editor already exists for the graph
+        for (int i = 0; i < getTabCount(); i++) {
+            Component view = getComponentAt(i);
+            if (view instanceof EditorPanel) {
+                AspectGraph editedGraph = ((EditorPanel) view).getGraph();
+                if (editedGraph.getName().equals(graph.getName())
+                    && editedGraph.getRole() == graph.getRole()) {
+                    result = (EditorPanel) view;
+                    break;
+                }
+            }
+        }
+        if (result == null) {
+            result = addEditorPanel(graph);
+        }
+        setSelectedComponent(result);
+    }
+
+    /** Creates and adds an editor panel for the given graph. */
+    private EditorPanel addEditorPanel(AspectGraph graph) {
+        final EditorPanel result = new EditorPanel(this.simulator, graph);
+        add(result);
+        result.start(graph);
+        return result;
+    }
+
+    /** 
+     * Attempts to disposes the editor for certain aspect graphs, if any.
+     * This is done in response to a change in the graph outside the editor.
+     * @param graphs the graphs that are about to be changed and whose editor 
+     * therefore needs to be disposed
+     * @return {@code true} if the operation was not cancelled
+     */
+    public boolean disposeEditors(AspectGraph... graphs) {
+        Set<Pair<GraphRole,String>> graphSet =
+            new HashSet<Pair<GraphRole,String>>();
+        for (AspectGraph graph : graphs) {
+            graphSet.add(Pair.newPair(graph.getRole(), graph.getName()));
+        }
+        boolean result = true;
+        for (EditorPanel editor : getEditors()) {
+            AspectGraph graph = editor.getGraph();
+            if (graphSet.contains(Pair.newPair(graph.getRole(), graph.getName()))) {
+                if (editor.askAndSave()) {
+                    editor.dispose();
+                } else {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Attempts to save the dirty editors, asking the user what should happen.
+     * Optionally disposes the editors.
+     * @param dispose if {@code true}, all editors are disposed (unless 
+     * the operation was cancelled)
+     * @return {@code true} if the operation was not cancelled
+     */
+    public boolean saveEditors(boolean dispose) {
+        boolean result = true;
+        for (EditorPanel editor : getEditors()) {
+            if (editor.askAndSave()) {
+                if (dispose) {
+                    editor.dispose();
+                }
+            } else {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** Tests if there is a dirty editor. */
+    public boolean isEditorDirty() {
+        boolean result = false;
+        for (EditorPanel editor : getEditors()) {
+            if (editor.isDirty() && !editor.isSaving()) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private final Simulator simulator;
+    /** Mapping from standard (non-editor) panels to their tab kinds. */
+    private final Map<Component,TabKind> tabKindMap =
+        new HashMap<Component,TabKind>();
+    /** Mapping from standard (non-editor) panels to their tab kinds. */
+    private final Map<TabKind,Component> tabbedPanelMap =
+        new HashMap<TabKind,Component>();
+    private ChangeListener tabListener;
+    /** The previously selected tab. */
     private Component lastSelected;
 
     /**
@@ -228,16 +380,16 @@ public class SimulatorPanel extends JTabbedPane {
      */
     private class JGraphWindow extends JFrame {
         /** Constructs an instance for a given simulator and panel. */
-        public JGraphWindow(final Component panel) {
-            super(SimulatorPanel.this.titleMap.get(panel));
+        public JGraphWindow(TabKind kind, final Component panel) {
+            super(kind.getName());
             getContentPane().add(panel);
             setAlwaysOnTop(true);
-            ImageIcon icon = SimulatorPanel.this.frameIconMap.get(panel);
+            if (kind == TabKind.EDITOR) {
+                setTitle(((EditorPanel) panel).getName());
+            }
+            ImageIcon icon = kind.getFrameIcon();
             if (icon != null) {
                 setIconImage(icon.getImage());
-            }
-            if (panel instanceof EditorPanel) {
-                setTitle(((EditorPanel) panel).getName());
             }
             pack();
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -250,5 +402,50 @@ public class SimulatorPanel extends JTabbedPane {
             });
             setVisible(true);
         }
+    }
+
+    /** Type of components in the panel. */
+    public static enum TabKind {
+        /** State panel. */
+        GRAPH(Icons.GRAPH_FRAME_ICON, Icons.GRAPH_FILE_ICON,
+                "Current graph state"),
+        /** Rule panel. */
+        RULE(Icons.RULE_FRAME_ICON, Icons.RULE_FILE_ICON, "Selected rule"),
+        /** LTS panel. */
+        LTS(Icons.LTS_FRAME_ICON, null, "Labelled transition system"),
+        /** Control panel. */
+        CONTROL(Icons.CONTROL_FRAME_ICON, Icons.CONTROL_FILE_ICON,
+                "Control specification"),
+        /** Type panel. */
+        TYPE(Icons.TYPE_FRAME_ICON, Icons.TYPE_FILE_ICON, "Type graph"),
+        /** Prolog panel. */
+        PROLOG(Icons.PROLOG_FRAME_ICON, null, "Prolog"),
+        /** Editor panel. */
+        EDITOR(null, null, null);
+
+        private TabKind(ImageIcon tabIcon, ImageIcon frameIcon, String name) {
+            this.tabIcon = tabIcon;
+            this.frameIcon = frameIcon;
+            this.name = name;
+        }
+
+        /** Returns the icon that should be used for a tab of this kind. */
+        public final ImageIcon getTabIcon() {
+            return this.tabIcon;
+        }
+
+        /** Returns the icon that should be used in case this tab is detached. */
+        public final ImageIcon getFrameIcon() {
+            return this.frameIcon;
+        }
+
+        /** Returns name for this tab kind. */
+        public final String getName() {
+            return this.name;
+        }
+
+        private final ImageIcon tabIcon;
+        private final ImageIcon frameIcon;
+        private final String name;
     }
 }

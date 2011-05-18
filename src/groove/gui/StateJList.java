@@ -73,7 +73,7 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -326,7 +326,6 @@ public class StateJList extends JList implements SimulatorListener {
      */
     private void switchSimulatorToStatePanel() {
         getSimulator().switchTabs(getSimulator().getStatePanel());
-        getSimulator().refreshActions();
     }
 
     /**

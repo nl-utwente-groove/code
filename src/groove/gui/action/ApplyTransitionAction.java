@@ -17,7 +17,7 @@ public class ApplyTransitionAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         getModel().applyMatch();
         return false;
     }

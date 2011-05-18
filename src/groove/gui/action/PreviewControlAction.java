@@ -26,7 +26,7 @@ public class PreviewControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         if (getControlPanel().stopEditing(true)) {
             try {
                 CtrlAut aut = getCtrlAut();
@@ -35,8 +35,8 @@ public class PreviewControlAction extends SimulatorAction {
                     getDialog().setVisible(true);
                 }
             } catch (FormatException exc) {
-                showErrorDialog(String.format("Error in control program '%s'",
-                    getModel().getControl().getName()), exc);
+                showErrorDialog(exc, String.format("Error in control program '%s'",
+                        getModel().getControl().getName()));
             }
         }
         return false;

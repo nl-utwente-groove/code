@@ -32,9 +32,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -180,7 +183,7 @@ public class SimulatorModel implements Cloneable {
     public boolean doAddControl(String name, String program) throws IOException {
         StoredGrammarView grammar = getGrammar();
         boolean result = name.equals(grammar.getControlName());
-        grammar.getStore().putControl(name, program);
+        getStore().putControl(name, program);
         refreshGrammar(result);
         setControl(name);
         return result;
@@ -436,14 +439,14 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean refreshGts() {
         start();
-        doRefreshGts();
+        changeGts();
         return finish();
     }
 
     /**
      * Refreshes the GTS.
      */
-    private final boolean doRefreshGts() {
+    private final boolean changeGts() {
         boolean result = this.ltsListener.isChanged();
         if (result) {
             this.ltsListener.clear();
@@ -465,9 +468,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setGts(GTS gts) {
         start();
-        if (doSetGts(gts)) {
-            doSetState(gts == null ? null : gts.startState());
-            doSetMatch(null);
+        if (changeGts(gts)) {
+            changeState(gts == null ? null : gts.startState());
+            changeMatch(null);
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
@@ -505,7 +508,7 @@ public class SimulatorModel implements Cloneable {
      * Changes the active GTS.
      * @see #setGts(GTS)
      */
-    private final boolean doSetGts(GTS gts) {
+    private final boolean changeGts(GTS gts) {
         boolean result = this.gts != gts;
         if (result) {
             if (this.gts != null) {
@@ -538,9 +541,9 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setState(GraphState state) {
         start();
-        doRefreshGts();
-        if (doSetState(state)) {
-            doSetMatch(null);
+        changeGts();
+        if (changeState(state)) {
+            changeMatch(null);
         }
         return finish();
     }
@@ -549,7 +552,7 @@ public class SimulatorModel implements Cloneable {
      * Does the work for {@link #setState(GraphState)}, except
      * for firing the update.
      */
-    private final boolean doSetState(GraphState state) {
+    private final boolean changeState(GraphState state) {
         // never reset the active state as long as there is a GTS
         boolean result = state != this.state;
         if (result) {
@@ -582,10 +585,10 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setMatch(MatchResult match) {
         start();
-        if (doSetMatch(match) && match != null) {
+        if (changeMatch(match) && match != null) {
             doSetRule(this.grammar.getRuleView(match.getEvent().getRule().getName()));
             if (match instanceof GraphTransition) {
-                doSetState(((GraphTransition) match).source());
+                changeState(((GraphTransition) match).source());
             }
         }
         return finish();
@@ -595,7 +598,7 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected event and, if the event is propagated,
      * possibly the rule.
      */
-    private final boolean doSetMatch(MatchResult match) {
+    private final boolean changeMatch(MatchResult match) {
         boolean result = match != this.match;
         if (result) {
             this.match = match;
@@ -636,7 +639,7 @@ public class SimulatorModel implements Cloneable {
             grammarHostSet.add(grammar.getGraphView(hostName));
         }
         newHostSet.retainAll(grammarHostSet);
-        doSetHostSet(newHostSet);
+        changeHostSet(newHostSet);
         // restrict the selected rules to those that are (still)
         // in the grammar
         Collection<RuleView> newRuleSet =
@@ -646,13 +649,13 @@ public class SimulatorModel implements Cloneable {
             grammarRuleSet.add(grammar.getRuleView(ruleName));
         }
         newRuleSet.retainAll(grammarRuleSet);
-        doSetRuleSet(newRuleSet);
-        doSetControl();
-        doSetType();
+        changeRuleSet(newRuleSet);
+        changeControl();
+        changeType();
         if (reset) {
-            doSetGts(null);
-            doSetState(null);
-            doSetMatch(null);
+            changeGts(null);
+            changeState(null);
+            changeMatch(null);
         }
         finish();
     }
@@ -660,21 +663,21 @@ public class SimulatorModel implements Cloneable {
     /** Updates the state according to a given grammar. */
     public final void setGrammar(StoredGrammarView grammar) {
         start();
-        if (doSetGrammar(grammar)) {
+        if (changeGrammar(grammar)) {
             // reset the GTS in any case
-            doSetGts(null);
-            doSetState(null);
-            doSetMatch(null);
-            doSetHostSet(Collections.<GraphView>emptySet());
-            doSetRuleSet(Collections.<RuleView>emptySet());
+            changeGts(null);
+            changeState(null);
+            changeMatch(null);
+            changeHostSet(Collections.<GraphView>emptySet());
+            changeRuleSet(Collections.<RuleView>emptySet());
         }
-        doSetControl();
-        doSetType();
+        changeControl();
+        changeType();
         finish();
     }
 
     /** Updates the state according to a given grammar. */
-    private final boolean doSetGrammar(StoredGrammarView grammar) {
+    private final boolean changeGrammar(StoredGrammarView grammar) {
         boolean result = (grammar != this.grammar);
         // if the grammar view is a different object,
         // do not attempt to keep the host graph and rule selections
@@ -702,7 +705,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setHost(GraphView host) {
         start();
-        doSetHostSet(Collections.singleton(host));
+        changeHostSet(Collections.singleton(host));
         return finish();
     }
 
@@ -725,7 +728,7 @@ public class SimulatorModel implements Cloneable {
         for (String hostName : hostNameSet) {
             hostSet.add(this.grammar.getGraphView(hostName));
         }
-        doSetHostSet(hostSet);
+        changeHostSet(hostSet);
         return finish();
     }
 
@@ -734,7 +737,7 @@ public class SimulatorModel implements Cloneable {
      * May also change the selected host graph.
      * @see #setHost(GraphView)
      */
-    private final boolean doSetHostSet(Collection<GraphView> hostSet) {
+    private final boolean changeHostSet(Collection<GraphView> hostSet) {
         boolean result = !hostSet.equals(this.hostSet);
         if (result) {
             // keep the current set in the same order
@@ -770,7 +773,7 @@ public class SimulatorModel implements Cloneable {
     public final boolean setRule(RuleView rule) {
         start();
         if (doSetRule(rule)) {
-            doSetMatch(null);
+            changeMatch(null);
         }
         return finish();
     }
@@ -790,12 +793,12 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setRuleSet(Collection<RuleView> ruleSet) {
         start();
-        doSetRuleSet(ruleSet);
+        changeRuleSet(ruleSet);
         return finish();
     }
 
     private final boolean doSetRule(RuleView rule) {
-        return doSetRuleSet(Collections.singleton(rule));
+        return changeRuleSet(Collections.singleton(rule));
     }
 
     /** 
@@ -804,7 +807,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if a change was actually made
      * @see #setRule(RuleView)
      */
-    private final boolean doSetRuleSet(Collection<RuleView> ruleSet) {
+    private final boolean changeRuleSet(Collection<RuleView> ruleSet) {
         boolean result = !ruleSet.equals(this.ruleSet);
         if (result) {
             this.ruleSet = new LinkedHashSet<RuleView>(this.ruleSet);
@@ -839,7 +842,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setType(TypeView type) {
         start();
-        doSetType(type);
+        changeType(type);
         return finish();
     }
 
@@ -848,7 +851,7 @@ public class SimulatorModel implements Cloneable {
      * if the new type graph is different from the old.
      * @return {@code true} if a change was actually made
      */
-    private final boolean doSetType(TypeView type) {
+    private final boolean changeType(TypeView type) {
         boolean result = type != this.type;
         if (result) {
             this.type = type;
@@ -863,7 +866,8 @@ public class SimulatorModel implements Cloneable {
      * type graphs available in the grammar otherwise. Only sets {@code null} 
      * if the grammar has no type graphs.
      */
-    private final void doSetType() {
+    private final boolean changeType() {
+        boolean result = false;
         StoredGrammarView grammar = this.grammar;
         TypeView type = this.type;
         if (type == null || !type.equals(grammar.getTypeView(type.getName()))) {
@@ -877,8 +881,9 @@ public class SimulatorModel implements Cloneable {
             }
             TypeView newType =
                 newTypeName == null ? null : grammar.getTypeView(newTypeName);
-            doSetType(newType);
+            result = changeType(newType);
         }
+        return result;
     }
 
     /** Returns the currently selected control program. */
@@ -905,7 +910,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setControl(CtrlView type) {
         start();
-        doSetControl(type);
+        changeControl(type);
         return finish();
     }
 
@@ -914,7 +919,7 @@ public class SimulatorModel implements Cloneable {
      * if the new type program is different from the old.
      * @return {@code true} if a change was actually made
      */
-    private final boolean doSetControl(CtrlView control) {
+    private final boolean changeControl(CtrlView control) {
         boolean result = control != this.control;
         if (result) {
             this.control = control;
@@ -929,7 +934,8 @@ public class SimulatorModel implements Cloneable {
      * control programs available in the grammar otherwise. Only sets {@code null} 
      * if the grammar has no control programs.
      */
-    private final void doSetControl() {
+    private final boolean changeControl() {
+        boolean result = false;
         // check the selected control view
         StoredGrammarView grammar = this.grammar;
         CtrlView control = this.control;
@@ -940,8 +946,9 @@ public class SimulatorModel implements Cloneable {
                 String newName = grammar.getControlNames().iterator().next();
                 newControl = grammar.getControlView(newName);
             }
-            doSetControl(newControl);
+            result = changeControl(newControl);
         }
+        return result;
     }
 
     /** Returns the currently selected type graph. */
@@ -968,7 +975,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setProlog(PrologView prolog) {
         start();
-        doSetProlog(prolog);
+        changeProlog(prolog);
         return finish();
     }
 
@@ -977,7 +984,7 @@ public class SimulatorModel implements Cloneable {
      * if the new program is different from the old.
      * @return {@code true} if a change was actually made
      */
-    private final boolean doSetProlog(PrologView prolog) {
+    private final boolean changeProlog(PrologView prolog) {
         boolean result = prolog != this.prolog;
         if (result) {
             this.prolog = prolog;
@@ -995,8 +1002,23 @@ public class SimulatorModel implements Cloneable {
      * Sets the abstraction mode.
      * @param value if {@code true}, the simulator is set to abstract.
      */
-    public void setAbstractionMode(boolean value) {
-        this.abstractionMode = value;
+    public boolean setAbstractionMode(boolean value) {
+        start();
+        changeAbstractionMode(value);
+        return finish();
+    }
+
+    /** 
+     * Sets the abstraction mode.
+     * @param value if {@code true}, the simulator is set to abstract.
+     */
+    private boolean changeAbstractionMode(boolean value) {
+        boolean result = false;
+        if (value != this.abstractionMode) {
+            this.abstractionMode = value;
+            this.changes.add(Change.ABSTRACT);
+        }
+        return result;
     }
 
     /**
@@ -1012,6 +1034,28 @@ public class SimulatorModel implements Cloneable {
      */
     public void setExploration(Exploration exploration) {
         this.exploration = exploration;
+    }
+
+    /** Returns the kind of tab currently showing in the simulator panel. */
+    public final SimulatorPanel.TabKind getTabKind() {
+        return this.tabKind;
+    }
+
+    /** Changes the kind of tab showing in the simulator panel. */
+    public final boolean setTabKind(SimulatorPanel.TabKind tabKind) {
+        start();
+        changeTabKind(tabKind);
+        return finish();
+    }
+
+    /** Changes the kind of tab showing in the simulator panel. */
+    private boolean changeTabKind(SimulatorPanel.TabKind tabKind) {
+        boolean result = false;
+        if (tabKind != this.tabKind) {
+            this.tabKind = tabKind;
+            this.changes.add(Change.TAB);
+        }
+        return result;
     }
 
     /**
@@ -1035,16 +1079,39 @@ public class SimulatorModel implements Cloneable {
             + ", changes=" + this.changes + "]";
     }
 
-    /** Adds a given simulation listener to the list. */
-    public void addListener(SimulatorListener listener) {
-        if (!this.listeners.contains(listener)) {
-            this.listeners.add(listener);
+    /** 
+     * Adds a given simulation listener to the list.
+     * An optional parameter indicates which kinds of changes should be
+     * notified.
+     * @param listener the listener to be registered
+     * @param changes the set of change events the listener should be notified of;
+     * if empty, the listener is notified of all types of events
+     */
+    public void addListener(SimulatorListener listener, Change... changes) {
+        if (changes.length == 0) {
+            changes = EnumSet.allOf(Change.class).toArray(new Change[0]);
+        }
+        for (Change change : changes) {
+            List<SimulatorListener> listeners = this.listeners.get(change);
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
         }
     }
 
-    /** Removes a given listener from the list. */
-    public void removeListener(SimulatorListener listener) {
-        this.listeners.remove(listener);
+    /**
+     * Removes a given listener from the list.
+     * @param listener the listener to be removed
+     * @param changes the set of change events the listener should be notified of;
+     * if empty, the listener is notified of all types of events 
+     */
+    public void removeListener(SimulatorListener listener, Change... changes) {
+        if (changes.length == 0) {
+            changes = EnumSet.allOf(Change.class).toArray(new Change[0]);
+        }
+        for (Change change : changes) {
+            this.listeners.get(change).remove(listener);
+        }
     }
 
     /** 
@@ -1054,7 +1121,7 @@ public class SimulatorModel implements Cloneable {
     private void start() {
         assert this.old == null;
         this.old = clone();
-        this.changes = new HashSet<SimulatorModel.Change>();
+        this.changes.clear();
     }
 
     /** 
@@ -1069,7 +1136,7 @@ public class SimulatorModel implements Cloneable {
             fireUpdate();
         }
         this.old = null;
-        this.changes = null;
+        this.changes.clear();
         return result;
     }
 
@@ -1087,20 +1154,25 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Notifies all listeners of the changes involved in the current
+     * Notifies all registered listeners of the changes involved in the current
      * transaction.
      */
     private void fireUpdate() {
-        for (SimulatorListener listener : new ArrayList<SimulatorListener>(
-            this.listeners)) {
-            listener.update(this, this.old, this.changes);
+        Set<SimulatorListener> notified = new HashSet<SimulatorListener>();
+        for (Change change : this.changes) {
+            for (SimulatorListener listener : new ArrayList<SimulatorListener>(
+                this.listeners.get(change))) {
+                if (notified.add(listener)) {
+                    listener.update(this, this.old, this.changes);
+                }
+            }
         }
     }
 
     /** Frozen GUI state, if there is a transaction underway. */
     private SimulatorModel old;
     /** Set of changes made in the current transaction. */
-    private Set<SimulatorModel.Change> changes;
+    private Set<Change> changes = EnumSet.noneOf(Change.class);
     /** Currently active GTS. */
     private GTS gts;
     /** Currently active state. */
@@ -1132,10 +1204,16 @@ public class SimulatorModel implements Cloneable {
 
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean abstractionMode = false;
+    /** Kind of tab that currently showing in the simulator panel. */
+    private SimulatorPanel.TabKind tabKind;
     /** Array of listeners. */
-    private final List<SimulatorListener> listeners =
-        new ArrayList<SimulatorListener>();
-
+    private final Map<Change,List<SimulatorListener>> listeners =
+        new EnumMap<Change,List<SimulatorListener>>(Change.class);
+    { // initialise the listener map to empty listener lists
+        for (Change change : EnumSet.allOf(Change.class)) {
+            this.listeners.put(change, new ArrayList<SimulatorListener>());
+        }
+    }
     private final MyLTSListener ltsListener = new MyLTSListener();
 
     /**
@@ -1168,41 +1246,34 @@ public class SimulatorModel implements Cloneable {
 
     /** Change type. */
     public enum Change {
+        /** The abstraction mode has changed. */
+        ABSTRACT,
+        /**
+         * The selected control program has changed.
+         */
+        CONTROL,
+        /** 
+         * The loaded grammar has changed.
+         * @see SimulatorModel#getGrammar()
+         */
+        GRAMMAR,
         /** 
          * The GTS has changed.
          * @see SimulatorModel#getGts()
          */
         GTS,
         /** 
-         * The selected and/or active state has changed.
-         * @see SimulatorModel#getState()
+         * The selected set of host graphs has changed.
+         * @see SimulatorModel#getHost()
+         * @see SimulatorModel#getHostSet()
          */
-        STATE,
+        HOST,
         /** 
          * The selected match (i.e., a rule event or a transition) has changed.
          * @see SimulatorModel#getMatch()
          * @see SimulatorModel#getTransition()
          */
         MATCH,
-        /** 
-         * The loaded grammar has changed.
-         * @see SimulatorModel#getGrammar()
-         */
-        GRAMMAR,
-        /**
-         * The selected type graph has changed.
-         */
-        TYPE,
-        /** 
-         * The selected set of host graphs has changed.
-         * @see SimulatorModel#getHost()
-         * @see SimulatorModel#getHostSet()
-         */
-        HOST,
-        /**
-         * The selected control program has changed.
-         */
-        CONTROL,
         /**
          * The selected prolog program has changed.
          */
@@ -1213,6 +1284,17 @@ public class SimulatorModel implements Cloneable {
          * @see SimulatorModel#getRuleSet()
          */
         RULE,
+        /** 
+         * The selected and/or active state has changed.
+         * @see SimulatorModel#getState()
+         */
+        STATE,
+        /** The selected tab in the simulator panel has changed. */
+        TAB,
+        /**
+         * The selected type graph has changed.
+         */
+        TYPE,
     }
 
     /**

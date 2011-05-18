@@ -50,7 +50,7 @@ public class DeleteRuleAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // Multiple selection
         String question = "Delete rule(s) '%s'";
@@ -70,14 +70,16 @@ public class DeleteRuleAction extends SimulatorAction {
             }
         }
         if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)
-            && getSimulator().disposeEditors(rules)) {
+            && getPanel().disposeEditors(rules)) {
             for (RuleView rule : ruleViews) {
                 try {
-                    result |= getSimulator().getModel().doDeleteRule(rule.getName());
+                    result |=
+                        getSimulator().getModel().doDeleteRule(rule.getName());
                 } catch (IOException exc) {
                     showErrorDialog(
+                        exc,
                         String.format("Error while deleting rule '%s'",
-                            rule.getName()), exc);
+                            rule.getName()));
                 }
             }
         }

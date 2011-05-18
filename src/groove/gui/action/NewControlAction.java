@@ -15,7 +15,7 @@ public class NewControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         if (getControlPanel().stopEditing(true)) {
             String newName =
                 askNewControlName("Select control program name",
@@ -28,7 +28,7 @@ public class NewControlAction extends SimulatorAction {
                 }
             } catch (IOException exc) {
                 showErrorDialog(
-                    "Error creating new control program " + newName, exc);
+                    exc, "Error creating new control program " + newName);
             }
         }
         return false;

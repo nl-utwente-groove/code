@@ -55,7 +55,7 @@ public class RenameRuleAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // first collect the rule graphs involved
         AspectGraph[] ruleGraphs =
@@ -65,7 +65,7 @@ public class RenameRuleAction extends SimulatorAction {
             ruleGraphs[i] = ruleView.getAspectGraph();
             i++;
         }
-        if (confirmAbandon() && getSimulator().disposeEditors(ruleGraphs)) {
+        if (confirmAbandon() && getPanel().disposeEditors(ruleGraphs)) {
             // Multiple selection
             String newName = null;
             // copy the selected rules to avoid concurrent modifications
@@ -78,9 +78,9 @@ public class RenameRuleAction extends SimulatorAction {
                             getSimulator().getModel().doRenameRule(ruleGraph,
                                 newName);
                     } catch (IOException exc) {
-                        showErrorDialog(String.format(
+                        showErrorDialog(exc, String.format(
                             "Error while renaming rule '%s' into '%s'",
-                            oldName, newName), exc);
+                            oldName, newName));
                     }
                 }
             }

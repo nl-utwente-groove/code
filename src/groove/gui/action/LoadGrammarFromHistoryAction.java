@@ -44,14 +44,14 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         try {
             result =
                 getActions().getLoadGrammarAction().load(this.store,
                     this.startGraphName);
         } catch (IOException e) {
-            showErrorDialog("Can't load grammar: ", e);
+            showErrorDialog(e, "Can't load grammar: ");
         }
         return result;
     }

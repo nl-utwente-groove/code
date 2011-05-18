@@ -49,7 +49,7 @@ public class RenameHostAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // Multiple selection
         // copy selected graph names
@@ -61,19 +61,18 @@ public class RenameHostAction extends SimulatorAction {
             hostGraphs[count] = hostView.getAspectGraph();
             count++;
         }
-        if (getSimulator().disposeEditors(hostGraphs)) {
+        if (getPanel().disposeEditors(hostGraphs)) {
             for (AspectGraph graph : hostGraphs) {
                 String oldName = graph.getName();
                 String newName =
                     askNewGraphName("Select new graph name", oldName, false);
                 if (newName != null && !oldName.equals(newName)) {
                     try {
-                        result |=
-                            getModel().doRenameHost(graph, newName);
+                        result |= getModel().doRenameHost(graph, newName);
                     } catch (IOException exc) {
-                        showErrorDialog(String.format(
+                        showErrorDialog(exc, String.format(
                             "Error while renaming graph '%s' into '%s'",
-                            oldName, newName), exc);
+                            oldName, newName));
                     }
                 }
             }

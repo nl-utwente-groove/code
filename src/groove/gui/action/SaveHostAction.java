@@ -16,7 +16,7 @@ public class SaveHostAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         getActions().getSaveGraphAction().actionForGraphs(
             getModel().getHost().getAspectGraph(), FileType.STATE_FILTER);
         return false;

@@ -26,7 +26,7 @@ public class LoadGrammarAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         JFileChooser fileChooser = getGrammarFileChooser(true);
         int approve = fileChooser.showOpenDialog(getFrame());
@@ -34,12 +34,12 @@ public class LoadGrammarAction extends SimulatorAction {
         if (approve == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile == null) {
-                showErrorDialog("No file selected", null);
+                showErrorDialog(null, "No file selected");
             } else {
                 try {
                     result = load(selectedFile, null);
                 } catch (IOException exc) {
-                    showErrorDialog(exc.getMessage(), exc);
+                    showErrorDialog(exc, exc.getMessage());
                 }
             }
         }
@@ -81,7 +81,7 @@ public class LoadGrammarAction extends SimulatorAction {
      */
     public boolean load(final SystemStore store, final String startGraphName)
         throws IOException {
-        if (!getSimulator().saveEditors(true)) {
+        if (!getPanel().saveEditors(true)) {
             return false;
         }
 
@@ -89,8 +89,8 @@ public class LoadGrammarAction extends SimulatorAction {
         store.reload();
         SystemProperties props = store.getProperties();
         if (store.isEmpty()) {
-            showErrorDialog(store.getLocation()
-                + " is not a GROOVE production system.", null);
+            showErrorDialog(null, store.getLocation()
+                + " is not a GROOVE production system.");
             return false;
         }
         String fileGrammarVersion = props.getGrammarVersion();

@@ -18,8 +18,8 @@ public class QuitAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
-        boolean result = getSimulator().saveEditors(true);
+    public boolean execute() {
+        boolean result = getPanel().saveEditors(true);
         if (result) {
             groove.gui.UserSettings.synchSettings(getFrame());
             // Saves the current user settings.

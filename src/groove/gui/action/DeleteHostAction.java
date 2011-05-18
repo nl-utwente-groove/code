@@ -50,7 +50,7 @@ public class DeleteHostAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // Multiple selection
         // copy selected graph names
@@ -77,12 +77,12 @@ public class DeleteHostAction extends SimulatorAction {
             count++;
         }
         if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)
-            && getSimulator().disposeEditors(graphs)) {
+            && getPanel().disposeEditors(graphs)) {
             for (GraphView graphView : selectedGraphs) {
                 try {
-                    result |= getSimulator().getModel().doDeleteHost(graphView.getName());
+                    result |= getModel().doDeleteHost(graphView.getName());
                 } catch (IOException exc) {
-                    showErrorDialog("Error while deleting graph", exc);
+                    showErrorDialog(exc, "Error while deleting graph");
                 }
             }
         }

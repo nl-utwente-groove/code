@@ -16,6 +16,7 @@ final class SimulatorUndoManager extends UndoManager implements
         SimulatorListener {
     public SimulatorUndoManager(Simulator simulator) {
         this.actions = simulator.getActions();
+        simulator.getModel().addListener(this);
     }
 
     @Override

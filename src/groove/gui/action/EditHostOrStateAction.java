@@ -38,18 +38,18 @@ public class EditHostOrStateAction extends SimulatorAction {
      * panel.
      */
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         // find out if we're editing a host graph or a state
         if (getModel().getHost() == null) {
             AspectGraph graph = getStatePanel().getJModel().getGraph();
             String newGraphName =
                 askNewGraphName("Select graph name", graph.getName(), true);
             if (newGraphName != null) {
-                getSimulator().handleEditGraph(graph, true);
+                getPanel().editGraph(graph);
             }
         } else {
             AspectGraph graph = getStatePanel().getJModel().getGraph();
-            getSimulator().handleEditGraph(graph, false);
+            getPanel().editGraph(graph);
         }
         return false;
     }

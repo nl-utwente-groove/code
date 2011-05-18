@@ -16,7 +16,7 @@ public class RenameControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getControlPanel().stopEditing(true)) {
             String oldName = getModel().getControl().getName();
@@ -26,9 +26,9 @@ public class RenameControlAction extends SimulatorAction {
                 try {
                     result = getModel().doRenameControl(oldName, newName);
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
-                        "Error while renaming control program '%s' into '%s'",
-                        oldName, newName), exc);
+                    showErrorDialog(exc, String.format(
+                            "Error while renaming control program '%s' into '%s'",
+                            oldName, newName));
                 }
             }
         }

@@ -22,6 +22,11 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.SimulatorModel.Change.GRAMMAR;
+import static groove.gui.SimulatorModel.Change.GTS;
+import static groove.gui.SimulatorModel.Change.HOST;
+import static groove.gui.SimulatorModel.Change.MATCH;
+import static groove.gui.SimulatorModel.Change.STATE;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -96,6 +101,12 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+        getSimulatorModel().removeListener(this);
+    }
+
+    @Override
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
         result.add(getActions().getNewHostAction());
@@ -164,7 +175,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         if (this.listening) {
             throw new IllegalStateException();
         }
-        getSimulatorModel().addListener(this.simulatorListener);
+        getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
+            STATE, HOST, MATCH);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(this.graphSelectionListener);
@@ -206,11 +218,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(Change.GRAMMAR)) {
+        if (changes.contains(GRAMMAR)) {
             setGrammar(source.getGrammar());
-        } else if (changes.contains(Change.GTS)) {
+        } else if (changes.contains(GTS)) {
             startSimulation(source.getGts());
-        } else if (changes.contains(Change.STATE)) {
+        } else if (changes.contains(STATE)) {
             GraphState newState = source.getState();
             if (newState == null) {
                 clearSelectedMatch(true);
@@ -226,14 +238,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 // set the graph model to the new state
                 setStateModel(newState);
             }
-        } else if (changes.contains(Change.HOST)) {
+        } else if (changes.contains(HOST)) {
             if (source.getHost() == null) {
                 setStateModel(source.getState());
             } else {
                 setGraphModel(source.getHost());
             }
         }
-        if (changes.contains(Change.MATCH)) {
+        if (changes.contains(MATCH)) {
             if (source.getMatch() == null) {
                 clearSelectedMatch(true);
             } else {
@@ -347,14 +359,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Changes the display to a given state. */
     private void setStateModel(GraphState state) {
-        boolean change = getSimulatorModel().getState() != state;
-        if (change) {
-            if (state != null) {
-                setJModel(getAspectJModel(state));
-                setEnabled(true);
-            }
-            refreshStatus();
+        if (state != null) {
+            setJModel(getAspectJModel(state));
+            setEnabled(true);
         }
+        refreshStatus();
     }
 
     /** 
