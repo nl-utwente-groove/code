@@ -16,11 +16,11 @@
  */
 package groove.gui;
 
-import groove.control.CtrlAut;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelControlEditAction;
+import groove.gui.action.ControlPreviewAction;
 import groove.gui.action.CopyControlAction;
 import groove.gui.action.DeleteControlAction;
 import groove.gui.action.DisableControlAction;
@@ -29,19 +29,15 @@ import groove.gui.action.EnableControlAction;
 import groove.gui.action.NewControlAction;
 import groove.gui.action.RenameControlAction;
 import groove.gui.action.SaveControlAction;
-import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.io.store.SystemStore;
-import groove.trans.GraphGrammar;
 import groove.view.CtrlView;
-import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -52,15 +48,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -207,7 +200,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
         result.add(getNameField());
         result.addSeparator();
         // result.add(createButton(getPreviewAction()));
-        result.add(createButton(getCtrlPreviewAction()));
+        result.add(createButton(getControlPreviewAction()));
         result.add(createButton(getDisableControlAction()));
         result.add(createButton(getEnableControlAction()));
         return result;
@@ -359,7 +352,7 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * Registers a refreshable.
      * @see #refreshAll()
      */
-    private void addRefreshable(Refreshable refreshable) {
+    public void addRefreshable(Refreshable refreshable) {
         this.refreshables.add(refreshable);
     }
 
@@ -388,187 +381,6 @@ public class ControlPanel extends JPanel implements SimulatorListener {
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
-
-    /** Lazily creates and returns the field displaying the control name. */
-    public JComboBox getNameField() {
-        if (this.nameField == null) {
-            this.nameField = new ControlNameField();
-            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-            this.nameField.setMaximumSize(new Dimension(150, 24));
-        }
-        return this.nameField;
-    }
-
-    /** Name field of the control program. */
-    private JComboBox nameField;
-
-    private class ControlNameField extends JComboBox implements Refreshable {
-        public ControlNameField() {
-            setBorder(BorderFactory.createLoweredBevelBorder());
-            setMaximumSize(new Dimension(150, 24));
-            setEnabled(false);
-            setEditable(false);
-            this.selectionListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String selectedItem = (String) getSelectedItem();
-                    if (selectedItem != null && stopEditing(true)) {
-                        getSimulatorModel().setControl(selectedItem);
-                    }
-                }
-            };
-            addActionListener(this.selectionListener);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void refresh() {
-            removeActionListener(this.selectionListener);
-            this.removeAllItems();
-            if (getGrammar() == null) {
-                setEnabled(false);
-            } else {
-                Set<String> names =
-                    new TreeSet<String>(getGrammar().getControlNames());
-                for (String controlName : names) {
-                    addItem(controlName);
-                }
-                if (isControlSelected()) {
-                    setSelectedItem(getSelectedControl().getName());
-                }
-                setEnabled(getItemCount() > 0);
-            }
-            addActionListener(this.selectionListener);
-        }
-
-        private final ActionListener selectionListener;
-    }
-
-    /** Lazily creates and returns the area displaying the control program. */
-    public ControlTextArea getControlTextArea() {
-        if (this.controlTextArea == null) {
-            this.controlTextArea = new ControlTextArea();
-        }
-        return this.controlTextArea;
-    }
-
-    /** Panel showing the control program. */
-    private ControlTextArea controlTextArea;
-
-    /** Text area that holds the current control program. */
-    public class ControlTextArea extends RSyntaxTextArea implements Refreshable {
-        /** Constructs an instance of this class. */
-        public ControlTextArea() {
-            super(new RSyntaxDocument("gcl"));
-            // RSyntaxDocument document = new RSyntaxDocument("gcl");
-            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new CtrlTokenMaker());
-            // setDocument(document);
-            setBackground(DISABLED_COLOUR);
-            this.changeListener = new DocumentListener() {
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    notifyEdit();
-                }
-
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    notifyEdit();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                    notifyEdit();
-                }
-
-                private void notifyEdit() {
-                    setDirty(true);
-                    ControlTextArea.this.listenToRefresh = false;
-                    refreshAll();
-                    ControlTextArea.this.listenToRefresh = true;
-                }
-            };
-            getDocument().addDocumentListener(this.changeListener);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            setBackground();
-        }
-
-        private void setBackground() {
-            if (isEnabled()) {
-                setBackground(isEditable() ? JAttr.EDITOR_BACKGROUND
-                        : ENABLED_COLOUR);
-            } else {
-                setBackground(DISABLED_COLOUR);
-            }
-        }
-
-        @Override
-        public void refresh() {
-            // if the text area has focus, don't do any refreshing
-            // as that would destroy the current state of the editing
-            if (isDirty()) {
-                setEnabled(true);
-                setEditable(true);
-                requestFocusInWindow();
-            } else if (this.listenToRefresh) {
-                getDocument().removeDocumentListener(this.changeListener);
-                // we enable the area only if it is being edited.
-                setEditable(isEditing());
-                // the area is editable (meaning it is lighter)
-                // if it is actually being edited, or if it is the
-                // currently used control program
-                boolean enabled = isEditing();
-                if (!enabled && isControlSelected()) {
-                    enabled =
-                        getSelectedControl().equals(
-                            getGrammar().getControlView());
-                }
-                setEnabled(enabled);
-                String program = "";
-                if (isControlSelected()) {
-                    CtrlView cv = getSelectedControl();
-                    if (cv != null) {
-                        program = cv.getProgram();
-                    }
-                }
-                setText(program);
-                discardAllEdits();
-                if (isEditing()) {
-                    requestFocusInWindow();
-                }
-                getDocument().addDocumentListener(this.changeListener);
-            }
-        }
-
-        /** Selects a line in the currently displayed control program, if possible. */
-        public void selectLine(int lineNr) {
-            try {
-                int start = getLineStartOffset(lineNr - 1);
-                getCaret().setDot(start);
-            } catch (BadLocationException e) {
-                // do nothing
-            }
-        }
-
-        private final DocumentListener changeListener;
-        /** Flag indicating if refresh actions should be currently listened to. */
-        private boolean listenToRefresh = true;
-    }
-
-    /** Abstract superclass for actions that can refresh their own status. */
-    private abstract class RefreshableAction extends AbstractAction implements
-            Refreshable {
-        public RefreshableAction(String name, Icon icon) {
-            super(name, icon);
-            putValue(SHORT_DESCRIPTION, name);
-            setEnabled(false);
-            addRefreshable(this);
-        }
-    }
 
     /**
      * Lazily creates and returns the singleton instance of the
@@ -670,96 +482,15 @@ public class ControlPanel extends JPanel implements SimulatorListener {
      * Lazily creates and returns the singleton instance of the
      * {@link NewControlAction}.
      */
-    private CtrlPreviewAction getCtrlPreviewAction() {
-        if (this.ctrlPreviewAction == null) {
-            this.ctrlPreviewAction = new CtrlPreviewAction();
+    private ControlPreviewAction getControlPreviewAction() {
+        if (this.controlPreviewAction == null) {
+            this.controlPreviewAction = new ControlPreviewAction(this);
         }
-        return this.ctrlPreviewAction;
+        return this.controlPreviewAction;
     }
 
     /** Singular instance of the CtrlPreviewAction. */
-    private CtrlPreviewAction ctrlPreviewAction;
-
-    /**
-     * Creates a dialog showing the control automaton.
-     */
-    public class CtrlPreviewAction extends RefreshableAction {
-        /** Constructs a new action, for a given control panel. */
-        public CtrlPreviewAction() {
-            super(Options.PREVIEW_CONTROL_ACTION_NAME, Icons.CONTROL_MODE_ICON);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (stopEditing(true)) {
-                try {
-                    CtrlAut aut = getCtrlAut();
-                    if (aut != null) {
-                        getJGraph().setModel(aut);
-                        getDialog().setVisible(true);
-                    }
-                } catch (FormatException exc) {
-                    getSimulator().showErrorDialog(
-                        String.format("Error in control program '%s'",
-                            getSelectedControl()), exc);
-                }
-            }
-        }
-
-        @Override
-        public void refresh() {
-            try {
-                setEnabled(getCtrlAut() != null);
-            } catch (FormatException e) {
-                setEnabled(false);
-            }
-        }
-
-        private CtrlJGraph getJGraph() throws FormatException {
-            if (this.jGraph == null) {
-                this.jGraph = new CtrlJGraph(getSimulator());
-                this.jGraph.setModel(getCtrlAut());
-                this.jGraph.getLayouter().start(true);
-            }
-            return this.jGraph;
-        }
-
-        private CtrlJGraph jGraph;
-
-        private JDialog getDialog() throws FormatException {
-            JDialog result = this.dialog;
-            if (result == null) {
-                JGraphPanel<?> autPanel =
-                    new JGraphPanel<CtrlJGraph>(getJGraph(), true);
-                autPanel.initialise();
-                result =
-                    this.dialog =
-                        new JDialog(getSimulator().getFrame(),
-                            "Control Automaton");
-                result.add(autPanel);
-                result.setSize(600, 700);
-                Point p = getSimulator().getFrame().getLocation();
-                result.setLocation(new Point(p.x + 50, p.y + 50));
-                result.setVisible(true);
-            }
-            return result;
-        }
-
-        private JDialog dialog;
-
-        /** Convenience method to obtain the currently selected control automaton. */
-        private CtrlAut getCtrlAut() throws FormatException {
-            CtrlAut result = null;
-            StoredGrammarView grammarView = getGrammar();
-            if (grammarView != null) {
-                GraphGrammar grammar = grammarView.toGrammar();
-                CtrlView controlView = getSelectedControl();
-                result =
-                    controlView == null ? grammar.getCtrlAut()
-                            : controlView.toCtrlAut(getGrammar().toGrammar());
-            }
-            return result;
-        }
-    }
+    private ControlPreviewAction controlPreviewAction;
 
     /**
      * Lazily creates and returns the singleton instance of the
@@ -789,6 +520,175 @@ public class ControlPanel extends JPanel implements SimulatorListener {
     /** Singular instance of the SaveAction. */
     private SaveControlAction saveControlAction;
 
+    /** Lazily creates and returns the field displaying the control name. */
+    public JComboBox getNameField() {
+        if (this.nameField == null) {
+            this.nameField = new ControlNameField();
+            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+            this.nameField.setMaximumSize(new Dimension(150, 24));
+        }
+        return this.nameField;
+    }
+
+    /** Name field of the control program. */
+    private ControlNameField nameField;
+
+    private class ControlNameField extends JComboBox implements Refreshable {
+        public ControlNameField() {
+            setBorder(BorderFactory.createLoweredBevelBorder());
+            setMaximumSize(new Dimension(150, 24));
+            setEnabled(false);
+            setEditable(false);
+            this.selectionListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String selectedItem = (String) getSelectedItem();
+                    if (selectedItem != null && stopEditing(true)) {
+                        getSimulatorModel().setControl(selectedItem);
+                    }
+                }
+            };
+            addActionListener(this.selectionListener);
+            addRefreshable(this);
+        }
+    
+        @Override
+        public void refresh() {
+            removeActionListener(this.selectionListener);
+            this.removeAllItems();
+            if (getGrammar() == null) {
+                setEnabled(false);
+            } else {
+                Set<String> names =
+                    new TreeSet<String>(getGrammar().getControlNames());
+                for (String controlName : names) {
+                    addItem(controlName);
+                }
+                if (isControlSelected()) {
+                    setSelectedItem(getSelectedControl().getName());
+                }
+                setEnabled(getItemCount() > 0);
+            }
+            addActionListener(this.selectionListener);
+        }
+    
+        private final ActionListener selectionListener;
+    }
+
+    /** Lazily creates and returns the area displaying the control program. */
+    public ControlTextArea getControlTextArea() {
+        if (this.controlTextArea == null) {
+            this.controlTextArea = new ControlTextArea();
+        }
+        return this.controlTextArea;
+    }
+
+    /** Panel showing the control program. */
+    private ControlTextArea controlTextArea;
+
+    /** Text area that holds the current control program. */
+    public class ControlTextArea extends RSyntaxTextArea implements Refreshable {
+        /** Constructs an instance of this class. */
+        public ControlTextArea() {
+            super(new RSyntaxDocument("gcl"));
+            // RSyntaxDocument document = new RSyntaxDocument("gcl");
+            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new CtrlTokenMaker());
+            // setDocument(document);
+            setBackground(DISABLED_COLOUR);
+            this.changeListener = new DocumentListener() {
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    notifyEdit();
+                }
+    
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    notifyEdit();
+                }
+    
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    notifyEdit();
+                }
+    
+                private void notifyEdit() {
+                    setDirty(true);
+                    ControlTextArea.this.listenToRefresh = false;
+                    refreshAll();
+                    ControlTextArea.this.listenToRefresh = true;
+                }
+            };
+            getDocument().addDocumentListener(this.changeListener);
+            addRefreshable(this);
+        }
+    
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            setBackground();
+        }
+    
+        private void setBackground() {
+            if (isEnabled()) {
+                setBackground(isEditable() ? JAttr.EDITOR_BACKGROUND
+                        : ENABLED_COLOUR);
+            } else {
+                setBackground(DISABLED_COLOUR);
+            }
+        }
+    
+        @Override
+        public void refresh() {
+            // if the text area has focus, don't do any refreshing
+            // as that would destroy the current state of the editing
+            if (isDirty()) {
+                setEnabled(true);
+                setEditable(true);
+                requestFocusInWindow();
+            } else if (this.listenToRefresh) {
+                getDocument().removeDocumentListener(this.changeListener);
+                // we enable the area only if it is being edited.
+                setEditable(isEditing());
+                // the area is editable (meaning it is lighter)
+                // if it is actually being edited, or if it is the
+                // currently used control program
+                boolean enabled = isEditing();
+                if (!enabled && isControlSelected()) {
+                    enabled =
+                        getSimulatorModel().getControl().equals(
+                            getGrammar().getControlView());
+                }
+                setEnabled(enabled);
+                String program = "";
+                if (isControlSelected()) {
+                    CtrlView cv = getSelectedControl();
+                    if (cv != null) {
+                        program = cv.getProgram();
+                    }
+                }
+                setText(program);
+                discardAllEdits();
+                if (isEditing()) {
+                    requestFocusInWindow();
+                }
+                getDocument().addDocumentListener(this.changeListener);
+            }
+        }
+    
+        /** Selects a line in the currently displayed control program, if possible. */
+        public void selectLine(int lineNr) {
+            try {
+                int start = getLineStartOffset(lineNr - 1);
+                getCaret().setDot(start);
+            } catch (BadLocationException e) {
+                // do nothing
+            }
+        }
+    
+        private final DocumentListener changeListener;
+        /** Flag indicating if refresh actions should be currently listened to. */
+        private boolean listenToRefresh = true;
+    }
     private static JTextField enabledField = new JTextField();
     private static JTextField disabledField = new JTextField();
     static {

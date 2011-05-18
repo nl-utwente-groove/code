@@ -34,6 +34,7 @@ public abstract class ControlAction extends SimulatorAction {
      */
     public ControlAction(ControlPanel panel, String name, Icon icon) {
         super(panel.getSimulator(), name, icon);
+        panel.addRefreshable(this);
         this.panel = panel;
     }
 
