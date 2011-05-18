@@ -149,28 +149,6 @@ public abstract class Predicate<A> {
 
     /**
      * <======================================================================>
-     * Convenience class for defining the predicate (P <-> Q).
-     * <======================================================================>
-     */
-    public static class Iff<X> extends Predicate<X> {
-        private final Predicate<X> P;
-        private final Predicate<X> Q;
-
-        /** Default constructor. */
-        public Iff(Predicate<X> P, Predicate<X> Q) {
-            super(P.statePredicate, P.transitionPredicate);
-            this.P = P;
-            this.Q = Q;
-        }
-
-        @Override
-        public boolean eval(X value) {
-            return (this.P.eval(value) == this.Q.eval(value));
-        }
-    }
-
-    /**
-     * <======================================================================>
      * Convenience class for defining the predicate on graph states that
      * checks whether a given rule is applicable.
      * <======================================================================>

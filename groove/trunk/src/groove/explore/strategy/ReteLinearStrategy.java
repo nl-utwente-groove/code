@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.MatchSetCollector;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -26,10 +25,6 @@ import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
 import groove.trans.DeltaStore;
-import groove.trans.Proof;
-import groove.trans.Rule;
-import groove.trans.SystemRecord;
-import groove.util.Reporter;
 
 /**
  * Explores a single path until reaching a final state or a loop. In case of
@@ -134,13 +129,6 @@ public class ReteLinearStrategy extends AbstractStrategy {
         MatcherFactory.instance().setEngine(this.oldEngine);
     }
 
-    // TODO AREND: I do not see the use of the ReteMatchSetCollector class
-    //    @Override
-    //    protected ReteMatchSetCollector createMatchCollector() {
-    //        return new ReteMatchSetCollector(getAtState(), getRecord(),
-    //            getGTS().checkDiamonds());
-    //    }
-
     /** Return the current value of the "close on exit" setting */
     public boolean closeExit() {
         return this.closeExit;
@@ -191,42 +179,6 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
         private GraphState newState;
 
-    }
-
-    static class ReteMatchSetCollector extends MatchSetCollector {
-        protected static final Reporter reporter =
-            Reporter.register(ReteMatchSetCollector.class);
-        protected static final Reporter getMatchReporter =
-            reporter.register("getMatch()");
-
-        public ReteMatchSetCollector(GraphState state, SystemRecord record,
-                boolean checkDiamonds) {
-            super(state, record, checkDiamonds);
-        }
-
-        /** 
-         * @return The next match available at the current state
-         **/
-        @Override
-        public MatchResult getMatch() {
-            getMatchReporter.start();
-            MatchResult result = null;
-            Rule currentRule = firstCall().getRule();
-            while (currentRule != null) {
-                Proof ruleMatch =
-                    currentRule.getMatch(this.state.getGraph(), null);
-                if (ruleMatch != null) {
-                    // convert the match to an event
-                    result = this.record.getEvent(ruleMatch);
-                    if (result != null) {
-                        return result;
-                    }
-                }
-                currentRule = nextCall(false).getRule();
-            }
-            getMatchReporter.stop();
-            return result;
-        }
     }
 
 }

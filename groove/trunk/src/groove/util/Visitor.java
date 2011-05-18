@@ -172,11 +172,6 @@ abstract public class Visitor<T,R> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static final Finder prototypeFinder = new Finder(null);
 
-    /** Simple visitor that does not have a meaningful result value. */
-    static public abstract class Simple<T> extends Visitor<T,Object> {
-        // empty
-    }
-
     /** A visitor that stores the first visited object satisfying a given property. */
     static public class Finder<T> extends Visitor<T,T> {
         /**

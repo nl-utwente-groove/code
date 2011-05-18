@@ -626,52 +626,6 @@ public class PlanSearchEngine extends SearchEngine {
     }
 
     /**
-     * Search item comparator that gives higher priority to items with more
-     * unmatched parts.
-     * @author Arend Rensink
-     * @version $Revision: 3291 $
-     */
-    static class BoundPartsComparator implements Comparator<SearchItem> {
-        BoundPartsComparator(Set<RuleNode> remainingNodes,
-                Set<LabelVar> remainingVars) {
-            this.remainingNodes = remainingNodes;
-            this.remainingVars = remainingVars;
-        }
-
-        /**
-         * Compares the connect count (higher is better).
-         */
-        public int compare(SearchItem o1, SearchItem o2) {
-            return getBoundCount(o1) - getBoundCount(o2);
-        }
-
-        /**
-         * Returns the number of nodes and variables bound by the item that have
-         * not yet been matched. More unmatched parts means more
-         * non-determinism, so the lower the better.
-         */
-        private int getBoundCount(SearchItem item) {
-            int result = 0;
-            for (RuleNode node : item.bindsNodes()) {
-                if (this.remainingNodes.contains(node)) {
-                    result++;
-                }
-            }
-            for (LabelVar var : item.bindsVars()) {
-                if (this.remainingVars.contains(var)) {
-                    result++;
-                }
-            }
-            return result;
-        }
-
-        /** The set of (as yet) unscheduled nodes. */
-        private final Set<RuleNode> remainingNodes;
-        /** The set of (as yet) unscheduled variables. */
-        private final Set<LabelVar> remainingVars;
-    }
-
-    /**
      * Edge comparator for regular expression edges. An edge is better if it is
      * not regular, or if the automaton is not reflexive.
      * @author Arend Rensink

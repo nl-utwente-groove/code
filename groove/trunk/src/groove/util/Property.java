@@ -186,38 +186,6 @@ abstract public class Property<S> {
     }
 
     /**
-     * Property subclass that tests whether a given string represents a positive
-     * (or zero) integer.
-     * @author Iovka Boneva
-     * @version $Revision $
-     */
-    static public class IsPositiveInteger extends Property<String> {
-        /**
-         * Constructs an instance with a flag to indicate if the empty string
-         * should be approved.
-         */
-        public IsPositiveInteger(String comment) {
-            super(description, comment);
-        }
-
-        /**
-         * A value is only correct if it is empty, or equals <code>true</code>
-         * or <code>false</code>.
-         */
-        @Override
-        public boolean isSatisfied(String value) {
-            try {
-                int i = Integer.parseInt(value);
-                return i >= 0;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-
-        static private final String description = " a positive number";
-    }
-
-    /**
      * Properties subclass that tests whether a given value is a correct value
      * of an {@link Enum} type (passed in as a type parameter).
      */
