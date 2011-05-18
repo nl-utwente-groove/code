@@ -146,6 +146,7 @@ public class ReteNetwork {
      *  
      * @param condition The condition to processed and added to the RETE network.
      */
+    @SuppressWarnings("rawtypes")
     private void addConditionToNetwork(Condition condition,
             ConditionChecker parent) {
         ConditionChecker result = null;
@@ -590,7 +591,7 @@ public class ReteNetwork {
      * @param positiveConditionChecker This is the condition-checker for the positive
      *        condition that has negative sub-conditions.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private void processNacs(ReteStaticMapping lastSubgraphMapping,
             Set<Condition> nacs, ConditionChecker positiveConditionChecker) {
 
@@ -1055,7 +1056,7 @@ public class ReteNetwork {
             assert reteNode.getPattern().length == mappedTo.length;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
                 ReteStaticMapping otherMap, SubgraphCheckerNode suc) {
             assert oneMap.getNNode().getSuccessors().contains(suc)
@@ -1100,7 +1101,7 @@ public class ReteNetwork {
             return result;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
                 ReteStaticMapping otherMap,
                 NegativeFilterSubgraphCheckerNode suc) {

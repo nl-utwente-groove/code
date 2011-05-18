@@ -465,6 +465,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
         ReteNetworkNode previous = null;
         int repeatedSuccessorIndex = 0;
@@ -778,13 +779,13 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         /**
          * The subgraph-checker node to which this join strategy belongs
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         protected SubgraphCheckerNode subgraphChecker;
 
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public AbstractSimpleTestJoinStrategy(SubgraphCheckerNode sgChecker) {
             this.subgraphChecker = sgChecker;
         }
@@ -878,7 +879,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public AbstractJoinWithPathStrategy(SubgraphCheckerNode sgChecker) {
             super(sgChecker);
             for (int i = 0; i < sgChecker.fastEqualityLookupTable.length; i++) {
@@ -965,7 +966,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *        coming the left antecedent should be copied for the combined matches that 
      *        are passed down the network.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public static SubgraphCheckerNode create(ReteNetwork network,
             ReteStaticMapping left, ReteStaticMapping right, boolean keepPrefix) {
         if ((left.getNNode() instanceof AbstractPathChecker)
