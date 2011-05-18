@@ -33,6 +33,7 @@ import groove.gui.ShowHideMenu;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.ZoomMenu;
+import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
 import groove.gui.layout.Layouter;
@@ -219,6 +220,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Convenience method to retrieve the state of the simulator, if any. */
     final protected SimulatorModel getSimulatorModel() {
         return getSimulator() == null ? null : getSimulator().getModel();
+    }
+
+    /** Convenience method to retrieve the state of the simulator, if any. */
+    final protected ActionStore getActions() {
+        return getSimulator() == null ? null : getSimulator().getActions();
     }
 
     /**
@@ -964,9 +970,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
         Object[] cells = getSelectionCells();
         boolean itemAdded = false;
         if (cells != null && cells.length > 0 && getSimulator() != null) {
-            result.add(getSimulator().getRelabelAction());
-            if (getSimulator().getSelectColorAction().isEnabled()) {
-                result.add(getSimulator().getSelectColorAction());
+            result.add(getActions().getRelabelAction());
+            if (getActions().getSelectColorAction().isEnabled()) {
+                result.add(getActions().getSelectColorAction());
             }
             itemAdded = true;
         }

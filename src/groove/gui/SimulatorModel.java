@@ -15,8 +15,8 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleEvent;
 import groove.trans.SystemProperties;
 import groove.view.CtrlView;
 import groove.view.FormatException;
@@ -36,8 +36,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.undo.UndoManager;
 
 /**
  * Collection of values that make up the state of 
@@ -417,12 +415,13 @@ public class SimulatorModel implements Cloneable {
      * derivation's target, and the current derivation to null.
      */
     public void applyMatch() {
-        RuleEvent event = getEvent();
-        if (event != null) {
-            GraphTransition result = getEventApplier().apply(getState(), event);
-            if (result != null) {
-                setState(result.target());
-            }
+        GraphTransition trans = getTransition();
+        if (trans == null) {
+            trans = getEventApplier().apply(getState(), getMatch().getEvent());
+
+        }
+        if (trans != null) {
+            setState(trans.target());
         }
     }
 
@@ -468,8 +467,7 @@ public class SimulatorModel implements Cloneable {
         start();
         if (doSetGts(gts)) {
             doSetState(gts == null ? null : gts.startState());
-            doSetTransition(null);
-            doSetEvent(null);
+            doSetMatch(null);
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
@@ -536,15 +534,13 @@ public class SimulatorModel implements Cloneable {
      * If the new state is different from the old, the transition
      * and event are set to {@code null}.
      * @return if {@code true}, the state was really changed
-     * @see #setTransition(GraphTransition)
-     * @see #setEvent(RuleEvent)
+     * @see #setMatch(MatchResult)
      */
     public final boolean setState(GraphState state) {
         start();
         doRefreshGts();
         if (doSetState(state)) {
-            doSetTransition(null);
-            doSetEvent(null);
+            doSetMatch(null);
         }
         return finish();
     }
@@ -563,62 +559,35 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** Returns the currently active transition, if any. */
+    /** Returns the currently selected match result. */
+    public final MatchResult getMatch() {
+        return this.match;
+    }
+
+    /** Returns the currently selected transition, if the selected match is
+     * a transition.
+     * @see #getMatch()
+     */
     public final GraphTransition getTransition() {
-        return this.transition;
+        return this.match instanceof GraphTransition
+                ? (GraphTransition) this.match : null;
     }
 
     /** 
-     * Changes the selected transition.
-     * If the new transition is different from the old, and not
-     * {@code null}, also changes the state and the event 
-     * to the source state and the event of the new transition.
-     * @return if {@code true}, the transition was really changed
-     * @see #setState(GraphState)
-     * @see #setEvent(RuleEvent)
-     */
-    public final boolean setTransition(GraphTransition trans) {
-        start();
-        if (doSetTransition(trans) && trans != null) {
-            doSetState(trans.source());
-            doSetEvent(trans.getEvent());
-            doSetRule(this.grammar.getRuleView(trans.getEvent().getRule().getName()));
-        }
-        return finish();
-    }
-
-    /** 
-     * Changes the selected transition.
-     * If the new transition is different from the old, and not
-     * {@code null}, also changes the state and the event 
-     * to the source state and the event of the new transition.
-     */
-    private final boolean doSetTransition(GraphTransition trans) {
-        boolean result = trans != this.transition;
-        if (result) {
-            this.transition = trans;
-            this.changes.add(Change.TRANS);
-        }
-        return result;
-    }
-
-    /** Returns the currently selected event. */
-    public final RuleEvent getEvent() {
-        return this.event;
-    }
-
-    /** 
-     * Changes the selected rule event, and fires an update event.
-     * If the event is changed to a non-null event, also sets the rule.
-     * @return if {@code true}, the event was really changed
+     * Changes the selected rule match, and fires an update event.
+     * If the match is changed to a non-null event, also sets the rule.
+     * If the match is changed to a non-null transition, also sets the state.
+     * @return if {@code true}, the match was really changed
      * @see #setRule(RuleView)
      */
-    public final boolean setEvent(RuleEvent event) {
+    public final boolean setMatch(MatchResult match) {
         start();
-        if (doSetEvent(event) && event != null) {
-            doSetRule(this.grammar.getRuleView(event.getRule().getName()));
+        if (doSetMatch(match) && match != null) {
+            doSetRule(this.grammar.getRuleView(match.getEvent().getRule().getName()));
+            if (match instanceof GraphTransition) {
+                doSetState(((GraphTransition) match).source());
+            }
         }
-        doSetTransition(null);
         return finish();
     }
 
@@ -626,11 +595,11 @@ public class SimulatorModel implements Cloneable {
      * Changes the selected event and, if the event is propagated,
      * possibly the rule.
      */
-    private final boolean doSetEvent(RuleEvent event) {
-        boolean result = event != this.event;
+    private final boolean doSetMatch(MatchResult match) {
+        boolean result = match != this.match;
         if (result) {
-            this.event = event;
-            this.changes.add(Change.EVENT);
+            this.match = match;
+            this.changes.add(Change.MATCH);
         }
         return result;
     }
@@ -683,8 +652,7 @@ public class SimulatorModel implements Cloneable {
         if (reset) {
             doSetGts(null);
             doSetState(null);
-            doSetTransition(null);
-            doSetEvent(null);
+            doSetMatch(null);
         }
         finish();
     }
@@ -696,8 +664,7 @@ public class SimulatorModel implements Cloneable {
             // reset the GTS in any case
             doSetGts(null);
             doSetState(null);
-            doSetTransition(null);
-            doSetEvent(null);
+            doSetMatch(null);
             doSetHostSet(Collections.<GraphView>emptySet());
             doSetRuleSet(Collections.<RuleView>emptySet());
         }
@@ -709,17 +676,6 @@ public class SimulatorModel implements Cloneable {
     /** Updates the state according to a given grammar. */
     private final boolean doSetGrammar(StoredGrammarView grammar) {
         boolean result = (grammar != this.grammar);
-        // transfer the undo manager to the new grammar
-        if (result && this.undoManager != null) {
-            this.undoManager.discardAllEdits();
-            if (this.grammar != null) {
-                this.grammar.getStore().removeUndoableEditListener(
-                    this.undoManager);
-            }
-            if (grammar != null) {
-                grammar.getStore().addUndoableEditListener(this.undoManager);
-            }
-        }
         // if the grammar view is a different object,
         // do not attempt to keep the host graph and rule selections
         this.grammar = grammar;
@@ -814,8 +770,7 @@ public class SimulatorModel implements Cloneable {
     public final boolean setRule(RuleView rule) {
         start();
         if (doSetRule(rule)) {
-            doSetTransition(null);
-            doSetEvent(null);
+            doSetMatch(null);
         }
         return finish();
     }
@@ -1075,9 +1030,9 @@ public class SimulatorModel implements Cloneable {
     @Override
     public String toString() {
         return "GuiState [gts=" + this.gts + ", state=" + this.state
-            + ", transition=" + this.transition + ", event=" + this.event
-            + ", grammar=" + this.grammar + ", hostSet=" + this.hostSet
-            + ", ruleSet=" + this.ruleSet + ", changes=" + this.changes + "]";
+            + ", match=" + this.match + ", grammar=" + this.grammar
+            + ", hostSet=" + this.hostSet + ", ruleSet=" + this.ruleSet
+            + ", changes=" + this.changes + "]";
     }
 
     /** Adds a given simulation listener to the list. */
@@ -1090,11 +1045,6 @@ public class SimulatorModel implements Cloneable {
     /** Removes a given listener from the list. */
     public void removeListener(SimulatorListener listener) {
         this.listeners.remove(listener);
-    }
-
-    /** Sets an undo manager to listen to the changes in the grammar store. */
-    public void setUndoManager(UndoManager undoManager) {
-        this.undoManager = undoManager;
     }
 
     /** 
@@ -1155,10 +1105,8 @@ public class SimulatorModel implements Cloneable {
     private GTS gts;
     /** Currently active state. */
     private GraphState state;
-    /** Currently active transition. */
-    private GraphTransition transition;
-    /** Currently selected rule event. */
-    private RuleEvent event;
+    /** Currently selected match (event or transition). */
+    private MatchResult match;
     /** Currently loaded grammar. */
     private StoredGrammarView grammar;
     /** Multiple selection of host graph views. */
@@ -1189,8 +1137,6 @@ public class SimulatorModel implements Cloneable {
         new ArrayList<SimulatorListener>();
 
     private final MyLTSListener ltsListener = new MyLTSListener();
-    /** Undo manager listening to the grammar store. */
-    private UndoManager undoManager;
 
     /**
      * Returns the state generator for the current GTS, if any.
@@ -1233,15 +1179,11 @@ public class SimulatorModel implements Cloneable {
          */
         STATE,
         /** 
-         * The selected and/or active transition has changed.
+         * The selected match (i.e., a rule event or a transition) has changed.
+         * @see SimulatorModel#getMatch()
          * @see SimulatorModel#getTransition()
          */
-        TRANS,
-        /** 
-         * The selected event has changed.
-         * @see SimulatorModel#getEvent()
-         */
-        EVENT,
+        MATCH,
         /** 
          * The loaded grammar has changed.
          * @see SimulatorModel#getGrammar()

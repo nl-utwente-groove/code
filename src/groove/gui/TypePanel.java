@@ -22,12 +22,6 @@ import groove.graph.GraphRole;
 import groove.gui.JTypeNameList.CheckBoxListModel;
 import groove.gui.JTypeNameList.ListItem;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.CopyTypeAction;
-import groove.gui.action.DeleteTypeAction;
-import groove.gui.action.EditTypeAction;
-import groove.gui.action.EnableTypesAction;
-import groove.gui.action.NewTypeAction;
-import groove.gui.action.RenameTypeAction;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
@@ -70,22 +64,22 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
-        result.add(createButton(getNewTypeAction()));
-        result.add(createButton(getEditTypeAction()));
-        result.add(getSimulator().getSaveGraphAction());
+        result.add(createButton(getActions().getNewTypeAction()));
+        result.add(createButton(getActions().getEditTypeAction()));
+        result.add(getActions().getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         result.addSeparator();
-        result.add(createButton(getCopyTypeAction()));
-        result.add(createButton(getDeleteTypeAction()));
-        result.add(createButton(getRenameTypeAction()));
+        result.add(createButton(getActions().getCopyTypeAction()));
+        result.add(createButton(getActions().getDeleteTypeAction()));
+        result.add(createButton(getActions().getRenameTypeAction()));
         result.addSeparator();
         result.add(new JLabel("Type Graphs: "));
         result.add(getNameListPane());
         result.addSeparator();
-        result.add(createButton(getDisableTypesAction()));
-        result.add(createButton(getEnableTypesAction()));
+        result.add(createButton(getActions().getDisableTypesAction()));
+        result.add(createButton(getActions().getEnableTypesAction()));
         return result;
     }
 
@@ -246,106 +240,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Listener for selection changes in the list of types. */
     private ListSelectionListener selectionListener;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link CopyTypeAction}.
-     */
-    private CopyTypeAction getCopyTypeAction() {
-        if (this.copyTypeAction == null) {
-            this.copyTypeAction = new CopyTypeAction(getSimulator());
-        }
-        return this.copyTypeAction;
-    }
-
-    /** Singular instance of the CopyTypeAction. */
-    private CopyTypeAction copyTypeAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link DeleteTypeAction}.
-     */
-    private DeleteTypeAction getDeleteTypeAction() {
-        if (this.deleteTypeAction == null) {
-            this.deleteTypeAction = new DeleteTypeAction(getSimulator());
-        }
-        return this.deleteTypeAction;
-    }
-
-    /** Singular instance of the DeleteTypeAction. */
-    private DeleteTypeAction deleteTypeAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link EnableTypesAction}.
-     */
-    private EnableTypesAction getDisableTypesAction() {
-        if (this.disableTypesAction == null) {
-            this.disableTypesAction =
-                new EnableTypesAction(getSimulator(), false);
-        }
-        return this.disableTypesAction;
-    }
-
-    /** Singular instance of the EnableTypesAction. */
-    private EnableTypesAction disableTypesAction;
-
-    /**
-     * Lazily creates and returns the appropriate instance of the
-     * {@link EnableTypesAction}.
-     */
-    private EnableTypesAction getEnableTypesAction() {
-        if (this.enableTypesAction == null) {
-            this.enableTypesAction =
-                new EnableTypesAction(getSimulator(), true);
-        }
-        return this.enableTypesAction;
-    }
-
-    /** Singular instance of the CheckAllAction. */
-    private EnableTypesAction enableTypesAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link EditTypeAction}.
-     */
-    EditTypeAction getEditTypeAction() {
-        if (this.editTypeAction == null) {
-            this.editTypeAction = new EditTypeAction(getSimulator());
-        }
-        return this.editTypeAction;
-    }
-
-    /** Singular instance of the EditTypeAction. */
-    private EditTypeAction editTypeAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewTypeAction}.
-     */
-    NewTypeAction getNewTypeAction() {
-        if (this.newTypeAction == null) {
-            this.newTypeAction = new NewTypeAction(getSimulator());
-        }
-        return this.newTypeAction;
-    }
-
-    /** Singular instance of the NewTypeAction. */
-    private NewTypeAction newTypeAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameTypeAction}.
-     */
-    private RenameTypeAction getRenameTypeAction() {
-        if (this.renameTypeAction == null) {
-            this.renameTypeAction = new RenameTypeAction(getSimulator());
-        }
-        return this.renameTypeAction;
-    }
-
-    /** Singular instance of the RenameTypeAction. */
-    private RenameTypeAction renameTypeAction;
 
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";

@@ -33,7 +33,7 @@ import javax.swing.Action;
  * @version $Revision$ $Date: 2008-01-30 09:33:36 $
  * @author Arend Rensink
  */
-class UndoHistory implements SimulatorListener {
+public class UndoHistory implements SimulatorListener {
     /**
      * Creates a new, empty history log and registers this undo history as a
      * simulation listener.
@@ -41,6 +41,7 @@ class UndoHistory implements SimulatorListener {
      */
     public UndoHistory(Simulator simulator) {
         this.history = new History<HistoryAction>();
+        this.simulator = simulator;
         this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();
         this.redoAction = new ForwardAction();
@@ -67,7 +68,7 @@ class UndoHistory implements SimulatorListener {
         if (changes.contains(Change.STATE) && source.getState() != null) {
             setStateUpdate(source.getState());
         }
-        if (changes.contains(Change.TRANS) && source.getTransition() != null) {
+        if (changes.contains(Change.MATCH) && source.getTransition() != null) {
             setTransitionUpdate(source.getTransition());
         }
     }
@@ -119,6 +120,7 @@ class UndoHistory implements SimulatorListener {
         ForwardAction() {
             super(Options.FORWARD_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.FORWARD_KEY);
+            UndoHistory.this.simulator.addAccelerator(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -143,6 +145,7 @@ class UndoHistory implements SimulatorListener {
         BackAction() {
             super(Options.BACK_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.BACK_KEY);
+            UndoHistory.this.simulator.addAccelerator(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -168,7 +171,7 @@ class UndoHistory implements SimulatorListener {
             this.simulatorModel.setState(action.getState());
         } else {
             assert action instanceof SetTransitionAction;
-            this.simulatorModel.setTransition(action.getTransition());
+            this.simulatorModel.setMatch(action.getTransition());
         }
     }
 
@@ -183,11 +186,12 @@ class UndoHistory implements SimulatorListener {
         this.redoAction.setEnabled(this.history.hasNext());
     }
 
+    private final Simulator simulator;
     /**
      * The parent simulator.
      * @invariant simulator != null
      */
-    protected final SimulatorModel simulatorModel;
+    private final SimulatorModel simulatorModel;
     /**
      * The (unique) undo action associated with this undo history.
      */
@@ -213,7 +217,7 @@ class UndoHistory implements SimulatorListener {
      * Class to record history elements without having to rely on the
      * distinction between {@link GraphState}s and {@link GraphTransition}s.
      */
-    private abstract class HistoryAction {
+    private static abstract class HistoryAction {
         /**
          * Creates an action that consists of either setting a state or a
          * transition in the simulator.

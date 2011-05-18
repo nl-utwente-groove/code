@@ -20,7 +20,6 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import groove.graph.Element;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
@@ -61,9 +60,9 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
-        result.add(getSimulator().getStartSimulationAction());
-        result.add(getSimulator().getExploreAction());
-        result.add(getSimulator().getSaveGraphAction());
+        result.add(getActions().getStartSimulationAction());
+        result.add(getActions().getExploreAction());
+        result.add(getActions().getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -107,78 +106,42 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         if (changes.contains(Change.GTS)) {
             GTS gts = source.getGts();
             if (gts == null) {
-                LTSJModel newModel = getJGraph().newModel();
+                LTSJModel newLtsModel = getJGraph().newModel();
                 getJGraph().getFilteredLabels().clear();
-                getJGraph().setModel(newModel);
-                setGTS(gts);
+                getJGraph().setModel(newLtsModel);
                 setEnabled(false);
             } else {
+                LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
-                    LTSJModel newModel = getJGraph().newModel();
-                    newModel.loadGraph(gts);
-                    getJGraph().setModel(newModel);
-                    setGTS(gts);
+                    ltsModel = getJGraph().newModel();
+                    getJGraph().setModel(ltsModel);
+                } else {
+                    ltsModel = getJGraph().getModel();
+                }
+                // (re)load the GTS if it is not the same size as the model
+                if (ltsModel.size() != gts.size()) {
+                    ltsModel.loadGraph(gts);
                 }
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
                 getJGraph().setActive(source.getState(), source.getTransition());
                 setEnabled(true);
             }
+            if (gts != oldModel.getGts()) {
+                if (oldModel.getGts() != null) {
+                    oldModel.getGts().removeLTSListener(this.ltsListener);
+                }
+                if (gts != null) {
+                    gts.addLTSListener(this.ltsListener);
+                }
+            }
             refreshStatus();
         } else if (changes.contains(Change.STATE)
-            || changes.contains(Change.TRANS)) {
+            || changes.contains(Change.MATCH)) {
             GraphState state = source.getState();
             GraphTransition transition = source.getTransition();
             getJGraph().setActive(state, transition);
-            //            List<Object> selectedCells = new ArrayList<Object>();
-            //            if (source.getSelectedState() != null) {
-            //                selectedCells.add(getJGraph().getModel().getJCellForNode(
-            //                    source.getSelectedState()));
-            //            }
-            //            if (source.getSelectedTransition() != null) {
-            //                selectedCells.add(getJGraph().getModel().getJCellForEdge(
-            //                    source.getSelectedTransition()));
-            //            }
-            //            if (!selectedCells.isEmpty()) {
-            //                getJGraph().setSelectionCells(selectedCells.toArray());
-            //            }
-            conditionalScrollTo(transition == null ? state : transition);
         }
-    }
-
-    /**
-     * Sets the value of the gts field, and changes the subject of the GTS
-     * listener. The return value indicates if this changes the value.
-     * @param gts the new value for the gts field; may be <code>null</code>
-     * @return <code>true</code> if the new value differs from the old
-     */
-    private boolean setGTS(GTS gts) {
-        boolean result = gts != this.gts;
-        if (result) {
-            if (this.gts != null) {
-                this.gts.removeLTSListener(this.ltsListener);
-            }
-            if (gts != null) {
-                gts.addLTSListener(this.ltsListener);
-            }
-        }
-        this.gts = gts;
-        return result;
-    }
-
-    /**
-     * @return Returns the gts.
-     */
-    final GTS getGTS() {
-        return this.gts;
-    }
-
-    /**
-     * Indicates if an LTS is currently loaded. This may fail to be the case if
-     * there is no grammar loaded, or if the loaded grammar has no start state.
-     */
-    private boolean isGTSactivated() {
-        return this.gts != null;
     }
 
     /**
@@ -187,39 +150,31 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
-        if (!isGTSactivated()) {
+        GTS gts = getSimulatorModel().getGts();
+        if (gts == null) {
             text.append("No start state loaded");
         } else {
             text.append("Currently explored: ");
-            text.append(this.gts.nodeCount());
+            text.append(gts.nodeCount());
             text.append(" states");
-            if (this.gts.openStateCount() > 0 || this.gts.hasFinalStates()) {
+            if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
                 text.append(" (");
-                if (this.gts.openStateCount() > 0) {
-                    text.append(this.gts.openStateCount() + " open");
-                    if (this.gts.hasFinalStates()) {
+                if (gts.openStateCount() > 0) {
+                    text.append(gts.openStateCount() + " open");
+                    if (gts.hasFinalStates()) {
                         text.append(", ");
                     }
                 }
-                if (this.gts.hasFinalStates()) {
-                    text.append(this.gts.getFinalStates().size() + " final");
+                if (gts.hasFinalStates()) {
+                    text.append(gts.getFinalStates().size() + " final");
                 }
                 text.append(")");
             }
             text.append(", ");
-            text.append(this.gts.edgeCount());
+            text.append(gts.edgeCount());
             text.append(" transitions");
         }
         return text.toString();
-    }
-
-    /***
-     * Only scroll when the panel is visible.
-     */
-    private void conditionalScrollTo(Element nodeOrEdge) {
-        if (this.isVisible) {
-            getJGraph().scrollTo(nodeOrEdge);
-        }
     }
 
     /**
@@ -233,9 +188,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     public void emphasiseStates(List<GraphState> counterExamples,
             boolean inTransitions) {
         // reset lts display visibility
-        if (this.isVisible) {
-            getSimulator().switchTabs(this);
-        }
+        getSimulator().switchTabs(this);
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
@@ -254,28 +207,9 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     }
 
     /**
-     * The underlying lts of ltsJModel.
-     * 
-     * @invariant lts == ltsJModel.graph()
-     */
-    private GTS gts;
-
-    /**
      * The graph listener permanently associated with this exploration strategy.
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
-
-    /** Indicator of the visibility of the LTSPanel. */
-    private boolean isVisible = true;
-
-    /***
-     * Notifies the LTSPanel that its visibility (inclusion in the GUI) has
-     * changed. The visibility changes the behavior of scrolling only (nothing
-     * else is affected).
-     */
-    public void setGUIVisibility(boolean visible) {
-        this.isVisible = visible;
-    }
 
     /**
      * Listener that makes sure the panel status gets updated when the LYS is
@@ -293,7 +227,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            assert gts == getGTS() : "I want to listen only to my lts";
+            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -303,7 +237,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
-            assert gts == getGTS() : "I want to listen only to my lts";
+            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -337,8 +271,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
             if (getJGraph().getMode() == SELECT_MODE
                 && evt.getButton() == MouseEvent.BUTTON1) {
                 if (!isEnabled()
-                    && getSimulator().getStartSimulationAction().isEnabled()) {
-                    getSimulator().getStartSimulationAction().execute();
+                    && getActions().getStartSimulationAction().isEnabled()) {
+                    getActions().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
                     getSimulator().switchTabs(getSimulator().getStatePanel());
                 } else {
@@ -349,7 +283,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                         getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     if (cell instanceof LTSJEdge) {
                         GraphTransition edge = ((LTSJEdge) cell).getEdge();
-                        getSimulatorModel().setTransition(edge);
+                        getSimulatorModel().setMatch(edge);
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);

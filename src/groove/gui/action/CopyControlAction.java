@@ -1,28 +1,28 @@
 package groove.gui.action;
 
-import groove.gui.ControlPanel;
 import groove.gui.Icons;
 import groove.gui.Options;
+import groove.gui.Simulator;
 
 /**
  * Action to copy the currently displayed control program.
  */
-public class CopyControlAction extends ControlAction {
+public class CopyControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
-    public CopyControlAction(ControlPanel panel) {
-        super(panel, Options.COPY_CONTROL_ACTION_NAME, Icons.COPY_ICON);
+    public CopyControlAction(Simulator simulator) {
+        super(simulator, Options.COPY_CONTROL_ACTION_NAME, Icons.COPY_ICON);
     }
 
     @Override
     protected boolean doAction() {
         boolean result = false;
-        if (getPanel().stopEditing(true)) {
+        if (getControlPanel().stopEditing(true)) {
             String oldName = getModel().getControl().getName();
             String newName =
                 askNewControlName("Select new control program name", oldName,
                     true);
             if (newName != null) {
-                result = getPanel().getSaveControlAction().doAction();
+                result = getActions().getSaveControlAction().doAction();
             }
         }
         return result;

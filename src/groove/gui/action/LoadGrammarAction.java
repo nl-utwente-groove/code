@@ -79,8 +79,8 @@ public class LoadGrammarAction extends SimulatorAction {
     /**
      * Loads in a given system store.
      */
-    public boolean load(final SystemStore store,
-            final String startGraphName) throws IOException {
+    public boolean load(final SystemStore store, final String startGraphName)
+        throws IOException {
         if (!getSimulator().saveEditors(true)) {
             return false;
         }
@@ -140,7 +140,7 @@ public class LoadGrammarAction extends SimulatorAction {
         getModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
-            getSimulator().getSaveGrammarAction().save(newGrammarFile,
+            getActions().getSaveGrammarAction().save(newGrammarFile,
                 !newGrammarFile.equals(store.getLocation()));
         }
         return true;

@@ -67,16 +67,15 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      */
     public RulePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.RULE), true);
-        this.simulator = simulator;
         initialise();
     }
 
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
-        result.add(this.simulator.getNewRuleAction());
-        result.add(this.simulator.getEditRuleAction());
-        result.add(this.simulator.getSaveGraphAction());
+        result.add(getActions().getNewRuleAction());
+        result.add(getActions().getEditRuleAction());
+        result.add(getActions().getSaveGraphAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -148,7 +147,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             }
         }
         // reset the display
-        RuleView currentRule = getSimulatorState().getRule();
+        RuleView currentRule = getSimulatorModel().getRule();
         displayRule(currentRule == null ? null : currentRule.getName(), true);
     }
 
@@ -179,7 +178,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
-        RuleView view = getSimulatorState().getRule();
+        RuleView view = getSimulatorModel().getRule();
         if (view != null) {
             text.append("Rule ");
             text.append(HTMLConverter.STRONG_TAG.on(view.getName()));
@@ -229,20 +228,11 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         return Groove.toString(anchor.toArray(), "(", ")", ",");
     }
 
-    /** Convenience method to retrieve the simulator state. */
-    private SimulatorModel getSimulatorState() {
-        return this.simulator.getModel();
-    }
-
     /** Convenience method to retrieve the current grammar view. */
     private StoredGrammarView getGrammar() {
-        return getSimulatorState().getGrammar();
+        return getSimulatorModel().getGrammar();
     }
 
-    /**
-     * The production simulator to which this frame belongs.
-     */
-    private final Simulator simulator;
     /**
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel

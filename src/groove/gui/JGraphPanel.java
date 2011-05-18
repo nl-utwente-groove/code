@@ -22,6 +22,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
@@ -405,6 +406,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /** Convenience method to retrieve the simulator model. */
     protected final SimulatorModel getSimulatorModel() {
         return getSimulator().getModel();
+    }
+
+    /** Convenience method to retrieve the simulator model. */
+    protected final ActionStore getActions() {
+        return getSimulator().getActions();
     }
 
     private final Simulator simulator;

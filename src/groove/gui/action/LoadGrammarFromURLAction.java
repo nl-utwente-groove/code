@@ -32,7 +32,7 @@ public class LoadGrammarFromURLAction extends SimulatorAction {
                 final SystemStore store = SystemStoreFactory.newStore(url);
                 String startGraphName = url.getQuery();
                 result =
-                    getSimulator().getLoadGrammarAction().load(store,
+                    getActions().getLoadGrammarAction().load(store,
                         startGraphName);
             } catch (MalformedURLException e) {
                 showErrorDialog(

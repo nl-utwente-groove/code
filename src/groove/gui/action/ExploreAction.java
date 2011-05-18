@@ -52,11 +52,7 @@ public class ExploreAction extends SimulatorAction {
      */
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
-        Action applyAction = getSimulator().getApplyTransitionAction();
         getModel().setExploration(exploration);
-        // disable rule application for the time being
-        boolean applyEnabled = applyAction.isEnabled();
-        applyAction.setEnabled(false);
         LTSJModel ltsJModel = getLTSPanel().getJModel();
         if (ltsJModel == null) {
             if (getModel().setGts()) {
@@ -65,39 +61,31 @@ public class ExploreAction extends SimulatorAction {
                 return;
             }
         }
-        synchronized (ltsJModel) {
-            GTS gts = getModel().getGts();
-            int size = gts.size();
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-            gts.removeLTSListener(ltsJModel);
-            // create a thread to do the work in the background
-            Thread generateThread = new ExploreThread(exploration);
-            // go!
-            getModel().getExplorationStats().start();
-            generateThread.start();
-            getModel().getExplorationStats().stop();
-            gts.addLTSListener(ltsJModel);
-            // collect the result states
-            if (setResult) {
-                gts.setResult(exploration.getLastResult());
-            }
-            if (gts.size() != size) {
-                // get the lts' jmodel back on line and re-synchronize its state
-                ltsJModel.loadGraph(gts);
-            }
-            // re-enable rule application
-            // reset lts display visibility
-            getSimulator().switchTabs(getLTSPanel());
-            getModel().setGts(gts);
-            // emphasise the result states, if required
-            if (emphasise) {
-                Collection<GraphState> result =
-                    exploration.getLastResult().getValue();
-                getLTSPanel().emphasiseStates(
-                    new ArrayList<GraphState>(result), true);
-            }
+        GTS gts = getModel().getGts();
+        // unhook the lts' jmodel from the lts, for efficiency's sake
+        gts.removeLTSListener(ltsJModel);
+        // create a thread to do the work in the background
+        Thread generateThread = new ExploreThread(exploration);
+        // go!
+        getModel().getExplorationStats().start();
+        generateThread.start();
+        getModel().getExplorationStats().stop();
+        gts.addLTSListener(ltsJModel);
+        // collect the result states
+        if (setResult) {
+            gts.setResult(exploration.getLastResult());
         }
-        applyAction.setEnabled(applyEnabled);
+        // re-enable rule application
+        // reset lts display visibility
+        getSimulator().switchTabs(getLTSPanel());
+        getModel().setGts(gts);
+        // emphasise the result states, if required
+        if (emphasise) {
+            Collection<GraphState> result =
+                exploration.getLastResult().getValue();
+            getLTSPanel().emphasiseStates(new ArrayList<GraphState>(result),
+                true);
+        }
     }
 
     @Override

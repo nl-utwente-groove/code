@@ -24,6 +24,6 @@ public class ApplyTransitionAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getEvent() != null);
+        setEnabled(getModel().getMatch() != null);
     }
 }

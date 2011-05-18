@@ -17,7 +17,7 @@ public class SaveHostAction extends SimulatorAction {
 
     @Override
     protected boolean doAction() {
-        getSimulator().getSaveGraphAction().actionForGraphs(
+        getActions().getSaveGraphAction().actionForGraphs(
             getModel().getHost().getAspectGraph(), FileType.STATE_FILTER);
         return false;
     }
@@ -28,7 +28,8 @@ public class SaveHostAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getSimulator().getStatePanel().getJModel() != null);
+        setEnabled(getModel().getState() != null
+            || getModel().getHost() != null);
         if (getModel().getHost() == null) {
             putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
             putValue(SHORT_DESCRIPTION, Options.SAVE_STATE_ACTION_NAME);

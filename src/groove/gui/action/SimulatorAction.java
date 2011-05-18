@@ -3,6 +3,7 @@ package groove.gui.action;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
+import groove.gui.ControlPanel;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -60,9 +61,19 @@ public abstract class SimulatorAction extends AbstractAction implements
         return this.simulator.getModel();
     }
 
+    /** Convenience method to retrieve the simulator action store. */
+    protected final ActionStore getActions() {
+        return this.simulator.getActions();
+    }
+
     /** Convenience method to retrieve the simulator model. */
     protected final JFrame getFrame() {
         return this.simulator.getFrame();
+    }
+
+    /** Returns the control panel that owns the action. */
+    final protected ControlPanel getControlPanel() {
+        return this.simulator.getControlPanel();
     }
 
     @Override

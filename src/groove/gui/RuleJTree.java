@@ -20,10 +20,10 @@ import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.action.ActionStore;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.trans.Rule;
 import groove.trans.RuleName;
@@ -94,8 +94,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
         setModel(this.ruleDirectory);
         // set key bindings
         ActionMap am = getActionMap();
-        am.put(Options.UNDO_ACTION_NAME, simulator.getBackAction());
-        am.put(Options.REDO_ACTION_NAME, simulator.getForwardAction());
+        am.put(Options.UNDO_ACTION_NAME, simulator.getActions().getBackAction());
+        am.put(Options.REDO_ACTION_NAME,
+            simulator.getActions().getForwardAction());
         InputMap im = getInputMap();
         im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
@@ -200,12 +201,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // since the rule events have been changed into transitions
                 refresh(source.getState());
             }
-            if (changes.contains(Change.EVENT)) {
-                MatchResult match = source.getTransition();
-                if (match == null) {
-                    match = source.getEvent();
-                }
-                selectMatch(source.getRule(), match);
+            if (changes.contains(Change.MATCH)) {
+                selectMatch(source.getRule(), source.getMatch());
             }
         }
         activateListeners();
@@ -464,19 +461,19 @@ public class RuleJTree extends JTree implements SimulatorListener {
     private JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
         res.setFocusable(false);
-        res.add(getSimulator().getNewRuleAction());
+        res.add(getActions().getNewRuleAction());
         if (node instanceof RuleTreeNode) {
-            res.add(getSimulator().getEditRuleAction());
+            res.add(getActions().getEditRuleAction());
             res.addSeparator();
-            res.add(getSimulator().getCopyRuleAction());
-            res.add(getSimulator().getDeleteRuleAction());
-            res.add(getSimulator().getRenameRuleAction());
+            res.add(getActions().getCopyRuleAction());
+            res.add(getActions().getDeleteRuleAction());
+            res.add(getActions().getRenameRuleAction());
             res.addSeparator();
-            res.add(getSimulator().getEnableRuleAction());
-            res.add(getSimulator().getEditRulePropertiesAction());
+            res.add(getActions().getEnableRuleAction());
+            res.add(getActions().getEditRulePropertiesAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
-            res.add(getSimulator().getApplyTransitionAction());
+            res.add(getActions().getApplyTransitionAction());
         }
         return res;
     }
@@ -489,6 +486,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Convenience method to retrieve the simulator state. */
     private final SimulatorModel getSimulatorModel() {
         return this.simulator.getModel();
+    }
+
+    /** Convenience method to retrieve the simulator action store. */
+    private final ActionStore getActions() {
+        return this.simulator.getActions();
     }
 
     /**
@@ -518,11 +520,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 matchSelected = true;
                 // selected tree node is a match (level 2 node)
                 MatchResult result = ((MatchTreeNode) selectedNode).getResult();
-                if (result instanceof GraphTransition) {
-                    getSimulatorModel().setTransition((GraphTransition) result);
-                } else {
-                    getSimulatorModel().setEvent(result.getEvent());
-                }
+                getSimulatorModel().setMatch(result);
                 if (getSimulator().getGraphPanel() != getSimulator().getLtsPanel()) {
                     getSimulator().switchTabs(getSimulator().getStatePanel());
                 }
@@ -595,7 +593,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
      * selected, and <tt>setDerivation</tt> if a match node is selected.
      * @see SimulatorModel#setRule
-     * @see SimulatorModel#setTransition
+     * @see SimulatorModel#setMatch
      */
     private class RuleSelectionListener implements TreeSelectionListener {
         /**
@@ -628,12 +626,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     // selected tree node is a match (level 2 node)
                     MatchResult result =
                         ((MatchTreeNode) selectedNode).getResult();
-                    if (result instanceof GraphTransition) {
-                        getSimulatorModel().setTransition(
-                            (GraphTransition) result);
-                    } else {
-                        getSimulatorModel().setEvent(result.getEvent());
-                    }
+                    getSimulatorModel().setMatch(result);
                 }
                 if (ruleNode != null) {
                     selectedRules.add(ruleNode.getRule());

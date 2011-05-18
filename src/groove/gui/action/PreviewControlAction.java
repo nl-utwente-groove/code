@@ -1,10 +1,10 @@
 package groove.gui.action;
 
 import groove.control.CtrlAut;
-import groove.gui.ControlPanel;
 import groove.gui.Icons;
 import groove.gui.JGraphPanel;
 import groove.gui.Options;
+import groove.gui.Simulator;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.trans.GraphGrammar;
 import groove.view.CtrlView;
@@ -18,16 +18,16 @@ import javax.swing.JDialog;
 /**
  * Creates a dialog showing the control automaton.
  */
-public class ControlPreviewAction extends ControlAction {
+public class PreviewControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
-    public ControlPreviewAction(ControlPanel panel) {
-        super(panel, Options.PREVIEW_CONTROL_ACTION_NAME,
+    public PreviewControlAction(Simulator simulator) {
+        super(simulator, Options.PREVIEW_CONTROL_ACTION_NAME,
             Icons.CONTROL_MODE_ICON);
     }
 
     @Override
     protected boolean doAction() {
-        if (getPanel().stopEditing(true)) {
+        if (getControlPanel().stopEditing(true)) {
             try {
                 CtrlAut aut = getCtrlAut();
                 if (aut != null) {
@@ -35,8 +35,7 @@ public class ControlPreviewAction extends ControlAction {
                     getDialog().setVisible(true);
                 }
             } catch (FormatException exc) {
-                showErrorDialog(String.format(
-                    "Error in control program '%s'",
+                showErrorDialog(String.format("Error in control program '%s'",
                     getModel().getControl().getName()), exc);
             }
         }
@@ -71,8 +70,7 @@ public class ControlPreviewAction extends ControlAction {
             autPanel.initialise();
             result =
                 this.dialog =
-                    new JDialog(getSimulator().getFrame(),
-                        "Control Automaton");
+                    new JDialog(getSimulator().getFrame(), "Control Automaton");
             result.add(autPanel);
             result.setSize(600, 700);
             Point p = getSimulator().getFrame().getLocation();

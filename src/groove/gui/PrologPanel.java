@@ -906,8 +906,9 @@ public class PrologPanel extends JPanel {
             this.results.setText("?- " + queryString + "\n");
 
             this.prolog.setGrooveState(new GrooveState(
-                getGrammar().toGrammar(), getSimulatorState().getGts(),
-                getSimulatorState().getState(), getSimulatorState().getEvent()));
+                getGrammar().toGrammar(), getSimulatorModel().getGts(),
+                getSimulatorModel().getState(),
+                getSimulatorModel().getMatch().getEvent()));
 
             this.solutionCount = 0;
             processResults(this.prolog.newQuery(queryString));
@@ -1064,13 +1065,13 @@ public class PrologPanel extends JPanel {
     }
 
     /** Convenience method to retrieve the simulator state. */
-    private SimulatorModel getSimulatorState() {
+    private SimulatorModel getSimulatorModel() {
         return this.sim.getModel();
     }
 
     /** Convenience method to retrieve the grammar view from the simulator. */
     private StoredGrammarView getGrammar() {
-        return getSimulatorState().getGrammar();
+        return getSimulatorModel().getGrammar();
     }
 
     /**
