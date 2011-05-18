@@ -167,6 +167,8 @@ public class HTMLConverter {
             result = 2;
         } else if (!red.off(htmlLine).equals(originalLine)) {
             result = 3;
+        } else if (!remark.off(htmlLine).equals(originalLine)) {
+            result = 4;
         }
         return result;
     }

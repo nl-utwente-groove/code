@@ -906,6 +906,9 @@ public final class GraphToTikz {
         case 3:
             this.result.append(enclose(aux, BEGIN_COLOR_RED, "}"));
             break;
+        case 4:
+            this.result.append(enclose(aux, BEGIN_COLOR_ORANGE, "}"));
+            break;
         }
 
         this.result.append(CRLF);
@@ -1408,6 +1411,7 @@ public final class GraphToTikz {
     private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}";
     private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}";
     private static final String BEGIN_COLOR_RED = "{\\color{\\red}";
+    private static final String BEGIN_COLOR_ORANGE = "{\\color{\\orange}";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
     private static final String BASIC_LABEL_STYLE = "lab";
