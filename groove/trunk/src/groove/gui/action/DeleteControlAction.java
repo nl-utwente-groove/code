@@ -16,7 +16,7 @@ public class DeleteControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         String controlName = getControlPanel().getSelectedControl().getName();
         if (confirmBehaviour(Options.DELETE_CONTROL_OPTION,
@@ -29,9 +29,9 @@ public class DeleteControlAction extends SimulatorAction {
             try {
                 result = getModel().doDeleteControl(controlName);
             } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while deleting control program '%s'", controlName),
-                    exc);
+                showErrorDialog(exc,
+                    String.format(
+                        "Error while deleting control program '%s'", controlName));
             }
         }
         return result;

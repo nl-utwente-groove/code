@@ -29,7 +29,7 @@ public class EnableRuleAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // collect the selected rule graphs
         AspectGraph[] ruleGraphs =
@@ -39,14 +39,13 @@ public class EnableRuleAction extends SimulatorAction {
             ruleGraphs[i] = ruleView.getAspectGraph();
             i++;
         }
-        if (confirmAbandon() && getSimulator().disposeEditors(ruleGraphs)) {
+        if (confirmAbandon() && getPanel().disposeEditors(ruleGraphs)) {
             for (AspectGraph ruleGraph : ruleGraphs) {
                 try {
                     result |= getSimulator().getModel().doEnableRule(ruleGraph);
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
-                        "Error while enabling rule '%s'", ruleGraph.getName()),
-                        exc);
+                    showErrorDialog(exc, String.format(
+                        "Error while enabling rule '%s'", ruleGraph.getName()));
                 }
             }
         }

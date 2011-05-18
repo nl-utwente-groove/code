@@ -17,7 +17,7 @@ public class CopyTypeAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         String oldName = getModel().getType().getName();
         String newName =
@@ -28,9 +28,9 @@ public class CopyTypeAction extends SimulatorAction {
             try {
                 result = getModel().doAddType(newType);
             } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while copying type graph '%s' to '%s'", oldName,
-                    newName), exc);
+                showErrorDialog(exc, String.format(
+                        "Error while copying type graph '%s' to '%s'", oldName,
+                        newName));
             }
         }
         return result;

@@ -58,7 +58,7 @@ public class SelectColorAction extends SimulatorAction implements
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         Color initColour =
             getModel().getGrammar().getLabelStore().getColor(this.label);
         if (initColour != null) {
@@ -99,9 +99,9 @@ public class SelectColorAction extends SimulatorAction implements
                 try {
                     getSimulator().getModel().doAddType(newTypeView);
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
-                        "Error while saving type graph '%s'", typeViewName),
-                        exc);
+                    showErrorDialog(exc,
+                        String.format(
+                            "Error while saving type graph '%s'", typeViewName));
                 }
             }
         }

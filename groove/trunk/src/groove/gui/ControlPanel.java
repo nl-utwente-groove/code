@@ -112,7 +112,8 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
             getActions().getCancelEditControlAction());
         // start listening
-        this.simulator.getModel().addListener(this);
+        this.simulator.getModel().addListener(this, Change.GRAMMAR,
+            Change.CONTROL);
     }
 
     private JComponent createDocPane() {

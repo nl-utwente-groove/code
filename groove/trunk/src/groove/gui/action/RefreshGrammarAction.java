@@ -18,14 +18,14 @@ public class RefreshGrammarAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (confirmAbandon()) {
             try {
                 result = getSimulator().getModel().doRefreshGrammar();
             } catch (IOException exc) {
-                showErrorDialog("Error while refreshing grammar from "
-                    + getModel().getStore().getLocation(), exc);
+                showErrorDialog(exc, "Error while refreshing grammar from "
+                        + getModel().getStore().getLocation());
             }
         }
         return result;

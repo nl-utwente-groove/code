@@ -19,7 +19,7 @@ public class RenameTypeAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         TypeView type = getModel().getType();
         String oldName = type.getName();
@@ -27,13 +27,13 @@ public class RenameTypeAction extends SimulatorAction {
             askNewTypeName("Select new type graph name", oldName, false);
         if (newName != null && !oldName.equals(newName)) {
             AspectGraph typeGraph = type.getAspectGraph();
-            if (getSimulator().disposeEditors(typeGraph)) {
+            if (getPanel().disposeEditors(typeGraph)) {
                 try {
                     result = getModel().doRenameType(typeGraph, newName);
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
+                    showErrorDialog(exc, String.format(
                         "Error while renaming type graph '%s' into '%s'",
-                        oldName, newName), exc);
+                        oldName, newName));
                 }
             }
         }

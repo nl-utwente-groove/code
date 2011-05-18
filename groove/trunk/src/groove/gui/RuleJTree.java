@@ -16,6 +16,10 @@
  */
 package groove.gui;
 
+import static groove.gui.SimulatorModel.Change.GRAMMAR;
+import static groove.gui.SimulatorModel.Change.GTS;
+import static groove.gui.SimulatorModel.Change.MATCH;
+import static groove.gui.SimulatorModel.Change.STATE;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -171,11 +175,16 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return result;
     }
 
+    /** Unhooks this object from all observables. */
+    public void dispose() {
+        getSimulatorModel().removeListener(this);
+    }
+
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(Change.GRAMMAR)) {
+        if (changes.contains(GRAMMAR)) {
             GrammarView grammar = source.getGrammar();
             if (grammar == null) {
                 this.clearAllMaps();
@@ -195,13 +204,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
             refresh(source.getState());
         } else {
-            if (changes.contains(Change.GTS) || changes.contains(Change.STATE)) {
+            if (changes.contains(GTS) || changes.contains(STATE)) {
                 // if the GTS has changed, this may mean that the state 
                 // displayed here has been closed, in which case we have to refresh
                 // since the rule events have been changed into transitions
                 refresh(source.getState());
             }
-            if (changes.contains(Change.MATCH)) {
+            if (changes.contains(MATCH)) {
                 selectMatch(source.getRule(), source.getMatch());
             }
         }
@@ -209,7 +218,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this);
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -257,20 +266,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
         }
         super.setEnabled(enabled);
-    }
-
-    /** 
-     * Sets the selection to a rule with a given name.
-     * If the rule does not exist, merely switches the simulator to rule view.
-     */
-    public void setSelectedRule(String ruleName) {
-        RuleView ruleView = getGrammar().getRuleView(ruleName);
-        if (ruleView == null) {
-            switchSimulatorToRulePanel();
-        } else {
-            setSelectionPath(new TreePath(
-                this.ruleNodeMap.get(ruleView).getPath()));
-        }
     }
 
     /** Returns the list of currently selected rule names. */
@@ -491,15 +486,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Convenience method to retrieve the simulator action store. */
     private final ActionStore getActions() {
         return this.simulator.getActions();
-    }
-
-    /**
-     * Switches the simulator to the state panel view, and
-     * refreshes the actions.
-     */
-    private void switchSimulatorToRulePanel() {
-        getSimulator().switchTabs(getSimulator().getRulePanel());
-        getSimulator().refreshActions();
     }
 
     /**

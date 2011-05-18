@@ -18,9 +18,13 @@ package groove.gui.action;
 
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Action;
 
@@ -29,15 +33,22 @@ import javax.swing.Action;
  * @author Arend Rensink
  * @version $Revision: 3382 $
  */
-public class ActionStore {
+public class ActionStore implements SimulatorListener {
     /**
      * Constructs a simulator with an empty graph grammar.
      */
     public ActionStore(Simulator simulator) {
         this.simulator = simulator;
+        simulator.getModel().addListener(this);
     }
 
     private final Simulator simulator;
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        refreshActions();
+    }
 
     /**
      * Adds an element to the set of refreshables. Also calls

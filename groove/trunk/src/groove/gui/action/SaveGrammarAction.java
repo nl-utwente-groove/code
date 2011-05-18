@@ -22,7 +22,7 @@ public class SaveGrammarAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         int approve = getGrammarFileChooser(false).showSaveDialog(getFrame());
         // now save, if so required
@@ -32,8 +32,8 @@ public class SaveGrammarAction extends SimulatorAction {
                 try {
                     result |= save(selectedFile, true);
                 } catch (IOException exc) {
-                    showErrorDialog("Error while saving grammar to "
-                        + selectedFile, exc);
+                    showErrorDialog(exc, "Error while saving grammar to "
+                        + selectedFile);
                 }
             }
         }
@@ -48,7 +48,7 @@ public class SaveGrammarAction extends SimulatorAction {
      */
     public boolean save(File grammarFile, boolean clearDir) throws IOException {
         boolean result = false;
-        if (getSimulator().saveEditors(true)) {
+        if (getPanel().saveEditors(true)) {
             SystemStore newStore =
                 getModel().getStore().save(grammarFile, clearDir);
             StoredGrammarView newView = newStore.toGrammarView();

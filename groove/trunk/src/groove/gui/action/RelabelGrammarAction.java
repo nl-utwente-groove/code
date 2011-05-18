@@ -60,7 +60,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
         if (relabelling != null) {
@@ -69,9 +69,9 @@ public class RelabelGrammarAction extends SimulatorAction implements
                     getSimulator().getModel().doRelabel(relabelling.one(),
                         relabelling.two());
             } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while renaming '%s' into '%s':", relabelling.one(),
-                    relabelling.two()), exc);
+                showErrorDialog(exc, String.format(
+                        "Error while renaming '%s' into '%s':", relabelling.one(),
+                        relabelling.two()));
             }
         }
         return result;

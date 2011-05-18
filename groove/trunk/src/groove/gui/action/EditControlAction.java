@@ -13,7 +13,7 @@ public class EditControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         getControlPanel().startEditing();
         return false;
     }

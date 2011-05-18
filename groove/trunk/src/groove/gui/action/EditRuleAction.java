@@ -40,9 +40,8 @@ public class EditRuleAction extends SimulatorAction {
      * @require <tt>getCurrentRule != null</tt>.
      */
     @Override
-    protected boolean doAction() {
-        getSimulator().handleEditGraph(getModel().getRule().getAspectGraph(),
-            false);
+    public boolean execute() {
+        getPanel().editGraph(getModel().getRule().getAspectGraph());
         return false;
     }
 }

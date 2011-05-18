@@ -14,7 +14,7 @@ public class ExplorationDialogAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         new ExplorationDialog(getSimulator(),
             getFrame());
         return false;

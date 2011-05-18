@@ -38,7 +38,7 @@ public class SaveSimulatorAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
             result = actionForControl();
@@ -77,8 +77,8 @@ public class SaveSimulatorAction extends SimulatorAction {
             try {
                 result = marshalGraph(graph, selectedFile, filter);
             } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while saving graph to '%s'", selectedFile), exc);
+                showErrorDialog(exc, String.format(
+                        "Error while saving graph to '%s'", selectedFile));
             }
         }
         return result;
@@ -168,8 +168,8 @@ public class SaveSimulatorAction extends SimulatorAction {
             try {
                 DefaultGxl.getInstance().marshalAnyGraph(gts, selectedFile);
             } catch (IOException exc) {
-                showErrorDialog(String.format("Error while saving LTS to '%s'",
-                    selectedFile), exc);
+                showErrorDialog(exc, String.format("Error while saving LTS to '%s'",
+                        selectedFile));
             }
         }
         return false;
@@ -190,7 +190,7 @@ public class SaveSimulatorAction extends SimulatorAction {
             try {
                 result = doSaveControl(program, selectedFile);
             } catch (IOException exc) {
-                showErrorDialog("Error while saving to " + selectedFile, exc);
+                showErrorDialog(exc, "Error while saving to " + selectedFile);
             }
         }
         return result;

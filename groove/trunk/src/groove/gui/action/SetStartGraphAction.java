@@ -12,7 +12,7 @@ public class SetStartGraphAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         String selection = getModel().getHost().getName();
         return getModel().doSetStartGraph(selection);
     }

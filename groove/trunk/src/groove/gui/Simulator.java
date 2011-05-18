@@ -34,7 +34,6 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
-import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
@@ -42,7 +41,6 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.FormatError;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
@@ -57,8 +55,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -80,7 +76,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -100,12 +95,11 @@ public class Simulator implements SimulatorListener {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
-        this.actions = new ActionStore(this);
         this.model = new SimulatorModel();
+        this.actions = new ActionStore(this);
         this.model.addListener(this);
         this.undoManager = new SimulatorUndoManager(this);
         getFrame();
-        refreshActions();
     }
 
     /**
@@ -151,6 +145,7 @@ public class Simulator implements SimulatorListener {
      * {@link JFrame#setVisible(boolean)}.
      */
     public void start() {
+        getActions().refreshActions();
         getFrame().pack();
         groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
@@ -169,120 +164,24 @@ public class Simulator implements SimulatorListener {
         return this.undoHistory;
     }
 
-    /** 
-     * Adds an editor panel for the given graph, or selects the 
-     * one that already exists.
-     * @param fresh if {@code true}, this is a new graph (not already in the grammar)
-     */
-    public void handleEditGraph(final AspectGraph graph, boolean fresh) {
-        EditorPanel result = null;
-        // look if an editor already exists for the graph
-        JTabbedPane viewsPane = getSimulatorPanel();
-        for (int i = 0; i < viewsPane.getTabCount(); i++) {
-            Component view = viewsPane.getComponentAt(i);
-            if (view instanceof EditorPanel) {
-                AspectGraph editedGraph = ((EditorPanel) view).getGraph();
-                if (editedGraph.getName().equals(graph.getName())
-                    && editedGraph.getRole() == graph.getRole()) {
-                    result = (EditorPanel) view;
-                    break;
-                }
-            }
-        }
-        if (result == null) {
-            result = addEditorPanel(graph, fresh);
-        }
-        getSimulatorPanel().setSelectedComponent(result);
-    }
-
-    /** Creates and adds an editor panel for the given graph. */
-    private EditorPanel addEditorPanel(AspectGraph graph, boolean fresh) {
-        final EditorPanel result = new EditorPanel(this, graph, fresh);
-        getSimulatorPanel().add(result);
-        result.start(graph);
-        return result;
-    }
-
-    /** Changes the type graph in the open editor panels. */
-    void changeEditorTypes() {
-        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-            editor.setType();
-        }
-    }
-
-    /** 
-     * Attempts to disposes the editor for certain aspect graphs, if any.
-     * This is done in response to a change in the graph outside the editor.
-     * @param graphs the graphs that are about to be changed and whose editor 
-     * therefore needs to be disposed
-     * @return {@code true} if the operation was not cancelled
-     */
-    public boolean disposeEditors(AspectGraph... graphs) {
-        Set<Pair<GraphRole,String>> graphSet =
-            new HashSet<Pair<GraphRole,String>>();
-        for (AspectGraph graph : graphs) {
-            graphSet.add(Pair.newPair(graph.getRole(), graph.getName()));
-        }
-        boolean result = true;
-        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-            AspectGraph graph = editor.getGraph();
-            if (graphSet.contains(Pair.newPair(graph.getRole(), graph.getName()))) {
-                if (editor.askAndSave()) {
-                    editor.dispose();
-                } else {
-                    result = false;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /** 
-     * Attempts to save the dirty editors, asking the user what should happen.
-     * Optionally disposes the editors.
-     * @param dispose if {@code true}, all editors are disposed (unless 
-     * the operation was cancelled)
-     * @return {@code true} if the operation was not cancelled
-     */
-    public boolean saveEditors(boolean dispose) {
-        boolean result = true;
-        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-            if (editor.askAndSave()) {
-                if (dispose) {
-                    editor.dispose();
-                }
-            } else {
-                result = false;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** Tests if there is a dirty editor. */
-    boolean isEditorDirty() {
-        boolean result = false;
-        for (EditorPanel editor : getSimulatorPanel().getEditors()) {
-            if (editor.isDirty() && !editor.isSaving()) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
-            changeEditorTypes();
             setTitle();
             List<FormatError> grammarErrors =
                 getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
         }
-        refreshActions();
+        if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
+            getStatePanel().dispose();
+            this.statePanel = null;
+            getSimulatorPanel().setComponentAt(0, getStatePanel());
+            getRuleTree().dispose();
+            this.ruleJTree = null;
+            this.ruleTreePanel.setViewportView(getRuleTree());
+        }
+        refreshExportMenuItem();
     }
 
     /**
@@ -299,19 +198,6 @@ public class Simulator implements SimulatorListener {
             contentPane.remove(getErrorPanel());
             contentPane.setDividerSize(0);
         }
-    }
-
-    /**
-     * Sets a new graph transition system.
-     */
-    public synchronized boolean startSimulation() {
-        boolean result = false;
-        boolean start =
-            !isEditorDirty() && confirmBehaviourOption(START_SIMULATION_OPTION);
-        if (start) {
-            result = getModel().setGts();
-        }
-        return result;
     }
 
     /**
@@ -528,7 +414,7 @@ public class Simulator implements SimulatorListener {
                                 break;
                             case TYPE:
                                 panel = getTypePanel();
-                                getTypePanel().setSelectedType(name);
+                                getModel().setType(name);
                                 break;
                             default:
                                 assert false;
@@ -563,8 +449,7 @@ public class Simulator implements SimulatorListener {
                                     // do nothing
                                 }
                             }
-                            getSimulatorPanel().setSelectedComponent(
-                                getControlPanel());
+                            switchTabs(getControlPanel());
                         }
                     }
                 }
@@ -664,26 +549,6 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Resets the state panel, in preparation for a switch between
-     * concrete and abstract state space exploration.
-     */
-    public void resetStatePanel() {
-        getModel().removeListener(getStatePanel());
-        this.statePanel = null;
-        getSimulatorPanel().setComponentAt(0, getStatePanel());
-    }
-
-    /**
-     * Resets the rule tree, in preparation for a switch between
-     * concrete and abstract state space exploration.
-     */
-    public void resetRuleTree() {
-        getModel().removeListener(getRuleTree());
-        this.ruleJTree = null;
-        this.ruleTreePanel.setViewportView(getRuleTree());
-    }
-
-    /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
     public RuleJTree getRuleTree() {
@@ -749,26 +614,6 @@ public class Simulator implements SimulatorListener {
      */
     public boolean isSwitchingTabs() {
         return this.switchingTabs;
-    }
-
-    /**
-     * Adds an element to the set of refreshables. Also calls
-     * {@link Refreshable#refresh()} on the element.
-     */
-    public void addRefreshable(Refreshable element) {
-        this.refreshables.add(element);
-    }
-
-    /**
-     * Is called after a change to current state, rule or derivation or to the
-     * currently selected view panel to allow registered refreshable elements to
-     * refresh themselves.
-     */
-    public void refreshActions() {
-        refreshExportMenuItem();
-        for (Refreshable action : this.refreshables) {
-            action.refresh();
-        }
     }
 
     /**
@@ -1221,8 +1066,6 @@ public class Simulator implements SimulatorListener {
     /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
     private boolean switchingTabs;
 
-    /** Current set of refreshables of this simulator. */
-    private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
     /**
      * This application's main frame.
      */

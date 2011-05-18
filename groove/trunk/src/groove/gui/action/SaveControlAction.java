@@ -16,7 +16,7 @@ public class SaveControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getControlPanel().isDirty()) {
             String name = getModel().getControl().getName();
@@ -36,7 +36,7 @@ public class SaveControlAction extends SimulatorAction {
                 getModel().doAddControl(name,
                     getControlPanel().getControlTextArea().getText());
         } catch (IOException exc) {
-            showErrorDialog("Error storing control program " + name, exc);
+            showErrorDialog(exc, "Error storing control program " + name);
         }
         return result;
     }

@@ -54,7 +54,7 @@ public class CheckLTLAction extends ExploreAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         Serialized strategy;
         // prompt for a formula to model check
         String property = getLtlFormulaDialog().showDialog(getFrame());

@@ -7,6 +7,7 @@ import groove.gui.ControlPanel;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
+import groove.gui.SimulatorPanel;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.RelabelDialog;
@@ -32,9 +33,7 @@ import javax.swing.JOptionPane;
  * The class contains a host of convenience methods for confirmation
  * dialogs.
  * The actual action to be taken on {@link #actionPerformed(ActionEvent)}
- * is delegated to an abstract method {@link #doAction()}, the return value
- * of which determines if a {@link Simulator#startSimulation()} should
- * be invoked afterwards. 
+ * is delegated to an abstract method {@link #execute()}.
  */
 public abstract class SimulatorAction extends AbstractAction implements
         Refreshable {
@@ -48,7 +47,7 @@ public abstract class SimulatorAction extends AbstractAction implements
         this.simulator = simulator;
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
-        simulator.addRefreshable(this);
+        simulator.getActions().addRefreshable(this);
     }
 
     /** The simulator on which this action works. */
@@ -71,6 +70,11 @@ public abstract class SimulatorAction extends AbstractAction implements
         return this.simulator.getFrame();
     }
 
+    /** Convenience method to retrieve the simulator model. */
+    protected final SimulatorPanel getPanel() {
+        return this.simulator.getSimulatorPanel();
+    }
+
     /** Returns the control panel that owns the action. */
     final protected ControlPanel getControlPanel() {
         return this.simulator.getControlPanel();
@@ -87,16 +91,13 @@ public abstract class SimulatorAction extends AbstractAction implements
         execute();
     }
 
-    /** 
+    /**
      * Method to execute the action encapsulated by this class.
-     * This implementation calls {@link #doAction()} and, if that is
-     * successful, starts the simulation. 
+     * Called from {@link #actionPerformed(ActionEvent)}.
+     * @return {@code true} if the grammar was invalidated as a result of
+     * this action, so that the simulation has to be restarted. 
      */
-    public void execute() {
-        if (doAction()) {
-            this.simulator.startSimulation();
-        }
-    }
+    public abstract boolean execute();
 
     /**
      * Enters a dialog that results in a control name that does not yet occur in
@@ -216,8 +217,9 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Creates and shows an {@link ErrorDialog} for a given message and
      * exception.
      */
-    final protected void showErrorDialog(String message, Throwable exc) {
-        new ErrorDialog(getFrame(), message, exc).setVisible(true);
+    final protected void showErrorDialog(Throwable exc, String message,
+            Object... args) {
+        new ErrorDialog(getFrame(), String.format(message, args), exc).setVisible(true);
     }
 
     /**
@@ -367,16 +369,6 @@ public abstract class SimulatorAction extends AbstractAction implements
         }
         return result;
     }
-
-    /**
-     * Callback method to perform the actual action.
-     * Called from {@link #actionPerformed(ActionEvent)}.
-     * If the return value is {@code true}, {@link Simulator#startSimulation()}
-     * will be invoked after this action.
-     * @return {@code true} if the grammar was invalidated as a result of
-     * this action, so that the simulation has to be restarted. 
-     */
-    protected abstract boolean doAction();
 
     /** The simulator on which this action works. */
     private final Simulator simulator;

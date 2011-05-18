@@ -44,7 +44,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // Get selected rules.
         Collection<RuleView> selectedRules = getModel().getRuleSet();
@@ -87,7 +87,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
                 GraphProperties.DEFAULT_USER_KEYS, true);
 
         if (dialog.showDialog(getFrame()) && confirmAbandon()
-            && getSimulator().disposeEditors(ruleGraphs)) {
+            && getPanel().disposeEditors(ruleGraphs)) {
 
             // We go through the results of the dialog.
             GraphProperties editedProperties =
@@ -122,11 +122,11 @@ public class EditRulePropertiesAction extends SimulatorAction {
                     getModel().getStore().putRule(newGraph);
                     ruleGraphs[i].invalidateView();
                 } catch (IOException exc) {
-                    showErrorDialog(String.format(
+                    showErrorDialog(exc, String.format(
                         "Error while storing rule '%s'",
-                        ruleGraphs[i].getName()), exc);
+                        ruleGraphs[i].getName()));
                 } catch (UnsupportedOperationException u) {
-                    showErrorDialog("Current grammar is read-only", u);
+                    showErrorDialog(u, "Current grammar is read-only");
                 }
             }
             // We are done with the rule changes.

@@ -21,7 +21,7 @@ public class UndoSimulatorAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         this.undoManager.undo();
         getModel().refreshGrammar(true);
         return true;

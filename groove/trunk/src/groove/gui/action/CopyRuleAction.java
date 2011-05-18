@@ -49,7 +49,7 @@ public class CopyRuleAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         // Multiple selection
         if (confirmAbandon()) {
@@ -68,9 +68,9 @@ public class CopyRuleAction extends SimulatorAction {
                         result |= getSimulator().getModel().doAddRule(newRuleGraph);
                         savedRule = newRuleName;
                     } catch (IOException exc) {
-                        showErrorDialog(String.format(
-                            "Error while copying rule '%s' to '%s'",
-                            oldRuleName, newRuleName), exc);
+                        showErrorDialog(exc, String.format(
+                                "Error while copying rule '%s' to '%s'",
+                                oldRuleName, newRuleName));
                     }
                 }
             }

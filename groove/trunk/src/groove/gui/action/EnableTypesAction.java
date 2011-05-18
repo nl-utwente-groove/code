@@ -18,12 +18,12 @@ public class EnableTypesAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         try {
             result = getModel().doSetActiveTypes(getChangedTypes());
         } catch (IOException exc) {
-            showErrorDialog("Error while resetting type graphs", exc);
+            showErrorDialog(exc, "Error while resetting type graphs");
         }
         return result;
     }

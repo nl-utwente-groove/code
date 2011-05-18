@@ -16,7 +16,7 @@ public class DisableControlAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         if (getControlPanel().stopEditing(true)) {
             SystemProperties oldProperties =
@@ -26,7 +26,7 @@ public class DisableControlAction extends SimulatorAction {
             try {
                 result = getModel().doSetProperties(newProperties);
             } catch (IOException exc) {
-                showErrorDialog("Error while disabling control", exc);
+                showErrorDialog(exc, "Error while disabling control");
             }
         }
         return result;

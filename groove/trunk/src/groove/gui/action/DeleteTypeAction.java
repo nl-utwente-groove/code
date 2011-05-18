@@ -19,19 +19,19 @@ public class DeleteTypeAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         boolean result = false;
         TypeView type = getModel().getType();
         String typeName = type.getName();
         AspectGraph typeGraph = type.getAspectGraph();
         if (confirmBehaviour(Options.DELETE_TYPE_OPTION,
             String.format("Delete type graph '%s'?", typeName))
-            && getSimulator().disposeEditors(typeGraph)) {
+            && getPanel().disposeEditors(typeGraph)) {
             try {
                 result = getModel().doDeleteType(typeName);
             } catch (IOException exc) {
-                showErrorDialog(String.format(
-                    "Error while deleting type graph '%s'", typeName), exc);
+                showErrorDialog(exc, String.format(
+                    "Error while deleting type graph '%s'", typeName));
             }
         }
         return result;

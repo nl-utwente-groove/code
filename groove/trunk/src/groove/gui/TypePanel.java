@@ -100,7 +100,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected void installListeners() {
         super.installListeners();
-        getSimulatorModel().addListener(this);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         this.selectionListener = new ListSelectionListener() {
@@ -114,7 +114,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 int index = getNameList().getSelectedIndex();
                 if (index >= 0) {
                     ListItem item = getNameListModel().getElementAt(index);
-                    setSelectedType(item.dataItem);
+                    getSimulatorModel().setType(item.dataItem);
                 }
             }
         };
@@ -154,16 +154,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             displayType();
             activateListeners();
         }
-    }
-
-    /**
-     * Selects a type graph to be viewed.
-     * @param name the type graph to be viewed; either <code>null</code> if
-     *        there is no type graph in the current grammar, or an existing name
-     *        in the type graph names of the current grammar.
-     */
-    public void setSelectedType(String name) {
-        getSimulatorModel().setType(name);
     }
 
     /**

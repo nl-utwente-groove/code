@@ -40,7 +40,7 @@ public class SaveLTSAsAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         SaveLTSAsDialog dialog = new SaveLTSAsDialog(getSimulator());
         if (getLastGrammarFile() != null) {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());

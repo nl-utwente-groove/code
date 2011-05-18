@@ -22,6 +22,10 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.view.aspect.AspectGraph;
 
+import java.io.IOException;
+
+import javax.swing.SwingUtilities;
+
 /**
  * Action that takes care of creating a new host graph in a grammar view.
  * @author Arend Rensink
@@ -34,12 +38,24 @@ public class NewRuleAction extends SimulatorAction {
     }
 
     @Override
-    protected boolean doAction() {
+    public boolean execute() {
         final String ruleName =
             askNewRuleName(null, Simulator.NEW_RULE_NAME, true);
         if (ruleName != null) {
-            AspectGraph newRule = AspectGraph.emptyGraph(ruleName, RULE);
-            getSimulator().handleEditGraph(newRule, true);
+            try {
+                final AspectGraph newRule =
+                    AspectGraph.emptyGraph(ruleName, RULE);
+                getModel().doAddRule(newRule);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getPanel().editGraph(newRule);
+                    }
+                });
+            } catch (IOException e) {
+                showErrorDialog(e, "Error creating new type graph '%s'",
+                    ruleName);
+            }
         }
         return false;
     }
