@@ -92,7 +92,6 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * 
  * @author Michiel Hendriks
  */
-// TODO make this nicer
 public class PrologPanel extends JPanel {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
