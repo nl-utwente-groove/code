@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.SimulatorPanel.TabKind;
 
 import java.io.IOException;
 
@@ -27,8 +28,8 @@ public class RenameControlAction extends SimulatorAction {
                     result = getModel().doRenameControl(oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
-                            "Error while renaming control program '%s' into '%s'",
-                            oldName, newName));
+                        "Error while renaming control program '%s' into '%s'",
+                        oldName, newName));
                 }
             }
         }
@@ -38,7 +39,7 @@ public class RenameControlAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(getModel().getControl() != null);
-        if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+        if (getPanel().getSelectedTab() == TabKind.CONTROL) {
             getSimulator().getRenameMenuItem().setAction(this);
         }
     }
