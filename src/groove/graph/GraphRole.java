@@ -27,29 +27,35 @@ import java.util.Map;
  */
 public enum GraphRole {
     /** Unspecified graph role. */
-    NONE("none"),
+    NONE("none", "No Graph"),
     /** Host graph role. */
-    HOST("graph"),
+    HOST("graph", "Graph"),
     /** Rule graph role. */
-    RULE("rule"),
+    RULE("rule", "Rule Graph"),
     /** Type graph role. */
-    TYPE("type"),
+    TYPE("type", "Type Graph"),
     /** LTS graph role. */
-    LTS("lts"),
+    LTS("lts", "LTS"),
     /** RETE graph role. */
-    RETE("rete"),
+    RETE("rete", "Rete Network"),
     /** Control automaton role. */
-    CTRL("control"),
+    CTRL("control", "Control Automaton"),
     /** Büchi automaton role. */
-    BUCHI("büchi");
+    BUCHI("büchi", "Büchi Automaton");
 
-    private GraphRole(String name) {
+    private GraphRole(String name, String description) {
         this.name = name;
+        this.description = description;
     }
 
     @Override
     public String toString() {
         return this.name;
+    }
+
+    /** Returns a short (1- or 2-word) description of this graph role. */
+    public String getDescription() {
+        return this.description;
     }
 
     /**
@@ -76,6 +82,7 @@ public enum GraphRole {
         return grammarRoles.contains(this);
     }
 
+    private final String description;
     private final String name;
 
     /** Map from graph role names to graph roles. */

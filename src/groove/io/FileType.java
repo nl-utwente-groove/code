@@ -16,6 +16,8 @@
  */
 package groove.io;
 
+import groove.graph.GraphRole;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,6 @@ import java.util.Map;
  * @author Eduardo Zambon
  */
 public enum FileType {
-
     // Native Groove files.
     /** GXL (Graph eXchange Language) files. */
     GXL(".gxl", "GXL files"),
@@ -302,6 +303,20 @@ public enum FileType {
     /** Returns the extension filter associated with the given file type. */
     public static ExtensionFilter getFilter(FileType fileTypes) {
         return simpleFilterMap.get(fileTypes);
+    }
+
+    /** Returns the extension filter associated with the given graph role. */
+    public static ExtensionFilter getFilter(GraphRole role) {
+        switch (role) {
+        case HOST:
+            return STATE_FILTER;
+        case RULE:
+            return RULE_FILTER;
+        case TYPE:
+            return TYPE_FILTER;
+        default:
+            return null;
+        }
     }
 
     /** Returns the extension filter associated with the given file type. */

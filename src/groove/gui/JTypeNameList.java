@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.gui.dialog.ErrorDialog;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 
@@ -543,8 +544,8 @@ public class JTypeNameList extends JList {
                         simulator.getModel().doSetActiveTypes(
                             getModel().getCheckedTypes());
                     } catch (IOException exc) {
-                        simulator.showErrorDialog(
-                            "Error while modifying type graph composition", exc);
+                        new ErrorDialog(JTypeNameList.this.panel,
+                            "Error while modifying type graph composition", exc).setVisible(true);
                     }
                 }
             }

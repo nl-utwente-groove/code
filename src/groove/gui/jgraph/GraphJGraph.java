@@ -34,11 +34,9 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.ZoomMenu;
 import groove.gui.action.ActionStore;
-import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.SaveDialog;
+import groove.gui.action.ExportAction;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
-import groove.io.external.Exporter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
 import groove.util.ObservableSet;
@@ -61,8 +59,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -828,7 +824,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Returns the action to export this JGraph in various formats. */
     public ExportAction getExportAction() {
         if (this.exportAction == null) {
-            this.exportAction = new ExportAction();
+            this.exportAction = new ExportAction(this);
         }
         this.exportAction.refresh();
         return this.exportAction;
@@ -867,11 +863,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 }
             }
         };
-    }
-
-    /** Callback method to return the export action name. */
-    protected String getExportActionName() {
-        return Options.EXPORT_ACTION_NAME;
     }
 
     /** Changes the scale of the {@link JGraph} by a given
@@ -1226,48 +1217,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         JAttr defaultValues = new JAttr();
         DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
         DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
-    }
-
-    /**
-     * Action to save the state, as a graph or in some export format.
-     * @see Exporter#export(GraphJGraph, File)
-     */
-    private class ExportAction extends AbstractAction {
-        /** Constructs an instance of the action. */
-        ExportAction() {
-            super(Options.EXPORT_GRAPH_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String fileName = getModel().getName();
-            if (fileName != null) {
-                this.exporter.getFileChooser().setSelectedFile(
-                    new File(fileName));
-            }
-            File selectedFile =
-                SaveDialog.show(this.exporter.getFileChooser(),
-                    GraphJGraph.this, null);
-            // now save, if so required
-            if (selectedFile != null) {
-                try {
-                    this.exporter.export(GraphJGraph.this, selectedFile);
-                } catch (IOException exc) {
-                    new ErrorDialog(GraphJGraph.this,
-                        "Error while exporting to " + selectedFile, exc).setVisible(true);
-                }
-
-            }
-        }
-
-        /** Refreshes the name of this action. */
-        public void refresh() {
-            setEnabled(GraphJGraph.this.isEnabled());
-            putValue(NAME, getExportActionName());
-            putValue(SHORT_DESCRIPTION, getExportActionName());
-        }
-
-        private final Exporter exporter = Exporter.getInstance();
     }
 
     /** Action to turn filtering on for a set of selected cells. */

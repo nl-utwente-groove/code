@@ -42,6 +42,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -69,7 +70,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         setVisible(true);
     }
 
-    private void add(TabKind kind, Component component) {
+    private void add(TabKind kind, JPanel component) {
         this.tabKindMap.put(component, kind);
         this.tabbedPanelMap.put(kind, component);
         addTab(null, kind.getTabIcon(), component, kind.getName());
@@ -82,7 +83,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
             public void mouseClicked(MouseEvent e) {
                 int index = indexAtLocation(e.getX(), e.getY());
                 if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
-                    Component panel = getComponentAt(index);
+                    JPanel panel = (JPanel) getComponentAt(index);
                     createDetachMenu(panel).show(SimulatorPanel.this, e.getX(),
                         e.getY());
                 }
@@ -152,8 +153,46 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         return result == null ? TabKind.EDITOR : result;
     }
 
+    /**
+     * Returns the currently selected graph view component, if that is a 
+     * {@link JGraphPanel}. Returns {@code null} otherwise.
+     */
+    public JGraphPanel<?> getGraphPanel() {
+        Component selectedComponent = getSelectedComponent();
+        if (selectedComponent instanceof EditorPanel) {
+            return ((EditorPanel) selectedComponent).getEditor().getGraphPanel();
+        }
+        if (!(selectedComponent instanceof JGraphPanel<?>)) {
+            return null;
+        } else {
+            return (JGraphPanel<?>) selectedComponent;
+        }
+    }
+
+    /** Returns the panel corresponding to a certain tab kind. */
+    public JPanel getPanelFor(TabKind tabKind) {
+        return this.tabbedPanelMap.get(tabKind);
+    }
+
+    /** Returns the panel corresponding to a certain graph role. */
+    public JGraphPanel<?> getPanelFor(GraphRole role) {
+        TabKind tabKind = null;
+        switch (role) {
+        case HOST:
+            tabKind = TabKind.GRAPH;
+            break;
+        case RULE:
+            tabKind = TabKind.RULE;
+            break;
+        case TYPE:
+            tabKind = TabKind.TYPE;
+            break;
+        }
+        return (JGraphPanel<?>) getPanelFor(tabKind);
+    }
+
     /** Reattaches a component at its proper place. */
-    public void attach(Component component) {
+    public void attach(JPanel component) {
         if (component instanceof EditorPanel) {
             add((EditorPanel) component);
         } else {
@@ -172,7 +211,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
-    public void detach(Component component) {
+    public void detach(JPanel component) {
         revertSelection();
         TabKind kind = this.tabKindMap.get(component);
         new JGraphWindow(kind == null ? TabKind.EDITOR : kind, component);
@@ -237,7 +276,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Creates a popup menu with a detach action for a given component. */
-    private JPopupMenu createDetachMenu(final Component component) {
+    private JPopupMenu createDetachMenu(final JPanel component) {
         assert indexOfComponent(component) >= 0;
         JPopupMenu result = new JPopupMenu();
         result.add(new AbstractAction("Detach") {
@@ -272,7 +311,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
      * Adds an editor panel for the given graph, or selects the 
      * one that already exists.
      */
-    public void editGraph(final AspectGraph graph) {
+    public void doEditGraph(final AspectGraph graph) {
         EditorPanel result = null;
         // look if an editor already exists for the graph
         for (int i = 0; i < getTabCount(); i++) {
@@ -364,11 +403,11 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
 
     private final Simulator simulator;
     /** Mapping from standard (non-editor) panels to their tab kinds. */
-    private final Map<Component,TabKind> tabKindMap =
-        new HashMap<Component,TabKind>();
+    private final Map<JPanel,TabKind> tabKindMap =
+        new HashMap<JPanel,TabKind>();
     /** Mapping from standard (non-editor) panels to their tab kinds. */
-    private final Map<TabKind,Component> tabbedPanelMap =
-        new HashMap<TabKind,Component>();
+    private final Map<TabKind,JPanel> tabbedPanelMap =
+        new HashMap<TabKind,JPanel>();
     private ChangeListener tabListener;
     /** The previously selected tab. */
     private Component lastSelected;
@@ -380,7 +419,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
      */
     private class JGraphWindow extends JFrame {
         /** Constructs an instance for a given simulator and panel. */
-        public JGraphWindow(TabKind kind, final Component panel) {
+        public JGraphWindow(TabKind kind, final JPanel panel) {
             super(kind.getName());
             getContentPane().add(panel);
             setAlwaysOnTop(true);

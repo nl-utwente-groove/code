@@ -29,8 +29,8 @@ public class CopyTypeAction extends SimulatorAction {
                 result = getModel().doAddType(newType);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
-                        "Error while copying type graph '%s' to '%s'", oldName,
-                        newName));
+                    "Error while copying type graph '%s' to '%s'", oldName,
+                    newName));
             }
         }
         return result;
@@ -38,9 +38,7 @@ public class CopyTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null);
-        if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
-            getSimulator().getCopyMenuItem().setAction(this);
-        }
+        setEnabled(getModel().getType() != null
+            && getModel().getStore().isModifiable());
     }
 }

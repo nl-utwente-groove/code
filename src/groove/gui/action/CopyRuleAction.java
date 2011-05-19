@@ -42,10 +42,6 @@ public class CopyRuleAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getModel().getRule() != null
             && getModel().getStore().isModifiable());
-
-        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-            getSimulator().getCopyMenuItem().setAction(this);
-        }
     }
 
     @Override

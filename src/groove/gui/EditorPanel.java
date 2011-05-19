@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.graph.GraphRole;
+import groove.gui.dialog.ErrorDialog;
 import groove.view.StoredGrammarView;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
@@ -261,9 +262,9 @@ public class EditorPanel extends JPanel {
                 }
                 this.editor.setDirty(false);
             } catch (IOException exc) {
-                this.simulator.showErrorDialog(
-                    String.format("Error while saving edited graph '%s'",
-                        graph.getName()), exc);
+                new ErrorDialog(this, String.format(
+                    "Error while saving edited graph '%s'", graph.getName()),
+                    exc).setVisible(true);
             }
             this.saving = false;
         }

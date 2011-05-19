@@ -25,6 +25,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
@@ -75,7 +76,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(getActions().getNewRuleAction());
         result.add(getActions().getEditRuleAction());
-        result.add(getActions().getSaveGraphAction());
+        result.add(getActions().getSaveAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -102,8 +103,8 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
                 try {
                     getSimulator().getModel().doSetProperties(newProperties);
                 } catch (IOException exc) {
-                    getSimulator().showErrorDialog(
-                        "Error while modifying type hierarchy", exc);
+                    new ErrorDialog(RulePanel.this,
+                        "Error while modifying type hierarchy", exc).setVisible(true);
                 }
             }
         });

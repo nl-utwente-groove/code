@@ -19,7 +19,6 @@ package groove.gui.jgraph;
 import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
@@ -94,11 +93,6 @@ public class CtrlJGraph extends GraphJGraph {
         SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
         result.addLayoutItem(createInitialLayouter());
         return result;
-    }
-
-    @Override
-    protected String getExportActionName() {
-        return Options.EXPORT_CONTROL_ACTION_NAME;
     }
 
     /** The default node attributes of the control automaton */

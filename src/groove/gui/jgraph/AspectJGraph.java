@@ -94,14 +94,15 @@ final public class AspectJGraph extends GraphJGraph {
         setDisconnectable(true);
     }
 
-    @Override
-    public void requestFocus() {
-        // only pass on the request if it is not due to
-        // an explicitly requested tab switch in the simulator
-        if (getSimulator() != null && !getSimulator().isSwitchingTabs()) {
-            super.requestFocus();
-        }
-    }
+    //
+    //    @Override
+    //    public void requestFocus() {
+    //        // only pass on the request if it is not due to
+    //        // an explicitly requested tab switch in the simulator
+    //        if (getSimulator() != null && !getSimulator().isSwitchingTabs()) {
+    //            super.requestFocus();
+    //        }
+    //    }
 
     @Override
     public AspectJModel getModel() {
@@ -278,7 +279,7 @@ final public class AspectJGraph extends GraphJGraph {
         // add a save graph action as the first action
         JMenu result = new JMenu();
         if (getSimulator() != null && getGraphRole() == GraphRole.HOST) {
-            result.add(getActions().getSaveHostGraphAction());
+            result.add(getActions().getSaveHostOrStateAction());
         }
         addMenuItems(result, super.createExportMenu());
         return result;
@@ -340,24 +341,6 @@ final public class AspectJGraph extends GraphJGraph {
                 getSimulatorModel().setRule(ruleName);
             }
         };
-    }
-
-    @Override
-    protected String getExportActionName() {
-        switch (getGraphRole()) {
-        case HOST:
-            if (getSimulator() != null
-                && getSimulator().getModel().getHost() != null) {
-                return Options.EXPORT_STATE_ACTION_NAME;
-            } else {
-                return Options.EXPORT_GRAPH_ACTION_NAME;
-            }
-        case RULE:
-            return Options.EXPORT_RULE_ACTION_NAME;
-        case TYPE:
-            return Options.EXPORT_TYPE_ACTION_NAME;
-        }
-        throw new IllegalStateException();
     }
 
     @Override

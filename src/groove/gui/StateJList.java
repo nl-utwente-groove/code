@@ -148,9 +148,9 @@ public class StateJList extends JList implements SimulatorListener {
         if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
             result.add(getActions().getEditHostOrStateAction());
             result.addSeparator();
-            result.add(getActions().getCopyGraphAction());
+            result.add(getActions().getCopyHostAction());
             result.add(getActions().getDeleteHostAction());
-            result.add(getActions().getRenameGraphAction());
+            result.add(getActions().getRenameHostAction());
             result.addSeparator();
             result.add(getActions().getSetStartGraphAction());
         }

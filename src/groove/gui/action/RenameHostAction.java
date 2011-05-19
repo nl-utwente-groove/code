@@ -42,10 +42,6 @@ public class RenameHostAction extends SimulatorAction {
         setEnabled(getModel().getGrammar() != null
             && getModel().getStore().isModifiable()
             && !getModel().getHostSet().isEmpty());
-
-        if (getSimulator().getGraphPanel() == getSimulator().getStatePanel()) {
-            getSimulator().getRenameMenuItem().setAction(this);
-        }
     }
 
     @Override

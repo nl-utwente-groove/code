@@ -1,6 +1,9 @@
 package groove.gui.action;
 
+import static groove.graph.GraphRole.RULE;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlPanel;
@@ -11,15 +14,24 @@ import groove.gui.SimulatorPanel;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.RelabelDialog;
+import groove.gui.dialog.SaveDialog;
+import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.SystemStore;
+import groove.io.xml.AspectGxl;
+import groove.trans.RuleName;
 import groove.util.Duo;
 import groove.util.Groove;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -172,24 +184,6 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /**
-     * Enters a dialog that asks for a label to be renamed, and its the
-     * replacement.
-     * @return A pair consisting of the label to be replaced and its
-     *         replacement, neither of which can be <code>null</code>; or
-     *         <code>null</code> if the dialog was cancelled.
-     */
-    final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
-        RelabelDialog dialog =
-            new RelabelDialog(getModel().getGrammar().getLabelStore(), oldLabel);
-        if (dialog.showDialog(getFrame(), null)) {
-            return new Duo<TypeLabel>(dialog.getOldLabel(),
-                dialog.getNewLabel());
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Enters a dialog that results in a type graph that does not yet occur in
      * the current grammar, or <code>null</code> if the dialog was cancelled.
      * @param title dialog title; if <code>null</code>, a default title is used
@@ -211,6 +205,36 @@ public abstract class SimulatorAction extends AbstractAction implements
             };
         nameDialog.showDialog(getFrame(), title);
         return nameDialog.getName();
+    }
+
+    /**
+     * Invokes a file chooser of the right type to save a given aspect graph,
+     * and returns the chosen (possibly {@code null}) file.
+     */
+    final protected File askSaveGraph(Graph<?,?> graph) {
+        ExtensionFilter filter = FileType.getFilter(graph.getRole());
+        String name = graph.getName();
+        GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
+        chooser.setSelectedFile(new File(name));
+        return SaveDialog.show(chooser, getFrame(), null);
+    }
+
+    /**
+     * Enters a dialog that asks for a label to be renamed, and its the
+     * replacement.
+     * @return A pair consisting of the label to be replaced and its
+     *         replacement, neither of which can be <code>null</code>; or
+     *         <code>null</code> if the dialog was cancelled.
+     */
+    final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
+        RelabelDialog dialog =
+            new RelabelDialog(getModel().getGrammar().getLabelStore(), oldLabel);
+        if (dialog.showDialog(getFrame(), null)) {
+            return new Duo<TypeLabel>(dialog.getOldLabel(),
+                dialog.getNewLabel());
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -368,6 +392,87 @@ public abstract class SimulatorAction extends AbstractAction implements
             result = Groove.toFile((URL) location);
         }
         return result;
+    }
+
+    /** Saves a given graph, either as a file outside the grammar directory
+     * or as a component of the grammar.
+     * @param graph the graph to be saved
+     * @param selectedFile the file name
+     * @return {@code true} if saving was successful and changed the grammar
+     * @throws IOException if there was an IO problem while saving
+     */
+    final protected boolean marshalGraph(AspectGraph graph, File selectedFile)
+        throws IOException {
+        boolean result = false;
+        ExtensionFilter filter = FileType.getFilter(graph.getRole());
+        // find out if this is within the grammar directory
+        String name = null;
+        Object location = getModel().getStore().getLocation();
+        if (location instanceof File) {
+            String locationPath = ((File) location).getCanonicalPath();
+            String selectedPath =
+                filter.stripExtension(selectedFile.getCanonicalPath());
+            name = getName(locationPath, selectedPath, graph.getRole());
+        }
+        if (name == null) {
+            name = filter.stripExtension(selectedFile.getName());
+            graph = graph.rename(name);
+            AspectGxl.getInstance().marshalGraph(graph, selectedFile);
+        } else {
+            // the graph will be put within the grammar itself
+            graph = graph.rename(name);
+            switch (graph.getRole()) {
+            case HOST:
+                result = getModel().doAddHost(graph);
+                break;
+            case RULE:
+                result = getModel().doAddRule(graph);
+                break;
+            case TYPE:
+                result = getModel().doAddType(graph);
+                break;
+            default:
+                assert false;
+            }
+        }
+        return result;
+    }
+
+    /** Constructs an aspect graph name from a  file within the grammar location,
+     * or {@code null} if the file is not within the grammar location.
+     * @throws IOException if the name is not well-formed
+     */
+    private String getName(String grammarPath, String selectedPath,
+            GraphRole role) throws IOException {
+        String name = null;
+        if (selectedPath.startsWith(grammarPath)) {
+            String diff = selectedPath.substring(grammarPath.length());
+            File pathDiff = new File(diff);
+            List<String> pathFragments = new ArrayList<String>();
+            while (pathDiff.getName().length() > 0) {
+                pathFragments.add(pathDiff.getName());
+                pathDiff = pathDiff.getParentFile();
+            }
+            assert !pathFragments.isEmpty();
+            int i = pathFragments.size() - 1;
+            if (role == RULE) {
+                RuleName ruleName = new RuleName(pathFragments.get(i));
+                for (i--; i >= 0; i--) {
+                    try {
+                        ruleName = new RuleName(ruleName, pathFragments.get(i));
+                    } catch (FormatException e) {
+                        throw new IOException("Malformed rule name " + diff);
+                    }
+                }
+                name = ruleName.toString();
+            } else if (pathFragments.size() > 1) {
+                throw new IOException(
+                    "Can't save graph or type in a grammar subdirectory");
+            } else {
+                name = pathFragments.get(0);
+            }
+        }
+        return name;
     }
 
     /** The simulator on which this action works. */

@@ -35,6 +35,7 @@ import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
@@ -72,7 +73,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -97,7 +97,8 @@ public class Simulator implements SimulatorListener {
     public Simulator() {
         this.model = new SimulatorModel();
         this.actions = new ActionStore(this);
-        this.model.addListener(this);
+        this.model.addListener(this, Change.GRAMMAR, Change.ABSTRACT,
+            Change.TAB);
         this.undoManager = new SimulatorUndoManager(this);
         getFrame();
     }
@@ -133,7 +134,7 @@ public class Simulator implements SimulatorListener {
                         Simulator.this.actions.getLoadGrammarAction().load(
                             location, startGraphName);
                     } catch (IOException exc) {
-                        showErrorDialog(exc.getMessage(), exc);
+                        new ErrorDialog(getFrame(), exc.getMessage(), exc).setVisible(true);
                     }
                 }
             });
@@ -181,7 +182,9 @@ public class Simulator implements SimulatorListener {
             this.ruleJTree = null;
             this.ruleTreePanel.setViewportView(getRuleTree());
         }
-        refreshExportMenuItem();
+        if (changes.contains(Change.TAB)) {
+            refreshMenuItems();
+        }
     }
 
     /**
@@ -367,9 +370,9 @@ public class Simulator implements SimulatorListener {
         result.add(this.actions.getNewHostAction());
         result.add(this.actions.getEditHostOrStateAction());
         result.addSeparator();
-        result.add(this.actions.getCopyGraphAction());
+        result.add(this.actions.getCopyHostAction());
         result.add(this.actions.getDeleteHostAction());
-        result.add(this.actions.getRenameGraphAction());
+        result.add(this.actions.getRenameHostAction());
         result.addSeparator();
         result.add(this.actions.getSetStartGraphAction());
         // make sure tool tips get displayed
@@ -401,32 +404,28 @@ public class Simulator implements SimulatorListener {
                         FormatError error = (FormatError) arg;
                         AspectGraph errorGraph = error.getGraph();
                         if (errorGraph != null) {
-                            JGraphPanel<?> panel = null;
+                            JGraphPanel<?> panel =
+                                getSimulatorPanel().getPanelFor(
+                                    errorGraph.getRole());
+                            // select the error cell and switch to the panel
+                            for (Element errorObject : error.getElements()) {
+                                if (panel.selectJCell(errorObject)) {
+                                    break;
+                                }
+                            }
                             String name = errorGraph.getName();
                             switch (errorGraph.getRole()) {
                             case RULE:
-                                panel = getRulePanel();
                                 getModel().setRule(name);
                                 break;
                             case HOST:
-                                panel = getStatePanel();
                                 getModel().setHost(name);
                                 break;
                             case TYPE:
-                                panel = getTypePanel();
                                 getModel().setType(name);
                                 break;
                             default:
                                 assert false;
-                            }
-                            // select the error cell and switch to the panel
-                            if (panel != null) {
-                                for (Element errorObject : error.getElements()) {
-                                    if (panel.selectJCell(errorObject)) {
-                                        break;
-                                    }
-                                }
-                                switchTabs(panel);
                             }
                         } else if (error.getControl() != null) {
                             getModel().setControl(error.getControl().getName());
@@ -449,7 +448,7 @@ public class Simulator implements SimulatorListener {
                                     // do nothing
                                 }
                             }
-                            switchTabs(getControlPanel());
+                            getModel().setTabKind(TabKind.CONTROL);
                         }
                     }
                 }
@@ -464,7 +463,6 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #switchTabs(Component)
      */
     public StatePanel getStatePanel() {
         if (this.statePanel == null) {
@@ -488,7 +486,6 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the simulator panel on which the currently selected production
      * rule is displayed. Note that this panel may currently not be visible.
-     * @see #switchTabs(Component)
      */
     public RulePanel getRulePanel() {
         if (this.rulePanel == null) {
@@ -501,10 +498,8 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Returns the simulator panel on which the LTS. Note that: - this panel may
-     * currently not be visible. - this panel is always contained in the
-     * ConditionalLTSPanel.
-     * @see #switchTabs(Component)
+     * Returns the simulator panel on which the LTS. Note that this panel may
+     * currently not be visible.
      */
     public LTSPanel getLtsPanel() {
         if (this.ltsPanel == null) {
@@ -517,7 +512,6 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the simulator panel on which the current state is displayed. Note
      * that this panel may currently not be visible.
-     * @see #switchTabs(Component)
      */
     public TypePanel getTypePanel() {
         if (this.typePanel == null) {
@@ -530,7 +524,6 @@ public class Simulator implements SimulatorListener {
 
     /**
      * Returns the prolog panel.
-     * @see #switchTabs(Component)
      */
     public PrologPanel getPrologPanel() {
         if (this.prologPanel == null) {
@@ -558,75 +551,43 @@ public class Simulator implements SimulatorListener {
         return this.ruleJTree;
     }
 
-    /** Returns the currently selected simulator panel. */
-    public Component getPanel() {
-        return getSimulatorPanel().getSelectedComponent();
-    }
-
-    /**
-     * Returns the currently selected graph view component. This can be the
-     * state, rule or LTS view. In case the LTS is active, the inner LTSPanel is
-     * returned instead of the outer ConditionalLTSPanel.
-     * @see #getStatePanel()
-     * @see #getRulePanel()
-     * @see #getLtsPanel()
-     * @see #switchTabs(Component)
-     */
-    public JGraphPanel<?> getGraphPanel() {
-        Component selectedComponent =
-            getSimulatorPanel().getSelectedComponent();
-        if (selectedComponent instanceof EditorPanel) {
-            return ((EditorPanel) selectedComponent).getEditor().getGraphPanel();
-        }
-        if (!(selectedComponent instanceof JGraphPanel<?>)) {
-            return null;
+    /** Refreshes some of the menu item by assigning the right action. */
+    private void refreshMenuItems() {
+        TabKind tabKind = getModel().getTabKind();
+        JMenuItem exportItem = getExportMenuItem();
+        Action exportAction = getActions().getExportAction(tabKind);
+        if (exportAction == null) {
+            exportItem.setEnabled(false);
         } else {
-            return (JGraphPanel<?>) selectedComponent;
+            exportItem.setAction(exportAction);
         }
-    }
-
-    /**
-     * Brings one of the graph view components to the foreground. This should be
-     * the state, rule or LTS view.
-     * @param component the graph view component to bring to the foreground (in
-     *        case the LTS panel should be made active, this is expected to be
-     *        the inner LTSPanel, instead of the outer ConditionalLTSPanel)
-     * @return {@code true} if now the selected component equals the parameter
-     * @see #getStatePanel()
-     * @see #getRulePanel()
-     * @see #getLtsPanel()
-     * @see #getGraphPanel()
-     */
-    public boolean switchTabs(Component component) {
-        boolean result = getSimulatorPanel().indexOfComponent(component) >= 0;
-        if (getSimulatorPanel().getSelectedComponent() != component && result) {
-            this.switchingTabs = true;
-            getSimulatorPanel().setSelectedComponent(component);
-            this.switchingTabs = false;
-        }
-        return result;
-    }
-
-    /**
-     * Indicates that the simulator is processing a 
-     * {@link #switchTabs(Component)}.
-     * This may affect the newly selected component's behaviour. 
-     */
-    public boolean isSwitchingTabs() {
-        return this.switchingTabs;
-    }
-
-    /**
-     * Refreshes the menu item for the export action to the most appropriate
-     * action, given the currently selected view panel.
-     */
-    private void refreshExportMenuItem() {
-        if (getGraphPanel() == null) {
-            getExportGraphMenuItem().setEnabled(false);
+        JMenuItem editItem = getEditMenuItem();
+        Action editAction = getActions().getEditAction(tabKind);
+        if (editAction == null) {
+            editItem.setEnabled(false);
         } else {
-            Action exportAction = getGraphPanel().getJGraph().getExportAction();
-            getExportGraphMenuItem().setAction(exportAction);
-            getExportGraphMenuItem().setEnabled(getGraphPanel().isEnabled());
+            editItem.setAction(editAction);
+        }
+        JMenuItem copyItem = getCopyMenuItem();
+        Action copyAction = getActions().getCopyAction(tabKind);
+        if (copyAction == null) {
+            copyItem.setEnabled(false);
+        } else {
+            copyItem.setAction(copyAction);
+        }
+        JMenuItem deleteItem = getDeleteMenuItem();
+        Action deleteAction = getActions().getDeleteAction(tabKind);
+        if (deleteAction == null) {
+            deleteItem.setEnabled(false);
+        } else {
+            deleteItem.setAction(deleteAction);
+        }
+        JMenuItem renameItem = getRenameMenuItem();
+        Action renameAction = getActions().getRenameAction(tabKind);
+        if (renameAction == null) {
+            renameItem.setEnabled(false);
+        } else {
+            renameItem.setAction(renameAction);
         }
     }
 
@@ -684,12 +645,12 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(new JMenuItem(this.actions.getSaveGrammarAction()));
-        result.add(new JMenuItem(this.actions.getSaveGraphAction()));
+        result.add(new JMenuItem(this.actions.getSaveAction()));
 
         result.addSeparator();
 
         result.add(new JMenuItem(this.actions.getImportAction()));
-        result.add(getExportGraphMenuItem());
+        result.add(getExportMenuItem());
 
         result.addSeparator();
 
@@ -750,14 +711,11 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies editing the
      * currently displayed graph or rule.
      */
-    public JMenuItem getEditMenuItem() {
+    private JMenuItem getEditMenuItem() {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
             this.editGraphItem.setAction(this.actions.getEditHostOrStateAction());
-            // give the rule edit action a chance to replace the graph edit
-            // action
-            this.actions.getEditRuleAction();
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
@@ -767,11 +725,11 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies copy the currently
      * displayed graph or rule.
      */
-    public JMenuItem getCopyMenuItem() {
+    private JMenuItem getCopyMenuItem() {
         if (this.copyGraphItem == null) {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
-            this.copyGraphItem.setAction(this.actions.getCopyGraphAction());
+            this.copyGraphItem.setAction(this.actions.getCopyHostAction());
         }
         return this.copyGraphItem;
     }
@@ -780,7 +738,7 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies delete the
      * currently displayed graph or rule.
      */
-    public JMenuItem getDeleteMenuItem() {
+    private JMenuItem getDeleteMenuItem() {
         if (this.deleteGraphItem == null) {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
@@ -793,11 +751,11 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies delete the
      * currently displayed graph or rule.
      */
-    public JMenuItem getRenameMenuItem() {
+    private JMenuItem getRenameMenuItem() {
         if (this.renameGraphItem == null) {
             this.renameGraphItem = new JMenuItem();
             // load the graph rename action as default
-            this.renameGraphItem.setAction(this.actions.getRenameGraphAction());
+            this.renameGraphItem.setAction(this.actions.getRenameHostAction());
             // give the rule rename action a chance to replace the graph rename
             // action
             this.actions.getRenameRuleAction();
@@ -809,13 +767,13 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the menu item that will contain the current export action.
      */
-    private JMenuItem getExportGraphMenuItem() {
+    private JMenuItem getExportMenuItem() {
         // lazily create the menu item
-        if (this.exportGraphMenuItem == null) {
-            this.exportGraphMenuItem =
+        if (this.exportMenuItem == null) {
+            this.exportMenuItem =
                 new JMenuItem(getStatePanel().getJGraph().getExportAction());
         }
-        return this.exportGraphMenuItem;
+        return this.exportMenuItem;
     }
 
     /**
@@ -830,8 +788,9 @@ public class Simulator implements SimulatorListener {
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
                 GraphJGraph jGraph;
-                if (getGraphPanel() != null) {
-                    jGraph = getGraphPanel().getJGraph();
+                JGraphPanel<?> panel = getSimulatorPanel().getGraphPanel();
+                if (panel != null) {
+                    jGraph = panel.getJGraph();
                     if (jGraph instanceof AspectJGraph) {
                         jGraph.addSubmenu(this,
                             ((AspectJGraph) jGraph).createEditMenu(null));
@@ -1003,38 +962,6 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Checks if a given option is confirmed.
-     */
-    boolean confirmBehaviourOption(String option) {
-        BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
-        return menu.confirm(getFrame(), null);
-    }
-
-    /**
-     * Asks whether a given existing file should be overwritten by a new
-     * grammar.
-     */
-    boolean confirmOverwriteGrammar(File grammarFile) {
-        if (grammarFile.exists()) {
-            int response =
-                JOptionPane.showConfirmDialog(getFrame(),
-                    "Overwrite existing grammar?", null,
-                    JOptionPane.OK_CANCEL_OPTION);
-            return response == JOptionPane.OK_OPTION;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Creates and shows an {@link ErrorDialog} for a given message and
-     * exception.
-     */
-    void showErrorDialog(String message, Throwable exc) {
-        new ErrorDialog(getFrame(), message, exc).setVisible(true);
-    }
-
-    /**
      * Returns the options object associated with the simulator.
      */
     public Options getOptions() {
@@ -1063,9 +990,6 @@ public class Simulator implements SimulatorListener {
 
     /** Store of all simulator-related actions. */
     private final ActionStore actions;
-    /** Flag to indicate that a {@link #switchTabs(Component)} request is underway. */
-    private boolean switchingTabs;
-
     /**
      * This application's main frame.
      */
@@ -1111,7 +1035,7 @@ public class Simulator implements SimulatorListener {
     private JMenu externalMenu;
 
     /** The menu item containing the (current) export action. */
-    private JMenuItem exportGraphMenuItem;
+    private JMenuItem exportMenuItem;
 
     /** Dummy action for the {@link #externalMenu}. */
     private Action dummyExternalAction;

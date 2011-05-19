@@ -39,9 +39,7 @@ public class DeleteTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null);
-        if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
-            getSimulator().getDeleteMenuItem().setAction(this);
-        }
+        setEnabled(getModel().getType() != null
+            && getModel().getStore().isModifiable());
     }
 }

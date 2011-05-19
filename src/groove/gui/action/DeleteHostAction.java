@@ -43,10 +43,6 @@ public class DeleteHostAction extends SimulatorAction {
         setEnabled(getModel().getStore() != null
             && getModel().getStore().isModifiable()
             && !getModel().getHostSet().isEmpty());
-
-        if (getSimulator().getGraphPanel() == getSimulator().getStatePanel()) {
-            getSimulator().getDeleteMenuItem().setAction(this);
-        }
     }
 
     @Override

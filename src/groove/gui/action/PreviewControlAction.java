@@ -35,8 +35,9 @@ public class PreviewControlAction extends SimulatorAction {
                     getDialog().setVisible(true);
                 }
             } catch (FormatException exc) {
-                showErrorDialog(exc, String.format("Error in control program '%s'",
-                        getModel().getControl().getName()));
+                showErrorDialog(exc, String.format(
+                    "Error in control program '%s'",
+                    getModel().getControl().getName()));
             }
         }
         return false;
@@ -88,7 +89,7 @@ public class PreviewControlAction extends SimulatorAction {
         StoredGrammarView grammarView = getModel().getGrammar();
         if (grammarView != null) {
             GraphGrammar grammar = grammarView.toGrammar();
-            CtrlView controlView = grammarView.getControlView();
+            CtrlView controlView = getModel().getControl();
             result =
                 controlView == null ? grammar.getCtrlAut()
                         : controlView.toCtrlAut(grammar);

@@ -48,10 +48,8 @@ public class RenameRuleAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getRule() != null);
-        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-            getSimulator().getRenameMenuItem().setAction(this);
-        }
+        setEnabled(getModel().getRule() != null
+            && getModel().getStore().isModifiable());
     }
 
     @Override

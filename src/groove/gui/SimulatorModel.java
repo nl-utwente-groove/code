@@ -62,7 +62,7 @@ public class SimulatorModel implements Cloneable {
             String hostName = hostGraph.getName();
             boolean result = hostName.equals(grammar.getStartGraphName());
             changeGrammar(result);
-            changeHost(grammar.getGraphView(hostName));
+            changeHost(hostName);
             return result;
         } finally {
             finish();
@@ -566,7 +566,7 @@ public class SimulatorModel implements Cloneable {
      * <li> setting the transition to {@code null}
      * <li> setting the event to {@code null}
      * @param gts the new GTS; may be {@code null}
-     * @param switchTab TODO
+     * @param switchTab if {@code true}, the simulator tab will be switched to the LTS
      * @return if {@code true}, the GTS was really changed
      * @see #setState(GraphState)
      */
@@ -821,15 +821,11 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the host was actually changed.
      */
     public final boolean setHost(String name) {
-        return setHost(this.grammar.getGraphView(name));
-    }
-
-    /** Changes the currently selected host.
-     * @return if {@code true}, the host was actually changed.
-     */
-    public final boolean setHost(GraphView host) {
         start();
-        changeHostSet(Collections.singleton(host));
+        changeHost(name);
+        if (name != null) {
+            changeTabKind(TabKind.GRAPH);
+        }
         return finish();
     }
 
@@ -837,7 +833,7 @@ public class SimulatorModel implements Cloneable {
      * Changes the currently selected host graph list.
      * Changes the simulator tab to the graph view.
      * @return if {@code true}, actually made the change.
-     * @see #setHost(GraphView)
+     * @see #setHost(String)
      */
     public final boolean setHostSet(Collection<String> hostNameSet) {
         start();
@@ -852,22 +848,26 @@ public class SimulatorModel implements Cloneable {
 
     /** 
      * Changes the currently selected host graph.
-     * @see #setHost(GraphView)
+     * @see #setHost(String)
      */
-    private final boolean changeHost(GraphView hostView) {
-        return changeHostSet(Collections.singleton(hostView));
+    private final boolean changeHost(String hostName) {
+        if (hostName == null) {
+            return changeHostSet(Collections.<GraphView>emptySet());
+        } else {
+            return changeHostSet(Collections.singleton(getGrammar().getGraphView(
+                hostName)));
+        }
     }
 
     /** 
      * Changes the currently selected host graph list.
      * May also change the selected host graph.
-     * @see #setHost(GraphView)
+     * @see #setHost(String)
      */
     private final boolean changeHostSet(Collection<GraphView> hostSet) {
         boolean result = !hostSet.equals(this.hostSet);
         if (result) {
             // keep the current set in the same order
-            this.hostSet = new LinkedHashSet<GraphView>(this.hostSet);
             this.hostSet.retainAll(hostSet);
             this.hostSet.addAll(hostSet);
             this.changes.add(Change.HOST);
@@ -894,10 +894,8 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setRule(String ruleName) {
         start();
-        if (ruleName == null) {
-            changeRule(null);
-        } else {
-            changeRule(ruleName);
+        changeRule(ruleName);
+        if (ruleName != null) {
             changeTabKind(TabKind.RULE);
         }
         return finish();
@@ -931,7 +929,6 @@ public class SimulatorModel implements Cloneable {
     private final boolean changeRuleSet(Collection<RuleView> ruleSet) {
         boolean result = !ruleSet.equals(this.ruleSet);
         if (result) {
-            this.ruleSet = new LinkedHashSet<RuleView>(this.ruleSet);
             this.ruleSet.retainAll(ruleSet);
             this.ruleSet.addAll(ruleSet);
             this.changes.add(Change.RULE);
@@ -944,12 +941,17 @@ public class SimulatorModel implements Cloneable {
         return this.type;
     }
 
-    /** Changes the currently selected type graph, based on the type name.
+    /**
+     * Changes the currently selected type graph, based on the type name.
+     * Also switches the simulator panel to the type tab.
      * @return if {@code true}, the rule was actually changed.
      */
     public final boolean setType(String typeName) {
         start();
         changeType(typeName);
+        if (typeName != null) {
+            changeTabKind(TabKind.TYPE);
+        }
         return finish();
     }
 
@@ -1240,8 +1242,8 @@ public class SimulatorModel implements Cloneable {
         SimulatorModel result = null;
         try {
             result = (SimulatorModel) super.clone();
-            result.hostSet = new ArrayList<GraphView>(this.hostSet);
-            result.ruleSet = new ArrayList<RuleView>(this.ruleSet);
+            result.hostSet = new LinkedHashSet<GraphView>(this.hostSet);
+            result.ruleSet = new LinkedHashSet<RuleView>(this.ruleSet);
         } catch (CloneNotSupportedException e) {
             assert false;
         }
@@ -1277,9 +1279,9 @@ public class SimulatorModel implements Cloneable {
     /** Currently loaded grammar. */
     private StoredGrammarView grammar;
     /** Multiple selection of host graph views. */
-    private Collection<GraphView> hostSet = Collections.emptyList();
+    private Set<GraphView> hostSet = new LinkedHashSet<GraphView>();
     /** Multiple selection of rule views. */
-    private Collection<RuleView> ruleSet = Collections.emptyList();
+    private Set<RuleView> ruleSet = new LinkedHashSet<RuleView>();
     /** Currently selected type view. */
     private TypeView type;
     /** Currently selected control view. */

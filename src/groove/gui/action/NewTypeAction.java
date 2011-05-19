@@ -30,7 +30,7 @@ public class NewTypeAction extends SimulatorAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getPanel().editGraph(initType);
+                        getPanel().doEditGraph(initType);
                     }
                 });
             } catch (IOException e) {
