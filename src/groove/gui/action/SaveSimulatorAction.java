@@ -6,9 +6,6 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.SaveDialog;
-import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.LTSJModel;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
@@ -40,28 +37,34 @@ public class SaveSimulatorAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+        switch (getPanel().getSelectedTab()) {
+        case CONTROL:
             result = actionForControl();
-        } else {
-            GraphJModel<?,?> jModel =
-                getSimulator().getGraphPanel().getJModel();
-            if (getSimulator().getGraphPanel() == getSimulator().getStatePanel()) {
-                result =
-                    actionForGraphs(((AspectJModel) jModel).getGraph(),
-                        FileType.STATE_FILTER);
-            } else if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-                result =
-                    actionForGraphs(((AspectJModel) jModel).getGraph(),
-                        FileType.RULE_FILTER);
-            } else if (getSimulator().getGraphPanel() == getSimulator().getLtsPanel()) {
-                result =
-                    actionForGTS(((LTSJModel) jModel).getGraph(),
-                        FileType.GXL_FILTER);
-            } else if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
-                result =
-                    actionForGraphs(((AspectJModel) jModel).getGraph(),
-                        FileType.TYPE_FILTER);
-            }
+            break;
+        case EDITOR:
+        case GRAPH:
+            result =
+                actionForGraphs(
+                    getSimulator().getStatePanel().getJModel().getGraph(),
+                    FileType.STATE_FILTER);
+            break;
+        case LTS:
+            result = actionForGTS(getModel().getGts(), FileType.GXL_FILTER);
+            break;
+        case PROLOG:
+            break;
+        case RULE:
+            result =
+                actionForGraphs(getModel().getRule().getAspectGraph(),
+                    FileType.RULE_FILTER);
+            break;
+        case TYPE:
+            result =
+                actionForGraphs(getModel().getType().getAspectGraph(),
+                    FileType.TYPE_FILTER);
+            break;
+        default:
+            assert false;
         }
         return result;
     }
@@ -78,7 +81,7 @@ public class SaveSimulatorAction extends SimulatorAction {
                 result = marshalGraph(graph, selectedFile, filter);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
-                        "Error while saving graph to '%s'", selectedFile));
+                    "Error while saving graph to '%s'", selectedFile));
             }
         }
         return result;
@@ -168,8 +171,8 @@ public class SaveSimulatorAction extends SimulatorAction {
             try {
                 DefaultGxl.getInstance().marshalAnyGraph(gts, selectedFile);
             } catch (IOException exc) {
-                showErrorDialog(exc, String.format("Error while saving LTS to '%s'",
-                        selectedFile));
+                showErrorDialog(exc, String.format(
+                    "Error while saving LTS to '%s'", selectedFile));
             }
         }
         return false;

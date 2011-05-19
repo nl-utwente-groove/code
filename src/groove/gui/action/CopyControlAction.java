@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.SimulatorPanel.TabKind;
 
 /**
  * Action to copy the currently displayed control program.
@@ -31,7 +32,7 @@ public class CopyControlAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(getModel().getControl() != null);
-        if (getSimulator().getPanel() == getSimulator().getControlPanel()) {
+        if (getPanel().getSelectedTab() == TabKind.CONTROL) {
             getSimulator().getCopyMenuItem().setAction(this);
         }
     }
