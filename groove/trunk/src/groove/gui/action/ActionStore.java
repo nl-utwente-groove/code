@@ -16,14 +16,19 @@
  */
 package groove.gui.action;
 
+import groove.gui.JGraphPanel;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 
+import java.awt.Component;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Action;
@@ -149,6 +154,22 @@ public class ActionStore implements SimulatorListener {
      */
     private CheckCTLAction checkCTLAsIsAction;
 
+    /** Returns the copy action appropriate for a given simulator tab kind. */
+    public SimulatorAction getCopyAction(TabKind kind) {
+        switch (kind) {
+        case CONTROL:
+            return getCopyControlAction();
+        case GRAPH:
+            return getCopyHostAction();
+        case RULE:
+            return getCopyRuleAction();
+        case TYPE:
+            return getCopyTypeAction();
+        default:
+            return null;
+        }
+    }
+
     /**
      * Lazily creates and returns the singleton instance of the CopyAction.
      */
@@ -166,18 +187,18 @@ public class ActionStore implements SimulatorListener {
      * Returns the graph copying action permanently associated with this
      * simulator.
      */
-    public CopyHostAction getCopyGraphAction() {
+    public CopyHostAction getCopyHostAction() {
         // lazily create the action
-        if (this.copyGraphAction == null) {
-            this.copyGraphAction = new CopyHostAction(this.simulator);
+        if (this.copyHostAction == null) {
+            this.copyHostAction = new CopyHostAction(this.simulator);
         }
-        return this.copyGraphAction;
+        return this.copyHostAction;
     }
 
     /**
      * The graph copying action permanently associated with this simulator.
      */
-    private CopyHostAction copyGraphAction;
+    private CopyHostAction copyHostAction;
 
     /**
      * Returns the rule copying action permanently associated with this
@@ -209,6 +230,22 @@ public class ActionStore implements SimulatorListener {
 
     /** Singular instance of the CopyTypeAction. */
     private CopyTypeAction copyTypeAction;
+
+    /** Returns the copy action appropriate for a given simulator tab kind. */
+    public SimulatorAction getDeleteAction(TabKind kind) {
+        switch (kind) {
+        case CONTROL:
+            return getDeleteControlAction();
+        case GRAPH:
+            return getDeleteHostAction();
+        case RULE:
+            return getDeleteRuleAction();
+        case TYPE:
+            return getDeleteTypeAction();
+        default:
+            return null;
+        }
+    }
 
     /**
      * Lazily creates and returns the singleton instance of the DeleteAction.
@@ -301,11 +338,27 @@ public class ActionStore implements SimulatorListener {
     /** Singular instance of the EnableTypesAction. */
     private EnableTypesAction disableTypesAction;
 
+    /** Returns the copy action appropriate for a given simulator tab kind. */
+    public SimulatorAction getEditAction(TabKind kind) {
+        switch (kind) {
+        case CONTROL:
+            return getEditControlAction();
+        case GRAPH:
+            return getEditHostOrStateAction();
+        case RULE:
+            return getEditRuleAction();
+        case TYPE:
+            return getEditTypeAction();
+        default:
+            return null;
+        }
+    }
+
     /**
      * Lazily creates and returns the singleton instance of the
      * {@link NewControlAction}.
      */
-    public EditControlAction getEditAction() {
+    public EditControlAction getEditControlAction() {
         if (this.editControlAction == null) {
             this.editControlAction = new EditControlAction(this.simulator);
         }
@@ -499,6 +552,25 @@ public class ActionStore implements SimulatorListener {
      * this simulator.
      */
     private ExplorationStatsDialogAction explorationStatsDialogAction;
+
+    /** Returns the copy action appropriate for a given simulator tab kind. */
+    public ExportAction getExportAction(TabKind kind) {
+        if (!this.exportActionMap.containsKey(kind)) {
+            ExportAction result = null;
+            Component panel =
+                this.simulator.getSimulatorPanel().getPanelFor(kind);
+            if (panel instanceof JGraphPanel) {
+                result = ((JGraphPanel<?>) panel).getJGraph().getExportAction();
+            }
+            // also put it in the map when the result is null,
+            // so we don't try to compute it again
+            this.exportActionMap.put(kind, result);
+        }
+        return this.exportActionMap.get(kind);
+    }
+
+    private Map<TabKind,ExportAction> exportActionMap =
+        new EnumMap<TabKind,ExportAction>(TabKind.class);
 
     /**
      * Returns the forward (= repeat) simulation action permanently associated
@@ -751,6 +823,22 @@ public class ActionStore implements SimulatorListener {
      */
     private RelabelGrammarAction relabelAction;
 
+    /** Returns the copy action appropriate for a given simulator tab kind. */
+    public SimulatorAction getRenameAction(TabKind kind) {
+        switch (kind) {
+        case CONTROL:
+            return getRenameControlAction();
+        case GRAPH:
+            return getRenameHostAction();
+        case RULE:
+            return getRenameRuleAction();
+        case TYPE:
+            return getRenameTypeAction();
+        default:
+            return null;
+        }
+    }
+
     /**
      * Lazily creates and returns the singleton instance of the
      * {@link RenameControlAction}.
@@ -769,18 +857,18 @@ public class ActionStore implements SimulatorListener {
      * Returns the rule renaming action permanently associated with this
      * simulator.
      */
-    public RenameHostAction getRenameGraphAction() {
+    public RenameHostAction getRenameHostAction() {
         // lazily create the action
-        if (this.renameGraphAction == null) {
-            this.renameGraphAction = new RenameHostAction(this.simulator);
+        if (this.renameHostAction == null) {
+            this.renameHostAction = new RenameHostAction(this.simulator);
         }
-        return this.renameGraphAction;
+        return this.renameHostAction;
     }
 
     /**
      * The graph renaming action permanently associated with this simulator.
      */
-    private RenameHostAction renameGraphAction;
+    private RenameHostAction renameHostAction;
 
     /**
      * Returns the rule renaming action permanently associated with this
@@ -863,34 +951,34 @@ public class ActionStore implements SimulatorListener {
     /**
      * Returns the graph save action permanently associated with this simulator.
      */
-    public SaveSimulatorAction getSaveGraphAction() {
+    public SaveAction getSaveAction() {
         // lazily create the action
-        if (this.saveGraphAction == null) {
-            this.saveGraphAction = new SaveSimulatorAction(this.simulator);
+        if (this.saveAction == null) {
+            this.saveAction = new SaveAction(this.simulator);
         }
-        return this.saveGraphAction;
+        return this.saveAction;
     }
 
     /**
      * The state save action permanently associated with this simulator.
      */
-    private SaveSimulatorAction saveGraphAction;
+    private SaveAction saveAction;
 
     /**
      * Returns the host graph save action permanently associated with this simulator.
      */
-    public SaveHostAction getSaveHostGraphAction() {
+    public SaveHostOrStateAction getSaveHostOrStateAction() {
         // lazily create the action
-        if (this.saveHostGraphAction == null) {
-            this.saveHostGraphAction = new SaveHostAction(this.simulator);
+        if (this.saveHostOrStateAction == null) {
+            this.saveHostOrStateAction = new SaveHostOrStateAction(this.simulator);
         }
-        return this.saveHostGraphAction;
+        return this.saveHostOrStateAction;
     }
 
     /**
      * The host graph save action permanently associated with this simulator.
      */
-    private SaveHostAction saveHostGraphAction;
+    private SaveHostOrStateAction saveHostOrStateAction;
 
     /**
      * Returns the Save LTS As action permanently associated with this simulator.

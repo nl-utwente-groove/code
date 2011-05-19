@@ -27,10 +27,6 @@ public class EditRuleAction extends SimulatorAction {
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
-
-        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-            getSimulator().getEditMenuItem().setAction(this);
-        }
     }
 
     /**
@@ -41,7 +37,7 @@ public class EditRuleAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
-        getPanel().editGraph(getModel().getRule().getAspectGraph());
+        getPanel().doEditGraph(getModel().getRule().getAspectGraph());
         return false;
     }
 }

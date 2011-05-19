@@ -6,6 +6,10 @@ import groove.gui.Simulator;
 import groove.gui.StatePanel;
 import groove.view.aspect.AspectGraph;
 
+import java.io.IOException;
+
+import javax.swing.SwingUtilities;
+
 /**
  * Action for editing the current host graph or state.
  */
@@ -27,9 +31,6 @@ public class EditHostOrStateAction extends SimulatorAction {
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
-        if (getSimulator().getGraphPanel() == getStatePanel()) {
-            getSimulator().getEditMenuItem().setAction(this);
-        }
     }
 
     /**
@@ -39,17 +40,27 @@ public class EditHostOrStateAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
+        AspectGraph graph = getStatePanel().getJModel().getGraph();
         // find out if we're editing a host graph or a state
         if (getModel().getHost() == null) {
-            AspectGraph graph = getStatePanel().getJModel().getGraph();
             String newGraphName =
                 askNewGraphName("Select graph name", graph.getName(), true);
             if (newGraphName != null) {
-                getPanel().editGraph(graph);
+                final AspectGraph newGraph = graph.rename(newGraphName);
+                try {
+                    getModel().doAddHost(newGraph);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            getPanel().doEditGraph(newGraph);
+                        }
+                    });
+                } catch (IOException e) {
+                    showErrorDialog(e, "Can't edit state '%s'", graph.getName());
+                }
             }
         } else {
-            AspectGraph graph = getStatePanel().getJModel().getGraph();
-            getPanel().editGraph(graph);
+            getPanel().doEditGraph(graph);
         }
         return false;
     }

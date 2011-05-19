@@ -188,7 +188,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         JToolBar result = new JToolBar();
         result.setFloatable(false);
         result.add(createButton(getActions().getNewControlAction()));
-        result.add(createButton(getActions().getEditAction()));
+        result.add(createButton(getActions().getEditControlAction()));
         result.add(createButton(getActions().getSaveControlAction()));
         result.add(createButton(getActions().getCancelEditControlAction()));
         result.addSeparator();

@@ -40,10 +40,6 @@ public class CopyHostAction extends SimulatorAction {
         setEnabled(getModel().getStore() != null
             && getModel().getStore().isModifiable()
             && !getModel().getHostSet().isEmpty());
-
-        if (getSimulator().getGraphPanel() == getSimulator().getStatePanel()) {
-            getSimulator().getCopyMenuItem().setAction(this);
-        }
     }
 
     @Override
@@ -60,8 +56,8 @@ public class CopyHostAction extends SimulatorAction {
                             oldHostView.getAspectGraph().rename(newName));
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
-                            "Error while copying host graph '%s' to '%s'", oldName,
-                            newName));
+                        "Error while copying host graph '%s' to '%s'", oldName,
+                        newName));
                 }
             }
         }

@@ -3,7 +3,6 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.SimulatorPanel.TabKind;
 
 import java.io.IOException;
 
@@ -38,9 +37,7 @@ public class RenameControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getControl() != null);
-        if (getPanel().getSelectedTab() == TabKind.CONTROL) {
-            getSimulator().getRenameMenuItem().setAction(this);
-        }
+        setEnabled(getModel().getControl() != null
+            && getModel().getStore().isModifiable());
     }
 }

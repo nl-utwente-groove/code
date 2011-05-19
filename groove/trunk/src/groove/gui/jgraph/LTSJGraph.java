@@ -124,7 +124,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
         if (getActiveState() != null) {
-            result.add(getActions().getSaveHostGraphAction());
+            result.add(getActions().getSaveHostOrStateAction());
         }
         addMenuItems(result, super.createExportMenu());
         return result;
@@ -169,11 +169,6 @@ public class LTSJGraph extends GraphJGraph {
     @Override
     public Simulator getSimulator() {
         return this.simulator;
-    }
-
-    @Override
-    protected String getExportActionName() {
-        return Options.EXPORT_LTS_ACTION_NAME;
     }
 
     /**

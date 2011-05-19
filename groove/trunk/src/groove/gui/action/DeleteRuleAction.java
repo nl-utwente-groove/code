@@ -43,10 +43,6 @@ public class DeleteRuleAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getModel().getRule() != null
             && getModel().getStore().isModifiable());
-
-        if (getSimulator().getGraphPanel() == getSimulator().getRulePanel()) {
-            getSimulator().getDeleteMenuItem().setAction(this);
-        }
     }
 
     @Override
@@ -73,8 +69,7 @@ public class DeleteRuleAction extends SimulatorAction {
             && getPanel().disposeEditors(rules)) {
             for (RuleView rule : ruleViews) {
                 try {
-                    result |=
-                        getSimulator().getModel().doDeleteRule(rule.getName());
+                    result |= getModel().doDeleteRule(rule.getName());
                 } catch (IOException exc) {
                     showErrorDialog(
                         exc,

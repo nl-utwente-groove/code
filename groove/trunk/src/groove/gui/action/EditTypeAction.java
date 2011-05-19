@@ -16,7 +16,7 @@ public class EditTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         final AspectGraph initType = getModel().getType().getAspectGraph();
-        getPanel().editGraph(initType);
+        getPanel().doEditGraph(initType);
         return false;
     }
 
@@ -24,8 +24,5 @@ public class EditTypeAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getModel().getType() != null
             && getModel().getStore().isModifiable());
-        if (getSimulator().getGraphPanel() == getSimulator().getTypePanel()) {
-            getSimulator().getEditMenuItem().setAction(this);
-        }
     }
 }
