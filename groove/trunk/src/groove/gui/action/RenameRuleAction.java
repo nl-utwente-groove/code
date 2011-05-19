@@ -74,18 +74,13 @@ public class RenameRuleAction extends SimulatorAction {
                 newName = askNewRuleName("Select new rule name", oldName, true);
                 if (newName != null) {
                     try {
-                        result |=
-                            getSimulator().getModel().doRenameRule(ruleGraph,
-                                newName);
+                        result |= getModel().doRenameRule(ruleGraph, newName);
                     } catch (IOException exc) {
                         showErrorDialog(exc, String.format(
                             "Error while renaming rule '%s' into '%s'",
                             oldName, newName));
                     }
                 }
-            }
-            if (newName != null) {
-                getModel().setRule(newName);
             }
         }
         return result;

@@ -75,10 +75,6 @@ public class ExploreAction extends SimulatorAction {
         if (setResult) {
             gts.setResult(exploration.getLastResult());
         }
-        // re-enable rule application
-        // reset lts display visibility
-        getSimulator().switchTabs(getLTSPanel());
-        getModel().setGts(gts);
         // emphasise the result states, if required
         if (emphasise) {
             Collection<GraphState> result =
@@ -86,6 +82,7 @@ public class ExploreAction extends SimulatorAction {
             getLTSPanel().emphasiseStates(new ArrayList<GraphState>(result),
                 true);
         }
+        getModel().setGts(gts, true);
     }
 
     @Override
