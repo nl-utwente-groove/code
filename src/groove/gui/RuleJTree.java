@@ -24,6 +24,7 @@ import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
@@ -290,7 +291,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Sets a listener to the anchor image option, if that has not yet been
      * done.
      */
-    protected void setShowAnchorsOptionListener() {
+    private void setShowAnchorsOptionListener() {
         if (!this.anchorImageOptionListenerSet) {
             JMenuItem showAnchorsOptionItem =
                 getSimulator().getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
@@ -299,7 +300,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 showAnchorsOptionItem.addItemListener(new ItemListener() {
                     public void itemStateChanged(ItemEvent e) {
                         suspendListeners();
-                        refresh(getState());
+                        refresh(getSimulatorModel().getState());
                         activateListeners();
                     }
                 });
@@ -337,7 +338,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Refreshes the selection in the tree, based on the current state of the
      * Simulator.
      */
-    protected void refresh(GraphState state) {
+    private void refresh(GraphState state) {
         Collection<? extends MatchResult> matches;
         if (state == null) {
             matches = Collections.<MatchResult>emptySet();
@@ -421,24 +422,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
     }
 
-    /** Convenience method to retrieve the current grammar view. */
-    final GrammarView getGrammar() {
-        return getSimulatorModel().getGrammar();
-    }
-
-    /** Convenience method to retrieve the current GTS from the simulator. */
-    final GTS getGTS() {
-        return getSimulatorModel().getGts();
-    }
-
-    /**
-     * Convenience method to retrieve the currently selected state from the
-     * simulator.
-     */
-    final GraphState getState() {
-        return getSimulatorModel().getState();
-    }
-
     /**
      * Returns the listener used to propagate changes in the tree selection.
      */
@@ -473,48 +456,34 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return res;
     }
 
+    /** Convenience method to retrieve the current grammar view. */
+    private final GrammarView getGrammar() {
+        return getSimulatorModel().getGrammar();
+    }
+
+    /** Convenience method to retrieve the current GTS from the simulator. */
+    private final GTS getGTS() {
+        return getSimulatorModel().getGts();
+    }
+
     /** Returns the associated simulator. */
     private final Simulator getSimulator() {
         return this.simulator;
     }
 
-    /** Convenience method to retrieve the simulator state. */
+    /** Convenience method to retrieve the simulator model. */
     private final SimulatorModel getSimulatorModel() {
         return this.simulator.getModel();
+    }
+
+    /** Convenience method to retrieve the simulator panel. */
+    private final SimulatorPanel getSimulatorPanel() {
+        return this.simulator.getSimulatorPanel();
     }
 
     /** Convenience method to retrieve the simulator action store. */
     private final ActionStore getActions() {
         return this.simulator.getActions();
-    }
-
-    /**
-     * Triggers a rule or match selection update by the simulator
-     * based on the current selection in the tree.
-     */
-    void triggerSelectionUpdate() {
-        TreePath[] paths = getSelectionPaths();
-        Set<RuleView> selectedRules = new HashSet<RuleView>();
-        boolean matchSelected = false;
-        for (int i = 0; !matchSelected && paths != null && i < paths.length; i++) {
-            Object selectedNode = paths[i].getLastPathComponent();
-            if (selectedNode instanceof RuleTreeNode) {
-                // selected tree node is a production rule (level 1
-                // node)
-                selectedRules.add(((RuleTreeNode) selectedNode).getRule());
-            } else if (selectedNode instanceof MatchTreeNode) {
-                matchSelected = true;
-                // selected tree node is a match (level 2 node)
-                MatchResult result = ((MatchTreeNode) selectedNode).getResult();
-                getSimulatorModel().setMatch(result);
-                if (getSimulator().getGraphPanel() != getSimulator().getLtsPanel()) {
-                    getSimulator().switchTabs(getSimulator().getStatePanel());
-                }
-            }
-        }
-        if (!matchSelected) {
-            getSimulatorModel().setRuleSet(selectedRules);
-        }
     }
 
     /**
@@ -620,11 +589,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
             getSimulatorModel().setRuleSet(selectedRules);
             if (evt.isAddedPath() && paths.length == 1) {
+                TabKind newTab;
                 if (evt.getPath().getLastPathComponent() instanceof RuleTreeNode) {
-                    getSimulator().switchTabs(getSimulator().getRulePanel());
-                } else if (getSimulator().getGraphPanel() != getSimulator().getLtsPanel()) {
-                    getSimulator().switchTabs(getSimulator().getStatePanel());
+                    newTab = TabKind.RULE;
+                } else if (getSimulatorPanel().getSelectedTab() != TabKind.LTS) {
+                    newTab = TabKind.GRAPH;
+                } else {
+                    newTab = TabKind.LTS;
                 }
+                getSimulatorModel().setTabKind(newTab);
             }
         }
     }

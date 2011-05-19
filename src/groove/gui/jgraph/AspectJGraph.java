@@ -33,7 +33,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
-import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectKind;
 
@@ -326,8 +325,7 @@ final public class AspectJGraph extends GraphJGraph {
                 if (selected) {
                     removeAll();
                     for (String ruleName : getGrammar().getRuleNames()) {
-                        add(createSetRuleAction(getGrammar().getRuleView(
-                            ruleName)));
+                        add(createSetRuleAction(ruleName));
                     }
                 }
             }
@@ -336,10 +334,10 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /** Action to change the display to a given (named) rule. */
-    private Action createSetRuleAction(final RuleView rule) {
-        return new AbstractAction(rule.getName()) {
+    private Action createSetRuleAction(final String ruleName) {
+        return new AbstractAction(ruleName) {
             public void actionPerformed(ActionEvent evt) {
-                getSimulatorModel().setRule(rule);
+                getSimulatorModel().setRule(ruleName);
             }
         };
     }

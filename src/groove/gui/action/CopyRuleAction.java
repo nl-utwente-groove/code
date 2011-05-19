@@ -56,7 +56,6 @@ public class CopyRuleAction extends SimulatorAction {
             // copy the selected rules to avoid concurrent modifications
             List<RuleView> rules =
                 new ArrayList<RuleView>(getModel().getRuleSet());
-            String savedRule = null;
             for (RuleView rule : rules) {
                 AspectGraph oldRuleGraph = rule.getAspectGraph();
                 String oldRuleName = rule.getName();
@@ -65,18 +64,13 @@ public class CopyRuleAction extends SimulatorAction {
                 if (newRuleName != null) {
                     AspectGraph newRuleGraph = oldRuleGraph.rename(newRuleName);
                     try {
-                        result |= getSimulator().getModel().doAddRule(newRuleGraph);
-                        savedRule = newRuleName;
+                        result |= getModel().doAddRule(newRuleGraph);
                     } catch (IOException exc) {
                         showErrorDialog(exc, String.format(
-                                "Error while copying rule '%s' to '%s'",
-                                oldRuleName, newRuleName));
+                            "Error while copying rule '%s' to '%s'",
+                            oldRuleName, newRuleName));
                     }
                 }
-            }
-            // select last copied rule
-            if (savedRule != null) {
-                getModel().setRule(savedRule);
             }
         }
         return result;

@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.lts.GTS;
 import groove.view.GraphView;
@@ -243,19 +244,6 @@ public class StateJList extends JList implements SimulatorListener {
         return result;
     }
 
-    /** 
-     * Switches the state view to a graph with a given name.
-     */
-    void setSelectedGraph(String name) {
-        int index = this.listModel.indexOf(name);
-        if (index < 0 || getSelectedIndices().length == 1
-            && getSelectedIndex() == index) {
-            switchSimulatorToStatePanel();
-        } else {
-            setSelectedIndex(index);
-        }
-    }
-
     /**
      * Refreshes the value of the current state item of the state list.
      * @param select if <code>true</code>, select the current state item
@@ -289,7 +277,7 @@ public class StateJList extends JList implements SimulatorListener {
      * Returns the current grammar view from the simulator.
      */
     private StoredGrammarView getGrammar() {
-        return getSimulator().getModel().getGrammar();
+        return getSimulatorModel().getGrammar();
     }
 
     /**
@@ -318,14 +306,6 @@ public class StateJList extends JList implements SimulatorListener {
     /** Returns the simulator to which the state list belongs. */
     private ActionStore getActions() {
         return getSimulator().getActions();
-    }
-
-    /**
-     * Switches the simulator to the state panel view, and
-     * refreshes the actions.
-     */
-    private void switchSimulatorToStatePanel() {
-        getSimulator().switchTabs(getSimulator().getStatePanel());
     }
 
     /**
@@ -395,7 +375,7 @@ public class StateJList extends JList implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            switchSimulatorToStatePanel();
+            getSimulatorModel().setTabKind(TabKind.GRAPH);
         }
     }
 
@@ -403,7 +383,6 @@ public class StateJList extends JList implements SimulatorListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             getSimulatorModel().setHostSet(getSelectedGraphs());
-            switchSimulatorToStatePanel();
         }
     }
 

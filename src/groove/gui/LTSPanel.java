@@ -25,6 +25,7 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
@@ -197,18 +198,16 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
      * Returns a message to be displayed in a dialog.
      * @param counterExamples the collection of states that do not satisfy the
      *        property verified
-     * @param inTransitions flag to indicate that the canonical incoming transition
+     * @param showTransitions flag to indicate that the canonical incoming transition
      * should also be highlighted.
      */
     public void emphasiseStates(List<GraphState> counterExamples,
-            boolean inTransitions) {
-        // reset lts display visibility
-        getSimulator().switchTabs(this);
+            boolean showTransitions) {
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
             jCells.add(getJModel().getJCellForNode(state));
-            if (inTransitions && i + 1 < counterExamples.size()) {
+            if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
                 for (GraphTransition trans : state.getTransitionSet()) {
                     if (trans.target() == counterExamples.get(i + 1)) {
@@ -289,7 +288,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
-                    getSimulator().switchTabs(getSimulator().getStatePanel());
+                    getSimulatorModel().setTabKind(TabKind.GRAPH);
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
@@ -301,9 +300,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                         getSimulatorModel().setMatch(edge);
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
-                        getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getSimulatorModel().exploreState(node);
+                            getSimulatorModel().doExploreState(node);
                         }
                     }
                 }
