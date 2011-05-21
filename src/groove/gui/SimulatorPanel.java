@@ -137,7 +137,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
                 if (view != null) {
                     editor.setType();
                 } else {
-                    editor.dispose();
+                    remove(editor);
                 }
             }
         }
@@ -252,7 +252,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the parent frame of an editor panel, if the editor is not
      * displayed in a tab. */
-    public JFrame getFrameOf(EditorPanel panel) {
+    public JFrame getFrameOf(Component panel) {
         if (indexOfComponent(panel) < 0) {
             Container window = panel.getParent();
             while (!(window instanceof JGraphWindow)) {
@@ -261,6 +261,25 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
             return (JFrame) window;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * If the component is not shown on a tab but in a separate frame,
+     * disposes the frame.
+     */
+    @Override
+    public void remove(Component component) {
+        if (indexOfComponent(component) < 0) {
+            JFrame frame = getFrameOf(component);
+            if (frame != null) {
+                frame.dispose();
+            }
+        } else {
+            if (getSelectedComponent() == component) {
+                revertSelection();
+            }
+            super.remove(component);
         }
     }
 
@@ -356,10 +375,8 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         for (EditorPanel editor : getEditors()) {
             AspectGraph graph = editor.getGraph();
             if (graphSet.contains(Pair.newPair(graph.getRole(), graph.getName()))) {
-                if (editor.askAndSave()) {
-                    editor.dispose();
-                } else {
-                    result = false;
+                result = editor.doCancel();
+                if (!result) {
                     break;
                 }
             }
@@ -370,19 +387,13 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** 
      * Attempts to save the dirty editors, asking the user what should happen.
      * Optionally disposes the editors.
-     * @param dispose if {@code true}, all editors are disposed (unless 
-     * the operation was cancelled)
      * @return {@code true} if the operation was not cancelled
      */
-    public boolean saveEditors(boolean dispose) {
+    public boolean disposeAllEditors() {
         boolean result = true;
         for (EditorPanel editor : getEditors()) {
-            if (editor.askAndSave()) {
-                if (dispose) {
-                    editor.dispose();
-                }
-            } else {
-                result = false;
+            result = editor.doCancel();
+            if (!result) {
                 break;
             }
         }

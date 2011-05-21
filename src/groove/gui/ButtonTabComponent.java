@@ -137,7 +137,7 @@ public class ButtonTabComponent extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ButtonTabComponent.this.editorPanel.handleCancel();
+            ButtonTabComponent.this.editorPanel.doCancel();
         }
 
         //we don't want to update UI for this button
