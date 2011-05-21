@@ -20,8 +20,6 @@ import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.view.StoredGrammarView;
-import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -31,10 +29,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,7 +53,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
     public SimulatorPanel(final Simulator simulator) {
         this.simulator = simulator;
-        add(TabKind.GRAPH, simulator.getStatePanel());
+        add(TabKind.HOST, simulator.getStatePanel());
         add(TabKind.RULE, simulator.getRulePanel());
         add(TabKind.LTS, simulator.getLtsPanel());
         add(TabKind.CONTROL, simulator.getControlPanel());
@@ -66,7 +62,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
             add(TabKind.PROLOG, simulator.getPrologPanel());
         }
         installListeners();
-        simulator.getModel().addListener(this, Change.GRAMMAR, Change.TAB);
+        simulator.getModel().addListener(this, Change.TAB);
         setVisible(true);
     }
 
@@ -93,7 +89,9 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         // above will trigger it
         this.tabListener = new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
-                SimulatorPanel.this.simulator.getActions().refreshActions();
+                SimulatorPanel.this.changingTabs = true;
+                getSimulatorModel().setTabKind(getSelectedTab());
+                SimulatorPanel.this.changingTabs = false;
             }
         };
         activateListeners();
@@ -113,35 +111,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(Change.GRAMMAR)) {
-            for (EditorPanel editor : getEditors()) {
-                // test if the graph being edited is still in the grammar;
-                // if not, silently dispose it - it's too late to do anything else!
-                AspectGraph graph = editor.getGraph();
-                StoredGrammarView grammar =
-                    this.simulator.getModel().getGrammar();
-                View<?> view = null;
-                switch (graph.getRole()) {
-                case HOST:
-                    view = grammar.getGraphView(graph.getName());
-                    break;
-                case RULE:
-                    view = grammar.getRuleView(graph.getName());
-                    break;
-                case TYPE:
-                    view = grammar.getTypeView(graph.getName());
-                    break;
-                default:
-                    assert false;
-                }
-                if (view != null) {
-                    editor.setType();
-                } else {
-                    remove(editor);
-                }
-            }
-        }
-        if (changes.contains(Change.TAB)) {
+        if (changes.contains(Change.TAB) && !this.changingTabs) {
             setSelectedComponent(this.tabbedPanelMap.get(source.getTabKind()));
         }
         activateListeners();
@@ -179,7 +149,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         TabKind tabKind = null;
         switch (role) {
         case HOST:
-            tabKind = TabKind.GRAPH;
+            tabKind = TabKind.HOST;
             break;
         case RULE:
             tabKind = TabKind.RULE;
@@ -284,11 +254,15 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns a list of all editor panels currently displayed. */
-    public List<EditorPanel> getEditors() {
-        List<EditorPanel> result = new ArrayList<EditorPanel>();
+    public Map<Pair<String,GraphRole>,EditorPanel> getEditors() {
+        Map<Pair<String,GraphRole>,EditorPanel> result =
+            new LinkedHashMap<Pair<String,GraphRole>,EditorPanel>();
         for (int i = 0; i < getTabCount(); i++) {
             if (getComponentAt(i) instanceof EditorPanel) {
-                result.add((EditorPanel) getComponentAt(i));
+                EditorPanel panel = (EditorPanel) getComponentAt(i);
+                AspectGraph graph = panel.getGraph();
+                result.put(Pair.newPair(graph.getName(), graph.getRole()),
+                    panel);
             }
         }
         return result;
@@ -366,15 +340,12 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
      * @return {@code true} if the operation was not cancelled
      */
     public boolean disposeEditors(AspectGraph... graphs) {
-        Set<Pair<GraphRole,String>> graphSet =
-            new HashSet<Pair<GraphRole,String>>();
-        for (AspectGraph graph : graphs) {
-            graphSet.add(Pair.newPair(graph.getRole(), graph.getName()));
-        }
         boolean result = true;
-        for (EditorPanel editor : getEditors()) {
-            AspectGraph graph = editor.getGraph();
-            if (graphSet.contains(Pair.newPair(graph.getRole(), graph.getName()))) {
+        Map<Pair<String,GraphRole>,EditorPanel> editors = getEditors();
+        for (AspectGraph graph : graphs) {
+            EditorPanel editor =
+                editors.get(Pair.newPair(graph.getRole(), graph.getName()));
+            if (editor != null) {
                 result = editor.doCancel();
                 if (!result) {
                     break;
@@ -386,12 +357,12 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
 
     /** 
      * Attempts to save the dirty editors, asking the user what should happen.
-     * Optionally disposes the editors.
+     * Disposes the editors if the action is not cancelled.
      * @return {@code true} if the operation was not cancelled
      */
     public boolean disposeAllEditors() {
         boolean result = true;
-        for (EditorPanel editor : getEditors()) {
+        for (EditorPanel editor : getEditors().values()) {
             result = editor.doCancel();
             if (!result) {
                 break;
@@ -403,13 +374,18 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Tests if there is a dirty editor. */
     public boolean isEditorDirty() {
         boolean result = false;
-        for (EditorPanel editor : getEditors()) {
+        for (EditorPanel editor : getEditors().values()) {
             if (editor.isDirty() && !editor.isSaving()) {
                 result = true;
                 break;
             }
         }
         return result;
+    }
+
+    /** Convenience method to returnt he simulator model. */
+    private SimulatorModel getSimulatorModel() {
+        return this.simulator.getModel();
     }
 
     private final Simulator simulator;
@@ -419,7 +395,12 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping from standard (non-editor) panels to their tab kinds. */
     private final Map<TabKind,JPanel> tabbedPanelMap =
         new HashMap<TabKind,JPanel>();
+    /** Listener to tab changes. */
     private ChangeListener tabListener;
+    /** Flag indicating that the {@link #tabListener} has caused a 
+     * tab change, so we don't have to update.
+     */
+    private boolean changingTabs;
     /** The previously selected tab. */
     private Component lastSelected;
 
@@ -457,7 +438,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Type of components in the panel. */
     public static enum TabKind {
         /** State panel. */
-        GRAPH(Icons.GRAPH_FRAME_ICON, Icons.GRAPH_FILE_ICON,
+        HOST(Icons.GRAPH_FRAME_ICON, Icons.GRAPH_FILE_ICON,
                 "Current graph state"),
         /** Rule panel. */
         RULE(Icons.RULE_FRAME_ICON, Icons.RULE_FILE_ICON, "Selected rule"),
@@ -492,6 +473,11 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         /** Returns name for this tab kind. */
         public final String getName() {
             return this.name;
+        }
+
+        /** Returns the graph role corresponding to this tab kind, if any. */
+        public final GraphRole getGraphRole() {
+            return GraphRole.valueOf(name());
         }
 
         private final ImageIcon tabIcon;

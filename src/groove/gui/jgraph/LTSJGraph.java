@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
+import groove.graph.GraphRole;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -124,7 +125,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
         if (getActiveState() != null) {
-            result.add(getActions().getSaveHostOrStateAction());
+            result.add(getActions().getSaveGraphAsAction(GraphRole.HOST));
         }
         addMenuItems(result, super.createExportMenu());
         return result;

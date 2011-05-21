@@ -66,7 +66,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(createButton(getActions().getNewTypeAction()));
         result.add(createButton(getActions().getEditTypeAction()));
-        result.add(getActions().getSaveAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));

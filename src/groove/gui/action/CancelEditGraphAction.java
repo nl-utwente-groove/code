@@ -24,7 +24,7 @@ public final class CancelEditGraphAction extends SimulatorAction {
     /**
      * If the editor is dirty, asks if it should be saved, and does so if
      * the answer is yes.
-     * Disposes the editor if not cancelled.
+     * Disposes the editor if not cancelled, by calling {@link EditorPanel#dispose()}.
      * @return {@code true} if the editor was indeed disposed
      */
     @Override
@@ -38,12 +38,12 @@ public final class CancelEditGraphAction extends SimulatorAction {
                     graph.getRole().toString(true), graph.getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                this.editor.getSaveAction().doSave();
+                this.editor.getSaveAction().doSave(graph);
             }
             result = (confirm != JOptionPane.CANCEL_OPTION);
         }
         if (result) {
-            getPanel().remove(this.editor);
+            this.editor.dispose();
         }
         return result;
     }

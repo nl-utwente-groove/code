@@ -314,6 +314,8 @@ public enum FileType {
             return RULE_FILTER;
         case TYPE:
             return TYPE_FILTER;
+        case LTS:
+            return GXL_FILTER;
         default:
             return null;
         }

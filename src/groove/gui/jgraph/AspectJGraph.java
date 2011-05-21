@@ -278,8 +278,8 @@ final public class AspectJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         // add a save graph action as the first action
         JMenu result = new JMenu();
-        if (getSimulator() != null && getGraphRole() == GraphRole.HOST) {
-            result.add(getActions().getSaveHostOrStateAction());
+        if (getSimulator() != null) {
+            result.add(getActions().getSaveGraphAsAction(getGraphRole()));
         }
         addMenuItems(result, super.createExportMenu());
         return result;

@@ -16,6 +16,7 @@
  */
 package groove.gui.action;
 
+import groove.graph.GraphRole;
 import groove.gui.JGraphPanel;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
@@ -56,11 +57,15 @@ public class ActionStore implements SimulatorListener {
     }
 
     /**
-     * Adds an element to the set of refreshables. Also calls
-     * {@link Refreshable#refresh()} on the element.
+     * Adds an element to the set of refreshables.
      */
     public void addRefreshable(Refreshable element) {
         this.refreshables.add(element);
+    }
+
+    /** Removes an element from the set of refreshables. */
+    public void removeRefreshable(Refreshable element) {
+        this.refreshables.remove(element);
     }
 
     /**
@@ -159,7 +164,7 @@ public class ActionStore implements SimulatorListener {
         switch (kind) {
         case CONTROL:
             return getCopyControlAction();
-        case GRAPH:
+        case HOST:
             return getCopyHostAction();
         case RULE:
             return getCopyRuleAction();
@@ -236,7 +241,7 @@ public class ActionStore implements SimulatorListener {
         switch (kind) {
         case CONTROL:
             return getDeleteControlAction();
-        case GRAPH:
+        case HOST:
             return getDeleteHostAction();
         case RULE:
             return getDeleteRuleAction();
@@ -343,7 +348,7 @@ public class ActionStore implements SimulatorListener {
         switch (kind) {
         case CONTROL:
             return getEditControlAction();
-        case GRAPH:
+        case HOST:
             return getEditHostOrStateAction();
         case RULE:
             return getEditRuleAction();
@@ -828,7 +833,7 @@ public class ActionStore implements SimulatorListener {
         switch (kind) {
         case CONTROL:
             return getRenameControlAction();
-        case GRAPH:
+        case HOST:
             return getRenameHostAction();
         case RULE:
             return getRenameRuleAction();
@@ -920,17 +925,38 @@ public class ActionStore implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
+     * {@link SaveControlAction} that saves control programs within the
+     * grammar.
      */
     public SaveControlAction getSaveControlAction() {
         if (this.saveControlAction == null) {
-            this.saveControlAction = new SaveControlAction(this.simulator);
+            this.saveControlAction =
+                new SaveControlAction(this.simulator, false);
         }
         return this.saveControlAction;
     }
 
-    /** Singular instance of the SaveAction. */
+    /** Singular instance of the {@link SaveControlAction} that 
+     * saves within the grammar. */
     private SaveControlAction saveControlAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link SaveControlAction} that saves control programs to files
+     * outside the 
+     * grammar directory
+     */
+    public SaveControlAction getSaveControlAsAction() {
+        if (this.saveControlAsAction == null) {
+            this.saveControlAsAction =
+                new SaveControlAction(this.simulator, true);
+        }
+        return this.saveControlAsAction;
+    }
+
+    /** Singular instance of the {@link SaveControlAction} that 
+     * saves outside the grammar. */
+    private SaveControlAction saveControlAsAction;
 
     /**
      * Returns the graph save action permanently associated with this simulator.
@@ -949,36 +975,75 @@ public class ActionStore implements SimulatorListener {
     private SaveGrammarAction saveGrammarAction;
 
     /**
-     * Returns the graph save action permanently associated with this simulator.
+     * Returns the graph save action for a given graph role that is permanently 
+     * associated with this simulator.
      */
-    public SaveAction getSaveAction() {
-        // lazily create the action
-        if (this.saveAction == null) {
-            this.saveAction = new SaveAction(this.simulator);
+    public SaveGraphAction getSaveGraphAction(GraphRole role) {
+        SaveGraphAction result = this.saveGraphActionMap.get(role);
+        if (result == null) {
+            this.saveGraphActionMap.put(role, result =
+                new SaveGraphAction(this.simulator, role, false));
         }
-        return this.saveAction;
+        return result;
     }
 
     /**
-     * The state save action permanently associated with this simulator.
+     * Mapping from graph roles to corresponding save actions.
      */
-    private SaveAction saveAction;
+    private Map<GraphRole,SaveGraphAction> saveGraphActionMap =
+        new EnumMap<GraphRole,SaveGraphAction>(GraphRole.class);
 
     /**
-     * Returns the host graph save action permanently associated with this simulator.
+     * Returns the graph save-as action for a given graph role that is permanently 
+     * associated with this simulator.
      */
-    public SaveHostOrStateAction getSaveHostOrStateAction() {
-        // lazily create the action
-        if (this.saveHostOrStateAction == null) {
-            this.saveHostOrStateAction = new SaveHostOrStateAction(this.simulator);
+    public SaveGraphAction getSaveGraphAsAction(GraphRole role) {
+        SaveGraphAction result = this.saveGraphAsActionMap.get(role);
+        if (result == null) {
+            this.saveGraphAsActionMap.put(role, result =
+                new SaveGraphAction(this.simulator, role, true));
         }
-        return this.saveHostOrStateAction;
+        return result;
     }
 
     /**
-     * The host graph save action permanently associated with this simulator.
+     * Mapping from graph roles to corresponding save-as actions.
      */
-    private SaveHostOrStateAction saveHostOrStateAction;
+    private Map<GraphRole,SaveGraphAction> saveGraphAsActionMap =
+        new EnumMap<GraphRole,SaveGraphAction>(GraphRole.class);
+
+    /**
+     * Returns the save-as action for a given tab kind permanently
+     * associated with this simulator.
+     */
+    public SimulatorAction getSaveAsAction(TabKind kind) {
+        SimulatorAction result = this.saveAsActionMap.get(kind);
+        if (result == null) {
+            switch (kind) {
+            case CONTROL:
+                result = getSaveControlAsAction();
+                break;
+            case HOST:
+            case RULE:
+            case TYPE:
+                result = getSaveGraphAsAction(kind.getGraphRole());
+                break;
+            case LTS:
+                result = getSaveLTSAsAction();
+                break;
+            case PROLOG:
+            default:
+                // null is good enough
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Mapping from simulator tabs to corresponding save-as actions.
+     */
+    private Map<TabKind,SimulatorAction> saveAsActionMap =
+        new EnumMap<TabKind,SimulatorAction>(TabKind.class);
 
     /**
      * Returns the Save LTS As action permanently associated with this simulator.

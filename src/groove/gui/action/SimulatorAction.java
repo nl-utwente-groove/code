@@ -1,9 +1,7 @@
 package groove.gui.action;
 
-import static groove.graph.GraphRole.RULE;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.Graph;
-import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlPanel;
@@ -19,12 +17,10 @@ import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.SystemStore;
-import groove.io.xml.AspectGxl;
 import groove.trans.RuleName;
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -90,6 +86,11 @@ public abstract class SimulatorAction extends AbstractAction implements
     /** Returns the control panel that owns the action. */
     final protected ControlPanel getControlPanel() {
         return this.simulator.getControlPanel();
+    }
+
+    /** Disposes the action by unregistering it as a listener. */
+    public void dispose() {
+        getActions().removeRefreshable(this);
     }
 
     @Override
@@ -394,82 +395,47 @@ public abstract class SimulatorAction extends AbstractAction implements
         return result;
     }
 
-    /** Saves a given graph, either as a file outside the grammar directory
-     * or as a component of the grammar.
-     * @param graph the graph to be saved
-     * @param selectedFile the file name
-     * @return {@code true} if saving was successful and changed the grammar
-     * @throws IOException if there was an IO problem while saving
+    /** Constructs a grammar element name from a file, if it is within the grammar location.
+     * The element name is relative to the grammar location.
+     * A flag controls if the name should be treated as a rule name, i.e.,
+     * divided into fragments standing for subdirectories.
+     * @param selectedPath the canonical file name of the grammar element, without extension
+     * @param structured if the file name is to be interpreted as a structured name
+     * @throws IOException if the name is not well-formed
      */
-    final protected boolean marshalGraph(AspectGraph graph, File selectedFile)
-        throws IOException {
-        boolean result = false;
-        ExtensionFilter filter = FileType.getFilter(graph.getRole());
-        // find out if this is within the grammar directory
+    final protected String getNameInGrammar(String selectedPath,
+            boolean structured) throws IOException {
         String name = null;
         Object location = getModel().getStore().getLocation();
         if (location instanceof File) {
-            String locationPath = ((File) location).getCanonicalPath();
-            String selectedPath =
-                filter.stripExtension(selectedFile.getCanonicalPath());
-            name = getName(locationPath, selectedPath, graph.getRole());
-        }
-        if (name == null) {
-            name = filter.stripExtension(selectedFile.getName());
-            graph = graph.rename(name);
-            AspectGxl.getInstance().marshalGraph(graph, selectedFile);
-        } else {
-            // the graph will be put within the grammar itself
-            graph = graph.rename(name);
-            switch (graph.getRole()) {
-            case HOST:
-                result = getModel().doAddHost(graph);
-                break;
-            case RULE:
-                result = getModel().doAddRule(graph);
-                break;
-            case TYPE:
-                result = getModel().doAddType(graph);
-                break;
-            default:
-                assert false;
-            }
-        }
-        return result;
-    }
-
-    /** Constructs an aspect graph name from a  file within the grammar location,
-     * or {@code null} if the file is not within the grammar location.
-     * @throws IOException if the name is not well-formed
-     */
-    private String getName(String grammarPath, String selectedPath,
-            GraphRole role) throws IOException {
-        String name = null;
-        if (selectedPath.startsWith(grammarPath)) {
-            String diff = selectedPath.substring(grammarPath.length());
-            File pathDiff = new File(diff);
-            List<String> pathFragments = new ArrayList<String>();
-            while (pathDiff.getName().length() > 0) {
-                pathFragments.add(pathDiff.getName());
-                pathDiff = pathDiff.getParentFile();
-            }
-            assert !pathFragments.isEmpty();
-            int i = pathFragments.size() - 1;
-            if (role == RULE) {
-                RuleName ruleName = new RuleName(pathFragments.get(i));
-                for (i--; i >= 0; i--) {
-                    try {
-                        ruleName = new RuleName(ruleName, pathFragments.get(i));
-                    } catch (FormatException e) {
-                        throw new IOException("Malformed rule name " + diff);
-                    }
+            String grammarPath = ((File) location).getCanonicalPath();
+            if (selectedPath.startsWith(grammarPath)) {
+                String diff = selectedPath.substring(grammarPath.length());
+                File pathDiff = new File(diff);
+                List<String> pathFragments = new ArrayList<String>();
+                while (pathDiff.getName().length() > 0) {
+                    pathFragments.add(pathDiff.getName());
+                    pathDiff = pathDiff.getParentFile();
                 }
-                name = ruleName.toString();
-            } else if (pathFragments.size() > 1) {
-                throw new IOException(
-                    "Can't save graph or type in a grammar subdirectory");
-            } else {
-                name = pathFragments.get(0);
+                assert !pathFragments.isEmpty();
+                int i = pathFragments.size() - 1;
+                if (structured) {
+                    RuleName ruleName = new RuleName(pathFragments.get(i));
+                    for (i--; i >= 0; i--) {
+                        try {
+                            ruleName =
+                                new RuleName(ruleName, pathFragments.get(i));
+                        } catch (FormatException e) {
+                            throw new IOException("Malformed rule name " + diff);
+                        }
+                    }
+                    name = ruleName.toString();
+                } else if (pathFragments.size() > 1) {
+                    throw new IOException(
+                        "Can't save to a grammar subdirectory");
+                } else {
+                    name = pathFragments.get(0);
+                }
             }
         }
         return name;

@@ -593,7 +593,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 if (evt.getPath().getLastPathComponent() instanceof RuleTreeNode) {
                     newTab = TabKind.RULE;
                 } else if (getSimulatorPanel().getSelectedTab() != TabKind.LTS) {
-                    newTab = TabKind.GRAPH;
+                    newTab = TabKind.HOST;
                 } else {
                     newTab = TabKind.LTS;
                 }

@@ -17,11 +17,15 @@
 package groove.gui.dialog;
 
 import groove.gui.Simulator;
+import groove.io.ExtensionFilter;
+import groove.io.FileType;
+import groove.io.GrooveFileChooser;
 
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -88,7 +92,7 @@ public class SaveLTSAsDialog {
         // nothing to do
     }
 
-    /** Sets the directoy to initialize the file directoy browser at * */
+    /** Sets the directory to initialise the file directory browser at * */
     public void setCurrentDirectory(String value) {
         this.currentDirectory = value;
     }
@@ -255,38 +259,35 @@ public class SaveLTSAsDialog {
         return -1;
     }
 
-    /** Returns an absolute path of the directory to export to * */
-    public String getDirectory() {
-        return this.dirField.getText();
+    /** Returns an absolute path of the directory to export to. */
+    public File getFile() {
+        return new File(this.dirField.getText());
     }
 
-    /** Returns if open states should be labeled with "open" * */
+    /** Returns if open states should be labelled with "open". */
     public boolean showOpen() {
         return this.openCheck.isSelected();
     }
 
-    /** Returns if final states should be labeled with "final" * */
+    /** Returns if final states should be labelled with "final". */
     public boolean showFinal() {
         return this.finalCheck.isSelected();
     }
 
-    /** Returns if states should be labeled with their name * */
+    /** Returns if states should be labelled with their name. */
     public boolean showNames() {
         return this.nameCheck.isSelected();
     }
 
-    /** Returns if the start state should be labeled with "start" * */
+    /** Returns if the start state should be labelled with "start". */
     public boolean showStart() {
         return this.startCheck.isSelected();
     }
 
     class BrowseButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            JFileChooser chooser =
-                new JFileChooser(SaveLTSAsDialog.this.dirField.getText());
-            chooser.setMultiSelectionEnabled(false);
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
+            ExtensionFilter filter = FileType.GXL_FILTER;
+            JFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
             int result =
                 chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
             // now load, if so required

@@ -119,7 +119,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
                     AspectGraph newGraph = ruleGraphs[i].clone();
                     GraphInfo.setProperties(newGraph, ruleProperties[i]);
                     newGraph.setFixed();
-                    getModel().getStore().putRule(newGraph);
+                    getModel().doAddRule(newGraph);
                     ruleGraphs[i].invalidateView();
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(

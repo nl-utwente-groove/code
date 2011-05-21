@@ -375,7 +375,7 @@ public class StateJList extends JList implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.GRAPH);
+            getSimulatorModel().setTabKind(TabKind.HOST);
         }
     }
 

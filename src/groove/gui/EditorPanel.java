@@ -17,13 +17,15 @@
 package groove.gui;
 
 import groove.graph.GraphRole;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditGraphAction;
 import groove.gui.action.SaveGraphAction;
 import groove.view.StoredGrammarView;
-import groove.view.StoredGrammarView.TypeViewList;
+import groove.view.View;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
+import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -36,7 +38,7 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditorPanel extends JPanel {
+public class EditorPanel extends JPanel implements SimulatorListener {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param simulator the simulator on which this panel is placed
@@ -51,28 +53,25 @@ public class EditorPanel extends JPanel {
             new Editor(null, this.options,
                 simulator.getModel().getGrammar().getProperties()) {
                 @Override
-                protected void doQuit() {
-                    EditorPanel.this.doCancel();
-                }
-
-                @Override
                 protected void updateTitle() {
                     ButtonTabComponent tab =
-                        getTabbedPane().getTabComponentOf(EditorPanel.this);
+                        getSimulatorPanel().getTabComponentOf(EditorPanel.this);
                     if (tab == null) {
-                        getTabbedPane().getFrameOf(EditorPanel.this).setTitle(
+                        getSimulatorPanel().getFrameOf(EditorPanel.this).setTitle(
                             getTitle());
                     } else {
                         tab.setTitle(getTitle());
                     }
-                    getSaveButton().setEnabled(isDirty());
+                    // an ugly way to ensure that the save action is enabled
+                    // upon changes to the graph
+                    getSaveAction().refresh();
                 }
 
                 @Override
                 protected void updateStatus() {
                     super.updateStatus();
                     ButtonTabComponent tab =
-                        getTabbedPane().getTabComponentOf(EditorPanel.this);
+                        getSimulatorPanel().getTabComponentOf(EditorPanel.this);
                     if (tab != null) {
                         tab.setError(!getModel().getErrorMap().isEmpty());
 
@@ -96,11 +95,12 @@ public class EditorPanel extends JPanel {
                     return graph.getRole();
                 }
             };
+        simulator.getModel().addListener(this, Change.GRAMMAR);
     }
 
     /** Starts the editor with the graph passed in at construction time. */
     public void start(AspectGraph graph) {
-        this.editor.setTypeView(getTypeView());
+        this.editor.setTypeView(getSimulatorModel().getGrammar().getTypeViewList());
         this.editor.setGraph(graph, true);
         setLayout(new BorderLayout());
         JSplitPane mainPanel = this.editor.getMainPanel();
@@ -121,19 +121,6 @@ public class EditorPanel extends JPanel {
         return getEditor().getGraph();
     }
 
-    /** Changes the type graph in the editor,
-     * according to the current type view in the simulator. 
-     */
-    public void setType() {
-        this.editor.setTypeView(getTypeView());
-    }
-
-    /** Returns the type graph associated with the grammar, if any. */
-    TypeViewList getTypeView() {
-        StoredGrammarView grammar = this.simulator.getModel().getGrammar();
-        return grammar == null ? null : grammar.getTypeViewList();
-    }
-
     /** Returns the editor instance of this panel. */
     public Editor getEditor() {
         return this.editor;
@@ -142,6 +129,44 @@ public class EditorPanel extends JPanel {
     /** Returns the simulator instance of this panel. */
     public Simulator getSimulator() {
         return this.simulator;
+    }
+
+    /** Convenience method to retrieve the simulator model. */
+    private SimulatorModel getSimulatorModel() {
+        return this.simulator.getModel();
+    }
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        assert changes.contains(Change.GRAMMAR);
+        StoredGrammarView grammar = source.getGrammar();
+        if (grammar == oldModel.getGrammar()) {
+            // test if the graph being edited is still in the grammar;
+            // if not, silently dispose it - it's too late to do anything else!
+            AspectGraph graph = getGraph();
+            View<?> view = null;
+            switch (graph.getRole()) {
+            case HOST:
+                view = grammar.getGraphView(graph.getName());
+                break;
+            case RULE:
+                view = grammar.getRuleView(graph.getName());
+                break;
+            case TYPE:
+                view = grammar.getTypeView(graph.getName());
+                break;
+            default:
+                assert false;
+            }
+            if (view != null) {
+                this.editor.setTypeView(grammar.getTypeViewList());
+            } else {
+                dispose();
+            }
+        } else {
+            dispose();
+        }
     }
 
     /** Indicates if the editor has unsaved changes. */
@@ -173,7 +198,7 @@ public class EditorPanel extends JPanel {
     }
 
     /** Returns the tabbed view pane of the simulator (on which this panel is displayed). */
-    private SimulatorPanel getTabbedPane() {
+    private SimulatorPanel getSimulatorPanel() {
         return this.simulator.getSimulatorPanel();
     }
 
@@ -220,6 +245,14 @@ public class EditorPanel extends JPanel {
     /** Calls {@link CancelEditGraphAction#execute()}. */
     public boolean doCancel() {
         return getCancelAction().execute();
+    }
+
+    /** Disposes the editor, by removing it as a listener and simulator panel component. */
+    public void dispose() {
+        getSaveAction().dispose();
+        getCancelAction().dispose();
+        getSimulatorPanel().remove(this);
+        getSimulatorModel().removeListener(this);
     }
 
     private JButton saveButton;
