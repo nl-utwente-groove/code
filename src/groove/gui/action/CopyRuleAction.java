@@ -19,12 +19,9 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Action that takes care of copying a rule in a grammar view.
@@ -40,8 +37,9 @@ public class CopyRuleAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getRule() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getModel().getStore() != null
+            && getModel().getStore().isModifiable()
+            && getModel().getRuleSet().size() == 1);
     }
 
     @Override
@@ -49,23 +47,18 @@ public class CopyRuleAction extends SimulatorAction {
         boolean result = false;
         // Multiple selection
         if (confirmAbandon()) {
-            // copy the selected rules to avoid concurrent modifications
-            List<RuleView> rules =
-                new ArrayList<RuleView>(getModel().getRuleSet());
-            for (RuleView rule : rules) {
-                AspectGraph oldRuleGraph = rule.getAspectGraph();
-                String oldRuleName = rule.getName();
-                String newRuleName =
-                    askNewRuleName("Select new rule name", oldRuleName, true);
-                if (newRuleName != null) {
-                    AspectGraph newRuleGraph = oldRuleGraph.rename(newRuleName);
-                    try {
-                        result |= getModel().doAddRule(newRuleGraph);
-                    } catch (IOException exc) {
-                        showErrorDialog(exc, String.format(
-                            "Error while copying rule '%s' to '%s'",
-                            oldRuleName, newRuleName));
-                    }
+            AspectGraph rule = getModel().getRule().getAspectGraph();
+            String oldRuleName = rule.getName();
+            String newRuleName =
+                askNewRuleName("Select new rule name", oldRuleName, true);
+            if (newRuleName != null) {
+                AspectGraph newRuleGraph = rule.rename(newRuleName);
+                try {
+                    result |= getModel().doAddRule(newRuleGraph);
+                } catch (IOException exc) {
+                    showErrorDialog(exc, String.format(
+                        "Error while copying rule '%s' to '%s'", oldRuleName,
+                        newRuleName));
                 }
             }
         }

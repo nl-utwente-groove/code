@@ -22,6 +22,7 @@ import groove.view.StoredGrammarView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.swing.event.UndoableEditListener;
@@ -58,23 +59,25 @@ public interface GenericSystemStore<R,G,T,C> {
      *         <code>null</code> otherwise
      * @throws IOException if an error occurred while storing the rule
      */
-    public R putRule(R rule) throws IOException;
+    public Collection<R> putRules(Collection<R> rule) throws IOException;
 
     /**
      * Deletes a rule from the store.
-     * @param name name of the rule to be deleted (non-null)
+     * @param names name of the rule to be deleted (non-null)
      * @return the rule with name <code>name</code>, or <code>null</code> if
      *         there was no such rule
      * @throws IOException if the store is immutable
      */
-    public R deleteRule(String name) throws IOException;
+    public Collection<R> deleteRules(Collection<String> names)
+        throws IOException;
 
     /**
      * Renames a rule in the store.
+     * It is an error if no rule with the old name exists, or if a rule
+     * with the new name exists.
      * @param oldName the name of the rule to be renamed (non-null)
      * @param newName the intended new name of the rule (non-null)
-     * @return the renamed rule, or <code>null</code> if no rule named
-     *         <code>oldName</code> existed
+     * @return the new renamed rule
      * @throws IOException if an error occurred while storing the renamed rule
      */
     public R renameRule(String oldName, String newName) throws IOException;
@@ -89,7 +92,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         <code>null</code> otherwise
      * @throws IOException if an error occurred while storing the graph
      */
-    public G putGraph(G graph) throws IOException;
+    public Collection<G> putGraphs(Collection<G> graph) throws IOException;
 
     /**
      * Deletes a graph from the store.
@@ -98,7 +101,7 @@ public interface GenericSystemStore<R,G,T,C> {
      *         there was no such graph
      * @throws IOException if the store is immutable
      */
-    public G deleteGraph(String name) throws IOException;
+    public Collection<G> deleteGraphs(Collection<String> name) throws IOException;
 
     /**
      * Renames a graph in the store.

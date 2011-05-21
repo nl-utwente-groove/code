@@ -19,7 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.GraphView;
+import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 
@@ -39,26 +39,23 @@ public class CopyHostAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getModel().getStore() != null
             && getModel().getStore().isModifiable()
-            && !getModel().getHostSet().isEmpty());
+            && getModel().getHostSet().size() == 1);
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
-        for (GraphView oldHostView : getModel().getHostSet()) {
-            String oldName = oldHostView.getName();
-            String newName =
-                askNewGraphName("Select new graph name", oldName, true);
-            if (newName != null) {
-                try {
-                    result |=
-                        getModel().doAddHost(
-                            oldHostView.getAspectGraph().rename(newName));
-                } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while copying host graph '%s' to '%s'", oldName,
-                        newName));
-                }
+        AspectGraph host = getModel().getHost().getAspectGraph();
+        String oldName = host.getName();
+        String newName =
+            askNewGraphName("Select new graph name", oldName, true);
+        if (newName != null) {
+            try {
+                result |= getModel().doAddHost(host.rename(newName));
+            } catch (IOException exc) {
+                showErrorDialog(exc, String.format(
+                    "Error while copying host graph '%s' to '%s'", oldName,
+                    newName));
             }
         }
         return result;

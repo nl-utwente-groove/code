@@ -21,11 +21,9 @@ import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
-import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
-import java.util.Collection;
 
 /**
  * Action for editing the current state or rule.
@@ -46,92 +44,30 @@ public class EditRulePropertiesAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        // Get selected rules.
-        Collection<RuleView> selectedRules = getModel().getRuleSet();
-        RuleView[] ruleViews =
-            selectedRules.toArray(new RuleView[selectedRules.size()]);
-
-        // Associated rule graphs.
-        AspectGraph[] ruleGraphs = new AspectGraph[ruleViews.length];
+        AspectGraph rule = getModel().getRule().getAspectGraph();
         // Associated rule properties.
-        GraphProperties[] ruleProperties =
-            new GraphProperties[ruleViews.length];
-
-        // INVARIANT: related elements in the arrays are stored at
-        // the same position.
-        for (int i = 0; i < ruleViews.length; i++) {
-            ruleGraphs[i] = ruleViews[i].getAspectGraph();
-            ruleProperties[i] =
-                GraphInfo.getProperties(ruleGraphs[i], true).clone();
-        }
-
-        // Use the first properties of the first rule as the starting point. 
-        GraphProperties dialogProperties =
-            new GraphProperties(ruleProperties[0]);
-
-        // Now we go through the rest of the properties and check if there
-        // are conflicts. If yes the property will be empty in the dialog.
-        for (int i = 1; i < ruleViews.length; i++) {
-            for (String key : GraphProperties.DEFAULT_USER_KEYS.keySet()) {
-                String entryValue = (String) ruleProperties[i].get(key);
-                String dialogValue = (String) dialogProperties.get(key);
-                if (dialogValue != null && !dialogValue.equals(entryValue)) {
-                    // We have a conflict. Remove the key from the dialog.
-                    dialogProperties.remove(key);
-                }
-            }
-        }
+        GraphProperties properties =
+            GraphInfo.getProperties(rule, true).clone();
 
         PropertiesDialog dialog =
-            new PropertiesDialog(dialogProperties,
-                GraphProperties.DEFAULT_USER_KEYS, true);
+            new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
+                true);
 
         if (dialog.showDialog(getFrame()) && confirmAbandon()
-            && getPanel().disposeEditors(ruleGraphs)) {
+            && getPanel().disposeEditors(rule)) {
 
             // We go through the results of the dialog.
             GraphProperties editedProperties =
                 new GraphProperties(dialog.getEditedProperties());
-            for (int i = 0; i < ruleViews.length; i++) {
-                for (String key : GraphProperties.DEFAULT_USER_KEYS.keySet()) {
-                    String entryValue = (String) ruleProperties[i].get(key);
-                    String editedValue = (String) editedProperties.get(key);
-                    String defaultValue = GraphProperties.getDefaultValue(key);
-                    if (editedValue != null && !editedValue.equals(entryValue)) {
-                        // The value was changed in the dialog, set it in
-                        // the rule properties.
-                        ruleProperties[i].setProperty(key, editedValue);
-                    } else if (editedValue == null && entryValue != null
-                        && !defaultValue.equals(entryValue)) {
-                        // The value was cleared in the dialog, set the
-                        // default value in the rule properties.
-                        ruleProperties[i].setProperty(key, defaultValue);
-                    }
-                }
+            AspectGraph newGraph = rule.clone();
+            GraphInfo.setProperties(newGraph, editedProperties);
+            newGraph.setFixed();
+            try {
+                result = getModel().doAddRule(newGraph);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error while modifying rule '%s'",
+                    rule.getName());
             }
-
-            // Now all the elements of the ruleProperties[] are correct.
-            // Let's recreate the rules.
-            for (int i = 0; i < ruleViews.length; i++) {
-                // Avoiding call to doDeleteRule() and doAddRule() because
-                // of grammar updates.
-                try {
-                    AspectGraph newGraph = ruleGraphs[i].clone();
-                    GraphInfo.setProperties(newGraph, ruleProperties[i]);
-                    newGraph.setFixed();
-                    getModel().doAddRule(newGraph);
-                    ruleGraphs[i].invalidateView();
-                } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while storing rule '%s'",
-                        ruleGraphs[i].getName()));
-                } catch (UnsupportedOperationException u) {
-                    showErrorDialog(u, "Current grammar is read-only");
-                }
-            }
-            // We are done with the rule changes.
-            // Update the grammar, but just once.. :P
-            result = true;
         }
         return result;
     }

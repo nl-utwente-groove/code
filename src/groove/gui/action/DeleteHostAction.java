@@ -23,7 +23,9 @@ import groove.view.GraphView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Action that takes care of deleting a host graph in a grammar view.
@@ -50,36 +52,35 @@ public class DeleteHostAction extends SimulatorAction {
         boolean result = false;
         // Multiple selection
         // copy selected graph names
-        Collection<GraphView> selectedGraphs = getModel().getHostSet();
+        Collection<GraphView> hostViews = getModel().getHostSet();
         // first collect the affected graphs and compose the question
-        AspectGraph[] graphs = new AspectGraph[selectedGraphs.size()];
-        String question = "Delete graph(s) '%s'";
-        int count = 0;
-        for (GraphView graphView : selectedGraphs) {
-            String graphName = graphView.getName();
-            graphs[count] = graphView.getAspectGraph();
+        AspectGraph[] hostGraphs = new AspectGraph[hostViews.size()];
+        List<String> hostGraphNames = new ArrayList<String>();
+        boolean deleteStartGraph = false;
+        for (GraphView hostView : hostViews) {
+            AspectGraph hostGraph = hostView.getAspectGraph();
+            hostGraphs[hostGraphNames.size()] = hostGraph;
+            hostGraphNames.add(hostGraph.getName());
             // compose the question
-            question = String.format(question, graphName);
-            boolean isStartGraph =
-                graphView.equals(getModel().getGrammar().getStartGraphView());
-            if (isStartGraph) {
-                question = question + " (start graph)";
-            }
-            if (count < selectedGraphs.size() - 1) {
-                question = question + ", '%s'";
-            } else {
-                question = question + "?";
-            }
-            count++;
+            deleteStartGraph |=
+                hostView.equals(getModel().getGrammar().getStartGraphView());
+        }
+        String question;
+        if (hostGraphs.length == 1) {
+            question =
+                String.format("Delete %sgraph '%s'?", deleteStartGraph
+                        ? "start " : "", hostGraphs[0].getName());
+        } else {
+            question =
+                String.format("Delete these %d graphs%s?", hostGraphs.length,
+                    deleteStartGraph ? " (including start graph)" : "");
         }
         if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)
-            && getPanel().disposeEditors(graphs)) {
-            for (GraphView graphView : selectedGraphs) {
-                try {
-                    result |= getModel().doDeleteHost(graphView.getName());
-                } catch (IOException exc) {
-                    showErrorDialog(exc, "Error while deleting graph");
-                }
+            && getPanel().disposeEditors(hostGraphs)) {
+            try {
+                result |= getModel().doDeleteHosts(hostGraphNames);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error during graph deletion");
             }
         }
         return result;

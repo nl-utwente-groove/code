@@ -54,12 +54,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -342,66 +345,77 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph putGraph(AspectGraph graph) throws IOException {
-        AspectGraph result = null;
-        PutGraphEdit edit = doPutGraph(graph);
+    public Collection<AspectGraph> putGraphs(Collection<AspectGraph> graphs)
+        throws IOException {
+        Collection<AspectGraph> result = Collections.emptySet();
+        GraphEdit edit = doPutGraphs(graphs);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldGraph();
+            result = edit.getOldGraphs();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of {@link #putGraph(AspectGraph)}. Returns
+     * Implements the functionality of {@link #putGraphs(Collection)}. Returns
      * an undoable edit wrapping this functionality.
      */
-    private PutGraphEdit doPutGraph(AspectGraph graph) throws IOException {
+    private GraphEdit doPutGraphs(Collection<AspectGraph> newGraphs)
+        throws IOException {
         testInit();
-        String name = graph.getName();
-        this.marshaller.marshalGraph(graph.toPlainGraph(),
-            createGraphFile(name));
-        AspectGraph oldGraph = this.graphMap.put(name, graph);
-        return new PutGraphEdit(oldGraph, graph);
+        Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
+        for (AspectGraph newGraph : newGraphs) {
+            String name = newGraph.getName();
+            this.marshaller.marshalGraph(newGraph.toPlainGraph(),
+                createGraphFile(name));
+            AspectGraph oldGraph = this.graphMap.put(name, newGraph);
+            if (oldGraph != null) {
+                oldGraphs.add(oldGraph);
+            }
+        }
+        return new GraphEdit(oldGraphs, newGraphs);
     }
 
     @Override
-    public AspectGraph deleteGraph(String name) {
-        AspectGraph result = null;
-        DeleteGraphEdit edit = doDeleteGraph(name);
+    public Collection<AspectGraph> deleteGraphs(Collection<String> name) {
+        Collection<AspectGraph> result = Collections.emptySet();
+        GraphEdit edit = doDeleteGraphs(name);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getGraph();
+            result = edit.getOldGraphs();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of the {@link #deleteGraph(String)} method.
+     * Implements the functionality of the {@link #deleteGraphs(Collection)} method.
      * Returns a corresponding undoable edit.
      */
-    private DeleteGraphEdit doDeleteGraph(String name) {
-        DeleteGraphEdit result = null;
+    private GraphEdit doDeleteGraphs(Collection<String> names) {
         testInit();
-        AspectGraph graph = this.graphMap.remove(name);
-        if (graph != null) {
+        List<AspectGraph> deletedGraphs =
+            new ArrayList<AspectGraph>(names.size());
+        for (String name : names) {
+            AspectGraph graph = this.graphMap.remove(name);
+            assert graph != null;
             this.marshaller.deleteGraph(createGraphFile(name));
-            result = new DeleteGraphEdit(graph);
+            deletedGraphs.add(graph);
         }
-        return result;
+        return new GraphEdit(deletedGraphs,
+            Collections.<AspectGraph>emptySet());
     }
 
     @Override
     public AspectGraph renameGraph(String oldName, String newName)
         throws IOException {
         AspectGraph result = null;
-        RenameGraphEdit edit = doRenameGraph(oldName, newName);
+        GraphEdit edit = doRenameGraph(oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldGraph();
+            result = edit.getNewGraphs().iterator().next();
         }
         return result;
     }
@@ -410,23 +424,19 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Implements the functionality of {@link #renameGraph(String, String)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private RenameGraphEdit doRenameGraph(String oldName, String newName)
+    private GraphEdit doRenameGraph(String oldName, String newName)
         throws IOException {
-        RenameGraphEdit result = null;
         testInit();
-        AspectGraph graph = this.graphMap.remove(oldName);
-        if (graph != null) {
-            this.marshaller.deleteGraph(createGraphFile(oldName));
-            graph = graph.rename(newName);
-            AspectGraph oldGraph = this.graphMap.put(newName, graph);
-            this.marshaller.marshalGraph(graph.toPlainGraph(),
-                createGraphFile(newName));
-            result = new RenameGraphEdit(oldName, newName, oldGraph);
-        } else if (this.graphMap.containsKey(newName)) {
-            AspectGraph oldGraph = this.graphMap.remove(newName);
-            result = new RenameGraphEdit(oldName, newName, oldGraph);
-        }
-        return result;
+        AspectGraph oldGraph = this.graphMap.remove(oldName);
+        assert oldGraph != null;
+        this.marshaller.deleteGraph(createGraphFile(oldName));
+        AspectGraph newGraph = oldGraph.rename(newName);
+        AspectGraph previous = this.graphMap.put(newName, newGraph);
+        assert previous == null;
+        this.marshaller.marshalGraph(newGraph.toPlainGraph(),
+            createGraphFile(newName));
+        return new GraphEdit(Collections.singleton(oldGraph),
+            Collections.singleton(newGraph));
     }
 
     @Override
@@ -436,68 +446,79 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph putRule(AspectGraph rule) throws IOException {
-        AspectGraph result = null;
-        PutRuleEdit edit = doPutRule(rule);
+    public Collection<AspectGraph> putRules(Collection<AspectGraph> rule)
+        throws IOException {
+        Collection<AspectGraph> result = Collections.emptySet();
+        RuleEdit edit = doPutRules(rule);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldRule();
+            result = edit.getOldRules();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of {@link #putRule(AspectGraph)}. Returns an
+     * Implements the functionality of {@link #putRules(Collection)}. Returns an
      * undoable edit wrapping this functionality.
      */
-    private PutRuleEdit doPutRule(AspectGraph rule) throws IOException {
+    private RuleEdit doPutRules(Collection<AspectGraph> rules)
+        throws IOException {
         testInit();
-        String name = rule.getName();
-        this.marshaller.marshalGraph(rule.toPlainGraph(), createRuleFile(name));
-        AspectGraph oldRule = this.ruleMap.put(name, rule);
-        return new PutRuleEdit(oldRule, rule);
+        Set<AspectGraph> oldRules = new HashSet<AspectGraph>();
+        for (AspectGraph newRule : rules) {
+            String name = newRule.getName();
+            this.marshaller.marshalGraph(newRule.toPlainGraph(),
+                createRuleFile(name));
+            AspectGraph oldRule = this.ruleMap.put(name, newRule);
+            if (oldRule != null) {
+                oldRules.add(oldRule);
+            }
+        }
+        return new RuleEdit(oldRules, rules);
     }
 
     @Override
-    public AspectGraph deleteRule(String name) {
-        AspectGraph result = null;
-        DeleteRuleEdit edit = doDeleteRule(name);
+    public Collection<AspectGraph> deleteRules(Collection<String> names) {
+        Collection<AspectGraph> result = Collections.emptySet();
+        RuleEdit edit = doDeleteRules(names);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getRule();
+            result = edit.getOldRules();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of the {@link #deleteRule(String)} method.
+     * Implements the functionality of the {@link #deleteRules(Collection)} method.
      * Returns a corresponding undoable edit.
      */
-    private DeleteRuleEdit doDeleteRule(String name) {
-        DeleteRuleEdit result = null;
+    private RuleEdit doDeleteRules(Collection<String> names) {
         testInit();
-        AspectGraph rule = this.ruleMap.remove(name);
-        if (rule != null) {
+        List<AspectGraph> deletedRules =
+            new ArrayList<AspectGraph>(names.size());
+        for (String name : names) {
+            AspectGraph rule = this.ruleMap.remove(name);
+            assert rule != null;
             this.marshaller.deleteGraph(new File(
                 this.file,
                 RULE_FILTER.addExtension(Groove.toString(
                     new RuleName(name).tokens(), "", "", Groove.FILE_SEPARATOR))));
-            result = new DeleteRuleEdit(rule);
+            deletedRules.add(rule);
         }
-        return result;
+        return new RuleEdit(deletedRules, Collections.<AspectGraph>emptySet());
     }
 
     @Override
     public AspectGraph renameRule(String oldName, String newName)
         throws IOException {
         AspectGraph result = null;
-        RenameRuleEdit edit = doRenameRule(oldName, newName);
+        RuleEdit edit = doRenameRule(oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldRule();
+            result = edit.getNewRules().iterator().next();
         }
         return result;
     }
@@ -506,24 +527,19 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Implements the functionality of {@link #renameRule(String, String)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private RenameRuleEdit doRenameRule(String oldName, String newName)
+    private RuleEdit doRenameRule(String oldName, String newName)
         throws IOException {
-        RenameRuleEdit result = null;
         testInit();
-        AspectGraph rule = this.ruleMap.remove(oldName);
-        if (rule != null) {
-            this.marshaller.deleteGraph(createRuleFile(oldName));
-            rule = rule.rename(newName);
-            AspectGraph oldRule = this.ruleMap.put(newName, rule);
-            this.marshaller.marshalGraph(rule.toPlainGraph(),
-                createRuleFile(newName));
-            result = new RenameRuleEdit(oldName, newName, oldRule);
-        } else if (this.ruleMap.containsKey(newName)) {
-            this.marshaller.deleteGraph(createRuleFile(newName));
-            AspectGraph oldRule = this.ruleMap.remove(newName);
-            result = new RenameRuleEdit(oldName, newName, oldRule);
-        }
-        return result;
+        AspectGraph oldRule = this.ruleMap.remove(oldName);
+        assert oldRule != null;
+        this.marshaller.deleteGraph(createRuleFile(oldName));
+        AspectGraph newRule = oldRule.rename(newName);
+        AspectGraph previous = this.ruleMap.put(newName, newRule);
+        assert previous == null;
+        this.marshaller.marshalGraph(newRule.toPlainGraph(),
+            createRuleFile(newName));
+        return new RuleEdit(Collections.singleton(oldRule),
+            Collections.singleton(newRule));
     }
 
     @Override
@@ -702,13 +718,16 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws IOException {
         MyCompoundEdit result = new MyCompoundEdit(Options.RELABEL_ACTION_NAME);
+
+        List<AspectGraph> newGraphs =
+            new ArrayList<AspectGraph>(getGraphs().size());
         for (AspectGraph graph : getGraphs().values()) {
             AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
             if (newGraph != graph) {
-                Edit edit = doPutGraph(newGraph);
-                result.addEdit(edit);
+                newGraphs.add(newGraph);
             }
         }
+        result.addEdit(doPutGraphs(newGraphs));
         for (AspectGraph type : getTypes().values()) {
             AspectGraph newType = type.relabel(oldLabel, newLabel);
             if (newType != type) {
@@ -716,13 +735,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 result.addEdit(edit);
             }
         }
+        List<AspectGraph> newRules =
+            new ArrayList<AspectGraph>(getRules().size());
         for (AspectGraph rule : getRules().values()) {
             AspectGraph newRule = rule.relabel(oldLabel, newLabel);
             if (newRule != rule) {
-                Edit edit = doPutRule(newRule);
-                result.addEdit(edit);
+                newRules.add(newRule);
             }
         }
+        result.addEdit(doPutRules(newRules));
         SystemProperties newProperties =
             this.properties.relabel(oldLabel, newLabel);
         if (newProperties != this.properties) {
@@ -751,13 +772,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private MyCompoundEdit doRenumber() throws IOException {
         MyCompoundEdit result =
             new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
+        List<AspectGraph> newGraphs =
+            new ArrayList<AspectGraph>(getGraphs().size());
         for (AspectGraph graph : getGraphs().values()) {
             AspectGraph newGraph = graph.renumber();
             if (newGraph != graph) {
-                Edit edit = doPutGraph(newGraph);
-                result.addEdit(edit);
+                newGraphs.add(newGraph);
             }
         }
+        result.addEdit(doPutGraphs(newGraphs));
         for (AspectGraph type : getTypes().values()) {
             AspectGraph newType = type.renumber();
             if (newType != type) {
@@ -765,13 +788,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 result.addEdit(edit);
             }
         }
+        List<AspectGraph> newRules =
+            new ArrayList<AspectGraph>(getRules().size());
         for (AspectGraph rule : getRules().values()) {
             AspectGraph newRule = rule.renumber();
             if (newRule != rule) {
-                Edit edit = doPutRule(newRule);
-                result.addEdit(edit);
+                newRules.add(newRule);
             }
         }
+        result.addEdit(doPutRules(newRules));
         result.end();
         return result.getChange() == 0 ? null : result;
     }
@@ -1222,13 +1247,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                     controlEntry.getValue());
             }
             // save graphs
-            for (AspectGraph stateGraph : store.getGraphs().values()) {
-                result.doPutGraph(stateGraph);
-            }
+            result.doPutGraphs(store.getGraphs().values());
             // save rules
-            for (AspectGraph ruleGraph : store.getRules().values()) {
-                result.doPutRule(ruleGraph);
-            }
+            result.doPutRules(store.getRules().values());
             // save type graphs
             for (AspectGraph typeGraph : store.getTypes().values()) {
                 result.doPutType(typeGraph);
@@ -1330,6 +1351,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
+        }
+
+        /** Returns a fresh set consisting of the names of a given set of graphs. */
+        final protected Set<String> getNames(Collection<AspectGraph> graphs) {
+            Set<String> result = new HashSet<String>();
+            for (AspectGraph graph : graphs) {
+                result.add(graph.getName());
+            }
+            return result;
         }
 
         /**
@@ -1701,24 +1731,39 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /** Edit consisting of the addition (or replacement) of a graph. */
-    private class PutGraphEdit extends MyEdit {
-        public PutGraphEdit(AspectGraph oldGraph, AspectGraph newGraph) {
+    private class GraphEdit extends MyEdit {
+        public GraphEdit(Collection<AspectGraph> oldGraphs,
+                Collection<AspectGraph> newGraphs) {
             super(GRAPH_CHANGE);
-            this.oldGraph = oldGraph;
-            this.newGraph = newGraph;
+            this.oldGraphs = oldGraphs;
+            this.newGraphs = newGraphs;
         }
 
         @Override
         public String getPresentationName() {
-            return this.oldGraph == null ? Options.NEW_GRAPH_ACTION_NAME
-                    : Options.EDIT_GRAPH_ACTION_NAME;
+            if (this.oldGraphs.isEmpty()) {
+                return Options.NEW_GRAPH_ACTION_NAME;
+            } else if (this.newGraphs.isEmpty()) {
+                return Options.DELETE_GRAPH_ACTION_NAME;
+            } else if (this.newGraphs.size() == 1 && this.oldGraphs.size() == 1) {
+                String oldRuleName = this.oldGraphs.iterator().next().getName();
+                String newRuleName = this.newGraphs.iterator().next().getName();
+                if (oldRuleName.equals(newRuleName)) {
+                    return Options.EDIT_GRAPH_ACTION_NAME;
+                } else {
+                    return Options.RENAME_GRAPH_ACTION_NAME;
+                }
+            } else {
+                return Options.CHANGE_GRAPHS_ACTION_NAME;
+            }
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
+            doDeleteGraphs(getNames(this.oldGraphs));
             try {
-                doPutGraph(this.newGraph);
+                doPutGraphs(this.newGraphs);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1728,140 +1773,65 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (this.oldGraph == null) {
-                doDeleteGraph(this.newGraph.getName());
-            } else {
-                try {
-                    doPutGraph(this.oldGraph);
-                } catch (IOException exc) {
-                    throw new CannotUndoException();
-                }
+            doDeleteGraphs(getNames(this.newGraphs));
+            try {
+                doPutGraphs(this.oldGraphs);
+            } catch (IOException exc) {
+                throw new CannotUndoException();
             }
             notifyObservers(this);
         }
 
-        /** Returns the deleted graph. */
-        public final AspectGraph getOldGraph() {
-            return this.oldGraph;
+        /** Returns the deleted graphs. */
+        public final Collection<AspectGraph> getOldGraphs() {
+            return this.oldGraphs;
+        }
+
+        /** Returns the created graphs. */
+        public final Collection<AspectGraph> getNewGraphs() {
+            return this.newGraphs;
         }
 
         /** The deleted graph, if any. */
-        private final AspectGraph oldGraph;
+        private final Collection<AspectGraph> oldGraphs;
         /** The added graph. */
-        private final AspectGraph newGraph;
+        private final Collection<AspectGraph> newGraphs;
     }
 
-    /** Edit consisting of the deletion of a graph. */
-    private class DeleteGraphEdit extends MyEdit {
-        public DeleteGraphEdit(AspectGraph graph) {
-            super(GRAPH_CHANGE);
-            this.graph = graph;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.DELETE_GRAPH_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            doDeleteGraph(this.graph.getName());
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doPutGraph(this.graph);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted graph. */
-        public final AspectGraph getGraph() {
-            return this.graph;
-        }
-
-        /** The deleted graph. */
-        private final AspectGraph graph;
-    }
-
-    /** Edit consisting of the renaming of a graph. */
-    private class RenameGraphEdit extends MyEdit {
-        public RenameGraphEdit(String oldName, String newName,
-                AspectGraph oldGraph) {
-            super(GRAPH_CHANGE);
-            this.oldName = oldName;
-            this.newName = newName;
-            this.oldGraph = oldGraph;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.RENAME_GRAPH_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                doRenameGraph(this.oldName, this.newName);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doRenameGraph(this.newName, this.oldName);
-                if (this.oldGraph != null) {
-                    doPutGraph(this.oldGraph);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the graph previously stored under {@link #newName}, if any. */
-        public final AspectGraph getOldGraph() {
-            return this.oldGraph;
-        }
-
-        /** The old name of the renamed graph. */
-        private final String oldName;
-        /** The new name of the renamed graph. */
-        private final String newName;
-        /** The graph previously stored under {@link #newName}, if any. */
-        private final AspectGraph oldGraph;
-    }
-
-    /** Edit consisting of the addition (or replacement) of a rule. */
-    private class PutRuleEdit extends MyEdit {
-        public PutRuleEdit(AspectGraph oldRule, AspectGraph newRule) {
+    /** Edit consisting adding and removing sets of rules. */
+    private class RuleEdit extends MyEdit {
+        public RuleEdit(Collection<AspectGraph> oldRules,
+                Collection<AspectGraph> newRules) {
             super(RULE_CHANGE);
-            this.oldRule = oldRule;
-            this.newRule = newRule;
+            this.oldRules = oldRules;
+            this.newRules = newRules;
         }
 
         @Override
         public String getPresentationName() {
-            return this.oldRule == null ? Options.NEW_RULE_ACTION_NAME
-                    : Options.EDIT_RULE_ACTION_NAME;
+            if (this.oldRules.isEmpty()) {
+                return Options.NEW_RULE_ACTION_NAME;
+            } else if (this.newRules.isEmpty()) {
+                return Options.DELETE_RULE_ACTION_NAME;
+            } else if (this.newRules.size() == 1 && this.oldRules.size() == 1) {
+                String oldRuleName = this.oldRules.iterator().next().getName();
+                String newRuleName = this.newRules.iterator().next().getName();
+                if (oldRuleName.equals(newRuleName)) {
+                    return Options.EDIT_RULE_ACTION_NAME;
+                } else {
+                    return Options.RENAME_RULE_ACTION_NAME;
+                }
+            } else {
+                return Options.CHANGE_RULES_ACTION_NAME;
+            }
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
+            doDeleteRules(getNames(this.oldRules));
             try {
-                doPutRule(this.newRule);
+                doPutRules(this.newRules);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1871,119 +1841,29 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (this.oldRule == null) {
-                doDeleteRule(this.newRule.getName());
-            } else {
-                try {
-                    doPutRule(this.oldRule);
-                } catch (IOException exc) {
-                    throw new CannotUndoException();
-                }
+            doDeleteRules(getNames(this.newRules));
+            try {
+                doPutRules(this.oldRules);
+            } catch (IOException exc) {
+                throw new CannotUndoException();
             }
             notifyObservers(this);
         }
 
-        /** Returns the deleted rule, if any. */
-        public final AspectGraph getOldRule() {
-            return this.oldRule;
+        /** Returns the deleted rules, if any. */
+        public final Collection<AspectGraph> getOldRules() {
+            return this.oldRules;
+        }
+
+        /** Returns the created rules, if any. */
+        public final Collection<AspectGraph> getNewRules() {
+            return this.newRules;
         }
 
         /** The deleted rule, if any. */
-        private final AspectGraph oldRule;
+        private final Collection<AspectGraph> oldRules;
         /** The added rule. */
-        private final AspectGraph newRule;
-    }
-
-    /** Edit consisting of the deletion of a rule. */
-    private class DeleteRuleEdit extends MyEdit {
-        public DeleteRuleEdit(AspectGraph rule) {
-            super(RULE_CHANGE);
-            this.rule = rule;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.DELETE_RULE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            doDeleteRule(this.rule.getName());
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doPutRule(this.rule);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted graph. */
-        public final AspectGraph getRule() {
-            return this.rule;
-        }
-
-        /** The deleted graph. */
-        private final AspectGraph rule;
-    }
-
-    /** Edit consisting of the renaming of a rule. */
-    private class RenameRuleEdit extends MyEdit {
-        public RenameRuleEdit(String oldName, String newName,
-                AspectGraph oldRule) {
-            super(RULE_CHANGE);
-            this.oldName = oldName;
-            this.newName = newName;
-            this.oldRule = oldRule;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.RENAME_RULE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                doRenameRule(this.oldName, this.newName);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doRenameRule(this.newName, this.oldName);
-                if (this.oldRule != null) {
-                    doPutRule(this.oldRule);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the rule previously stored under {@link #newName}, if any. */
-        public final AspectGraph getOldRule() {
-            return this.oldRule;
-        }
-
-        /** The old name of the renamed rule. */
-        private final String oldName;
-        /** The new name of the renamed rule. */
-        private final String newName;
-        /** The rule previously stored under {@link #newName}, if any. */
-        private final AspectGraph oldRule;
+        private final Collection<AspectGraph> newRules;
     }
 
     /** Edit consisting of the addition (or replacement) of a type graph. */

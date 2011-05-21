@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -176,12 +177,14 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph putGraph(AspectGraph graph) throws IOException {
+    public Collection<AspectGraph> putGraphs(Collection<AspectGraph> graph)
+        throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public AspectGraph deleteGraph(String name) throws IOException {
+    public Collection<AspectGraph> deleteGraphs(Collection<String> name)
+        throws IOException {
         throw new IOException(String.format(
             "Archived grammar '%s' is immutable", getName()));
     }
@@ -199,12 +202,14 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public AspectGraph putRule(AspectGraph rule) throws IOException {
+    public Collection<AspectGraph> putRules(Collection<AspectGraph> rule)
+        throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public AspectGraph deleteRule(String name) throws IOException {
+    public Collection<AspectGraph> deleteRules(Collection<String> names)
+        throws IOException {
         throw new IOException(String.format(
             "Archived grammar '%s' is immutable", getName()));
     }

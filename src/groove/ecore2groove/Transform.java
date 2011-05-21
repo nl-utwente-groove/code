@@ -211,9 +211,7 @@ public class Transform {
                 rulesToDelete.add(ruleName);
             }
         }
-        for (String ruleName : rulesToDelete) {
-            grammar.deleteRule(ruleName);
-        }
+        grammar.deleteRules(rulesToDelete);
 
         // Now create the required constraint rules and add them to the grammar
         start = new Date().getTime();
@@ -223,6 +221,7 @@ public class Transform {
             + (new Date().getTime() - start) + " ms)");
 
         start = new Date().getTime();
+        Set<AspectGraph> rules = new HashSet<AspectGraph>();
         for (DefaultGraph constraintRule : constraints.getConstraints()) {
             AspectGraph arg;
             try {
@@ -235,14 +234,16 @@ public class Transform {
             String name = constraintRule.getName();
             arg.getInfo().setFile(f + File.separator + name + ".gty");
             arg.getInfo().getProperties(true).setPriority(50);
-            grammar.putRule(arg);
+            rules.add(arg);
 
             number++;
         }
+        grammar.putRules(rules);
         System.out.println("Stored constraint rules: " + number + " ("
             + (new Date().getTime() - start) + " ms)");
 
         // Load instance models and create instance graph representations
+        Set<AspectGraph> graphs = new HashSet<AspectGraph>();
         for (int i = 1; i < args.length - 1; i++) {
             start = new Date().getTime();
 
@@ -263,10 +264,9 @@ public class Transform {
 
             // Set info about how to store the instance graph and then store it
             aig.getInfo().setFile(f + File.separator + instanceName);
-
-            grammar.putGraph(aig);
-
+            graphs.add(aig);
         }
+        grammar.putGraphs(graphs);
 
         System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
     }

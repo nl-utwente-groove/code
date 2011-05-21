@@ -24,6 +24,7 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,34 +49,27 @@ public class DeleteRuleAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        // Multiple selection
-        String question = "Delete rule(s) '%s'";
         // copy the selected rules to avoid concurrent modifications
-        List<RuleView> ruleViews =
-            new ArrayList<RuleView>(getModel().getRuleSet());
+        Collection<RuleView> ruleViews = getModel().getRuleSet();
         // collect the affected graphs and compose the question
         AspectGraph[] rules = new AspectGraph[ruleViews.size()];
-        for (int i = 0; i < ruleViews.size(); i++) {
-            rules[i] = ruleViews.get(i).getAspectGraph();
-            String ruleName = ruleViews.get(i).getName();
-            question = String.format(question, ruleName);
-            if (i < ruleViews.size() - 1) {
-                question = question + ", '%s'";
-            } else {
-                question = question + "?";
-            }
+        List<String> ruleNames = new ArrayList<String>(ruleViews.size());
+        for (RuleView ruleView : ruleViews) {
+            rules[ruleNames.size()] = ruleView.getAspectGraph();
+            ruleNames.add(ruleView.getName());
+        }
+        String question;
+        if (rules.length == 1) {
+            question = String.format("Delete rule '%s'?", rules[0].getName());
+        } else {
+            question = String.format("Delete these %s rules?", rules.length);
         }
         if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)
             && getPanel().disposeEditors(rules)) {
-            for (RuleView rule : ruleViews) {
-                try {
-                    result |= getModel().doDeleteRule(rule.getName());
-                } catch (IOException exc) {
-                    showErrorDialog(
-                        exc,
-                        String.format("Error while deleting rule '%s'",
-                            rule.getName()));
-                }
+            try {
+                result |= getModel().doDeleteRules(ruleNames);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error during rule deletion");
             }
         }
         return result;
