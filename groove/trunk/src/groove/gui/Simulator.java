@@ -323,7 +323,6 @@ public class Simulator implements SimulatorListener {
         JToolBar result = createToolBar();
         result.setFloatable(false);
         result.add(this.actions.getNewRuleAction());
-        result.add(this.actions.getEditRuleAction());
         result.addSeparator();
         result.add(this.actions.getCopyRuleAction());
         result.add(this.actions.getDeleteRuleAction());
@@ -368,7 +367,6 @@ public class Simulator implements SimulatorListener {
         JToolBar result = createToolBar();
         result.setFloatable(false);
         result.add(this.actions.getNewHostAction());
-        result.add(this.actions.getEditHostOrStateAction());
         result.addSeparator();
         result.add(this.actions.getCopyHostAction());
         result.add(this.actions.getDeleteHostAction());
@@ -589,6 +587,13 @@ public class Simulator implements SimulatorListener {
         } else {
             renameItem.setAction(renameAction);
         }
+        JMenuItem saveItem = getSaveMenuItem();
+        Action saveAction = getActions().getSaveAsAction(tabKind);
+        if (saveAction == null) {
+            saveItem.setEnabled(false);
+        } else {
+            saveItem.setAction(saveAction);
+        }
     }
 
     /**
@@ -645,7 +650,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(new JMenuItem(this.actions.getSaveGrammarAction()));
-        result.add(new JMenuItem(this.actions.getSaveAction()));
+        result.add(getSaveMenuItem());
 
         result.addSeparator();
 
@@ -715,7 +720,7 @@ public class Simulator implements SimulatorListener {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(this.actions.getEditHostOrStateAction());
+            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedTab()));
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
@@ -729,7 +734,8 @@ public class Simulator implements SimulatorListener {
         if (this.copyGraphItem == null) {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
-            this.copyGraphItem.setAction(this.actions.getCopyHostAction());
+            this.copyGraphItem.setAction(getActions().getCopyAction(
+                getSimulatorPanel().getSelectedTab()));
         }
         return this.copyGraphItem;
     }
@@ -742,7 +748,8 @@ public class Simulator implements SimulatorListener {
         if (this.deleteGraphItem == null) {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
-            this.deleteGraphItem.setAction(this.actions.getDeleteHostAction());
+            this.deleteGraphItem.setAction(getActions().getDeleteAction(
+                getSimulatorPanel().getSelectedTab()));
         }
         return this.deleteGraphItem;
     }
@@ -753,13 +760,9 @@ public class Simulator implements SimulatorListener {
      */
     private JMenuItem getRenameMenuItem() {
         if (this.renameGraphItem == null) {
-            this.renameGraphItem = new JMenuItem();
-            // load the graph rename action as default
-            this.renameGraphItem.setAction(this.actions.getRenameHostAction());
-            // give the rule rename action a chance to replace the graph rename
-            // action
-            this.actions.getRenameRuleAction();
-            this.renameGraphItem.setAccelerator(Options.RENAME_KEY);
+            this.renameGraphItem =
+                new JMenuItem(getActions().getRenameAction(
+                    getSimulatorPanel().getSelectedTab()));
         }
         return this.renameGraphItem;
     }
@@ -771,9 +774,23 @@ public class Simulator implements SimulatorListener {
         // lazily create the menu item
         if (this.exportMenuItem == null) {
             this.exportMenuItem =
-                new JMenuItem(getStatePanel().getJGraph().getExportAction());
+                new JMenuItem(getActions().getExportAction(
+                    getSimulatorPanel().getSelectedTab()));
         }
         return this.exportMenuItem;
+    }
+
+    /**
+     * Returns the menu item that will contain the current export action.
+     */
+    private JMenuItem getSaveMenuItem() {
+        // lazily create the menu item
+        if (this.saveMenuItem == null) {
+            this.saveMenuItem =
+                new JMenuItem(getActions().getSaveAsAction(
+                    getSimulatorPanel().getSelectedTab()));
+        }
+        return this.saveMenuItem;
     }
 
     /**
@@ -1036,6 +1053,9 @@ public class Simulator implements SimulatorListener {
 
     /** The menu item containing the (current) export action. */
     private JMenuItem exportMenuItem;
+
+    /** The menu item containing the current save-as action. */
+    private JMenuItem saveMenuItem;
 
     /** Dummy action for the {@link #externalMenu}. */
     private Action dummyExternalAction;

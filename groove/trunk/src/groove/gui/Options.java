@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
 import groove.gui.jgraph.JAttr;
 import groove.util.ExprParser;
 import groove.util.Groove;
@@ -359,40 +360,35 @@ public class Options implements Cloneable {
     /**
      * Save action name
      */
-    public static final String SAVE_ACTION_NAME = "Save ...";
+    public static final String SAVE_ACTION_NAME = "Save";
     /**
      * Save-as action name
      */
     public static final String SAVE_AS_ACTION_NAME = "Save As ...";
     /**
-     * Save action name
+     * Save control action name
      */
     public static final String SAVE_CONTROL_ACTION_NAME = "Save Control";
+    /**
+     * Save-as control action name
+     */
+    public static final String SAVE_CONTROL_AS_ACTION_NAME =
+        "Save Control As ...";
+
+    /** Returns the save-as action name for a given graph role. */
+    public static final String getSaveActionName(GraphRole role, boolean saveAs) {
+        return String.format("Save %s %s...", role.toString(true), saveAs
+                ? "As " : "");
+    }
+
     /**
      * Save grammar action name
      */
     public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar As ...";
     /**
-     * Save graph action name
-     */
-    public static final String SAVE_GRAPH_ACTION_NAME = "Save Graph As ...";
-    /**
-     * Save state action name
-     */
-    public static final String SAVE_STATE_ACTION_NAME = "Save State As ...";
-    /**
-     * Save rule action name
-     */
-    public static final String SAVE_RULE_ACTION_NAME = "Save Rule As ...";
-    /**
      * Save lts action name
      */
     public static final String SAVE_LTS_ACTION_NAME = "Save LTS As ...";
-    /**
-     * Save type action name
-     */
-    public static final String SAVE_TYPE_ACTION_NAME = "Save Type As ...";
-
     /**
      * Scroll to action name
      */

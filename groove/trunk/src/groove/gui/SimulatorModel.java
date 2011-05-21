@@ -824,7 +824,7 @@ public class SimulatorModel implements Cloneable {
         start();
         changeHost(name);
         if (name != null) {
-            changeTabKind(TabKind.GRAPH);
+            changeTabKind(TabKind.HOST);
         }
         return finish();
     }
@@ -842,7 +842,7 @@ public class SimulatorModel implements Cloneable {
             hostSet.add(this.grammar.getGraphView(hostName));
         }
         changeHostSet(hostSet);
-        changeTabKind(TabKind.GRAPH);
+        changeTabKind(TabKind.HOST);
         return finish();
     }
 

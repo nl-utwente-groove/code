@@ -105,9 +105,9 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         // add keyboard binding for Save key
         InputMap focusedInputMap =
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_ACTION_NAME);
+        focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_CONTROL_ACTION_NAME);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(Options.SAVE_ACTION_NAME,
+        getActionMap().put(Options.SAVE_CONTROL_ACTION_NAME,
             getActions().getSaveControlAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
             getActions().getCancelEditControlAction());
@@ -234,6 +234,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)
             || changes.contains(Change.CONTROL)) {
+            stopEditing(false);
             refreshAll();
         }
     }
@@ -458,9 +459,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         /** Constructs an instance of this class. */
         public ControlTextArea() {
             super(new RSyntaxDocument("gcl"));
-            // RSyntaxDocument document = new RSyntaxDocument("gcl");
             ((RSyntaxDocument) getDocument()).setSyntaxStyle(new CtrlTokenMaker());
-            // setDocument(document);
             setBackground(DISABLED_COLOUR);
             this.changeListener = new DocumentListener() {
                 @Override

@@ -112,7 +112,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         JToolBar result = new JToolBar();
         result.add(getActions().getNewHostAction());
         result.add(getActions().getEditHostOrStateAction());
-        result.add(getActions().getSaveAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -204,6 +203,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     public AspectJModel getJModel() {
         return (AspectJModel) super.getJModel();
+    }
+
+    /**
+     * Returns the graph that is currently selected (either one of the
+     * grammar view's host graphs, or a state).
+     */
+    public AspectGraph getGraph() {
+        return getJModel() == null ? null : getJModel().getGraph();
     }
 
     /**

@@ -69,7 +69,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         JToolBar result = new JToolBar();
         result.add(getActions().getStartSimulationAction());
         result.add(getActions().getExploreAction());
-        result.add(getActions().getSaveAction());
+        result.add(getActions().getSaveLTSAsAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
@@ -288,7 +288,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
-                    getSimulatorModel().setTabKind(TabKind.GRAPH);
+                    getSimulatorModel().setTabKind(TabKind.HOST);
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
