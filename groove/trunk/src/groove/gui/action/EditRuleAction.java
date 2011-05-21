@@ -22,8 +22,7 @@ public class EditRuleAction extends SimulatorAction {
     public void refresh() {
         boolean enabled =
             getModel().getRule() != null
-                && getModel().getStore().isModifiable()
-                && getModel().getRuleSet().size() == 1;
+                && getModel().getStore().isModifiable();
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }

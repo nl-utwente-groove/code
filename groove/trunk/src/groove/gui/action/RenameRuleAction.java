@@ -19,7 +19,6 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -36,48 +35,29 @@ public class RenameRuleAction extends SimulatorAction {
         putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
     }
 
-    /** This action is disabled if there is more than one selected rule. */
-    @Override
-    public boolean isEnabled() {
-        if (getModel().getRuleSet().size() != 1) {
-            return false;
-        } else {
-            return super.isEnabled();
-        }
-    }
-
     @Override
     public void refresh() {
-        setEnabled(getModel().getRule() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getModel().getStore() != null
+            && getModel().getStore().isModifiable()
+            && getModel().getRuleSet().size() == 1);
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
         // first collect the rule graphs involved
-        AspectGraph[] ruleGraphs =
-            new AspectGraph[getModel().getRuleSet().size()];
-        int i = 0;
-        for (RuleView ruleView : getModel().getRuleSet()) {
-            ruleGraphs[i] = ruleView.getAspectGraph();
-            i++;
-        }
-        if (confirmAbandon() && getPanel().disposeEditors(ruleGraphs)) {
-            // Multiple selection
-            String newName = null;
-            // copy the selected rules to avoid concurrent modifications
-            for (AspectGraph ruleGraph : ruleGraphs) {
-                String oldName = ruleGraph.getName();
-                newName = askNewRuleName("Select new rule name", oldName, true);
-                if (newName != null) {
-                    try {
-                        result |= getModel().doRenameRule(ruleGraph, newName);
-                    } catch (IOException exc) {
-                        showErrorDialog(exc, String.format(
-                            "Error while renaming rule '%s' into '%s'",
-                            oldName, newName));
-                    }
+        AspectGraph rule = getModel().getRule().getAspectGraph();
+        if (confirmAbandon() && getPanel().disposeEditors(rule)) {
+            String oldName = rule.getName();
+            String newName =
+                askNewRuleName("Select new rule name", oldName, true);
+            if (newName != null) {
+                try {
+                    result |= getModel().doRenameRule(rule, newName);
+                } catch (IOException exc) {
+                    showErrorDialog(exc, String.format(
+                        "Error while renaming rule '%s' into '%s'", oldName,
+                        newName));
                 }
             }
         }

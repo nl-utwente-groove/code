@@ -157,6 +157,10 @@ public class Options implements Cloneable {
     public static final String BACK_ACTION_NAME = "Back";
     /** Action name for cancelling an edit. */
     public static final String CANCEL_EDIT_ACTION_NAME = "Cancel Edit";
+    /** Change graphs action name */
+    public static final String CHANGE_GRAPHS_ACTION_NAME = "Change Graphs";
+    /** Change rules action name */
+    public static final String CHANGE_RULES_ACTION_NAME = "Change Rules";
     /** Action name for checking CTL on full state space */
     public static final String CHECK_CTL_FULL_ACTION_NAME =
         "Check CTL property (full state space)";

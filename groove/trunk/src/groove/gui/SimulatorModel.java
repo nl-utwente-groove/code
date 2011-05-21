@@ -50,19 +50,34 @@ import java.util.Set;
 public class SimulatorModel implements Cloneable {
     /**
      * Adds a given host graph to the host graphs in this grammar
-     * @param hostGraph the new host graph
+     * @param newHost the new host graph
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddHost(AspectGraph hostGraph) throws IOException {
+    public boolean doAddHost(AspectGraph newHost) throws IOException {
+        return doAddHosts(Collections.singleton(newHost));
+    }
+
+    /**
+     * Adds a given set of host graphs to the host graphs in this grammar
+     * @param newHosts the new host graph
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddHosts(Collection<AspectGraph> newHosts)
+        throws IOException {
         start();
         try {
+            boolean result = true;
             StoredGrammarView grammar = getGrammar();
-            grammar.getStore().putGraph(hostGraph);
-            String hostName = hostGraph.getName();
-            boolean result = hostName.equals(grammar.getStartGraphName());
+            getStore().putGraphs(newHosts);
+            Set<String> newHostNames = new HashSet<String>();
+            for (AspectGraph newHost : newHosts) {
+                newHostNames.add(newHost.getName());
+                result |= newHost.getName().equals(grammar.getStartGraphName());
+            }
             changeGrammar(result);
-            changeHost(hostName);
+            changeHostSet(newHostNames);
             return result;
         } finally {
             finish();
@@ -70,19 +85,20 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Deletes a host graph from the grammar view.
-     * @param hostName name of the host graph to be deleted
+     * Deletes a set of host graphs from the grammar view.
+     * @param hostNames names of the host graphs to be deleted
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the delete action failed
      */
-    public boolean doDeleteHost(String hostName) throws IOException {
+    public boolean doDeleteHosts(Collection<String> hostNames)
+        throws IOException {
         start();
         try {
             StoredGrammarView grammar = getGrammar();
             // test now if this is the start state, before it is deleted from the
             // grammar
-            boolean result = hostName.equals(grammar.getStartGraphName());
-            grammar.getStore().deleteGraph(hostName);
+            boolean result = hostNames.contains(grammar.getStartGraphName());
+            grammar.getStore().deleteGraphs(hostNames);
             if (result) {
                 // reset the start graph to null
                 grammar.removeStartGraph();
@@ -127,20 +143,36 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Saves an aspect graph as a rule under a given name, and puts the rule
-     * into the current grammar view.
-     * @param ruleGraph the new rule, given as an aspect graph
+     * Saves a new rule in the store, and fires an update event.
+     * @param newRule the new rule, given as an aspect graph
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddRule(AspectGraph ruleGraph) throws IOException {
+    public boolean doAddRule(AspectGraph newRule) throws IOException {
+        return doAddRules(Collections.singleton(newRule));
+    }
+
+    /**
+     * Saves a set of new rules in the store, and fires an update event.
+     * @param newRules the new rules, given as aspect graphs
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doAddRules(Collection<AspectGraph> newRules)
+        throws IOException {
         start();
         try {
-            AspectGraph oldGraph = getStore().putRule(ruleGraph);
-            boolean result =
-                GraphProperties.isEnabled(ruleGraph)
-                    || GraphProperties.isEnabled(oldGraph);
-            changeRule(ruleGraph.getName());
+            Collection<AspectGraph> oldRules = getStore().putRules(newRules);
+            boolean result = false;
+            for (AspectGraph oldRule : oldRules) {
+                result |= GraphProperties.isEnabled(oldRule);
+            }
+            Set<String> newRuleNames = new HashSet<String>();
+            for (AspectGraph newRule : newRules) {
+                result |= GraphProperties.isEnabled(newRule);
+                newRuleNames.add(newRule.getName());
+            }
+            changeRuleSet(newRuleNames);
             changeGrammar(result);
             return result;
         } finally {
@@ -149,19 +181,24 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Deletes a rule from the grammar and the file system, and resets the
+     * Deletes set of rules from the grammar and the file system, and resets the
      * grammar view.
-     * @param name name of the rule to be deleted
+     * @param names names of the rules to be deleted
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the delete action failed
      */
-    public boolean doDeleteRule(String name) throws IOException {
+    public boolean doDeleteRules(Collection<String> names) throws IOException {
         start();
         try {
             StoredGrammarView grammar = getGrammar();
-            boolean result = grammar.getRuleView(name).isEnabled();
-            AspectGraph rule = getStore().deleteRule(name);
-            result |= GraphProperties.isEnabled(rule);
+            boolean result = false;
+            for (String ruleName : names) {
+                RuleView ruleView = grammar.getRuleView(ruleName);
+                result |= ruleView.isEnabled();
+            }
+            for (AspectGraph oldRule : getStore().deleteRules(names)) {
+                result |= GraphProperties.isEnabled(oldRule);
+            }
             changeGrammar(result);
             return result;
         } finally {
@@ -169,19 +206,26 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** Inverts the enabledness of the current rule, and stores the result.
-     * @param ruleGraph rule whose enabledness should be changed
+    /**
+     * Inverts the enabledness of a set of rules, and stores the result.
+     * @param oldRules rules whose enabledness should be changed
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the delete action failed
      */
-    public boolean doEnableRule(AspectGraph ruleGraph) throws IOException {
-        GraphProperties properties =
-            GraphInfo.getProperties(ruleGraph, true).clone();
-        properties.setEnabled(!properties.isEnabled());
-        AspectGraph newRuleGraph = ruleGraph.clone();
-        GraphInfo.setProperties(newRuleGraph, properties);
-        newRuleGraph.setFixed();
-        return doAddRule(newRuleGraph);
+    public boolean doEnableRules(Collection<AspectGraph> oldRules)
+        throws IOException {
+        Collection<AspectGraph> newRules =
+            new ArrayList<AspectGraph>(oldRules.size());
+        for (AspectGraph oldRule : oldRules) {
+            GraphProperties properties =
+                GraphInfo.getProperties(oldRule, true).clone();
+            properties.setEnabled(!properties.isEnabled());
+            AspectGraph newRule = oldRule.clone();
+            GraphInfo.setProperties(newRule, properties);
+            newRule.setFixed();
+            newRules.add(newRule);
+        }
+        return doAddRules(newRules);
     }
 
     /**
@@ -751,22 +795,19 @@ public class SimulatorModel implements Cloneable {
         changeGrammar(grammar);
         // restrict the selected host graphs to those that are (still)
         // in the grammar
-        Set<GraphView> newHostSet = new LinkedHashSet<GraphView>(this.hostSet);
-        Set<GraphView> grammarHostSet = new HashSet<GraphView>();
-        for (String hostName : grammar.getGraphNames()) {
-            grammarHostSet.add(grammar.getGraphView(hostName));
+        Set<String> newHostSet = new LinkedHashSet<String>();
+        for (GraphView hostView : this.hostSet) {
+            newHostSet.add(hostView.getName());
         }
-        newHostSet.retainAll(grammarHostSet);
+        newHostSet.retainAll(grammar.getGraphNames());
         changeHostSet(newHostSet);
         // restrict the selected rules to those that are (still)
         // in the grammar
-        Collection<RuleView> newRuleSet =
-            new LinkedHashSet<RuleView>(this.ruleSet);
-        Set<RuleView> grammarRuleSet = new HashSet<RuleView>();
-        for (String ruleName : grammar.getRuleNames()) {
-            grammarRuleSet.add(grammar.getRuleView(ruleName));
+        Collection<String> newRuleSet = new LinkedHashSet<String>();
+        for (RuleView ruleView : this.ruleSet) {
+            newRuleSet.add(ruleView.getName());
         }
-        newRuleSet.retainAll(grammarRuleSet);
+        newRuleSet.retainAll(grammar.getRuleNames());
         changeRuleSet(newRuleSet);
         changeControl();
         changeType();
@@ -785,8 +826,8 @@ public class SimulatorModel implements Cloneable {
             changeGts(null);
             changeState(null);
             changeMatch(null);
-            changeHostSet(Collections.<GraphView>emptySet());
-            changeRuleSet(Collections.<RuleView>emptySet());
+            changeHostSet(Collections.<String>emptySet());
+            changeRuleSet(Collections.<String>emptySet());
         }
         changeControl();
         changeType();
@@ -837,11 +878,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setHostSet(Collection<String> hostNameSet) {
         start();
-        List<GraphView> hostSet = new ArrayList<GraphView>();
-        for (String hostName : hostNameSet) {
-            hostSet.add(this.grammar.getGraphView(hostName));
-        }
-        changeHostSet(hostSet);
+        changeHostSet(hostNameSet);
         changeTabKind(TabKind.HOST);
         return finish();
     }
@@ -852,10 +889,9 @@ public class SimulatorModel implements Cloneable {
      */
     private final boolean changeHost(String hostName) {
         if (hostName == null) {
-            return changeHostSet(Collections.<GraphView>emptySet());
+            return changeHostSet(Collections.<String>emptySet());
         } else {
-            return changeHostSet(Collections.singleton(getGrammar().getGraphView(
-                hostName)));
+            return changeHostSet(Collections.singleton(hostName));
         }
     }
 
@@ -864,12 +900,26 @@ public class SimulatorModel implements Cloneable {
      * May also change the selected host graph.
      * @see #setHost(String)
      */
-    private final boolean changeHostSet(Collection<GraphView> hostSet) {
-        boolean result = !hostSet.equals(this.hostSet);
+    private final boolean changeHostSet(Collection<String> hostNames) {
+        boolean result = false;
+        Set<GraphView> newHostSet = new LinkedHashSet<GraphView>();
+        hostNames = new HashSet<String>(hostNames);
+        for (GraphView oldHost : this.hostSet) {
+            if (hostNames.remove(oldHost.getName())) {
+                GraphView newRule =
+                    this.grammar.getGraphView(oldHost.getName());
+                newHostSet.add(newRule);
+                result |= oldHost != newRule;
+            } else {
+                result = true;
+            }
+        }
+        for (String hostName : hostNames) {
+            newHostSet.add(this.grammar.getGraphView(hostName));
+            result = true;
+        }
         if (result) {
-            // keep the current set in the same order
-            this.hostSet.retainAll(hostSet);
-            this.hostSet.addAll(hostSet);
+            this.hostSet = newHostSet;
             this.changes.add(Change.HOST);
         }
         return result;
@@ -907,7 +957,7 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, actually made the change.
      * @see #setRule(String)
      */
-    public final boolean setRuleSet(Collection<RuleView> ruleSet) {
+    public final boolean setRuleSet(Collection<String> ruleSet) {
         start();
         changeRuleSet(ruleSet);
         return finish();
@@ -915,9 +965,7 @@ public class SimulatorModel implements Cloneable {
 
     /** Changes the rule view to a given named rule. */
     private final boolean changeRule(String ruleName) {
-        RuleView rule = getGrammar().getRuleView(ruleName);
-        assert rule != null;
-        return changeRuleSet(Collections.singleton(rule));
+        return changeRuleSet(Collections.singleton(ruleName));
     }
 
     /** 
@@ -926,11 +974,25 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if a change was actually made
      * @see #setRule(String)
      */
-    private final boolean changeRuleSet(Collection<RuleView> ruleSet) {
-        boolean result = !ruleSet.equals(this.ruleSet);
+    private final boolean changeRuleSet(Collection<String> ruleNames) {
+        boolean result = false;
+        Set<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
+        ruleNames = new HashSet<String>(ruleNames);
+        for (RuleView oldRule : this.ruleSet) {
+            if (ruleNames.remove(oldRule.getName())) {
+                RuleView newRule = this.grammar.getRuleView(oldRule.getName());
+                newRuleSet.add(newRule);
+                result |= oldRule != newRule;
+            } else {
+                result = true;
+            }
+        }
+        for (String ruleName : ruleNames) {
+            newRuleSet.add(this.grammar.getRuleView(ruleName));
+            result = true;
+        }
         if (result) {
-            this.ruleSet.retainAll(ruleSet);
-            this.ruleSet.addAll(ruleSet);
+            this.ruleSet = newRuleSet;
             this.changes.add(Change.RULE);
         }
         return result;

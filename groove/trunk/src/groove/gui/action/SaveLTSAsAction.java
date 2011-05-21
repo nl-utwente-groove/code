@@ -17,6 +17,7 @@
 package groove.gui.action;
 
 import groove.graph.DefaultGraph;
+import groove.graph.GraphRole;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -53,8 +54,11 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
 
         if (dialog.showDialog(getSimulator())) {
-
+            ExtensionFilter ltsFilter = FileType.getFilter(GraphRole.LTS);
             File ltsFile = dialog.getFile();
+            if (ltsFile.isDirectory()) {
+                ltsFile = new File(ltsFile, ltsFilter.addExtension("lts"));
+            }
             int exportStates = dialog.getExportStates();
             boolean showFinal = dialog.showFinal();
             boolean showNames = dialog.showNames();
@@ -62,7 +66,7 @@ public class SaveLTSAsAction extends SimulatorAction {
             boolean showOpen = dialog.showOpen();
 
             GTS gts = getModel().getGts();
-            gts.setName(FileType.GXL_FILTER.stripExtension(ltsFile.getName()));
+            gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
             DefaultGraph lts =
                 gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
 

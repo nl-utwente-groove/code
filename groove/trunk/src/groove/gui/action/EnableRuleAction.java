@@ -6,6 +6,8 @@ import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Action that changes the enabledness status of the currently selected
@@ -32,21 +34,17 @@ public class EnableRuleAction extends SimulatorAction {
     public boolean execute() {
         boolean result = false;
         // collect the selected rule graphs
-        AspectGraph[] ruleGraphs =
-            new AspectGraph[getModel().getRuleSet().size()];
-        int i = 0;
+        List<AspectGraph> ruleGraphs =
+            new ArrayList<AspectGraph>(getModel().getRuleSet().size());
         for (RuleView ruleView : getModel().getRuleSet()) {
-            ruleGraphs[i] = ruleView.getAspectGraph();
-            i++;
+            ruleGraphs.add(ruleView.getAspectGraph());
         }
-        if (confirmAbandon() && getPanel().disposeEditors(ruleGraphs)) {
-            for (AspectGraph ruleGraph : ruleGraphs) {
-                try {
-                    result |= getSimulator().getModel().doEnableRule(ruleGraph);
-                } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while enabling rule '%s'", ruleGraph.getName()));
-                }
+        if (confirmAbandon()
+            && getPanel().disposeEditors(ruleGraphs.toArray(new AspectGraph[0]))) {
+            try {
+                result |= getSimulator().getModel().doEnableRules(ruleGraphs);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error during rule enabling");
             }
         }
         return result;

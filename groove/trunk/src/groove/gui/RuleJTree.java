@@ -133,6 +133,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<RuleView>> priorityMap = getPriorityMap(grammar);
+        Collection<RuleView> selectedRules = getSimulatorModel().getRuleSet();
+        List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleView>> priorityEntry : priorityMap.entrySet()) {
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
@@ -149,11 +151,16 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
                 parentNode.add(ruleNode);
-                expandPath(new TreePath(ruleNode.getPath()));
+                TreePath rulePath = new TreePath(ruleNode.getPath());
+                expandPath(rulePath);
+                if (selectedRules.contains(ruleView)) {
+                    selectedPaths.add(rulePath);
+                }
                 this.ruleNodeMap.put(ruleView, ruleNode);
             }
         }
         this.ruleDirectory.reload(this.topDirectoryNode);
+        setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
     /**
@@ -270,15 +277,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /** Returns the list of currently selected rule names. */
-    public List<RuleView> getSelectedRules() {
-        List<RuleView> result = new ArrayList<RuleView>();
+    public Set<String> getSelectedRules() {
+        Set<String> result = new HashSet<String>();
         int[] selectedRows = getSelectionRows();
         if (selectedRows != null) {
             for (int selectedRow : selectedRows) {
                 Object[] nodes = getPathForRow(selectedRow).getPath();
                 for (int i = nodes.length - 1; i >= 0; i--) {
                     if (nodes[i] instanceof RuleTreeNode) {
-                        result.add(((RuleTreeNode) nodes[i]).getRule());
+                        result.add(((RuleTreeNode) nodes[i]).getRule().getName());
                         break;
                     }
                 }
@@ -564,30 +571,17 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         public void valueChanged(TreeSelectionEvent evt) {
             TreePath[] paths = getSelectionPaths();
-            Set<RuleView> selectedRules = new HashSet<RuleView>();
-            boolean matchSelected = false;
             for (int i = 0; paths != null && i < paths.length; i++) {
                 Object selectedNode = paths[i].getLastPathComponent();
-                RuleTreeNode ruleNode = null;
-                if (selectedNode instanceof RuleTreeNode) {
-                    // selected tree node is a production rule (level 1
-                    // node)
-                    ruleNode = (RuleTreeNode) selectedNode;
-                } else if (!matchSelected
-                    && selectedNode instanceof MatchTreeNode) {
-                    ruleNode =
-                        (RuleTreeNode) paths[i].getParentPath().getLastPathComponent();
-                    matchSelected = true;
+                if (selectedNode instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
                     MatchResult result =
                         ((MatchTreeNode) selectedNode).getResult();
                     getSimulatorModel().setMatch(result);
-                }
-                if (ruleNode != null) {
-                    selectedRules.add(ruleNode.getRule());
+                    break;
                 }
             }
-            getSimulatorModel().setRuleSet(selectedRules);
+            getSimulatorModel().setRuleSet(getSelectedRules());
             if (evt.isAddedPath() && paths.length == 1) {
                 TabKind newTab;
                 if (evt.getPath().getLastPathComponent() instanceof RuleTreeNode) {
@@ -623,7 +617,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     TreePath[] paths = getSelectionPaths();
                     boolean pathIsSelected = false;
                     for (int i = 0; paths != null && i < paths.length; i++) {
-                        if (selectedPath == paths[i]) {
+                        if (selectedPath.equals(paths[i])) {
                             pathIsSelected = true;
                         }
                     }
