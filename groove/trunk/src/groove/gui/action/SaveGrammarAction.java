@@ -48,7 +48,7 @@ public class SaveGrammarAction extends SimulatorAction {
      */
     public boolean save(File grammarFile, boolean clearDir) throws IOException {
         boolean result = false;
-        if (getPanel().saveEditors(true)) {
+        if (getPanel().disposeAllEditors()) {
             SystemStore newStore =
                 getModel().getStore().save(grammarFile, clearDir);
             StoredGrammarView newView = newStore.toGrammarView();

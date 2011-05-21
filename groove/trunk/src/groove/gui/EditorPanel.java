@@ -17,19 +17,16 @@
 package groove.gui;
 
 import groove.graph.GraphRole;
-import groove.gui.dialog.ErrorDialog;
+import groove.gui.action.CancelEditGraphAction;
+import groove.gui.action.SaveGraphAction;
 import groove.view.StoredGrammarView;
 import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -55,7 +52,7 @@ public class EditorPanel extends JPanel {
                 simulator.getModel().getGrammar().getProperties()) {
                 @Override
                 protected void doQuit() {
-                    askAndSave();
+                    EditorPanel.this.doCancel();
                 }
 
                 @Override
@@ -68,7 +65,7 @@ public class EditorPanel extends JPanel {
                     } else {
                         tab.setTitle(getTitle());
                     }
-                    getOkButton().setEnabled(isDirty());
+                    getSaveButton().setEnabled(isDirty());
                 }
 
                 @Override
@@ -85,7 +82,7 @@ public class EditorPanel extends JPanel {
                 @Override
                 JToolBar createToolBar() {
                     JToolBar toolbar = new JToolBar();
-                    toolbar.add(getOkButton());
+                    toolbar.add(getSaveButton());
                     toolbar.add(getCancelButton());
                     addModeButtons(toolbar);
                     addUndoButtons(toolbar);
@@ -142,9 +139,19 @@ public class EditorPanel extends JPanel {
         return this.editor;
     }
 
+    /** Returns the simulator instance of this panel. */
+    public Simulator getSimulator() {
+        return this.simulator;
+    }
+
     /** Indicates if the editor has unsaved changes. */
     public boolean isDirty() {
         return getEditor().isDirty();
+    }
+
+    /** Changes the startus of the editor to dirty. */
+    public void setDirty(boolean dirty) {
+        getEditor().setDirty(dirty);
     }
 
     /** Indicates if the editor is currently saving changes. */
@@ -173,14 +180,7 @@ public class EditorPanel extends JPanel {
     /** Creates and returns a Cancel button, for use on the tool bar. */
     private JButton getCancelButton() {
         if (this.cancelButton == null) {
-            Action cancelAction =
-                new AbstractAction(Options.CANCEL_EDIT_ACTION_NAME,
-                    Icons.CANCEL_ICON) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        handleCancel();
-                    }
-                };
+            Action cancelAction = getCancelAction();
             JButton result = new JButton(cancelAction);
             result.setText(null);
             result.setToolTipText("Cancel editing");
@@ -189,139 +189,43 @@ public class EditorPanel extends JPanel {
         return this.cancelButton;
     }
 
+    /** Creates and returns the cancel action. */
+    private CancelEditGraphAction getCancelAction() {
+        if (this.cancelAction == null) {
+            this.cancelAction = new CancelEditGraphAction(this);
+        }
+        return this.cancelAction;
+    }
+
     /** Creates and returns an OK button, for use on the tool bar. */
-    private JButton getOkButton() {
-        if (this.okButton == null) {
-            Action saveAction =
-                new AbstractAction(Options.SAVE_ACTION_NAME, Icons.SAVE_ICON) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        if (isDirty() && confirmSave()) {
-                            doSave();
-                        }
-                    }
-                };
-            saveAction.putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);
+    private JButton getSaveButton() {
+        if (this.saveButton == null) {
+            Action saveAction = getSaveAction();
             JButton result = new JButton(saveAction);
             result.setText(null);
             result.setToolTipText("Save changes");
-            this.okButton = result;
+            this.saveButton = result;
         }
-        return this.okButton;
+        return this.saveButton;
     }
 
-    /** Does the cancel action. */
-    void handleCancel() {
-        if (askAndSave()) {
-            switchToEditedGraph();
-            dispose();
+    /** Creates and returns the save action. */
+    public SaveGraphAction getSaveAction() {
+        if (this.saveAction == null) {
+            this.saveAction = new SaveGraphAction(this);
         }
+        return this.saveAction;
     }
 
-    /**
-     * If the editor is dirty, asks if it should be saved, and does so if
-     * the answer is yes.
-     * Optionally disposes the editor if not cancelled.
-     * @return {@code true} if the operation was not cancelled
-     */
-    boolean askAndSave() {
-        boolean result = true;
-        if (this.editor.isDirty() && !this.saving) {
-            int confirm =
-                JOptionPane.showConfirmDialog(this,
-                    String.format("%s '%s' has been modified. Save changes?",
-                        this.editor.getRole().toString(true),
-                        getGraph().getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                doSave();
-            }
-            result = (confirm != JOptionPane.CANCEL_OPTION);
-        }
-        return result;
+    /** Calls {@link CancelEditGraphAction#execute()}. */
+    public boolean doCancel() {
+        return getCancelAction().execute();
     }
 
-    /**
-     * Saves the editor if it is dirty.
-     */
-    void doSave() {
-        if (this.editor.isDirty()) {
-            this.saving = true;
-            AspectGraph graph = this.editor.getGraph();
-            try {
-                switch (graph.getRole()) {
-                case HOST:
-                    this.simulator.getModel().doAddHost(graph);
-                    break;
-                case RULE:
-                    this.simulator.getModel().doAddRule(graph);
-                    break;
-                case TYPE:
-                    this.simulator.getModel().doAddType(graph);
-                    break;
-                }
-                this.editor.setDirty(false);
-            } catch (IOException exc) {
-                new ErrorDialog(this, String.format(
-                    "Error while saving edited graph '%s'", graph.getName()),
-                    exc).setVisible(true);
-            }
-            this.saving = false;
-        }
-    }
-
-    /**
-     * Asks whether it is OK to stop the current simulation (if any).
-     */
-    private boolean confirmSave() {
-        if (this.simulator.getModel().getGts() != null) {
-            BehaviourOption option =
-                (BehaviourOption) this.options.getItem(Options.STOP_SIMULATION_OPTION);
-            if (option.getValue() == BehaviourOption.ASK) {
-                String question =
-                    String.format(
-                        "Saving %s '%s' may stop current simulation. Proceed?",
-                        this.editor.getRole(), getName());
-                int response =
-                    JOptionPane.showConfirmDialog(this.simulator.getFrame(),
-                        question, null, JOptionPane.OK_CANCEL_OPTION);
-                return response == JOptionPane.OK_OPTION;
-            }
-        }
-        return true;
-    }
-
-    /** Removes the editor from the simulator pane. */
-    void dispose() {
-        if (getTabbedPane().indexOfComponent(this) >= 0) {
-            // we're displayed on a tab in the simulator
-            if (getTabbedPane().getSelectedComponent() == this) {
-                getTabbedPane().revertSelection();
-            }
-            getTabbedPane().remove(this);
-        } else {
-            // we're displayed in a JGraphWindow
-            getTabbedPane().getFrameOf(this).dispose();
-        }
-    }
-
-    /** Switches the view in the simulator to the graph being edited here. */
-    private void switchToEditedGraph() {
-        SimulatorModel model = this.simulator.getModel();
-        switch (getEditor().getRole()) {
-        case HOST:
-            model.setHost(getName());
-            break;
-        case RULE:
-            model.setRule(getName());
-            break;
-        case TYPE:
-            model.setType(getName());
-        }
-    }
-
-    private JButton okButton;
+    private JButton saveButton;
+    private SaveGraphAction saveAction;
     private JButton cancelButton;
+    private CancelEditGraphAction cancelAction;
     /** Options of this dialog. */
     private final Options options;
     /** The simulator to which the panel reports. */
