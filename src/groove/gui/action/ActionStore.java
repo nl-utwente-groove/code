@@ -315,21 +315,6 @@ public class ActionStore implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    public DisableControlAction getDisableControlAction() {
-        if (this.disableControlAction == null) {
-            this.disableControlAction =
-                new DisableControlAction(this.simulator);
-        }
-        return this.disableControlAction;
-    }
-
-    /** Singular instance of the EnableAction. */
-    private DisableControlAction disableControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
      * {@link EnableAllTypesAction}.
      */
     public EnableAllTypesAction getDisableTypesAction() {
@@ -733,6 +718,20 @@ public class ActionStore implements SimulatorListener {
      * The graph creation action permanently associated with this simulator.
      */
     private NewHostAction newHostAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewControlAction}.
+     */
+    public NewPrologAction getNewPrologAction() {
+        if (this.newPrologAction == null) {
+            this.newPrologAction = new NewPrologAction(this.simulator);
+        }
+        return this.newPrologAction;
+    }
+
+    /** Singular instance of the NewAction. */
+    private NewPrologAction newPrologAction;
 
     /**
      * Returns the rule creation action permanently associated with this

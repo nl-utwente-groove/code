@@ -65,6 +65,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     public StoredGrammarView(SystemStore store, String startGraphName) {
         this.store = store;
         loadControlMap();
+        loadPrologMap();
         setStartGraph(startGraphName == null ? Groove.DEFAULT_START_GRAPH_NAME
                 : startGraphName);
     }

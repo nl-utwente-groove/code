@@ -1136,8 +1136,8 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Returns the currently selected type graph. */
-    public final TypeView getProlog() {
-        return this.type;
+    public final PrologView getProlog() {
+        return this.prolog;
     }
 
     /** Changes the currently selected prolog program, based on the program name.

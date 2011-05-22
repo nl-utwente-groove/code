@@ -19,13 +19,11 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
-import groove.lts.GTS;
+import groove.view.PrologView;
 import groove.view.StoredGrammarView;
-import groove.view.TypeView;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -47,15 +45,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * List of available type graphs, showing their enabledness status.
+ * List of available prolog programs.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeJList extends JList implements SimulatorListener {
+public class PrologJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected TypeJList(final Simulator simulator) {
+    protected PrologJList(final Simulator simulator) {
         this.simulator = simulator;
         this.setEnabled(false);
         this.setCellRenderer(new MyCellRenderer());
@@ -63,16 +61,16 @@ public class TypeJList extends JList implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                TypeJList.this.repaint();
+                PrologJList.this.repaint();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                TypeJList.this.repaint();
+                PrologJList.this.repaint();
             }
         });
         addMouseListener(new MyMouseListener());
@@ -125,21 +123,21 @@ public class TypeJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    /** Creates a tool bar for the types list. */
+    /** Creates a tool bar for the rule tree. */
     void fillToolBar(JToolBar result) {
-        result.add(getActions().getNewTypeAction());
-        result.addSeparator();
-        result.add(getActions().getCopyTypeAction());
-        result.add(getActions().getDeleteTypeAction());
-        result.add(getActions().getRenameTypeAction());
-        result.addSeparator();
-        result.add(getEnableButton());
+        result.add(getActions().getNewPrologAction());
+        //        result.addSeparator();
+        //        result.add(getActions().getCopyControlAction());
+        //        result.add(getActions().getDeleteControlAction());
+        //        result.add(getActions().getRenameControlAction());
+        //        result.addSeparator();
+        //        result.add(getEnableButton());
     }
 
     private JToggleButton getEnableButton() {
         if (this.enableButton == null) {
             this.enableButton =
-                new JToggleButton(getActions().getEnableTypeAction());
+                new JToggleButton(getActions().getEnableControlAction());
             this.enableButton.setText(null);
             this.enableButton.setMargin(new Insets(3, 1, 3, 1));
             this.enableButton.setFocusable(false);
@@ -152,18 +150,18 @@ public class TypeJList extends JList implements SimulatorListener {
      */
     private JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewTypeAction());
+        result.add(getActions().getNewPrologAction());
         result.setFocusable(false);
-        // add rest only if mouse is actually over a type name
+        // add rest only if mouse is actually over a prolog name
         int index = locationToIndex(atPoint);
         if (getCellBounds(index, index).contains(atPoint)) {
-            result.add(getActions().getEditTypeAction());
-            result.addSeparator();
-            result.add(getActions().getCopyTypeAction());
-            result.add(getActions().getDeleteTypeAction());
-            result.add(getActions().getRenameTypeAction());
-            result.addSeparator();
-            result.add(getActions().getEnableTypeAction());
+            //            result.add(getActions().getEditControlAction());
+            //            result.addSeparator();
+            //            result.add(getActions().getCopyControlAction());
+            //            result.add(getActions().getDeleteControlAction());
+            //            result.add(getActions().getRenameControlAction());
+            //            result.addSeparator();
+            //            result.add(getActions().getEnableControlAction());
         }
         return result;
     }
@@ -174,14 +172,14 @@ public class TypeJList extends JList implements SimulatorListener {
         suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
             if (source.getGrammar() == null
-                && source.getGrammar().getTypeNames().isEmpty()) {
+                || source.getGrammar().getPrologNames().isEmpty()) {
                 removeAll();
                 setEnabled(false);
             } else {
                 setEnabled(true);
                 refresh();
             }
-        } else if (changes.contains(Change.TYPE)) {
+        } else if (changes.contains(Change.PROLOG)) {
             refresh();
         }
         activateListeners();
@@ -191,18 +189,16 @@ public class TypeJList extends JList implements SimulatorListener {
      * Refreshes the list from the grammar.
      */
     private void refresh() {
-        Object[] typeNames = getGrammar().getTypeNames().toArray();
-        Arrays.sort(typeNames);
-        setListData(typeNames);
-        TypeView selection = getSimulatorModel().getType();
+        Object[] prologNames = getGrammar().getPrologNames().toArray();
+        Arrays.sort(prologNames);
+        setListData(prologNames);
+        PrologView selection = getSimulatorModel().getProlog();
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
             getEnableButton().setSelected(false);
         } else {
             setSelectedValue(selection.getName(), true);
-            getEnableButton().setSelected(
-                getGrammar().getActiveTypeNames().contains(selection.getName()));
         }
     }
 
@@ -211,11 +207,6 @@ public class TypeJList extends JList implements SimulatorListener {
      */
     private StoredGrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
-    }
-
-    /** Convenience method to retrieve the current GTS from the simulator. */
-    private GTS getCurrentGTS() {
-        return getSimulatorModel().getGts();
     }
 
     /** Returns the simulator to which the state list belongs. */
@@ -278,27 +269,27 @@ public class TypeJList extends JList implements SimulatorListener {
                             setSelectedIndex(index);
                         }
                     }
-                    TypeJList.this.requestFocus();
+                    PrologJList.this.requestFocus();
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
-            } else if (evt.getClickCount() == 2) { // Left double click
-                if (TypeJList.this.isEnabled() && cellSelected) {
-                    getActions().getEnableTypeAction().execute();
-                }
+                //            } else if (evt.getClickCount() == 2) { // Left double click
+                //                if (PrologJList.this.isEnabled() && cellSelected) {
+                //                    getActions().getEnableControlAction().execute();
+                //                }
             }
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.TYPE);
+            getSimulatorModel().setTabKind(TabKind.PROLOG);
         }
     }
 
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setType((String) getSelectedValue());
+            getSimulatorModel().setProlog((String) getSelectedValue());
         }
     }
 
@@ -320,10 +311,10 @@ public class TypeJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            if (isSelected && !TypeJList.this.isFocusOwner()) {
+            if (isSelected && !PrologJList.this.isFocusOwner()) {
                 Color foreground = Color.BLACK;
                 Color background = SELECTION_NON_FOCUS_COLOR;
-                if (getCurrentGTS() == null) {
+                if (getSimulatorModel().getGts() == null) {
                     foreground = Color.WHITE;
                     background = background.darker();
                 }
@@ -331,13 +322,12 @@ public class TypeJList extends JList implements SimulatorListener {
                 result.setBackground(background);
             }
             // set tool tips and special formats
-            if (getGrammar().getActiveTypeNames().contains(value.toString())) {
-                setFont(getFont().deriveFont(Font.BOLD));
-                setToolTipText("Enabled type graph; doubleclick to disable");
-            } else {
-                setToolTipText("Disabled type graph; doubleclick to enable");
-                setText("(" + value.toString() + ")");
-            }
+            //            if (value.toString().equals(getGrammar().getControlName())) {
+            //                setFont(getFont().deriveFont(Font.BOLD));
+            //                setToolTipText("Enabled control program; doubleclick to disable");
+            //            } else {
+            //                setToolTipText("Disabled control program; doubleclick to enable");
+            //            }
             return result;
         }
 

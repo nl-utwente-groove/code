@@ -188,7 +188,11 @@ public class Simulator implements SimulatorListener {
             if (source.getTabKind() == TabKind.HOST) {
                 getListPanel().setSelectedComponent(getStatesListPanel());
             } else if (source.getTabKind() == TabKind.TYPE) {
-                getListPanel().setSelectedComponent(createTypesListPanel());
+                getListPanel().setSelectedComponent(getTypesListPanel());
+            } else if (source.getTabKind() == TabKind.CONTROL) {
+                getListPanel().setSelectedComponent(getControlListPanel());
+            } else if (source.getTabKind() == TabKind.PROLOG) {
+                getListPanel().setSelectedComponent(getPrologListPanel());
             }
         }
     }
@@ -343,7 +347,9 @@ public class Simulator implements SimulatorListener {
         if (this.listPanel == null) {
             this.listPanel = new JTabbedPane();
             this.listPanel.add("Graphs", getStatesListPanel());
-            this.listPanel.add("Types", createTypesListPanel());
+            this.listPanel.add("Types", getTypesListPanel());
+            this.listPanel.add("Control", getControlListPanel());
+            this.listPanel.add("Prolog", getPrologListPanel());
         }
         return this.listPanel;
     }
@@ -353,8 +359,9 @@ public class Simulator implements SimulatorListener {
      */
     private JPanel getStatesListPanel() {
         if (this.stateListPanel == null) {
-            JToolBar labelTreeToolbar = createStatesListToolBar();
-            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            JToolBar toolBar = createToolBar();
+            getStateList().fillToolBar(toolBar);
+            toolBar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
             JScrollPane startGraphsPane = new JScrollPane(getStateList()) {
                 @Override
                 public Dimension getPreferredSize() {
@@ -365,7 +372,7 @@ public class Simulator implements SimulatorListener {
             };
 
             this.stateListPanel = new JPanel(new BorderLayout(), false);
-            this.stateListPanel.add(labelTreeToolbar, BorderLayout.NORTH);
+            this.stateListPanel.add(toolBar, BorderLayout.NORTH);
             this.stateListPanel.add(startGraphsPane, BorderLayout.CENTER);
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(
@@ -374,29 +381,13 @@ public class Simulator implements SimulatorListener {
         return this.stateListPanel;
     }
 
-    /** Creates a tool bar for the rule tree. */
-    private JToolBar createStatesListToolBar() {
-        JToolBar result = createToolBar();
-        result.setFloatable(false);
-        result.add(this.actions.getNewHostAction());
-        result.addSeparator();
-        result.add(this.actions.getCopyHostAction());
-        result.add(this.actions.getDeleteHostAction());
-        result.add(this.actions.getRenameHostAction());
-        result.addSeparator();
-        result.add(this.actions.getSetStartGraphAction());
-        // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(result);
-        return result;
-    }
-
     /**
      * Creates and returns the panel with the type graphs list.
      */
-    private JPanel createTypesListPanel() {
+    private JPanel getTypesListPanel() {
         if (this.typeListPanel == null) {
-            JToolBar typeListToolbar = createToolBar();
-            getTypeList().fillToolBar(typeListToolbar);
+            JToolBar toolBar = createToolBar();
+            getTypeList().fillToolBar(toolBar);
             JScrollPane typesPane = new JScrollPane(getTypeList()) {
                 @Override
                 public Dimension getPreferredSize() {
@@ -407,13 +398,65 @@ public class Simulator implements SimulatorListener {
             };
 
             this.typeListPanel = new JPanel(new BorderLayout(), false);
-            this.typeListPanel.add(typeListToolbar, BorderLayout.NORTH);
+            this.typeListPanel.add(toolBar, BorderLayout.NORTH);
             this.typeListPanel.add(typesPane, BorderLayout.CENTER);
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(
                 this.typeListPanel);
         }
         return this.typeListPanel;
+    }
+
+    /**
+     * Creates and returns the panel with the control programs list.
+     */
+    private JPanel getControlListPanel() {
+        if (this.controlListPanel == null) {
+            JToolBar toolBar = createToolBar();
+            getControlList().fillToolBar(toolBar);
+            JScrollPane controlPane = new JScrollPane(getControlList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.controlListPanel = new JPanel(new BorderLayout(), false);
+            this.controlListPanel.add(toolBar, BorderLayout.NORTH);
+            this.controlListPanel.add(controlPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.controlListPanel);
+        }
+        return this.controlListPanel;
+    }
+
+    /**
+     * Creates and returns the panel with the control programs list.
+     */
+    private JPanel getPrologListPanel() {
+        if (this.prologListPanel == null) {
+            JToolBar toolBar = createToolBar();
+            getPrologList().fillToolBar(toolBar);
+            JScrollPane prologPane = new JScrollPane(getPrologList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.prologListPanel = new JPanel(new BorderLayout(), false);
+            this.prologListPanel.add(toolBar, BorderLayout.NORTH);
+            this.prologListPanel.add(prologPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.prologListPanel);
+        }
+        return this.prologListPanel;
     }
 
     private JToolBar createToolBar() {
@@ -425,7 +468,10 @@ public class Simulator implements SimulatorListener {
                 return result;
             }
         };
+        result.setFloatable(false);
         result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
         return result;
     }
 
@@ -576,6 +622,22 @@ public class Simulator implements SimulatorListener {
             this.typeJList = new TypeJList(this);
         }
         return this.typeJList;
+    }
+
+    /** Returns the list of control programs. */
+    public ControlJList getControlList() {
+        if (this.controlJList == null) {
+            this.controlJList = new ControlJList(this);
+        }
+        return this.controlJList;
+    }
+
+    /** Returns the list of control programs. */
+    public PrologJList getPrologList() {
+        if (this.prologJList == null) {
+            this.prologJList = new PrologJList(this);
+        }
+        return this.prologJList;
     }
 
     /** Returns the list of states and host graphs. */
@@ -1078,8 +1140,20 @@ public class Simulator implements SimulatorListener {
     /** panel on which the state list (and toolbar) are displayed. */
     private JPanel typeListPanel;
 
+    /** panel on which the control list (and toolbar) are displayed. */
+    private JPanel controlListPanel;
+
+    /** panel on which the prolog list (and toolbar) are displayed. */
+    private JPanel prologListPanel;
+
     /** Production system type list */
     private TypeJList typeJList;
+
+    /** Production system control program list. */
+    private ControlJList controlJList;
+
+    /** Production system prolog program list. */
+    private PrologJList prologJList;
 
     /** Production rule display panel. */
     private RulePanel rulePanel;
@@ -1170,15 +1244,19 @@ public class Simulator implements SimulatorListener {
     public static final String LTS_FILE_NAME = "lts";
 
     /**
-     * Default name of an empty rule.
+     * Default name of a fresh grammar.
      */
     public static final String NEW_GRAMMAR_NAME = "newGrammar";
 
     /**
-     * Default name of an empty rule.
+     * Default name of an empty host graph.
      */
     public static final String NEW_GRAPH_NAME = "newGraph";
 
+    /**
+     * Default name of a fresh prolog program.
+     */
+    public static final String NEW_PROLOG_NAME = "newProlog";
     /**
      * Default name of an empty rule.
      */

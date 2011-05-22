@@ -403,8 +403,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             this.marshaller.deleteGraph(createGraphFile(name));
             deletedGraphs.add(graph);
         }
-        return new GraphEdit(deletedGraphs,
-            Collections.<AspectGraph>emptySet());
+        return new GraphEdit(deletedGraphs, Collections.<AspectGraph>emptySet());
     }
 
     @Override
@@ -808,9 +807,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         loadGraphs();
         loadTypes();
         loadControls();
+        loadProlog();
         notifyObservers(new MyEdit(SystemStore.PROPERTIES_CHANGE
             | SystemStore.RULE_CHANGE | SystemStore.GRAPH_CHANGE
-            | SystemStore.TYPE_CHANGE | SystemStore.CONTROL_CHANGE));
+            | SystemStore.TYPE_CHANGE | SystemStore.CONTROL_CHANGE
+            | SystemStore.PROLOG_CHANGE));
         this.initialised = true;
     }
 
@@ -930,8 +931,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Loads the named graphs from specified location and returns the
-     * corresponding AspectGraphs
+     * Loads the control programs.
      */
     private void loadControls() throws IOException {
         this.controlMap.clear();
@@ -954,6 +954,35 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 // insert the string into the control map
                 this.controlMap.put(
                     CONTROL_FILTER.stripExtension(file.getName()),
+                    program.toString());
+            }
+        }
+    }
+
+    /**
+     * Loads the control programs.
+     */
+    private void loadProlog() throws IOException {
+        this.prologMap.clear();
+        File[] files = this.file.listFiles(PROLOG_FILTER);
+        // read in the prolog files
+        for (File file : files) {
+            // check for overlapping rule and directory names
+            if (!file.isDirectory()) {
+                // read the program in as a single string
+                BufferedReader reader =
+                    new BufferedReader(new FileReader(file));
+                StringBuilder program = new StringBuilder();
+                String nextLine = reader.readLine();
+                while (nextLine != null) {
+                    program.append(nextLine);
+                    program.append("\n");
+                    nextLine = reader.readLine();
+                }
+                reader.close();
+                // insert the string into the control map
+                this.prologMap.put(
+                    PROLOG_FILTER.stripExtension(file.getName()),
                     program.toString());
             }
         }

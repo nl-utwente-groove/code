@@ -5,7 +5,6 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.trans.SystemProperties;
 import groove.view.CtrlView;
-import groove.view.StoredGrammarView;
 
 import java.io.IOException;
 
@@ -24,13 +23,13 @@ public class EnableControlAction extends SimulatorAction {
             SystemProperties oldProperties =
                 getModel().getGrammar().getProperties();
             SystemProperties newProperties = oldProperties.clone();
-            newProperties.setUseControl(true);
+            newProperties.setUseControl(!isControlEnabled());
             newProperties.setControlName(controlName);
             try {
                 result = getModel().doSetProperties(newProperties);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while enabling control program "
-                        + controlName);
+                    + controlName);
             }
         }
         return result;
@@ -38,10 +37,18 @@ public class EnableControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        StoredGrammarView grammar = getModel().getGrammar();
         CtrlView control = getModel().getControl();
-        setEnabled(control != null
-            && (!grammar.isUseControl() || !grammar.getControlView().equals(
-                control)));
+        setEnabled(control != null);
+        if (isEnabled()) {
+            putValue(SHORT_DESCRIPTION, isControlEnabled()
+                    ? Options.DISABLE_CONTROL_ACTION_NAME
+                    : Options.ENABLE_CONTROL_ACTION_NAME);
+        }
+    }
+
+    private boolean isControlEnabled() {
+        CtrlView control = getModel().getControl();
+        return control != null
+            && control.equals(getModel().getGrammar().getControlView());
     }
 }
