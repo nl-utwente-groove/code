@@ -36,7 +36,6 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
@@ -73,12 +72,12 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         result.add(createButton(getActions().getCopyTypeAction()));
         result.add(createButton(getActions().getDeleteTypeAction()));
         result.add(createButton(getActions().getRenameTypeAction()));
-        result.addSeparator();
-        result.add(new JLabel("Type Graphs: "));
-        result.add(getNameListPane());
-        result.addSeparator();
-        result.add(createButton(getActions().getDisableTypesAction()));
-        result.add(createButton(getActions().getEnableTypesAction()));
+        //        result.addSeparator();
+        //        result.add(new JLabel("Type Graphs: "));
+        //        result.add(getNameListPane());
+        //        result.addSeparator();
+        //        result.add(createButton(getActions().getDisableTypesAction()));
+        //        result.add(createButton(getActions().getEnableTypeAction()));
         return result;
     }
 
@@ -122,12 +121,12 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Activates the listeners that pass their actions to the simulator model. */
     private void activateListeners() {
-        getNameList().addListSelectionListener(this.selectionListener);
+        //        getNameList().addListSelectionListener(this.selectionListener);
     }
 
     /** Suspends the listeners that pass their actions to the simulator model. */
     private void suspendListeners() {
-        getNameList().removeListSelectionListener(this.selectionListener);
+        //        getNameList().removeListSelectionListener(this.selectionListener);
     }
 
     @Override
@@ -138,7 +137,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             StoredGrammarView grammar = source.getGrammar();
             this.typeJModelMap.clear();
             if (grammar != null) {
-                getNameList().refreshTypes();
+                //                getNameList().refreshTypes();
                 // set either the type or the label store of the associated JGraph
                 if (grammar.getActiveTypeNames().isEmpty()) {
                     getJGraph().setLabelStore(grammar.getLabelStore());

@@ -218,7 +218,7 @@ public class Options implements Cloneable {
     /** Name of the "Disable Rule" action. */
     public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
     /** Name of the "Disable Type Graph" action. */
-    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Typing";
+    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Type Graph";
     /** Edge mode action name */
     public static final String EDIT_MODE_NAME = "Edit mode";
     /** Edit action name */
@@ -242,7 +242,7 @@ public class Options implements Cloneable {
     /** Name of the "Enable Rule" action */
     public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
     /** Name of the "Enable Type Graph" action */
-    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Typing";
+    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Type Graph";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
         "Customize Exploration ...";

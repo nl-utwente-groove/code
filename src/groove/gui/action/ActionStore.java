@@ -330,18 +330,18 @@ public class ActionStore implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link EnableTypesAction}.
+     * {@link EnableAllTypesAction}.
      */
-    public EnableTypesAction getDisableTypesAction() {
+    public EnableAllTypesAction getDisableTypesAction() {
         if (this.disableTypesAction == null) {
             this.disableTypesAction =
-                new EnableTypesAction(this.simulator, false);
+                new EnableAllTypesAction(this.simulator, false);
         }
         return this.disableTypesAction;
     }
 
     /** Singular instance of the EnableTypesAction. */
-    private EnableTypesAction disableTypesAction;
+    private EnableAllTypesAction disableTypesAction;
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
     public SimulatorAction getEditAction(TabKind kind) {
@@ -473,18 +473,32 @@ public class ActionStore implements SimulatorListener {
 
     /**
      * Lazily creates and returns the appropriate instance of the
-     * {@link EnableTypesAction}.
+     * {@link EnableTypeAction}.
      */
-    public EnableTypesAction getEnableTypesAction() {
-        if (this.enableTypesAction == null) {
-            this.enableTypesAction =
-                new EnableTypesAction(this.simulator, true);
+    public EnableTypeAction getEnableTypeAction() {
+        if (this.enableTypeAction == null) {
+            this.enableTypeAction = new EnableTypeAction(this.simulator);
         }
-        return this.enableTypesAction;
+        return this.enableTypeAction;
     }
 
     /** Singular instance of the CheckAllAction. */
-    private EnableTypesAction enableTypesAction;
+    private EnableTypeAction enableTypeAction;
+
+    /**
+     * Lazily creates and returns the appropriate instance of the
+     * {@link EnableAllTypesAction}.
+     */
+    public EnableAllTypesAction getEnableAllTypesAction() {
+        if (this.enableAllTypesAction == null) {
+            this.enableAllTypesAction =
+                new EnableAllTypesAction(this.simulator, true);
+        }
+        return this.enableAllTypesAction;
+    }
+
+    /** Singular instance of the CheckAllAction. */
+    private EnableAllTypesAction enableAllTypesAction;
 
     /**
      * Returns the rule enabling action permanently associated with this
@@ -1077,7 +1091,7 @@ public class ActionStore implements SimulatorListener {
     /**
      * Lazily creates and returns an instance of SetStartGraphAction.
      */
-    public Action getSetStartGraphAction() {
+    public SetStartGraphAction getSetStartGraphAction() {
         // lazily create the action
         if (this.setStartGraphAction == null) {
             this.setStartGraphAction = new SetStartGraphAction(this.simulator);
@@ -1119,7 +1133,7 @@ public class ActionStore implements SimulatorListener {
      * Lazily creates and returns an instance of
      * {@link StartSimulationAction}.
      */
-    public SimulatorAction getStartSimulationAction() {
+    public StartSimulationAction getStartSimulationAction() {
         // lazily create the action
         if (this.startSimulationAction == null) {
             this.startSimulationAction =

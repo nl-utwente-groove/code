@@ -9,9 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 /** Action to disable or enable typing. */
-public class EnableTypesAction extends SimulatorAction {
+public class EnableAllTypesAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
-    public EnableTypesAction(Simulator simulator, boolean enable) {
+    public EnableAllTypesAction(Simulator simulator, boolean enable) {
         super(simulator, (enable ? "Check" : "Uncheck") + " all type graphs",
             enable ? Icons.ENABLE_ICON : Icons.DISABLE_ICON);
         this.enable = enable;
@@ -42,5 +42,6 @@ public class EnableTypesAction extends SimulatorAction {
                 : Collections.<String>emptyList();
     }
 
+    /** Flag indicating if all types should be enabled or disabled. */
     private final boolean enable;
 }
