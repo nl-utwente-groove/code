@@ -35,13 +35,8 @@ public class StartSimulationAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (confirmAbandon()) {
-            boolean start =
-                !getPanel().isEditorDirty()
-                    && confirmBehaviourOption(START_SIMULATION_OPTION);
-            if (start) {
-                result = getModel().setGts();
-            }
+        if (confirmAbandon() && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+            result = getModel().setGts();
         }
         return result;
     }
