@@ -781,6 +781,21 @@ public class ActionStore implements SimulatorListener {
     private QuitAction quitAction;
 
     /**
+     * Returns the priority raising action permanently associated with the simulator.
+     */
+    public RaisePriorityAction getRaisePriorityAction() {
+        if (this.raisePriorityAction == null) {
+            this.raisePriorityAction = new RaisePriorityAction(this.simulator);
+        }
+        return this.raisePriorityAction;
+    }
+
+    /**
+     * The priority raising action permanently associated with the simulator.
+     */
+    private RaisePriorityAction raisePriorityAction;
+
+    /**
      * Returns the redo action permanently associated with this simulator.
      */
     public RedoSimulatorAction getRedoAction() {

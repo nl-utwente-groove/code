@@ -706,6 +706,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(this.actions.getEnableRuleAction());
+        result.add(this.actions.getRaisePriorityAction());
         result.add(this.actions.getEditRulePropertiesAction());
         result.add(this.actions.getEditSystemPropertiesAction());
 

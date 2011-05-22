@@ -317,6 +317,8 @@ public class Options implements Cloneable {
         "Preview Control ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
+    /** Name of the "Raise Priority" action. */
+    public static final String RAISE_PRIORITY_ACTION_NAME = "Raise Priority";
     /** Redo action name */
     public static final String REDO_ACTION_NAME = "Redo";
     /** Refresh grammar action name */

@@ -455,6 +455,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             res.add(getActions().getRenameRuleAction());
             res.addSeparator();
             res.add(getActions().getEnableRuleAction());
+            res.add(getActions().getRaisePriorityAction());
             res.add(getActions().getEditRulePropertiesAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();

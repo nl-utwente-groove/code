@@ -16,6 +16,8 @@
  */
 package groove.gui;
 
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditGraphAction;
@@ -161,6 +163,17 @@ public class EditorPanel extends JPanel implements SimulatorListener {
             }
             if (view != null) {
                 this.editor.setTypeView(grammar.getTypeViewList());
+                // check if the properties have changed
+                GraphProperties properties =
+                    GraphInfo.getProperties(view.getAspectGraph(), false);
+                if (properties != null
+                    && !properties.equals(GraphInfo.getProperties(getGraph(),
+                        false))) {
+                    AspectGraph newGraph = getGraph().clone();
+                    GraphInfo.setProperties(newGraph, properties);
+                    newGraph.setFixed();
+                    change(newGraph);
+                }
             } else {
                 dispose();
             }

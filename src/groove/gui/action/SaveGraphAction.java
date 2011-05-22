@@ -134,7 +134,9 @@ public final class SaveGraphAction extends SimulatorAction {
                 : this.editor.isDirty());
         if (isEnabled()) {
             String name = Options.getSaveActionName(getRole(), this.saveAs);
-            putValue(NAME, name);
+            if (this.saveAs) {
+                putValue(NAME, name);
+            }
             putValue(SHORT_DESCRIPTION, name);
         }
     }
