@@ -38,6 +38,12 @@ public final class Icons {
     /** Cancel action icon. */
     public static final ImageIcon CANCEL_ICON =
         createIcon("cancel-smaller.gif");
+    /** Classic (simple) up-arrow icon. */
+    public static final ImageIcon CLASSIC_UP_ARROW_ICON =
+        createIcon("classic-up-arrow.gif");
+    /** Classic (simple) down-arrow icon. */
+    public static final ImageIcon CLASSIC_DOWN_ARROW_ICON =
+        createIcon("classic-down-arrow.gif");
     /** Copy action icon. */
     public static final ImageIcon COPY_ICON = createIcon("copy.gif");
     /** Cut action icon. */

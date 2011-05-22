@@ -289,7 +289,8 @@ public class Options implements Cloneable {
     /** Load grammar from url action name */
     public static final String LOAD_URL_GRAMMAR_ACTION_NAME =
         "Load Grammar from URL ...";
-
+    /** Name of the "Lower Priority" action. */
+    public static final String LOWER_PRIORITY_ACTION_NAME = "Lower Priority";
     /** Name for the model checking action. */
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */
