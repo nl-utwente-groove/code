@@ -47,6 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -134,6 +135,17 @@ public class StateJList extends JList implements SimulatorListener {
             }
         }
         super.setEnabled(enabled);
+    }
+
+    /** Creates a tool bar for the states list. */
+    void fillToolBar(JToolBar result) {
+        result.add(getActions().getNewHostAction());
+        result.addSeparator();
+        result.add(getActions().getCopyHostAction());
+        result.add(getActions().getDeleteHostAction());
+        result.add(getActions().getRenameHostAction());
+        result.addSeparator();
+        result.add(getActions().getSetStartGraphAction());
     }
 
     /**

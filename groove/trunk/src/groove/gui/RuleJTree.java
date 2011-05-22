@@ -695,7 +695,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Rule nodes (= level 1 nodes) of the directory
      */
-    public static class RuleTreeNode extends DefaultMutableTreeNode {
+    private static class RuleTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new rule node based on a given rule name. The node can have
          * children.

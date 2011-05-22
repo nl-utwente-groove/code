@@ -25,6 +25,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JGraphMode;
+import groove.io.HTMLConverter;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
@@ -68,10 +69,10 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        result.addSeparator();
-        result.add(createButton(getActions().getCopyTypeAction()));
-        result.add(createButton(getActions().getDeleteTypeAction()));
-        result.add(createButton(getActions().getRenameTypeAction()));
+        //        result.addSeparator();
+        //        result.add(createButton(getActions().getCopyTypeAction()));
+        //        result.add(createButton(getActions().getDeleteTypeAction()));
+        //        result.add(createButton(getActions().getRenameTypeAction()));
         //        result.addSeparator();
         //        result.add(new JLabel("Type Graphs: "));
         //        result.add(getNameListPane());
@@ -130,6 +131,23 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     @Override
+    protected String getStatusText() {
+        StringBuilder result = new StringBuilder();
+        if (getSimulatorModel().getType() == null) {
+            result.append("No type graph selected");
+        } else {
+            String typeName = getSimulatorModel().getType().getName();
+            result.append("Type graph: ");
+            result.append(HTMLConverter.STRONG_TAG.on(typeName));
+            if (!getSimulatorModel().getGrammar().getActiveTypeNames().contains(
+                typeName)) {
+                result.append(" (inactive)");
+            }
+        }
+        return HTMLConverter.HTML_TAG.on(result).toString();
+    }
+
+    @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
@@ -150,8 +168,8 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 }
             }
             displayType();
-            activateListeners();
         }
+        activateListeners();
     }
 
     /**

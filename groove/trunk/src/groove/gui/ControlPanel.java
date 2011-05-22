@@ -21,6 +21,7 @@ import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
+import groove.io.HTMLConverter;
 import groove.io.store.SystemStore;
 import groove.view.CtrlView;
 import groove.view.StoredGrammarView;
@@ -101,7 +102,8 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         splitPane.setOneTouchExpandable(true);
         splitPane.setResizeWeight(1.0);
 
-        this.add(splitPane, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
+        add(getStatusBar(), BorderLayout.SOUTH);
         // add keyboard binding for Save key
         InputMap focusedInputMap =
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -191,18 +193,18 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         result.add(createButton(getActions().getEditControlAction()));
         result.add(createButton(getActions().getSaveControlAction()));
         result.add(createButton(getActions().getCancelEditControlAction()));
-        result.addSeparator();
-        result.add(createButton(getActions().getCopyControlAction()));
-        result.add(createButton(getActions().getDeleteControlAction()));
-        result.add(createButton(getActions().getRenameControlAction()));
-        result.addSeparator();
-        result.add(new JLabel("Name: "));
-        result.add(getNameField());
+        //        result.addSeparator();
+        //        result.add(createButton(getActions().getCopyControlAction()));
+        //        result.add(createButton(getActions().getDeleteControlAction()));
+        //        result.add(createButton(getActions().getRenameControlAction()));
+        //        result.addSeparator();
+        //        result.add(new JLabel("Name: "));
+        //        result.add(getNameField());
         result.addSeparator();
         // result.add(createButton(getPreviewAction()));
         result.add(createButton(getActions().getPreviewControlAction()));
-        result.add(createButton(getActions().getDisableControlAction()));
-        result.add(createButton(getActions().getEnableControlAction()));
+        //        result.add(createButton(getActions().getDisableControlAction()));
+        //        result.add(createButton(getActions().getEnableControlAction()));
         return result;
     }
 
@@ -219,6 +221,29 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             result.setHideActionText(true);
         }
         return result;
+    }
+
+    /**
+     * Returns the status bar of this panel, if any.
+     */
+    private JLabel getStatusBar() {
+        return this.statusBar;
+    }
+
+    /** Text shown in the status bar of this panel. */
+    private String getStatusText() {
+        StringBuilder result = new StringBuilder();
+        if (getSimulatorModel().getControl() == null) {
+            result.append("No control program selected");
+        } else {
+            String controlName = getSimulatorModel().getControl().getName();
+            result.append("Control program: ");
+            result.append(HTMLConverter.STRONG_TAG.on(controlName));
+            if (!controlName.equals(getSimulatorModel().getGrammar().getControlName())) {
+                result.append(" (disabled)");
+            }
+        }
+        return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
     @Override
@@ -362,6 +387,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         for (Refreshable refreshable : this.refreshables) {
             refreshable.refresh();
         }
+        getStatusBar().setText(getStatusText());
     }
 
     /** List of registered refreshables. */
@@ -397,6 +423,8 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         }
         return this.nameField;
     }
+
+    private final JLabel statusBar = new JLabel(" ");
 
     /** Name field of the control program. */
     private ControlNameField nameField;

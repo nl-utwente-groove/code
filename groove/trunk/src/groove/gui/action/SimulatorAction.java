@@ -5,6 +5,7 @@ import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlPanel;
+import groove.gui.PrologPanel;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -86,6 +87,11 @@ public abstract class SimulatorAction extends AbstractAction implements
     /** Returns the control panel that owns the action. */
     final protected ControlPanel getControlPanel() {
         return this.simulator.getControlPanel();
+    }
+
+    /** Returns the prolog panel that owns the action. */
+    final protected PrologPanel getPrologPanel() {
+        return this.simulator.getPrologPanel();
     }
 
     /** Disposes the action by unregistering it as a listener. */

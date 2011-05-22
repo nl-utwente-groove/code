@@ -907,8 +907,7 @@ public class PrologPanel extends JPanel {
 
             this.prolog.setGrooveState(new GrooveState(
                 getGrammar().toGrammar(), getSimulatorModel().getGts(),
-                getSimulatorModel().getState(),
-                getSimulatorModel().getMatch().getEvent()));
+                getSimulatorModel().getState(), getSimulatorModel().getMatch()));
 
             this.solutionCount = 0;
             processResults(this.prolog.newQuery(queryString));
