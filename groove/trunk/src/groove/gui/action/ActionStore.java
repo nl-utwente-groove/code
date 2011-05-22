@@ -781,21 +781,6 @@ public class ActionStore implements SimulatorListener {
     private QuitAction quitAction;
 
     /**
-     * Returns the priority raising action permanently associated with the simulator.
-     */
-    public RaisePriorityAction getRaisePriorityAction() {
-        if (this.raisePriorityAction == null) {
-            this.raisePriorityAction = new RaisePriorityAction(this.simulator);
-        }
-        return this.raisePriorityAction;
-    }
-
-    /**
-     * The priority raising action permanently associated with the simulator.
-     */
-    private RaisePriorityAction raisePriorityAction;
-
-    /**
      * Returns the redo action permanently associated with this simulator.
      */
     public RedoSimulatorAction getRedoAction() {
@@ -1102,6 +1087,33 @@ public class ActionStore implements SimulatorListener {
 
     /** Singleton instance of {@link SetStartGraphAction}. */
     private SetStartGraphAction setStartGraphAction;
+
+    /**
+     * Returns the priority up- or down-shifting action permanently associated with the simulator.
+     */
+    public ShiftPriorityAction getShiftPriorityAction(boolean up) {
+        ShiftPriorityAction result =
+            up ? this.raisePriorityAction : this.lowerPriorityAction;
+        if (result == null) {
+            result = new ShiftPriorityAction(this.simulator, up);
+            if (up) {
+                this.raisePriorityAction = result;
+            } else {
+                this.lowerPriorityAction = result;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * The priority raising action permanently associated with the simulator.
+     */
+    private ShiftPriorityAction raisePriorityAction;
+
+    /**
+     * The priority lowering action permanently associated with the simulator.
+     */
+    private ShiftPriorityAction lowerPriorityAction;
 
     /**
      * Lazily creates and returns an instance of

@@ -327,6 +327,9 @@ public class Simulator implements SimulatorListener {
         result.add(this.actions.getCopyRuleAction());
         result.add(this.actions.getDeleteRuleAction());
         result.add(this.actions.getRenameRuleAction());
+        result.addSeparator();
+        result.add(this.actions.getShiftPriorityAction(true));
+        result.add(this.actions.getShiftPriorityAction(false));
         return result;
     }
 
@@ -706,7 +709,8 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(this.actions.getEnableRuleAction());
-        result.add(this.actions.getRaisePriorityAction());
+        result.add(this.actions.getShiftPriorityAction(true));
+        result.add(this.actions.getShiftPriorityAction(false));
         result.add(this.actions.getEditRulePropertiesAction());
         result.add(this.actions.getEditSystemPropertiesAction());
 

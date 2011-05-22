@@ -277,21 +277,33 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /** Returns the list of currently selected rule names. */
-    public Set<String> getSelectedRules() {
+    private Set<String> getSelectedRules() {
         Set<String> result = new HashSet<String>();
         int[] selectedRows = getSelectionRows();
         if (selectedRows != null) {
             for (int selectedRow : selectedRows) {
                 Object[] nodes = getPathForRow(selectedRow).getPath();
                 for (int i = nodes.length - 1; i >= 0; i--) {
-                    if (nodes[i] instanceof RuleTreeNode) {
-                        result.add(((RuleTreeNode) nodes[i]).getRule().getName());
+                    if (!(nodes[i] instanceof MatchTreeNode)) {
+                        collectRules((TreeNode) nodes[i], result);
                         break;
                     }
                 }
             }
         }
         return result;
+    }
+
+    /** Collects all rule names corresponding to a given tree node or its children. */
+    private void collectRules(TreeNode node, Set<String> result) {
+        if (node instanceof RuleTreeNode) {
+            result.add(((RuleTreeNode) node).getRule().getName());
+        } else if (node instanceof PriorityTreeNode
+            || node instanceof DirectoryTreeNode) {
+            for (int i = 0; i < node.getChildCount(); i++) {
+                collectRules(node.getChildAt(i), result);
+            }
+        }
     }
 
     /**
@@ -455,7 +467,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
             res.add(getActions().getRenameRuleAction());
             res.addSeparator();
             res.add(getActions().getEnableRuleAction());
-            res.add(getActions().getRaisePriorityAction());
+            res.add(getActions().getShiftPriorityAction(true));
+            res.add(getActions().getShiftPriorityAction(false));
             res.add(getActions().getEditRulePropertiesAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
