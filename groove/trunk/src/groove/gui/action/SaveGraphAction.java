@@ -31,7 +31,8 @@ public final class SaveGraphAction extends SimulatorAction {
     private SaveGraphAction(Simulator simulator, EditorPanel editor,
             boolean saveAs) {
         super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
-                : Options.SAVE_ACTION_NAME, Icons.SAVE_ICON);
+                : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
+                : Icons.SAVE_ICON);
         this.saveAs = saveAs;
         this.editor = editor;
         putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);

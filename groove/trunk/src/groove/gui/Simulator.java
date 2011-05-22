@@ -76,6 +76,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -184,6 +185,11 @@ public class Simulator implements SimulatorListener {
         }
         if (changes.contains(Change.TAB)) {
             refreshMenuItems();
+            if (source.getTabKind() == TabKind.HOST) {
+                getListPanel().setSelectedComponent(getStatesListPanel());
+            } else if (source.getTabKind() == TabKind.TYPE) {
+                getListPanel().setSelectedComponent(createTypesListPanel());
+            }
         }
     }
 
@@ -238,7 +244,7 @@ public class Simulator implements SimulatorListener {
 
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    createRuleTreePanel(), createStatesListPanel());
+                    createRuleTreePanel(), getListPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
@@ -333,36 +339,39 @@ public class Simulator implements SimulatorListener {
         return result;
     }
 
+    private JTabbedPane getListPanel() {
+        if (this.listPanel == null) {
+            this.listPanel = new JTabbedPane();
+            this.listPanel.add("Graphs", getStatesListPanel());
+            this.listPanel.add("Types", createTypesListPanel());
+        }
+        return this.listPanel;
+    }
+
     /**
      * Creates and returns the panel with the start states list.
      */
-    private JPanel createStatesListPanel() {
-        // set title and toolbar
-        JLabel labelPaneTitle =
-            new JLabel(" " + Options.STATES_PANE_TITLE + " ");
-        labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-        JToolBar labelTreeToolbar = createStatesListToolBar();
-        labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+    private JPanel getStatesListPanel() {
+        if (this.stateListPanel == null) {
+            JToolBar labelTreeToolbar = createStatesListToolBar();
+            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            JScrollPane startGraphsPane = new JScrollPane(getStateList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        START_LIST_MINIMUM_HEIGHT);
+                }
+            };
 
-        Box labelPaneTop = Box.createVerticalBox();
-        labelPaneTop.add(labelPaneTitle);
-        labelPaneTop.add(labelTreeToolbar);
-
-        JScrollPane startGraphsPane = new JScrollPane(this.getStateList()) {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension superSize = super.getPreferredSize();
-                return new Dimension((int) superSize.getWidth(),
-                    START_LIST_MINIMUM_HEIGHT);
-            }
-        };
-
-        JPanel result = new JPanel(new BorderLayout(), false);
-        result.add(labelPaneTop, BorderLayout.NORTH);
-        result.add(startGraphsPane, BorderLayout.CENTER);
-        // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(result);
-        return result;
+            this.stateListPanel = new JPanel(new BorderLayout(), false);
+            this.stateListPanel.add(labelTreeToolbar, BorderLayout.NORTH);
+            this.stateListPanel.add(startGraphsPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.stateListPanel);
+        }
+        return this.stateListPanel;
     }
 
     /** Creates a tool bar for the rule tree. */
@@ -381,6 +390,32 @@ public class Simulator implements SimulatorListener {
         return result;
     }
 
+    /**
+     * Creates and returns the panel with the type graphs list.
+     */
+    private JPanel createTypesListPanel() {
+        if (this.typeListPanel == null) {
+            JToolBar typeListToolbar = createToolBar();
+            getTypeList().fillToolBar(typeListToolbar);
+            JScrollPane typesPane = new JScrollPane(getTypeList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.typeListPanel = new JPanel(new BorderLayout(), false);
+            this.typeListPanel.add(typeListToolbar, BorderLayout.NORTH);
+            this.typeListPanel.add(typesPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.typeListPanel);
+        }
+        return this.typeListPanel;
+    }
+
     private JToolBar createToolBar() {
         JToolBar result = new JToolBar() {
             @Override
@@ -390,6 +425,7 @@ public class Simulator implements SimulatorListener {
                 return result;
             }
         };
+        result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
         return result;
     }
 
@@ -532,6 +568,14 @@ public class Simulator implements SimulatorListener {
             this.prologPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.prologPanel;
+    }
+
+    /** Returns the list of states and host graphs. */
+    public TypeJList getTypeList() {
+        if (this.typeJList == null) {
+            this.typeJList = new TypeJList(this);
+        }
+        return this.typeJList;
     }
 
     /** Returns the list of states and host graphs. */
@@ -1023,8 +1067,19 @@ public class Simulator implements SimulatorListener {
     /** Panel with the ruleJTree plus toolbar. */
     private JScrollPane ruleTreePanel;
 
+    /** Panel with the graphs and types lists. */
+    private JTabbedPane listPanel;
+
+    /** panel on which the state list (and toolbar) are displayed. */
+    private JPanel stateListPanel;
     /** Production system graph list */
     private StateJList stateJList;
+
+    /** panel on which the state list (and toolbar) are displayed. */
+    private JPanel typeListPanel;
+
+    /** Production system type list */
+    private TypeJList typeJList;
 
     /** Production rule display panel. */
     private RulePanel rulePanel;

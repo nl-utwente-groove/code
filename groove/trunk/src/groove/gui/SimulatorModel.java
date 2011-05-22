@@ -414,6 +414,31 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
+     * Inverts the enabledness of a type graph.
+     * @param oldType type graph whose enabledness should be changed
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the enabling failed
+     */
+    public boolean doEnableType(AspectGraph oldType) throws IOException {
+        SystemProperties oldProperties = getGrammar().getProperties();
+        SystemProperties newProperties = oldProperties.clone();
+        List<String> activeTypes =
+            new ArrayList<String>(newProperties.getTypeNames());
+        if (!activeTypes.remove(oldType.getName())) {
+            activeTypes.add(oldType.getName());
+        }
+        newProperties.setTypeNames(activeTypes);
+        return doSetProperties(newProperties);
+        //        GraphProperties properties =
+        //            GraphInfo.getProperties(oldType, true).clone();
+        //        properties.setEnabled(!properties.isEnabled());
+        //        AspectGraph newType = oldType.clone();
+        //        GraphInfo.setProperties(newType, properties);
+        //        newType.setFixed();
+        //        return doAddType(newType);
+    }
+
+    /**
      * Saves a changed list of active types in the system properties.
      */
     public boolean doSetActiveTypes(List<String> activeTypes)

@@ -31,7 +31,6 @@ import groove.util.ObservableSet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -171,10 +170,8 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowSubtypesButton() {
         if (this.showSubtypesButton == null) {
             this.showSubtypesButton =
-                new JToggleButton(new ShowModeAction(true));
+                createToggleButton(new ShowModeAction(true));
             this.showSubtypesButton.setSelected(true);
-            this.showSubtypesButton.setMargin(new Insets(1, 1, 1, 1));
-            this.showSubtypesButton.setFocusable(false);
         }
         return this.showSubtypesButton;
     }
@@ -186,9 +183,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowSupertypesButton() {
         if (this.showSupertypesButton == null) {
             this.showSupertypesButton =
-                new JToggleButton(new ShowModeAction(false));
-            this.showSupertypesButton.setMargin(new Insets(1, 1, 1, 1));
-            this.showSupertypesButton.setFocusable(false);
+                createToggleButton(new ShowModeAction(false));
         }
         return this.showSupertypesButton;
     }
@@ -200,11 +195,15 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowAllLabelsButton() {
         if (this.showAllLabelsButton == null) {
             this.showAllLabelsButton =
-                new JToggleButton(new ShowAllLabelsAction());
-            this.showAllLabelsButton.setMargin(new Insets(1, 1, 1, 1));
-            this.showAllLabelsButton.setFocusable(false);
+                createToggleButton(new ShowAllLabelsAction());
         }
         return this.showAllLabelsButton;
+    }
+
+    private JToggleButton createToggleButton(Action action) {
+        JToggleButton result = new JToggleButton(action);
+        result.setFocusable(false);
+        return result;
     }
 
     /**

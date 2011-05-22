@@ -100,6 +100,8 @@ public final class Icons {
         createIcon("graph-mode.gif");
     /** Icon for snap to grid action. */
     public static final ImageIcon GRID_ICON = createIcon("grid.gif");
+    /** Icon for the LTS panel of the simulator. */
+    public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
     /** Small icon for production rules. */
     public static final ImageIcon RULE_SMALL_ICON =
         createIcon("rule-small.gif");
@@ -110,8 +112,14 @@ public final class Icons {
         createIcon("rule-frame.gif");
     /** Rule editing mode icon. */
     public static final ImageIcon RULE_MODE_ICON = createIcon("rule-mode.gif");
-    /** Icon for the LTS panel of the simulator. */
-    public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
+    /** Save action icon. */
+    public static final ImageIcon SAVE_ICON = createIcon("save.gif");
+    /** Save-as action icon. */
+    public static final ImageIcon SAVE_AS_ICON = createIcon("saveas.gif");
+    /** Start action icon. */
+    public static final ImageIcon START_ICON = createIcon("start.gif");
+    /** Select action icon. */
+    public static final ImageIcon SELECT_ICON = createIcon("select.gif");
     /** Icon for type (GTY) files. */
     public static final ImageIcon TYPE_FILE_ICON = createIcon("type-file.gif");
     /** Icon for Type Panel. */
@@ -136,12 +144,6 @@ public final class Icons {
     /** Special icon denoting choice e/a. */
     public static final ImageIcon E_A_CHOICE_ICON =
         createIcon("e-a-choice.gif");
-    /** Save action icon. */
-    public static final ImageIcon SAVE_ICON = createIcon("save.gif");
-    /** Start action icon. */
-    public static final ImageIcon START_ICON = createIcon("start.gif");
-    /** Select action icon. */
-    public static final ImageIcon SELECT_ICON = createIcon("select.gif");
     /** Edge action icon. */
     public static final ImageIcon EDGE_ICON = createIcon("edge.gif");
     /** Preview action icon. */

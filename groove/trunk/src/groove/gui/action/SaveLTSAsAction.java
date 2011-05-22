@@ -43,7 +43,7 @@ import java.util.HashSet;
 public class SaveLTSAsAction extends SimulatorAction {
     /** Constructs an instance of the action, for a given simulator. */
     public SaveLTSAsAction(Simulator simulator) {
-        super(simulator, Options.SAVE_LTS_ACTION_NAME, Icons.SAVE_ICON);
+        super(simulator, Options.SAVE_LTS_ACTION_NAME, Icons.SAVE_AS_ICON);
     }
 
     @Override

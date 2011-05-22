@@ -19,71 +19,63 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
+import groove.gui.dialog.ErrorDialog;
 import groove.lts.GTS;
-import groove.view.GraphView;
 import groove.view.StoredGrammarView;
+import groove.view.TypeView;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.ListSelectionModel;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * @author Tom Staijen
+ * List of available type graphs, showing their enabledness status.
+ * @author Arend Rensink
  * @version $Revision $
  */
-public class StateJList extends JList implements SimulatorListener {
+public class TypeJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected StateJList(final Simulator simulator) {
+    protected TypeJList(final Simulator simulator) {
         this.simulator = simulator;
-        this.listModel = new DefaultListModel();
-        setModel(this.listModel);
         this.setEnabled(false);
-        this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new MyCellRenderer());
         installListeners();
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                StateJList.this.repaint();
+                TypeJList.this.repaint();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                StateJList.this.repaint();
+                TypeJList.this.repaint();
             }
         });
         addMouseListener(new MyMouseListener());
@@ -136,34 +128,50 @@ public class StateJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    /**
-     * Creates a popup menu, consisting of "use as start graph" & "preview".
-     */
-    protected JPopupMenu createPopupMenu(Point atPoint) {
-        JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewHostAction());
-        result.setFocusable(false);
-        // add rest only if mouse is actually over a graph name
-        int index = locationToIndex(atPoint);
-        if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(getActions().getEditHostOrStateAction());
-            result.addSeparator();
-            result.add(getActions().getCopyHostAction());
-            result.add(getActions().getDeleteHostAction());
-            result.add(getActions().getRenameHostAction());
-            result.addSeparator();
-            result.add(getActions().getSetStartGraphAction());
-        }
-        return result;
+    /** Creates a tool bar for the rule tree. */
+    void fillToolBar(JToolBar result) {
+        result.setFloatable(false);
+        result.add(getActions().getNewTypeAction());
+        result.addSeparator();
+        result.add(getActions().getCopyTypeAction());
+        result.add(getActions().getDeleteTypeAction());
+        result.add(getActions().getRenameTypeAction());
+        result.addSeparator();
+        result.add(getEnableButton());
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
     }
 
-    // -----------------------------------------
-    // Methods from SimulationListener Interface
-    // -----------------------------------------
+    private JToggleButton getEnableButton() {
+        if (this.enableButton == null) {
+            this.enableButton =
+                new JToggleButton(getActions().getEnableTypeAction());
+            this.enableButton.setText(null);
+            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
+            this.enableButton.setFocusable(false);
+        }
+        return this.enableButton;
+    }
 
-    @Override
-    protected ListSelectionModel createSelectionModel() {
-        return new MySelectionModel();
+    /**
+     * Creates a popup menu.
+     */
+    private JPopupMenu createPopupMenu(Point atPoint) {
+        JPopupMenu result = new JPopupMenu();
+        result.add(getActions().getNewTypeAction());
+        result.setFocusable(false);
+        // add rest only if mouse is actually over a type name
+        int index = locationToIndex(atPoint);
+        if (getCellBounds(index, index).contains(atPoint)) {
+            result.add(getActions().getEditTypeAction());
+            result.addSeparator();
+            result.add(getActions().getCopyTypeAction());
+            result.add(getActions().getDeleteTypeAction());
+            result.add(getActions().getRenameTypeAction());
+            result.addSeparator();
+            result.add(getActions().getEnableTypeAction());
+        }
+        return result;
     }
 
     @Override
@@ -171,121 +179,43 @@ public class StateJList extends JList implements SimulatorListener {
             Set<Change> changes) {
         suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
-            this.removeAll();
             if (source.getGrammar() == null) {
+                removeAll();
                 setEnabled(false);
             } else {
                 setEnabled(true);
-                setList(source.getHostSet());
+                refresh();
             }
-        }
-        if (changes.contains(Change.STATE)) {
-            refreshCurrentState(source.getHost() == null);
+        } else if (changes.contains(Change.TYPE)) {
+            refresh();
         }
         activateListeners();
     }
 
     /**
-     * Sets the list of names to a given set.
-     * @param selection the set of names to be selected
+     * Refreshes the list from the grammar.
      */
-    private void setList(Collection<GraphView> selection) {
-        Object[] hostNames = getGrammar().getGraphNames().toArray();
-        Arrays.sort(hostNames);
+    private void refresh() {
+        Object[] typeNames = getGrammar().getTypeNames().toArray();
+        Arrays.sort(typeNames);
+        setListData(typeNames);
+        TypeView selection = getSimulatorModel().getType();
         // turn the selection into a set of names
-        Set<String> selectionNames = new HashSet<String>();
-        for (GraphView hostView : selection) {
-            selectionNames.add(hostView.getName());
-        }
-        int[] selectedIndices = new int[selection.size()];
-        int selectedCount = 0;
-        this.listModel.clear();
-        // add the empty string, later to be replaced by the
-        // current state indicator
-        this.listModel.addElement("");
-        for (int i = 0; i < hostNames.length; i++) {
-            Object name = hostNames[i];
-            this.listModel.addElement(name);
-            if (selectionNames.contains(name)) {
-                selectedIndices[selectedCount] = i + 1;
-                selectedCount++;
-            }
-        }
-        refreshCurrentState(false);
-        if (selectedCount == 0) {
-            if (getStartGraphName() != null) {
-                setSelectedValue(getStartGraphName(), true);
-            } else {
-                clearSelection();
-            }
+        if (selection == null) {
+            clearSelection();
+            getEnableButton().setSelected(false);
         } else {
-            setSelectedIndices(selectedIndices);
+            setSelectedValue(selection.getName(), true);
+            getEnableButton().setSelected(
+                getGrammar().getActiveTypeNames().contains(selection.getName()));
         }
     }
-
-    @Override
-    public void setSelectedIndex(int index) {
-        // don't select the first item if there is no GTS
-        if (index != 0 || getCurrentGTS() != null) {
-            super.setSelectedIndex(index);
-        }
-    }
-
-    /** Returns the list of selected graph names. */
-    private List<String> getSelectedGraphs() {
-        List<String> result = new ArrayList<String>();
-        int[] selection = getSelectedIndices();
-        for (int i = 0; i < selection.length; i++) {
-            int index = selection[i];
-            if (index > 0) {
-                result.add((String) this.listModel.elementAt(index));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Refreshes the value of the current state item of the state list.
-     * @param select if <code>true</code>, select the current state item
-     */
-    private void refreshCurrentState(boolean select) {
-        String text;
-        if (getSimulatorModel().getState() == null) {
-            String startKey =
-                getActions().getStartSimulationAction().getValue(
-                    Action.ACCELERATOR_KEY).toString();
-            text =
-                String.format("Press %s to start simulation",
-                    startKey.substring(startKey.indexOf(" ") + 1));
-        } else {
-            text =
-                String.format("Simulation state: %s",
-                    getSimulatorModel().getState());
-        }
-        this.listModel.setElementAt(text, 0);
-        if (select) {
-            setSelectedIndex(0);
-        }
-        repaint();
-    }
-
-    // --------------
-    // Private fields
-    // --------------
 
     /**
      * Returns the current grammar view from the simulator.
      */
     private StoredGrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
-    }
-
-    /**
-     * Returns the current value of the start graph name. Convenience method for
-     * <code>getGrammarView().getStartGraphName()</code>.
-     */
-    private final String getStartGraphName() {
-        return getGrammar() == null ? null : getGrammar().getStartGraphName();
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
@@ -313,9 +243,8 @@ public class StateJList extends JList implements SimulatorListener {
      * @invariant simulator != null
      */
     private final Simulator simulator;
-    /** The list model used in this class. */
-    private final DefaultListModel listModel;
-
+    /** The type enable button. */
+    private JToggleButton enableButton;
     private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
@@ -330,11 +259,6 @@ public class StateJList extends JList implements SimulatorListener {
 
     /** The background colour of a selected cell if the list does not have focus. */
     static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
-    /** The background colour of the start graph. */
-    static private final Color START_GRAPH_BACKGROUND_COLOR =
-        new JLabel().getBackground();
-    static private final Border START_GRAPH_BORDER = new CompoundBorder(
-        LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2));
 
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
@@ -359,27 +283,33 @@ public class StateJList extends JList implements SimulatorListener {
                             setSelectedIndex(index);
                         }
                     }
-                    StateJList.this.requestFocus();
+                    TypeJList.this.requestFocus();
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
-                    getActions().getSetStartGraphAction().execute();
+                if (TypeJList.this.isEnabled() && cellSelected) {
+                    try {
+                        getSimulatorModel().doEnableType(
+                            getSimulatorModel().getType().getAspectGraph());
+                    } catch (IOException e) {
+                        new ErrorDialog(getSimulator().getFrame(),
+                            "Error while enabling type graph", e).setVisible(true);
+                    }
                 }
             }
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.HOST);
+            getSimulatorModel().setTabKind(TabKind.TYPE);
         }
     }
 
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setHostSet(getSelectedGraphs());
+            getSimulatorModel().setType((String) getSelectedValue());
         }
     }
 
@@ -401,7 +331,7 @@ public class StateJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            if (isSelected && !StateJList.this.isFocusOwner()) {
+            if (isSelected && !TypeJList.this.isFocusOwner()) {
                 Color foreground = Color.BLACK;
                 Color background = SELECTION_NON_FOCUS_COLOR;
                 if (getCurrentGTS() == null) {
@@ -412,48 +342,15 @@ public class StateJList extends JList implements SimulatorListener {
                 result.setBackground(background);
             }
             // set tool tips and special formats
-            if (index == 0) {
-                // set the first item (the current state indicator) to special
-                // format
-                if (!isSelected) {
-                    // distinguish the current start graph name
-                    result.setBackground(START_GRAPH_BACKGROUND_COLOR);
-                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
-                }
-                setFont(getFont().deriveFont(Font.ITALIC));
-                setToolTipText("Currently selected state of the simulation");
-            } else if (value.toString().equals(getStartGraphName())) {
+            if (getGrammar().getActiveTypeNames().contains(value.toString())) {
                 setFont(getFont().deriveFont(Font.BOLD));
-                setToolTipText("Current start graph");
+                setToolTipText("Enabled type graph");
             } else {
-                setToolTipText("Doubleclick to use as start graph");
+                setToolTipText("Disabled type graph; doubleclick to enable");
             }
             return result;
         }
 
         private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
-    }
-
-    /** Variation on the selection model that makes sure the first item
-     * only gets selected if there is a GTS.
-     */
-    private class MySelectionModel extends DefaultListSelectionModel {
-        @Override
-        public void setSelectionInterval(int index0, int index1) {
-            if (index0 == 0 && getCurrentGTS() == null) {
-                index0 = 1;
-            }
-            if (index0 <= index1) {
-                super.setSelectionInterval(index0, index1);
-            }
-        }
-
-        @Override
-        public void setLeadSelectionIndex(int leadIndex) {
-            if (leadIndex != 0 || getCurrentGTS() != null) {
-                super.setLeadSelectionIndex(leadIndex);
-            }
-        }
-
     }
 }
