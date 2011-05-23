@@ -59,6 +59,8 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -71,8 +73,12 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -195,6 +201,41 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         // also deselect the match
         getJGraph().removeGraphSelectionListener(this.graphSelectionListener);
         this.listening = false;
+    }
+
+    /** Returns the list of states and host graphs. */
+    public StateJList getList() {
+        if (this.stateJList == null) {
+            this.stateJList = new StateJList(getSimulator());
+        }
+        return this.stateJList;
+    }
+
+    /**
+     * Creates and returns the panel with the start states list.
+     */
+    public JPanel getListPanel() {
+        if (this.stateListPanel == null) {
+            JToolBar toolBar = getSimulator().createToolBar();
+            getList().fillToolBar(toolBar);
+            toolBar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            JScrollPane startGraphsPane = new JScrollPane(getList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.stateListPanel = new JPanel(new BorderLayout(), false);
+            this.stateListPanel.add(toolBar, BorderLayout.NORTH);
+            this.stateListPanel.add(startGraphsPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.stateListPanel);
+        }
+        return this.stateListPanel;
     }
 
     /**
@@ -603,6 +644,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         }
         return result;
     }
+
+    /** panel on which the state list (and toolbar) are displayed. */
+    private JPanel stateListPanel;
+    /** Production system graph list */
+    private StateJList stateJList;
 
     /**
      * Mapping from graphs to the corresponding graph models.

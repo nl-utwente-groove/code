@@ -38,6 +38,8 @@ import groove.view.FormatException;
 import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +52,12 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 
 /**
  * Window that displays and controls the current rule graph. Auxiliary class for
@@ -109,6 +116,69 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         });
     }
 
+    /**
+     * Lazily creates and returns the panel with the rule tree.
+     */
+    public JPanel getListPanel() {
+        if (this.ruleTreePanel == null) {
+            // set title and toolbar
+            JLabel labelPaneTitle =
+                new JLabel(" " + Options.RULES_PANE_TITLE + " ");
+            labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            JToolBar labelTreeToolbar = createRuleTreeToolBar();
+            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+
+            Box labelPaneTop = Box.createVerticalBox();
+            labelPaneTop.add(labelPaneTitle);
+            labelPaneTop.add(labelTreeToolbar);
+
+            // make sure the preferred width is not smaller than the minimum
+            // width
+            JScrollPane ruleJTreePanel = new JScrollPane(getRuleTree()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) Math.max(superSize.getWidth(),
+                        RULE_TREE_MINIMUM_WIDTH), (int) superSize.getHeight());
+                }
+            };
+            ruleJTreePanel.setMinimumSize(new Dimension(
+                RULE_TREE_MINIMUM_WIDTH, RULE_TREE_MINIMUM_HEIGHT));
+
+            this.ruleTreePanel = new JPanel(new BorderLayout(), false);
+            this.ruleTreePanel.add(labelPaneTop, BorderLayout.NORTH);
+            this.ruleTreePanel.add(ruleJTreePanel, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.ruleTreePanel);
+        }
+        return this.ruleTreePanel;
+    }
+
+    /** Creates a tool bar for the rule tree. */
+    private JToolBar createRuleTreeToolBar() {
+        JToolBar result = getSimulator().createToolBar();
+        result.add(getActions().getNewRuleAction());
+        result.addSeparator();
+        result.add(getActions().getCopyRuleAction());
+        result.add(getActions().getDeleteRuleAction());
+        result.add(getActions().getRenameRuleAction());
+        result.addSeparator();
+        result.add(getActions().getShiftPriorityAction(true));
+        result.add(getActions().getShiftPriorityAction(false));
+        return result;
+    }
+
+    /**
+     * Returns the tree of rules and matches displayed in the simulator.
+     */
+    public RuleJTree getRuleTree() {
+        if (this.ruleJTree == null) {
+            this.ruleJTree = new RuleJTree(getSimulator());
+        }
+        return this.ruleJTree;
+    }
+
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
@@ -116,6 +186,11 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             setGrammarUpdate(source.getGrammar());
         } else if (changes.contains(Change.RULE) && source.getRule() != null) {
             displayRule(source.getRule().getName(), false);
+        }
+        if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
+            getRuleTree().dispose();
+            this.ruleJTree = null;
+            this.ruleTreePanel = null;
         }
     }
 
@@ -233,6 +308,12 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
         return getSimulatorModel().getGrammar();
     }
 
+    /** Production rule directory. */
+    private RuleJTree ruleJTree;
+
+    /** Panel with the ruleJTree plus toolbar. */
+    private JPanel ruleTreePanel;
+
     /**
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
@@ -243,4 +324,14 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     // private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */
     private String displayedRule;
+
+    /**
+     * Minimum width of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
+
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_HEIGHT = 200;
 }
