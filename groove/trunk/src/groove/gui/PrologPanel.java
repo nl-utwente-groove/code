@@ -38,6 +38,7 @@ import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -655,6 +656,40 @@ public class PrologPanel extends JPanel {
     }
 
     /**
+     * Creates and returns the panel with the control programs list.
+     */
+    public JPanel getListPanel() {
+        if (this.prologListPanel == null) {
+            JToolBar toolBar = getSimulator().createToolBar();
+            getPrologList().fillToolBar(toolBar);
+            JScrollPane prologPane = new JScrollPane(getPrologList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.prologListPanel = new JPanel(new BorderLayout(), false);
+            this.prologListPanel.add(toolBar, BorderLayout.NORTH);
+            this.prologListPanel.add(prologPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.prologListPanel);
+        }
+        return this.prologListPanel;
+    }
+
+    /** Returns the list of control programs. */
+    public PrologJList getPrologList() {
+        if (this.prologJList == null) {
+            this.prologJList = new PrologJList(getSimulator());
+        }
+        return this.prologJList;
+    }
+
+    /**
      * Create a prolog editor tab for the given file
      */
     protected void createEditor(File file) {
@@ -1063,6 +1098,11 @@ public class PrologPanel extends JPanel {
         return true;
     }
 
+    /** Convenience method to retrieve the simulator. */
+    private Simulator getSimulator() {
+        return this.sim;
+    }
+
     /** Convenience method to retrieve the simulator state. */
     private SimulatorModel getSimulatorModel() {
         return this.sim.getModel();
@@ -1072,6 +1112,12 @@ public class PrologPanel extends JPanel {
     private StoredGrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
     }
+
+    /** panel on which the prolog list (and toolbar) are displayed. */
+    private JPanel prologListPanel;
+
+    /** Production system prolog program list. */
+    private PrologJList prologJList;
 
     /**
      * Class used to redirect the standard output stream used by prolog to the

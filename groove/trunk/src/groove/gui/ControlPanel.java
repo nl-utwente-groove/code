@@ -254,6 +254,37 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         }
     }
 
+    /** Returns the GUI component showing the list of control program names. */
+    public JPanel getListPanel() {
+        if (this.listPanel == null) {
+            JToolBar toolBar = getSimulator().createToolBar();
+            getList().fillToolBar(toolBar);
+            JScrollPane controlPane = new JScrollPane(getList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.listPanel = new JPanel(new BorderLayout(), false);
+            this.listPanel.add(toolBar, BorderLayout.NORTH);
+            this.listPanel.add(controlPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
+        }
+        return this.listPanel;
+    }
+
+    /** Returns the list of control programs. */
+    public ControlJList getList() {
+        if (this.controlJList == null) {
+            this.controlJList = new ControlJList(getSimulator());
+        }
+        return this.controlJList;
+    }
+
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
@@ -410,6 +441,12 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
 
     /** Simulator to which the control panel belongs. */
     private final Simulator simulator;
+
+    /** Production system control program list. */
+    private ControlJList controlJList;
+
+    /** Panel with the {@link #controlJList}. */
+    private JPanel listPanel;
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;

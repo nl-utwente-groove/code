@@ -30,6 +30,8 @@ import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +39,11 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -147,6 +151,39 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
+    /**
+     * Creates and returns the panel with the type graphs list.
+     */
+    public JPanel getListPanel() {
+        if (this.listPanel == null) {
+            JToolBar toolBar = getSimulator().createToolBar();
+            getList().fillToolBar(toolBar);
+            JScrollPane typesPane = new JScrollPane(getList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.listPanel = new JPanel(new BorderLayout(), false);
+            this.listPanel.add(toolBar, BorderLayout.NORTH);
+            this.listPanel.add(typesPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
+        }
+        return this.listPanel;
+    }
+
+    /** Returns the list of states and host graphs. */
+    public TypeJList getList() {
+        if (this.typeJList == null) {
+            this.typeJList = new TypeJList(getSimulator());
+        }
+        return this.typeJList;
+    }
+
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
@@ -232,6 +269,12 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /** Name list of type graphs. */
     private JTypeNameList nameList;
+
+    /** panel on which the state list (and toolbar) are displayed. */
+    private JPanel listPanel;
+
+    /** Production system type list */
+    private TypeJList typeJList;
 
     /** Lazily creates and returns the pane displaying the type names. */
     private TypeNamesPane getNameListPane() {
