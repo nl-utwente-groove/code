@@ -18,23 +18,29 @@ package groove.control.parse;
 
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
 import groove.annotation.Help;
+import groove.io.FileType;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
 import org.antlr.works.ate.syntax.generic.ATESyntaxLexer;
 import org.antlr.works.ate.syntax.misc.ATEToken;
 import org.antlr.works.grammar.element.ElementRule;
 import org.antlr.works.grammar.syntax.GrammarSyntaxLexer;
 import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
-import org.antlr.xjlib.foundation.XJUtils;
 
 /** Class retrieving documentation lines from the Control grammar. */
 public class CtrlDoc {
@@ -59,19 +65,39 @@ public class CtrlDoc {
 
     /** Initialises all data structures. */
     private void init() {
-        String grammarFile = Groove.getResource(CTRL_GRAMMAR_FILE).getFile();
-        String grammarText;
-        try {
-            grammarText = XJUtils.getStringFromFile(grammarFile);
-        } catch (Exception e) {
-            throw new IllegalStateException(String.format(
-                "Error while reading rammar file %s: %s", CTRL_GRAMMAR_FILE,
-                e.getMessage()));
-        }
+        String grammarText = this.readGrammarText();
         for (Map.Entry<ElementRule,ATEToken> nonterminal : getRules(grammarText).entrySet()) {
             processRule(nonterminal.getKey(), nonterminal.getValue());
         }
         this.initialised = true;
+    }
+
+    /** Returns the content of the file that specifies the control grammar. */
+    private String readGrammarText() {
+        URL url = Groove.getResource(CTRL_GRAMMAR_FILE);
+        String grammarText = "";
+
+        try {
+            if (FileType.JAR.getExtensionName().equals(url.getProtocol())) {
+                // We are running from a JAR file so we cannot read the file
+                // directly because it is compressed.
+                JarURLConnection conn =
+                    ((JarURLConnection) url.openConnection());
+                ZipFile zipFile = conn.getJarFile();
+                InputStream in = zipFile.getInputStream(conn.getJarEntry());
+                grammarText = groove.io.Util.readInputStreamToString(in);
+            } else {
+                // We can read the file directly.
+                File file = new File(url.getFile());
+                grammarText = groove.io.Util.readFileToString(file);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format(
+                "Error while reading grammar file %s: %s", CTRL_GRAMMAR_FILE,
+                e.getMessage()));
+        }
+
+        return grammarText;
     }
 
     /** 

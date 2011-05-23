@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -210,6 +212,26 @@ public class Util {
         }
         reader.close();
         return fileData.toString();
+    }
+
+    /**
+     * Reads the contents of a input stream into a String.
+     *
+     * @param in  the stream to read, must not be <code>null</code>
+     * @throws IOException in case of an I/O error
+     */
+    public static String readInputStreamToString(InputStream in)
+        throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        StringBuilder result = new StringBuilder();
+        String nextLine = reader.readLine();
+        while (nextLine != null) {
+            result.append(nextLine);
+            result.append("\n");
+            nextLine = reader.readLine();
+        }
+        reader.close();
+        return result.toString();
     }
 
     /**
