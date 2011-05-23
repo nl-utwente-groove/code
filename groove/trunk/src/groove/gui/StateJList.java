@@ -157,7 +157,11 @@ public class StateJList extends JList implements SimulatorListener {
         result.setFocusable(false);
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
-        if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
+        if (index == 0) {
+            result.addSeparator();
+            result.add(getSimulator().getStepHistory().getBackAction());
+            result.add(getSimulator().getStepHistory().getForwardAction());
+        } else if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
             result.add(getActions().getEditHostOrStateAction());
             result.addSeparator();
             result.add(getActions().getCopyHostAction());
