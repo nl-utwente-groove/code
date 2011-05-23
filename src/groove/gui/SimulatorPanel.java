@@ -328,7 +328,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     private EditorPanel addEditorPanel(AspectGraph graph) {
         final EditorPanel result = new EditorPanel(this.simulator, graph);
         add(result);
-        result.start(graph);
+        result.start();
         return result;
     }
 

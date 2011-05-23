@@ -19,12 +19,9 @@ package groove.gui;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphRole;
-import groove.gui.JTypeNameList.CheckBoxListModel;
-import groove.gui.JTypeNameList.ListItem;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.JGraphMode;
 import groove.io.HTMLConverter;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
@@ -37,15 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.ToolTipManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * @author Frank van Es
@@ -67,12 +60,13 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.add(createButton(getActions().getNewTypeAction()));
-        result.add(createButton(getActions().getEditTypeAction()));
-        result.addSeparator();
-        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        return null;
+        //        JToolBar result = new JToolBar();
+        //        result.add(createButton(getActions().getNewTypeAction()));
+        //        result.add(createButton(getActions().getEditTypeAction()));
+        //        result.addSeparator();
+        //        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        //        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         //        result.addSeparator();
         //        result.add(createButton(getActions().getCopyTypeAction()));
         //        result.add(createButton(getActions().getDeleteTypeAction()));
@@ -83,22 +77,23 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         //        result.addSeparator();
         //        result.add(createButton(getActions().getDisableTypesAction()));
         //        result.add(createButton(getActions().getEnableTypeAction()));
-        return result;
+        //        return result;
     }
 
-    /**
-     * Creates a button around an action that is resized in case the action
-     * doesn't have an icon.
-     */
-    private JButton createButton(Action action) {
-        JButton result = new JButton(action);
-        if (action.getValue(Action.SMALL_ICON) == null) {
-            result.setMargin(new Insets(4, 2, 4, 2));
-        } else {
-            result.setHideActionText(true);
-        }
-        return result;
-    }
+    //
+    //    /**
+    //     * Creates a button around an action that is resized in case the action
+    //     * doesn't have an icon.
+    //     */
+    //    private JButton createButton(Action action) {
+    //        JButton result = new JButton(action);
+    //        if (action.getValue(Action.SMALL_ICON) == null) {
+    //            result.setMargin(new Insets(4, 2, 4, 2));
+    //        } else {
+    //            result.setHideActionText(true);
+    //        }
+    //        return result;
+    //    }
 
     @Override
     protected void installListeners() {
@@ -106,21 +101,21 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        this.selectionListener = new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    // This event is referencing the previously selected value,
-                    // ignore it and wait for the event with the new value.
-                    return;
-                }
-                int index = getNameList().getSelectedIndex();
-                if (index >= 0) {
-                    ListItem item = getNameListModel().getElementAt(index);
-                    getSimulatorModel().setType(item.dataItem);
-                }
-            }
-        };
+        //        this.selectionListener = new ListSelectionListener() {
+        //            @Override
+        //            public void valueChanged(ListSelectionEvent e) {
+        //                if (e.getValueIsAdjusting()) {
+        //                    // This event is referencing the previously selected value,
+        //                    // ignore it and wait for the event with the new value.
+        //                    return;
+        //                }
+        //                int index = getNameList().getSelectedIndex();
+        //                if (index >= 0) {
+        //                    ListItem item = getNameListModel().getElementAt(index);
+        //                    getSimulatorModel().setType(item.dataItem);
+        //                }
+        //            }
+        //        };
         activateListeners();
     }
 
@@ -156,8 +151,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
      */
     public JPanel getListPanel() {
         if (this.listPanel == null) {
-            JToolBar toolBar = getSimulator().createToolBar();
-            getList().fillToolBar(toolBar);
+
             JScrollPane typesPane = new JScrollPane(getList()) {
                 @Override
                 public Dimension getPreferredSize() {
@@ -168,12 +162,38 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             };
 
             this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(toolBar, BorderLayout.NORTH);
+            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
             this.listPanel.add(typesPane, BorderLayout.CENTER);
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(this.listPanel);
         }
         return this.listPanel;
+    }
+
+    /** Creates a tool bar for the types list. */
+    private JToolBar createListToolBar() {
+        JToolBar result = getSimulator().createToolBar();
+        result.add(getActions().getNewTypeAction());
+        result.add(getActions().getEditTypeAction());
+        result.addSeparator();
+        result.add(getActions().getCopyTypeAction());
+        result.add(getActions().getDeleteTypeAction());
+        result.add(getActions().getRenameTypeAction());
+        result.addSeparator();
+        result.add(getEnableButton());
+        return result;
+    }
+
+    /** The type enable button. */
+    JToggleButton getEnableButton() {
+        if (this.enableButton == null) {
+            this.enableButton =
+                new JToggleButton(getActions().getEnableTypeAction());
+            this.enableButton.setText(null);
+            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
+            this.enableButton.setFocusable(false);
+        }
+        return this.enableButton;
     }
 
     /** Returns the list of states and host graphs. */
@@ -205,6 +225,14 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                 }
             }
             displayType();
+            TypeView selection = getSimulatorModel().getType();
+            // turn the selection into a set of names
+            if (selection == null) {
+                getEnableButton().setSelected(false);
+            } else {
+                getEnableButton().setSelected(
+                    grammar.getActiveTypeNames().contains(selection.getName()));
+            }
         }
         activateListeners();
     }
@@ -255,20 +283,21 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         refreshStatus();
     }
 
-    /** Lazily creates and returns the list displaying the type names. */
-    private JTypeNameList getNameList() {
-        if (this.nameList == null) {
-            this.nameList = new JTypeNameList(this);
-        }
-        return this.nameList;
-    }
-
-    private CheckBoxListModel getNameListModel() {
-        return this.getNameList().getModel();
-    }
-
-    /** Name list of type graphs. */
-    private JTypeNameList nameList;
+    //
+    //    /** Lazily creates and returns the list displaying the type names. */
+    //    private JTypeNameList getNameList() {
+    //        if (this.nameList == null) {
+    //            this.nameList = new JTypeNameList(this);
+    //        }
+    //        return this.nameList;
+    //    }
+    //
+    //    private CheckBoxListModel getNameListModel() {
+    //        return this.getNameList().getModel();
+    //    }
+    //
+    //    /** Name list of type graphs. */
+    //    private JTypeNameList nameList;
 
     /** panel on which the state list (and toolbar) are displayed. */
     private JPanel listPanel;
@@ -276,31 +305,34 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     /** Production system type list */
     private TypeJList typeJList;
 
-    /** Lazily creates and returns the pane displaying the type names. */
-    private TypeNamesPane getNameListPane() {
-        if (this.nameListPane == null) {
-            this.nameListPane = new TypeNamesPane(getNameList());
-        }
-        return this.nameListPane;
-    }
-
-    /** Name list of type graphs. */
-    private TypeNamesPane nameListPane;
-
-    /** Listener for selection changes in the list of types. */
-    private ListSelectionListener selectionListener;
+    /** The type enable button. */
+    private JToggleButton enableButton;
+    //
+    //    /** Lazily creates and returns the pane displaying the type names. */
+    //    private TypeNamesPane getNameListPane() {
+    //        if (this.nameListPane == null) {
+    //            this.nameListPane = new TypeNamesPane(getNameList());
+    //        }
+    //        return this.nameListPane;
+    //    }
+    //
+    //    /** Name list of type graphs. */
+    //    private TypeNamesPane nameListPane;
+    //
+    //    /** Listener for selection changes in the list of types. */
+    //    private ListSelectionListener selectionListener;
 
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
-
-    private static class TypeNamesPane extends JScrollPane {
-        TypeNamesPane(JTypeNameList nameList) {
-            super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            this.setViewportView(nameList);
-            this.setMinimumSize(JTypeNameList.MIN_DIMENSIONS);
-            this.setMaximumSize(JTypeNameList.MAX_DIMENSIONS);
-            this.setPreferredSize(JTypeNameList.MAX_DIMENSIONS);
-        }
-    }
+    //
+    //    private static class TypeNamesPane extends JScrollPane {
+    //        TypeNamesPane(JTypeNameList nameList) {
+    //            super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+    //                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    //            this.setViewportView(nameList);
+    //            this.setMinimumSize(JTypeNameList.MIN_DIMENSIONS);
+    //            this.setMaximumSize(JTypeNameList.MAX_DIMENSIONS);
+    //            this.setPreferredSize(JTypeNameList.MAX_DIMENSIONS);
+    //        }
+    //    }
 }

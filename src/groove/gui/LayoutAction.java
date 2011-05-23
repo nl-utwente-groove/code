@@ -36,7 +36,9 @@ public class LayoutAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        doLayout();
+        if (this.layouter.isEnabled()) {
+            doLayout();
+        }
     }
 
     /**

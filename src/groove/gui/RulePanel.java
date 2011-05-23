@@ -28,7 +28,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.JGraphMode;
 import groove.io.HTMLConverter;
 import groove.trans.Rule;
 import groove.trans.RuleElement;
@@ -80,13 +79,14 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
 
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.add(getActions().getNewRuleAction());
-        result.add(getActions().getEditRuleAction());
-        result.addSeparator();
-        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        return result;
+        return null;
+        //        JToolBar result = new JToolBar();
+        //        result.add(getActions().getNewRuleAction());
+        //        result.add(getActions().getEditRuleAction());
+        //        result.addSeparator();
+        //        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        //        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        //        return result;
     }
 
     @Override
@@ -159,11 +159,12 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     private JToolBar createRuleTreeToolBar() {
         JToolBar result = getSimulator().createToolBar();
         result.add(getActions().getNewRuleAction());
-        result.addSeparator();
+        result.add(getActions().getEditRuleAction());
+        result.addSeparator(new Dimension(7, 0));
         result.add(getActions().getCopyRuleAction());
         result.add(getActions().getDeleteRuleAction());
         result.add(getActions().getRenameRuleAction());
-        result.addSeparator();
+        result.addSeparator(new Dimension(7, 0));
         result.add(getActions().getShiftPriorityAction(true));
         result.add(getActions().getShiftPriorityAction(false));
         return result;

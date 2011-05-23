@@ -749,8 +749,8 @@ public class LabelTree extends JTree implements GraphModelListener,
         new JCheckBox().getPreferredSize().width;
 
     /** Returns the appropriate background colour for an enabledness condition. */
-    static private Color getColor(boolean enabled) {
-        return enabled ? ENABLED_COLOUR : DISABLED_COLOUR;
+    private Color getColor(boolean enabled) {
+        return enabled ? getBackground() : DISABLED_COLOUR;
     }
 
     private static JTextField enabledField = new JTextField();

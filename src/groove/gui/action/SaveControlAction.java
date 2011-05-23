@@ -21,9 +21,8 @@ public class SaveControlAction extends SimulatorAction {
      * as a separate file outside the grammar
      */
     public SaveControlAction(Simulator simulator, boolean saveAs) {
-        super(simulator, saveAs ? Options.SAVE_CONTROL_AS_ACTION_NAME
-                : Options.SAVE_CONTROL_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
-                : Icons.SAVE_ICON);
+        super(simulator, Options.getSaveControlActionName(saveAs), saveAs
+                ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON);
         putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         this.saveAs = saveAs;
         getControlPanel().addRefreshable(this);

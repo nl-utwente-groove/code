@@ -81,7 +81,17 @@ public final class SaveGraphAction extends SimulatorAction {
         try {
             switch (graph.getRole()) {
             case HOST:
-                result = getModel().doAddHost(graph);
+                if (this.editor != null || getModel().hasHost()) {
+                    result = getModel().doAddHost(graph);
+                } else {
+                    // we're saving a state
+                    String newName =
+                        askNewGraphName("Select new graph name",
+                            graph.getName(), true);
+                    if (newName != null) {
+                        result |= getModel().doAddHost(graph.rename(newName));
+                    }
+                }
                 break;
             case RULE:
                 result = getModel().doAddRule(graph);
@@ -134,7 +144,12 @@ public final class SaveGraphAction extends SimulatorAction {
         setEnabled(this.editor == null ? getGraph() != null
                 : this.editor.isDirty());
         if (isEnabled()) {
-            String name = Options.getSaveActionName(getRole(), this.saveAs);
+            String name;
+            if (getRole() != GraphRole.HOST || getModel().hasHost()) {
+                name = Options.getSaveActionName(getRole(), this.saveAs);
+            } else {
+                name = Options.getSaveStateName(this.saveAs);
+            }
             if (this.saveAs) {
                 putValue(NAME, name);
             }

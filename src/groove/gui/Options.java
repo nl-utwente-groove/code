@@ -364,6 +364,8 @@ public class Options implements Cloneable {
     /** To concrete mode action name */
     public static final String TOGGLE_TO_CONC_ACTION_NAME =
         "Return to Concrete Mode";
+    private static final String SAVE_NAME_TEMPLATE = "Save %s ...";
+    private static final String SAVE_AS_NAME_TEMPLATE = "Save %s As ...";
     /**
      * Save action name
      */
@@ -372,20 +374,26 @@ public class Options implements Cloneable {
      * Save-as action name
      */
     public static final String SAVE_AS_ACTION_NAME = "Save As ...";
-    /**
-     * Save control action name
-     */
-    public static final String SAVE_CONTROL_ACTION_NAME = "Save Control";
-    /**
-     * Save-as control action name
-     */
-    public static final String SAVE_CONTROL_AS_ACTION_NAME =
-        "Save Control As ...";
+
+    /** Returns the save-as action name for a given item text. */
+    private static final String getSaveActionName(String item, boolean saveAs) {
+        return String.format(saveAs ? SAVE_AS_NAME_TEMPLATE
+                : SAVE_NAME_TEMPLATE, item);
+    }
 
     /** Returns the save-as action name for a given graph role. */
     public static final String getSaveActionName(GraphRole role, boolean saveAs) {
-        return String.format("Save %s %s...", role.toString(true), saveAs
-                ? "As " : "");
+        return getSaveActionName(role.toString(true), saveAs);
+    }
+
+    /** Returns the save-as action name for a given graph role. */
+    public static final String getSaveControlActionName(boolean saveAs) {
+        return getSaveActionName("Control", saveAs);
+    }
+
+    /** Returns the save-as action name for a given graph role. */
+    public static final String getSaveStateName(boolean saveAs) {
+        return getSaveActionName("State", saveAs);
     }
 
     /**

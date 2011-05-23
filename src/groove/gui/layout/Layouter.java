@@ -41,6 +41,9 @@ public interface Layouter {
      */
     public String getText();
 
+    /** Indicates if the layouter is currently enabled. */
+    public boolean isEnabled();
+
     /**
      * Lays out the <tt>jgraph</tt>, optionally taking existing layout
      * information into account. Existing layout information is kept for the

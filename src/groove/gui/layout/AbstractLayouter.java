@@ -179,6 +179,10 @@ abstract public class AbstractLayouter implements Layouter {
         return this.text;
     }
 
+    public boolean isEnabled() {
+        return this.jgraph.isEnabled();
+    }
+
     /**
      * Sets the name stored for this action. Used when the action is a factory.
      * Note that this does not affect the <i>display </i> name for this action.

@@ -47,9 +47,8 @@ public class EditorPanel extends JPanel implements SimulatorListener {
      * @param graph the input graph for the editor
      */
     public EditorPanel(Simulator simulator, final AspectGraph graph) {
-        setName(graph.getName());
-        setFocusCycleRoot(true);
         this.simulator = simulator;
+        this.graph = graph;
         this.options = simulator.getOptions();
         this.editor =
             new Editor(null, this.options,
@@ -97,13 +96,15 @@ public class EditorPanel extends JPanel implements SimulatorListener {
                     return graph.getRole();
                 }
             };
+        setFocusCycleRoot(true);
+        setName(graph.getName());
         simulator.getModel().addListener(this, Change.GRAMMAR);
     }
 
     /** Starts the editor with the graph passed in at construction time. */
-    public void start(AspectGraph graph) {
+    public void start() {
         this.editor.setTypeView(getSimulatorModel().getGrammar().getTypeViewList());
-        this.editor.setGraph(graph, true);
+        this.editor.setGraph(getGraph(), true);
         setLayout(new BorderLayout());
         JSplitPane mainPanel = this.editor.getMainPanel();
         mainPanel.setBorder(null);
@@ -120,7 +121,7 @@ public class EditorPanel extends JPanel implements SimulatorListener {
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getGraph() {
-        return getEditor().getGraph();
+        return this.graph;
     }
 
     /** Returns the editor instance of this panel. */
@@ -199,6 +200,9 @@ public class EditorPanel extends JPanel implements SimulatorListener {
 
     /** Changes the edited graph. */
     public void change(AspectGraph newGraph) {
+        assert newGraph.getName().equals(this.graph.getName())
+            && newGraph.getRole() == this.graph.getRole();
+        this.graph = newGraph;
         getEditor().setGraph(newGraph, false);
     }
 
@@ -268,6 +272,11 @@ public class EditorPanel extends JPanel implements SimulatorListener {
         getSimulatorModel().removeListener(this);
     }
 
+    /** Graph being edited.
+     * This is guaranteed to be the same as {@link Editor#getGraph()} once
+     * {@link #start()} has been invoked.
+     */
+    private AspectGraph graph;
     private JButton saveButton;
     private SaveGraphAction saveAction;
     private JButton cancelButton;

@@ -16,9 +16,11 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
+import groove.gui.jgraph.JAttr;
 import groove.lts.GTS;
 import groove.view.GraphView;
 import groove.view.StoredGrammarView;
@@ -140,12 +142,20 @@ public class StateJList extends JList implements SimulatorListener {
     /** Creates a tool bar for the states list. */
     void fillToolBar(JToolBar result) {
         result.add(getActions().getNewHostAction());
-        result.addSeparator();
-        result.add(getActions().getCopyHostAction());
-        result.add(getActions().getDeleteHostAction());
-        result.add(getActions().getRenameHostAction());
-        result.addSeparator();
-        result.add(getActions().getSetStartGraphAction());
+        result.add(getActions().getEditHostOrStateAction());
+        if (getSimulatorModel().hasHost()) {
+            result.addSeparator();
+            result.add(getActions().getCopyHostAction());
+            result.add(getActions().getDeleteHostAction());
+            result.add(getActions().getRenameHostAction());
+            result.addSeparator();
+            result.add(getActions().getSetStartGraphAction());
+        } else {
+            result.add(getActions().getSaveGraphAction(GraphRole.HOST));
+            result.addSeparator();
+            result.add(getActions().getBackAction());
+            result.add(getActions().getForwardAction());
+        }
     }
 
     /**
@@ -159,8 +169,8 @@ public class StateJList extends JList implements SimulatorListener {
         int index = locationToIndex(atPoint);
         if (index == 0) {
             result.addSeparator();
-            result.add(getSimulator().getStepHistory().getBackAction());
-            result.add(getSimulator().getStepHistory().getForwardAction());
+            result.add(getActions().getBackAction());
+            result.add(getActions().getForwardAction());
         } else if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
             result.add(getActions().getEditHostOrStateAction());
             result.addSeparator();
@@ -196,7 +206,10 @@ public class StateJList extends JList implements SimulatorListener {
             }
         }
         if (changes.contains(Change.STATE)) {
-            refreshCurrentState(source.getHost() == null);
+            refreshCurrentState();
+            if (!source.hasHost()) {
+                setSelectedIndex(0);
+            }
         }
         activateListeners();
     }
@@ -227,23 +240,11 @@ public class StateJList extends JList implements SimulatorListener {
                 selectedCount++;
             }
         }
-        refreshCurrentState(false);
+        refreshCurrentState();
         if (selectedCount == 0) {
-            if (getStartGraphName() != null) {
-                setSelectedValue(getStartGraphName(), true);
-            } else {
-                clearSelection();
-            }
+            setSelectedIndex(0);
         } else {
             setSelectedIndices(selectedIndices);
-        }
-    }
-
-    @Override
-    public void setSelectedIndex(int index) {
-        // don't select the first item if there is no GTS
-        if (index != 0 || getCurrentGTS() != null) {
-            super.setSelectedIndex(index);
         }
     }
 
@@ -262,9 +263,8 @@ public class StateJList extends JList implements SimulatorListener {
 
     /**
      * Refreshes the value of the current state item of the state list.
-     * @param select if <code>true</code>, select the current state item
      */
-    private void refreshCurrentState(boolean select) {
+    private void refreshCurrentState() {
         String text;
         if (getSimulatorModel().getState() == null) {
             String startKey =
@@ -279,9 +279,6 @@ public class StateJList extends JList implements SimulatorListener {
                     getSimulatorModel().getState());
         }
         this.listModel.setElementAt(text, 0);
-        if (select) {
-            setSelectedIndex(0);
-        }
         repaint();
     }
 
@@ -433,7 +430,7 @@ public class StateJList extends JList implements SimulatorListener {
                 // format
                 if (!isSelected) {
                     // distinguish the current start graph name
-                    result.setBackground(START_GRAPH_BACKGROUND_COLOR);
+                    result.setBackground(JAttr.STATE_BACKGROUND.darker());
                     ((JComponent) result).setBorder(START_GRAPH_BORDER);
                 }
                 setFont(getFont().deriveFont(Font.ITALIC));

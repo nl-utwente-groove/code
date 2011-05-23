@@ -107,10 +107,10 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         // add keyboard binding for Save key
         InputMap focusedInputMap =
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        focusedInputMap.put(Options.SAVE_KEY, Options.SAVE_CONTROL_ACTION_NAME);
+        String actionName = Options.getSaveControlActionName(false);
+        focusedInputMap.put(Options.SAVE_KEY, actionName);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(Options.SAVE_CONTROL_ACTION_NAME,
-            getActions().getSaveControlAction());
+        getActionMap().put(actionName, getActions().getSaveControlAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
             getActions().getCancelEditControlAction());
         // start listening

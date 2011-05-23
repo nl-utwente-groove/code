@@ -26,7 +26,6 @@ import groove.view.TypeView;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -39,8 +38,6 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -125,28 +122,6 @@ public class TypeJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    /** Creates a tool bar for the types list. */
-    void fillToolBar(JToolBar result) {
-        result.add(getActions().getNewTypeAction());
-        result.addSeparator();
-        result.add(getActions().getCopyTypeAction());
-        result.add(getActions().getDeleteTypeAction());
-        result.add(getActions().getRenameTypeAction());
-        result.addSeparator();
-        result.add(getEnableButton());
-    }
-
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                new JToggleButton(getActions().getEnableTypeAction());
-            this.enableButton.setText(null);
-            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
-            this.enableButton.setFocusable(false);
-        }
-        return this.enableButton;
-    }
-
     /**
      * Creates a popup menu.
      */
@@ -198,11 +173,8 @@ public class TypeJList extends JList implements SimulatorListener {
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
-            getEnableButton().setSelected(false);
         } else {
             setSelectedValue(selection.getName(), true);
-            getEnableButton().setSelected(
-                getGrammar().getActiveTypeNames().contains(selection.getName()));
         }
     }
 
@@ -238,8 +210,6 @@ public class TypeJList extends JList implements SimulatorListener {
      * @invariant simulator != null
      */
     private final Simulator simulator;
-    /** The type enable button. */
-    private JToggleButton enableButton;
     private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
