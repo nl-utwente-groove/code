@@ -154,7 +154,7 @@ public class Options implements Cloneable {
     public static final String APPLY_TRANSITION_ACTION_NAME =
         "Apply active match";
     /** Back action name */
-    public static final String BACK_ACTION_NAME = "Back";
+    public static final String BACK_ACTION_NAME = "Step Back";
     /** Action name for cancelling an edit. */
     public static final String CANCEL_EDIT_ACTION_NAME = "Cancel Edit";
     /** Change graphs action name */
@@ -269,7 +269,7 @@ public class Options implements Cloneable {
     /** Export type-based label filter action name */
     public static final String FILTER_TYPE_ACTION_NAME = "Filter type graph";
     /** Back action name */
-    public static final String FORWARD_ACTION_NAME = "Forward";
+    public static final String FORWARD_ACTION_NAME = "Step Forward";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
@@ -463,8 +463,7 @@ public class Options implements Cloneable {
     static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(
         KeyEvent.VK_ENTER, InputEvent.CTRL_MASK);
     /** Back keystroke */
-    public static final KeyStroke BACK_KEY =
-        KeyStroke.getKeyStroke("control LEFT");
+    public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
     public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
 
@@ -504,7 +503,7 @@ public class Options implements Cloneable {
     /** Explore state space keystroke */
     /** Back keystroke */
     public static final KeyStroke FORWARD_KEY =
-        KeyStroke.getKeyStroke("control RIGHT");
+        KeyStroke.getKeyStroke("alt RIGHT");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
         KeyStroke.getKeyStroke("control G");

@@ -300,6 +300,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                         getSimulatorModel().setMatch(edge);
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
+                        getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
                             getSimulatorModel().doExploreState(node);
                         }

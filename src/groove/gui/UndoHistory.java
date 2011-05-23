@@ -121,6 +121,7 @@ public class UndoHistory implements SimulatorListener {
             super(Options.FORWARD_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.FORWARD_KEY);
             UndoHistory.this.simulator.addAccelerator(this);
+            setEnabled(true);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -146,6 +147,7 @@ public class UndoHistory implements SimulatorListener {
             super(Options.BACK_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.BACK_KEY);
             UndoHistory.this.simulator.addAccelerator(this);
+            setEnabled(true);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -211,7 +213,7 @@ public class UndoHistory implements SimulatorListener {
      * Indicator whether simulation updates should currently be ignored. Is set
      * to true if the change is instigated by our un/redo actions.
      */
-    protected boolean ignoreSimulationUpdates = true;
+    protected boolean ignoreSimulationUpdates;
 
     /**
      * Class to record history elements without having to rely on the

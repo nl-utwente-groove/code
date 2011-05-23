@@ -156,10 +156,10 @@ public class Simulator implements SimulatorListener {
 
     /** Returns (after lazily creating) the undo history for this simulator. */
     public UndoHistory getSimulationHistory() {
-        if (this.undoHistory == null) {
-            this.undoHistory = new UndoHistory(this);
+        if (this.stepHistory == null) {
+            this.stepHistory = new UndoHistory(this);
         }
-        return this.undoHistory;
+        return this.stepHistory;
     }
 
     @Override
@@ -942,8 +942,13 @@ public class Simulator implements SimulatorListener {
     /** Prolog display panel. */
     private PrologPanel prologPanel;
 
+    /** Returns the history of simulation steps. */
+    public UndoHistory getStepHistory() {
+        return this.stepHistory;
+    }
+
     /** Undo history. */
-    private UndoHistory undoHistory;
+    private UndoHistory stepHistory;
 
     /** background for displays. */
     private SimulatorPanel simulatorPanel;
