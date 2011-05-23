@@ -29,23 +29,24 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 /**
- * Manager of the undo history.
+ * History of simulation steps.
  * @version $Revision$ $Date: 2008-01-30 09:33:36 $
  * @author Arend Rensink
  */
-public class UndoHistory implements SimulatorListener {
+public class StepHistory implements SimulatorListener {
     /**
      * Creates a new, empty history log and registers this undo history as a
      * simulation listener.
      * @param simulator the "parent" simulator
      */
-    public UndoHistory(Simulator simulator) {
+    public StepHistory(Simulator simulator) {
         this.history = new History<HistoryAction>();
         this.simulator = simulator;
         this.simulatorModel = simulator.getModel();
         this.undoAction = new BackAction();
         this.redoAction = new ForwardAction();
-        this.simulatorModel.addListener(this);
+        this.simulatorModel.addListener(this, Change.GTS, Change.STATE,
+            Change.MATCH);
     }
 
     /**
@@ -65,6 +66,11 @@ public class UndoHistory implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        if (changes.contains(Change.GTS)
+            && source.getGts() != oldModel.getGts()) {
+            this.history.clear();
+            refreshActions();
+        }
         if (changes.contains(Change.STATE) && source.getState() != null) {
             setStateUpdate(source.getState());
         }
@@ -86,7 +92,7 @@ public class UndoHistory implements SimulatorListener {
                 this.history.replace(newAction);
             }
         }
-        setActionEnablings();
+        refreshActions();
     }
 
     /**
@@ -108,7 +114,7 @@ public class UndoHistory implements SimulatorListener {
                 this.history.replace(newAction);
             }
         }
-        setActionEnablings();
+        refreshActions();
     }
 
     /**
@@ -118,21 +124,22 @@ public class UndoHistory implements SimulatorListener {
     private class ForwardAction extends AbstractAction {
         /** Creates an instance of the redo action. */
         ForwardAction() {
-            super(Options.FORWARD_ACTION_NAME);
+            super(Options.FORWARD_ACTION_NAME, Icons.CLASSIC_RIGHT_ARROW_ICON);
             putValue(ACCELERATOR_KEY, Options.FORWARD_KEY);
-            UndoHistory.this.simulator.addAccelerator(this);
-            setEnabled(true);
+            putValue(SHORT_DESCRIPTION, Options.FORWARD_ACTION_NAME);
+            StepHistory.this.simulator.addAccelerator(this);
+            setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (UndoHistory.this.history.hasNext()) {
-                UndoHistory.this.ignoreSimulationUpdates = true;
-                HistoryAction next = UndoHistory.this.history.next();
+            if (StepHistory.this.history.hasNext()) {
+                StepHistory.this.ignoreSimulationUpdates = true;
+                HistoryAction next = StepHistory.this.history.next();
                 if (DEBUG) {
                     Groove.message("Redo: restore " + next);
                 }
                 doHistoryAction(next);
-                UndoHistory.this.ignoreSimulationUpdates = false;
+                StepHistory.this.ignoreSimulationUpdates = false;
             }
         }
     }
@@ -144,21 +151,22 @@ public class UndoHistory implements SimulatorListener {
     private class BackAction extends AbstractAction {
         /** Creates an instance of the undo action. */
         BackAction() {
-            super(Options.BACK_ACTION_NAME);
+            super(Options.BACK_ACTION_NAME, Icons.CLASSIC_LEFT_ARROW_ICON);
             putValue(ACCELERATOR_KEY, Options.BACK_KEY);
-            UndoHistory.this.simulator.addAccelerator(this);
-            setEnabled(true);
+            putValue(SHORT_DESCRIPTION, Options.BACK_ACTION_NAME);
+            StepHistory.this.simulator.addAccelerator(this);
+            setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (UndoHistory.this.history.hasPrevious()) {
-                UndoHistory.this.ignoreSimulationUpdates = true;
-                HistoryAction previous = UndoHistory.this.history.previous();
+            if (StepHistory.this.history.hasPrevious()) {
+                StepHistory.this.ignoreSimulationUpdates = true;
+                HistoryAction previous = StepHistory.this.history.previous();
                 if (DEBUG) {
                     Groove.message("Undo: restore " + previous);
                 }
                 doHistoryAction(previous);
-                UndoHistory.this.ignoreSimulationUpdates = false;
+                StepHistory.this.ignoreSimulationUpdates = false;
             }
         }
     }
@@ -183,7 +191,7 @@ public class UndoHistory implements SimulatorListener {
      * @see #getForwardAction()
      * @see #getBackAction()
      */
-    protected void setActionEnablings() {
+    private void refreshActions() {
         this.undoAction.setEnabled(this.history.hasPrevious());
         this.redoAction.setEnabled(this.history.hasNext());
     }

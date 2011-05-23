@@ -579,10 +579,10 @@ public class SimulatorModel implements Cloneable {
     /** Fully explores a given state of the GTS. */
     public void doExploreState(GraphState state) {
         start();
-        changeState(state);
         getExploreStateStrategy().prepare(getGts(), state);
         getExploreStateStrategy().next();
         changeGts(getGts());
+        changeState(state);
         finish();
     }
 
@@ -870,10 +870,18 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Returns the first of the currently selected host graphs.
+     * Returns the first of the currently selected host graphs, or {@code null}
+     * if none is currently selected.
      */
     public final GraphView getHost() {
-        return this.hostSet.isEmpty() ? null : this.hostSet.iterator().next();
+        return hasHost() ? this.hostSet.iterator().next() : null;
+    }
+
+    /** 
+     * Indicates if any host graph has been selected.
+     */
+    public final boolean hasHost() {
+        return !this.hostSet.isEmpty();
     }
 
     /** 
@@ -887,12 +895,8 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the host was actually changed.
      */
     public final boolean setHost(String name) {
-        start();
-        changeHost(name);
-        if (name != null) {
-            changeTabKind(TabKind.HOST);
-        }
-        return finish();
+        return setHostSet(name == null ? Collections.<String>emptySet()
+                : Collections.singleton(name));
     }
 
     /** 
@@ -904,20 +908,11 @@ public class SimulatorModel implements Cloneable {
     public final boolean setHostSet(Collection<String> hostNameSet) {
         start();
         changeHostSet(hostNameSet);
-        changeTabKind(TabKind.HOST);
-        return finish();
-    }
-
-    /** 
-     * Changes the currently selected host graph.
-     * @see #setHost(String)
-     */
-    private final boolean changeHost(String hostName) {
-        if (hostName == null) {
-            return changeHostSet(Collections.<String>emptySet());
-        } else {
-            return changeHostSet(Collections.singleton(hostName));
+        if (!hostNameSet.isEmpty()) {
+            changeMatch(null);
+            changeTabKind(TabKind.HOST);
         }
+        return finish();
     }
 
     /** 

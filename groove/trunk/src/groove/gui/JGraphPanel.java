@@ -30,6 +30,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -105,6 +106,12 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         }
         installListeners();
         setEnabled(false);
+    }
+
+    /** Sets the background colour of the graph and label panels. */
+    public void setGraphBackground(Color color) {
+        getJGraph().setBackground(color);
+        getLabelTree().setBackground(color);
     }
 
     /** Callback method that adds the required listeners to this panel. */

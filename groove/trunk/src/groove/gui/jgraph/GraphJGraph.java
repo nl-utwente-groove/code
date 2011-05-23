@@ -974,6 +974,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
         if (itemAdded) {
             result.addSeparator();
         }
+        result.add(getModeAction(SELECT_MODE));
+        result.add(getModeAction(PAN_MODE));
         result.add(createShowHideMenu());
         result.add(createZoomMenu());
         return result;

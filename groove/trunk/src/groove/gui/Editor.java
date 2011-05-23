@@ -600,14 +600,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
 
     JGraphPanel<?> getGraphPanel() {
         if (this.jGraphPanel == null) {
-            JGraphPanel<?> result = this.jGraphPanel = new EditorJGraphPanel(this);
+            JGraphPanel<?> result =
+                this.jGraphPanel = new EditorJGraphPanel(this);
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
             result.addRefreshListener(SHOW_ASPECTS_OPTION);
             result.setEnabled(true);
-            result.getJGraph().setBackground(JAttr.EDITOR_BACKGROUND);
-            result.getLabelTree().setBackground(JAttr.EDITOR_BACKGROUND);
+            result.setGraphBackground(JAttr.EDITOR_BACKGROUND);
         }
         return this.jGraphPanel;
     }

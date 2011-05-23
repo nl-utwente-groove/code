@@ -37,7 +37,7 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JGraphMode;
+import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -60,6 +60,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -73,7 +74,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -115,13 +115,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.add(getActions().getNewHostAction());
-        result.add(getActions().getEditHostOrStateAction());
-        result.addSeparator();
-        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        return result;
+        return null;
+        //        JToolBar result = new JToolBar();
+        //        result.add(getActions().getNewHostAction());
+        //        result.add(getActions().getEditHostOrStateAction());
+        //        result.addSeparator();
+        //        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        //        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        //        return result;
     }
 
     @Override
@@ -215,10 +216,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Creates and returns the panel with the start states list.
      */
     public JPanel getListPanel() {
-        if (this.stateListPanel == null) {
-            JToolBar toolBar = getSimulator().createToolBar();
-            getList().fillToolBar(toolBar);
-            toolBar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        if (this.listPanel == null) {
             JScrollPane startGraphsPane = new JScrollPane(getList()) {
                 @Override
                 public Dimension getPreferredSize() {
@@ -228,14 +226,30 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 }
             };
 
-            this.stateListPanel = new JPanel(new BorderLayout(), false);
-            this.stateListPanel.add(toolBar, BorderLayout.NORTH);
-            this.stateListPanel.add(startGraphsPane, BorderLayout.CENTER);
+            this.listPanel = new JPanel(new BorderLayout());
+            this.listPanel.add(getListToolBar(), BorderLayout.NORTH);
+            this.listPanel.add(startGraphsPane, BorderLayout.CENTER);
             // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(
-                this.stateListPanel);
+            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
         }
-        return this.stateListPanel;
+        return this.listPanel;
+    }
+
+    private JToolBar getListToolBar() {
+        if (this.listToolBar == null) {
+            this.listToolBar = getSimulator().createToolBar();
+            getList().fillToolBar(this.listToolBar);
+        }
+        return this.listToolBar;
+    }
+
+    /**
+     * Refreshes the tool bar of the label list.
+     */
+    private void refreshToolbars() {
+        getListToolBar().removeAll();
+        getList().fillToolBar(getListToolBar());
+        getListPanel().repaint();
     }
 
     /**
@@ -301,6 +315,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 selectMatch(source.getMatch().getEvent().getMatch(
                     source.getState().getGraph()));
             }
+        }
+        if (oldModel.hasHost() != source.hasHost()) {
+            refreshToolbars();
         }
         refreshStatus();
         activateListeners();
@@ -401,8 +418,10 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private void setGraphModel(GraphView graphView) {
         if (graphView != null) {
             setJModel(getAspectJModel(graphView.getAspectGraph()));
+            //            getJGraph().setMoveable(false);
+            //            getJGraph().setMode(JGraphMode.PAN_MODE);
+            setGraphBackground(Color.WHITE);
             setEnabled(true);
-            refreshStatus();
         }
     }
 
@@ -410,9 +429,11 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private void setStateModel(GraphState state) {
         if (state != null) {
             setJModel(getAspectJModel(state));
+            //            getJGraph().setMoveable(true);
+            //            getJGraph().setMode(JGraphMode.SELECT_MODE);
+            setGraphBackground(JAttr.STATE_BACKGROUND);
             setEnabled(true);
         }
-        refreshStatus();
     }
 
     /** 
@@ -646,7 +667,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /** panel on which the state list (and toolbar) are displayed. */
-    private JPanel stateListPanel;
+    private JPanel listPanel;
+    /** Toolbar for the {@link #listPanel}. */
+    private JToolBar listToolBar;
     /** Production system graph list */
     private StateJList stateJList;
 
@@ -668,4 +691,5 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     /** The currently emphasised match (nullable). */
     private Proof selectedMatch;
+
 }

@@ -19,6 +19,7 @@ package groove.gui;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
+import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
@@ -218,7 +219,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // since the rule events have been changed into transitions
                 refresh(source.getState());
             }
-            if (changes.contains(MATCH)) {
+            if (changes.contains(MATCH) || changes.contains(RULE)) {
                 selectMatch(source.getRule(), source.getMatch());
             }
         }
@@ -226,7 +227,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, RULE, MATCH);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
