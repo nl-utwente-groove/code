@@ -45,11 +45,9 @@ import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -466,19 +464,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             String controlName =
                 CONTROL_FILTER.stripExtension(controlEntry.getKey());
             InputStream in = file.getInputStream(controlEntry.getValue());
-            // read the program in as a single string
-            BufferedReader reader =
-                new BufferedReader(new InputStreamReader(in));
-            StringBuilder program = new StringBuilder();
-            String nextLine = reader.readLine();
-            while (nextLine != null) {
-                program.append(nextLine);
-                program.append("\n");
-                nextLine = reader.readLine();
-            }
-            reader.close();
-            /* Store the control program */
-            this.controlMap.put(controlName, program.toString());
+            String program = groove.io.Util.readInputStreamToString(in);
+            this.controlMap.put(controlName, program);
         }
     }
 
@@ -493,19 +480,8 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             String prologName =
                 PROLOG_FILTER.stripExtension(prologEntry.getKey());
             InputStream in = file.getInputStream(prologEntry.getValue());
-            // read the program in as a single string
-            BufferedReader reader =
-                new BufferedReader(new InputStreamReader(in));
-            StringBuilder program = new StringBuilder();
-            String nextLine = reader.readLine();
-            while (nextLine != null) {
-                program.append(nextLine);
-                program.append("\n");
-                nextLine = reader.readLine();
-            }
-            reader.close();
-            /* Store the control program */
-            this.prologMap.put(prologName, program.toString());
+            String program = groove.io.Util.readInputStreamToString(in);
+            this.prologMap.put(prologName, program);
         }
     }
 

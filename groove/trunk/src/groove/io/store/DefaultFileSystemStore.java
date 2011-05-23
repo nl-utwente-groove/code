@@ -42,10 +42,8 @@ import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -941,20 +939,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
                 // read the program in as a single string
-                BufferedReader reader =
-                    new BufferedReader(new FileReader(file));
-                StringBuilder program = new StringBuilder();
-                String nextLine = reader.readLine();
-                while (nextLine != null) {
-                    program.append(nextLine);
-                    program.append("\n");
-                    nextLine = reader.readLine();
-                }
-                reader.close();
+                String program = groove.io.Util.readFileToString(file);
                 // insert the string into the control map
                 this.controlMap.put(
-                    CONTROL_FILTER.stripExtension(file.getName()),
-                    program.toString());
+                    CONTROL_FILTER.stripExtension(file.getName()), program);
             }
         }
     }
@@ -970,20 +958,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             // check for overlapping rule and directory names
             if (!file.isDirectory()) {
                 // read the program in as a single string
-                BufferedReader reader =
-                    new BufferedReader(new FileReader(file));
-                StringBuilder program = new StringBuilder();
-                String nextLine = reader.readLine();
-                while (nextLine != null) {
-                    program.append(nextLine);
-                    program.append("\n");
-                    nextLine = reader.readLine();
-                }
-                reader.close();
+                String program = groove.io.Util.readFileToString(file);
                 // insert the string into the control map
                 this.prologMap.put(
-                    PROLOG_FILTER.stripExtension(file.getName()),
-                    program.toString());
+                    PROLOG_FILTER.stripExtension(file.getName()), program);
             }
         }
     }
