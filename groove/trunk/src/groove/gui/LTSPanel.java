@@ -90,8 +90,11 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     protected JToolBar createToolBar() {
         JToolBar result = new JToolBar();
         result.add(getActions().getStartSimulationAction());
-        result.add(getActions().getExploreAction());
         result.add(getActions().getSaveLTSAsAction());
+        result.addSeparator();
+        result.add(getActions().getExploreAction());
+        result.add(getActions().getBackAction());
+        result.add(getActions().getForwardAction());
         result.addSeparator();
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));

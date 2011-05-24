@@ -581,7 +581,7 @@ public class SimulatorModel implements Cloneable {
         start();
         getExploreStateStrategy().prepare(getGts(), state);
         getExploreStateStrategy().next();
-        changeGts(getGts());
+        changeGts(getGts(), true);
         changeState(state);
         finish();
     }
@@ -641,7 +641,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setGts(GTS gts, boolean switchTab) {
         start();
-        if (changeGts(gts)) {
+        if (changeGts(gts, false)) {
             changeState(gts == null ? null : gts.startState());
             changeMatch(null);
         } else if (this.ltsListener.isChanged()) {
@@ -682,10 +682,11 @@ public class SimulatorModel implements Cloneable {
 
     /** 
      * Changes the active GTS.
+     * @param always also fire an event if the GTS actually is the same object.
      * @see #setGts(GTS, boolean)
      */
-    private final boolean changeGts(GTS gts) {
-        boolean result = this.gts != gts;
+    private final boolean changeGts(GTS gts, boolean always) {
+        boolean result = always || this.gts != gts;
         if (result) {
             if (this.gts != null) {
                 this.gts.removeLTSListener(this.ltsListener);
@@ -837,7 +838,7 @@ public class SimulatorModel implements Cloneable {
         changeControl();
         changeType();
         if (reset) {
-            changeGts(null);
+            changeGts(null, false);
             changeState(null);
             changeMatch(null);
         }
@@ -848,7 +849,7 @@ public class SimulatorModel implements Cloneable {
         start();
         if (changeGrammar(grammar)) {
             // reset the GTS in any case
-            changeGts(null);
+            changeGts(null, false);
             changeState(null);
             changeMatch(null);
             changeHostSet(Collections.<String>emptySet());
