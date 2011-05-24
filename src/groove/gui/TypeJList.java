@@ -301,7 +301,7 @@ public class TypeJList extends JList implements SimulatorListener {
                 result.setBackground(background);
             }
             // set tool tips and special formats
-            if (getGrammar().getActiveTypeNames().contains(value.toString())) {
+            if (getGrammar().getTypeView(value.toString()).isEnabled()) {
                 setFont(getFont().deriveFont(Font.BOLD));
                 setToolTipText("Enabled type graph; doubleclick to disable");
             } else {

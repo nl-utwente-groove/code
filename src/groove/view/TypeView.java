@@ -20,5 +20,6 @@ import groove.graph.TypeGraph;
 
 /** Specialised view interface for models that are type graphs. */
 public interface TypeView extends View<TypeGraph> {
-    // no additional functionality
+    /** Indicates if the type is active. */
+    boolean isEnabled();
 }

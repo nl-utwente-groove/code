@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectKind.COLOR;
 import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ID;
+import static groove.view.aspect.AspectKind.IMPORT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import static groove.view.aspect.AspectKind.READER;
@@ -200,6 +201,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         } else if (!hasAspect()) {
             setAspect(AspectKind.NONE.getAspect());
         }
+        if (hasImport() && getAttrKind().isData()) {
+            throw new FormatException("Can't import data type", getAttrKind(),
+                this);
+        }
         if (!hasAttrAspect()) {
             setAttrAspect(AspectKind.NONE.getAspect());
         }
@@ -239,6 +244,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             setId(value);
         } else if (kind == COLOR) {
             setColor(value);
+        } else if (kind == IMPORT) {
+            setImport(value);
         } else {
             setAspect(value);
         }
@@ -523,6 +530,26 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return this.color != null;
     }
 
+    /** Sets the colour aspect of this node. */
+    private void setImport(Aspect imported) throws FormatException {
+        assert imported.getKind() == IMPORT : String.format(
+            "Aspect %s is not an import", imported);
+        if (this.imported != null) {
+            throw new FormatException("Duplicate import specification");
+        }
+        this.imported = imported;
+    }
+
+    /** Returns the colour aspect of this node, if any. */
+    public Aspect getImport() {
+        return this.imported;
+    }
+
+    /** Indicates if this node has an colour. */
+    public boolean hasImport() {
+        return this.imported != null;
+    }
+
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
         assert hasParam();
@@ -619,6 +646,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private Aspect id;
     /** The colour aspect of this node, if any. */
     private Aspect color;
+    /** The import aspect of this node, if any. */
+    private Aspect imported;
     /** The aspect node representing the nesting level of this node. */
     private AspectNode nestingLevel;
     /** The aspect node representing the parent of this node in the nesting

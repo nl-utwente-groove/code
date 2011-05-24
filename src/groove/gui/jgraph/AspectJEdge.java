@@ -292,6 +292,14 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                 setFontAttr(result, Font.ITALIC);
             }
         }
+        if (edge != null && edge.isComposite()) {
+            GraphConstants.setBeginSize(result, 15);
+            GraphConstants.setLineBegin(result, GraphConstants.ARROW_DIAMOND);
+        }
+        if (edge != null && edge.getOutMult() != null) {
+            GraphConstants.setExtraLabels(result,
+                new Object[] {edge.getOutMult()});
+        }
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
             GraphConstants.setConnectable(result, true);

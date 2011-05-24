@@ -224,7 +224,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 getNode().getId().getContentString())));
             return result;
         } else {
-            return super.getNodeIdLines();
+            List<StringBuilder> result = super.getNodeIdLines();
+            if (getNode().hasImport()) {
+                result.add(new StringBuilder(ITALIC_TAG.on(IMPORT_TEXT)));
+            }
+            return result;
         }
     }
 
@@ -559,4 +563,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
+    static private final String IMPORT_TEXT = String.format("%simport%s",
+        HTMLConverter.FRENCH_QUOTES_OPEN, HTMLConverter.FRENCH_QUOTES_CLOSED);
 }

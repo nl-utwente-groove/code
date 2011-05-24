@@ -25,6 +25,7 @@ import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
 import groove.graph.DefaultGraph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
@@ -136,6 +137,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         prop.setCurrentVersionProperties();
         try {
             this.saveProperties(prop);
+            this.hasSystemPropertiesFile = true;
         } catch (IOException e) {
             throw new IllegalArgumentException(
                 "Could not create properties file.");
@@ -897,6 +899,21 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      */
     private void loadTypes() throws IOException {
         collectObjects(this.typeMap, TYPE_FILTER, GraphRole.TYPE);
+        enableTypes();
+    }
+
+    /**
+     * Processes the {@link SystemProperties#getTypeNames()} field by
+     * setting the enabling of the rtype graphs accordingly
+     */
+    private void enableTypes() {
+        // enable the active types listed in the system properties
+        Set<String> enabledTypes =
+            new HashSet<String>(getProperties().getTypeNames());
+        for (AspectGraph typeGraph : this.typeMap.values()) {
+            GraphInfo.getProperties(typeGraph, true).setEnabled(
+                enabledTypes.contains(typeGraph.getName()));
+        }
     }
 
     /**
@@ -1042,15 +1059,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     private void saveProperties() throws IOException {
-        File propertiesFile =
-            new File(this.file,
-                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
-        Writer propertiesWriter = new FileWriter(propertiesFile);
-        try {
-            this.properties.store(propertiesWriter, null);
-        } finally {
-            propertiesWriter.close();
-        }
+        saveProperties(this.properties);
     }
 
     private void saveProperties(SystemProperties properties) throws IOException {
@@ -1063,7 +1072,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         } finally {
             propertiesWriter.close();
         }
-        this.hasSystemPropertiesFile = true;
+        enableTypes();
     }
 
     /**

@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.view.TypeView;
 
 import java.io.IOException;
 
@@ -29,12 +30,10 @@ public class EnableTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null);
+        TypeView typeView = getModel().getType();
+        setEnabled(typeView != null);
         if (isEnabled()) {
-            boolean enabled =
-                getModel().getGrammar().getActiveTypeNames().contains(
-                    getModel().getType().getName());
-            putValue(SHORT_DESCRIPTION, enabled
+            putValue(SHORT_DESCRIPTION, typeView.isEnabled()
                     ? Options.DISABLE_TYPE_ACTION_NAME
                     : Options.ENABLE_TYPE_ACTION_NAME);
         }

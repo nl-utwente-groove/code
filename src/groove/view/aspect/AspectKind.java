@@ -102,6 +102,8 @@ public enum AspectKind {
     // type-related aspects
     /** Indicates an abstract type. */
     ABSTRACT("abs"),
+    /** Indicates an imported type. */
+    IMPORT("import", ContentKind.EMPTY),
     /** Indicates a subtype relation. */
     SUBTYPE("sub", ContentKind.EMPTY),
     /** Indicates an incoming multiplicity. */
@@ -602,6 +604,13 @@ public enum AspectKind {
             p.add("the declared name for this node");
             break;
 
+        case IMPORT:
+            s = "%s.COLON";
+            h = "Imported node type";
+            b.add("Indicates that the type is imported from another type graph.");
+            b.add("This affects the behaviour of hiding (all elements of) a type graph.");
+            break;
+
         case INT:
             if (!forNode) {
                 s = "%s.COLON.op";
@@ -922,7 +931,7 @@ public enum AspectKind {
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
-                    REAL, STRING, ABSTRACT, COLOR));
+                    REAL, STRING, ABSTRACT, IMPORT, COLOR));
                 allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT,
                     SUBTYPE, MULT_IN, MULT_OUT, COMPOSITE));
                 break;

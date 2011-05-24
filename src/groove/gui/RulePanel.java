@@ -24,6 +24,7 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.dialog.ErrorDialog;
@@ -228,14 +229,16 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             // reset the graph model so it doesn't get mixed up with the new type
             getJGraph().setModel(null);
             // set either the type or the label store of the associated JGraph
-            if (grammar.getActiveTypeNames().isEmpty()) {
+            TypeGraph type;
+            try {
+                type = grammar.toModel().getType();
+            } catch (FormatException e) {
+                type = null;
+            }
+            if (type == null) {
                 getJGraph().setLabelStore(grammar.getLabelStore());
             } else {
-                try {
-                    getJGraph().setType(grammar.toModel().getType(), null);
-                } catch (FormatException e) {
-                    getJGraph().setLabelStore(grammar.getLabelStore());
-                }
+                getJGraph().setType(type, null);
             }
             for (String ruleName : grammar.getRuleNames()) {
                 RuleView ruleView = grammar.getRuleView(ruleName);
