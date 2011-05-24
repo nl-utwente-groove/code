@@ -357,23 +357,22 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             // reset the model so it doesn't get mixed up with the new type
             getJGraph().setModel(null);
             // set the type or the label store for the JGraph
-            if (!grammar.getActiveTypeNames().isEmpty()) {
-                Map<String,Set<TypeLabel>> labelsMap =
-                    new HashMap<String,Set<TypeLabel>>();
-                try {
-                    for (String typeName : grammar.getActiveTypeNames()) {
-                        TypeView view = grammar.getTypeView(typeName);
-                        // the view may be null if type names
-                        // overlap modulo upper/lowercase
-                        if (view != null) {
-                            labelsMap.put(typeName, view.getLabels());
-                        }
+            Map<String,Set<TypeLabel>> labelsMap =
+                new HashMap<String,Set<TypeLabel>>();
+            try {
+                for (String typeName : grammar.getTypeNames()) {
+                    TypeView view = grammar.getTypeView(typeName);
+                    // the view may be null if type names
+                    // overlap modulo upper/lowercase
+                    if (view != null && view.isEnabled()) {
+                        labelsMap.put(typeName, view.getLabels());
                     }
-                    getJGraph().setType(grammar.toModel().getType(), labelsMap);
-                } catch (FormatException e) {
-                    getJGraph().setLabelStore(grammar.getLabelStore());
                 }
-            } else {
+                getJGraph().setType(grammar.toModel().getType(), labelsMap);
+            } catch (FormatException e) {
+                getJGraph().setLabelStore(grammar.getLabelStore());
+            }
+            if (labelsMap.isEmpty()) {
                 getJGraph().setLabelStore(grammar.getLabelStore());
             }
             setGraphModel(grammar.getStartGraphView());

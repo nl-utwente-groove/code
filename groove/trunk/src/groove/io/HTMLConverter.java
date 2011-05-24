@@ -195,6 +195,10 @@ public class HTMLConverter {
 
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
+    /** HTML opening << quote symbol. */
+    static public final String FRENCH_QUOTES_OPEN = "&#171;"; // &laquo;
+    /** HTML closing >> quote symbol. */
+    static public final String FRENCH_QUOTES_CLOSED = "&#187;"; // &raquo;
     /** HTML greater than symbol. */
     static public final String HTML_GT = "&#62;"; // &gt;
     /** HTML forall symbol. */

@@ -91,17 +91,17 @@ public class SelectColorAction extends SimulatorAction implements
                 assert false;
             }
         }
-        for (String typeViewName : getModel().getGrammar().getActiveTypeNames()) {
-            AspectGraph typeView =
-                getModel().getGrammar().getTypeView(typeViewName).getAspectGraph();
-            AspectGraph newTypeView = typeView.colour(this.label, colourAspect);
-            if (newTypeView != typeView) {
+        for (String typeName : getModel().getGrammar().getTypeNames()) {
+            AspectGraph typeGraph =
+                getModel().getGrammar().getTypeView(typeName).getAspectGraph();
+            AspectGraph newTypeGraph =
+                typeGraph.colour(this.label, colourAspect);
+            if (newTypeGraph != typeGraph) {
                 try {
-                    getSimulator().getModel().doAddType(newTypeView);
+                    getSimulator().getModel().doAddType(newTypeGraph);
                 } catch (IOException exc) {
-                    showErrorDialog(exc,
-                        String.format(
-                            "Error while saving type graph '%s'", typeViewName));
+                    showErrorDialog(exc, String.format(
+                        "Error while saving type graph '%s'", typeName));
                 }
             }
         }
@@ -154,8 +154,7 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        super.setEnabled(this.label != null
-            && !getModel().getGrammar().getActiveTypeNames().isEmpty());
+        super.setEnabled(this.label != null && getModel().getType() != null);
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

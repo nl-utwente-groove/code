@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
@@ -518,6 +519,12 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         this.typeMap.clear();
         this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
             GraphRole.TYPE));
+        // enable the active types listed in the system properties
+        List<String> enabledTypes = getProperties().getTypeNames();
+        for (String enabledType : enabledTypes) {
+            GraphInfo.getProperties(this.typeMap.get(enabledType), true).setEnabled(
+                true);
+        }
     }
 
     /**

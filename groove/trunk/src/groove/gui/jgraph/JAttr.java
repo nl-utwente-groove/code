@@ -214,7 +214,10 @@ public class JAttr {
     public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
 
     /** The size of the rounded corners for rounded-rectangle vertices. */
-    public static final int ARC_SIZE = 5;
+    public static final int NORMAL_ARC_SIZE = 5;
+
+    /** The size of the rounded corners for strongly rounded-rectangle vertices. */
+    public static final int STRONG_ARC_SIZE = 20;
 
     /** The default font used in the j-graphs. */
     static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;

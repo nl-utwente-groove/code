@@ -19,6 +19,7 @@ package groove.gui;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphRole;
+import groove.graph.TypeGraph;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.jgraph.AspectJGraph;
@@ -152,11 +153,11 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         if (getSimulatorModel().getType() == null) {
             result.append("No type graph selected");
         } else {
-            String typeName = getSimulatorModel().getType().getName();
+            TypeView typeView = getSimulatorModel().getType();
+            String typeName = typeView.getName();
             result.append("Type graph: ");
             result.append(HTMLConverter.STRONG_TAG.on(typeName));
-            if (!getSimulatorModel().getGrammar().getActiveTypeNames().contains(
-                typeName)) {
+            if (!typeView.isEnabled()) {
                 result.append(" (inactive)");
             }
         }
@@ -229,16 +230,17 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             StoredGrammarView grammar = source.getGrammar();
             this.typeJModelMap.clear();
             if (grammar != null) {
-                //                getNameList().refreshTypes();
                 // set either the type or the label store of the associated JGraph
-                if (grammar.getActiveTypeNames().isEmpty()) {
+                TypeGraph type;
+                try {
+                    type = grammar.toModel().getType();
+                } catch (FormatException e) {
+                    type = null;
+                }
+                if (type == null) {
                     getJGraph().setLabelStore(grammar.getLabelStore());
                 } else {
-                    try {
-                        getJGraph().setType(grammar.toModel().getType(), null);
-                    } catch (FormatException e) {
-                        getJGraph().setLabelStore(grammar.getLabelStore());
-                    }
+                    getJGraph().setType(type, null);
                 }
             }
             displayType();
@@ -247,8 +249,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
             if (selection == null) {
                 getEnableButton().setSelected(false);
             } else {
-                getEnableButton().setSelected(
-                    grammar.getActiveTypeNames().contains(selection.getName()));
+                getEnableButton().setSelected(selection.isEnabled());
             }
         }
         activateListeners();

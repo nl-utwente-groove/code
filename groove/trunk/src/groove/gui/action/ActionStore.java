@@ -313,21 +313,6 @@ public class ActionStore implements SimulatorListener {
     /** Singular instance of the DeleteTypeAction. */
     private DeleteTypeAction deleteTypeAction;
 
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link EnableAllTypesAction}.
-     */
-    public EnableAllTypesAction getDisableTypesAction() {
-        if (this.disableTypesAction == null) {
-            this.disableTypesAction =
-                new EnableAllTypesAction(this.simulator, false);
-        }
-        return this.disableTypesAction;
-    }
-
-    /** Singular instance of the EnableTypesAction. */
-    private EnableAllTypesAction disableTypesAction;
-
     /** Returns the copy action appropriate for a given simulator tab kind. */
     public SimulatorAction getEditAction(TabKind kind) {
         switch (kind) {
@@ -469,21 +454,6 @@ public class ActionStore implements SimulatorListener {
 
     /** Singular instance of the CheckAllAction. */
     private EnableTypeAction enableTypeAction;
-
-    /**
-     * Lazily creates and returns the appropriate instance of the
-     * {@link EnableAllTypesAction}.
-     */
-    public EnableAllTypesAction getEnableAllTypesAction() {
-        if (this.enableAllTypesAction == null) {
-            this.enableAllTypesAction =
-                new EnableAllTypesAction(this.simulator, true);
-        }
-        return this.enableAllTypesAction;
-    }
-
-    /** Singular instance of the CheckAllAction. */
-    private EnableAllTypesAction enableAllTypesAction;
 
     /**
      * Returns the rule enabling action permanently associated with this

@@ -133,23 +133,26 @@ public class JVertexView extends VertexView {
      * Callback method indicating that a certain vertex is a data vertex (and so
      * should be rendered differently).
      */
-    private int getVertexShape() {
-        AspectNode node = null;
+    private VertexShape getVertexShape() {
+        GraphRole graphRole = GraphRole.NONE;
+        AspectKind attrKind = AspectKind.NONE;
         if (getCell() instanceof AspectJVertex) {
-            node = ((AspectJVertex) getCell()).getNode();
+            AspectNode node = ((AspectJVertex) getCell()).getNode();
+            graphRole = node.getGraphRole();
+            attrKind = node.getAttrKind();
+        } else if (getCell() instanceof LTSJVertex) {
+            graphRole = GraphRole.LTS;
         }
-        GraphRole graphRole =
-            node == null ? GraphRole.NONE : node.getGraphRole();
-        AspectKind attrKind =
-            node == null ? AspectKind.NONE : node.getAttrKind();
         if (graphRole == GraphRole.TYPE) {
-            return RECTANGLE_SHAPE;
+            return VertexShape.RECTANGLE;
+        } else if (graphRole == GraphRole.LTS) {
+            return VertexShape.OVAL;
         } else if (attrKind.isData()) {
-            return ELLIPSE_SHAPE;
+            return VertexShape.ELLIPSE;
         } else if (attrKind == PRODUCT) {
-            return DIAMOND_SHAPE;
+            return VertexShape.DIAMOND;
         } else {
-            return ROUNDED_RECTANGLE_SHAPE;
+            return VertexShape.ROUNDED;
         }
     }
 
@@ -204,21 +207,22 @@ public class JVertexView extends VertexView {
                 double x = xAdjust ? p.getX() : bounds.getCenterX();
                 double y = yAdjust ? p.getY() : bounds.getCenterY();
                 switch (getVertexShape()) {
-                case DIAMOND_SHAPE:
+                case DIAMOND:
                     result = getDiamondPerimeterPoint(bounds, x, y, p);
                     break;
-                case RECTANGLE_SHAPE:
-                case ROUNDED_RECTANGLE_SHAPE:
+                case RECTANGLE:
+                case ROUNDED:
+                case OVAL:
                     result = getRectanglePerimeterPoint(bounds, x, y, p);
                 }
             }
         }
         if (result == null) {
             switch (getVertexShape()) {
-            case ELLIPSE_SHAPE:
+            case ELLIPSE:
                 result = getEllipsePerimeterPoint(bounds, p);
                 break;
-            case DIAMOND_SHAPE:
+            case DIAMOND:
                 result = getDiamondPerimeterPoint(bounds, p);
                 break;
             default:
@@ -501,14 +505,10 @@ public class JVertexView extends VertexView {
         PortView.allowPortMagic = false;
     }
 
-    /** Constant indicating a rounded rectangular vertex. */
-    static public final int ROUNDED_RECTANGLE_SHAPE = 0;
-    /** Constant indicating an ellipse-shaped vertex. */
-    static public final int ELLIPSE_SHAPE = 1;
-    /** Constant indicating a diamond-shaped vertex. */
-    static public final int DIAMOND_SHAPE = 2;
-    /** Constant indicating a rectangular vertex. */
-    static public final int RECTANGLE_SHAPE = 3;
+    /** Enumeration of special vertex shapes. */
+    private enum VertexShape {
+        ROUNDED, ELLIPSE, DIAMOND, RECTANGLE, OVAL;
+    }
 
     /** HTML tag for the text display font. */
     private static final HTMLTag fontTag;
@@ -817,13 +817,13 @@ public class JVertexView extends VertexView {
             result.bottom += inset;
             // add space needed for non-rectangular shapes
             switch (this.view.getVertexShape()) {
-            case ELLIPSE_SHAPE:
+            case ELLIPSE:
                 result.left += textWidth / 8;
                 result.right += textWidth / 8;
                 result.top += textHeight / 8;
                 result.bottom += textHeight / 8;
                 break;
-            case DIAMOND_SHAPE:
+            case DIAMOND:
                 result.left += textWidth / 3;
                 result.right += textWidth / 3;
                 result.top += textHeight / 3;
@@ -849,15 +849,21 @@ public class JVertexView extends VertexView {
             double width = s.getWidth() - 2 * extra;
             double height = s.getHeight() - 2 * extra;
             switch (this.view.getVertexShape()) {
-            case ELLIPSE_SHAPE:
+            case ELLIPSE:
                 return new Ellipse2D.Double(x, y, width, height);
-            case DIAMOND_SHAPE:
+            case DIAMOND:
                 return createDiamondShape(x, y, width, height);
-            case RECTANGLE_SHAPE:
+            case RECTANGLE:
                 return new Rectangle2D.Double(x, y, width, height);
-            default:
+            case ROUNDED:
                 return new RoundRectangle2D.Double(x, y, width, height,
-                    JAttr.ARC_SIZE, JAttr.ARC_SIZE);
+                    JAttr.NORMAL_ARC_SIZE, JAttr.NORMAL_ARC_SIZE);
+            case OVAL:
+                return new RoundRectangle2D.Double(x, y, width, height,
+                    JAttr.STRONG_ARC_SIZE, JAttr.STRONG_ARC_SIZE);
+            default:
+                assert false;
+                return null;
             }
         }
 

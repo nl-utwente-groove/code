@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
@@ -62,6 +63,11 @@ public class DefaultTypeView implements TypeView {
     @Override
     public AspectGraph getAspectGraph() {
         return this.view;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return GraphProperties.isEnabled(getAspectGraph());
     }
 
     @Override

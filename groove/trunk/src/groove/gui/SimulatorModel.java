@@ -354,8 +354,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             StoredGrammarView grammar = getGrammar();
-            boolean result =
-                grammar.getActiveTypeNames().contains(typeGraph.getName());
+            boolean result = GraphProperties.isEnabled(typeGraph);
             grammar.getStore().putType(typeGraph);
             changeGrammar(result);
             changeType(typeGraph.getName());
@@ -374,9 +373,8 @@ public class SimulatorModel implements Cloneable {
     public boolean doDeleteType(String name) throws IOException {
         start();
         try {
-            StoredGrammarView grammar = getGrammar();
-            boolean result = grammar.getActiveTypeNames().contains(name);
-            grammar.getStore().deleteType(name);
+            AspectGraph deletedType = getGrammar().getStore().deleteType(name);
+            boolean result = GraphProperties.isEnabled(deletedType);
             changeGrammar(result);
             // we only need to refresh the grammar if the deleted
             // type graph was the currently active one
@@ -400,8 +398,7 @@ public class SimulatorModel implements Cloneable {
             String oldName = graph.getName();
             // test now if this is the type graph, before it is deleted from the
             // grammar
-            boolean result =
-                getGrammar().getActiveTypeNames().contains(oldName);
+            boolean result = GraphProperties.isEnabled(graph);
             getStore().renameType(oldName, newName);
             changeGrammar(result);
             if (oldName.equals(getType().getName())) {
@@ -429,13 +426,6 @@ public class SimulatorModel implements Cloneable {
         }
         newProperties.setTypeNames(activeTypes);
         return doSetProperties(newProperties);
-        //        GraphProperties properties =
-        //            GraphInfo.getProperties(oldType, true).clone();
-        //        properties.setEnabled(!properties.isEnabled());
-        //        AspectGraph newType = oldType.clone();
-        //        GraphInfo.setProperties(newType, properties);
-        //        newType.setFixed();
-        //        return doAddType(newType);
     }
 
     /**
@@ -1050,12 +1040,14 @@ public class SimulatorModel implements Cloneable {
         TypeView type = this.type;
         if (type == null || !type.equals(grammar.getTypeView(type.getName()))) {
             String newTypeName = null;
-            if (!grammar.getActiveTypeNames().isEmpty()) {
-                // preferably get the type view from the active types
-                newTypeName = grammar.getActiveTypeNames().iterator().next();
-            } else if (!grammar.getTypeNames().isEmpty()) {
-                // if there are none, take any type
-                newTypeName = grammar.getTypeNames().iterator().next();
+            for (String typeName : grammar.getTypeNames()) {
+                if (grammar.getTypeView(typeName).isEnabled()) {
+                    newTypeName = typeName;
+                    break;
+                }
+                if (newTypeName == null) {
+                    newTypeName = typeName;
+                }
             }
             result = changeType(newTypeName);
         }

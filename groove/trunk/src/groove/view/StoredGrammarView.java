@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Grammar view based on a backing system store.
@@ -134,7 +133,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             result = stateGraph.toGraphView(getProperties());
             TypeGraph type = null;
             try {
-                type = getTypeViewList().toModel();
+                type = getCompositeTypeView().toModel();
             } catch (FormatException e) {
                 // don't set the type graph
             }
@@ -164,7 +163,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             result = ruleGraph.toRuleView(getProperties());
             boolean typed = false;
             try {
-                TypeGraph type = getTypeViewList().toModel();
+                TypeGraph type = getCompositeTypeView().toModel();
                 if (type != null) {
                     result.setType(type);
                     typed = true;
@@ -193,20 +192,11 @@ public class StoredGrammarView implements GrammarView, Observer {
      * Lazily creates a list of selected type views.
      * @return a list of type views that yield a composite type graph.
      */
-    public TypeViewList getTypeViewList() {
-        if (this.composedTypeView == null) {
-            this.composedTypeView = new TypeViewList();
+    public CompositeTypeView getCompositeTypeView() {
+        if (this.compositeTypeView == null) {
+            this.compositeTypeView = new CompositeTypeView(this);
         }
-        return this.composedTypeView;
-    }
-
-    /**
-     * Returns a list of the active type graph names. This is taken from the
-     * system properties. The empty list means that no type graph is set.
-     * @see SystemProperties#getTypeNames()
-     */
-    public List<String> getActiveTypeNames() {
-        return getProperties().getTypeNames();
+        return this.compositeTypeView;
     }
 
     public String getStartGraphName() {
@@ -263,7 +253,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     private LabelStore computeLabelStore() {
         LabelStore result = null;
         try {
-            TypeGraph type = getTypeViewList().toModel();
+            TypeGraph type = getCompositeTypeView().toModel();
             if (type != null) {
                 result = type.getLabelStore();
             }
@@ -369,29 +359,10 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
-        // check type correctness
-        for (String typeName : getActiveTypeNames()) {
-            TypeView typeView = getTypeView(typeName);
-            if (typeView == null) {
-                errors.add(new FormatError("Type graph '%s' cannot be found",
-                    typeName));
-            } else {
-                try {
-                    typeView.toModel();
-                } catch (FormatException exc) {
-                    for (FormatError error : exc.getErrors()) {
-                        errors.add(new FormatError(
-                            "Error in type graph '%s': %s", typeView.getName(),
-                            error, typeView.getAspectGraph()));
-                    }
-                }
-            }
-        }
-        // We have constructed all views of the type graphs.
-        // Make the composition now.
+        // Construct the composite type graph
         try {
-            result.setType(getTypeViewList().toModel(),
-                getTypeViewList().getTypeGraphMap());
+            result.setType(getCompositeTypeView().toModel(),
+                getCompositeTypeView().getTypeGraphMap());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -484,7 +455,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.errors = null;
         this.labelStore = null;
         this.controlPropertyAdjusted = false;
-        this.composedTypeView = null;
+        this.compositeTypeView = null;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -553,7 +524,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     /** The labels occurring in this view. */
     private LabelStore labelStore;
     /** The type view composed from the individual elements. */
-    private TypeViewList composedTypeView;
+    private CompositeTypeView compositeTypeView;
 
     /**
      * Creates an instance based on a store located at a given URL.
@@ -646,91 +617,6 @@ public class StoredGrammarView implements GrammarView, Observer {
             return newInstance(new File(location), false);
         } catch (IOException exc) {
             return newInstance(new File(location), false);
-        }
-    }
-
-    /** Class to store the views that are used to compose the type graph. */
-    public class TypeViewList {
-
-        private Map<String,TypeView> typeViewMap;
-        private Map<String,TypeGraph> typeGraphMap;
-        private TypeGraph model;
-        private List<FormatError> errors;
-
-        private TypeViewList() {
-            this.typeViewMap = new HashMap<String,TypeView>();
-            this.model = null;
-            this.errors = new ArrayList<FormatError>();
-            for (String typeName : getActiveTypeNames()) {
-                TypeView typeView = getTypeView(typeName);
-                if (typeView != null) {
-                    this.typeViewMap.put(typeName, typeView);
-                    this.errors.addAll(typeView.getErrors());
-                }
-            }
-        }
-
-        /**
-         * @return the composite type graph from the view list, or {@code null}
-         * if there are no active type views
-         * @throws FormatException if any of the views has errors.
-         * @throws IllegalArgumentException if the composition of types gives
-         *         rise to typing cycles.
-         */
-        public TypeGraph toModel() throws FormatException,
-            IllegalArgumentException {
-            this.initialise();
-            if (this.model == null) {
-                throw new FormatException(this.getErrors());
-            } else {
-                if (this.typeViewMap.isEmpty()) {
-                    return null;
-                } else {
-                    return this.model;
-                }
-            }
-        }
-
-        /**
-         * @return the errors in the underlying type views.
-         */
-        public List<FormatError> getErrors() {
-            this.initialise();
-            return this.errors;
-        }
-
-        /** Returns a mapping from names to type graphs,
-         * which together make up the combined type model. */
-        public Map<String,TypeGraph> getTypeGraphMap() {
-            this.initialise();
-            return this.model == null ? null
-                    : Collections.unmodifiableMap(this.typeGraphMap);
-        }
-
-        /** Constructs the model and associated data structures from the view. */
-        private void initialise() {
-            // first test if there is something to be done
-            if (this.errors.isEmpty() && this.model == null) {
-                // There are no errors in each of the views, try to compose the
-                // type graph.
-                this.model = new TypeGraph("combined type");
-                this.typeGraphMap = new TreeMap<String,TypeGraph>();
-                for (TypeView view : this.typeViewMap.values()) {
-                    try {
-                        this.typeGraphMap.put(view.getName(), view.toModel());
-                        this.model.add(view.toModel());
-                    } catch (FormatException e) {
-                        this.errors.addAll(e.getErrors());
-                    } catch (IllegalArgumentException e) {
-                        this.errors.add(new FormatError(e.getMessage()));
-                    }
-                }
-                if (this.errors.isEmpty()) {
-                    this.model.setFixed();
-                } else {
-                    this.model = null;
-                }
-            }
         }
     }
 }

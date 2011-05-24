@@ -125,7 +125,7 @@ public class EditorPanel extends JPanel implements SimulatorListener,
 
     /** Starts the editor with the graph passed in at construction time. */
     public void start() {
-        this.editor.setTypeView(getSimulatorModel().getGrammar().getTypeViewList());
+        this.editor.setTypeView(getSimulatorModel().getGrammar().getCompositeTypeView());
         this.editor.setGraph(getGraph(), true);
         this.graph = null;
         setLayout(new BorderLayout());
@@ -186,7 +186,7 @@ public class EditorPanel extends JPanel implements SimulatorListener,
                 assert false;
             }
             if (view != null) {
-                this.editor.setTypeView(grammar.getTypeViewList());
+                this.editor.setTypeView(grammar.getCompositeTypeView());
                 // check if the properties have changed
                 GraphProperties properties =
                     GraphInfo.getProperties(view.getAspectGraph(), false);

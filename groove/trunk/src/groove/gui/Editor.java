@@ -43,9 +43,9 @@ import groove.io.xml.AspectGxl;
 import groove.trans.SystemProperties;
 import groove.util.Property;
 import groove.util.Version;
+import groove.view.CompositeTypeView;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView.TypeViewList;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -208,7 +208,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Sets the type graph for this editor. */
-    public void setTypeView(TypeViewList typeView) {
+    public void setTypeView(CompositeTypeView typeView) {
         this.type = null;
         if (typeView != null) {
             try {
