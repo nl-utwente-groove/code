@@ -445,8 +445,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private void setStateModel(GraphState state) {
         if (state != null) {
             setJModel(getAspectJModel(state));
-            //            getJGraph().setMoveable(true);
-            //            getJGraph().setMode(JGraphMode.SELECT_MODE);
             setGraphBackground(JAttr.STATE_BACKGROUND);
             setEnabled(true);
         }

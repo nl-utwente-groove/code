@@ -127,6 +127,7 @@ public class EditorPanel extends JPanel implements SimulatorListener,
     public void start() {
         this.editor.setTypeView(getSimulatorModel().getGrammar().getTypeViewList());
         this.editor.setGraph(getGraph(), true);
+        this.graph = null;
         setLayout(new BorderLayout());
         JSplitPane mainPanel = this.editor.getMainPanel();
         mainPanel.setBorder(null);
@@ -143,7 +144,7 @@ public class EditorPanel extends JPanel implements SimulatorListener,
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph getGraph() {
-        return this.graph;
+        return this.graph == null ? getEditor().getGraph() : this.graph;
     }
 
     /** Returns the editor instance of this panel. */
@@ -222,9 +223,8 @@ public class EditorPanel extends JPanel implements SimulatorListener,
 
     /** Changes the edited graph. */
     public void change(AspectGraph newGraph) {
-        assert newGraph.getName().equals(this.graph.getName())
-            && newGraph.getRole() == this.graph.getRole();
-        this.graph = newGraph;
+        assert newGraph.getName().equals(getGraph().getName())
+            && newGraph.getRole() == getGraph().getRole();
         getEditor().setGraph(newGraph, false);
     }
 
@@ -295,8 +295,9 @@ public class EditorPanel extends JPanel implements SimulatorListener,
     }
 
     /** Graph being edited.
-     * This is guaranteed to be the same as {@link Editor#getGraph()} once
-     * {@link #start()} has been invoked.
+     * This holds the graph as long as the editor is not yet initialised,
+     * and then is set to {@code null}.
+     * Use {@link #getGraph()} to access the graph.
      */
     private AspectGraph graph;
     private JButton saveButton;
