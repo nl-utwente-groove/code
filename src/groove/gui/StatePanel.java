@@ -31,6 +31,7 @@ import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
@@ -92,7 +93,7 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision$
  */
 public class StatePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener {
+        SimulatorListener, SimulatorTab {
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
 
@@ -105,6 +106,21 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         super(new AspectJGraph(simulator, GraphRole.HOST), true);
         initialise();
         getJGraph().setToolTipEnabled(true);
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.HOST;
+    }
+
+    @Override
+    public String getCurrent() {
+        return getJModel() == null ? null : getJModel().getName();
     }
 
     @Override

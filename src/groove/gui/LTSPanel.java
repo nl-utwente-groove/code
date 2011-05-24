@@ -38,12 +38,14 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.view.StoredGrammarView;
 
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
@@ -55,13 +57,33 @@ import javax.swing.SwingUtilities;
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements
-        SimulatorListener {
+        SimulatorListener, SimulatorTab {
 
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true);
         getJGraph().setToolTipEnabled(true);
         initialise();
+    }
+
+    @Override
+    public JPanel getListPanel() {
+        return null;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.LTS;
+    }
+
+    @Override
+    public String getCurrent() {
+        return null;
     }
 
     @Override
@@ -93,6 +115,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         if (enabled) {
             getJGraph().getModeButton(SELECT_MODE).doClick();
         }
+        setGraphBackground(enabled ? Color.WHITE : null);
     }
 
     /**

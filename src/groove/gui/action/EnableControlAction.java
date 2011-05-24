@@ -18,7 +18,7 @@ public class EnableControlAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (getControlPanel().stopEditing(true)) {
+        if (getControlPanel().cancelEditing(true)) {
             String controlName = getModel().getControl().getName();
             SystemProperties oldProperties =
                 getModel().getGrammar().getProperties();

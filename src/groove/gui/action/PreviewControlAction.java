@@ -27,7 +27,7 @@ public class PreviewControlAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getControlPanel().stopEditing(true)) {
+        if (getControlPanel().cancelEditing(true)) {
             try {
                 CtrlAut aut = getCtrlAut();
                 if (aut != null) {

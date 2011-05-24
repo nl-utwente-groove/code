@@ -19,6 +19,7 @@ package groove.gui;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
@@ -30,22 +31,16 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -74,7 +69,8 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-final public class ControlPanel extends JPanel implements SimulatorListener {
+final public class ControlPanel extends JPanel implements SimulatorListener,
+        SimulatorTab {
     /**
      * @param simulator The Simulator the panel is added to.
      */
@@ -86,6 +82,21 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         this.setFocusCycleRoot(true);
     }
 
+    @Override
+    public TabKind getKind() {
+        return TabKind.CONTROL;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public String getCurrent() {
+        return isControlSelected() ? getSelectedControl().getName() : null;
+    }
+
     /**
      * Initialises the GUI.
      * Should be called after the constructor, and
@@ -95,10 +106,11 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         // fill in the GUI
         RTextScrollPane scroller =
             new RTextScrollPane(500, 400, getControlTextArea(), true);
-        this.add(createToolbar(), BorderLayout.NORTH); // set up the split editor pane
+        this.add(createToolbar(), BorderLayout.NORTH);
+        // set up the split editor pane
         JSplitPane splitPane =
             new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroller,
-                createDocPane());
+                new JScrollPane(getDocPane()));
         splitPane.setOneTouchExpandable(true);
         splitPane.setResizeWeight(1.0);
 
@@ -118,7 +130,14 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             Change.CONTROL);
     }
 
-    private JComponent createDocPane() {
+    private JTree getDocPane() {
+        if (this.docPane == null) {
+            this.docPane = createDocPane();
+        }
+        return this.docPane;
+    }
+
+    private JTree createDocPane() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         final JTree result = new JTree(root) {
             @Override
@@ -131,11 +150,16 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 return getToolTip(userObject);
             }
+
         };
         result.setRootVisible(false);
         result.setShowsRootHandles(true);
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) result.getCellRenderer();
+        renderer.setBackgroundNonSelectionColor(null);
+        renderer.setBackgroundSelectionColor(null);
+        renderer.setTextSelectionColor(null);
+        result.setCellRenderer(renderer);
         renderer.setLeafIcon(null);
         renderer.setClosedIcon(null);
         renderer.setOpenIcon(null);
@@ -175,7 +199,8 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             result.expandPath(new TreePath(
                 ((DefaultMutableTreeNode) root.getChildAt(i)).getPath()));
         }
-        return new JScrollPane(result);
+        result.setBackground(null);
+        return result;
     }
 
     private String getToolTip(Object value) {
@@ -278,7 +303,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
     }
 
     /** Returns the list of control programs. */
-    public ControlJList getList() {
+    private ControlJList getList() {
         if (this.controlJList == null) {
             this.controlJList = new ControlJList(getSimulator());
         }
@@ -290,8 +315,8 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)
             || changes.contains(Change.CONTROL)) {
-            stopEditing(false);
             refreshAll();
+            getDocPane().setBackground(isControlSelected() ? Color.WHITE : null);
         }
     }
 
@@ -346,12 +371,19 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
         return getSelectedControl() != null;
     }
 
+    /** Stops the editing, and returns the current text of the control program. */
+    public String stopEditing() {
+        this.editing = false;
+        setDirty(false);
+        return getControlTextArea().getText();
+    }
+
     /**
-     * Stops the current editing action, if any.
+     * Cancels the current editing action, if any.
      * @param confirm indicates if the user should be asked for confirmation
      * @return if editing was indeed stopped
      */
-    public boolean stopEditing(boolean confirm) {
+    public boolean cancelEditing(boolean confirm) {
         boolean result = true;
         if (isEditing()) {
             if (!confirm || confirmAbandon()) {
@@ -445,68 +477,72 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
     /** Production system control program list. */
     private ControlJList controlJList;
 
+    /** Documentation tree. */
+    private JTree docPane;
+
     /** Panel with the {@link #controlJList}. */
     private JPanel listPanel;
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
-
-    /** Lazily creates and returns the field displaying the control name. */
-    public JComboBox getNameField() {
-        if (this.nameField == null) {
-            this.nameField = new ControlNameField();
-            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
-            this.nameField.setMaximumSize(new Dimension(150, 24));
-        }
-        return this.nameField;
-    }
+    //
+    //    /** Lazily creates and returns the field displaying the control name. */
+    //    public JComboBox getNameField() {
+    //        if (this.nameField == null) {
+    //            this.nameField = new ControlNameField();
+    //            this.nameField.setBorder(BorderFactory.createLoweredBevelBorder());
+    //            this.nameField.setMaximumSize(new Dimension(150, 24));
+    //        }
+    //        return this.nameField;
+    //    }
 
     private final JLabel statusBar = new JLabel(" ");
 
-    /** Name field of the control program. */
-    private ControlNameField nameField;
-
-    private class ControlNameField extends JComboBox implements Refreshable {
-        public ControlNameField() {
-            setBorder(BorderFactory.createLoweredBevelBorder());
-            setMaximumSize(new Dimension(150, 24));
-            setEnabled(false);
-            setEditable(false);
-            this.selectionListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String selectedItem = (String) getSelectedItem();
-                    if (selectedItem != null && stopEditing(true)) {
-                        getSimulatorModel().setControl(selectedItem);
-                    }
-                }
-            };
-            addActionListener(this.selectionListener);
-            addRefreshable(this);
-        }
-
-        @Override
-        public void refresh() {
-            removeActionListener(this.selectionListener);
-            this.removeAllItems();
-            if (getGrammar() == null) {
-                setEnabled(false);
-            } else {
-                Set<String> names =
-                    new TreeSet<String>(getGrammar().getControlNames());
-                for (String controlName : names) {
-                    addItem(controlName);
-                }
-                if (isControlSelected()) {
-                    setSelectedItem(getSelectedControl().getName());
-                }
-                setEnabled(getItemCount() > 0);
-            }
-            addActionListener(this.selectionListener);
-        }
-
-        private final ActionListener selectionListener;
-    }
+    //
+    //    /** Name field of the control program. */
+    //    private ControlNameField nameField;
+    //
+    //    private class ControlNameField extends JComboBox implements Refreshable {
+    //        public ControlNameField() {
+    //            setBorder(BorderFactory.createLoweredBevelBorder());
+    //            setMaximumSize(new Dimension(150, 24));
+    //            setEnabled(false);
+    //            setEditable(false);
+    //            this.selectionListener = new ActionListener() {
+    //                @Override
+    //                public void actionPerformed(ActionEvent e) {
+    //                    String selectedItem = (String) getSelectedItem();
+    //                    if (selectedItem != null && stopEditing(true)) {
+    //                        getSimulatorModel().setControl(selectedItem);
+    //                    }
+    //                }
+    //            };
+    //            addActionListener(this.selectionListener);
+    //            addRefreshable(this);
+    //        }
+    //
+    //        @Override
+    //        public void refresh() {
+    //            removeActionListener(this.selectionListener);
+    //            this.removeAllItems();
+    //            if (getGrammar() == null) {
+    //                setEnabled(false);
+    //            } else {
+    //                Set<String> names =
+    //                    new TreeSet<String>(getGrammar().getControlNames());
+    //                for (String controlName : names) {
+    //                    addItem(controlName);
+    //                }
+    //                if (isControlSelected()) {
+    //                    setSelectedItem(getSelectedControl().getName());
+    //                }
+    //                setEnabled(getItemCount() > 0);
+    //            }
+    //            addActionListener(this.selectionListener);
+    //        }
+    //
+    //        private final ActionListener selectionListener;
+    //    }
 
     /** Lazily creates and returns the area displaying the control program. */
     public ControlTextArea getControlTextArea() {
@@ -551,6 +587,7 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
             };
             getDocument().addDocumentListener(this.changeListener);
             addRefreshable(this);
+            setEditable(false);
         }
 
         @Override
@@ -583,13 +620,13 @@ final public class ControlPanel extends JPanel implements SimulatorListener {
                 // the area is editable (meaning it is lighter)
                 // if it is actually being edited, or if it is the
                 // currently used control program
-                boolean enabled = isEditing();
-                if (!enabled && isControlSelected()) {
-                    enabled =
-                        getSimulatorModel().getControl().equals(
-                            getGrammar().getControlView());
-                }
-                setEnabled(enabled);
+                //                boolean enabled = isEditing();
+                //                if (!enabled && isControlSelected()) {
+                //                    enabled =
+                //                        getSimulatorModel().getControl().equals(
+                //                            getGrammar().getControlView());
+                //                }
+                setEnabled(isControlSelected());
                 String program = "";
                 if (isControlSelected()) {
                     CtrlView cv = getSelectedControl();

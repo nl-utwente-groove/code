@@ -173,8 +173,8 @@ public class ControlJList extends JList implements SimulatorListener {
         suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
             if (source.getGrammar() == null
-                && source.getGrammar().getControlNames().isEmpty()) {
-                removeAll();
+                || source.getGrammar().getControlNames().isEmpty()) {
+                setListData(new String[0]);
                 setEnabled(false);
             } else {
                 setEnabled(true);

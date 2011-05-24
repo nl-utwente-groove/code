@@ -173,7 +173,7 @@ public class PrologJList extends JList implements SimulatorListener {
         if (changes.contains(Change.GRAMMAR)) {
             if (source.getGrammar() == null
                 || source.getGrammar().getPrologNames().isEmpty()) {
-                removeAll();
+                setListData(new String[0]);
                 setEnabled(false);
             } else {
                 setEnabled(true);

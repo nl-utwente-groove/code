@@ -40,6 +40,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -53,23 +54,32 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
     public SimulatorPanel(final Simulator simulator) {
         this.simulator = simulator;
-        add(TabKind.HOST, simulator.getStatePanel());
-        add(TabKind.RULE, simulator.getRulePanel());
-        add(TabKind.LTS, simulator.getLtsPanel());
-        add(TabKind.CONTROL, simulator.getControlPanel());
-        add(TabKind.TYPE, simulator.getTypePanel());
+        addTab(simulator.getStatePanel());
+        addTab(simulator.getRulePanel());
+        addTab(simulator.getLtsPanel());
+        addTab(simulator.getControlPanel());
+        addTab(simulator.getTypePanel());
         if (Groove.INCLUDE_PROLOG) {
-            add(TabKind.PROLOG, simulator.getPrologPanel());
+            addTab(simulator.getPrologPanel());
         }
         installListeners();
-        simulator.getModel().addListener(this, Change.TAB);
+        simulator.getModel().addListener(this, Change.TAB, Change.HOST,
+            Change.RULE, Change.TYPE);
         setVisible(true);
     }
 
-    private void add(TabKind kind, JPanel component) {
-        this.tabKindMap.put(component, kind);
+    private void addTab(SimulatorTab component) {
+        TabKind kind = component.getKind();
+        JPanel mainPanel = component.getMainPanel();
         this.tabbedPanelMap.put(kind, component);
-        addTab(null, kind.getTabIcon(), component, kind.getName());
+        addTab(null, kind.getTabIcon(), mainPanel, kind.getName());
+        JPanel listPanel = component.getListPanel();
+        if (listPanel != null) {
+            this.listKindMap.put(listPanel, kind);
+            this.tabbedListMap.put(kind, listPanel);
+            getListsPanel().addTab(null, kind.getTabIcon(), listPanel,
+                kind.getName());
+        }
     }
 
     private void installListeners() {
@@ -79,7 +89,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
             public void mouseClicked(MouseEvent e) {
                 int index = indexAtLocation(e.getX(), e.getY());
                 if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
-                    JPanel panel = (JPanel) getComponentAt(index);
+                    SimulatorTab panel = (SimulatorTab) getComponentAt(index);
                     createDetachMenu(panel).show(SimulatorPanel.this, e.getX(),
                         e.getY());
                 }
@@ -107,20 +117,87 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         removeChangeListener(this.tabListener);
     }
 
+    /** Tabbed pane holding the list panels of the various components on the 
+     * {@link SimulatorPanel}.
+     * @see SimulatorTab#getListPanel()
+     */
+    public JTabbedPane getListsPanel() {
+        if (this.listsPanel == null) {
+            this.listsPanel = new JTabbedPane();
+        }
+        return this.listsPanel;
+    }
+
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(Change.TAB) && !this.changingTabs) {
-            setSelectedComponent(this.tabbedPanelMap.get(source.getTabKind()));
+        if (changes.contains(Change.TAB)) {
+            if (!this.changingTabs) {
+                // maybe we should move to an open editor tab instead
+                SimulatorTab panel = null;
+                GraphRole role = source.getTabKind().getGraphRole();
+                SimulatorTab component =
+                    this.tabbedPanelMap.get(source.getTabKind());
+                if (role != null) {
+                    panel = getEditor(role, component.getCurrent());
+                }
+                if (panel == null) {
+                    panel = component;
+                }
+                if (indexOfComponent(panel.getMainPanel()) >= 0) {
+                    setSelectedComponent(panel.getMainPanel());
+                }
+            }
+            JPanel listPanel = this.tabbedListMap.get(source.getTabKind());
+            if (listPanel != null
+                && getListsPanel().indexOfComponent(listPanel) >= 0) {
+                getListsPanel().setSelectedComponent(listPanel);
+            }
+        } else {
+            SimulatorTab tab = (SimulatorTab) getSelectedComponent();
+            String changedTo = null;
+            switch (tab.getKind()) {
+            case HOST:
+                if (changes.contains(Change.HOST)
+                    && getSimulatorModel().hasHost()) {
+                    changedTo = getSimulatorModel().getHost().getName();
+                }
+                break;
+            case RULE:
+                if (changes.contains(Change.RULE)
+                    && getSimulatorModel().getRule() != null) {
+                    changedTo = getSimulatorModel().getRule().getName();
+                }
+                break;
+            case TYPE:
+                if (changes.contains(Change.HOST)
+                    && getSimulatorModel().getType() != null) {
+                    changedTo = getSimulatorModel().getType().getName();
+                }
+                break;
+            }
+            if (changedTo == null) {
+                SimulatorTab panel =
+                    this.tabbedPanelMap.get(source.getTabKind());
+                if (panel != null
+                    && indexOfComponent(panel.getMainPanel()) >= 0) {
+                    setSelectedComponent(panel.getMainPanel());
+                }
+            } else {
+                EditorPanel panel =
+                    getEditor(tab.getKind().getGraphRole(), changedTo);
+                if (panel != null) {
+                    setSelectedComponent(panel.getMainPanel());
+                }
+            }
         }
         activateListeners();
     }
 
     /** Returns the kind of tab on top of the tabbed pane. */
     public TabKind getSelectedTab() {
-        TabKind result = this.tabKindMap.get(getSelectedComponent());
-        return result == null ? TabKind.EDITOR : result;
+        return ((SimulatorTab) getSelectedComponent()).getKind();
     }
 
     /**
@@ -141,7 +218,8 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the panel corresponding to a certain tab kind. */
     public JPanel getPanelFor(TabKind tabKind) {
-        return this.tabbedPanelMap.get(tabKind);
+        SimulatorTab tab = this.tabbedPanelMap.get(tabKind);
+        return tab == null ? null : tab.getMainPanel();
     }
 
     /** Returns the panel corresponding to a certain graph role. */
@@ -162,29 +240,44 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Reattaches a component at its proper place. */
-    public void attach(JPanel component) {
-        if (component instanceof EditorPanel) {
+    public void attach(SimulatorTab component) {
+        if (component.getKind() == TabKind.EDITOR) {
             add((EditorPanel) component);
         } else {
-            TabKind myKind = this.tabKindMap.get(component);
+            TabKind myKind = component.getKind();
             int index;
             for (index = 0; index < getTabCount(); index++) {
-                TabKind otherKind = this.tabKindMap.get(getComponentAt(index));
+                TabKind otherKind =
+                    ((SimulatorTab) getComponentAt(index)).getKind();
                 if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                     // insert here
                     break;
                 }
             }
-            insertTab(null, myKind.getTabIcon(), component, myKind.getName(),
-                index);
+            insertTab(null, myKind.getTabIcon(), component.getMainPanel(),
+                myKind.getName(), index);
+            JPanel listPanel = component.getListPanel();
+            if (listPanel != null) {
+                for (index = 0; index < getListsPanel().getTabCount(); index++) {
+                    TabKind otherKind =
+                        this.listKindMap.get(getListsPanel().getComponentAt(
+                            index));
+                    if (otherKind == null || myKind.compareTo(otherKind) < 0) {
+                        // insert here
+                        break;
+                    }
+                }
+                getListsPanel().insertTab(null, myKind.getTabIcon(), listPanel,
+                    myKind.getName(), index);
+            }
         }
+        setSelectedComponent(component.getMainPanel());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
-    public void detach(JPanel component) {
+    public void detach(SimulatorTab component) {
         revertSelection();
-        TabKind kind = this.tabKindMap.get(component);
-        new JGraphWindow(kind == null ? TabKind.EDITOR : kind, component);
+        new JGraphWindow(component);
     }
 
     /** Adds a tab for a given editor panel. */
@@ -253,24 +346,9 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         }
     }
 
-    /** Returns a list of all editor panels currently displayed. */
-    public Map<Pair<String,GraphRole>,EditorPanel> getEditors() {
-        Map<Pair<String,GraphRole>,EditorPanel> result =
-            new LinkedHashMap<Pair<String,GraphRole>,EditorPanel>();
-        for (int i = 0; i < getTabCount(); i++) {
-            if (getComponentAt(i) instanceof EditorPanel) {
-                EditorPanel panel = (EditorPanel) getComponentAt(i);
-                AspectGraph graph = panel.getGraph();
-                result.put(Pair.newPair(graph.getName(), graph.getRole()),
-                    panel);
-            }
-        }
-        return result;
-    }
-
     /** Creates a popup menu with a detach action for a given component. */
-    private JPopupMenu createDetachMenu(final JPanel component) {
-        assert indexOfComponent(component) >= 0;
+    private JPopupMenu createDetachMenu(final SimulatorTab component) {
+        assert indexOfComponent(component.getMainPanel()) >= 0;
         JPopupMenu result = new JPopupMenu();
         result.add(new AbstractAction("Detach") {
             @Override
@@ -298,6 +376,37 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         } else {
             this.lastSelected = null;
         }
+    }
+
+    /** Returns a list of all editor panels currently displayed. */
+    public Map<Pair<String,GraphRole>,EditorPanel> getEditors() {
+        Map<Pair<String,GraphRole>,EditorPanel> result =
+            new LinkedHashMap<Pair<String,GraphRole>,EditorPanel>();
+        for (int i = 0; i < getTabCount(); i++) {
+            if (getComponentAt(i) instanceof EditorPanel) {
+                EditorPanel panel = (EditorPanel) getComponentAt(i);
+                AspectGraph graph = panel.getGraph();
+                result.put(Pair.newPair(graph.getName(), graph.getRole()),
+                    panel);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the editor for a graph with given role and name. */
+    public EditorPanel getEditor(GraphRole role, String name) {
+        EditorPanel result = null;
+        for (int i = 0; i < getTabCount(); i++) {
+            if (getComponentAt(i) instanceof EditorPanel) {
+                EditorPanel panel = (EditorPanel) getComponentAt(i);
+                AspectGraph graph = panel.getGraph();
+                if (graph.getRole() == role && graph.getName().equals(name)) {
+                    result = panel;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** 
@@ -383,18 +492,25 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         return result;
     }
 
-    /** Convenience method to returnt he simulator model. */
+    /** Convenience method to return the simulator model. */
     private SimulatorModel getSimulatorModel() {
         return this.simulator.getModel();
     }
 
     private final Simulator simulator;
-    /** Mapping from standard (non-editor) panels to their tab kinds. */
-    private final Map<JPanel,TabKind> tabKindMap =
+    /** Mapping from simulator tab list panels to their tab kinds. */
+    private final Map<JPanel,TabKind> listKindMap =
         new HashMap<JPanel,TabKind>();
-    /** Mapping from standard (non-editor) panels to their tab kinds. */
-    private final Map<TabKind,JPanel> tabbedPanelMap =
+    /** Mapping from tab kinds to the corresponding panels. */
+    private final Map<TabKind,SimulatorTab> tabbedPanelMap =
+        new HashMap<TabKind,SimulatorTab>();
+    /** Mapping from tab kinds to the corresponding (possibly {@code null})
+     * label lists. */
+    private final Map<TabKind,JPanel> tabbedListMap =
         new HashMap<TabKind,JPanel>();
+
+    /** Panel with the graphs and types lists. */
+    private JTabbedPane listsPanel;
     /** Listener to tab changes. */
     private ChangeListener tabListener;
     /** Flag indicating that the {@link #tabListener} has caused a 
@@ -411,14 +527,22 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
      */
     private class JGraphWindow extends JFrame {
         /** Constructs an instance for a given simulator and panel. */
-        public JGraphWindow(TabKind kind, final JPanel panel) {
-            super(kind.getName());
-            getContentPane().add(panel);
+        public JGraphWindow(final SimulatorTab panel) {
+            super(panel.getKind().getName());
+            JPanel listPanel = panel.getListPanel();
+            if (listPanel == null) {
+                getContentPane().add(panel.getMainPanel());
+            } else {
+                JSplitPane splitPane =
+                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
+                        panel.getMainPanel());
+                getContentPane().add(splitPane);
+            }
             setAlwaysOnTop(true);
-            if (kind == TabKind.EDITOR) {
+            if (panel.getKind() == TabKind.EDITOR) {
                 setTitle(((EditorPanel) panel).getName());
             }
-            ImageIcon icon = kind.getFrameIcon();
+            ImageIcon icon = panel.getKind().getFrameIcon();
             if (icon != null) {
                 setIconImage(icon.getImage());
             }
@@ -444,15 +568,15 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         RULE(Icons.RULE_FRAME_ICON, Icons.RULE_FILE_ICON, "Selected rule"),
         /** LTS panel. */
         LTS(Icons.LTS_FRAME_ICON, null, "Labelled transition system"),
+        /** Type panel. */
+        TYPE(Icons.TYPE_FRAME_ICON, Icons.TYPE_FILE_ICON, "Type graph"),
         /** Control panel. */
         CONTROL(Icons.CONTROL_FRAME_ICON, Icons.CONTROL_FILE_ICON,
                 "Control specification"),
-        /** Type panel. */
-        TYPE(Icons.TYPE_FRAME_ICON, Icons.TYPE_FILE_ICON, "Type graph"),
         /** Prolog panel. */
         PROLOG(Icons.PROLOG_FRAME_ICON, null, "Prolog"),
         /** Editor panel. */
-        EDITOR(null, null, null);
+        EDITOR(null, Icons.GROOVE_ICON_16x16, "Graph Editor");
 
         private TabKind(ImageIcon tabIcon, ImageIcon frameIcon, String name) {
             this.tabIcon = tabIcon;

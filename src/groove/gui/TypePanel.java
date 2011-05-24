@@ -20,6 +20,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.io.HTMLConverter;
@@ -45,7 +46,7 @@ import javax.swing.ToolTipManager;
  * @version $Revision $
  */
 public class TypePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener {
+        SimulatorListener, SimulatorTab {
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
      * instantiates all necessary variables.
@@ -56,6 +57,21 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         setFocusable(false);
         initialise();
         setEnabled(false);
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.TYPE;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public String getCurrent() {
+        return getJModel() == null ? null : getJModel().getName();
     }
 
     @Override
@@ -266,10 +282,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         TypeView type = getSimulatorModel().getType();
         if (type != null) {
             newModel = getTypeJModel(type);
-            String typeName = type.getName();
-            enabled =
-                getSimulatorModel().getGrammar().getActiveTypeNames().contains(
-                    typeName);
+            enabled = true;
         } else {
             newModel = getJGraph().newModel();
             enabled = false;

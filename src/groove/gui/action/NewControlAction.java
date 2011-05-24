@@ -16,7 +16,7 @@ public class NewControlAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getControlPanel().stopEditing(true)) {
+        if (getControlPanel().cancelEditing(true)) {
             String newName =
                 askNewControlName("Select control program name",
                     Groove.DEFAULT_CONTROL_NAME, true);
