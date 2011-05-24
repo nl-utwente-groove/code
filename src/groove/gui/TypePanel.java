@@ -29,6 +29,7 @@ import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.util.HashMap;
@@ -283,9 +284,11 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         if (type != null) {
             newModel = getTypeJModel(type);
             enabled = true;
+            setGraphBackground(Color.WHITE);
         } else {
             newModel = getJGraph().newModel();
             enabled = false;
+            setGraphBackground(null);
         }
         // first set the enabling, then the model
         // in order to get the background right.
@@ -296,22 +299,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
         refreshStatus();
     }
 
-    //
-    //    /** Lazily creates and returns the list displaying the type names. */
-    //    private JTypeNameList getNameList() {
-    //        if (this.nameList == null) {
-    //            this.nameList = new JTypeNameList(this);
-    //        }
-    //        return this.nameList;
-    //    }
-    //
-    //    private CheckBoxListModel getNameListModel() {
-    //        return this.getNameList().getModel();
-    //    }
-    //
-    //    /** Name list of type graphs. */
-    //    private JTypeNameList nameList;
-
     /** panel on which the state list (and toolbar) are displayed. */
     private JPanel listPanel;
 
@@ -320,32 +307,6 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
 
     /** The type enable button. */
     private JToggleButton enableButton;
-    //
-    //    /** Lazily creates and returns the pane displaying the type names. */
-    //    private TypeNamesPane getNameListPane() {
-    //        if (this.nameListPane == null) {
-    //            this.nameListPane = new TypeNamesPane(getNameList());
-    //        }
-    //        return this.nameListPane;
-    //    }
-    //
-    //    /** Name list of type graphs. */
-    //    private TypeNamesPane nameListPane;
-    //
-    //    /** Listener for selection changes in the list of types. */
-    //    private ListSelectionListener selectionListener;
-
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
-    //
-    //    private static class TypeNamesPane extends JScrollPane {
-    //        TypeNamesPane(JTypeNameList nameList) {
-    //            super(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-    //                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    //            this.setViewportView(nameList);
-    //            this.setMinimumSize(JTypeNameList.MIN_DIMENSIONS);
-    //            this.setMaximumSize(JTypeNameList.MAX_DIMENSIONS);
-    //            this.setPreferredSize(JTypeNameList.MAX_DIMENSIONS);
-    //        }
-    //    }
 }

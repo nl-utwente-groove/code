@@ -62,6 +62,7 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
         if (Groove.INCLUDE_PROLOG) {
             addTab(simulator.getPrologPanel());
         }
+        setSelectedIndex(0);
         installListeners();
         simulator.getModel().addListener(this, Change.TAB, Change.HOST,
             Change.RULE, Change.TYPE);
@@ -70,16 +71,13 @@ public class SimulatorPanel extends JTabbedPane implements SimulatorListener {
 
     private void addTab(SimulatorTab component) {
         TabKind kind = component.getKind();
-        JPanel mainPanel = component.getMainPanel();
         this.tabbedPanelMap.put(kind, component);
-        addTab(null, kind.getTabIcon(), mainPanel, kind.getName());
         JPanel listPanel = component.getListPanel();
         if (listPanel != null) {
             this.listKindMap.put(listPanel, kind);
             this.tabbedListMap.put(kind, listPanel);
-            getListsPanel().addTab(null, kind.getTabIcon(), listPanel,
-                kind.getName());
         }
+        attach(component);
     }
 
     private void installListeners() {
