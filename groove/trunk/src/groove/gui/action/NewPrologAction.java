@@ -15,7 +15,7 @@ public class NewPrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getControlPanel().stopEditing(true)) {
+        if (getControlPanel().cancelEditing(true)) {
             String newName =
                 askNewControlName("Select Prolog program name",
                     Simulator.NEW_PROLOG_NAME, true);

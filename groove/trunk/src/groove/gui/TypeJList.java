@@ -149,8 +149,8 @@ public class TypeJList extends JList implements SimulatorListener {
         suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
             if (source.getGrammar() == null
-                && source.getGrammar().getTypeNames().isEmpty()) {
-                removeAll();
+                || source.getGrammar().getTypeNames().isEmpty()) {
+                setListData(new String[0]);
                 setEnabled(false);
             } else {
                 setEnabled(true);

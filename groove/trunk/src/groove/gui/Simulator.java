@@ -72,7 +72,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -178,19 +177,6 @@ public class Simulator implements SimulatorListener {
         }
         if (changes.contains(Change.TAB)) {
             refreshMenuItems();
-            if (source.getTabKind() == TabKind.HOST) {
-                getListPanel().setSelectedComponent(
-                    getStatePanel().getListPanel());
-            } else if (source.getTabKind() == TabKind.TYPE) {
-                getListPanel().setSelectedComponent(
-                    getTypePanel().getListPanel());
-            } else if (source.getTabKind() == TabKind.CONTROL) {
-                getListPanel().setSelectedComponent(
-                    getControlPanel().getListPanel());
-            } else if (source.getTabKind() == TabKind.PROLOG) {
-                getListPanel().setSelectedComponent(
-                    getPrologPanel().getListPanel());
-            }
         }
     }
 
@@ -245,7 +231,8 @@ public class Simulator implements SimulatorListener {
 
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getRulePanel().getListPanel(), getListPanel());
+                    getRulePanel().getTreePanel(),
+                    getSimulatorPanel().getListsPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
@@ -285,17 +272,6 @@ public class Simulator implements SimulatorListener {
             this.simulatorPanel = new SimulatorPanel(this);
         }
         return this.simulatorPanel;
-    }
-
-    private JTabbedPane getListPanel() {
-        if (this.listPanel == null) {
-            this.listPanel = new JTabbedPane();
-            this.listPanel.add("Graphs", getStatePanel().getListPanel());
-            this.listPanel.add("Types", getTypePanel().getListPanel());
-            this.listPanel.add("Control", getControlPanel().getListPanel());
-            this.listPanel.add("Prolog", getPrologPanel().getListPanel());
-        }
-        return this.listPanel;
     }
 
     /** Creates a non-floatable tool bar of which the buttons are non-focusable. */
@@ -920,9 +896,6 @@ public class Simulator implements SimulatorListener {
      * This application's main frame.
      */
     private JFrame frame;
-
-    /** Panel with the graphs and types lists. */
-    private JTabbedPane listPanel;
 
     /** Production rule display panel. */
     private RulePanel rulePanel;

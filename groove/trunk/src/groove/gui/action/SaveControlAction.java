@@ -48,7 +48,8 @@ public class SaveControlAction extends SimulatorAction {
     public boolean doSave(String name) {
         boolean result = false;
         try {
-            result = getModel().doAddControl(name, getProgram());
+            String program = getControlPanel().stopEditing();
+            result = getModel().doAddControl(name, program);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error saving control program " + name);
         }
@@ -57,6 +58,7 @@ public class SaveControlAction extends SimulatorAction {
 
     private boolean doSaveAs(String name) {
         boolean result = false;
+        getControlPanel().cancelEditing(false);
         ExtensionFilter filter = FileType.CONTROL_FILTER;
         GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
         chooser.setSelectedFile(new File(name));
@@ -68,13 +70,13 @@ public class SaveControlAction extends SimulatorAction {
                     getNameInGrammar(
                         filter.stripExtension(selectedFile.getCanonicalPath()),
                         false);
+                String program = getModel().getControl().getProgram();
                 if (nameInGrammar == null) {
                     // store as external file
-                    CtrlView.store(getProgram(), new FileOutputStream(
-                        selectedFile));
+                    CtrlView.store(program, new FileOutputStream(selectedFile));
                 } else {
                     // store in grammar
-                    getModel().doAddControl(nameInGrammar, getProgram());
+                    getModel().doAddControl(nameInGrammar, program);
                 }
                 result = true;
             } catch (IOException exc) {
@@ -83,12 +85,6 @@ public class SaveControlAction extends SimulatorAction {
             }
         }
         return result;
-    }
-
-    /** Returns the text of the control program to be saved. */
-    private String getProgram() {
-        return this.saveAs ? getModel().getControl().getProgram()
-                : getControlPanel().getControlTextArea().getText();
     }
 
     @Override

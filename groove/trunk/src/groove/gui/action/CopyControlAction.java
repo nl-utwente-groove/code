@@ -16,7 +16,7 @@ public class CopyControlAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (getControlPanel().stopEditing(true)) {
+        if (getControlPanel().cancelEditing(true)) {
             String oldName = getModel().getControl().getName();
             String newName =
                 askNewControlName("Select new control program name", oldName,

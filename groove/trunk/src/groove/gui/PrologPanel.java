@@ -27,6 +27,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.prolog.GrooveState;
@@ -34,6 +35,7 @@ import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
+import groove.view.PrologView;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
@@ -93,7 +95,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * 
  * @author Michiel Hendriks
  */
-public class PrologPanel extends JPanel {
+public class PrologPanel extends JPanel implements SimulatorTab {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
@@ -345,6 +347,22 @@ public class PrologPanel extends JPanel {
         this.statusBar = new JLabel(" ");
         add(this.statusBar, BorderLayout.SOUTH);
         consultUserCode();
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.PROLOG;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public String getCurrent() {
+        PrologView prolog = getSimulatorModel().getProlog();
+        return prolog == null ? null : prolog.getName();
     }
 
     /**

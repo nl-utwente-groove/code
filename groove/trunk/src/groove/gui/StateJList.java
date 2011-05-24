@@ -46,7 +46,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -197,7 +196,7 @@ public class StateJList extends JList implements SimulatorListener {
             Set<Change> changes) {
         suspendListeners();
         if (changes.contains(Change.GRAMMAR)) {
-            this.removeAll();
+            this.listModel.clear();
             if (source.getGrammar() == null) {
                 setEnabled(false);
             } else {
@@ -343,9 +342,6 @@ public class StateJList extends JList implements SimulatorListener {
 
     /** The background colour of a selected cell if the list does not have focus. */
     static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
-    /** The background colour of the start graph. */
-    static private final Color START_GRAPH_BACKGROUND_COLOR =
-        new JLabel().getBackground();
     static private final Border START_GRAPH_BORDER = new CompoundBorder(
         LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2));
 

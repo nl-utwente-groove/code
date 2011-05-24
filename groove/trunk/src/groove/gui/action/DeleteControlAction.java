@@ -21,7 +21,7 @@ public class DeleteControlAction extends SimulatorAction {
         String controlName = getModel().getControl().getName();
         if (confirmBehaviour(Options.DELETE_CONTROL_OPTION,
             String.format("Delete control program '%s'?", controlName))) {
-            getControlPanel().stopEditing(false);
+            getControlPanel().cancelEditing(false);
             try {
                 result = getModel().doDeleteControl(controlName);
             } catch (IOException exc) {

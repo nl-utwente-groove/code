@@ -20,6 +20,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.CancelEditGraphAction;
 import groove.gui.action.SaveGraphAction;
 import groove.view.StoredGrammarView;
@@ -40,7 +41,8 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditorPanel extends JPanel implements SimulatorListener {
+public class EditorPanel extends JPanel implements SimulatorListener,
+        SimulatorTab {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param simulator the simulator on which this panel is placed
@@ -99,6 +101,26 @@ public class EditorPanel extends JPanel implements SimulatorListener {
         setFocusCycleRoot(true);
         setName(graph.getName());
         simulator.getModel().addListener(this, Change.GRAMMAR);
+    }
+
+    @Override
+    public JPanel getListPanel() {
+        return null;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.EDITOR;
+    }
+
+    @Override
+    public String getCurrent() {
+        return getGraph().getName();
     }
 
     /** Starts the editor with the graph passed in at construction time. */

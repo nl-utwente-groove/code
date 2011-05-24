@@ -25,6 +25,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -38,6 +39,7 @@ import groove.view.RuleView;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ import javax.swing.ToolTipManager;
  * @version $Revision$
  */
 final public class RulePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener {
+        SimulatorListener, SimulatorTab {
     /** Frame name when no rule is selected. */
     private static final String INITIAL_FRAME_NAME = "No rule selected";
 
@@ -75,6 +77,26 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     public RulePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.RULE), true);
         initialise();
+    }
+
+    @Override
+    public TabKind getKind() {
+        return TabKind.RULE;
+    }
+
+    @Override
+    public JPanel getMainPanel() {
+        return this;
+    }
+
+    @Override
+    public JPanel getListPanel() {
+        return null;
+    }
+
+    @Override
+    public String getCurrent() {
+        return getJModel() == null ? null : getJModel().getName();
     }
 
     @Override
@@ -119,7 +141,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     /**
      * Lazily creates and returns the panel with the rule tree.
      */
-    public JPanel getListPanel() {
+    public JPanel getTreePanel() {
         if (this.ruleTreePanel == null) {
             // set title and toolbar
             JLabel labelPaneTitle =
@@ -242,6 +264,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
                 ruleName == null ? null : this.ruleJModelMap.get(ruleName);
             // display new rule
             setEnabled(ruleJModel != null);
+            setGraphBackground(isEnabled() ? Color.white : null);
             this.displayedRule = ruleName;
             this.jGraph.setModel(ruleJModel);
             refreshStatus();
