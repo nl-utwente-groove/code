@@ -16,9 +16,9 @@
  */
 package groove.prolog.builtin;
 
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipPars;
 
 /** LTS-related Prolog predicates.
  * Documentation reading guide:
@@ -56,7 +56,7 @@ public class LtsPredicates extends GroovePredicates {
     }
 
     @ToolTipBody("Retrieves the graph for a state")
-    @Signature({"State", "Graph", "?+"})
+    @Signature({"State", "Graph", "+?"})
     @ToolTipPars({"A state", "The graph belonging to the state"})
     //    % @groove.lts.GraphState#getGraph()
     public void state_graph_2() {
