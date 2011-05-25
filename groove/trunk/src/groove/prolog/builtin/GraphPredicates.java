@@ -16,9 +16,9 @@
  */
 package groove.prolog.builtin;
 
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipPars;
 
 /** Graph-related GROOVE predicates.
  * Documentation reading guide:
@@ -217,6 +217,12 @@ public class GraphPredicates extends GroovePredicates {
     @ToolTipBody("Gets all node type edges in the graph")
     public void graph_node_type_2() {
         s("graph_node_type(G,E) :- graph_edge(G,E), edge_role_node_type(E).");
+    }
+
+    @Signature({"Graph", "String", "++"})
+    @ToolTipBody("Succeeds if the graph has at least a node with the given node type")
+    public void has_node_type_2() {
+        s("has_node_type(G,T) :- graph_node_type(G,E), edge_label(E,L), L == T.");
     }
 
     @ToolTipBody({"Gets the path from one node to an other"})
