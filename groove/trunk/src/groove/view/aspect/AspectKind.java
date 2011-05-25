@@ -314,7 +314,9 @@ public enum AspectKind {
 
     /** Indicates that this aspect kind is always the last on a label. */
     public boolean isLast() {
-        return this.contentKind != ContentKind.LEVEL;
+        return this.contentKind != ContentKind.LEVEL
+            && this.contentKind != ContentKind.MULTIPLICITY
+            && this != COMPOSITE;
     }
 
     private final ContentKind contentKind;
@@ -1434,7 +1436,7 @@ public enum AspectKind {
         String toString(AspectKind aspect, Object content) {
             if (content == null) {
                 return aspect.getPrefix();
-            } else if (this == LEVEL) {
+            } else if (this == LEVEL || this == MULTIPLICITY) {
                 return aspect.getName() + ASSIGN + toString(content)
                     + SEPARATOR;
             } else {
