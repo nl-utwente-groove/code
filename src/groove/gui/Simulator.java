@@ -303,15 +303,6 @@ public class Simulator implements SimulatorListener {
                         FormatError error = (FormatError) arg;
                         AspectGraph errorGraph = error.getGraph();
                         if (errorGraph != null) {
-                            JGraphPanel<?> panel =
-                                getSimulatorPanel().getPanelFor(
-                                    errorGraph.getRole());
-                            // select the error cell and switch to the panel
-                            for (Element errorObject : error.getElements()) {
-                                if (panel.selectJCell(errorObject)) {
-                                    break;
-                                }
-                            }
                             String name = errorGraph.getName();
                             switch (errorGraph.getRole()) {
                             case RULE:
@@ -325,6 +316,15 @@ public class Simulator implements SimulatorListener {
                                 break;
                             default:
                                 assert false;
+                            }
+                            JGraphPanel<?> panel =
+                                getSimulatorPanel().getPanelFor(
+                                    errorGraph.getRole());
+                            // select the error cell and switch to the panel
+                            for (Element errorObject : error.getElements()) {
+                                if (panel.selectJCell(errorObject)) {
+                                    break;
+                                }
                             }
                         } else if (error.getControl() != null) {
                             getModel().setControl(error.getControl().getName());

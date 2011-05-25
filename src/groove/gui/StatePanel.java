@@ -368,7 +368,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                         labelsMap.put(typeName, view.getLabels());
                     }
                 }
-                getJGraph().setType(grammar.toModel().getType(), labelsMap);
+                getJGraph().setType(grammar.getCompositeTypeView().toModel(),
+                    labelsMap);
             } catch (FormatException e) {
                 getJGraph().setLabelStore(grammar.getLabelStore());
             }

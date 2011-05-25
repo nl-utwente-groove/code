@@ -442,6 +442,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
         for (int i = viewRoots.length - 1; result == null && i >= 0; i--) {
             CellView jCellView = viewRoots[i];
+            if (!(jCellView.getCell() instanceof GraphJCell)) {
+                continue;
+            }
             GraphJCell jCell = (GraphJCell) jCellView.getCell();
             boolean typeCorrect =
                 vertex ? jCell instanceof GraphJVertex : edge
