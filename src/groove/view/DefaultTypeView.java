@@ -138,9 +138,9 @@ public class DefaultTypeView implements TypeView {
         }
         // collect node type edges and build the view type map
         for (AspectEdge viewEdge : this.view.edgeSet()) {
-            TypeLabel modelLabel = viewEdge.getTypeLabel();
-            if (modelLabel != null && modelLabel.isNodeType()) {
-                addNodeType(viewEdge.source(), modelLabel);
+            TypeLabel typeLabel = viewEdge.getTypeLabel();
+            if (typeLabel != null && typeLabel.isNodeType()) {
+                addNodeType(viewEdge.source(), typeLabel);
             }
         }
         // check if there are untyped, non-virtual nodes
@@ -165,18 +165,14 @@ public class DefaultTypeView implements TypeView {
         }
         // copy the edges from view to model
         for (AspectEdge viewEdge : this.view.edgeSet()) {
-            processViewEdge(this.model, this.elementMap, viewEdge);
-        }
-        // add subtype relations to the model
-        for (AspectEdge viewEdge : this.view.edgeSet()) {
-            try {
-                if (viewEdge.getKind() == SUBTYPE) {
-                    this.model.addSubtype(
-                        this.elementMap.getNode(viewEdge.target()),
-                        this.elementMap.getNode(viewEdge.source()));
+            // do not process the node type edges again
+            TypeLabel typeLabel = viewEdge.getTypeLabel();
+            if (typeLabel == null || !typeLabel.isNodeType()) {
+                try {
+                    processViewEdge(this.model, this.elementMap, viewEdge);
+                } catch (FormatException exc) {
+                    this.errors.addAll(exc.getErrors());
                 }
-            } catch (FormatException exc) {
-                this.errors.addAll(exc.getErrors());
             }
         }
         if (this.errors.isEmpty()) {
@@ -208,6 +204,7 @@ public class DefaultTypeView implements TypeView {
             if (typeNode == null) {
                 typeNode = new TypeNode(viewNode.getNumber(), modelLabel);
                 typeNode.setAbstract(viewNode.getKind() == ABSTRACT);
+                typeNode.setImported(viewNode.hasImport());
                 if (viewNode.hasColor()) {
                     typeNode.setColor((Color) viewNode.getColor().getContent());
                 }
@@ -224,17 +221,22 @@ public class DefaultTypeView implements TypeView {
      * map and subtypes.
      */
     private void processViewEdge(TypeGraph model, ViewToTypeMap elementMap,
-            AspectEdge viewEdge) {
+            AspectEdge viewEdge) throws FormatException {
         TypeNode modelSource = elementMap.getNode(viewEdge.source());
         assert modelSource != null : String.format(
             "Source of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
+        if (modelSource.isImported()) {
+            throw new FormatException("Can't change imported type '%s'",
+                modelSource.getType(), viewEdge);
+        }
         TypeNode modelTarget = elementMap.getNode(viewEdge.target());
         assert modelTarget != null : String.format(
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
-        // register subtype edges
-        if (viewEdge.getKind() != SUBTYPE) {
+        if (viewEdge.getKind() == SUBTYPE) {
+            model.addSubtype(modelSource, modelTarget);
+        } else {
             TypeLabel modelLabel = viewEdge.getTypeLabel();
             TypeEdge modelEdge =
                 model.addEdge(modelSource, modelLabel, modelTarget);

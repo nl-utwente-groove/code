@@ -1,6 +1,8 @@
 package groove.view;
 
 import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
+import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,8 +39,7 @@ public class CompositeTypeView {
      * @throws IllegalArgumentException if the composition of types gives
      *         rise to typing cycles.
      */
-    public TypeGraph toModel() throws FormatException,
-        IllegalArgumentException {
+    public TypeGraph toModel() throws FormatException, IllegalArgumentException {
         this.initialise();
         if (this.model == null) {
             throw new FormatException(this.getErrors());
@@ -75,14 +76,35 @@ public class CompositeTypeView {
             // type graph.
             this.model = new TypeGraph("combined type");
             this.typeGraphMap = new TreeMap<String,TypeGraph>();
+            Map<TypeNode,TypeNode> importNodes =
+                new HashMap<TypeNode,TypeNode>();
+            Map<TypeNode,TypeView> importViews =
+                new HashMap<TypeNode,TypeView>();
             for (TypeView view : this.typeViewMap.values()) {
                 try {
-                    this.typeGraphMap.put(view.getName(), view.toModel());
-                    this.model.add(view.toModel());
+                    TypeGraph graph = view.toModel();
+                    this.typeGraphMap.put(view.getName(), graph);
+                    Map<TypeNode,TypeNode> map = this.model.add(graph);
+                    for (TypeNode node : graph.getImports()) {
+                        importNodes.put(node, map.get(node));
+                        importViews.put(node, view);
+                    }
                 } catch (FormatException e) {
                     this.errors.addAll(e.getErrors());
                 } catch (IllegalArgumentException e) {
                     this.errors.add(new FormatError(e.getMessage()));
+                }
+            }
+            // test that there are no imported types left
+            for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
+                if (importEntry.getValue().isImported()) {
+                    TypeNode origNode = importEntry.getKey();
+                    TypeView origView = importViews.get(origNode);
+                    this.errors.add(new FormatError(
+                        "Error in type graph '%s': Unresolved type import '%s'",
+                        origView.getName(), origNode.getType(), getInverse(
+                            origView.getMap().nodeMap(), origNode),
+                        origView.getAspectGraph()));
                 }
             }
             if (this.errors.isEmpty()) {
@@ -91,5 +113,15 @@ public class CompositeTypeView {
                 this.model = null;
             }
         }
+    }
+
+    private AspectNode getInverse(Map<AspectNode,?> map, TypeNode image) {
+        AspectNode result = null;
+        for (Map.Entry<AspectNode,?> entry : map.entrySet()) {
+            if (entry.getValue().equals(image)) {
+                return entry.getKey();
+            }
+        }
+        return result;
     }
 }

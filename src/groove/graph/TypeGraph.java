@@ -61,14 +61,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * Adds type nodes and edges from another type graph.
      * Equally labelled type nodes are merged.
      * This may change the node numbering of the other type graph.
+     * @return mapping from nodes in the added type graph to the corresponding nodes
+     * in this type graph
      */
-    public void add(TypeGraph other) {
+    public Map<TypeNode,TypeNode> add(TypeGraph other) {
         Map<TypeNode,TypeNode> otherToThis = new HashMap<TypeNode,TypeNode>();
         for (Node otherNode : other.nodeSet()) {
             TypeNode otherTypeNode = (TypeNode) otherNode;
             TypeNode image = addNode(otherTypeNode.getType());
             image.setAbstract(otherTypeNode.isAbstract());
             image.setColor(otherTypeNode.getColor());
+            boolean imported = image.isImported() && otherTypeNode.isImported();
+            image.setImported(imported);
+            if (imported) {
+                this.imports.add(image);
+            } else {
+                this.imports.remove(image);
+            }
             otherToThis.put(otherTypeNode, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
@@ -78,6 +87,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             image.setAbstract(otherEdge.isAbstract());
         }
         this.labelStore.add(other.labelStore);
+        return otherToThis;
     }
 
     @Override
@@ -89,6 +99,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeNode oldType = this.typeMap.put(node.getType(), node);
             assert oldType == null : String.format(
                 "Duplicate type node for %s", oldType.getType());
+            if (node.isImported()) {
+                this.imports.add(node);
+            }
         }
         return result;
     }
@@ -110,6 +123,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             assert !this.predefinedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
             this.maxNodeNr++;
             result = new TypeNode(this.maxNodeNr, label);
+            result.setImported(true);
             this.typeMap.put(label, result);
             super.addNode(result);
             addEdgeWithoutCheck(createEdge(result, label, result));
@@ -311,11 +325,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (edgeType instanceof RuleLabel
                 && !((RuleLabel) edgeType).isAtom()) {
                 RuleLabel ruleEdgeType = (RuleLabel) edgeType;
-                //                if (ruleEdgeType.getWildcardId() != null) {
-                //                    errors.add(new FormatError(
-                //                        "Wildcard expression '%s' not supported in typed rules",
-                //                        edgeType, edge));
-                //                } else 
                 if (ruleEdgeType.isEmpty()) {
                     // this is a (possibly negative) comparison of nodes
                     // which can only be correct if they have a common subtype
@@ -661,6 +670,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     private final LabelStore labelStore = new LabelStore();
     /** Mapping from node type labels to the corresponding type nodes. */
     private final Map<Label,TypeNode> typeMap = new HashMap<Label,TypeNode>();
+
+    /** Returns the set of imported node types. */
+    public Set<TypeNode> getImports() {
+        return this.imports;
+    }
+
+    /** Set of imported nodes. */
+    private final Set<TypeNode> imports = new HashSet<TypeNode>();
 
     /**
      * Class encoding the typing information discovered for a graph in

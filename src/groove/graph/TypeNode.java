@@ -98,12 +98,22 @@ public class TypeNode implements Node {
 
     /** Indicates if this node type is abstract. */
     public final boolean isAbstract() {
-        return this.abstractType;
+        return this.abstracted;
     }
 
     /** Sets this node type to abstract. */
     public final void setAbstract(boolean value) {
-        this.abstractType = value;
+        this.abstracted = value;
+    }
+
+    /** Indicates if this node type is imported. */
+    public final boolean isImported() {
+        return this.imported;
+    }
+
+    /** Sets this node type to imported. */
+    public final void setImported(boolean value) {
+        this.imported = value;
     }
 
     /** Returns the (possibly {@code null}) colour of this type node. */
@@ -116,8 +126,10 @@ public class TypeNode implements Node {
         this.colour = colour;
     }
 
-    /** Flag indicating if this edge type is abstract. */
-    private boolean abstractType;
+    /** Flag indicating if this node type is abstract. */
+    private boolean abstracted;
+    /** Flag indicating if this node type is imported from another type graph. */
+    private boolean imported;
     /** The display colour of this node, if any. */
     private Color colour;
     /** The number of this node. */
