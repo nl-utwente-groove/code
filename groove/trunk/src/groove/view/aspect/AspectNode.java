@@ -201,9 +201,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         } else if (!hasAspect()) {
             setAspect(AspectKind.NONE.getAspect());
         }
-        if (hasImport() && getAttrKind().isData()) {
-            throw new FormatException("Can't import data type", getAttrKind(),
-                this);
+        if (hasImport()) {
+            if (getAttrKind().isData()) {
+                throw new FormatException("Can't import data type",
+                    getAttrKind(), this);
+            } else if (getKind() == ABSTRACT) {
+                throw new FormatException("Can't abstract an imported type",
+                    getAttrKind(), this);
+            }
         }
         if (!hasAttrAspect()) {
             setAttrAspect(AspectKind.NONE.getAspect());
