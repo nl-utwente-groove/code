@@ -235,7 +235,7 @@ public class DefaultTypeView implements TypeView {
             "Target of view edge '%s' not in element map %s",
             viewEdge.source(), elementMap);
         if (viewEdge.getKind() == SUBTYPE) {
-            model.addSubtype(modelSource, modelTarget);
+            model.addSubtype(modelTarget, modelSource);
         } else {
             TypeLabel modelLabel = viewEdge.getTypeLabel();
             TypeEdge modelEdge =
