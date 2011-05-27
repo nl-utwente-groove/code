@@ -76,12 +76,17 @@ public class Multiplicity extends Duo<Integer> {
      * @throws FormatException if the input text was not correctly formatted
      */
     public static Multiplicity parse(String text) throws FormatException {
-        int dotdot = text.indexOf(MULT_SEPARATOR);
         int lower, upper;
         try {
+            int dotdot = text.indexOf(MULT_SEPARATOR);
             if (dotdot < 0) {
-                // the multiplicity is a single value
-                lower = upper = Integer.parseInt(text);
+                if (UNBOUNDED.equals(text)) {
+                    lower = 0;
+                    upper = Integer.MAX_VALUE;
+                } else {
+                    // the multiplicity is a single value
+                    lower = upper = Integer.parseInt(text);
+                }
             } else {
                 lower = Integer.parseInt(text.substring(0, dotdot));
                 String upperText =
