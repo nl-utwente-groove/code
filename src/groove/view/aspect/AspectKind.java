@@ -23,8 +23,8 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.annotation.Help;
 import groove.graph.GraphRole;
+import groove.graph.Multiplicity;
 import groove.util.Colors;
-import groove.util.Duo;
 import groove.util.Pair;
 import groove.view.FormatException;
 
@@ -1043,59 +1043,19 @@ public enum AspectKind {
                 if (end == pos) {
                     throw new FormatException("Malformed multiplicity");
                 }
-                Duo<Integer> content =
+                Multiplicity content =
                     parseContent(text.substring(pos + 1, end));
                 return new Pair<Object,String>(content, text.substring(end + 1));
             }
 
             @Override
-            Duo<Integer> parseContent(String text) throws FormatException {
-                int dotdot = text.indexOf(MULT_SEPARATOR);
-                int lower, upper;
-                try {
-                    if (dotdot < 0) {
-                        // the multiplicity is a single value
-                        lower = upper = Integer.parseInt(text);
-                    } else {
-                        lower = Integer.parseInt(text.substring(0, dotdot));
-                        String upperText =
-                            text.substring(dotdot + MULT_SEPARATOR.length());
-                        if (upperText.equals("*")) {
-                            upper = Integer.MAX_VALUE;
-                        } else {
-                            upper = Integer.parseInt(upperText);
-                        }
-                    }
-                } catch (NumberFormatException e) {
-                    throw new FormatException(
-                        "Malformed multiplicity value %s", text);
-                }
-                if (lower < 0) {
-                    throw new FormatException("Negative lower bound %d", lower);
-                } else if (lower > upper) {
-                    throw new FormatException(
-                        "Lower bound %d larger than upper bound %d", lower,
-                        upper);
-                }
-                return new Duo<Integer>(lower, upper);
+            Multiplicity parseContent(String text) throws FormatException {
+                return Multiplicity.parse(text);
             }
 
             @Override
             String toString(Object content) {
-                String result;
-                @SuppressWarnings("unchecked")
-                Duo<Integer> mult = (Duo<Integer>) content;
-                int lower = mult.one();
-                int upper = mult.two();
-                if (lower == upper) {
-                    result = "" + lower;
-                } else {
-                    boolean unbounded = upper == Integer.MAX_VALUE;
-                    result =
-                        "" + lower + MULT_SEPARATOR
-                            + (unbounded ? MULT_UNBOUNDED : upper);
-                }
-                return result;
+                return ((Multiplicity) content).toString();
             }
         },
         /** 
@@ -1464,10 +1424,6 @@ public enum AspectKind {
 
         private final String signature;
 
-        /** Symbolic representation of unbounded multiplicity. */
-        static public final String MULT_UNBOUNDED = "*";
-        /** Separator sequence in a multiplicity value. */
-        static public final String MULT_SEPARATOR = "..";
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
     }
