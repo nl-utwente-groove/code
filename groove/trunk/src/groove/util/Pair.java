@@ -16,7 +16,6 @@
  */
 package groove.util;
 
-import groove.view.FormatException;
 
 /**
  * Implements a generic pair of values.
@@ -61,7 +60,7 @@ public class Pair<T,U> implements Fixable {
     }
 
     @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         // the pair is fixed by computing the hash code.
         hashCode();
     }

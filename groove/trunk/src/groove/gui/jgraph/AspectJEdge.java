@@ -19,6 +19,7 @@ import groove.view.aspect.AspectParser;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -296,9 +297,18 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setBeginSize(result, 15);
             GraphConstants.setLineBegin(result, GraphConstants.ARROW_DIAMOND);
         }
-        if (edge != null && edge.getOutMult() != null) {
+        if (edge != null
+            && (edge.getInMult() != null || edge.getOutMult() != null)) {
+            String inMult =
+                edge.getInMult() == null ? "" : edge.getInMult().toString();
+            String outMult =
+                edge.getOutMult() == null ? "" : edge.getOutMult().toString();
             GraphConstants.setExtraLabels(result,
-                new Object[] {edge.getOutMult()});
+                new Object[] {outMult, inMult});
+            Point2D[] labelPositions =
+                {new Point2D.Double(GraphConstants.PERMILLE * 92 / 100, -11),
+                    new Point2D.Double(GraphConstants.PERMILLE * 8 / 100, -11)};
+            GraphConstants.setExtraLabelPositions(result, labelPositions);
         }
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);

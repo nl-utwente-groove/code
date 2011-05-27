@@ -35,6 +35,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.Multiplicity;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
@@ -433,7 +434,6 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Setter for the aspect type. */
-    @SuppressWarnings("unchecked")
     private void setAspect(Aspect aspect) throws FormatException {
         AspectKind kind = aspect.getKind();
         assert !kind.isAttrKind() && kind != AspectKind.PATH
@@ -465,9 +465,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         // actually set the type, if the passed-in value was not a quantifier
         // (which we use only for its level name)
         if (kind == AspectKind.MULT_IN) {
-            this.inMult = (Duo<Integer>) aspect.getContent();
+            this.inMult = (Multiplicity) aspect.getContent();
         } else if (kind == AspectKind.MULT_OUT) {
-            this.outMult = (Duo<Integer>) aspect.getContent();
+            this.outMult = (Multiplicity) aspect.getContent();
         } else if (kind == AspectKind.COMPOSITE) {
             this.composite = true;
         } else if (!kind.isQuantifier()) {
@@ -602,7 +602,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Returns the incoming multiplicity of this (type) edge, if any. */
-    public Duo<Integer> getInMult() {
+    public Multiplicity getInMult() {
         return this.inMult;
     }
 
@@ -667,11 +667,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** The incoming multiplicity of this (type) edge.
      * {@code null} if there is no incoming multiplicity declared.
      */
-    private Duo<Integer> inMult;
+    private Multiplicity inMult;
     /** The outgoing multiplicity of this (type) edge.
      * {@code null} if there is no outgoing multiplicity declared.
      */
-    private Duo<Integer> outMult;
+    private Multiplicity outMult;
     /** Flag indicating that this is a composite type edge. */
     private boolean composite;
     /** Flag indicating if the edge is fixed. */
