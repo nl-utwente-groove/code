@@ -34,6 +34,7 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /**
@@ -478,4 +479,8 @@ public class Groove {
     public static final boolean IS_PLATFORM_LINUX = System.getProperty(
         "os.name").toLowerCase().indexOf("linux") > -1;
 
+    static {
+        /** Make sure default action names are all in English. */
+        Locale.setDefault(Locale.ENGLISH);
+    }
 }
