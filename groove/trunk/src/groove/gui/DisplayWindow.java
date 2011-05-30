@@ -1,5 +1,8 @@
 package groove.gui;
 
+import groove.gui.DisplaysPanel.DisplayKind;
+
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -13,13 +16,14 @@ import javax.swing.JSplitPane;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract class DisplayWindow extends JFrame {
+class DisplayWindow extends JFrame {
     /** Constructs an instance for a given simulator and panel. */
-    public DisplayWindow(final Display panel) {
+    public DisplayWindow(DisplaysPanel parent, final Display panel) {
         super(panel.getKind().getName());
+        this.parent = parent;
         this.panel = panel;
         JPanel listPanel = panel.getListPanel();
-        if (listPanel == null) {
+        if (panel.getKind() == DisplayKind.RULE || listPanel == null) {
             getContentPane().add(panel.getPanel());
         } else {
             JSplitPane splitPane =
@@ -32,6 +36,8 @@ abstract class DisplayWindow extends JFrame {
         if (icon != null) {
             setIconImage(icon.getImage());
         }
+        setMinimumSize(MINIMUM_SIZE);
+        getContentPane().setMinimumSize(MINIMUM_SIZE);
         pack();
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -45,12 +51,16 @@ abstract class DisplayWindow extends JFrame {
     }
 
     /** Callback method to attach the window content back to its original container. */
-    protected abstract void attach();
+    protected void attach() {
+        this.parent.attach(getDisplay());
+    }
 
     /** Returns the simulator tab currently displayed in this window. */
-    protected final Display getTab() {
+    protected final Display getDisplay() {
         return this.panel;
     }
 
+    private final DisplaysPanel parent;
     private final Display panel;
+    private static final Dimension MINIMUM_SIZE = new Dimension(500, 300);
 }

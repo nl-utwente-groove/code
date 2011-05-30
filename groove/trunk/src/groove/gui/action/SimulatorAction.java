@@ -89,17 +89,17 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Convenience method to retrieve the state panel of the simulator. */
     protected final StateDisplay getStateTab() {
-        return getMainPanel().getStateTab();
+        return getMainPanel().getStateDisplay();
     }
 
     /** Convenience method to retrieve the rule panel of the simulator */
     protected final RuleDisplay getRuleTab() {
-        return getMainPanel().getRuleTab();
+        return getMainPanel().getRuleDisplay();
     }
 
     /** Convenience method to retrieve the type panel of the simulator. */
     protected final TypeDisplay getTypeTab() {
-        return getMainPanel().getTypeTab();
+        return getMainPanel().getTypeDisplay();
     }
 
     /** Returns the control panel that owns the action. */

@@ -16,7 +16,7 @@ public class EditTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         final AspectGraph initType = getModel().getType().getAspectGraph();
-        getMainPanel().getTypeTab().doEdit(initType);
+        getMainPanel().getTypeDisplay().doEdit(initType);
         return false;
     }
 

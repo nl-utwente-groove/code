@@ -56,7 +56,7 @@ public class EditHostOrStateAction extends SimulatorAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getMainPanel().getStateTab().doEdit(newGraph);
+                            getMainPanel().getStateDisplay().doEdit(newGraph);
                         }
                     });
                 } catch (IOException e) {
