@@ -85,8 +85,6 @@ public class TabLabel extends JPanel {
         this.panel = panel;
         //No need to be focusable
         setFocusable(false);
-        //add more space to the top of the component
-        setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         setOpaque(false);
         this.iconLabel = new JLabel(title, icon, 0);
         this.iconLabel.setBackground(JAttr.ERROR_COLOR);

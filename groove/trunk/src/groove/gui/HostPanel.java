@@ -62,7 +62,7 @@ public class HostPanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new state panel.
      */
     public HostPanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), true);
+        super(new AspectJGraph(simulator, GraphRole.HOST), false);
         initialise();
         setBorder(null);
         getJGraph().setToolTipEnabled(true);
