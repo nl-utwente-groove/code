@@ -47,7 +47,7 @@ import javax.swing.event.ChangeListener;
 public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
     public DisplaysPanel(final Simulator simulator) {
-        super(LEFT);
+        super(TOP);
         this.simulator = simulator;
         addTab(getStateTab());
         addTab(getRuleTab());

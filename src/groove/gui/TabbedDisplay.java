@@ -48,10 +48,10 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      * Constructs a panel for a given simulator.
      */
     public TabbedDisplay(Simulator simulator) {
-        super(TOP);
+        super(BOTTOM);
         this.simulator = simulator;
         setFocusable(false);
-        setBorder(new EmptyBorder(0, 5, 0, 0));
+        setBorder(new EmptyBorder(0, 0, -4, 0));
     }
 
     /** Installs all listeners to this display. */
