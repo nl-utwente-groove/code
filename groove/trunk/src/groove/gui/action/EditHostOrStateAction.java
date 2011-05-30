@@ -42,10 +42,10 @@ public class EditHostOrStateAction extends SimulatorAction {
     @Override
     public boolean execute() {
         if (getModel().hasHost()) {
-            getStateTab().doEdit(getModel().getHost().getAspectGraph());
+            getStateDisplay().doEdit(getModel().getHost().getAspectGraph());
         } else {
             AspectGraph graph =
-                getStateTab().getStatePanel().getJModel().getGraph();
+                getStateDisplay().getStatePanel().getJModel().getGraph();
             // find out if we're editing a host graph or a state
             String newGraphName =
                 askNewGraphName("Select graph name", graph.getName(), true);

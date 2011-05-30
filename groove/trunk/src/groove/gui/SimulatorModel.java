@@ -634,6 +634,9 @@ public class SimulatorModel implements Cloneable {
         if (changeGts(gts, false)) {
             changeState(gts == null ? null : gts.startState());
             changeMatch(null);
+            if (gts != null) {
+                changeHostSet(Collections.<String>emptySet());
+            }
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
@@ -692,8 +695,15 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
+     * Indicates if there is an active state.
+     */
+    public final boolean hasState() {
+        return getState() != null;
+    }
+
+    /** 
      * Returns the currently active state, if any.
-     * The the GTS is set, there is always an active transition.
+     * If the GTS is set, there is always an active state.
      */
     public final GraphState getState() {
         return this.state;
@@ -711,6 +721,9 @@ public class SimulatorModel implements Cloneable {
         changeGts();
         if (changeState(state)) {
             changeMatch(null);
+            if (state != null) {
+                changeHostSet(Collections.<String>emptySet());
+            }
         }
         return finish();
     }
@@ -809,6 +822,11 @@ public class SimulatorModel implements Cloneable {
         this.changes.add(Change.GRAMMAR);
         StoredGrammarView grammar = this.grammar;
         changeGrammar(grammar);
+        if (reset) {
+            changeGts(null, false);
+            changeState(null);
+            changeMatch(null);
+        }
         // restrict the selected host graphs to those that are (still)
         // in the grammar
         Set<String> newHostSet = new LinkedHashSet<String>();
@@ -827,11 +845,6 @@ public class SimulatorModel implements Cloneable {
         changeRuleSet(newRuleSet);
         changeControl();
         changeType();
-        if (reset) {
-            changeGts(null, false);
-            changeState(null);
-            changeMatch(null);
-        }
     }
 
     /** Updates the state according to a given grammar. */
@@ -882,12 +895,37 @@ public class SimulatorModel implements Cloneable {
         return this.hostSet;
     }
 
-    /** Changes the currently selected host, based on the graph name.
+    /**
+     * Changes the currently selected host, based on the graph name.
+     * @param name the name of the new host graph; must be either {@code null}
+     * or among the existing host graphs. If {@code null}, the host graph
+     * is reset if there is an active state, or set to either the start graph
+     * or the first graph in the available host graphs.
      * @return if {@code true}, the host was actually changed.
      */
     public final boolean setHost(String name) {
         return setHostSet(name == null ? Collections.<String>emptySet()
                 : Collections.singleton(name));
+        //        Set<String> hostNameSet;
+        //        if (name == null) {
+        //            if (hasState() || getGrammar() == null) {
+        //                hostNameSet = Collections.emptySet();
+        //            } else {
+        //                Set<String> allHostNames = getGrammar().getGraphNames();
+        //                String startGraphName = getGrammar().getStartGraphName();
+        //                if (allHostNames.isEmpty()) {
+        //                    hostNameSet = Collections.<String>emptySet();
+        //                } else {
+        //                    hostNameSet =
+        //                        Collections.singleton(allHostNames.contains(startGraphName)
+        //                                ? startGraphName
+        //                                : allHostNames.iterator().next());
+        //                }
+        //            }
+        //        } else {
+        //            hostNameSet = Collections.singleton(name);
+        //        }
+        //        return setHostSet(hostNameSet);
     }
 
     /** 
@@ -913,6 +951,15 @@ public class SimulatorModel implements Cloneable {
      */
     private final boolean changeHostSet(Collection<String> hostNames) {
         boolean result = false;
+        if (hostNames.isEmpty() && getGrammar() != null && !hasState()) {
+            Set<String> allHostNames = getGrammar().getGraphNames();
+            if (!allHostNames.isEmpty()) {
+                String startGraphName = getGrammar().getStartGraphName();
+                hostNames =
+                    Collections.singleton(allHostNames.contains(startGraphName)
+                            ? startGraphName : allHostNames.iterator().next());
+            }
+        }
         Set<GraphView> newHostSet = new LinkedHashSet<GraphView>();
         hostNames = new HashSet<String>(hostNames);
         for (GraphView oldHost : this.hostSet) {
@@ -956,9 +1003,6 @@ public class SimulatorModel implements Cloneable {
     public final boolean setRule(String ruleName) {
         start();
         changeRule(ruleName);
-        if (ruleName != null) {
-            changeDisplay(DisplayKind.RULE);
-        }
         return finish();
     }
 
@@ -976,7 +1020,8 @@ public class SimulatorModel implements Cloneable {
 
     /** Changes the rule view to a given named rule. */
     private final boolean changeRule(String ruleName) {
-        return changeRuleSet(Collections.singleton(ruleName));
+        return changeRuleSet(ruleName == null ? Collections.<String>emptySet()
+                : Collections.singleton(ruleName));
     }
 
     /** 
@@ -987,6 +1032,13 @@ public class SimulatorModel implements Cloneable {
      */
     private final boolean changeRuleSet(Collection<String> ruleNames) {
         boolean result = false;
+        if (ruleNames.isEmpty() && getGrammar() != null) {
+            Set<String> allRuleNames = getGrammar().getRuleNames();
+            if (!allRuleNames.isEmpty()) {
+                ruleNames =
+                    Collections.singleton(allRuleNames.iterator().next());
+            }
+        }
         Set<RuleView> newRuleSet = new LinkedHashSet<RuleView>();
         ruleNames = new HashSet<String>(ruleNames);
         for (RuleView oldRule : this.ruleSet) {

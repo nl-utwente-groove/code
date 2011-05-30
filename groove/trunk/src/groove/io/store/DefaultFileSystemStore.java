@@ -55,13 +55,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -1185,17 +1185,17 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
 
     /** The name-to-rule map of the source. */
     private final Map<String,AspectGraph> ruleMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-graph map of the source. */
     private final Map<String,AspectGraph> graphMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-types map of the source. */
     private final Map<String,AspectGraph> typeMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-control-program map of the source. */
-    private final Map<String,String> controlMap = new HashMap<String,String>();
+    private final Map<String,String> controlMap = new TreeMap<String,String>();
     /** The name-to-prolog-program map of the source. */
-    private final Map<String,String> prologMap = new HashMap<String,String>();
+    private final Map<String,String> prologMap = new TreeMap<String,String>();
     /** The system properties object of the source. */
     private SystemProperties properties;
     /**

@@ -104,7 +104,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public CtrlView getControlView(String name) {
-        return this.controlMap.get(name);
+        return name == null ? null : this.controlMap.get(name);
     }
 
     /**
@@ -128,7 +128,8 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     public GraphView getGraphView(String name) {
         GraphView result = null;
-        AspectGraph stateGraph = getStore().getGraphs().get(name);
+        AspectGraph stateGraph =
+            name == null ? null : getStore().getGraphs().get(name);
         if (stateGraph != null) {
             result = stateGraph.toGraphView(getProperties());
             TypeGraph type = null;
@@ -148,7 +149,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public PrologView getPrologView(String name) {
-        return this.prologMap.get(name);
+        return name == null ? null : this.prologMap.get(name);
     }
 
     public Set<String> getRuleNames() {
@@ -158,7 +159,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     /** Convenience method to obtain a rule by the string version of its rule name. */
     public RuleView getRuleView(String name) {
         RuleView result = null;
-        AspectGraph ruleGraph = getStore().getRules().get(name);
+        AspectGraph ruleGraph =
+            name == null ? null : getStore().getRules().get(name);
         if (ruleGraph != null) {
             result = ruleGraph.toRuleView(getProperties());
             boolean typed = false;
@@ -184,7 +186,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     public TypeView getTypeView(String name) {
-        AspectGraph typeGraph = getStore().getTypes().get(name);
+        AspectGraph typeGraph =
+            name == null ? null : getStore().getTypes().get(name);
         return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
     }
 

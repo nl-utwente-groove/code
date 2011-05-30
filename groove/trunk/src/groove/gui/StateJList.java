@@ -74,7 +74,8 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE,
+            Change.HOST);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -202,9 +203,11 @@ public class StateJList extends JList implements SimulatorListener {
                 setList(source.getHostSet());
             }
         }
-        if (changes.contains(Change.STATE)) {
+        if (changes.contains(Change.STATE) || changes.contains(Change.HOST)) {
             refreshCurrentState();
-            if (!source.hasHost()) {
+            if (source.hasHost()) {
+                setSelectedValue(source.getHost().getName(), true);
+            } else {
                 setSelectedIndex(0);
             }
         }

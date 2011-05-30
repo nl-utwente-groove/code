@@ -38,14 +38,26 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
+final public class TypeDisplay extends TabbedDisplay implements
+        SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
     public TypeDisplay(Simulator simulator) {
         super(simulator);
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
         installListeners();
+    }
+
+    @Override
+    protected void activateListeners() {
+        super.activateListeners();
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
+    }
+
+    @Override
+    protected void suspendListeners() {
+        super.suspendListeners();
+        getSimulatorModel().removeListener(this);
     }
 
     @Override
@@ -148,6 +160,11 @@ public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
             this.typePanel = new TypePanel(getSimulator());
         }
         return this.typePanel;
+    }
+
+    @Override
+    protected void selectionChanged() {
+        getSimulatorModel().setType(getSelectedName());
     }
 
     @Override

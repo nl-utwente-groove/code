@@ -392,7 +392,7 @@ public class Options implements Cloneable {
     }
 
     /** Returns the save-as action name for a given graph role. */
-    public static final String getSaveStateName(boolean saveAs) {
+    public static final String getSaveStateActionName(boolean saveAs) {
         return getSaveActionName("State", saveAs);
     }
 
@@ -474,6 +474,10 @@ public class Options implements Cloneable {
     public static final KeyStroke BACK_KEY = KeyStroke.getKeyStroke("alt LEFT");
     /** Cancel keystroke */
     public static final KeyStroke CANCEL_KEY = KeyStroke.getKeyStroke("ESCAPE");
+
+    /** Cancel keystroke */
+    public static final KeyStroke CLOSE_KEY =
+        KeyStroke.getKeyStroke("control W");
 
     /**
      * Copy keystroke

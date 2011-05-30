@@ -535,12 +535,6 @@ public class JEdgeView extends EdgeView {
             this.lineWidth = lineWidth;
             // if the specified background is null, use the graph background
             this.defaultBackground = jGraph.getBackground();
-            //            Object[] extraLabels =
-            //                GraphConstants.getExtraLabels(theView.getCell().getAttributes());
-            //            if (extraLabels != null) {
-            //                GraphConstants.setExtraLabels(theView.getAllAttributes(),
-            //                    extraLabels);
-            //            }
             return this;
         }
 
