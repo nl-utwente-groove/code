@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
@@ -28,6 +29,7 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
@@ -137,6 +139,10 @@ final public class StateDisplay extends TabbedDisplay implements
             this.statePanel = null;
             removeMainPanel();
         }
+        getEnableButton().setSelected(
+            source.hasHost()
+                && source.getHost().equals(
+                    source.getGrammar().getStartGraphView()));
         activateListeners();
     }
 
@@ -171,19 +177,47 @@ final public class StateDisplay extends TabbedDisplay implements
 
     private JToolBar getListToolBar() {
         if (this.listToolBar == null) {
-            this.listToolBar = getSimulator().createToolBar();
-            getList().fillToolBar(this.listToolBar);
+            this.listToolBar = Options.createToolBar();
+            fillListToolBar();
         }
         return this.listToolBar;
+    }
+
+    /** Creates a tool bar for the states list. */
+    private void fillListToolBar() {
+        JToolBar bar = this.listToolBar;
+        bar.removeAll();
+        bar.add(getActions().getNewHostAction());
+        if (getSimulatorModel().hasHost()) {
+            bar.addSeparator();
+            bar.add(getActions().getCopyHostAction());
+            bar.add(getActions().getDeleteHostAction());
+            bar.add(getActions().getRenameHostAction());
+            bar.addSeparator();
+            bar.add(getEnableButton());
+        } else {
+            bar.add(getActions().getSaveGraphAction(GraphRole.HOST));
+            bar.addSeparator();
+            bar.add(getActions().getBackAction());
+            bar.add(getActions().getForwardAction());
+        }
     }
 
     /**
      * Refreshes the tool bar of the label list.
      */
     private void refreshToolbars() {
-        getListToolBar().removeAll();
-        getList().fillToolBar(getListToolBar());
+        fillListToolBar();
         getListPanel().repaint();
+    }
+
+    /** The type enable button. */
+    private JToggleButton getEnableButton() {
+        if (this.enableButton == null) {
+            this.enableButton =
+                Options.createToggleButton(getActions().getSetStartGraphAction());
+        }
+        return this.enableButton;
     }
 
     @Override
@@ -215,4 +249,6 @@ final public class StateDisplay extends TabbedDisplay implements
     private HostPanel hostPanel;
     /** Panel displaying the current state. */
     private StatePanel statePanel;
+    /** The type enable button. */
+    private JToggleButton enableButton;
 }

@@ -761,21 +761,18 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Creates, sets and returns a new label tree instance for this jgraph.
-     */
-    public LabelTree initLabelTree() {
-        this.labelTree = new LabelTree(this);
-        return this.labelTree;
-    }
-
-    /**
      * Lazily creates and returns the label list associated with this jgraph.
      */
     public LabelTree getLabelTree() {
         if (this.labelTree == null) {
-            initLabelTree();
+            this.labelTree = createLabelTree();
         }
         return this.labelTree;
+    }
+
+    /** Callback method to create the label tree. */
+    protected LabelTree createLabelTree() {
+        return new LabelTree(this, true);
     }
 
     /** 
@@ -1074,8 +1071,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             ButtonGroup modeButtonGroup = new ButtonGroup();
             for (JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
                 JToggleButton button = new JToggleButton(getModeAction(any));
-                button.setFocusable(false);
-                button.setText(null);
+                Options.setLAF(button);
                 button.setToolTipText(any.getName());
                 button.setEnabled(isEnabled());
                 this.modeButtonMap.put(any, button);

@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.view.RuleView;
@@ -16,18 +17,21 @@ import java.util.List;
 public class EnableRuleAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
     public EnableRuleAction(Simulator simulator) {
-        super(simulator, Options.DISABLE_RULE_ACTION_NAME, null);
+        super(simulator, Options.DISABLE_RULE_ACTION_NAME, Icons.ENABLE_ICON);
     }
 
     @Override
     public void refresh() {
         boolean ruleSelected = getModel().getRule() != null;
         setEnabled(ruleSelected && getModel().getStore().isModifiable());
+        String description;
         if (ruleSelected && getModel().getRule().isEnabled()) {
-            putValue(NAME, Options.DISABLE_RULE_ACTION_NAME);
+            description = Options.DISABLE_RULE_ACTION_NAME;
         } else {
-            putValue(NAME, Options.ENABLE_RULE_ACTION_NAME);
+            description = Options.ENABLE_RULE_ACTION_NAME;
         }
+        putValue(NAME, description);
+        putValue(SHORT_DESCRIPTION, description);
     }
 
     @Override

@@ -61,9 +61,10 @@ public class ExportAction extends SimulatorAction {
 
     /** Returns the export action name for a given JGraph being saved. */
     private String getActionName(GraphRole role) {
-        String type =
-            role == GraphRole.HOST && !getModel().hasHost() ? "State"
-                    : role.getDescription();
+        boolean isState =
+            getSimulator() != null && role == GraphRole.HOST
+                && !getModel().hasHost();
+        String type = isState ? "State" : role.getDescription();
         return "Export " + type + " ...";
     }
 

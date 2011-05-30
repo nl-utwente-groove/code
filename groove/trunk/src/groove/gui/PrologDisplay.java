@@ -28,8 +28,7 @@ import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
 import groove.gui.DisplaysPanel.DisplayKind;
-import groove.io.FileType;
-import groove.io.GrooveFileChooser;
+import groove.gui.action.SimulatorAction;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologQuery;
 import groove.prolog.QueryResult;
@@ -108,24 +107,68 @@ public class PrologDisplay extends JPanel implements Display {
      * 
      * @author Michiel Hendriks
      */
-    public class PrologFile {
+    public static class PrologFile {
+        /** Constructs a prolog editor from a given file. */
+        public PrologFile(File file) {
+            this.file = file;
+            this.dirty = file == null;
+            this.editor = new RSyntaxTextArea(25, 100);
+            Font editFont = new Font("Monospaced", Font.PLAIN, 12);
+            this.editor.setFont(editFont);
+            this.editor.setText("");
+            this.editor.setEditable(true);
+            this.editor.setEnabled(true);
+            this.editor.setTabSize(4);
+            this.pane = new RTextScrollPane(this.editor, true);
+        }
+
+        /** Indicates if the editor is currently dirty. */
+        public final boolean isDirty() {
+            return this.dirty;
+        }
+
+        /** Changes the dirty status of the editor. */
+        public final void setDirty(boolean dirty) {
+            this.dirty = dirty;
+        }
+
+        /** Returns the file from which the editor was loaded. */
+        public final File getFile() {
+            return this.file;
+        }
+
+        /** Changes the file to which the editor should be saved. */
+        public final void setFile(File file) {
+            this.file = file;
+        }
+
+        /** Returns the editor panel. */
+        public final RSyntaxTextArea getEditor() {
+            return this.editor;
+        }
+
+        /** Returns the scroll pane of the editor. */
+        public final RTextScrollPane getPane() {
+            return this.pane;
+        }
+
         /**
          * Editor contents has changed
          */
-        boolean dirty;
+        private boolean dirty;
         /**
          * The origin file, can be null when it is a new file
          */
-        File file;
+        private File file;
         /**
          * The associated editor
          */
-        RSyntaxTextArea editor;
+        private final RSyntaxTextArea editor;
         /**
          * The panel the editor is in. This is needed in order to remove the
          * editor from the tab when a file is closed
          */
-        RTextScrollPane pane;
+        private final RTextScrollPane pane;
     }
 
     /**
@@ -172,11 +215,6 @@ public class PrologDisplay extends JPanel implements Display {
      * 
      */
     protected JButton nextResultBtn;
-
-    /**
-     * 
-     */
-    protected JButton consultBtn;
 
     /**
      * 
@@ -250,8 +288,7 @@ public class PrologDisplay extends JPanel implements Display {
         this.sim = simulator;
         setLayout(new BorderLayout());
 
-        JToolBar toolBar = new JToolBar();
-        toolBar.setFloatable(false);
+        JToolBar toolBar = Options.createToolBar();
 
         this.query = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
         this.query.setFont(editFont);
@@ -274,18 +311,15 @@ public class PrologDisplay extends JPanel implements Display {
         queryPane.add(this.query, BorderLayout.CENTER);
         queryPane.add(createExecuteButton(), BorderLayout.EAST);
 
-        toolBar = new JToolBar();
-        toolBar.setFloatable(false);
+        toolBar = Options.createToolBar();
         toolBar.add(new JLabel("User code:"));
         toolBar.addSeparator();
         toolBar.add(createNewButton());
-        toolBar.add(createLoadButton());
+        toolBar.add(createEditButton());
         toolBar.add(createSaveButton());
         toolBar.add(getCloseButton());
         toolBar.addSeparator();
-
-        this.consultBtn = createConsultButton();
-        toolBar.add(this.consultBtn);
+        toolBar.add(createConsultButton());
 
         this.userCodeConsulted = new JLabel("");
         this.userCodeConsulted.setFont(this.userCodeConsulted.getFont().deriveFont(
@@ -383,174 +417,238 @@ public class PrologDisplay extends JPanel implements Display {
      * Creates the New button.
      */
     private JButton createNewButton() {
-        JButton newButton = new JButton(Icons.NEW_ICON);
-        newButton.setToolTipText("Create a new prolog file");
-        newButton.addActionListener(new ActionListener() {
+        return Options.createButton(getNewPrologAction());
+    }
 
-            public void actionPerformed(ActionEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        createEditor(null);
-                    }
-                });
-            }
-        });
-        return newButton;
+    /** Constructs and returns a new prolog creation action for a given simulator. */
+    public NewPrologAction getNewPrologAction() {
+        if (this.newPrologAction == null) {
+            this.newPrologAction = new NewPrologAction(getSimulator());
+        }
+        return this.newPrologAction;
+    }
+
+    private NewPrologAction newPrologAction;
+
+    /** Action that creates a new Prolog file. */
+    public static class NewPrologAction extends SimulatorAction {
+        /** Constructs an instance of this action for a given simulator. */
+        public NewPrologAction(Simulator simulator) {
+            super(simulator, Options.NEW_PROLOG_ACTION_NAME,
+                Icons.NEW_PROLOG_ICON);
+        }
+
+        @Override
+        public boolean execute() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    getPrologPanel().createEditor(null);
+                }
+            });
+            return false;
+        }
     }
 
     /**
      * Creates the load button.
      */
-    private JButton createLoadButton() {
-        JButton loadButton = new JButton(Icons.OPEN_ICON);
-        loadButton.setToolTipText("Open a prolog file");
-        loadButton.addActionListener(new ActionListener() {
+    private JButton createEditButton() {
+        return Options.createButton(getEditPrologAction());
+    }
 
-            public void actionPerformed(ActionEvent e) {
-                getPrologFileChooser().setMultiSelectionEnabled(true);
-                int result =
-                    getPrologFileChooser().showOpenDialog(
-                        PrologDisplay.this.sim.getFrame());
-                // now load, if so required
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    final File[] files =
-                        getPrologFileChooser().getSelectedFiles();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            for (File fl : files) {
-                                createEditor(fl, true);
-                            }
-                            consultUserCode();
+    /** Constructs and returns a new prolog creation action for a given simulator. */
+    public EditPrologAction getEditPrologAction() {
+        if (this.editPrologAction == null) {
+            this.editPrologAction = new EditPrologAction(getSimulator());
+        }
+        return this.editPrologAction;
+    }
+
+    private EditPrologAction editPrologAction;
+
+    /** Action that creates a new Prolog file. */
+    public static class EditPrologAction extends SimulatorAction {
+        /** Constructs an instance of this action for a given simulator. */
+        public EditPrologAction(Simulator simulator) {
+            super(simulator, Options.EDIT_PROLOG_ACTION_NAME,
+                Icons.EDIT_PROLOG_ICON);
+        }
+
+        @Override
+        public boolean execute() {
+            getPrologFileChooser().setMultiSelectionEnabled(true);
+            int result =
+                getPrologFileChooser().showOpenDialog(getPrologPanel());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION) {
+                final File[] files = getPrologFileChooser().getSelectedFiles();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        for (File fl : files) {
+                            getPrologPanel().createEditor(fl, true);
                         }
-                    });
-                }
+                        getPrologPanel().consultUserCode();
+                    }
+                });
             }
-        });
-        return loadButton;
+            return false;
+        }
     }
 
     /**
      * Creates the save button.
      */
     private JButton createSaveButton() {
-        JButton saveButton = new JButton(Icons.SAVE_ICON);
-        saveButton.setToolTipText("Save the current prolog file");
-        saveButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component comp =
-                    PrologDisplay.this.prologEditors.getSelectedComponent();
-                if (comp == null) {
-                    return;
-                }
-                PrologFile proFile = null;
-                for (PrologFile pf : PrologDisplay.this.prologFiles) {
-                    if (pf.pane == comp) {
-                        proFile = pf;
-                    }
-                }
-                if (proFile == null) {
-                    return;
-                }
+        return Options.createButton(getSavePrologAction());
+    }
 
-                // select a filename
-                if (proFile.file == null) {
-                    JFileChooser fc = getPrologFileChooser();
-                    fc.setMultiSelectionEnabled(false);
-                    fc.setSelectedFile(null);
-                    do {
-                        int result =
-                            fc.showSaveDialog(PrologDisplay.this.sim.getFrame());
-                        if (result == JFileChooser.APPROVE_OPTION) {
-                            File fl = getPrologFileChooser().getSelectedFile();
-                            if (fl.exists()) {
-                                int overwrite =
-                                    JOptionPane.showConfirmDialog(
-                                        PrologDisplay.this.sim.getFrame(),
-                                        "Overwrite existing file \""
-                                            + fl.getName()
-                                            + "\"?"
-                                            + (PrologDisplay.this.prologFileMap.containsKey(fl)
-                                                    ? "\nThis will also discard the current editor for this file."
-                                                    : ""));
-                                if (overwrite == JOptionPane.NO_OPTION) {
-                                    continue;
-                                } else if (overwrite == JOptionPane.CANCEL_OPTION) {
-                                    return;
-                                }
-                            }
+    /** Constructs and returns a new prolog creation action for a given simulator. */
+    public SavePrologAction getSavePrologAction() {
+        if (this.savePrologAction == null) {
+            this.savePrologAction = new SavePrologAction(getSimulator());
+        }
+        return this.savePrologAction;
+    }
 
-                            if (PrologDisplay.this.prologFileMap.containsKey(fl)) {
-                                PrologFile other =
-                                    PrologDisplay.this.prologFileMap.get(fl);
-                                PrologDisplay.this.prologEditors.remove(other.pane);
-                                PrologDisplay.this.prologFileMap.remove(fl);
-                                PrologDisplay.this.prologFiles.remove(other);
-                            }
-                            proFile.file = fl;
-                            PrologDisplay.this.prologFileMap.put(fl, proFile);
-                            break;
-                        }
-                    } while (true);
-                }
+    private SavePrologAction savePrologAction;
 
-                try {
-                    proFile.editor.write(new FileWriter(proFile.file));
-                    proFile.dirty = false;
-                    int index =
-                        PrologDisplay.this.prologEditors.indexOfComponent(proFile.pane);
-                    if (index > -1) {
-                        PrologDisplay.this.prologEditors.setTitleAt(index,
-                            proFile.file.getName());
-                    }
-                } catch (IOException eex) {
-                    eex.printStackTrace();
-                }
-                return;
+    /** Action that saves all Prolog files. */
+    public static class SavePrologAction extends SimulatorAction {
+        /** Constructs an instance of this action for a given simulator. */
+        public SavePrologAction(Simulator simulator) {
+            super(simulator, Options.SAVE_ACTION_NAME, Icons.SAVE_ICON);
+        }
+
+        @Override
+        public boolean execute() {
+            Component comp =
+                getPrologPanel().prologEditors.getSelectedComponent();
+            if (comp == null) {
+                return false;
             }
-        });
-        return saveButton;
+            PrologFile proFile = null;
+            for (PrologFile pf : getPrologPanel().prologFiles) {
+                if (pf.pane == comp) {
+                    proFile = pf;
+                }
+            }
+            if (proFile == null) {
+                return false;
+            }
+
+            // select a filename
+            if (proFile.getFile() == null) {
+                JFileChooser fc = getPrologFileChooser();
+                fc.setMultiSelectionEnabled(false);
+                fc.setSelectedFile(null);
+                do {
+                    int result = fc.showSaveDialog(getPrologPanel());
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        File fl = getPrologFileChooser().getSelectedFile();
+                        if (fl.exists()) {
+                            int overwrite =
+                                JOptionPane.showConfirmDialog(
+                                    getPrologPanel(),
+                                    "Overwrite existing file \""
+                                        + fl.getName()
+                                        + "\"?"
+                                        + (getPrologPanel().prologFileMap.containsKey(fl)
+                                                ? "\nThis will also discard the current editor for this file."
+                                                : ""));
+                            if (overwrite == JOptionPane.NO_OPTION) {
+                                continue;
+                            } else if (overwrite == JOptionPane.CANCEL_OPTION) {
+                                break;
+                            }
+                        }
+
+                        if (getPrologPanel().prologFileMap.containsKey(fl)) {
+                            PrologFile other =
+                                getPrologPanel().prologFileMap.get(fl);
+                            getPrologPanel().prologEditors.remove(other.pane);
+                            getPrologPanel().prologFileMap.remove(fl);
+                            getPrologPanel().prologFiles.remove(other);
+                        }
+                        proFile.setFile(fl);
+                        getPrologPanel().prologFileMap.put(fl, proFile);
+                        break;
+                    }
+                } while (true);
+            }
+
+            try {
+                proFile.getEditor().write(new FileWriter(proFile.file));
+                proFile.setDirty(false);
+                int index =
+                    getPrologPanel().prologEditors.indexOfComponent(proFile.pane);
+                if (index > -1) {
+                    getPrologPanel().prologEditors.setTitleAt(index,
+                        proFile.file.getName());
+                }
+            } catch (IOException eex) {
+                eex.printStackTrace();
+            }
+            return false;
+        }
     }
 
     /**
      * Creates the close button.
      */
     private JButton getCloseButton() {
-        JButton closeButton = new JButton(Icons.DELETE_ICON);
-        closeButton.setToolTipText("Close the current prolog file");
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component comp =
-                    PrologDisplay.this.prologEditors.getSelectedComponent();
-                if (comp == null) {
-                    return;
-                }
-                PrologFile proFile = null;
-                for (PrologFile pf : PrologDisplay.this.prologFiles) {
-                    if (pf.pane == comp) {
-                        proFile = pf;
-                    }
-                }
-                if (proFile == null) {
-                    return;
-                }
-                if (proFile.dirty) {
-                    int overwrite =
-                        JOptionPane.showConfirmDialog(
-                            PrologDisplay.this.sim.getFrame(),
-                            "You have got unsaved changes. Are you sure you want to close this file and discard the changes?",
-                            "Discard changes?", JOptionPane.YES_NO_OPTION);
-                    if (overwrite == JOptionPane.NO_OPTION) {
-                        return;
-                    }
-                }
+        return Options.createButton(getDeletePrologAction());
+    }
 
-                PrologDisplay.this.prologEditors.remove(proFile.pane);
-                PrologDisplay.this.prologFileMap.remove(proFile.file);
-                PrologDisplay.this.prologFiles.remove(proFile);
-                consultUserCode();
+    /** Constructs and returns a prolog delete action for this display. */
+    public DeletePrologAction getDeletePrologAction() {
+        if (this.deletePrologAction == null) {
+            this.deletePrologAction = new DeletePrologAction(getSimulator());
+        }
+        return this.deletePrologAction;
+    }
+
+    private DeletePrologAction deletePrologAction;
+
+    /** Action that deletes a Prolog program. */
+    public static class DeletePrologAction extends SimulatorAction {
+        /** Constructs an instance of this action for a given simulator. */
+        public DeletePrologAction(Simulator simulator) {
+            super(simulator, Options.DELETE_ACTION_NAME, Icons.DELETE_ICON);
+        }
+
+        @Override
+        public boolean execute() {
+            Component comp =
+                getPrologPanel().prologEditors.getSelectedComponent();
+            if (comp == null) {
+                return false;
             }
-        });
-        return closeButton;
+            PrologFile proFile = null;
+            for (PrologFile pf : getPrologPanel().prologFiles) {
+                if (pf.pane == comp) {
+                    proFile = pf;
+                }
+            }
+            if (proFile == null) {
+                return false;
+            }
+            if (proFile.isDirty()) {
+                int overwrite =
+                    JOptionPane.showConfirmDialog(
+                        getPrologPanel(),
+                        "You have got unsaved changes. Are you sure you want to close this file and discard the changes?",
+                        "Discard changes?", JOptionPane.YES_NO_OPTION);
+                if (overwrite == JOptionPane.NO_OPTION) {
+                    return false;
+                }
+            }
+
+            getPrologPanel().prologEditors.remove(proFile.pane);
+            getPrologPanel().prologFileMap.remove(proFile.file);
+            getPrologPanel().prologFiles.remove(proFile);
+            getPrologPanel().consultUserCode();
+            return false;
+        }
     }
 
     /**
@@ -679,7 +777,7 @@ public class PrologDisplay extends JPanel implements Display {
      */
     public JPanel getListPanel() {
         if (this.prologListPanel == null) {
-            JToolBar toolBar = getSimulator().createToolBar();
+            JToolBar toolBar = Options.createToolBar();
             getPrologList().fillToolBar(toolBar);
             JScrollPane prologPane = new JScrollPane(getPrologList()) {
                 @Override
@@ -729,22 +827,12 @@ public class PrologDisplay extends JPanel implements Display {
             return;
         }
 
-        final PrologFile proFile = new PrologFile();
-        proFile.file = file;
-        proFile.dirty = file == null;
-        proFile.editor = new RSyntaxTextArea();
-        Font editFont = new Font("Monospaced", Font.PLAIN, 12);
-        proFile.editor.setFont(editFont);
-        proFile.editor.setText("");
-        proFile.editor.setEditable(true);
-        proFile.editor.setEnabled(true);
-        proFile.editor.setTabSize(4);
+        final PrologFile proFile = new PrologFile(file);
         String title = "* untitled.pro";
         if (file != null) {
             title = file.getName();
             this.prologFileMap.put(file, proFile);
         }
-        proFile.pane = new RTextScrollPane(300, 300, proFile.editor, true);
         this.prologFiles.add(proFile);
         this.prologEditors.addTab(title, proFile.pane);
         this.prologEditors.setSelectedComponent(proFile.pane);
@@ -752,7 +840,7 @@ public class PrologDisplay extends JPanel implements Display {
         if (file != null) {
             try {
                 FileReader fis = new FileReader(file);
-                proFile.editor.read(fis, null);
+                proFile.getEditor().read(fis, null);
                 if (delayLoading) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -765,20 +853,20 @@ public class PrologDisplay extends JPanel implements Display {
             }
         }
 
-        proFile.editor.getDocument().addDocumentListener(
+        proFile.getEditor().getDocument().addDocumentListener(
             new DocumentListener() {
 
                 /**
                  * Update the tab title
                  */
                 protected void updateTab() {
-                    if (proFile.dirty) {
+                    if (proFile.isDirty()) {
                         return;
                     }
-                    proFile.dirty = true;
+                    proFile.setDirty(true);
                     String title = "untitled.pro";
-                    if (proFile.file != null) {
-                        title = proFile.file.getName();
+                    if (proFile.getFile() != null) {
+                        title = proFile.getFile().getName();
                     }
                     int index =
                         PrologDisplay.this.prologEditors.indexOfComponent(proFile.pane);
@@ -801,17 +889,6 @@ public class PrologDisplay extends JPanel implements Display {
                     updateTab();
                 }
             });
-    }
-
-    /**
-     * Return a file chooser for prolog files
-     */
-    protected JFileChooser getPrologFileChooser() {
-        if (this.prologFileChooser == null) {
-            this.prologFileChooser =
-                GrooveFileChooser.getFileChooser(FileType.PROLOG_FILTER);
-        }
-        return this.prologFileChooser;
     }
 
     /**

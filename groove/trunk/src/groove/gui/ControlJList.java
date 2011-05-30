@@ -19,13 +19,15 @@ package groove.gui;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
+import groove.gui.action.SimulatorAction;
+import groove.gui.jgraph.JAttr;
+import groove.trans.GraphGrammar;
 import groove.view.CtrlView;
+import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -38,8 +40,6 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -54,8 +54,8 @@ public class ControlJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected ControlJList(final Simulator simulator) {
-        this.simulator = simulator;
+    protected ControlJList(ControlDisplay display) {
+        this.display = display;
         this.setEnabled(false);
         this.setCellRenderer(new MyCellRenderer());
         installListeners();
@@ -124,28 +124,6 @@ public class ControlJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    /** Creates a tool bar for the rule tree. */
-    void fillToolBar(JToolBar result) {
-        result.add(getActions().getNewControlAction());
-        result.addSeparator();
-        result.add(getActions().getCopyControlAction());
-        result.add(getActions().getDeleteControlAction());
-        result.add(getActions().getRenameControlAction());
-        result.addSeparator();
-        result.add(getEnableButton());
-    }
-
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                new JToggleButton(getActions().getEnableControlAction());
-            this.enableButton.setText(null);
-            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
-            this.enableButton.setFocusable(false);
-        }
-        return this.enableButton;
-    }
-
     /**
      * Creates a popup menu.
      */
@@ -197,11 +175,8 @@ public class ControlJList extends JList implements SimulatorListener {
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
-            getEnableButton().setSelected(false);
         } else {
             setSelectedValue(selection.getName(), true);
-            getEnableButton().setSelected(
-                selection.getName().equals(getGrammar().getControlName()));
         }
     }
 
@@ -214,7 +189,7 @@ public class ControlJList extends JList implements SimulatorListener {
 
     /** Returns the simulator to which the state list belongs. */
     private Simulator getSimulator() {
-        return this.simulator;
+        return this.display.getSimulator();
     }
 
     /** Returns the simulator to which the state list belongs. */
@@ -227,13 +202,7 @@ public class ControlJList extends JList implements SimulatorListener {
         return getSimulator().getActions();
     }
 
-    /**
-     * The simulator to which this directory belongs.
-     * @invariant simulator != null
-     */
-    private final Simulator simulator;
-    /** The type enable button. */
-    private JToggleButton enableButton;
+    private final ControlDisplay display;
     private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
@@ -245,9 +214,6 @@ public class ControlJList extends JList implements SimulatorListener {
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
-
-    /** The background colour of a selected cell if the list does not have focus. */
-    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
 
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
@@ -277,8 +243,11 @@ public class ControlJList extends JList implements SimulatorListener {
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (ControlJList.this.isEnabled() && cellSelected) {
-                    getActions().getEnableControlAction().execute();
+                SimulatorAction editAction =
+                    getActions().getEditControlAction();
+                if (ControlJList.this.isEnabled() && editAction.isEnabled()
+                    && cellSelected) {
+                    editAction.execute();
                 }
             }
         }
@@ -314,26 +283,35 @@ public class ControlJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            if (isSelected && !ControlJList.this.isFocusOwner()) {
-                Color foreground = Color.BLACK;
-                Color background = SELECTION_NON_FOCUS_COLOR;
-                if (getSimulatorModel().getGts() == null) {
-                    foreground = Color.WHITE;
-                    background = background.darker();
-                }
-                result.setForeground(foreground);
-                result.setBackground(background);
+            String ctrlName = value.toString();
+            boolean isActiveControl =
+                ctrlName.equals(getGrammar().getControlName());
+            boolean error;
+            try {
+                GraphGrammar grammar =
+                    getSimulatorModel().getGrammar().toModel();
+                error =
+                    getGrammar().getControlView(ctrlName).hasErrors(grammar);
+            } catch (FormatException exc) {
+                error =
+                    isActiveControl && !getGrammar().getCtrlErrors().isEmpty();
             }
+            setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
+            setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
+            setText(ControlJList.this.display.getLabelText(ctrlName));
             // set tool tips and special formats
-            if (value.toString().equals(getGrammar().getControlName())) {
-                setFont(getFont().deriveFont(Font.BOLD));
-                setToolTipText("Enabled control program; doubleclick to disable");
+            String tip;
+            if (isActiveControl) {
+                tip = "Active control program";
             } else {
-                setToolTipText("Disabled control program; doubleclick to enable");
+                tip = "Inactive control program";
+            }
+            if (getActions().getEditControlAction().isEnabled()) {
+                tip += "; doubleclick to edit";
             }
             return result;
         }
 
-        private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
+        private final Border emptyBorder = new EmptyBorder(1, 3, 1, 0);
     }
 }

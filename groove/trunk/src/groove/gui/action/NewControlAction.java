@@ -24,7 +24,6 @@ public class NewControlAction extends SimulatorAction {
             try {
                 if (newName != null) {
                     getModel().doAddControl(newName, "");
-                    getControlPanel().setDirty(true);
                     getControlPanel().startEditing();
                 }
             } catch (IOException exc) {

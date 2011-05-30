@@ -22,6 +22,7 @@ import groove.util.Groove;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -265,8 +266,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             }
         }
-        insertTab(null, null, display.getPanel(), myKind.getName(), index);
+        insertTab(null, null, display.getPanel(), myKind.getTip(), index);
         JLabel tabComponent = new JLabel(myKind.getTabIcon());
+        tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
         // now add the corresponding list panel
@@ -289,7 +291,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
         if (tabbedPane != null) {
             tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
-                myKind.getName(), index);
+                myKind.getTip(), index);
         }
         setSelectedComponent(display.getPanel());
     }
@@ -361,9 +363,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     private void setTabEnabled(int index, boolean enabled) {
-        Component label = getTabComponentAt(index);
+        JLabel label = (JLabel) getTabComponentAt(index);
         if (label != null) {
+            label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);
+            label.setText(enabled
+                    ? ((Display) getComponentAt(index)).getKind().getTitle()
+                    : null);
         }
     }
 
@@ -432,30 +438,33 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public static enum DisplayKind {
         /** State panel. */
         HOST(Icons.GRAPH_FRAME_ICON, Icons.GRAPH_FILE_ICON,
-                Icons.EDIT_GRAPH_ICON, Icons.GRAPH_LIST_ICON,
+                Icons.EDIT_GRAPH_ICON, Icons.GRAPH_LIST_ICON, "Graphs",
                 "Current graph state"),
         /** Rule panel. */
         RULE(Icons.RULE_FRAME_ICON, Icons.RULE_FILE_ICON, Icons.EDIT_RULE_ICON,
-                Icons.RULE_LIST_ICON, "Selected rule"),
+                Icons.RULE_LIST_ICON, "Rules", "Selected rule"),
         /** LTS panel. */
-        LTS(Icons.LTS_FRAME_ICON, null, null, null,
+        LTS(Icons.LTS_FRAME_ICON, null, null, null, "State space",
                 "Labelled transition system"),
         /** Type panel. */
         TYPE(Icons.TYPE_FRAME_ICON, Icons.TYPE_FILE_ICON, Icons.EDIT_TYPE_ICON,
-                Icons.TYPE_LIST_ICON, "Type graph"),
+                Icons.TYPE_LIST_ICON, "Types", "Type graphs"),
         /** Control panel. */
         CONTROL(Icons.CONTROL_FRAME_ICON, Icons.CONTROL_FILE_ICON,
-                Icons.EDIT_CONTROL_ICON, null, "Control specification"),
+                Icons.EDIT_CONTROL_ICON, null, "Control",
+                "Control specifications"),
         /** Prolog panel. */
-        PROLOG(Icons.PROLOG_FRAME_ICON, null, Icons.EDIT_ICON, null, "Prolog");
+        PROLOG(Icons.PROLOG_FRAME_ICON, null, Icons.EDIT_ICON, null, "Prolog",
+                "Prolog programs");
 
         private DisplayKind(ImageIcon tabIcon, ImageIcon frameIcon,
-                ImageIcon editIcon, ImageIcon listIcon, String tip) {
+                ImageIcon editIcon, ImageIcon listIcon, String title, String tip) {
             this.tabIcon = tabIcon;
             this.frameIcon = frameIcon;
             this.editIcon = editIcon;
             this.listIcon = listIcon;
-            this.name = tip;
+            this.title = title;
+            this.tip = tip;
         }
 
         /** Returns the icon that should be used on the tab for a display of this kind. */
@@ -478,9 +487,14 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             return this.editIcon;
         }
 
-        /** Returns name for this tab kind. */
-        public final String getName() {
-            return this.name;
+        /** Returns the title of this display. */
+        public final String getTitle() {
+            return this.title;
+        }
+
+        /** Returns the tool tip description for this display. */
+        public final String getTip() {
+            return this.tip;
         }
 
         /** Returns the graph role corresponding to this tab kind, if any. */
@@ -492,6 +506,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         private final ImageIcon frameIcon;
         private final ImageIcon editIcon;
         private final ImageIcon listIcon;
-        private final String name;
+        private final String title;
+        private final String tip;
     }
 }

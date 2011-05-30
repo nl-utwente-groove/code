@@ -40,10 +40,19 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.jgraph.graph.GraphConstants;
@@ -55,12 +64,210 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
  * @version $Revision$
  */
 public class Options implements Cloneable {
+    /** Creates an initialised options object. */
+    public Options() {
+        addCheckbox(SHOW_NODE_IDS_OPTION);
+        addCheckbox(SHOW_ANCHORS_OPTION);
+        addCheckbox(SHOW_ASPECTS_OPTION);
+        addCheckbox(SHOW_REMARKS_OPTION);
+        addCheckbox(SHOW_BACKGROUND_OPTION);
+        addCheckbox(SHOW_VALUE_NODES_OPTION);
+        addCheckbox(SHOW_STATE_IDS_OPTION);
+        addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
+        addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
+        addBehaviour(DELETE_CONTROL_OPTION, 2);
+        addBehaviour(DELETE_GRAPH_OPTION, 2);
+        addBehaviour(DELETE_RULE_OPTION, 2);
+        addBehaviour(DELETE_TYPE_OPTION, 2);
+        addBehaviour(REPLACE_RULE_OPTION, 3);
+        addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
+        addBehaviour(STOP_SIMULATION_OPTION, 2);
+        addBehaviour(START_SIMULATION_OPTION, 3);
+        addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
+    }
+
+    /**
+     * Adds a checkbox item with a given name to the options, and returns the
+     * associated (fresh) menu item.
+     * @param name the name of the checkbox menu item to add
+     * @return the added {@link javax.swing.JCheckBoxMenuItem}
+     */
+    private final JCheckBoxMenuItem addCheckbox(final String name) {
+        JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
+        result.setSelected(userPrefs.getBoolean(name,
+            boolOptionDefaults.get(name)));
+        this.itemMap.put(name, result);
+        result.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                userPrefs.putBoolean(name,
+                    e.getStateChange() == ItemEvent.SELECTED);
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Adds a behaviour menu with a given name to the options, and returns the
+     * associated (fresh) menu item.
+     * @param name the name of the behaviour menu item to add
+     * @return the added {@link javax.swing.JCheckBoxMenuItem}
+     */
+    private final BehaviourOption addBehaviour(final String name,
+            int optionCount) {
+        BehaviourOption result = new BehaviourOption(name, optionCount);
+        result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
+        result.addPropertyChangeListener(BehaviourOption.SELECTION,
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+                    userPrefs.putInt(name, (Integer) e.getNewValue());
+                }
+            });
+        this.itemMap.put(name, result);
+        return result;
+    }
+
+    /**
+     * Returns the menu item associated with a given name, if any.
+     * @param name the name of the checkbox item looked for
+     * @return the {@link javax.swing.JCheckBoxMenuItem} with the given name if
+     *         it exists, or <tt>null</tt> otherwise
+     */
+    public JMenuItem getItem(String name) {
+        return this.itemMap.get(name);
+    }
+
+    /**
+     * Returns the set of menu items available.
+     * @return the set of menu items available
+     */
+    public Collection<JMenuItem> getItemSet() {
+        return this.itemMap.values();
+    }
+
+    /**
+     * Returns the current selection value of a given options name.
+     * @param name the name of the checkbox menu item for which to check its
+     *        value
+     * @return the value of the checkbox item with the given name
+     */
+    public boolean isSelected(String name) {
+        return this.itemMap.get(name).isSelected();
+    }
+
+    /**
+     * Sets the selection of a given option.
+     * @param name the name of the menu item for which to set the value
+     * @param selected the new selection value of the menu item
+     */
+    public void setSelected(String name, boolean selected) {
+        this.itemMap.get(name).setSelected(selected);
+    }
+
+    /**
+     * Returns the current value of a given options name. If the option is a
+     * checkbox menu, the value is <code>0</code> for <code>false</code> and
+     * <code>1</code> for <code>true</code>.
+     * @param name the name of the checkbox menu item for which to get the value
+     * @return the current value of the checkbox item with the given name
+     */
+    public int getValue(String name) {
+        JMenuItem item = this.itemMap.get(name);
+        if (item instanceof BehaviourOption) {
+            return ((BehaviourOption) item).getValue();
+        } else {
+            return item.isSelected() ? 1 : 0;
+        }
+    }
+
+    /**
+     * Sets the value of a given option. If the option is a checkbox menu item,
+     * it is set to <code>true</code> for any value greater than 0.
+     * @param name the name of the menu item for which to set the value
+     * @param value the new value of the menu item
+     */
+    public void setValue(String name, int value) {
+        JMenuItem item = this.itemMap.get(name);
+        if (item instanceof BehaviourOption) {
+            ((BehaviourOption) item).setValue(value);
+        } else {
+            item.setSelected(value > 0);
+        }
+    }
+
+    /** Returns a map from option keys to the enabled status of the option. */
+    @Override
+    public String toString() {
+        Map<String,Boolean> result = new HashMap<String,Boolean>();
+        for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().isSelected());
+        }
+        return result.toString();
+    }
+
+    /** Returns a clone of this options object. */
+    @Override
+    public Options clone() {
+        Options result = new Options();
+        result.itemMap.putAll(this.itemMap);
+        return result;
+    }
+
+    /**
+     * Map from option names to menu items.
+     */
+    private final Map<String,JMenuItem> itemMap =
+        new LinkedHashMap<String,JMenuItem>();
+
     /**
      * Callback method to determine whether a mouse event could be intended to
      * edit edge points.
      */
     static public boolean isEdgeEditEvent(MouseEvent evt) {
         return evt.getButton() == MouseEvent.BUTTON1 && evt.isAltDown();
+    }
+
+    /** Gives a button the Groove look-and-feel. */
+    static public void setLAF(final AbstractButton button) {
+        button.setHideActionText(true);
+        button.setFocusable(false);
+        button.setBorderPainted(button.isEnabled());
+        button.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                button.setBorderPainted(button.isEnabled());
+            }
+        });
+    }
+
+    /** Creates a button for a given action with the right look-and-feel. */
+    static public JButton createButton(Action action) {
+        JButton result = new JButton(action);
+        setLAF(result);
+        return result;
+    }
+
+    /** Creates a toggle button for a given action with the right look-and-feel. */
+    static public JToggleButton createToggleButton(Action action) {
+        JToggleButton result = new JToggleButton(action);
+        setLAF(result);
+        return result;
+    }
+
+    /** Creates a non-floatable tool bar of which the buttons are non-focusable. */
+    public static JToolBar createToolBar() {
+        JToolBar result = new JToolBar() {
+            @Override
+            protected JButton createActionComponent(Action a) {
+                final JButton result = super.createActionComponent(a);
+                setLAF(result);
+                return result;
+            }
+        };
+        result.setFloatable(false);
+        result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(result);
+        return result;
     }
 
     /** The default font set in the look-and-feel. */
@@ -854,159 +1061,5 @@ public class Options implements Cloneable {
             e.printStackTrace();
         }
     }
-
-    /** Creates an initialised options object. */
-    public Options() {
-        addCheckbox(SHOW_NODE_IDS_OPTION);
-        addCheckbox(SHOW_ANCHORS_OPTION);
-        addCheckbox(SHOW_ASPECTS_OPTION);
-        addCheckbox(SHOW_REMARKS_OPTION);
-        addCheckbox(SHOW_BACKGROUND_OPTION);
-        addCheckbox(SHOW_VALUE_NODES_OPTION);
-        addCheckbox(SHOW_STATE_IDS_OPTION);
-        addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
-        addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
-        addBehaviour(DELETE_CONTROL_OPTION, 2);
-        addBehaviour(DELETE_GRAPH_OPTION, 2);
-        addBehaviour(DELETE_RULE_OPTION, 2);
-        addBehaviour(DELETE_TYPE_OPTION, 2);
-        addBehaviour(REPLACE_RULE_OPTION, 3);
-        addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
-        addBehaviour(STOP_SIMULATION_OPTION, 2);
-        addBehaviour(START_SIMULATION_OPTION, 3);
-        addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
-    }
-
-    /**
-     * Adds a checkbox item with a given name to the options, and returns the
-     * associated (fresh) menu item.
-     * @param name the name of the checkbox menu item to add
-     * @return the added {@link javax.swing.JCheckBoxMenuItem}
-     */
-    private final JCheckBoxMenuItem addCheckbox(final String name) {
-        JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
-        result.setSelected(userPrefs.getBoolean(name,
-            boolOptionDefaults.get(name)));
-        this.itemMap.put(name, result);
-        result.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                userPrefs.putBoolean(name,
-                    e.getStateChange() == ItemEvent.SELECTED);
-            }
-        });
-        return result;
-    }
-
-    /**
-     * Adds a behaviour menu with a given name to the options, and returns the
-     * associated (fresh) menu item.
-     * @param name the name of the behaviour menu item to add
-     * @return the added {@link javax.swing.JCheckBoxMenuItem}
-     */
-    private final BehaviourOption addBehaviour(final String name,
-            int optionCount) {
-        BehaviourOption result = new BehaviourOption(name, optionCount);
-        result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
-        result.addPropertyChangeListener(BehaviourOption.SELECTION,
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent e) {
-                    userPrefs.putInt(name, (Integer) e.getNewValue());
-                }
-            });
-        this.itemMap.put(name, result);
-        return result;
-    }
-
-    /**
-     * Returns the menu item associated with a given name, if any.
-     * @param name the name of the checkbox item looked for
-     * @return the {@link javax.swing.JCheckBoxMenuItem} with the given name if
-     *         it exists, or <tt>null</tt> otherwise
-     */
-    public JMenuItem getItem(String name) {
-        return this.itemMap.get(name);
-    }
-
-    /**
-     * Returns the set of menu items available.
-     * @return the set of menu items available
-     */
-    public Collection<JMenuItem> getItemSet() {
-        return this.itemMap.values();
-    }
-
-    /**
-     * Returns the current selection value of a given options name.
-     * @param name the name of the checkbox menu item for which to check its
-     *        value
-     * @return the value of the checkbox item with the given name
-     */
-    public boolean isSelected(String name) {
-        return this.itemMap.get(name).isSelected();
-    }
-
-    /**
-     * Sets the selection of a given option.
-     * @param name the name of the menu item for which to set the value
-     * @param selected the new selection value of the menu item
-     */
-    public void setSelected(String name, boolean selected) {
-        this.itemMap.get(name).setSelected(selected);
-    }
-
-    /**
-     * Returns the current value of a given options name. If the option is a
-     * checkbox menu, the value is <code>0</code> for <code>false</code> and
-     * <code>1</code> for <code>true</code>.
-     * @param name the name of the checkbox menu item for which to get the value
-     * @return the current value of the checkbox item with the given name
-     */
-    public int getValue(String name) {
-        JMenuItem item = this.itemMap.get(name);
-        if (item instanceof BehaviourOption) {
-            return ((BehaviourOption) item).getValue();
-        } else {
-            return item.isSelected() ? 1 : 0;
-        }
-    }
-
-    /**
-     * Sets the value of a given option. If the option is a checkbox menu item,
-     * it is set to <code>true</code> for any value greater than 0.
-     * @param name the name of the menu item for which to set the value
-     * @param value the new value of the menu item
-     */
-    public void setValue(String name, int value) {
-        JMenuItem item = this.itemMap.get(name);
-        if (item instanceof BehaviourOption) {
-            ((BehaviourOption) item).setValue(value);
-        } else {
-            item.setSelected(value > 0);
-        }
-    }
-
-    /** Returns a map from option keys to the enabled status of the option. */
-    @Override
-    public String toString() {
-        Map<String,Boolean> result = new HashMap<String,Boolean>();
-        for (Map.Entry<String,JMenuItem> entry : this.itemMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().isSelected());
-        }
-        return result.toString();
-    }
-
-    /** Returns a clone of this options object. */
-    @Override
-    public Options clone() {
-        Options result = new Options();
-        result.itemMap.putAll(this.itemMap);
-        return result;
-    }
-
-    /**
-     * Map from option names to menu items.
-     */
-    private final Map<String,JMenuItem> itemMap =
-        new LinkedHashMap<String,JMenuItem>();
 
 }

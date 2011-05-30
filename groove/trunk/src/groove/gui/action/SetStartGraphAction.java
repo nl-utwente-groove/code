@@ -19,6 +19,8 @@ public class SetStartGraphAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getHost() != null);
+        setEnabled(getModel().getHost() != null
+            && !getModel().getHost().equals(
+                getModel().getGrammar().getStartGraphView()));
     }
 }

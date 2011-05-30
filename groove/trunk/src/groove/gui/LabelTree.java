@@ -103,11 +103,13 @@ public class LabelTree extends JTree implements GraphModelListener,
      * parameter indicates if the label stree should support subtypes.
      * {@link #updateModel()} should be called before the list can be used.
      * @param jGraph the jgraph with which this list is to be associated
+     * @param toolBar if {@code true}, the panel should have a tool bar
      */
-    public LabelTree(GraphJGraph jGraph) {
+    public LabelTree(GraphJGraph jGraph, boolean toolBar) {
         this.jGraph = jGraph;
         this.filteredLabels = jGraph.getFilteredLabels();
         this.filtering = this.filteredLabels != null;
+        this.toolBar = toolBar;
         if (this.filtering) {
             this.filteredLabels.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
@@ -150,16 +152,17 @@ public class LabelTree extends JTree implements GraphModelListener,
     /** Creates a tool bar for the label tree. */
     JToolBar createToolBar() {
         JToolBar result = null;
-        result = new JToolBar();
-        result.setFloatable(false);
-        result.add(getShowSubtypesButton());
-        result.add(getShowSupertypesButton());
-        result.addSeparator();
-        result.add(getShowAllLabelsButton());
-        // put the sub- and supertype buttons in a button group
-        ButtonGroup modeButtonGroup = new ButtonGroup();
-        modeButtonGroup.add(getShowSubtypesButton());
-        modeButtonGroup.add(getShowSupertypesButton());
+        if (this.toolBar) {
+            result = Options.createToolBar();
+            result.add(getShowSubtypesButton());
+            result.add(getShowSupertypesButton());
+            result.addSeparator();
+            result.add(getShowAllLabelsButton());
+            // put the sub- and supertype buttons in a button group
+            ButtonGroup modeButtonGroup = new ButtonGroup();
+            modeButtonGroup.add(getShowSubtypesButton());
+            modeButtonGroup.add(getShowSupertypesButton());
+        }
         return result;
     }
 
@@ -170,7 +173,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowSubtypesButton() {
         if (this.showSubtypesButton == null) {
             this.showSubtypesButton =
-                createToggleButton(new ShowModeAction(true));
+                Options.createToggleButton(new ShowModeAction(true));
             this.showSubtypesButton.setSelected(true);
         }
         return this.showSubtypesButton;
@@ -183,7 +186,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowSupertypesButton() {
         if (this.showSupertypesButton == null) {
             this.showSupertypesButton =
-                createToggleButton(new ShowModeAction(false));
+                Options.createToggleButton(new ShowModeAction(false));
         }
         return this.showSupertypesButton;
     }
@@ -195,15 +198,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JToggleButton getShowAllLabelsButton() {
         if (this.showAllLabelsButton == null) {
             this.showAllLabelsButton =
-                createToggleButton(new ShowAllLabelsAction());
+                Options.createToggleButton(new ShowAllLabelsAction());
         }
         return this.showAllLabelsButton;
-    }
-
-    private JToggleButton createToggleButton(Action action) {
-        JToggleButton result = new JToggleButton(action);
-        result.setFocusable(false);
-        return result;
     }
 
     /**
@@ -691,6 +688,8 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     private final Map<Label,Set<GraphJCell>> labelCellMap =
         new TreeMap<Label,Set<GraphJCell>>();
+    /** Flag indicating if a tool bar should be used. */
+    private final boolean toolBar;
     /** Flag indicating if label filtering should be used. */
     private final boolean filtering;
     /** Set of filtered labels. */

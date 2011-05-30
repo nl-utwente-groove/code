@@ -52,8 +52,9 @@ public class FormatError implements Comparable<FormatError> {
      */
     private void addContext(Object par) {
         if (par instanceof FormatError) {
-            this.graph = ((FormatError) par).getGraph();
-            this.elements.addAll(((FormatError) par).getElements());
+            this.subError = (FormatError) par;
+            this.graph = this.subError.getGraph();
+            this.elements.addAll(this.subError.getElements());
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
         } else if (par instanceof CtrlView) {
@@ -140,6 +141,11 @@ public class FormatError implements Comparable<FormatError> {
         return this.control;
     }
 
+    /** Returns the sub-error on which this one builds. May be {@code null}. */
+    public final FormatError getSubError() {
+        return this.subError;
+    }
+
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
         return this.graph;
@@ -174,6 +180,8 @@ public class FormatError implements Comparable<FormatError> {
     private AspectGraph graph;
     /** The erroneous element. */
     private final List<Element> elements = new ArrayList<Element>();
+    /** Possible suberror. */
+    private FormatError subError;
     /** The error message. */
     private final String message;
 }

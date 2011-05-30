@@ -19,7 +19,7 @@ import javax.swing.JSplitPane;
 class DisplayWindow extends JFrame {
     /** Constructs an instance for a given simulator and panel. */
     public DisplayWindow(DisplaysPanel parent, final Display panel) {
-        super(panel.getKind().getName());
+        super(panel.getKind().getTitle());
         this.parent = parent;
         this.panel = panel;
         JPanel listPanel = panel.getListPanel();

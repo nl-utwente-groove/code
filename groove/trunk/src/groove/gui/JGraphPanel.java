@@ -17,7 +17,6 @@
 package groove.gui;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -131,12 +130,10 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /** Post-processes an already constructed toolbar.
      */
     private void processToolBar(JToolBar toolBar) {
-        toolBar.setFloatable(false);
         for (int i = 0; i < toolBar.getComponentCount(); i++) {
             Component element = toolBar.getComponent(i);
             if (element instanceof JButton) {
                 JButton button = (JButton) element;
-                button.setFocusable(false);
                 Action action = button.getAction();
                 if (action != null) {
                     getJGraph().addAccelerator(action);
@@ -160,10 +157,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * If the method returns {@code null}, no tool bar is used.
      */
     protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
-        result.add(getJGraph().getModeButton(SELECT_MODE));
-        result.add(getJGraph().getModeButton(PAN_MODE));
-        return result;
+        return null;
     }
 
     /** Component on which the graph and the label tree are displayed. */
@@ -239,10 +233,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
 
     /** Returns the label tree displayed on this panel. */
     public LabelTree getLabelTree() {
-        if (this.labelTree == null) {
-            this.labelTree = this.jGraph.initLabelTree();
-        }
-        return this.labelTree;
+        return getJGraph().getLabelTree();
     }
 
     /**
@@ -314,7 +305,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
-        this.labelTree.setEnabled(enabled);
+        getLabelTree().setEnabled(enabled);
         if (getStatusBar() != null) {
             getStatusBar().setEnabled(enabled);
         }
@@ -485,8 +476,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private final JG jGraph;
     /** The background colour in case the panel is enabled. */
     private Color enabledBackground = Color.WHITE;
-    /** The label tree associated with this label pane. */
-    private LabelTree labelTree;
     /** Options for this panel. */
     private final Options options;
     /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */

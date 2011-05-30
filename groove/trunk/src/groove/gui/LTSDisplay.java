@@ -88,7 +88,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
 
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
+        JToolBar result = Options.createToolBar();
         result.add(getActions().getStartSimulationAction());
         result.add(getActions().getSaveLTSAsAction());
         result.addSeparator();

@@ -69,6 +69,7 @@ public class PreviewControlAction extends SimulatorAction {
             JGraphPanel<?> autPanel =
                 new JGraphPanel<CtrlJGraph>(getJGraph(), true);
             autPanel.initialise();
+            autPanel.setEnabled(true);
             result =
                 this.dialog =
                     new JDialog(getSimulator().getFrame(), "Control Automaton");
