@@ -88,7 +88,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the state panel of the simulator. */
-    protected final StateDisplay getStateTab() {
+    protected final StateDisplay getStateDisplay() {
         return getMainPanel().getStateDisplay();
     }
 

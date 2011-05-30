@@ -18,6 +18,7 @@ public final class CancelEditGraphAction extends SimulatorAction {
     public CancelEditGraphAction(EditorPanel editor) {
         super(editor.getSimulator(), Options.CANCEL_EDIT_ACTION_NAME,
             Icons.CANCEL_ICON);
+        putValue(ACCELERATOR_KEY, Options.CLOSE_KEY);
         this.editor = editor;
     }
 

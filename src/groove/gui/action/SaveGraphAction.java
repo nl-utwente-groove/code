@@ -145,10 +145,10 @@ public final class SaveGraphAction extends SimulatorAction {
                 : this.editor.isDirty());
         if (isEnabled()) {
             String name;
-            if (getRole() != GraphRole.HOST || getModel().hasHost()) {
-                name = Options.getSaveActionName(getRole(), this.saveAs);
+            if (getRole() == GraphRole.HOST && !getModel().hasHost()) {
+                name = Options.getSaveStateActionName(this.saveAs);
             } else {
-                name = Options.getSaveStateName(this.saveAs);
+                name = Options.getSaveActionName(getRole(), this.saveAs);
             }
             if (this.saveAs) {
                 putValue(NAME, name);
@@ -166,7 +166,11 @@ public final class SaveGraphAction extends SimulatorAction {
         if (this.editor == null) {
             switch (getRole()) {
             case HOST:
-                return getStateTab().getStatePanel().getGraph();
+                if (getModel().hasHost()) {
+                    return getModel().getHost().getAspectGraph();
+                } else {
+                    return getStateDisplay().getStatePanel().getGraph();
+                }
             case RULE:
                 RuleView rule = getModel().getRule();
                 return rule == null ? null : rule.getAspectGraph();

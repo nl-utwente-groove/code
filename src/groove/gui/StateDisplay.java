@@ -36,7 +36,8 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StateDisplay extends TabbedDisplay implements SimulatorListener {
+final public class StateDisplay extends TabbedDisplay implements
+        SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
@@ -44,9 +45,20 @@ public class StateDisplay extends TabbedDisplay implements SimulatorListener {
         super(simulator);
         add(getStatePanel(), 0);
         setTabComponentAt(0, getStatePanel().getTabLabel());
+        installListeners();
+    }
+
+    @Override
+    protected void activateListeners() {
+        super.activateListeners();
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE,
             Change.HOST, Change.MATCH, Change.ABSTRACT);
-        installListeners();
+    }
+
+    @Override
+    protected void suspendListeners() {
+        super.suspendListeners();
+        getSimulatorModel().removeListener(this);
     }
 
     @Override
@@ -142,6 +154,11 @@ public class StateDisplay extends TabbedDisplay implements SimulatorListener {
             this.statePanel = new StatePanel(getSimulator());
         }
         return this.statePanel;
+    }
+
+    @Override
+    protected void selectionChanged() {
+        getSimulatorModel().setHost(getSelectedName());
     }
 
     /** Returns the list of states and host graphs. */

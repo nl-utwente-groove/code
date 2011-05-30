@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -649,17 +650,17 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
 
     /** The name-to-rule map of the source. */
     private final Map<String,AspectGraph> ruleMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-type map of the source. */
     private final Map<String,AspectGraph> typeMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-graph map of the source. */
     private final Map<String,AspectGraph> graphMap =
-        new HashMap<String,AspectGraph>();
+        new TreeMap<String,AspectGraph>();
     /** The name-to-control-program map of the source. */
-    private final Map<String,String> controlMap = new HashMap<String,String>();
+    private final Map<String,String> controlMap = new TreeMap<String,String>();
     /** The name-to-control-program map of the source. */
-    private final Map<String,String> prologMap = new HashMap<String,String>();
+    private final Map<String,String> prologMap = new TreeMap<String,String>();
     /** Map from entry name to layout entry. */
     private final Map<String,ZipEntry> layoutEntryMap =
         new HashMap<String,ZipEntry>();

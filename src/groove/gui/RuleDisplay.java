@@ -41,9 +41,20 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
      */
     public RuleDisplay(Simulator simulator) {
         super(simulator);
+        installListeners();
+    }
+
+    @Override
+    protected void activateListeners() {
+        super.activateListeners();
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.RULE,
             Change.ABSTRACT);
-        installListeners();
+    }
+
+    @Override
+    protected void suspendListeners() {
+        super.suspendListeners();
+        getSimulatorModel().removeListener(this);
     }
 
     @Override
@@ -157,6 +168,11 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
             text.insert(0, "(");
             text.append(")");
         }
+    }
+
+    @Override
+    protected void selectionChanged() {
+        getSimulatorModel().setRule(getSelectedName());
     }
 
     private RulePanel rulePanel;

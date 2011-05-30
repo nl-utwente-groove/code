@@ -76,7 +76,7 @@ public class DeleteHostAction extends SimulatorAction {
                     deleteStartGraph ? " (including start graph)" : "");
         }
         if (confirmBehaviour(Options.DELETE_GRAPH_OPTION, question)
-            && getStateTab().disposeEditors(hostGraphs)) {
+            && getStateDisplay().disposeEditors(hostGraphs)) {
             try {
                 result |= getModel().doDeleteHosts(hostGraphNames);
             } catch (IOException exc) {

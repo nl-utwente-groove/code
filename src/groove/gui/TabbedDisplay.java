@@ -58,21 +58,51 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     protected void installListeners() {
         this.tabListener = new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
-                getSimulatorModel().setDisplay(getKind());
+                if (isListening()) {
+                    suspendListeners();
+                    selectionChanged();
+                    activateListeners();
+                }
                 getListPanel().repaint();
             }
         };
         activateListeners();
     }
 
-    /** Activates those listeners that may give rise to a circular dependency. */
+    /** Callback method that is invoked when the tab selection has changed. */
+    abstract protected void selectionChanged();
+
+    /** 
+     * Activates those listeners that may give rise to a circular dependency.
+     * This is only allowed if listening is currently suspended.
+     * @see #isListening()
+     * @see #suspendListeners()
+     */
     protected void activateListeners() {
+        if (this.listening) {
+            throw new IllegalStateException();
+        }
         addChangeListener(this.tabListener);
+        this.listening = true;
     }
 
-    /** Suspends those listeners that may give rise to a circular dependency. */
+    /** 
+     * Suspends those listeners that may give rise to a circular dependency.
+     * This is only allowed if listening is currently active.
+     * @see #isListening()
+     * @see #activateListeners() 
+     */
     protected void suspendListeners() {
+        if (!this.listening) {
+            throw new IllegalStateException();
+        }
         removeChangeListener(this.tabListener);
+        this.listening = false;
+    }
+
+    /** Indicates that the action listeners are currently active. */
+    protected boolean isListening() {
+        return this.listening;
     }
 
     @Override
@@ -108,10 +138,13 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     public void doEdit(AspectGraph graph) {
         EditorPanel result = getEditors().get(graph.getName());
         if (result == null) {
-            addEditorPanel(graph);
+            result = addEditorPanel(graph);
             if (this.jModelMap.remove(graph.getName()) != null) {
                 remove(getMainPanel());
             }
+        }
+        if (getSelectedComponent() == result) {
+            getSimulatorModel().setDisplay(getKind());
         } else {
             setSelectedComponent(result);
         }
@@ -124,7 +157,6 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         addTab("", result);
         int index = indexOfComponent(result);
         setTabComponentAt(index, result.getTabComponent());
-        setSelectedIndex(index);
         // start the editor only after it has been added
         result.start();
         // make sure the list keeps track of dirty editors
@@ -188,12 +220,15 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     @Override
     public void removeTabAt(int index) {
         // removes the editor panel from the map
+        boolean isIndexSelected = getSelectedIndex() == index;
         Component panel = getComponentAt(index);
         super.removeTabAt(index);
         if (panel instanceof EditorPanel) {
             String name = ((EditorPanel) panel).getName();
             this.editorMap.remove(name);
-            selectMainPanel(name);
+            if (isIndexSelected) {
+                selectMainPanel(name);
+            }
         }
         // make sure the tab component of the selected tab is enabled
         setTabEnabled(getSelectedIndex(), true);
@@ -202,11 +237,32 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     @Override
     public void setSelectedIndex(int index) {
         int selectedIndex = getSelectedIndex();
-        if (selectedIndex >= 0) {
-            setTabEnabled(selectedIndex, false);
+        if (index == selectedIndex) {
+            if (isListening()) {
+                selectionChanged();
+            }
+        } else {
+            if (selectedIndex >= 0) {
+                setTabEnabled(selectedIndex, false);
+            }
+            super.setSelectedIndex(index);
+            setTabEnabled(index, true);
         }
-        super.setSelectedIndex(index);
-        setTabEnabled(index, true);
+    }
+
+    /**
+     * Returns the name of the currently selected component, or {@code null}
+     * if none is selected. 
+     */
+    public String getSelectedName() {
+        String result = null;
+        Component selection = getSelectedComponent();
+        if (selection instanceof EditorPanel) {
+            result = ((EditorPanel) selection).getName();
+        } else if (selection == getMainPanel()) {
+            result = getMainPanel().getGraph().getName();
+        }
+        return result;
     }
 
     /** Changes the enabled status of the tab component at a given index. */
@@ -348,6 +404,8 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     /** Mapping from names to graph models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();
+    /** Flag indicating that the listeners are currently active. */
+    private boolean listening;
     /** Listener that forwards tab changes to the simulator model. */
     private ChangeListener tabListener;
 }

@@ -46,7 +46,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
     /** Constructs an instance of the action, for a given simulator. */
     public RelabelGrammarAction(Simulator simulator) {
         super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
-        addAsListener(getStateTab().getMainPanel());
+        addAsListener(getStateDisplay().getMainPanel());
         addAsListener(getRuleTab().getMainPanel());
         addAsListener(getTypeTab().getMainPanel());
     }
