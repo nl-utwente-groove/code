@@ -114,6 +114,11 @@ public class TabLabel extends JPanel {
         this.iconLabel.setEnabled(enabled);
     }
 
+    /** Returns the label showing the icon and text. */
+    public JLabel getLabel() {
+        return this.iconLabel;
+    }
+
     /** The editor panel in this tab. */
     private final JComponent panel;
     /** The label that the icon is displayed on. */

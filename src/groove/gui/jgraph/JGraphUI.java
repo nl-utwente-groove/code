@@ -182,7 +182,7 @@ public class JGraphUI extends BasicGraphUI {
                 GraphJCell jCell = getJCellAt(e.getPoint());
                 // select (on first click) or edit (on further clicks)
                 if (getJGraph().getSelectionModel().isCellSelected(jCell)) {
-                    startEditing(jCell, e);
+                    getJGraph().startEditingAtCell(jCell);
                 } else {
                     selectCellsForEvent(Collections.singleton(jCell), e);
                 }
@@ -202,7 +202,7 @@ public class JGraphUI extends BasicGraphUI {
                 return;
             }
             getJGraph().requestFocus();
-            cancelEditing(getJGraph());
+            stopEditing(getJGraph());
             // determine the drag mode (although dragging does not yet start)
             if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
                 this.dragMode = PAN;

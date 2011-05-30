@@ -19,7 +19,9 @@ package groove.gui;
 import groove.annotation.Help;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
+import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.rel.RegExpr;
 import groove.util.Pair;
@@ -29,6 +31,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +40,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -73,14 +78,30 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         JPanel result = new JPanel();
         result.setLayout(new BorderLayout());
         result.add(new JLabel("Allowed labels:"), BorderLayout.NORTH);
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedPane tabbedPane = new JTabbedPane();
+        final int nodeTabIndex = tabbedPane.getTabCount();
         tabbedPane.addTab("Nodes", createSyntaxList(this.nodeKeys));
+        final int edgeTabIndex = tabbedPane.getTabCount();
         tabbedPane.addTab("Edges", createSyntaxList(this.edgeKeys));
         if (this.role == GraphRole.RULE) {
             tabbedPane.addTab("RegExpr",
                 createSyntaxList(RegExpr.getDocMap().keySet()));
         }
         result.add(tabbedPane, BorderLayout.CENTER);
+        // add a listener that switches the syntax help between nodes and edges
+        // when a cell edit is started in the JGraph
+        this.editor.getJGraph().addPropertyChangeListener(
+            new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName() == GraphJGraph.CELL_EDIT_PROPERTY) {
+                        int index =
+                            evt.getNewValue() instanceof AspectJEdge
+                                    ? edgeTabIndex : nodeTabIndex;
+                        tabbedPane.setSelectedIndex(index);
+                    }
+                }
+            });
         return result;
     }
 
@@ -111,6 +132,17 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
             private final ToolTipManager manager =
                 ToolTipManager.sharedInstance();
             private final int standardDelay = this.manager.getDismissDelay();
+        });
+        list.setSelectionModel(new DefaultListSelectionModel() {
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                // do nothing
+            }
+
+            @Override
+            public void setLeadSelectionIndex(int leadIndex) {
+                // do nothing
+            }
         });
         return createLabelScrollPane(list);
     }

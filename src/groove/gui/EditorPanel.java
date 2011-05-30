@@ -57,7 +57,7 @@ public class EditorPanel extends JPanel implements SimulatorListener {
                 simulator.getModel().getGrammar().getProperties()) {
                 @Override
                 protected void updateTitle() {
-                    getTabComponent().setTitle(getTitle());
+                    getTabComponent().setTitle(parent.getLabelText(getName()));
                     // an ugly way to ensure that the save action is enabled
                     // upon changes to the graph
                     getSaveAction().refresh();
@@ -152,8 +152,8 @@ public class EditorPanel extends JPanel implements SimulatorListener {
      * in case it is used in a {@link JTabbedPane}.
      */
     protected TabLabel createTabComponent() {
-        return new TabLabel(this,
-            this.parent.getKind().getEditIcon(), getTitle());
+        return new TabLabel(this, this.parent.getKind().getEditIcon(),
+            getTitle());
     }
 
     @Override

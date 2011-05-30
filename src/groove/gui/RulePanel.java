@@ -120,8 +120,6 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     private synchronized void setGrammarUpdate(StoredGrammarView grammar) {
         // create a mapping from rule names to (fresh) rule models
         if (grammar != null) {
-            // reset the graph model so it doesn't get mixed up with the new type
-            getJGraph().setModel(null);
             // set either the type or the label store of the associated JGraph
             TypeGraph type;
             try {
