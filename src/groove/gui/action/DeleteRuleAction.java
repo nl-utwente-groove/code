@@ -65,7 +65,7 @@ public class DeleteRuleAction extends SimulatorAction {
             question = String.format("Delete these %s rules?", rules.length);
         }
         if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)
-            && getPanel().disposeEditors(rules)) {
+            && getRuleTab().disposeEditors(rules)) {
             try {
                 result |= getModel().doDeleteRules(ruleNames);
             } catch (IOException exc) {

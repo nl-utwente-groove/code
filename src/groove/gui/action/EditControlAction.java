@@ -8,7 +8,8 @@ import groove.gui.Simulator;
 public class EditControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public EditControlAction(Simulator simulator) {
-        super(simulator, Options.EDIT_CONTROL_ACTION_NAME, Icons.EDIT_ICON);
+        super(simulator, Options.EDIT_CONTROL_ACTION_NAME,
+            Icons.EDIT_CONTROL_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
     }
 

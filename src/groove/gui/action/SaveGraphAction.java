@@ -166,7 +166,7 @@ public final class SaveGraphAction extends SimulatorAction {
         if (this.editor == null) {
             switch (getRole()) {
             case HOST:
-                return getSimulator().getStatePanel().getGraph();
+                return getStateTab().getStatePanel().getGraph();
             case RULE:
                 RuleView rule = getModel().getRule();
                 return rule == null ? null : rule.getAspectGraph();

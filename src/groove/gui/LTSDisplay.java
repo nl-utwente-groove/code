@@ -24,8 +24,8 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
@@ -38,13 +38,13 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.view.StoredGrammarView;
 
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -56,11 +56,11 @@ import javax.swing.SwingUtilities;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
-public class LTSPanel extends JGraphPanel<LTSJGraph> implements
-        SimulatorListener, SimulatorTab {
+public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
+        SimulatorListener, Display {
 
     /** Creates a LTS panel for a given simulator. */
-    public LTSPanel(Simulator simulator) {
+    public LTSDisplay(Simulator simulator) {
         super(new LTSJGraph(simulator), true);
         getJGraph().setToolTipEnabled(true);
         initialise();
@@ -72,17 +72,17 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
-    public JPanel getMainPanel() {
+    public JComponent getPanel() {
         return this;
     }
 
     @Override
-    public TabKind getKind() {
-        return TabKind.LTS;
+    public DisplayKind getKind() {
+        return DisplayKind.LTS;
     }
 
     @Override
-    public String getCurrent() {
+    public String getName() {
         return null;
     }
 
@@ -118,7 +118,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
         if (enabled) {
             getJGraph().getModeButton(SELECT_MODE).doClick();
         }
-        setGraphBackground(enabled ? Color.WHITE : null);
     }
 
     /**
@@ -314,7 +313,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements
                     && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
-                    getSimulatorModel().setTabKind(TabKind.HOST);
+                    getSimulatorModel().setDisplay(DisplayKind.HOST);
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();

@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.lts.GTS;
 import groove.view.StoredGrammarView;
@@ -261,7 +261,7 @@ public class TypeJList extends JList implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.TYPE);
+            getSimulatorModel().setDisplay(DisplayKind.TYPE);
         }
     }
 

@@ -24,14 +24,12 @@ import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
-import static groove.gui.SimulatorModel.Change.HOST;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
@@ -53,16 +51,12 @@ import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
-import groove.view.GraphView;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -75,11 +69,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -93,9 +84,7 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision$
  */
 public class StatePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener, SimulatorTab {
-    /** Display name of this panel. */
-    public static final String FRAME_NAME = "Current state";
+        SimulatorListener {
 
     // --------------------- INSTANCE DEFINITIONS ----------------------
 
@@ -105,40 +94,31 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     public StatePanel(final Simulator simulator) {
         super(new AspectJGraph(simulator, GraphRole.HOST), true);
         initialise();
+        setBorder(null);
+        setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().setToolTipEnabled(true);
     }
 
     @Override
-    public JPanel getMainPanel() {
-        return this;
-    }
-
-    @Override
-    public TabKind getKind() {
-        return TabKind.HOST;
-    }
-
-    @Override
-    public String getCurrent() {
-        return getJModel() == null ? null : getJModel().getName();
+    public String getName() {
+        return null;//getJModel() == null ? null : getJModel().getName();
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        getSimulatorModel().removeListener(this);
+        suspendListeners();
     }
 
     @Override
     protected JToolBar createToolBar() {
         return null;
-        //        JToolBar result = new JToolBar();
-        //        result.add(getActions().getNewHostAction());
-        //        result.add(getActions().getEditHostOrStateAction());
-        //        result.addSeparator();
-        //        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        //        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        //        return result;
+    }
+
+    @Override
+    protected TabLabel createTabLabel() {
+        TabLabel result = new TabLabel(this, Icons.STATE_MODE_ICON, null);
+        return result;
     }
 
     @Override
@@ -148,8 +128,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.graphSelectionListener = new GraphSelectionListener() {
             @Override
             public void valueChanged(GraphSelectionEvent e) {
-                if (StatePanel.this.selectedMatch != null) {
-                    // change only if cells were removed
+                if (StatePanel.this.matchSelected) {
+                    // change only if cells were removed from the selection
                     boolean removed = false;
                     Object[] cells = e.getCells();
                     for (int i = 0; !removed && i < cells.length; i++) {
@@ -199,7 +179,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             throw new IllegalStateException();
         }
         getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
-            STATE, HOST, MATCH);
+            STATE, MATCH);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(this.graphSelectionListener);
@@ -220,77 +200,12 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.listening = false;
     }
 
-    /** Returns the list of states and host graphs. */
-    public StateJList getList() {
-        if (this.stateJList == null) {
-            this.stateJList = new StateJList(getSimulator());
-        }
-        return this.stateJList;
-    }
-
-    /**
-     * Creates and returns the panel with the start states list.
-     */
-    public JPanel getListPanel() {
-        if (this.listPanel == null) {
-            JScrollPane startGraphsPane = new JScrollPane(getList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.listPanel = new JPanel(new BorderLayout());
-            this.listPanel.add(getListToolBar(), BorderLayout.NORTH);
-            this.listPanel.add(startGraphsPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
-        }
-        return this.listPanel;
-    }
-
-    private JToolBar getListToolBar() {
-        if (this.listToolBar == null) {
-            this.listToolBar = getSimulator().createToolBar();
-            getList().fillToolBar(this.listToolBar);
-        }
-        return this.listToolBar;
-    }
-
-    /**
-     * Refreshes the tool bar of the label list.
-     */
-    private void refreshToolbars() {
-        getListToolBar().removeAll();
-        getList().fillToolBar(getListToolBar());
-        getListPanel().repaint();
-    }
-
     /**
      * Specialises the return type to {@link GraphJModel}.
      */
     @Override
     public AspectJModel getJModel() {
         return (AspectJModel) super.getJModel();
-    }
-
-    /**
-     * Returns the graph that is currently selected (either one of the
-     * grammar view's host graphs, or a state).
-     */
-    public AspectGraph getGraph() {
-        return getJModel() == null ? null : getJModel().getGraph();
-    }
-
-    /**
-     * Sets the graph model in the jgraph. Convenience method for
-     * <code>this.jGraph.setModel(newModel)</code>.
-     */
-    private void setJModel(AspectJModel newModel) {
-        clearSelectedMatch(true);
-        this.jGraph.setModel(newModel);
     }
 
     @Override
@@ -305,6 +220,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             GraphState newState = source.getState();
             if (newState == null) {
                 clearSelectedMatch(true);
+                setStateModel(null);
             } else {
                 GraphTransition transition = oldModel.getTransition();
                 GraphState target =
@@ -317,12 +233,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 // set the graph model to the new state
                 setStateModel(newState);
             }
-        } else if (changes.contains(HOST)) {
-            if (source.getHost() == null) {
-                setStateModel(source.getState());
-            } else {
-                setGraphModel(source.getHost());
-            }
         }
         if (changes.contains(MATCH)) {
             if (source.getMatch() == null) {
@@ -331,11 +241,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 selectMatch(source.getMatch().getEvent().getMatch(
                     source.getState().getGraph()));
             }
+            refreshStatus();
         }
-        if (oldModel.hasHost() != source.hasHost()) {
-            refreshToolbars();
-        }
-        refreshStatus();
         activateListeners();
     }
 
@@ -344,18 +251,10 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * new grammar.
      */
     private void setGrammar(StoredGrammarView grammar) {
-        this.stateToAspectMap.clear();
-        this.graphToJModel.clear();
-        this.jGraph.getFilteredLabels().clear();
+        getJGraph().getFilteredLabels().clear();
         if (grammar == null || grammar.getStartGraphView() == null) {
-            setEnabled(false);
-            setJModel(null);
             getJGraph().setType(null, null);
         } else {
-            // first enable so the edge label background is set correctly
-            setEnabled(true);
-            // reset the model so it doesn't get mixed up with the new type
-            getJGraph().setModel(null);
             // set the type or the label store for the JGraph
             Map<String,Set<TypeLabel>> labelsMap =
                 new HashMap<String,Set<TypeLabel>>();
@@ -376,7 +275,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             if (labelsMap.isEmpty()) {
                 getJGraph().setLabelStore(grammar.getLabelStore());
             }
-            setGraphModel(grammar.getStartGraphView());
         }
         refreshStatus();
     }
@@ -389,11 +287,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         this.stateToAspectMap.clear();
         // only change the displayed model if we are currently displaying a
         // state
-        if (getSimulatorModel().getHost() == null) {
-            setStateModel(getSimulatorModel().getState());
-        } else {
-            setGraphModel(getSimulatorModel().getHost());
-        }
+        setStateModel(getSimulatorModel().getState());
         refreshStatus();
     }
 
@@ -423,30 +317,19 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
             }
         }
         getJGraph().setSelectionCells(emphElems.toArray());
-        this.selectedMatch = match;
-        refreshStatus();
-    }
-
-    /**
-     * Changes the display to the graph with a given name, if there is such a
-     * graph in the current grammar.
-     */
-    private void setGraphModel(GraphView graphView) {
-        if (graphView != null) {
-            setJModel(getAspectJModel(graphView.getAspectGraph()));
-            //            getJGraph().setMoveable(false);
-            //            getJGraph().setMode(JGraphMode.PAN_MODE);
-            setGraphBackground(Color.WHITE);
-            setEnabled(true);
-        }
+        this.matchSelected = true;
     }
 
     /** Changes the display to a given state. */
     private void setStateModel(GraphState state) {
-        if (state != null) {
+        clearSelectedMatch(true);
+        if (state == null) {
+            setJModel(null);
+            // this sets the label text to null, which is not appropriate
+            getTabLabel().setTitle(NO_STATE_TEXT);
+            getTabLabel().setEnabled(false);
+        } else {
             setJModel(getAspectJModel(state));
-            setGraphBackground(JAttr.STATE_BACKGROUND);
-            setEnabled(true);
         }
     }
 
@@ -458,9 +341,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      *  otherwise it should be preserved
      */
     private boolean clearSelectedMatch(boolean clear) {
-        boolean result = this.listening && this.selectedMatch != null;
+        boolean result = this.listening && this.matchSelected;
         if (result) {
-            this.selectedMatch = null;
+            this.matchSelected = false;
             if (clear) {
                 getJGraph().clearSelection();
             }
@@ -476,11 +359,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder result = new StringBuilder();
-        if (getSimulatorModel().getHost() != null) {
-            result.append("Graph: ");
-            result.append(HTMLConverter.STRONG_TAG.on(getSimulatorModel().getHost().getName()));
-        } else if (getSimulatorModel().getState() != null) {
-            result.append(FRAME_NAME);
+        result.append(FRAME_NAME);
+        if (getSimulatorModel().getState() != null) {
             result.append(": ");
             result.append(HTMLConverter.STRONG_TAG.on(getSimulatorModel().getState().toString()));
             MatchResult match = getSimulatorModel().getMatch();
@@ -493,15 +373,13 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                         match.getEvent().getRule().getName()));
                 }
             }
-        } else {
-            result.append(FRAME_NAME);
         }
         return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
     /**
      * Returns a graph model for a given state graph. The graph model is
-     * retrieved from stateJModelMap; if there is no image for the requested
+     * retrieved from {@link #graphToJModel}; if there is no image for the requested
      * state then one is created.
      */
     private AspectJModel getAspectJModel(GraphState state) {
@@ -680,13 +558,6 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         return result;
     }
 
-    /** panel on which the state list (and toolbar) are displayed. */
-    private JPanel listPanel;
-    /** Toolbar for the {@link #listPanel}. */
-    private JToolBar listToolBar;
-    /** Production system graph list */
-    private StateJList stateJList;
-
     /**
      * Mapping from graphs to the corresponding graph models.
      */
@@ -704,6 +575,10 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     private GraphSelectionListener graphSelectionListener;
 
     /** The currently emphasised match (nullable). */
-    private Proof selectedMatch;
+    private boolean matchSelected;
+    /** Tab label in case there is no state selected. */
+    public static final String NO_STATE_TEXT = "No state";
+    /** Display name of this panel. */
+    public static final String FRAME_NAME = "Current state";
 
 }

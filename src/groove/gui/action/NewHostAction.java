@@ -49,7 +49,7 @@ public class NewHostAction extends SimulatorAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getPanel().doEditGraph(newGraph);
+                        getMainPanel().getStateTab().doEdit(newGraph);
                     }
                 });
             } catch (IOException e) {

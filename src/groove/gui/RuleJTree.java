@@ -24,9 +24,10 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
+import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -58,10 +59,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.ActionMap;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
@@ -80,8 +81,13 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class RuleJTree extends JTree implements SimulatorListener {
     /** Creates an instance for a given simulator. */
-    protected RuleJTree(final Simulator simulator) {
-        this.simulator = simulator;
+    protected RuleJTree(RuleDisplay display) {
+        this.display = display;
+        // the following is the easiest way to ensure that changes in
+        // tree labels will be correctly reflected in the display
+        // A cleaner way is to invoke DefaultTreeModel.nodeChanged,
+        // but how are we supposed to know when this occurs?
+        setLargeModel(true);
         setRootVisible(false);
         setShowsRootHandles(true);
         setEnabled(false);
@@ -93,16 +99,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
         renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
-        renderer.setOpenIcon(Icons.RULE_SMALL_ICON);
-        renderer.setClosedIcon(Icons.RULE_SMALL_ICON);
+        renderer.setOpenIcon(Icons.RULE_LIST_ICON);
+        renderer.setClosedIcon(Icons.RULE_LIST_ICON);
         this.topDirectoryNode = new DefaultMutableTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
         // set key bindings
         ActionMap am = getActionMap();
-        am.put(Options.UNDO_ACTION_NAME, simulator.getActions().getBackAction());
-        am.put(Options.REDO_ACTION_NAME,
-            simulator.getActions().getForwardAction());
+        am.put(Options.UNDO_ACTION_NAME, getActions().getBackAction());
+        am.put(Options.REDO_ACTION_NAME, getActions().getForwardAction());
         InputMap im = getInputMap();
         im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
@@ -227,7 +232,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     private void installListeners() {
-        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, RULE, MATCH);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -248,6 +252,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             throw new IllegalStateException();
         }
         addTreeSelectionListener(createRuleSelectionListener());
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, RULE, MATCH);
         this.listening = true;
     }
 
@@ -256,6 +261,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             throw new IllegalStateException();
         }
         removeTreeSelectionListener(createRuleSelectionListener());
+        getSimulatorModel().removeListener(this);
         this.listening = false;
     }
 
@@ -478,6 +484,23 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return res;
     }
 
+    @Override
+    public String convertValueToText(Object value, boolean selected,
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        if (value instanceof RuleTreeNode) {
+            RuleView ruleView = ((RuleTreeNode) value).getRule();
+            String text = this.display.getLabelText(ruleView.getName());
+            if (ruleView.isEnabled()) {
+                return text;
+            } else {
+                return "(" + text + ")";
+            }
+        } else {
+            return super.convertValueToText(value, selected, expanded, leaf,
+                row, hasFocus);
+        }
+    }
+
     /** Convenience method to retrieve the current grammar view. */
     private final GrammarView getGrammar() {
         return getSimulatorModel().getGrammar();
@@ -490,29 +513,20 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
     /** Returns the associated simulator. */
     private final Simulator getSimulator() {
-        return this.simulator;
+        return this.display.getSimulator();
     }
 
     /** Convenience method to retrieve the simulator model. */
     private final SimulatorModel getSimulatorModel() {
-        return this.simulator.getModel();
-    }
-
-    /** Convenience method to retrieve the simulator panel. */
-    private final SimulatorPanel getSimulatorPanel() {
-        return this.simulator.getSimulatorPanel();
+        return this.display.getSimulatorModel();
     }
 
     /** Convenience method to retrieve the simulator action store. */
     private final ActionStore getActions() {
-        return this.simulator.getActions();
+        return this.display.getActions();
     }
 
-    /**
-     * The simulator to which this directory belongs.
-     * @invariant simulator != null
-     */
-    private final Simulator simulator;
+    private final RuleDisplay display;
 
     private boolean listening;
     private RuleSelectionListener ruleSelectionListener;
@@ -561,11 +575,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return "(" + name + ")";
     }
 
-    /** The background colour of the tree when enabled. */
-    public static final Color TREE_ENABLED_COLOR = Color.WHITE;
-    /** The background colour of a selected cell if the list does not have focus. */
-    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
-
     /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
      * selected, and <tt>setDerivation</tt> if a match node is selected.
@@ -585,6 +594,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          * based on the current selection in the tree.
          */
         public void valueChanged(TreeSelectionEvent evt) {
+            suspendListeners();
             TreePath[] paths = getSelectionPaths();
             for (int i = 0; paths != null && i < paths.length; i++) {
                 Object selectedNode = paths[i].getLastPathComponent();
@@ -597,17 +607,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 }
             }
             getSimulatorModel().setRuleSet(getSelectedRules());
-            if (evt.isAddedPath() && paths.length == 1) {
-                TabKind newTab;
-                if (evt.getPath().getLastPathComponent() instanceof RuleTreeNode) {
-                    newTab = TabKind.RULE;
-                } else if (getSimulatorPanel().getSelectedTab() != TabKind.LTS) {
-                    newTab = TabKind.HOST;
-                } else {
-                    newTab = TabKind.LTS;
-                }
-                getSimulatorModel().setTabKind(newTab);
-            }
+            activateListeners();
         }
     }
 
@@ -639,6 +639,20 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     if (pathIsSelected == false) {
                         setSelectionPath(selectedPath);
                     }
+                }
+            }
+            DisplayKind newTab = null;
+            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            if (path != null) {
+                if (path.getLastPathComponent() instanceof RuleTreeNode) {
+                    newTab = DisplayKind.RULE;
+                } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
+                    newTab = DisplayKind.HOST;
+                } else {
+                    newTab = DisplayKind.LTS;
+                }
+                if (newTab != null) {
+                    getSimulatorModel().setDisplay(newTab);
                 }
             }
             maybeShowPopup(evt);
@@ -841,63 +855,39 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Class to provide proper icons for directory nodes
      */
     private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
-
-        /** The background colour of an enabled component. */
-        private final Color ENABLED_COLOUR;
-
-        /**
-         * Empty constructor with the correct visibility.
-         */
-        public MyTreeCellRenderer() {
-            JTextField enabledField = new JTextField();
-            enabledField.setEditable(true);
-            this.ENABLED_COLOUR = enabledField.getBackground();
-        }
-
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,
                 boolean sel, boolean expanded, boolean leaf, int row,
                 boolean hasFocus) {
-            super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                leaf, row, hasFocus);
+            boolean cellSelected = sel || hasFocus;
+            boolean cellFocused = cellSelected && RuleJTree.this.isFocusOwner();
+            super.getTreeCellRendererComponent(tree, value, cellSelected,
+                expanded, leaf, row, false);
 
+            boolean error = false;
+            Icon icon = null;
             if (value instanceof DirectoryTreeNode) {
-                setIcon(Icons.GPS_FOLDER_ICON);
-            } else if (value instanceof PriorityTreeNode) {
-                setIcon(null);
-            }
-            if (value instanceof RuleTreeNode) {
+                icon = Icons.GPS_FOLDER_ICON;
+            } else if (value instanceof RuleTreeNode) {
+                String ruleName = ((RuleTreeNode) value).getRule().getName();
+                icon = RuleJTree.this.display.getListIcon(ruleName);
+                error = RuleJTree.this.display.hasError(ruleName);
                 setToolTipText(((RuleTreeNode) value).getToolTipText());
-            } else {
+            } else if (value instanceof MatchTreeNode) {
+                icon = Icons.GRAPH_MATCH_ICON;
                 setToolTipText(null);
             }
-            setOpaque(!sel);
-            setBackground(this.ENABLED_COLOUR);
+            setIcon(icon);
+            setForeground(JAttr.getForeground(cellSelected, cellFocused, error));
+            Color background =
+                JAttr.getBackground(cellSelected, cellFocused, error);
+            if (cellSelected) {
+                setBackgroundSelectionColor(background);
+            } else {
+                setBackgroundNonSelectionColor(background);
+            }
+            setOpaque(false);
             return this;
         }
-
-        @Override
-        public Color getBackgroundSelectionColor() {
-            Color result;
-            if (RuleJTree.this.isFocusOwner()) {
-                result = super.getBackgroundSelectionColor();
-            } else {
-                result = SELECTION_NON_FOCUS_COLOR;
-                if (getGTS() == null) {
-                    result = result.darker();
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public Color getTextSelectionColor() {
-            if (RuleJTree.this.isFocusOwner() || getGTS() == null) {
-                return super.getTextSelectionColor();
-            } else {
-                return Color.BLACK;
-            }
-        }
-
     }
 }

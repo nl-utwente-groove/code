@@ -28,6 +28,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -53,7 +54,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
@@ -106,12 +109,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         }
         installListeners();
         setEnabled(false);
-    }
-
-    /** Sets the background colour of the graph and label panels. */
-    public void setGraphBackground(Color color) {
-        getJGraph().setBackground(color);
-        getLabelTree().setBackground(color);
     }
 
     /** Callback method that adds the required listeners to this panel. */
@@ -178,6 +175,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                 createLabelPane());
         result.setOneTouchExpandable(true);
         result.setResizeWeight(1.0);
+        result.setBorder(null);
         return result;
     }
 
@@ -249,6 +247,19 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /**
+     * Changes the graph model displayed in this panel.
+     * Also enables the panel if the new model is not {@code null},
+     * and disables it otherwise.  
+     */
+    public void setJModel(GraphJModel<?,?> jModel) {
+        getJGraph().setModel(jModel);
+        boolean enabled = jModel != null;
+        setEnabled(enabled);
+        getTabLabel().setTitle(enabled ? jModel.getName() : null);
+        refreshStatus();
+    }
+
+    /**
      * Returns the underlying {@link GraphJModel}, or <code>null</code> if the jgraph
      * is currently disabled.
      */
@@ -261,23 +272,73 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /**
+     * Returns the graph that is currently selected (either one of the
+     * grammar view's host graphs, or a state).
+     */
+    public AspectGraph getGraph() {
+        return getJModel() == null ? null
+                : (AspectGraph) getJModel().getGraph();
+    }
+
+    /**
      * Returns the status bar of this panel, if any.
      */
     private JLabel getStatusBar() {
         return this.statusBar;
     }
 
+    /** 
+     * Returns the component to be used to fill the tab in a 
+     * {@link JTabbedPane}, when this panel is displayed.
+     */
+    public final TabLabel getTabLabel() {
+        if (this.tabLabel == null) {
+            this.tabLabel = createTabLabel();
+            this.tabLabel.setBorder(new EmptyBorder(4, 0, 3, 0));
+            this.tabLabel.setFocusable(false);
+        }
+        return this.tabLabel;
+    }
+
+    /**
+     * Callback method to create a tab component for this panel,
+     * in case it is used in a {@link JTabbedPane}.
+     */
+    protected TabLabel createTabLabel() {
+        TabLabel result = new TabLabel(this, null, "");
+        return result;
+    }
+
     /**
      * Delegates the method to the content pane and to super.
+     * Also sets the background appropriately.
+     * @see #getEnabledBackground()
      */
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
+        this.labelTree.setEnabled(enabled);
         if (getStatusBar() != null) {
             getStatusBar().setEnabled(enabled);
         }
-        this.labelTree.setEnabled(enabled);
         super.setEnabled(enabled);
+        Color background = enabled ? getEnabledBackground() : null;
+        getJGraph().setBackground(background);
+        getLabelTree().setBackground(background);
+    }
+
+    /** Callback method to return the background colour in case the panel is enabled.
+     * This is {@link Color#WHITE} by default, but may be changed by a call to
+     * #setEnabledBackgound.
+     * The background colour for an enabled panel; non-{@code null}
+     */
+    protected Color getEnabledBackground() {
+        return this.enabledBackground;
+    }
+
+    /** Sets the background colour for an enabled panel. */
+    protected void setEnabledBackground(Color enabledBackground) {
+        this.enabledBackground = enabledBackground;
     }
 
     /**
@@ -424,11 +485,15 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /**
      * The {@link GraphJGraph}on which this panel provides a view.
      */
-    protected final JG jGraph;
+    private final JG jGraph;
+    /** The background colour in case the panel is enabled. */
+    private Color enabledBackground = Color.WHITE;
     /** The label tree associated with this label pane. */
     private LabelTree labelTree;
     /** Options for this panel. */
     private final Options options;
+    /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */
+    private TabLabel tabLabel;
     /** Change listener that calls {@link #refresh()} when activated. */
     private RefreshListener refreshListener;
     /**

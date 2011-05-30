@@ -9,7 +9,7 @@ import groove.explore.util.RuleEventApplier;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeLabel;
-import groove.gui.SimulatorPanel.TabKind;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
@@ -68,7 +68,7 @@ public class SimulatorModel implements Cloneable {
         throws IOException {
         start();
         try {
-            boolean result = true;
+            boolean result = false;
             StoredGrammarView grammar = getGrammar();
             getStore().putGraphs(newHosts);
             Set<String> newHostNames = new HashSet<String>();
@@ -78,6 +78,7 @@ public class SimulatorModel implements Cloneable {
             }
             changeGrammar(result);
             changeHostSet(newHostNames);
+            changeDisplay(DisplayKind.HOST);
             return result;
         } finally {
             finish();
@@ -136,6 +137,7 @@ public class SimulatorModel implements Cloneable {
                 grammar.setStartGraph(newName);
             }
             changeGrammar(result);
+            changeDisplay(DisplayKind.HOST);
             return result;
         } finally {
             finish();
@@ -174,6 +176,7 @@ public class SimulatorModel implements Cloneable {
             }
             changeRuleSet(newRuleNames);
             changeGrammar(result);
+            changeDisplay(DisplayKind.RULE);
             return result;
         } finally {
             finish();
@@ -265,6 +268,7 @@ public class SimulatorModel implements Cloneable {
             getStore().putControl(name, program);
             changeGrammar(result);
             changeControl(name);
+            changeDisplay(DisplayKind.CONTROL);
             return result;
         } finally {
             finish();
@@ -304,6 +308,7 @@ public class SimulatorModel implements Cloneable {
             boolean result = oldName.equals(getGrammar().getControlName());
             getStore().renameControl(oldName, newName);
             changeGrammar(result);
+            changeDisplay(DisplayKind.CONTROL);
             return result;
         } finally {
             finish();
@@ -321,6 +326,8 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             getStore().putProlog(name, program);
+            changeProlog(getGrammar().getPrologView(name));
+            changeDisplay(DisplayKind.CONTROL);
             return false;
         } finally {
             finish();
@@ -358,6 +365,7 @@ public class SimulatorModel implements Cloneable {
             grammar.getStore().putType(typeGraph);
             changeGrammar(result);
             changeType(typeGraph.getName());
+            changeDisplay(DisplayKind.TYPE);
             return result;
         } finally {
             finish();
@@ -404,6 +412,7 @@ public class SimulatorModel implements Cloneable {
             if (oldName.equals(getType().getName())) {
                 changeType(newName);
             }
+            changeDisplay(DisplayKind.TYPE);
             return result;
         } finally {
             finish();
@@ -424,17 +433,6 @@ public class SimulatorModel implements Cloneable {
         if (!activeTypes.remove(oldType.getName())) {
             activeTypes.add(oldType.getName());
         }
-        newProperties.setTypeNames(activeTypes);
-        return doSetProperties(newProperties);
-    }
-
-    /**
-     * Saves a changed list of active types in the system properties.
-     */
-    public boolean doSetActiveTypes(List<String> activeTypes)
-        throws IOException {
-        SystemProperties oldProperties = getGrammar().getProperties();
-        SystemProperties newProperties = oldProperties.clone();
         newProperties.setTypeNames(activeTypes);
         return doSetProperties(newProperties);
     }
@@ -468,6 +466,7 @@ public class SimulatorModel implements Cloneable {
         try {
             getGrammar().setStartGraph(graph);
             changeGrammar(true);
+            changeDisplay(DisplayKind.HOST);
             return true;
         } finally {
             finish();
@@ -485,6 +484,7 @@ public class SimulatorModel implements Cloneable {
         try {
             getGrammar().setStartGraph(name);
             changeGrammar(true);
+            changeDisplay(DisplayKind.HOST);
             return true;
         } finally {
             finish();
@@ -639,7 +639,7 @@ public class SimulatorModel implements Cloneable {
             this.changes.add(Change.GTS);
         }
         if (switchTab) {
-            changeTabKind(TabKind.LTS);
+            changeDisplay(DisplayKind.LTS);
         }
         return finish();
     }
@@ -901,7 +901,7 @@ public class SimulatorModel implements Cloneable {
         changeHostSet(hostNameSet);
         if (!hostNameSet.isEmpty()) {
             changeMatch(null);
-            changeTabKind(TabKind.HOST);
+            changeDisplay(DisplayKind.HOST);
         }
         return finish();
     }
@@ -957,7 +957,7 @@ public class SimulatorModel implements Cloneable {
         start();
         changeRule(ruleName);
         if (ruleName != null) {
-            changeTabKind(TabKind.RULE);
+            changeDisplay(DisplayKind.RULE);
         }
         return finish();
     }
@@ -1023,7 +1023,7 @@ public class SimulatorModel implements Cloneable {
         start();
         changeType(typeName);
         if (typeName != null) {
-            changeTabKind(TabKind.TYPE);
+            changeDisplay(DisplayKind.TYPE);
         }
         return finish();
     }
@@ -1208,25 +1208,25 @@ public class SimulatorModel implements Cloneable {
         this.exploration = exploration;
     }
 
-    /** Returns the kind of tab currently showing in the simulator panel. */
-    public final SimulatorPanel.TabKind getTabKind() {
-        return this.tabKind;
+    /** Returns the display currently showing in the simulator panel. */
+    public final DisplayKind getDisplay() {
+        return this.display;
     }
 
-    /** Changes the kind of tab showing in the simulator panel. */
-    public final boolean setTabKind(SimulatorPanel.TabKind tabKind) {
+    /** Changes the display showing in the simulator panel. */
+    public final boolean setDisplay(DisplayKind display) {
         start();
-        changeTabKind(tabKind);
+        changeDisplay(display);
         return finish();
     }
 
-    /** Changes the kind of tab showing in the simulator panel. */
-    private boolean changeTabKind(SimulatorPanel.TabKind tabKind) {
+    /** Changes the display showing in the simulator panel. */
+    private boolean changeDisplay(DisplayKind display) {
         boolean result = false;
-        if (tabKind != this.tabKind) {
-            this.tabKind = tabKind;
-            this.changes.add(Change.TAB);
-        }
+        //        if (display != this.display) {
+        this.display = display;
+        this.changes.add(Change.DISPLAY);
+        //        }
         return result;
     }
 
@@ -1376,8 +1376,8 @@ public class SimulatorModel implements Cloneable {
 
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean abstractionMode = false;
-    /** Kind of tab that currently showing in the simulator panel. */
-    private SimulatorPanel.TabKind tabKind;
+    /** Display currently showing in the simulator panel. */
+    private DisplayKind display;
     /** Array of listeners. */
     private final Map<Change,List<SimulatorListener>> listeners =
         new EnumMap<Change,List<SimulatorListener>>(Change.class);
@@ -1462,7 +1462,7 @@ public class SimulatorModel implements Cloneable {
          */
         STATE,
         /** The selected tab in the simulator panel has changed. */
-        TAB,
+        DISPLAY,
         /**
          * The selected type graph has changed.
          */

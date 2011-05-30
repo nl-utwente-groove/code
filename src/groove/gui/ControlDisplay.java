@@ -19,7 +19,7 @@ package groove.gui;
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
@@ -41,6 +41,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -69,12 +70,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-final public class ControlPanel extends JPanel implements SimulatorListener,
-        SimulatorTab {
+final public class ControlDisplay extends JPanel implements SimulatorListener,
+        Display {
     /**
      * @param simulator The Simulator the panel is added to.
      */
-    public ControlPanel(Simulator simulator) {
+    public ControlDisplay(Simulator simulator) {
         this.simulator = simulator;
         // create the layout for this JPanel
         this.setLayout(new BorderLayout());
@@ -83,17 +84,17 @@ final public class ControlPanel extends JPanel implements SimulatorListener,
     }
 
     @Override
-    public TabKind getKind() {
-        return TabKind.CONTROL;
+    public DisplayKind getKind() {
+        return DisplayKind.CONTROL;
     }
 
     @Override
-    public JPanel getMainPanel() {
+    public JComponent getPanel() {
         return this;
     }
 
     @Override
-    public String getCurrent() {
+    public String getName() {
         return isControlSelected() ? getSelectedControl().getName() : null;
     }
 

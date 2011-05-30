@@ -49,7 +49,7 @@ public class NewRuleAction extends SimulatorAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getPanel().doEditGraph(newRule);
+                        getMainPanel().getRuleTab().doEdit(newRule);
                     }
                 });
             } catch (IOException e) {

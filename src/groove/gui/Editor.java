@@ -32,7 +32,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
@@ -607,7 +606,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
             result.addRefreshListener(SHOW_ASPECTS_OPTION);
             result.setEnabled(true);
-            result.setGraphBackground(JAttr.EDITOR_BACKGROUND);
         }
         return this.jGraphPanel;
     }

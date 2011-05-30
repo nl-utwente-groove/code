@@ -36,9 +36,9 @@ public class SelectColorAction extends SimulatorAction implements
     public SelectColorAction(Simulator simulator) {
         super(simulator, Options.SELECT_COLOR_ACTION_NAME, null);
         putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
-        addAsListener(simulator.getStatePanel());
-        addAsListener(simulator.getRulePanel());
-        addAsListener(simulator.getTypePanel());
+        addAsListener(getStateTab().getMainPanel());
+        addAsListener(getRuleTab().getMainPanel());
+        addAsListener(getTypeTab().getMainPanel());
         refresh();
         this.chooser = new JColorChooser();
     }

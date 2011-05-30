@@ -11,7 +11,8 @@ import java.io.IOException;
 public class NewControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public NewControlAction(Simulator simulator) {
-        super(simulator, Options.NEW_CONTROL_ACTION_NAME, Icons.NEW_ICON);
+        super(simulator, Options.NEW_CONTROL_ACTION_NAME,
+            Icons.NEW_CONTROL_ICON);
     }
 
     @Override
@@ -27,8 +28,8 @@ public class NewControlAction extends SimulatorAction {
                     getControlPanel().startEditing();
                 }
             } catch (IOException exc) {
-                showErrorDialog(
-                    exc, "Error creating new control program " + newName);
+                showErrorDialog(exc, "Error creating new control program "
+                    + newName);
             }
         }
         return false;

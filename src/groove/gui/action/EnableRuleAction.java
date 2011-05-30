@@ -40,7 +40,8 @@ public class EnableRuleAction extends SimulatorAction {
             ruleGraphs.add(ruleView.getAspectGraph());
         }
         if (confirmAbandon()
-            && getPanel().disposeEditors(ruleGraphs.toArray(new AspectGraph[0]))) {
+            && getRuleTab().disposeEditors(
+                ruleGraphs.toArray(new AspectGraph[0]))) {
             try {
                 result |= getSimulator().getModel().doEnableRules(ruleGraphs);
             } catch (IOException exc) {

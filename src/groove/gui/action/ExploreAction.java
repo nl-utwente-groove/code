@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import groove.explore.Exploration;
 import groove.gui.Icons;
-import groove.gui.LTSPanel;
+import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -99,7 +99,7 @@ public class ExploreAction extends SimulatorAction {
     }
 
     /** Convenience method to retrieve the LTS panel. */
-    private final LTSPanel getLTSPanel() {
+    private final LTSDisplay getLTSPanel() {
         return getSimulator().getLtsPanel();
     }
 

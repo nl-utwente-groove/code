@@ -48,7 +48,7 @@ public class RenameHostAction extends SimulatorAction {
         // Multiple selection
         // copy selected graph names
         AspectGraph host = getModel().getHost().getAspectGraph();
-        if (getPanel().disposeEditors(host)) {
+        if (getStateTab().disposeEditors(host)) {
             String oldName = host.getName();
             String newName =
                 askNewGraphName("Select new graph name", oldName, false);

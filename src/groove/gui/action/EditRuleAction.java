@@ -10,7 +10,7 @@ import groove.gui.Simulator;
 public class EditRuleAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
     public EditRuleAction(Simulator simulator) {
-        super(simulator, Options.EDIT_RULE_ACTION_NAME, Icons.EDIT_ICON);
+        super(simulator, Options.EDIT_RULE_ACTION_NAME, Icons.EDIT_RULE_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
     }
 
@@ -36,7 +36,8 @@ public class EditRuleAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
-        getPanel().doEditGraph(getModel().getRule().getAspectGraph());
+        getMainPanel().getRuleTab().doEdit(
+            getModel().getRule().getAspectGraph());
         return false;
     }
 }

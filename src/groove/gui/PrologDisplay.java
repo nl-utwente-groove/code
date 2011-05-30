@@ -27,7 +27,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
-import groove.gui.SimulatorPanel.TabKind;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.prolog.GrooveState;
@@ -65,6 +65,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -95,12 +96,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * 
  * @author Michiel Hendriks
  */
-public class PrologPanel extends JPanel implements SimulatorTab {
+public class PrologDisplay extends JPanel implements Display {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
     static final Preferences PREFS =
-        Preferences.userNodeForPackage(PrologPanel.class);
+        Preferences.userNodeForPackage(PrologDisplay.class);
 
     /**
      * Data structure to keep track of the open/loaded prolog files
@@ -242,7 +243,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
     /**
      * Construct a prolog panel
      */
-    public PrologPanel(Simulator simulator) {
+    public PrologDisplay(Simulator simulator) {
         super();
         Font editFont = new Font("Monospaced", Font.PLAIN, 12);
 
@@ -350,17 +351,17 @@ public class PrologPanel extends JPanel implements SimulatorTab {
     }
 
     @Override
-    public TabKind getKind() {
-        return TabKind.PROLOG;
+    public DisplayKind getKind() {
+        return DisplayKind.PROLOG;
     }
 
     @Override
-    public JPanel getMainPanel() {
+    public JComponent getPanel() {
         return this;
     }
 
     @Override
-    public String getCurrent() {
+    public String getName() {
         PrologView prolog = getSimulatorModel().getProlog();
         return prolog == null ? null : prolog.getName();
     }
@@ -409,7 +410,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                 getPrologFileChooser().setMultiSelectionEnabled(true);
                 int result =
                     getPrologFileChooser().showOpenDialog(
-                        PrologPanel.this.sim.getFrame());
+                        PrologDisplay.this.sim.getFrame());
                 // now load, if so required
                 if (result == JFileChooser.APPROVE_OPTION) {
                     final File[] files =
@@ -437,12 +438,12 @@ public class PrologPanel extends JPanel implements SimulatorTab {
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Component comp =
-                    PrologPanel.this.prologEditors.getSelectedComponent();
+                    PrologDisplay.this.prologEditors.getSelectedComponent();
                 if (comp == null) {
                     return;
                 }
                 PrologFile proFile = null;
-                for (PrologFile pf : PrologPanel.this.prologFiles) {
+                for (PrologFile pf : PrologDisplay.this.prologFiles) {
                     if (pf.pane == comp) {
                         proFile = pf;
                     }
@@ -458,17 +459,17 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                     fc.setSelectedFile(null);
                     do {
                         int result =
-                            fc.showSaveDialog(PrologPanel.this.sim.getFrame());
+                            fc.showSaveDialog(PrologDisplay.this.sim.getFrame());
                         if (result == JFileChooser.APPROVE_OPTION) {
                             File fl = getPrologFileChooser().getSelectedFile();
                             if (fl.exists()) {
                                 int overwrite =
                                     JOptionPane.showConfirmDialog(
-                                        PrologPanel.this.sim.getFrame(),
+                                        PrologDisplay.this.sim.getFrame(),
                                         "Overwrite existing file \""
                                             + fl.getName()
                                             + "\"?"
-                                            + (PrologPanel.this.prologFileMap.containsKey(fl)
+                                            + (PrologDisplay.this.prologFileMap.containsKey(fl)
                                                     ? "\nThis will also discard the current editor for this file."
                                                     : ""));
                                 if (overwrite == JOptionPane.NO_OPTION) {
@@ -478,15 +479,15 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                                 }
                             }
 
-                            if (PrologPanel.this.prologFileMap.containsKey(fl)) {
+                            if (PrologDisplay.this.prologFileMap.containsKey(fl)) {
                                 PrologFile other =
-                                    PrologPanel.this.prologFileMap.get(fl);
-                                PrologPanel.this.prologEditors.remove(other.pane);
-                                PrologPanel.this.prologFileMap.remove(fl);
-                                PrologPanel.this.prologFiles.remove(other);
+                                    PrologDisplay.this.prologFileMap.get(fl);
+                                PrologDisplay.this.prologEditors.remove(other.pane);
+                                PrologDisplay.this.prologFileMap.remove(fl);
+                                PrologDisplay.this.prologFiles.remove(other);
                             }
                             proFile.file = fl;
-                            PrologPanel.this.prologFileMap.put(fl, proFile);
+                            PrologDisplay.this.prologFileMap.put(fl, proFile);
                             break;
                         }
                     } while (true);
@@ -496,9 +497,9 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                     proFile.editor.write(new FileWriter(proFile.file));
                     proFile.dirty = false;
                     int index =
-                        PrologPanel.this.prologEditors.indexOfComponent(proFile.pane);
+                        PrologDisplay.this.prologEditors.indexOfComponent(proFile.pane);
                     if (index > -1) {
-                        PrologPanel.this.prologEditors.setTitleAt(index,
+                        PrologDisplay.this.prologEditors.setTitleAt(index,
                             proFile.file.getName());
                     }
                 } catch (IOException eex) {
@@ -519,12 +520,12 @@ public class PrologPanel extends JPanel implements SimulatorTab {
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Component comp =
-                    PrologPanel.this.prologEditors.getSelectedComponent();
+                    PrologDisplay.this.prologEditors.getSelectedComponent();
                 if (comp == null) {
                     return;
                 }
                 PrologFile proFile = null;
-                for (PrologFile pf : PrologPanel.this.prologFiles) {
+                for (PrologFile pf : PrologDisplay.this.prologFiles) {
                     if (pf.pane == comp) {
                         proFile = pf;
                     }
@@ -535,7 +536,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                 if (proFile.dirty) {
                     int overwrite =
                         JOptionPane.showConfirmDialog(
-                            PrologPanel.this.sim.getFrame(),
+                            PrologDisplay.this.sim.getFrame(),
                             "You have got unsaved changes. Are you sure you want to close this file and discard the changes?",
                             "Discard changes?", JOptionPane.YES_NO_OPTION);
                     if (overwrite == JOptionPane.NO_OPTION) {
@@ -543,9 +544,9 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                     }
                 }
 
-                PrologPanel.this.prologEditors.remove(proFile.pane);
-                PrologPanel.this.prologFileMap.remove(proFile.file);
-                PrologPanel.this.prologFiles.remove(proFile);
+                PrologDisplay.this.prologEditors.remove(proFile.pane);
+                PrologDisplay.this.prologFileMap.remove(proFile.file);
+                PrologDisplay.this.prologFiles.remove(proFile);
                 consultUserCode();
             }
         });
@@ -599,7 +600,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 if (userObject instanceof CompoundTermTag) {
-                    return PrologPanel.this.prolog.getToolTipText((CompoundTermTag) userObject);
+                    return PrologDisplay.this.prolog.getToolTipText((CompoundTermTag) userObject);
                 } else {
                     return null;
                 }
@@ -629,7 +630,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                                 CompoundTermTag tag = (CompoundTermTag) o;
                                 StringBuilder sb =
                                     new StringBuilder(
-                                        PrologPanel.this.query.getSelectedItem().toString());
+                                        PrologDisplay.this.query.getSelectedItem().toString());
                                 if (sb.length() > 0
                                     && !sb.toString().endsWith(",")) {
                                     sb.append(',');
@@ -645,7 +646,7 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                                     }
                                     sb.append(')');
                                 }
-                                PrologPanel.this.query.setSelectedItem(sb.toString());
+                                PrologDisplay.this.query.setSelectedItem(sb.toString());
                             }
                         }
                     }
@@ -780,23 +781,23 @@ public class PrologPanel extends JPanel implements SimulatorTab {
                         title = proFile.file.getName();
                     }
                     int index =
-                        PrologPanel.this.prologEditors.indexOfComponent(proFile.pane);
-                    PrologPanel.this.prologEditors.setTitleAt(index, "* "
+                        PrologDisplay.this.prologEditors.indexOfComponent(proFile.pane);
+                    PrologDisplay.this.prologEditors.setTitleAt(index, "* "
                         + title);
                 }
 
                 public void changedUpdate(DocumentEvent arg0) {
-                    PrologPanel.this.userCodeConsulted.setText("Modified");
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
                     updateTab();
                 }
 
                 public void insertUpdate(DocumentEvent arg0) {
-                    PrologPanel.this.userCodeConsulted.setText("Modified");
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
                     updateTab();
                 }
 
                 public void removeUpdate(DocumentEvent arg0) {
-                    PrologPanel.this.userCodeConsulted.setText("Modified");
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
                     updateTab();
                 }
             });
