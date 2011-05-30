@@ -56,7 +56,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
@@ -294,8 +293,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     public final TabLabel getTabLabel() {
         if (this.tabLabel == null) {
             this.tabLabel = createTabLabel();
-            this.tabLabel.setBorder(new EmptyBorder(4, 0, 3, 0));
-            this.tabLabel.setFocusable(false);
         }
         return this.tabLabel;
     }

@@ -77,6 +77,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.undo.UndoManager;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
@@ -273,8 +275,16 @@ public class Simulator implements SimulatorListener {
         JToolBar result = new JToolBar() {
             @Override
             protected JButton createActionComponent(Action a) {
-                JButton result = super.createActionComponent(a);
+                final JButton result = super.createActionComponent(a);
                 result.setFocusable(false);
+                result.setBorderPainted(false);
+                result.addChangeListener(new ChangeListener() {
+
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        result.setBorderPainted(result.isEnabled());
+                    }
+                });
                 return result;
             }
         };

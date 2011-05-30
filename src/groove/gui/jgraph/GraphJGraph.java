@@ -814,7 +814,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Returns the action to export this JGraph in various formats. */
     public ExportAction getExportAction() {
         if (this.exportAction == null) {
-            this.exportAction = new ExportAction(this);
+            this.exportAction = new ExportAction(getSimulator(), this);
         }
         this.exportAction.refresh();
         return this.exportAction;

@@ -234,7 +234,7 @@ public class Options implements Cloneable {
     /** Edit rule action name */
     public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
-    public static final String EDIT_STATE_ACTION_NAME = "Edit Graph ...";
+    public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Edit type action name */
     public static final String EDIT_TYPE_ACTION_NAME = "Edit Type ...";
     /** Name of the "Enable Control Program" action */
