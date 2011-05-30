@@ -16,8 +16,9 @@
  */
 package groove.gui;
 
-import groove.gui.SimulatorPanel.TabKind;
+import groove.gui.DisplaysPanel.DisplayKind;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -25,20 +26,20 @@ import javax.swing.JPanel;
  * @author Arend Rensink
  * @version $Revision $
  */
-interface SimulatorTab {
+public interface Display {
     /** Main panel of this tab; typically this is {@code this}. */
-    JPanel getMainPanel();
+    JComponent getPanel();
 
     /** List panel corresponding to this tab; may be {@code null}. */
     JPanel getListPanel();
 
     /** Tab kind of this component. */
-    TabKind getKind();
+    DisplayKind getKind();
 
     /**
      * Returns the name of the item currently showing in this
      * panel; or {@code null} if there is nothing showing, or there is
      * nothing to select.
      */
-    String getCurrent();
+    String getName();
 }

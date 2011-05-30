@@ -35,6 +35,7 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicButtonUI;
@@ -74,45 +75,49 @@ import javax.swing.plaf.basic.BasicButtonUI;
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class ButtonTabComponent extends JPanel {
-    /** Creates a new component, for a given pane. */
-    public ButtonTabComponent(EditorPanel editorPanel, Icon icon, String title) {
+public class TabLabel extends JPanel {
+    /** 
+     * Creates a new component, for a given pane. 
+     */
+    public TabLabel(JComponent panel, Icon icon, String title) {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        this.editorPanel = editorPanel;
+        this.panel = panel;
         //No need to be focusable
         setFocusable(false);
         //add more space to the top of the component
-        setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+        setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         setOpaque(false);
-        this.iconLabel = new JLabel(icon);
+        this.iconLabel = new JLabel(title, icon, 0);
         this.iconLabel.setBackground(JAttr.ERROR_COLOR);
         add(this.iconLabel);
-        this.titleLabel = new JLabel(title);
-        //add more space between the label and the button
-        this.titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 5));
-        add(this.titleLabel);
         //tab button
-        JButton button = new TabButton();
-        add(button);
+        if (panel instanceof EditorPanel) {
+            JButton button = new TabButton();
+            add(button);
+        }
     }
 
     /** Changes the title of the tab. */
     public void setTitle(String title) {
-        this.titleLabel.setText(title);
+        this.iconLabel.setText(title);
     }
 
     /** Visually displays the error property. */
     public void setError(boolean error) {
         this.iconLabel.setOpaque(error);
+        this.repaint();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        this.iconLabel.setEnabled(enabled);
     }
 
     /** The editor panel in this tab. */
-    private final EditorPanel editorPanel;
+    private final JComponent panel;
     /** The label that the icon is displayed on. */
     private final JLabel iconLabel;
-    /** The label that the title is displayed on. */
-    private final JLabel titleLabel;
 
     /** Cancel button. */
     private class TabButton extends JButton implements ActionListener {
@@ -137,7 +142,7 @@ public class ButtonTabComponent extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ButtonTabComponent.this.editorPanel.doCancel();
+            ((EditorPanel) TabLabel.this.panel).doCancel();
         }
 
         //we don't want to update UI for this button

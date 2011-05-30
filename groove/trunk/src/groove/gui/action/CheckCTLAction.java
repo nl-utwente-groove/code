@@ -1,9 +1,9 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.dialog.StringDialog;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -108,7 +108,7 @@ public class CheckCTLAction extends SimulatorAction {
             }
         }
         getSimulator().getLtsPanel().emphasiseStates(counterExamples, false);
-        getModel().setTabKind(TabKind.LTS);
+        getModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getSimulator().getFrame(), message);
     }
 

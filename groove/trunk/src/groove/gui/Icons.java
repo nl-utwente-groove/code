@@ -43,10 +43,10 @@ public final class Icons {
         createIcon("classic-down-arrow.gif");
     /** Classic (simple) down-arrow icon. */
     public static final ImageIcon CLASSIC_LEFT_ARROW_ICON =
-        createIcon("classic-left-arrow.gif");
+        createIcon("new-left-arrow.gif");
     /** Classic (simple) down-arrow icon. */
     public static final ImageIcon CLASSIC_RIGHT_ARROW_ICON =
-        createIcon("classic-right-arrow.gif");
+        createIcon("new-right-arrow.gif");
     /** Classic (simple) up-arrow icon. */
     public static final ImageIcon CLASSIC_UP_ARROW_ICON =
         createIcon("classic-up-arrow.gif");
@@ -61,6 +61,16 @@ public final class Icons {
         createIcon("disable-smaller.gif");
     /** Edit action icon. */
     public static final ImageIcon EDIT_ICON = createIcon("edit.gif");
+    /** Control edit action icon. */
+    public static final ImageIcon EDIT_CONTROL_ICON = createIcon("edit-C.gif");
+    /** Graph edit action icon. */
+    public static final ImageIcon EDIT_GRAPH_ICON = createIcon("edit-G.gif");
+    /** Rule edit action icon. */
+    public static final ImageIcon EDIT_RULE_ICON = createIcon("edit-R.gif");
+    /** Type edit action icon. */
+    public static final ImageIcon EDIT_TYPE_ICON = createIcon("edit-T.gif");
+    /** Prolog edit action icon. */
+    public static final ImageIcon EDIT_PROLOG_ICON = createIcon("edit-P.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
     /** Icon for a New action. */
@@ -73,6 +83,10 @@ public final class Icons {
     public static final ImageIcon NEW_RULE_ICON = createIcon("new-R.gif");
     /** Icon for a New Type action. */
     public static final ImageIcon NEW_TYPE_ICON = createIcon("new-T.gif");
+    /** Icon for a New Control action. */
+    public static final ImageIcon NEW_CONTROL_ICON = createIcon("new-C.gif");
+    /** Icon for a New Prolog action. */
+    public static final ImageIcon NEW_PROLOG_ICON = createIcon("new-P.gif");
     /** Rename action icon. */
     public static final ImageIcon RENAME_ICON = createIcon("rename.gif");
     /** Redo action icon. */
@@ -101,29 +115,35 @@ public final class Icons {
     /** Icon for graph with emphasised match. */
     public static final ImageIcon GRAPH_MATCH_ICON =
         createIcon("graph-match.gif");
+    /** Icon for graph as shown in the host graph list. */
+    public static final ImageIcon GRAPH_LIST_ICON =
+        createIcon("graph-small.gif");
     /** Graph editing mode icon. */
     public static final ImageIcon GRAPH_MODE_ICON =
-        createIcon("graph-mode.gif");
+        createIcon("new-graph-mode.gif");
     /** Icon for snap to grid action. */
     public static final ImageIcon GRID_ICON = createIcon("grid.gif");
     /** Icon for the LTS panel of the simulator. */
     public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
-    /** Small icon for production rules. */
-    public static final ImageIcon RULE_SMALL_ICON =
-        createIcon("rule-small.gif");
+    /** Small icon for production rules, as shown in the rule tree. */
+    public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
     /** Icon for rule (GPR) files. */
     public static final ImageIcon RULE_FILE_ICON = createIcon("rule-file.gif");
     /** Icon for the rule panel of the simulator. */
     public static final ImageIcon RULE_FRAME_ICON =
         createIcon("rule-frame.gif");
     /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON = createIcon("rule-mode.gif");
+    public static final ImageIcon RULE_MODE_ICON =
+        createIcon("new-rule-mode.gif");
     /** Save action icon. */
     public static final ImageIcon SAVE_ICON = createIcon("save.gif");
     /** Save-as action icon. */
     public static final ImageIcon SAVE_AS_ICON = createIcon("saveas.gif");
     /** Start action icon. */
     public static final ImageIcon START_ICON = createIcon("start.gif");
+    /** State display mode icon. */
+    public static final ImageIcon STATE_MODE_ICON =
+        createIcon("new-state-mode.gif");
     /** Select action icon. */
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
     /** Icon for type (GTY) files. */
@@ -132,7 +152,10 @@ public final class Icons {
     public static final ImageIcon TYPE_FRAME_ICON =
         createIcon("type-frame.gif");
     /** Type editing mode icon. */
-    public static final ImageIcon TYPE_MODE_ICON = createIcon("type-mode.gif");
+    public static final ImageIcon TYPE_LIST_ICON = createIcon("type-small.gif");
+    /** Type editing mode icon. */
+    public static final ImageIcon TYPE_MODE_ICON =
+        createIcon("new-type-mode.gif");
     /** Icon for Prolog Panel. */
     public static final ImageIcon PROLOG_FRAME_ICON =
         createIcon("prolog-frame.gif");

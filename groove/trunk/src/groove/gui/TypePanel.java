@@ -18,37 +18,26 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
 import groove.io.HTMLConverter;
 import groove.view.FormatException;
 import groove.view.StoredGrammarView;
-import groove.view.TypeView;
+import groove.view.aspect.AspectGraph;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.ToolTipManager;
 
 /**
  * @author Frank van Es
  * @version $Revision $
  */
 public class TypePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener, SimulatorTab {
+        SimulatorListener {
     /**
      * Constructor for this TypePanel Creates a new TypePanel instance and
      * instantiates all necessary variables.
@@ -62,173 +51,45 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     @Override
-    public TabKind getKind() {
-        return TabKind.TYPE;
-    }
-
-    @Override
-    public JPanel getMainPanel() {
-        return this;
-    }
-
-    @Override
-    public String getCurrent() {
-        return getJModel() == null ? null : getJModel().getName();
-    }
-
-    @Override
     protected JToolBar createToolBar() {
         return null;
-        //        JToolBar result = new JToolBar();
-        //        result.add(createButton(getActions().getNewTypeAction()));
-        //        result.add(createButton(getActions().getEditTypeAction()));
-        //        result.addSeparator();
-        //        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        //        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
-        //        result.addSeparator();
-        //        result.add(createButton(getActions().getCopyTypeAction()));
-        //        result.add(createButton(getActions().getDeleteTypeAction()));
-        //        result.add(createButton(getActions().getRenameTypeAction()));
-        //        result.addSeparator();
-        //        result.add(new JLabel("Type Graphs: "));
-        //        result.add(getNameListPane());
-        //        result.addSeparator();
-        //        result.add(createButton(getActions().getDisableTypesAction()));
-        //        result.add(createButton(getActions().getEnableTypeAction()));
-        //        return result;
     }
 
-    //
-    //    /**
-    //     * Creates a button around an action that is resized in case the action
-    //     * doesn't have an icon.
-    //     */
-    //    private JButton createButton(Action action) {
-    //        JButton result = new JButton(action);
-    //        if (action.getValue(Action.SMALL_ICON) == null) {
-    //            result.setMargin(new Insets(4, 2, 4, 2));
-    //        } else {
-    //            result.setHideActionText(true);
-    //        }
-    //        return result;
-    //    }
+    @Override
+    protected TabLabel createTabLabel() {
+        return new TabLabel(this, Icons.TYPE_MODE_ICON, "");
+    }
 
     @Override
     protected void installListeners() {
         super.installListeners();
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
+        getSimulatorModel().addListener(this, Change.GRAMMAR);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
-        //        this.selectionListener = new ListSelectionListener() {
-        //            @Override
-        //            public void valueChanged(ListSelectionEvent e) {
-        //                if (e.getValueIsAdjusting()) {
-        //                    // This event is referencing the previously selected value,
-        //                    // ignore it and wait for the event with the new value.
-        //                    return;
-        //                }
-        //                int index = getNameList().getSelectedIndex();
-        //                if (index >= 0) {
-        //                    ListItem item = getNameListModel().getElementAt(index);
-        //                    getSimulatorModel().setType(item.dataItem);
-        //                }
-        //            }
-        //        };
-        activateListeners();
-    }
-
-    /** Activates the listeners that pass their actions to the simulator model. */
-    private void activateListeners() {
-        //        getNameList().addListSelectionListener(this.selectionListener);
-    }
-
-    /** Suspends the listeners that pass their actions to the simulator model. */
-    private void suspendListeners() {
-        //        getNameList().removeListSelectionListener(this.selectionListener);
     }
 
     @Override
     protected String getStatusText() {
         StringBuilder result = new StringBuilder();
-        if (getSimulatorModel().getType() == null) {
+        if (!isEnabled()) {
             result.append("No type graph selected");
         } else {
-            TypeView typeView = getSimulatorModel().getType();
-            String typeName = typeView.getName();
+            AspectGraph type = getGraph();
+            String typeName = type.getName();
             result.append("Type graph: ");
             result.append(HTMLConverter.STRONG_TAG.on(typeName));
-            if (!typeView.isEnabled()) {
+            if (!GraphProperties.isEnabled(type)) {
                 result.append(" (inactive)");
             }
         }
         return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
-    /**
-     * Creates and returns the panel with the type graphs list.
-     */
-    public JPanel getListPanel() {
-        if (this.listPanel == null) {
-
-            JScrollPane typesPane = new JScrollPane(getList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
-            this.listPanel.add(typesPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
-        }
-        return this.listPanel;
-    }
-
-    /** Creates a tool bar for the types list. */
-    private JToolBar createListToolBar() {
-        JToolBar result = getSimulator().createToolBar();
-        result.add(getActions().getNewTypeAction());
-        result.add(getActions().getEditTypeAction());
-        result.addSeparator();
-        result.add(getActions().getCopyTypeAction());
-        result.add(getActions().getDeleteTypeAction());
-        result.add(getActions().getRenameTypeAction());
-        result.addSeparator();
-        result.add(getEnableButton());
-        return result;
-    }
-
-    /** The type enable button. */
-    JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                new JToggleButton(getActions().getEnableTypeAction());
-            this.enableButton.setText(null);
-            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
-            this.enableButton.setFocusable(false);
-        }
-        return this.enableButton;
-    }
-
-    /** Returns the list of states and host graphs. */
-    public TypeJList getList() {
-        if (this.typeJList == null) {
-            this.typeJList = new TypeJList(getSimulator());
-        }
-        return this.typeJList;
-    }
-
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
-        if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
+        if (changes.contains(Change.GRAMMAR)) {
             StoredGrammarView grammar = source.getGrammar();
-            this.typeJModelMap.clear();
             if (grammar != null) {
                 // set either the type or the label store of the associated JGraph
                 TypeGraph type;
@@ -243,71 +104,9 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
                     getJGraph().setType(type, null);
                 }
             }
-            displayType();
-            TypeView selection = getSimulatorModel().getType();
-            // turn the selection into a set of names
-            if (selection == null) {
-                getEnableButton().setSelected(false);
-            } else {
-                getEnableButton().setSelected(selection.isEnabled());
-            }
         }
-        activateListeners();
     }
 
-    /**
-     * Returns a graph model for a given type view. The graph model is retrieved
-     * from {@link #typeJModelMap}; if there is no image for the requested state
-     * then one is created.
-     */
-    private AspectJModel getTypeJModel(TypeView graph) {
-        AspectJModel result = this.typeJModelMap.get(graph);
-        if (result == null) {
-            result = getJGraph().newModel();
-            result.loadGraph(graph.getAspectGraph());
-            this.typeJModelMap.put(graph, result);
-        }
-        return result;
-    }
-
-    /**
-     * Contains graph models for the production system's rules.
-     * @invariant ruleJModels: RuleName --> RuleJModel
-     */
-    private final Map<TypeView,AspectJModel> typeJModelMap =
-        new HashMap<TypeView,AspectJModel>();
-
-    /** Sets the model according to the currently selected type. */
-    private void displayType() {
-        AspectJModel newModel;
-        boolean enabled;
-        TypeView type = getSimulatorModel().getType();
-        if (type != null) {
-            newModel = getTypeJModel(type);
-            enabled = true;
-            setGraphBackground(Color.WHITE);
-        } else {
-            newModel = getJGraph().newModel();
-            enabled = false;
-            setGraphBackground(null);
-        }
-        // first set the enabling, then the model
-        // in order to get the background right.
-        if (newModel != getJModel()) {
-            this.jGraph.setModel(newModel);
-        }
-        setEnabled(enabled);
-        refreshStatus();
-    }
-
-    /** panel on which the state list (and toolbar) are displayed. */
-    private JPanel listPanel;
-
-    /** Production system type list */
-    private TypeJList typeJList;
-
-    /** The type enable button. */
-    private JToggleButton enableButton;
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
 }

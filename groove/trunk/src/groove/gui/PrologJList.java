@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.view.PrologView;
 import groove.view.StoredGrammarView;
@@ -282,7 +282,7 @@ public class PrologJList extends JList implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.PROLOG);
+            getSimulatorModel().setDisplay(DisplayKind.PROLOG);
         }
     }
 

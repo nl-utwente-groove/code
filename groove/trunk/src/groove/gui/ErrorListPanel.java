@@ -21,10 +21,8 @@ import groove.io.HTMLConverter;
 import groove.view.FormatError;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.SystemColor;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Collection;
@@ -52,7 +50,8 @@ public class ErrorListPanel extends JPanel {
      */
     public ErrorListPanel(String title) {
         super(new BorderLayout());
-        add(new JLabel(HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(title))),
+        add(new JLabel(
+            HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(title))),
             BorderLayout.NORTH);
         JScrollPane scrollPane = new JScrollPane(getErrorArea());
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -133,10 +132,10 @@ public class ErrorListPanel extends JPanel {
     private JList getErrorArea() {
         if (this.errorArea == null) {
             JList result = this.errorArea = new JList();
-            result.setBackground(SystemColor.text);
-            result.setForeground(Color.RED);
-            result.setSelectionBackground(SELECTED_FOCUS_COLOR);
-            result.setSelectionForeground(Color.WHITE);
+            result.setBackground(JAttr.ERROR_NORMAL_BACKGROUND);
+            result.setForeground(JAttr.ERROR_NORMAL_FOREGROUND);
+            result.setSelectionBackground(JAttr.ERROR_FOCUS_BACKGROUND);
+            result.setSelectionForeground(JAttr.ERROR_FOCUS_FOREGROUND);
             result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             result.setCellRenderer(new CellRenderer());
         }
@@ -146,11 +145,6 @@ public class ErrorListPanel extends JPanel {
     /** The text area containing the error messages. */
     private JList errorArea;
 
-    /** Colour of selected and focused list items. */
-    private static Color SELECTED_FOCUS_COLOR = Color.RED.darker().darker(); //new Color(255, 50, 0, 200);
-    /** Colour of selected but unfocused list items. */
-    private static Color SELECTED_NON_FOCUS_COLOR = JAttr.ERROR_COLOR;
-
     private static class CellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value,
@@ -159,8 +153,8 @@ public class ErrorListPanel extends JPanel {
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, false);
             if (isSelected && !cellHasFocus) {
-                result.setBackground(SELECTED_NON_FOCUS_COLOR);
-                result.setForeground(Color.RED);
+                result.setBackground(JAttr.ERROR_SELECT_BACKGROUND);
+                result.setForeground(JAttr.ERROR_SELECT_FOREGROUND);
             }
             return result;
         }

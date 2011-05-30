@@ -34,8 +34,8 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
@@ -93,8 +93,7 @@ public class Simulator implements SimulatorListener {
     public Simulator() {
         this.model = new SimulatorModel();
         this.actions = new ActionStore(this);
-        this.model.addListener(this, Change.GRAMMAR, Change.ABSTRACT,
-            Change.TAB);
+        this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
         this.undoManager = new SimulatorUndoManager(this);
         getFrame();
     }
@@ -170,12 +169,7 @@ public class Simulator implements SimulatorListener {
                 getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
         }
-        if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
-            getStatePanel().dispose();
-            this.statePanel = null;
-            getSimulatorPanel().setComponentAt(0, getStatePanel());
-        }
-        if (changes.contains(Change.TAB)) {
+        if (changes.contains(Change.DISPLAY)) {
             refreshMenuItems();
         }
     }
@@ -231,7 +225,7 @@ public class Simulator implements SimulatorListener {
 
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getRulePanel().getTreePanel(),
+                    getSimulatorPanel().getRuleTab().getListPanel(),
                     getSimulatorPanel().getListsPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
@@ -267,9 +261,9 @@ public class Simulator implements SimulatorListener {
     /**
      * Lazily creates and returns the panel with the state, rule and LTS views.
      */
-    public SimulatorPanel getSimulatorPanel() {
+    public DisplaysPanel getSimulatorPanel() {
         if (this.simulatorPanel == null) {
-            this.simulatorPanel = new SimulatorPanel(this);
+            this.simulatorPanel = new DisplaysPanel(this);
         }
         return this.simulatorPanel;
     }
@@ -347,7 +341,7 @@ public class Simulator implements SimulatorListener {
                                     // do nothing
                                 }
                             }
-                            getModel().setTabKind(TabKind.CONTROL);
+                            getModel().setDisplay(DisplayKind.CONTROL);
                         }
                     }
                 }
@@ -359,23 +353,10 @@ public class Simulator implements SimulatorListener {
     /** Error display. */
     private ErrorListPanel errorPanel;
 
-    /**
-     * Returns the simulator panel on which the current state is displayed. Note
-     * that this panel may currently not be visible.
-     */
-    public StatePanel getStatePanel() {
-        if (this.statePanel == null) {
-            // panel for state display
-            this.statePanel = new StatePanel(this);
-            this.statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        }
-        return this.statePanel;
-    }
-
     /** Returns the panel containing the control program. */
-    public ControlPanel getControlPanel() {
+    public ControlDisplay getControlPanel() {
         if (this.controlPanel == null) {
-            this.controlPanel = new ControlPanel(this);
+            this.controlPanel = new ControlDisplay(this);
             this.controlPanel.initialise();
             this.controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
@@ -383,50 +364,23 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Returns the simulator panel on which the currently selected production
-     * rule is displayed. Note that this panel may currently not be visible.
-     */
-    public RulePanel getRulePanel() {
-        if (this.rulePanel == null) {
-            // panel for production display
-            this.rulePanel = new RulePanel(this);
-            // res.setSize(preferredFrameDimension);
-            this.rulePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        }
-        return this.rulePanel;
-    }
-
-    /**
      * Returns the simulator panel on which the LTS. Note that this panel may
      * currently not be visible.
      */
-    public LTSPanel getLtsPanel() {
+    public LTSDisplay getLtsPanel() {
         if (this.ltsPanel == null) {
-            this.ltsPanel = new LTSPanel(this);
+            this.ltsPanel = new LTSDisplay(this);
             this.ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.ltsPanel;
     }
 
     /**
-     * Returns the simulator panel on which the current state is displayed. Note
-     * that this panel may currently not be visible.
-     */
-    public TypePanel getTypePanel() {
-        if (this.typePanel == null) {
-            // panel for state display
-            this.typePanel = new TypePanel(this);
-            this.typePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        }
-        return this.typePanel;
-    }
-
-    /**
      * Returns the prolog panel.
      */
-    public PrologPanel getPrologPanel() {
+    public PrologDisplay getPrologPanel() {
         if (this.prologPanel == null) {
-            this.prologPanel = new PrologPanel(this);
+            this.prologPanel = new PrologDisplay(this);
             this.prologPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.prologPanel;
@@ -434,7 +388,7 @@ public class Simulator implements SimulatorListener {
 
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
-        TabKind tabKind = getModel().getTabKind();
+        DisplayKind tabKind = getModel().getDisplay();
         JMenuItem exportItem = getExportMenuItem();
         Action exportAction = getActions().getExportAction(tabKind);
         if (exportAction == null) {
@@ -605,7 +559,7 @@ public class Simulator implements SimulatorListener {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedTab()));
+            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedDisplay()));
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
@@ -620,7 +574,7 @@ public class Simulator implements SimulatorListener {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
             this.copyGraphItem.setAction(getActions().getCopyAction(
-                getSimulatorPanel().getSelectedTab()));
+                getSimulatorPanel().getSelectedDisplay()));
         }
         return this.copyGraphItem;
     }
@@ -634,7 +588,7 @@ public class Simulator implements SimulatorListener {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
             this.deleteGraphItem.setAction(getActions().getDeleteAction(
-                getSimulatorPanel().getSelectedTab()));
+                getSimulatorPanel().getSelectedDisplay()));
         }
         return this.deleteGraphItem;
     }
@@ -647,7 +601,7 @@ public class Simulator implements SimulatorListener {
         if (this.renameGraphItem == null) {
             this.renameGraphItem =
                 new JMenuItem(getActions().getRenameAction(
-                    getSimulatorPanel().getSelectedTab()));
+                    getSimulatorPanel().getSelectedDisplay()));
         }
         return this.renameGraphItem;
     }
@@ -660,7 +614,7 @@ public class Simulator implements SimulatorListener {
         if (this.exportMenuItem == null) {
             this.exportMenuItem =
                 new JMenuItem(getActions().getExportAction(
-                    getSimulatorPanel().getSelectedTab()));
+                    getSimulatorPanel().getSelectedDisplay()));
         }
         return this.exportMenuItem;
     }
@@ -673,7 +627,7 @@ public class Simulator implements SimulatorListener {
         if (this.saveMenuItem == null) {
             this.saveMenuItem =
                 new JMenuItem(getActions().getSaveAsAction(
-                    getSimulatorPanel().getSelectedTab()));
+                    getSimulatorPanel().getSelectedDisplay()));
         }
         return this.saveMenuItem;
     }
@@ -897,23 +851,14 @@ public class Simulator implements SimulatorListener {
      */
     private JFrame frame;
 
-    /** Production rule display panel. */
-    private RulePanel rulePanel;
-
-    /** State display panel. */
-    private StatePanel statePanel;
-
     /** Control display panel. */
-    private ControlPanel controlPanel;
+    private ControlDisplay controlPanel;
 
     /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
-    private LTSPanel ltsPanel;
-
-    /** Type graph display panel. */
-    private TypePanel typePanel;
+    private LTSDisplay ltsPanel;
 
     /** Prolog display panel. */
-    private PrologPanel prologPanel;
+    private PrologDisplay prologPanel;
 
     /** Returns the history of simulation steps. */
     public StepHistory getStepHistory() {
@@ -924,7 +869,7 @@ public class Simulator implements SimulatorListener {
     private StepHistory stepHistory;
 
     /** background for displays. */
-    private SimulatorPanel simulatorPanel;
+    private DisplaysPanel simulatorPanel;
 
     /** History of recently opened grammars. */
     private SimulatorHistory history;

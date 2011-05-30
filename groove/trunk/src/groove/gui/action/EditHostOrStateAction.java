@@ -3,7 +3,6 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.StatePanel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import javax.swing.SwingUtilities;
 public class EditHostOrStateAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public EditHostOrStateAction(Simulator simulator) {
-        super(simulator, Options.EDIT_STATE_ACTION_NAME, Icons.EDIT_ICON);
+        super(simulator, Options.EDIT_STATE_ACTION_NAME, Icons.EDIT_GRAPH_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
     }
 
@@ -26,11 +25,13 @@ public class EditHostOrStateAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        boolean enabled =
-            getModel().getHost() != null || getModel().getState() != null;
+        boolean enabled = getModel().hasHost() || getModel().getState() != null;
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
+        boolean host = getModel().hasHost();
+        putValue(NAME, host ? Options.EDIT_GRAPH_ACTION_NAME
+                : Options.EDIT_STATE_ACTION_NAME);
     }
 
     /**
@@ -40,9 +41,12 @@ public class EditHostOrStateAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
-        AspectGraph graph = getStatePanel().getJModel().getGraph();
-        // find out if we're editing a host graph or a state
-        if (getModel().getHost() == null) {
+        if (getModel().hasHost()) {
+            getStateTab().doEdit(getModel().getHost().getAspectGraph());
+        } else {
+            AspectGraph graph =
+                getStateTab().getStatePanel().getJModel().getGraph();
+            // find out if we're editing a host graph or a state
             String newGraphName =
                 askNewGraphName("Select graph name", graph.getName(), true);
             if (newGraphName != null) {
@@ -52,20 +56,14 @@ public class EditHostOrStateAction extends SimulatorAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getPanel().doEditGraph(newGraph);
+                            getMainPanel().getStateTab().doEdit(newGraph);
                         }
                     });
                 } catch (IOException e) {
                     showErrorDialog(e, "Can't edit state '%s'", graph.getName());
                 }
             }
-        } else {
-            getPanel().doEditGraph(graph);
         }
         return false;
-    }
-
-    private StatePanel getStatePanel() {
-        return getSimulator().getStatePanel();
     }
 }

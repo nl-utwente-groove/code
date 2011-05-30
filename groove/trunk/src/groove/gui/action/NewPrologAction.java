@@ -10,7 +10,7 @@ import java.io.IOException;
 public class NewPrologAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public NewPrologAction(Simulator simulator) {
-        super(simulator, Options.NEW_PROLOG_ACTION_NAME, Icons.NEW_ICON);
+        super(simulator, Options.NEW_PROLOG_ACTION_NAME, Icons.NEW_PROLOG_ICON);
     }
 
     @Override

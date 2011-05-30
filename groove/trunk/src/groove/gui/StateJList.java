@@ -17,8 +17,8 @@
 package groove.gui;
 
 import groove.graph.GraphRole;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.lts.GTS;
@@ -65,8 +65,9 @@ public class StateJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected StateJList(final Simulator simulator) {
-        this.simulator = simulator;
+    protected StateJList(StateDisplay display) {
+        this.display = display;
+        this.simulator = display.getSimulator();
         this.listModel = new DefaultListModel();
         setModel(this.listModel);
         this.setEnabled(false);
@@ -320,6 +321,8 @@ public class StateJList extends JList implements SimulatorListener {
         return getSimulator().getActions();
     }
 
+    /** The display from which this list is derived. */
+    private final StateDisplay display;
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
@@ -340,8 +343,6 @@ public class StateJList extends JList implements SimulatorListener {
      */
     private Color enabledBackground;
 
-    /** The background colour of a selected cell if the list does not have focus. */
-    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
     static private final Border START_GRAPH_BORDER = new CompoundBorder(
         LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2));
 
@@ -381,7 +382,7 @@ public class StateJList extends JList implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setTabKind(TabKind.HOST);
+            getSimulatorModel().setDisplay(DisplayKind.HOST);
         }
     }
 
@@ -410,16 +411,7 @@ public class StateJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            if (isSelected && !StateJList.this.isFocusOwner()) {
-                Color foreground = Color.BLACK;
-                Color background = SELECTION_NON_FOCUS_COLOR;
-                if (getCurrentGTS() == null) {
-                    foreground = Color.WHITE;
-                    background = background.darker();
-                }
-                result.setForeground(foreground);
-                result.setBackground(background);
-            }
+            cellHasFocus = isSelected && StateJList.this.isFocusOwner();
             // set tool tips and special formats
             if (index == 0) {
                 // set the first item (the current state indicator) to special
@@ -431,11 +423,21 @@ public class StateJList extends JList implements SimulatorListener {
                 }
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setToolTipText("Currently selected state of the simulation");
-            } else if (value.toString().equals(getStartGraphName())) {
-                setFont(getFont().deriveFont(Font.BOLD));
-                setToolTipText("Current start graph");
             } else {
-                setToolTipText("Doubleclick to use as start graph");
+                if (value.toString().equals(getStartGraphName())) {
+                    setFont(getFont().deriveFont(Font.BOLD));
+                    setToolTipText("Current start graph");
+                } else {
+                    setToolTipText("Doubleclick to use as start graph");
+                }
+                setText(StateJList.this.display.getLabelText(value.toString()));
+                setIcon(StateJList.this.display.getListIcon(value.toString()));
+                boolean error =
+                    StateJList.this.display.hasError(value.toString());
+                setForeground(JAttr.getForeground(isSelected, cellHasFocus,
+                    error));
+                setBackground(JAttr.getBackground(isSelected, cellHasFocus,
+                    error));
             }
             return result;
         }

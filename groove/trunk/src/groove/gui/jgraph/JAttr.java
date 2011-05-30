@@ -273,8 +273,96 @@ public class JAttr {
 
     /** Maximum value of the colour dimensions. */
     static private final int MAX_VALUE = 255;
-    /** Colour used for indicating errors in the graph. */
+
+    /** Background colour used for selected items in focused lists. */
+    static public final Color FOCUS_BACKGROUND = Color.DARK_GRAY;
+    /** Text colour used for selected items in focused lists. */
+    static public final Color FOCUS_FOREGROUND = Color.WHITE;
+    /** Background colour used for selected items in non-focused lists. */
+    static public final Color SELECT_BACKGROUND = Color.LIGHT_GRAY;
+    /** Text colour used for selected items in non-focused lists. */
+    static public final Color SELECT_FOREGROUND = Color.BLACK;
+    /** Background colour used for non-selected items in lists. */
+    static public final Color NORMAL_BACKGROUND = Color.WHITE;
+    /** Text colour used for non-selected items in lists. */
+    static public final Color NORMAL_FOREGROUND = Color.BLACK;
+    /** Colour used for indicating errors in graphs. */
     static public final Color ERROR_COLOR = new Color(MAX_VALUE, 50, 0, 40);
+    /** Background colour used for focused error items in lists. */
+    static public final Color ERROR_FOCUS_BACKGROUND =
+        Color.RED.darker().darker();
+    /** Text colour used for focused error items in lists. */
+    static public final Color ERROR_FOCUS_FOREGROUND = Color.WHITE;
+    /** Background colour used for selected, non-focused error items in lists. */
+    static public final Color ERROR_SELECT_BACKGROUND = ERROR_COLOR;
+    /** Text colour used for selected, non-focused error items in lists. */
+    static public final Color ERROR_SELECT_FOREGROUND = Color.RED;
+    /** Background colour used for non-selected, non-focused error items in lists. */
+    static public final Color ERROR_NORMAL_BACKGROUND = Color.WHITE;
+    /** Text colour used for non-selected, non-focused error items in lists. */
+    static public final Color ERROR_NORMAL_FOREGROUND = Color.RED;
+
+    /**
+     * Returns the foreground colour to be used for list items, under
+     * certain conditions.
+     * @param selected indicates if the item is currently selected
+     * @param focused indicates if the list the item appears in is currently
+     * focused. (This is <i>not</i> the same as cell focus in a list.)
+     * @param error indicates if the cell is associated with an object with
+     * (syntax) errors
+     * @see #getBackground
+     */
+    static public Color getForeground(boolean selected, boolean focused,
+            boolean error) {
+        if (error) {
+            if (focused) {
+                return ERROR_FOCUS_FOREGROUND;
+            } else if (selected) {
+                return ERROR_SELECT_FOREGROUND;
+            } else {
+                return ERROR_NORMAL_FOREGROUND;
+            }
+        } else {
+            if (focused) {
+                return FOCUS_FOREGROUND;
+            } else if (selected) {
+                return SELECT_FOREGROUND;
+            } else {
+                return NORMAL_FOREGROUND;
+            }
+        }
+    }
+
+    /**
+     * Returns the foreground colour to be used for list items, under
+     * certain conditions.
+     * @param selected indicates if the item is currently selected
+     * @param focused indicates if the list the item appears in is currently
+     * focused. (This is <i>not</i> the same as cell focus in a list.)
+     * @param error indicates if the cell is associated with an object with
+     * (syntax) errors
+     * @see #getForeground
+     */
+    static public Color getBackground(boolean selected, boolean focused,
+            boolean error) {
+        if (error) {
+            if (focused) {
+                return ERROR_FOCUS_BACKGROUND;
+            } else if (selected) {
+                return ERROR_SELECT_BACKGROUND;
+            } else {
+                return ERROR_NORMAL_BACKGROUND;
+            }
+        } else {
+            if (focused) {
+                return FOCUS_BACKGROUND;
+            } else if (selected) {
+                return SELECT_BACKGROUND;
+            } else {
+                return NORMAL_BACKGROUND;
+            }
+        }
+    }
 
     /** Line width used for emphasised cells. */
     public static final int EMPH_WIDTH = 3;

@@ -19,6 +19,7 @@ package groove.gui.action;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.Icons;
+import groove.gui.JGraphPanel;
 import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -33,6 +34,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
+import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
@@ -44,12 +46,18 @@ public class RelabelGrammarAction extends SimulatorAction implements
     /** Constructs an instance of the action, for a given simulator. */
     public RelabelGrammarAction(Simulator simulator) {
         super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
-        simulator.getStatePanel().getJGraph().addGraphSelectionListener(this);
-        simulator.getStatePanel().getLabelTree().addTreeSelectionListener(this);
-        simulator.getRulePanel().getJGraph().addGraphSelectionListener(this);
-        simulator.getRulePanel().getLabelTree().addTreeSelectionListener(this);
-        simulator.getTypePanel().getJGraph().addGraphSelectionListener(this);
-        simulator.getTypePanel().getLabelTree().addTreeSelectionListener(this);
+        addAsListener(getStateTab().getMainPanel());
+        addAsListener(getRuleTab().getMainPanel());
+        addAsListener(getTypeTab().getMainPanel());
+    }
+
+    /**
+     * Adds this action as a listener to the {@link JGraph} and {@link LabelTree}
+     * of a given {@link JGraphPanel}.
+     */
+    private void addAsListener(JGraphPanel<?> panel) {
+        panel.getJGraph().addGraphSelectionListener(this);
+        panel.getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override
@@ -70,8 +78,8 @@ public class RelabelGrammarAction extends SimulatorAction implements
                         relabelling.two());
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
-                        "Error while renaming '%s' into '%s':", relabelling.one(),
-                        relabelling.two()));
+                    "Error while renaming '%s' into '%s':", relabelling.one(),
+                    relabelling.two()));
             }
         }
         return result;

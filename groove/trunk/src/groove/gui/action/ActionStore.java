@@ -17,15 +17,15 @@
 package groove.gui.action;
 
 import groove.graph.GraphRole;
-import groove.gui.JGraphPanel;
+import groove.gui.Display;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.SimulatorPanel.TabKind;
+import groove.gui.DisplaysPanel.DisplayKind;
+import groove.gui.TabbedDisplay;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -160,7 +160,7 @@ public class ActionStore implements SimulatorListener {
     private CheckCTLAction checkCTLAsIsAction;
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getCopyAction(TabKind kind) {
+    public SimulatorAction getCopyAction(DisplayKind kind) {
         switch (kind) {
         case CONTROL:
             return getCopyControlAction();
@@ -237,7 +237,7 @@ public class ActionStore implements SimulatorListener {
     private CopyTypeAction copyTypeAction;
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getDeleteAction(TabKind kind) {
+    public SimulatorAction getDeleteAction(DisplayKind kind) {
         switch (kind) {
         case CONTROL:
             return getDeleteControlAction();
@@ -314,7 +314,7 @@ public class ActionStore implements SimulatorListener {
     private DeleteTypeAction deleteTypeAction;
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getEditAction(TabKind kind) {
+    public SimulatorAction getEditAction(DisplayKind kind) {
         switch (kind) {
         case CONTROL:
             return getEditControlAction();
@@ -527,14 +527,15 @@ public class ActionStore implements SimulatorListener {
      */
     private ExplorationStatsDialogAction explorationStatsDialogAction;
 
-    /** Returns the copy action appropriate for a given simulator tab kind. */
-    public ExportAction getExportAction(TabKind kind) {
+    /** Returns the export action appropriate for a given simulator tab kind. */
+    public ExportAction getExportAction(DisplayKind kind) {
         if (!this.exportActionMap.containsKey(kind)) {
             ExportAction result = null;
-            Component panel =
-                this.simulator.getSimulatorPanel().getPanelFor(kind);
-            if (panel instanceof JGraphPanel) {
-                result = ((JGraphPanel<?>) panel).getJGraph().getExportAction();
+            Display display =
+                this.simulator.getSimulatorPanel().getDisplayFor(kind);
+            if (display instanceof TabbedDisplay) {
+                result =
+                    ((TabbedDisplay) display).getMainPanel().getJGraph().getExportAction();
             }
             // also put it in the map when the result is null,
             // so we don't try to compute it again
@@ -543,8 +544,8 @@ public class ActionStore implements SimulatorListener {
         return this.exportActionMap.get(kind);
     }
 
-    private Map<TabKind,ExportAction> exportActionMap =
-        new EnumMap<TabKind,ExportAction>(TabKind.class);
+    private Map<DisplayKind,ExportAction> exportActionMap =
+        new EnumMap<DisplayKind,ExportAction>(DisplayKind.class);
 
     /**
      * Returns the forward (= repeat) simulation action permanently associated
@@ -812,7 +813,7 @@ public class ActionStore implements SimulatorListener {
     private RelabelGrammarAction relabelAction;
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getRenameAction(TabKind kind) {
+    public SimulatorAction getRenameAction(DisplayKind kind) {
         switch (kind) {
         case CONTROL:
             return getRenameControlAction();
@@ -999,7 +1000,7 @@ public class ActionStore implements SimulatorListener {
      * Returns the save-as action for a given tab kind permanently
      * associated with this simulator.
      */
-    public SimulatorAction getSaveAsAction(TabKind kind) {
+    public SimulatorAction getSaveAsAction(DisplayKind kind) {
         SimulatorAction result = this.saveAsActionMap.get(kind);
         if (result == null) {
             switch (kind) {
@@ -1025,8 +1026,8 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from simulator tabs to corresponding save-as actions.
      */
-    private Map<TabKind,SimulatorAction> saveAsActionMap =
-        new EnumMap<TabKind,SimulatorAction>(TabKind.class);
+    private Map<DisplayKind,SimulatorAction> saveAsActionMap =
+        new EnumMap<DisplayKind,SimulatorAction>(DisplayKind.class);
 
     /**
      * Returns the Save LTS As action permanently associated with this simulator.

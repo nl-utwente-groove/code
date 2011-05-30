@@ -27,7 +27,7 @@ public class RenameTypeAction extends SimulatorAction {
             askNewTypeName("Select new type graph name", oldName, false);
         if (newName != null && !oldName.equals(newName)) {
             AspectGraph typeGraph = type.getAspectGraph();
-            if (getPanel().disposeEditors(typeGraph)) {
+            if (getTypeTab().disposeEditors(typeGraph)) {
                 try {
                     result = getModel().doRenameType(typeGraph, newName);
                 } catch (IOException exc) {

@@ -47,7 +47,7 @@ public class RenameRuleAction extends SimulatorAction {
         boolean result = false;
         // first collect the rule graphs involved
         AspectGraph rule = getModel().getRule().getAspectGraph();
-        if (confirmAbandon() && getPanel().disposeEditors(rule)) {
+        if (confirmAbandon() && getRuleTab().disposeEditors(rule)) {
             String oldName = rule.getName();
             String newName =
                 askNewRuleName("Select new rule name", oldName, true);

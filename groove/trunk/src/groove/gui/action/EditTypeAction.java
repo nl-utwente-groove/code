@@ -9,14 +9,14 @@ import groove.view.aspect.AspectGraph;
 public class EditTypeAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
     public EditTypeAction(Simulator simulator) {
-        super(simulator, Options.EDIT_TYPE_ACTION_NAME, Icons.EDIT_ICON);
+        super(simulator, Options.EDIT_TYPE_ACTION_NAME, Icons.EDIT_TYPE_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
     }
 
     @Override
     public boolean execute() {
         final AspectGraph initType = getModel().getType().getAspectGraph();
-        getPanel().doEditGraph(initType);
+        getMainPanel().getTypeTab().doEdit(initType);
         return false;
     }
 

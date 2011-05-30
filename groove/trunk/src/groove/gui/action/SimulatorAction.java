@@ -4,12 +4,15 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
-import groove.gui.ControlPanel;
-import groove.gui.PrologPanel;
+import groove.gui.ControlDisplay;
+import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
+import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.SimulatorPanel;
+import groove.gui.DisplaysPanel;
+import groove.gui.StateDisplay;
+import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.RelabelDialog;
@@ -74,23 +77,38 @@ public abstract class SimulatorAction extends AbstractAction implements
         return this.simulator.getActions();
     }
 
-    /** Convenience method to retrieve the simulator model. */
+    /** Convenience method to retrieve the frame of the simulator. */
     protected final JFrame getFrame() {
         return this.simulator.getFrame();
     }
 
-    /** Convenience method to retrieve the simulator model. */
-    protected final SimulatorPanel getPanel() {
+    /** Convenience method to retrieve the main simulator panel. */
+    protected final DisplaysPanel getMainPanel() {
         return this.simulator.getSimulatorPanel();
     }
 
+    /** Convenience method to retrieve the state panel of the simulator. */
+    protected final StateDisplay getStateTab() {
+        return getMainPanel().getStateTab();
+    }
+
+    /** Convenience method to retrieve the rule panel of the simulator */
+    protected final RuleDisplay getRuleTab() {
+        return getMainPanel().getRuleTab();
+    }
+
+    /** Convenience method to retrieve the type panel of the simulator. */
+    protected final TypeDisplay getTypeTab() {
+        return getMainPanel().getTypeTab();
+    }
+
     /** Returns the control panel that owns the action. */
-    final protected ControlPanel getControlPanel() {
+    final protected ControlDisplay getControlPanel() {
         return this.simulator.getControlPanel();
     }
 
     /** Returns the prolog panel that owns the action. */
-    final protected PrologPanel getPrologPanel() {
+    final protected PrologDisplay getPrologPanel() {
         return this.simulator.getPrologPanel();
     }
 

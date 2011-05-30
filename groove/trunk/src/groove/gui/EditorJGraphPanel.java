@@ -50,6 +50,7 @@ class EditorJGraphPanel extends JGraphPanel<AspectJGraph> {
         super(editor.getJGraph(), false);
         this.editor = editor;
         this.role = editor.getRole();
+        setEnabledBackground(JAttr.EDITOR_BACKGROUND);
     }
 
     @Override

@@ -8,7 +8,7 @@ import groove.gui.Simulator;
 public class SetStartGraphAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public SetStartGraphAction(Simulator simulator) {
-        super(simulator, Options.START_GRAPH_ACTION_NAME, Icons.START_ICON);
+        super(simulator, Options.START_GRAPH_ACTION_NAME, Icons.ENABLE_ICON);
     }
 
     @Override

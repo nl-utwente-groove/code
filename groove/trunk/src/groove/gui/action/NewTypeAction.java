@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import static groove.graph.GraphRole.TYPE;
+import groove.graph.GraphInfo;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -24,13 +25,16 @@ public class NewTypeAction extends SimulatorAction {
             askNewTypeName("Select type graph name", Groove.DEFAULT_TYPE_NAME,
                 true);
         if (typeName != null) {
-            final AspectGraph initType = AspectGraph.emptyGraph(typeName, TYPE);
+            final AspectGraph initType =
+                AspectGraph.emptyGraph(typeName, TYPE).clone();
+            GraphInfo.getProperties(initType, true).setEnabled(false);
+            initType.setFixed();
             try {
                 getModel().doAddType(initType);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getPanel().doEditGraph(initType);
+                        getMainPanel().getTypeTab().doEdit(initType);
                     }
                 });
             } catch (IOException e) {

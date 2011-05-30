@@ -26,7 +26,7 @@ public class DeleteTypeAction extends SimulatorAction {
         AspectGraph typeGraph = type.getAspectGraph();
         if (confirmBehaviour(Options.DELETE_TYPE_OPTION,
             String.format("Delete type graph '%s'?", typeName))
-            && getPanel().disposeEditors(typeGraph)) {
+            && getTypeTab().disposeEditors(typeGraph)) {
             try {
                 result = getModel().doDeleteType(typeName);
             } catch (IOException exc) {
