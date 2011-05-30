@@ -11,6 +11,7 @@ public class EditControlAction extends SimulatorAction {
         super(simulator, Options.EDIT_CONTROL_ACTION_NAME,
             Icons.EDIT_CONTROL_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
+        getControlPanel().addRefreshable(this);
     }
 
     @Override

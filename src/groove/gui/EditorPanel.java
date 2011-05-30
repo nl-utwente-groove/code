@@ -72,7 +72,7 @@ public class EditorPanel extends JPanel implements SimulatorListener {
 
                 @Override
                 JToolBar createToolBar() {
-                    JToolBar toolbar = new JToolBar();
+                    JToolBar toolbar = Options.createToolBar();
                     toolbar.add(getSaveButton());
                     toolbar.add(getCancelButton());
                     addModeButtons(toolbar);

@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.graph.GraphRole;
+import groove.gui.LabelTree;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -165,6 +166,12 @@ public class LTSJGraph extends GraphJGraph {
      */
     protected final JMenu createCheckerMenu() {
         return new ModelCheckingMenu(this.simulator);
+    }
+
+    @Override
+    protected LabelTree createLabelTree() {
+        // no tool bar on the label tree
+        return new LabelTree(this, false);
     }
 
     @Override

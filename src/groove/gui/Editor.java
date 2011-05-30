@@ -715,7 +715,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates and returns the tool bar.
      */
     JToolBar createToolBar() {
-        JToolBar result = new JToolBar();
+        JToolBar result = Options.createToolBar();
         addFileButtons(result);
         addTypeButtons(result);
         addModeButtons(result);

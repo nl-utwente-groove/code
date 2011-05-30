@@ -245,6 +245,14 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.errors;
     }
 
+    /** Collects and returns the permanent errors of the active control view. */
+    public List<FormatError> getCtrlErrors() {
+        if (this.errors == null) {
+            initGrammar();
+        }
+        return this.ctrlErrors;
+    }
+
     /** Returns the labels occurring in this grammar view. */
     public final LabelStore getLabelStore() {
         if (this.labelStore == null) {
@@ -347,11 +355,17 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
+        this.ctrlErrors = new ArrayList<FormatError>();
         try {
             this.grammar = computeGrammar();
             this.errors = Collections.emptyList();
         } catch (FormatException exc) {
             this.errors = exc.getErrors();
+            for (FormatError error : this.errors) {
+                if (error.getControl() != null && error.getSubError() != null) {
+                    this.ctrlErrors.add(error);
+                }
+            }
         }
     }
 
@@ -456,6 +470,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     void invalidate() {
         this.grammar = null;
         this.errors = null;
+        this.ctrlErrors = null;
         this.labelStore = null;
         this.controlPropertyAdjusted = false;
         this.compositeTypeView = null;
@@ -522,6 +537,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     private String startGraphName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<FormatError> errors;
+    /** Possibly empty list of errors found in the active control view. */
+    private List<FormatError> ctrlErrors;
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
     /** The labels occurring in this view. */

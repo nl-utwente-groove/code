@@ -237,7 +237,7 @@ public class TypeJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (TypeJList.this.isEnabled() && cellSelected) {
-                    getActions().getEnableTypeAction().execute();
+                    getActions().getEditTypeAction().execute();
                 }
             }
         }
@@ -276,21 +276,11 @@ public class TypeJList extends JList implements SimulatorListener {
             boolean error = TypeJList.this.display.hasError(value.toString());
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
-            //            if (isSelected && !TypeJList.this.isFocusOwner()) {
-            //                Color foreground = Color.BLACK;
-            //                Color background = SELECTION_NON_FOCUS_COLOR;
-            //                if (getCurrentGTS() == null) {
-            //                    foreground = Color.WHITE;
-            //                    background = background.darker();
-            //                }
-            //                result.setForeground(foreground);
-            //                result.setBackground(background);
-            //            }
             // set tool tips and special formats
             if (getGrammar().getTypeView(value.toString()).isEnabled()) {
-                setToolTipText("Enabled type graph; doubleclick to disable");
+                setToolTipText("Enabled type graph; doubleclick to edit");
             } else {
-                setToolTipText("Disabled type graph; doubleclick to enable");
+                setToolTipText("Disabled type graph; doubleclick to edit");
             }
             setIcon(TypeJList.this.display.getListIcon(value.toString()));
             setText(TypeJList.this.display.getLabelText(value.toString()));

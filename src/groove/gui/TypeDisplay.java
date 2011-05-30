@@ -24,7 +24,6 @@ import groove.view.TypeView;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -122,9 +121,8 @@ final public class TypeDisplay extends TabbedDisplay implements
 
     /** Creates a tool bar for the types list. */
     private JToolBar createListToolBar() {
-        JToolBar result = getSimulator().createToolBar();
+        JToolBar result = Options.createToolBar();
         result.add(getActions().getNewTypeAction());
-        result.add(getActions().getEditTypeAction());
         result.addSeparator();
         result.add(getActions().getCopyTypeAction());
         result.add(getActions().getDeleteTypeAction());
@@ -138,10 +136,7 @@ final public class TypeDisplay extends TabbedDisplay implements
     private JToggleButton getEnableButton() {
         if (this.enableButton == null) {
             this.enableButton =
-                new JToggleButton(getActions().getEnableTypeAction());
-            this.enableButton.setText(null);
-            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
-            this.enableButton.setFocusable(false);
+                Options.createToggleButton(getActions().getEnableTypeAction());
         }
         return this.enableButton;
     }

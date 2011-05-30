@@ -5,12 +5,12 @@ import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
+import groove.gui.DisplaysPanel;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.DisplaysPanel;
 import groove.gui.StateDisplay;
 import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
@@ -59,7 +59,9 @@ public abstract class SimulatorAction extends AbstractAction implements
         this.simulator = simulator;
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
-        simulator.getActions().addRefreshable(this);
+        if (simulator != null) {
+            simulator.getActions().addRefreshable(this);
+        }
     }
 
     /** The simulator on which this action works. */
@@ -380,6 +382,13 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected JFileChooser getStateFileChooser() {
         return GrooveFileChooser.getFileChooser(FileType.HOSTS_FILTER);
+    }
+
+    /**
+     * Return a file chooser for prolog files
+     */
+    final protected JFileChooser getPrologFileChooser() {
+        return GrooveFileChooser.getFileChooser(FileType.PROLOG_FILTER);
     }
 
     /**

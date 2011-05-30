@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
@@ -70,17 +71,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     @Override
     public JPanel getListPanel() {
         if (this.ruleTreePanel == null) {
-            // set title and toolbar
-            //            JLabel labelPaneTitle =
-            //                new JLabel(" " + Options.RULES_PANE_TITLE + " ");
-            //            labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
             JToolBar labelTreeToolbar = createRuleTreeToolBar();
-            //            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-            //
-            //            Box labelPaneTop = Box.createVerticalBox();
-            //            labelPaneTop.add(labelPaneTitle);
-            //            labelPaneTop.add(labelTreeToolbar);
-
             // make sure the preferred width is not smaller than the minimum
             // width
             JScrollPane ruleJTreePanel = new JScrollPane(getRuleTree()) {
@@ -106,14 +97,14 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
 
     /** Creates a tool bar for the rule tree. */
     private JToolBar createRuleTreeToolBar() {
-        JToolBar result = getSimulator().createToolBar();
+        JToolBar result = Options.createToolBar();
         result.add(getActions().getNewRuleAction());
-        result.add(getActions().getEditRuleAction());
         result.addSeparator(new Dimension(7, 0));
         result.add(getActions().getCopyRuleAction());
         result.add(getActions().getDeleteRuleAction());
         result.add(getActions().getRenameRuleAction());
         result.addSeparator(new Dimension(7, 0));
+        result.add(getEnableButton());
         result.add(getActions().getShiftPriorityAction(true));
         result.add(getActions().getShiftPriorityAction(false));
         return result;
@@ -139,6 +130,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.RULE)) {
             RuleView rule = source.getRule();
             setSelectedTab(rule == null ? null : rule.getName());
+            getEnableButton().setSelected(rule != null && rule.isEnabled());
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
             getRuleTree().dispose();
@@ -175,6 +167,15 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
         getSimulatorModel().setRule(getSelectedName());
     }
 
+    /** The type enable button. */
+    private JToggleButton getEnableButton() {
+        if (this.enableButton == null) {
+            this.enableButton =
+                Options.createToggleButton(getActions().getEnableRuleAction());
+        }
+        return this.enableButton;
+    }
+
     private RulePanel rulePanel;
     /** Production rule directory. */
     private RuleJTree ruleJTree;
@@ -182,6 +183,8 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     /** Panel with the ruleJTree plus toolbar. */
     private JPanel ruleTreePanel;
 
+    /** The type enable button. */
+    private JToggleButton enableButton;
     /**
      * Minimum width of the rule tree component.
      */

@@ -97,7 +97,7 @@ public final class Icons {
     public static final ImageIcon GPS_FOLDER_ICON = createIcon("gps.gif");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON =
-        createIcon("graph-mode.gif");
+        createIcon("control-mode.gif");
     /** Icon for Control Panel. */
     public static final ImageIcon CONTROL_FRAME_ICON =
         createIcon("cp-frame.gif");
@@ -218,5 +218,4 @@ public final class Icons {
             return tk.createCustomCursor(cursorImage, new Point(0, 0), name);
         }
     }
-
 }

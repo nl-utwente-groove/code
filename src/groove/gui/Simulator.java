@@ -64,21 +64,16 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.undo.UndoManager;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
@@ -268,31 +263,6 @@ public class Simulator implements SimulatorListener {
             this.simulatorPanel = new DisplaysPanel(this);
         }
         return this.simulatorPanel;
-    }
-
-    /** Creates a non-floatable tool bar of which the buttons are non-focusable. */
-    JToolBar createToolBar() {
-        JToolBar result = new JToolBar() {
-            @Override
-            protected JButton createActionComponent(Action a) {
-                final JButton result = super.createActionComponent(a);
-                result.setFocusable(false);
-                result.setBorderPainted(false);
-                result.addChangeListener(new ChangeListener() {
-
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        result.setBorderPainted(result.isEnabled());
-                    }
-                });
-                return result;
-            }
-        };
-        result.setFloatable(false);
-        result.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-        // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(result);
-        return result;
     }
 
     private ErrorListPanel getErrorPanel() {

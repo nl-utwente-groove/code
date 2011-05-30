@@ -623,34 +623,37 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
         @Override
         public void mousePressed(MouseEvent evt) {
+            TreePath path = getPathForLocation(evt.getX(), evt.getY());
             if (evt.getButton() == MouseEvent.BUTTON3) {
-                TreePath selectedPath =
-                    getPathForLocation(evt.getX(), evt.getY());
-                if (selectedPath != null) {
+                if (path != null) {
                     TreePath[] paths = getSelectionPaths();
                     boolean pathIsSelected = false;
                     for (int i = 0; paths != null && i < paths.length; i++) {
-                        if (selectedPath.equals(paths[i])) {
+                        if (path.equals(paths[i])) {
                             pathIsSelected = true;
                         }
                     }
                     if (pathIsSelected == false) {
-                        setSelectionPath(selectedPath);
+                        setSelectionPath(path);
                     }
                 }
             }
-            DisplayKind newTab = null;
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
             if (path != null) {
+                DisplayKind display = null;
                 if (path.getLastPathComponent() instanceof RuleTreeNode) {
-                    newTab = DisplayKind.RULE;
+                    display = DisplayKind.RULE;
                 } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
-                    newTab = DisplayKind.HOST;
+                    display = DisplayKind.HOST;
                 } else {
-                    newTab = DisplayKind.LTS;
+                    display = DisplayKind.LTS;
                 }
-                if (newTab != null) {
-                    getSimulatorModel().setDisplay(newTab);
+                if (evt.getClickCount() == 1) {
+                    if (display != null) {
+                        getSimulatorModel().setDisplay(display);
+                    }
+                } else if (evt.getClickCount() == 2
+                    && display == DisplayKind.RULE) { // Left double click
+                    getActions().getEditRuleAction().execute();
                 }
             }
             maybeShowPopup(evt);

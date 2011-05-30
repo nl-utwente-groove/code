@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.graph.GraphRole;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
@@ -47,7 +46,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -135,25 +133,6 @@ public class StateJList extends JList implements SimulatorListener {
             }
         }
         super.setEnabled(enabled);
-    }
-
-    /** Creates a tool bar for the states list. */
-    void fillToolBar(JToolBar result) {
-        result.add(getActions().getNewHostAction());
-        result.add(getActions().getEditHostOrStateAction());
-        if (getSimulatorModel().hasHost()) {
-            result.addSeparator();
-            result.add(getActions().getCopyHostAction());
-            result.add(getActions().getDeleteHostAction());
-            result.add(getActions().getRenameHostAction());
-            result.addSeparator();
-            result.add(getActions().getSetStartGraphAction());
-        } else {
-            result.add(getActions().getSaveGraphAction(GraphRole.HOST));
-            result.addSeparator();
-            result.add(getActions().getBackAction());
-            result.add(getActions().getForwardAction());
-        }
     }
 
     /**
@@ -371,8 +350,8 @@ public class StateJList extends JList implements SimulatorListener {
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (StateJList.this.isEnabled() && index > 0 && cellSelected) {
-                    getActions().getSetStartGraphAction().execute();
+                if (StateJList.this.isEnabled() && cellSelected) {
+                    getActions().getEditHostOrStateAction().execute();
                 }
             }
         }
@@ -425,7 +404,7 @@ public class StateJList extends JList implements SimulatorListener {
                 if (value.toString().equals(getStartGraphName())) {
                     setToolTipText("Current start graph");
                 } else {
-                    setToolTipText("Doubleclick to use as start graph");
+                    setToolTipText("Potential start graph");
                 }
                 setText(StateJList.this.display.getLabelText(value.toString()));
                 setIcon(StateJList.this.display.getListIcon(value.toString()));

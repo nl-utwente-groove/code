@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.gui.LabelTree;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
@@ -42,7 +43,8 @@ public class CtrlJGraph extends GraphJGraph {
      *        <code>null</code>.
      */
     public CtrlJGraph(Simulator simulator) {
-        super(simulator == null ? null : simulator.getOptions(), true);
+        super(simulator.getOptions(), true);
+        this.simulator = simulator;
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getSetLayoutMenu().selectLayoutAction(
             createInitialLayouter().newInstance((this)));
@@ -84,6 +86,12 @@ public class CtrlJGraph extends GraphJGraph {
         return new MyForestLayouter();
     }
 
+    @Override
+    protected LabelTree createLabelTree() {
+        // no tool bar on the label tree
+        return new LabelTree(this, false);
+    }
+
     /**
      * Overwrites the menu, so the forest layouter takes the Control start state
      * as its root.
@@ -94,6 +102,13 @@ public class CtrlJGraph extends GraphJGraph {
         result.addLayoutItem(createInitialLayouter());
         return result;
     }
+
+    @Override
+    public Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    private final Simulator simulator;
 
     /** The default node attributes of the control automaton */
     static public final JAttr.AttributeMap CONTROL_NODE_ATTR;

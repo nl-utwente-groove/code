@@ -58,6 +58,19 @@ public class CtrlView {
         }
     }
 
+    /** Indicates if this control program has errors, when compiled against a given
+     * graph grammar.
+     */
+    public boolean hasErrors(GraphGrammar grammar) {
+        boolean result = false;
+        try {
+            toCtrlAut(grammar);
+        } catch (FormatException e) {
+            result = true;
+        }
+        return result;
+    }
+
     /**
      * Returns a unique identifier for the location, set by the
      * LocationAutomatonBuilder
