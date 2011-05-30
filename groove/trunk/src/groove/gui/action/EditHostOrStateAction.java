@@ -29,8 +29,7 @@ public class EditHostOrStateAction extends SimulatorAction {
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
-        boolean host = getModel().hasHost();
-        putValue(NAME, host ? Options.EDIT_GRAPH_ACTION_NAME
+        putValue(NAME, getModel().hasHost() ? Options.EDIT_GRAPH_ACTION_NAME
                 : Options.EDIT_STATE_ACTION_NAME);
     }
 

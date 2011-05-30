@@ -983,6 +983,13 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** 
+     * Indicates if any rule has been selected.
+     */
+    public final boolean hasRule() {
+        return !this.ruleSet.isEmpty();
+    }
+
     /** Returns the currently selected rule. */
     public final RuleView getRule() {
         return this.ruleSet.isEmpty() ? null : this.ruleSet.iterator().next();
@@ -1061,6 +1068,13 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** 
+     * Indicates if any type has been selected.
+     */
+    public final boolean hasType() {
+        return this.type != null;
+    }
+
     /** Returns the currently selected type graph. */
     public final TypeView getType() {
         return this.type;
@@ -1122,6 +1136,13 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** 
+     * Indicates if any control program has been selected.
+     */
+    public final boolean hasControl() {
+        return getControl() != null;
+    }
+
     /** Returns the currently selected control program. */
     public final CtrlView getControl() {
         return this.control;
@@ -1175,7 +1196,14 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** Returns the currently selected type graph. */
+    /** 
+     * Indicates if any prolog program has been selected.
+     */
+    public final boolean hasProlog() {
+        return getProlog() != null;
+    }
+
+    /** Returns the currently selected prolog program. */
     public final PrologView getProlog() {
         return this.prolog;
     }

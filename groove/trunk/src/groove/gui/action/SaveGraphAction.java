@@ -141,9 +141,27 @@ public final class SaveGraphAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(this.editor == null ? getGraph() != null
-                : this.editor.isDirty());
-        if (isEnabled()) {
+        boolean enabled;
+        if (this.editor == null) {
+            switch (getRole()) {
+            case HOST:
+                enabled = getModel().hasHost() || getModel().hasState();
+                break;
+            case RULE:
+                enabled = getModel().hasRule();
+                break;
+            case TYPE:
+                enabled = getModel().hasType();
+                break;
+            default:
+                assert false;
+                enabled = false;
+            }
+        } else {
+            enabled = this.editor.isDirty();
+        }
+        setEnabled(enabled);
+        if (enabled) {
             String name;
             if (getRole() == GraphRole.HOST && !getModel().hasHost()) {
                 name = Options.getSaveStateActionName(this.saveAs);
