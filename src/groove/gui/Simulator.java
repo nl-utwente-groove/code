@@ -225,7 +225,7 @@ public class Simulator implements SimulatorListener {
 
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getSimulatorPanel().getRuleTab().getListPanel(),
+                    getSimulatorPanel().getRuleListPanel(),
                     getSimulatorPanel().getListsPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);

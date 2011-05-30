@@ -26,8 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Set;
 
-import javax.swing.Box;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -63,15 +61,15 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     public JPanel getListPanel() {
         if (this.ruleTreePanel == null) {
             // set title and toolbar
-            JLabel labelPaneTitle =
-                new JLabel(" " + Options.RULES_PANE_TITLE + " ");
-            labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            //            JLabel labelPaneTitle =
+            //                new JLabel(" " + Options.RULES_PANE_TITLE + " ");
+            //            labelPaneTitle.setAlignmentX(JLabel.LEFT_ALIGNMENT);
             JToolBar labelTreeToolbar = createRuleTreeToolBar();
-            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-
-            Box labelPaneTop = Box.createVerticalBox();
-            labelPaneTop.add(labelPaneTitle);
-            labelPaneTop.add(labelTreeToolbar);
+            //            labelTreeToolbar.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+            //
+            //            Box labelPaneTop = Box.createVerticalBox();
+            //            labelPaneTop.add(labelPaneTitle);
+            //            labelPaneTop.add(labelTreeToolbar);
 
             // make sure the preferred width is not smaller than the minimum
             // width
@@ -87,7 +85,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
                 RULE_TREE_MINIMUM_WIDTH, RULE_TREE_MINIMUM_HEIGHT));
 
             this.ruleTreePanel = new JPanel(new BorderLayout(), false);
-            this.ruleTreePanel.add(labelPaneTop, BorderLayout.NORTH);
+            this.ruleTreePanel.add(labelTreeToolbar, BorderLayout.NORTH);
             this.ruleTreePanel.add(ruleJTreePanel, BorderLayout.CENTER);
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(

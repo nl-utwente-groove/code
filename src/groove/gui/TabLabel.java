@@ -86,12 +86,14 @@ public class TabLabel extends JPanel {
         //No need to be focusable
         setFocusable(false);
         setOpaque(false);
+        setBorder(null);
         this.iconLabel = new JLabel(title, icon, 0);
         this.iconLabel.setBackground(JAttr.ERROR_COLOR);
+        this.iconLabel.setBorder(null);
         add(this.iconLabel);
         //tab button
         if (panel instanceof EditorPanel) {
-            JButton button = new TabButton();
+            JButton button = new CancelButton();
             add(button);
         }
     }
@@ -118,8 +120,8 @@ public class TabLabel extends JPanel {
     private final JLabel iconLabel;
 
     /** Cancel button. */
-    private class TabButton extends JButton implements ActionListener {
-        public TabButton() {
+    private class CancelButton extends JButton implements ActionListener {
+        public CancelButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText("Cancel editing");
@@ -172,7 +174,7 @@ public class TabLabel extends JPanel {
         }
     }
 
-    /** Listener that arms any {@link TabButton} that the mouse comes over. */
+    /** Listener that arms any {@link CancelButton} that the mouse comes over. */
     private final static MouseListener buttonMouseListener =
         new MouseAdapter() {
             @Override

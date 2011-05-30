@@ -49,11 +49,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public DisplaysPanel(final Simulator simulator) {
         super(TOP);
         this.simulator = simulator;
-        addTab(getStateTab());
-        addTab(getRuleTab());
+        addTab(getStateDisplay());
+        addTab(getRuleDisplay());
         addTab(simulator.getLtsPanel());
         addTab(simulator.getControlPanel());
-        addTab(getTypeTab());
+        addTab(getTypeDisplay());
         if (Groove.INCLUDE_PROLOG) {
             addTab(simulator.getPrologPanel());
         }
@@ -110,32 +110,42 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         removeChangeListener(this.tabListener);
     }
 
-    /** Returns the rule tab shown on this panel. */
-    public StateDisplay getStateTab() {
-        if (this.stateTab == null) {
-            this.stateTab = new StateDisplay(this.simulator);
+    /** Returns the state and graph display shown on this panel. */
+    public StateDisplay getStateDisplay() {
+        if (this.stateDisplay == null) {
+            this.stateDisplay = new StateDisplay(this.simulator);
         }
-        return this.stateTab;
+        return this.stateDisplay;
     }
 
-    /** Returns the rule tab shown on this panel. */
-    public RuleDisplay getRuleTab() {
-        if (this.ruleTab == null) {
-            this.ruleTab = new RuleDisplay(this.simulator);
+    /** Returns the rule display shown on this panel. */
+    public RuleDisplay getRuleDisplay() {
+        if (this.ruleDisplay == null) {
+            this.ruleDisplay = new RuleDisplay(this.simulator);
         }
-        return this.ruleTab;
+        return this.ruleDisplay;
     }
 
-    /** Returns the rule tab shown on this panel. */
-    public TypeDisplay getTypeTab() {
-        if (this.typeTab == null) {
-            this.typeTab = new TypeDisplay(this.simulator);
+    /** Returns the type display shown on this panel. */
+    public TypeDisplay getTypeDisplay() {
+        if (this.typeDisplay == null) {
+            this.typeDisplay = new TypeDisplay(this.simulator);
         }
-        return this.typeTab;
+        return this.typeDisplay;
+    }
+
+    /** Tabbed pane holding the rule list.
+     * @see Display#getListPanel()
+     */
+    public JTabbedPane getRuleListPanel() {
+        if (this.rulePanel == null) {
+            this.rulePanel = new JTabbedPane();
+        }
+        return this.rulePanel;
     }
 
     /** Tabbed pane holding the list panels of the various components on the 
-     * {@link DisplaysPanel}.
+     * {@link DisplaysPanel}, except for the rule list.
      * @see Display#getListPanel()
      */
     public JTabbedPane getListsPanel() {
@@ -162,9 +172,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 getListsPanel().setSelectedComponent(listPanel);
             }
         } else {
-            Display tab = (Display) getSelectedComponent();
+            Display display = (Display) getSelectedComponent();
             String changedTo = null;
-            switch (tab.getKind()) {
+            switch (display.getKind()) {
             case HOST:
                 if (changes.contains(Change.HOST)
                     && getSimulatorModel().hasHost()) {
@@ -241,12 +251,12 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Reattaches a component at its proper place. */
-    public void attach(Display component) {
-        if (indexOfComponent(component.getPanel()) >= 0) {
+    public void attach(Display display) {
+        if (indexOfComponent(display.getPanel()) >= 0) {
             // the component is already attached; don't do anything
             return;
         }
-        DisplayKind myKind = component.getKind();
+        DisplayKind myKind = display.getKind();
         int index;
         for (index = 0; index < getTabCount(); index++) {
             DisplayKind otherKind = ((Display) getComponentAt(index)).getKind();
@@ -255,14 +265,19 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             }
         }
-        insertTab(null, null, component.getPanel(), myKind.getName(), index);
+        insertTab(null, null, display.getPanel(), myKind.getName(), index);
         JLabel tabComponent = new JLabel(myKind.getTabIcon());
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
         // now add the corresponding list panel
-        JPanel listPanel = component.getListPanel();
-        if (listPanel != null
+        JPanel listPanel = display.getListPanel();
+        JTabbedPane tabbedPane = null;
+        if (display.getKind() == DisplayKind.RULE) {
+            tabbedPane = getRuleListPanel();
+            index = 0;
+        } else if (listPanel != null
             && getListsPanel().indexOfComponent(listPanel) < 0) {
+            tabbedPane = getListsPanel();
             for (index = 0; index < getListsPanel().getTabCount(); index++) {
                 DisplayKind otherKind =
                     this.listKindMap.get(getListsPanel().getComponentAt(index));
@@ -271,16 +286,18 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                     break;
                 }
             }
-            getListsPanel().insertTab(null, myKind.getTabIcon(), listPanel,
+        }
+        if (tabbedPane != null) {
+            tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
                 myKind.getName(), index);
         }
-        setSelectedComponent(component.getPanel());
+        setSelectedComponent(display.getPanel());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
-    public void detach(Display component) {
+    public void detach(Display display) {
         revertSelection();
-        new MyTabWindow(component);
+        new DisplayWindow(this, display);
     }
 
     /** Returns the parent frame of an editor panel, if the editor is not
@@ -365,12 +382,12 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      * @return {@code true} if all editors were disposed.
      */
     public boolean disposeAllEditors() {
-        boolean result = getStateTab().disposeAllEditors();
+        boolean result = getStateDisplay().disposeAllEditors();
         if (result) {
-            result = getRuleTab().disposeAllEditors();
+            result = getRuleDisplay().disposeAllEditors();
         }
         if (result) {
-            result = getTypeTab().disposeAllEditors();
+            result = getTypeDisplay().disposeAllEditors();
         }
         return result;
     }
@@ -393,11 +410,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         new HashMap<DisplayKind,JPanel>();
 
     /** The rule tab shown on this panel. */
-    private StateDisplay stateTab;
+    private StateDisplay stateDisplay;
     /** The rule tab shown on this panel. */
-    private RuleDisplay ruleTab;
+    private RuleDisplay ruleDisplay;
     /** The type tab shown on this panel. */
-    private TypeDisplay typeTab;
+    private TypeDisplay typeDisplay;
+    /** Panel with the rule list. */
+    private JTabbedPane rulePanel;
     /** Panel with the graphs and types lists. */
     private JTabbedPane listsPanel;
     /** Listener to tab changes. */
@@ -408,17 +427,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private boolean changingTabs;
     /** The previously selected tab. */
     private Component lastSelected;
-
-    private class MyTabWindow extends DisplayWindow {
-        public MyTabWindow(Display tab) {
-            super(tab);
-        }
-
-        @Override
-        protected void attach() {
-            DisplaysPanel.this.attach(getTab());
-        }
-    }
 
     /** Type of components in the panel. */
     public static enum DisplayKind {
