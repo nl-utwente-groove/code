@@ -19,13 +19,12 @@ package groove.gui;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
-import groove.lts.GTS;
+import groove.gui.jgraph.JAttr;
 import groove.view.StoredGrammarView;
 import groove.view.TypeView;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -52,8 +51,8 @@ public class TypeJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected TypeJList(final Simulator simulator) {
-        this.simulator = simulator;
+    protected TypeJList(TypeDisplay display) {
+        this.display = display;
         this.setEnabled(false);
         this.setCellRenderer(new MyCellRenderer());
         installListeners();
@@ -185,31 +184,18 @@ public class TypeJList extends JList implements SimulatorListener {
         return getSimulatorModel().getGrammar();
     }
 
-    /** Convenience method to retrieve the current GTS from the simulator. */
-    private GTS getCurrentGTS() {
-        return getSimulatorModel().getGts();
-    }
-
-    /** Returns the simulator to which the state list belongs. */
-    private Simulator getSimulator() {
-        return this.simulator;
-    }
-
     /** Returns the simulator to which the state list belongs. */
     private SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
+        return this.display.getSimulatorModel();
     }
 
     /** Returns the simulator to which the state list belongs. */
     private ActionStore getActions() {
-        return getSimulator().getActions();
+        return this.display.getActions();
     }
 
-    /**
-     * The simulator to which this directory belongs.
-     * @invariant simulator != null
-     */
-    private final Simulator simulator;
+    /** The display from which this list is derived. */
+    private final TypeDisplay display;
     private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
@@ -221,9 +207,6 @@ public class TypeJList extends JList implements SimulatorListener {
      * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
-
-    /** The background colour of a selected cell if the list does not have focus. */
-    static private final Color SELECTION_NON_FOCUS_COLOR = Color.LIGHT_GRAY;
 
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
@@ -290,27 +273,30 @@ public class TypeJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            if (isSelected && !TypeJList.this.isFocusOwner()) {
-                Color foreground = Color.BLACK;
-                Color background = SELECTION_NON_FOCUS_COLOR;
-                if (getCurrentGTS() == null) {
-                    foreground = Color.WHITE;
-                    background = background.darker();
-                }
-                result.setForeground(foreground);
-                result.setBackground(background);
-            }
+            boolean error = TypeJList.this.display.hasError(value.toString());
+            setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
+            setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
+            //            if (isSelected && !TypeJList.this.isFocusOwner()) {
+            //                Color foreground = Color.BLACK;
+            //                Color background = SELECTION_NON_FOCUS_COLOR;
+            //                if (getCurrentGTS() == null) {
+            //                    foreground = Color.WHITE;
+            //                    background = background.darker();
+            //                }
+            //                result.setForeground(foreground);
+            //                result.setBackground(background);
+            //            }
             // set tool tips and special formats
             if (getGrammar().getTypeView(value.toString()).isEnabled()) {
-                setFont(getFont().deriveFont(Font.BOLD));
                 setToolTipText("Enabled type graph; doubleclick to disable");
             } else {
                 setToolTipText("Disabled type graph; doubleclick to enable");
-                setText("(" + value.toString() + ")");
             }
+            setIcon(TypeJList.this.display.getListIcon(value.toString()));
+            setText(TypeJList.this.display.getLabelText(value.toString()));
             return result;
         }
 
-        private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
+        private final Border emptyBorder = new EmptyBorder(1, 3, 1, 0);
     }
 }

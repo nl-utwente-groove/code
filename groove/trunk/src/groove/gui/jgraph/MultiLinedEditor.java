@@ -148,6 +148,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 result.getInputMap(JComponent.WHEN_FOCUSED);
             focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 "enter");
+            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "enter");
             focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0),
                 "tab");
             focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,

@@ -20,7 +20,6 @@ import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.view.RuleView;
-import groove.view.View;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -139,8 +138,8 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     }
 
     @Override
-    protected View<?> getView(String name) {
-        View<?> result = getSimulatorModel().getGrammar().getRuleView(name);
+    protected RuleView getView(String name) {
+        RuleView result = getSimulatorModel().getGrammar().getRuleView(name);
         return result;
     }
 
@@ -150,6 +149,14 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
             this.rulePanel = new RulePanel(getSimulator());
         }
         return this.rulePanel;
+    }
+
+    @Override
+    protected void decorateLabelText(String name, StringBuilder text) {
+        if (!getView(name).isEnabled()) {
+            text.insert(0, "(");
+            text.append(")");
+        }
     }
 
     private RulePanel rulePanel;

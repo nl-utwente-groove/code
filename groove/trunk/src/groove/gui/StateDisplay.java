@@ -19,6 +19,7 @@ package groove.gui;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
+import groove.io.HTMLConverter;
 import groove.view.View;
 
 import java.awt.BorderLayout;
@@ -176,6 +177,15 @@ public class StateDisplay extends TabbedDisplay implements SimulatorListener {
     @Override
     protected int getMainPanelIndex() {
         return 1;
+    }
+
+    @Override
+    protected void decorateLabelText(String name, StringBuilder text) {
+        super.decorateLabelText(name, text);
+        if (name.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
+            HTMLConverter.STRONG_TAG.on(text);
+            HTMLConverter.HTML_TAG.on(text);
+        }
     }
 
     /** panel on which the state list (and toolbar) are displayed. */

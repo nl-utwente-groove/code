@@ -19,8 +19,8 @@ package groove.gui;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
+import groove.io.HTMLConverter;
 import groove.view.TypeView;
-import groove.view.View;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -71,7 +71,7 @@ public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
         if (changes.contains(Change.GRAMMAR)) {
             clearJModelMap();
         }
-        if (changes.contains(Change.TYPE)) {
+        if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
             TypeView type = source.getType();
             setSelectedTab(type == null ? null : type.getName());
             getEnableButton().setSelected(type != null && type.isEnabled());
@@ -80,7 +80,7 @@ public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
     }
 
     @Override
-    protected View<?> getView(String name) {
+    protected TypeView getView(String name) {
         return getSimulatorModel().getGrammar().getTypeView(name);
     }
 
@@ -137,7 +137,7 @@ public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
     /** Returns the list of states and host graphs. */
     public TypeJList getList() {
         if (this.typeJList == null) {
-            this.typeJList = new TypeJList(getSimulator());
+            this.typeJList = new TypeJList(this);
         }
         return this.typeJList;
     }
@@ -148,6 +148,18 @@ public class TypeDisplay extends TabbedDisplay implements SimulatorListener {
             this.typePanel = new TypePanel(getSimulator());
         }
         return this.typePanel;
+    }
+
+    @Override
+    protected void decorateLabelText(String name, StringBuilder text) {
+        super.decorateLabelText(name, text);
+        if (getView(name).isEnabled()) {
+            HTMLConverter.STRONG_TAG.on(text);
+            HTMLConverter.HTML_TAG.on(text);
+        } else {
+            text.insert(0, "(");
+            text.append(")");
+        }
     }
 
     private TypePanel typePanel;

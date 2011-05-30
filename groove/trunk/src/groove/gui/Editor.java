@@ -187,12 +187,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     private void setModel(AspectJModel model) {
         // unregister listeners with the model
         getModel().removeUndoableEditListener(getUndoManager());
-        getModel().removeGraphModelListener(this);
+        GraphModelListener[] listeners = getModel().getGraphModelListeners();
+        for (int i = 0; i < listeners.length; i++) {
+            getModel().removeGraphModelListener(listeners[i]);
+        }
         this.jgraph.setModel(model);
         setDirty(false);
         getUndoManager().discardAllEdits();
         getModel().addUndoableEditListener(getUndoManager());
-        getModel().addGraphModelListener(this);
+        for (int i = 0; i < listeners.length; i++) {
+            getModel().addGraphModelListener(listeners[i]);
+        }
         updateHistoryButtons();
         updateStatus();
         updateTitle();

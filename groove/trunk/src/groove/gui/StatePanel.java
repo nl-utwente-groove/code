@@ -57,6 +57,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
+import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -92,7 +93,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new state panel.
      */
     public StatePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), true);
+        super(new AspectJGraph(simulator, GraphRole.HOST), false);
         initialise();
         setBorder(null);
         setEnabledBackground(JAttr.STATE_BACKGROUND);
@@ -118,6 +119,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected TabLabel createTabLabel() {
         TabLabel result = new TabLabel(this, Icons.STATE_MODE_ICON, null);
+        result.getLabel().setFont(result.getFont().deriveFont(Font.ITALIC));
         return result;
     }
 
@@ -214,7 +216,8 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
             setGrammar(source.getGrammar());
-        } else if (changes.contains(GTS)) {
+        }
+        if (changes.contains(GTS)) {
             startSimulation(source.getGts());
         } else if (changes.contains(STATE)) {
             GraphState newState = source.getState();
@@ -281,9 +284,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
 
     private void startSimulation(GTS gts) {
         // clear the states from the aspect and model maps
-        for (HostToAspectMap aspectMap : this.stateToAspectMap.values()) {
-            this.graphToJModel.remove(aspectMap.getAspectGraph());
-        }
+        this.graphToJModel.clear();
         this.stateToAspectMap.clear();
         // only change the displayed model if we are currently displaying a
         // state

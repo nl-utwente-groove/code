@@ -45,15 +45,12 @@ import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -343,9 +340,6 @@ public class StateJList extends JList implements SimulatorListener {
      */
     private Color enabledBackground;
 
-    static private final Border START_GRAPH_BORDER = new CompoundBorder(
-        LineBorder.createBlackLineBorder(), new EmptyBorder(0, 2, 0, 2));
-
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
 
@@ -418,14 +412,14 @@ public class StateJList extends JList implements SimulatorListener {
                 // format
                 if (!isSelected) {
                     // distinguish the current start graph name
-                    result.setBackground(JAttr.STATE_BACKGROUND.darker());
-                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
+                    setBackground(JAttr.STATE_BACKGROUND);
+                    //                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
                 }
                 setFont(getFont().deriveFont(Font.ITALIC));
                 setToolTipText("Currently selected state of the simulation");
+                setIcon(Icons.STATE_MODE_ICON);
             } else {
                 if (value.toString().equals(getStartGraphName())) {
-                    setFont(getFont().deriveFont(Font.BOLD));
                     setToolTipText("Current start graph");
                 } else {
                     setToolTipText("Doubleclick to use as start graph");
@@ -442,7 +436,7 @@ public class StateJList extends JList implements SimulatorListener {
             return result;
         }
 
-        private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
+        private final Border emptyBorder = new EmptyBorder(1, 3, 1, 0);
     }
 
     /** Variation on the selection model that makes sure the first item

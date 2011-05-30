@@ -487,18 +487,16 @@ public class RuleJTree extends JTree implements SimulatorListener {
     @Override
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        String result;
         if (value instanceof RuleTreeNode) {
             RuleView ruleView = ((RuleTreeNode) value).getRule();
-            String text = this.display.getLabelText(ruleView.getName());
-            if (ruleView.isEnabled()) {
-                return text;
-            } else {
-                return "(" + text + ")";
-            }
+            result = this.display.getLabelText(ruleView.getName());
         } else {
-            return super.convertValueToText(value, selected, expanded, leaf,
-                row, hasFocus);
+            result =
+                super.convertValueToText(value, selected, expanded, leaf, row,
+                    hasFocus);
         }
+        return result;
     }
 
     /** Convenience method to retrieve the current grammar view. */

@@ -239,6 +239,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
             setTabComponentAt(index, tabLabel);
         }
         tabLabel.setEnabled(true);
+        tabLabel.setTitle(getLabelText(name));
         tabLabel.setError(hasError(name));
         setSelectedIndex(index);
     }
@@ -271,13 +272,25 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      * tab component.
      */
     protected String getLabelText(String name) {
-        String result;
+        StringBuilder result = new StringBuilder();
         if (this.editorMap.containsKey(name)) {
-            result = this.editorMap.get(name).getTitle();
+            result.append(this.editorMap.get(name).getTitle());
         } else {
-            result = name;
+            result.append(name);
         }
-        return result;
+        decorateLabelText(name, result);
+        return result.toString();
+    }
+
+    /** 
+     * Adds HTML formatting to the label text for the main display.
+     * Callback method from {@link #getLabelText(String)}.
+     * @param name the name of the displayed object. This determines the
+     * decoration
+     * @param text the text to be decorated
+     */
+    protected void decorateLabelText(String name, StringBuilder text) {
+        // empty
     }
 
     /** Indicates if a given (named) graph has errors. */

@@ -16,7 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
@@ -25,7 +24,6 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.gui.Icons;
 import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -42,23 +40,15 @@ import groove.util.Colors;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.geom.Dimension2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -693,14 +683,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Adds a listener to {@link #setMode(JGraphMode)} calls. */
     public void addJGraphModeListener(PropertyChangeListener listener) {
-        getChangeSupport().addPropertyChangeListener(JGRAPH_MODE_PROPERTY,
-            listener);
+        addPropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
     }
 
     /** Removes a listener to {@link #setMode(JGraphMode)} calls. */
     public void removeJGraphModeListener(PropertyChangeListener listener) {
-        getChangeSupport().removePropertyChangeListener(JGRAPH_MODE_PROPERTY,
-            listener);
+        removePropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
     }
 
     /**
@@ -723,8 +711,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             getModeButton(mode).setSelected(true);
             setCursor(mode.getCursor());
             // fire change only if there was a previous value
-            getChangeSupport().firePropertyChange(JGRAPH_MODE_PROPERTY,
-                oldMode, mode);
+            firePropertyChange(JGRAPH_MODE_PROPERTY, oldMode, mode);
         }
         return result;
     }
@@ -1044,17 +1031,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         }
     }
 
-    /**
-     * Lazily creates and returns the property change support object for this
-     * editor.
-     */
-    private PropertyChangeSupport getChangeSupport() {
-        if (this.propertyChangeSupport == null) {
-            this.propertyChangeSupport = new PropertyChangeSupport(this);
-        }
-        return this.propertyChangeSupport;
-    }
-
     /** 
      * Lazily creates and returns an action setting the mode of this 
      * JGraph. The actual setting is done by a call to {@link #setMode(JGraphMode)}.
@@ -1110,6 +1086,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.modeButtonMap;
     }
 
+    @Override
+    public void startEditingAtCell(Object cell) {
+        firePropertyChange(CELL_EDIT_PROPERTY, null, cell);
+        super.startEditingAtCell(cell);
+    }
+
     private Map<JGraphMode,Action> modeActionMap;
 
     private Map<JGraphMode,JToggleButton> modeButtonMap;
@@ -1118,8 +1100,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Options options;
     /** The set of labels currently filtered from view. */
     private final ObservableSet<Label> filteredLabels;
-    /** Object providing the core functionality for property changes. */
-    private PropertyChangeSupport propertyChangeSupport;
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
     /** The fixed refresh listener of this {@link GraphJModel}. */
@@ -1209,6 +1189,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * Values are of type {@link GraphRole}.
      */
     static public final String JGRAPH_MODE_PROPERTY = "JGraphMode";
+    /** Property name for the pseudo-property that signals a cell edit has started. */
+    static public final String CELL_EDIT_PROPERTY = "editedCell";
 
     static {
         // graying out
@@ -1241,204 +1223,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
         /** The array of cells upon which this action works. */
         private final Object[] cells;
-    }
-
-    /** Own implementation of UI for performance reasons. */
-    static class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
-        MyGraphUI() {
-            // empty
-        }
-
-        private GraphJGraph getJGraph() {
-            return (GraphJGraph) this.graph;
-        }
-
-        /**
-         * Taken from <code>com.jgraph.example.fastgraph.FastGraphUI</code>.
-         * Updates the <code>preferredSize</code> instance variable, which is
-         * returned from <code>getPreferredSize()</code>. Ignores edges for
-         * performance
-         */
-        @Override
-        protected void updateCachedPreferredSize() {
-            CellView[] views = this.graphLayoutCache.getRoots();
-            Rectangle2D size = null;
-            if (views != null && views.length > 0) {
-                for (int i = 0; i < views.length; i++) {
-                    if (views[i] != null && !(views[i] instanceof JEdgeView)) {
-                        Rectangle2D r = views[i].getBounds();
-                        if (r != null) {
-                            if (size == null) {
-                                size =
-                                    new Rectangle2D.Double(r.getX(), r.getY(),
-                                        r.getWidth(), r.getHeight());
-                            } else {
-                                Rectangle2D.union(size, r, size);
-                            }
-                        }
-                    }
-                }
-            }
-            if (size == null) {
-                size = new Rectangle2D.Double();
-            }
-            Point2D psize =
-                new Point2D.Double(size.getX() + size.getWidth(), size.getY()
-                    + size.getHeight());
-            Dimension d = getJGraph().getMinimumSize();
-            Point2D min =
-                (d != null)
-                        ? getJGraph().toScreen(new Point(d.width, d.height))
-                        : new Point(0, 0);
-            Point2D scaled = getJGraph().toScreen(psize);
-            this.preferredSize =
-                new Dimension((int) Math.max(min.getX(), scaled.getX()),
-                    (int) Math.max(min.getY(), scaled.getY()));
-            Insets in = this.graph.getInsets();
-            if (in != null) {
-                this.preferredSize.setSize(this.preferredSize.getWidth()
-                    + in.left + in.right, this.preferredSize.getHeight()
-                    + in.top + in.bottom);
-            }
-            this.validCachedPreferredSize = true;
-        }
-
-        @Override
-        protected Point2D getEditorLocation(Object cell,
-                Dimension2D editorSize, Point2D pt) {
-            double scale = getJGraph().getScale();
-            // shift the location by the extra border space
-            return super.getEditorLocation(cell, editorSize,
-                new Point2D.Double(pt.getX() + scale * (EXTRA_BORDER_SPACE + 4)
-                    - 4, pt.getY() + scale * (EXTRA_BORDER_SPACE + 3) - 3));
-        }
-
-        /** 
-         * Makes sure that cancelled edits are nevertheless passed on to 
-         * the JGraph.
-         */
-        @Override
-        protected void completeEditing(boolean messageStop,
-                boolean messageCancel, boolean messageGraph) {
-            super.completeEditing(messageStop, messageCancel, true);
-        }
-
-        @Override
-        protected void installListeners() {
-            super.installListeners();
-            this.graph.addMouseWheelListener((MouseWheelListener) this.mouseListener);
-        }
-
-        @Override
-        protected MouseListener createMouseListener() {
-            return new MyMouseHandler();
-        }
-
-        private final class MyMouseHandler extends MouseHandler {
-            /** The coordinates of a point where panning started. */
-            private int origX = -1, origY = -1;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (getJGraph().getMode() != PAN_MODE) {
-                    super.mousePressed(e);
-                } else if (isPanEnabled()
-                    && e.getButton() == MouseEvent.BUTTON1) {
-                    startPan(e);
-                }
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if (getJGraph().getMode() != PAN_MODE) {
-                    super.mouseDragged(e);
-                } else if (isPanEnabled()) {
-                    doPan(e);
-                }
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                if (getJGraph().getMode() != PAN_MODE) {
-                    super.mouseMoved(e);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (getJGraph().getMode() != PAN_MODE) {
-                    super.mouseReleased(e);
-                } else if (isPanEnabled()
-                    && e.getButton() == MouseEvent.BUTTON1) {
-                    endPan();
-                }
-            }
-
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (getJGraph().getMode() == PAN_MODE) {
-                    int change = -e.getWheelRotation();
-                    getJGraph().changeScale(change);
-                }
-            }
-
-            /**
-             * Start panning.
-             */
-            private void startPan(MouseEvent e) {
-                this.origX = e.getX();
-                this.origY = e.getY();
-                getJGraph().setCursor(Icons.CLOSED_HAND_CURSOR);
-            }
-
-            /**
-             * Finish panning.
-             */
-            private void endPan() {
-                this.origX = -1;
-                this.origY = -1;
-                getJGraph().setCursor(Icons.OPEN_HAND_CURSOR);
-            }
-
-            /**
-             * Shift the viewport according to the panned distance.
-             */
-            private void doPan(MouseEvent e) {
-                if (this.origX == -1) {
-                    return; // never happens ??
-                }
-                Point p = getViewPort().getViewPosition();
-                p.x -= (e.getX() - this.origX);
-                p.y -= (e.getY() - this.origY);
-
-                Dimension size = getJGraph().getSize();
-                Dimension vsize = getViewPort().getExtentSize();
-
-                if (p.x + vsize.width > size.width) {
-                    p.x = size.width - vsize.width;
-                }
-                if (p.y + vsize.height > size.height) {
-                    p.y = size.height - vsize.height;
-                }
-                if (p.x < 0) {
-                    p.x = 0;
-                }
-                if (p.y < 0) {
-                    p.y = 0;
-                }
-                getViewPort().setViewPosition(p);
-            }
-
-            private boolean isPanEnabled() {
-                return getJGraph().getMode() == PAN_MODE
-                    && getViewPort() != null;
-            }
-
-            /** The JGraph's ancestor viewport, if any. */
-            private JViewport getViewPort() {
-                return getJGraph().getViewPort();
-            }
-        }
     }
 
     /**
