@@ -20,7 +20,7 @@ package groove.explore.result;
 
 import groove.lts.GraphState;
 import groove.prolog.GrooveState;
-import groove.prolog.PrologQuery;
+import groove.prolog.PrologEngine;
 import groove.prolog.QueryReturnValue;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
@@ -34,10 +34,7 @@ import java.io.StringReader;
  * @author Michiel Hendriks
  */
 public class PrologCondition extends ExploreCondition<String> {
-    /**
-     * TODO
-     */
-    protected PrologQuery query;
+    private PrologEngine engine;
 
     /**
      * User defined predicates
@@ -58,7 +55,7 @@ public class PrologCondition extends ExploreCondition<String> {
             }
         }
         this.usercode = usercode;
-        this.query = null;
+        this.engine = null;
     }
 
     /*
@@ -87,14 +84,14 @@ public class PrologCondition extends ExploreCondition<String> {
             return true;
         }
         try {
-            if (this.query == null) {
+            if (this.engine == null) {
                 initProlog();
             }
-            this.query.setGrooveState(new GrooveState(null, null, value, null));
-            this.query.newQuery(this.condition);
+            this.engine.setGrooveState(new GrooveState(null, null, value, null));
+            this.engine.newQuery(this.condition);
             // the graphstate is accepted when the prolog query succeeds
-            return this.query.lastReturnValue() == QueryReturnValue.SUCCESS
-                || this.query.lastReturnValue() == QueryReturnValue.SUCCESS_LAST;
+            return this.engine.lastReturnValue() == QueryReturnValue.SUCCESS
+                || this.engine.lastReturnValue() == QueryReturnValue.SUCCESS_LAST;
         } catch (GroovePrologException e) {
             e.printStackTrace();
         }
@@ -107,9 +104,9 @@ public class PrologCondition extends ExploreCondition<String> {
      * @throws GroovePrologLoadingException TODO
      */
     protected void initProlog() throws GroovePrologLoadingException {
-        this.query = PrologQuery.instance();
+        this.engine = PrologEngine.instance();
         if (this.usercode != null && this.usercode.length() > 0) {
-            this.query.init(new StringReader(this.usercode), "user_code");
+            this.engine.init(new StringReader(this.usercode), "user_code");
         }
     }
 }

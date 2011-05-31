@@ -18,10 +18,10 @@
  */
 package groove.prolog.exception;
 
-import groove.prolog.PrologQuery;
+import groove.prolog.PrologEngine;
 
 /**
- * A wrapper exception thrown by the {@link PrologQuery}
+ * A wrapper exception thrown by the {@link PrologEngine}
  *
  * @author Michiel Hendriks
  */

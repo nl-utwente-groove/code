@@ -18,7 +18,7 @@ package groove.test.prolog;
 
 import static org.junit.Assert.fail;
 import groove.prolog.GrooveState;
-import groove.prolog.PrologQuery;
+import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.prolog.QueryReturnValue;
 import groove.prolog.exception.GroovePrologException;
@@ -37,7 +37,7 @@ public class PrologTestUtil {
     /** Location of the samples. */
     static public final String GRAMMAR_DIR = "junit/samples";
 
-    private static PrologQuery prologQuery;
+    private static PrologEngine prologQuery;
 
     private PrologTestUtil() {
         /**
@@ -53,7 +53,7 @@ public class PrologTestUtil {
      */
     public static QueryResult executeQuery(GrooveState grooveState, String query) {
         if (prologQuery == null) {
-            prologQuery = PrologQuery.instance();
+            prologQuery = PrologEngine.instance();
         }
 
         prologQuery.setGrooveState(grooveState);
@@ -86,7 +86,7 @@ public class PrologTestUtil {
     public static boolean test(GrooveState grooveState, String query)
         throws GroovePrologException {
         if (prologQuery == null) {
-            prologQuery = PrologQuery.instance();
+            prologQuery = PrologEngine.instance();
         }
 
         prologQuery.setGrooveState(grooveState);
