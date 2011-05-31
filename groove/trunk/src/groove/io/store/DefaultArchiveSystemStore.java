@@ -521,7 +521,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
             GraphRole.TYPE));
         // enable the active types listed in the system properties
-        List<String> enabledTypes = getProperties().getTypeNames();
+        List<String> enabledTypes = this.properties.getTypeNames();
         for (String enabledType : enabledTypes) {
             GraphInfo.getProperties(this.typeMap.get(enabledType), true).setEnabled(
                 true);
