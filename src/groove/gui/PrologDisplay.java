@@ -28,6 +28,7 @@ import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
 import groove.explore.result.PrologCondition;
 import groove.gui.DisplaysPanel.DisplayKind;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.action.SimulatorAction;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologQuery;
@@ -95,7 +96,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * 
  * @author Michiel Hendriks
  */
-public class PrologDisplay extends JPanel implements Display {
+public class PrologDisplay extends JPanel implements Display, SimulatorListener {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
@@ -103,72 +104,739 @@ public class PrologDisplay extends JPanel implements Display {
         Preferences.userNodeForPackage(PrologDisplay.class);
 
     /**
-     * Data structure to keep track of the open/loaded prolog files
-     * 
-     * @author Michiel Hendriks
+     * Construct a prolog panel
      */
-    public static class PrologFile {
-        /** Constructs a prolog editor from a given file. */
-        public PrologFile(File file) {
-            this.file = file;
-            this.dirty = file == null;
-            this.editor = new RSyntaxTextArea(25, 100);
-            Font editFont = new Font("Monospaced", Font.PLAIN, 12);
-            this.editor.setFont(editFont);
-            this.editor.setText("");
-            this.editor.setEditable(true);
-            this.editor.setEnabled(true);
-            this.editor.setTabSize(4);
-            this.pane = new RTextScrollPane(this.editor, true);
+    public PrologDisplay(Simulator simulator) {
+        this.sim = simulator;
+        setLayout(new BorderLayout());
+
+        JPanel queryPane = new JPanel(new BorderLayout());
+        queryPane.add(getQuery(), BorderLayout.CENTER);
+        queryPane.add(createExecuteButton(), BorderLayout.EAST);
+
+        getEditorPane();
+
+        JPanel editorPane = new JPanel(new BorderLayout());
+        editorPane.add(createToolBar(), BorderLayout.NORTH);
+        editorPane.add(getEditorPane(), BorderLayout.CENTER);
+
+        this.userOutput = new JTextAreaOutputStream(getResultsArea());
+        Environment.setDefaultOutputStream(this.userOutput);
+
+        this.nextResultBtn = createNextResultButton();
+
+        JPanel resultsPane = new JPanel(new BorderLayout());
+        resultsPane.add(new JScrollPane(getResultsArea()), BorderLayout.CENTER);
+        resultsPane.add(this.nextResultBtn, BorderLayout.SOUTH);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setBorder(null);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setTopComponent(editorPane);
+        splitPane.setBottomComponent(resultsPane);
+
+        JPanel mainPane = new JPanel(new BorderLayout());
+        mainPane.add(queryPane, BorderLayout.NORTH);
+        mainPane.add(splitPane, BorderLayout.CENTER);
+
+        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        sp2.setResizeWeight(0.9);
+        sp2.setBorder(null);
+        sp2.setOneTouchExpandable(true);
+        sp2.setRightComponent(createSyntaxHelp());
+        sp2.setLeftComponent(mainPane);
+        add(sp2, BorderLayout.CENTER);
+
+        this.statusBar = new JLabel(" ");
+        add(this.statusBar, BorderLayout.SOUTH);
+        consultUserCode();
+    }
+
+    /**
+     * Creates and returns the tabbed pane on which the editors are placed.
+     */
+    private JTabbedPane getEditorPane() {
+        if (this.editorPane == null) {
+            this.editorPane =
+                new JTabbedPane(SwingConstants.BOTTOM,
+                    JTabbedPane.SCROLL_TAB_LAYOUT);
+        }
+        return this.editorPane;
+    }
+
+    /**
+     * Constructs and returns the text component in the query field.
+     */
+    private JTextComponent getQueryEdit() {
+        if (this.queryEdit == null) {
+            getQuery();
+        }
+        return this.queryEdit;
+    }
+
+    /**
+     * Constructs and returns the query field.
+     * Also initialises {@link #queryEdit}.
+     */
+    private JComboBox getQuery() {
+        if (this.query == null) {
+            this.query =
+                new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
+            this.query.setFont(EDIT_FONT);
+            this.query.setEditable(true);
+            this.query.setEnabled(true);
+            this.query.setPrototypeDisplayValue("groove+prolog");
+            this.queryEdit =
+                (JTextComponent) this.query.getEditor().getEditorComponent();
+            this.queryEdit.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        executeQuery();
+                    }
+                }
+            });
+        }
+        return this.query;
+    }
+
+    /**
+     * Creates the panel with documentation trees.
+     */
+    private JTabbedPane createSyntaxHelp() {
+        JTabbedPane treePane = new JTabbedPane();
+        this.prologRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.prologTree = createPredicateTree(this.prologRootNode, false);
+        this.grooveRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.grooveTree = createPredicateTree(this.grooveRootNode, true);
+        this.userRootNode = new DefaultMutableTreeNode("Prolog", true);
+        this.userTree = createPredicateTree(this.userRootNode, false);
+        treePane.add("Groove", new JScrollPane(this.grooveTree));
+        treePane.add("Prolog", new JScrollPane(this.prologTree));
+        treePane.add("User", new JScrollPane(this.userTree));
+        return treePane;
+    }
+
+    /**
+     * Creates a tool bar for the display.
+     */
+    private JToolBar createToolBar() {
+        JToolBar result = Options.createToolBar();
+        result.add(new JLabel("User code:"));
+        result.addSeparator();
+        result.add(createNewButton());
+        result.add(createEditButton());
+        result.add(createSaveButton());
+        result.add(getCloseButton());
+        result.addSeparator();
+        result.add(createConsultButton());
+
+        this.userCodeConsulted = new JLabel("");
+        this.userCodeConsulted.setFont(this.userCodeConsulted.getFont().deriveFont(
+            Font.BOLD));
+        result.addSeparator();
+        result.add(this.userCodeConsulted);
+        return result;
+    }
+
+    private JTextArea getResultsArea() {
+        if (this.results == null) {
+            this.results = new JTextArea();
+            this.results.setFont(EDIT_FONT);
+            this.results.setText("");
+            this.results.setEditable(false);
+            this.results.setEnabled(true);
+            this.results.setBackground(null);
+        }
+        return this.results;
+    }
+
+    @Override
+    public DisplayKind getKind() {
+        return DisplayKind.PROLOG;
+    }
+
+    @Override
+    public JComponent getPanel() {
+        return this;
+    }
+
+    @Override
+    public String getName() {
+        PrologView prolog = getSimulatorModel().getProlog();
+        return prolog == null ? null : prolog.getName();
+    }
+
+    /**
+     * Creates the Execute button.
+     */
+    private JButton createExecuteButton() {
+        JButton execQuery = new JButton("Execute");
+        execQuery.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                executeQuery();
+            }
+        });
+        return execQuery;
+    }
+
+    /**
+     * Creates the consult button.
+     */
+    private JButton createConsultButton() {
+        JButton result = new JButton("Consult");
+        result.setToolTipText("Reconsult the prolog code. This will cancel the current active query.");
+        result.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (!confirmDirty()) {
+                    return;
+                }
+                consultUserCode();
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Creates the next-result button.
+     */
+    private JButton createNextResultButton() {
+        JButton result = new JButton("More?");
+        result.setFont(result.getFont().deriveFont(Font.BOLD));
+        result.setVisible(false);
+        result.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                nextResults();
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Creates the predicate tree component.
+     */
+    private JTree createPredicateTree(TreeNode rootNode, final boolean toolTips) {
+        final JTree result = new JTree(rootNode) {
+            @Override
+            public String getToolTipText(MouseEvent evt) {
+                if (!toolTips
+                    || getRowForLocation(evt.getX(), evt.getY()) == -1) {
+                    return null;
+                }
+                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                Object userObject =
+                    ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
+                if (userObject instanceof CompoundTermTag) {
+                    return PrologDisplay.this.prolog.getToolTipText((CompoundTermTag) userObject);
+                } else {
+                    return null;
+                }
+            }
+        };
+        result.setRootVisible(false);
+        result.setShowsRootHandles(true);
+        DefaultTreeCellRenderer renderer =
+            (DefaultTreeCellRenderer) result.getCellRenderer();
+        renderer.setLeafIcon(null);
+        renderer.setClosedIcon(null);
+        renderer.setOpenIcon(null);
+        ToolTipManager.sharedInstance().registerComponent(result);
+        result.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1
+                    && e.getButton() == MouseEvent.BUTTON1) {
+                    // when double clicked add the selected predicate (with
+                    // template) to the current query
+                    TreePath sel = result.getSelectionPath();
+                    if (sel != null) {
+                        Object o = sel.getLastPathComponent();
+                        if (o instanceof DefaultMutableTreeNode) {
+                            o = ((DefaultMutableTreeNode) o).getUserObject();
+                            if (o instanceof CompoundTermTag) {
+                                CompoundTermTag tag = (CompoundTermTag) o;
+                                StringBuilder sb =
+                                    new StringBuilder(
+                                        getQuery().getSelectedItem().toString());
+                                if (sb.length() > 0
+                                    && !sb.toString().endsWith(",")) {
+                                    sb.append(',');
+                                }
+                                sb.append(tag.functor.value);
+                                if (tag.arity > 0) {
+                                    sb.append('(');
+                                    for (int i = 0; i < tag.arity; i++) {
+                                        if (i > 0) {
+                                            sb.append(',');
+                                        }
+                                        sb.append('_');
+                                    }
+                                    sb.append(')');
+                                }
+                                getQuery().setSelectedItem(sb.toString());
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(Integer.MAX_VALUE);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (e.getSource() == result) {
+                    this.manager.setDismissDelay(this.standardDelay);
+                }
+            }
+
+            private final ToolTipManager manager =
+                ToolTipManager.sharedInstance();
+            private final int standardDelay = this.manager.getDismissDelay();
+        });
+        return result;
+    }
+
+    /**
+     * Creates and returns the panel with the control programs list.
+     */
+    public JPanel getListPanel() {
+        if (this.prologListPanel == null) {
+            JToolBar toolBar = Options.createToolBar();
+            getPrologList().fillToolBar(toolBar);
+            JScrollPane prologPane = new JScrollPane(getPrologList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.prologListPanel = new JPanel(new BorderLayout(), false);
+            this.prologListPanel.add(toolBar, BorderLayout.NORTH);
+            this.prologListPanel.add(prologPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(
+                this.prologListPanel);
+        }
+        return this.prologListPanel;
+    }
+
+    /** Returns the list of control programs. */
+    public PrologJList getPrologList() {
+        if (this.prologJList == null) {
+            this.prologJList = new PrologJList(getSimulator());
+        }
+        return this.prologJList;
+    }
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+
+    }
+
+    /**
+     * Create a new prolog editor tab
+     * 
+     * @param delayLoading
+     *            if false then do not consule the file, used in case of new
+     *            files
+     */
+    protected void createEditor(File file, boolean delayLoading) {
+        if (file != null && this.prologFileMap.containsKey(file)) {
+            PrologEditor proFile = this.prologFileMap.get(file);
+            getEditorPane().setSelectedComponent(proFile);
+            return;
         }
 
-        /** Indicates if the editor is currently dirty. */
-        public final boolean isDirty() {
-            return this.dirty;
+        final PrologEditor proFile = new PrologEditor(file);
+        String title = "* untitled.pro";
+        if (file != null) {
+            title = file.getName();
+            this.prologFileMap.put(file, proFile);
+        }
+        this.prologFiles.add(proFile);
+        getEditorPane().addTab(title, proFile);
+        getEditorPane().setSelectedComponent(proFile);
+
+        if (file != null) {
+            try {
+                FileReader fis = new FileReader(file);
+                proFile.getEditor().read(fis, null);
+                if (delayLoading) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            consultUserCode();
+                        }
+                    });
+                }
+            } catch (IOException eex) {
+                eex.printStackTrace();
+            }
         }
 
-        /** Changes the dirty status of the editor. */
-        public final void setDirty(boolean dirty) {
-            this.dirty = dirty;
+        proFile.getEditor().getDocument().addDocumentListener(
+            new DocumentListener() {
+
+                /**
+                 * Update the tab title
+                 */
+                protected void updateTab() {
+                    if (proFile.isDirty()) {
+                        return;
+                    }
+                    proFile.setDirty(true);
+                    String title = "untitled.pro";
+                    if (proFile.getFile() != null) {
+                        title = proFile.getFile().getName();
+                    }
+                    int index = getEditorPane().indexOfComponent(proFile);
+                    getEditorPane().setTitleAt(index, "* " + title);
+                }
+
+                public void changedUpdate(DocumentEvent arg0) {
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
+                    updateTab();
+                }
+
+                public void insertUpdate(DocumentEvent arg0) {
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
+                    updateTab();
+                }
+
+                public void removeUpdate(DocumentEvent arg0) {
+                    PrologDisplay.this.userCodeConsulted.setText("Modified");
+                    updateTab();
+                }
+            });
+    }
+
+    /**
+     * Execute the current query
+     */
+    protected void executeQuery() {
+        executeQuery(getQueryEdit().getText());
+    }
+
+    /**
+     * Make sure the prolog environment is initialized and clean up previous
+     * results.
+     */
+    protected boolean ensureProlog() {
+        this.statusBar.setText(" ");
+        if (this.prolog == null) {
+            this.prolog = PrologQuery.instance();
+            if (this.doConsultUserCode) {
+                try {
+                    Environment env = this.prolog.getEnvironment();
+                    for (PrologEditor pf : this.prologFiles) {
+                        if (pf.file == null) {
+                            continue;
+                        }
+                        CompoundTerm term =
+                            new CompoundTerm(
+                                AtomTerm.get("file"),
+                                new Term[] {AtomTerm.get(pf.getFile().getAbsolutePath())});
+                        env.ensureLoaded(term);
+                        if (!env.getLoadingErrors().isEmpty()) {
+                            throw new GroovePrologLoadingException(
+                                env.getLoadingErrors());
+                        }
+                    }
+                } catch (GroovePrologLoadingException e) {
+                    this.userCodeConsulted.setText("Error");
+                    getResultsArea().append(
+                        "\nError loading the prolog engine:\n");
+                    getResultsArea().append(e.getMessage());
+                    this.prolog = null;
+                    this.doConsultUserCode = false;
+                    return false;
+                }
+                this.userCodeConsulted.setText("User code consulted");
+                this.statusBar.setText("User code accepted");
+            }
+
+            try {
+                updatePredicateTree(this.prolog);
+                this.prolog.init();
+            } catch (GroovePrologLoadingException e) {
+                getResultsArea().append("\nError loading the prolog engine:\n");
+                getResultsArea().append(e.getMessage());
+                this.prolog = null;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Update the predicate trees with all known predicates
+     */
+    protected void updatePredicateTree(PrologQuery query) {
+        this.prologRootNode.removeAllChildren();
+        this.grooveRootNode.removeAllChildren();
+        this.userRootNode.removeAllChildren();
+        Map<AtomTerm,DefaultMutableTreeNode> nodes =
+            new HashMap<AtomTerm,DefaultMutableTreeNode>();
+        SortedSet<CompoundTermTag> tags =
+            new TreeSet<CompoundTermTag>(new Comparator<CompoundTermTag>() {
+                public int compare(CompoundTermTag o1, CompoundTermTag o2) {
+                    int rc = o1.functor.value.compareTo(o2.functor.value);
+                    if (rc == 0) {
+                        rc = o1.arity - o2.arity;
+                    }
+                    return rc;
+                }
+            });
+        Module module = query.getEnvironment().getModule();
+        Set<CompoundTermTag> prologTags = query.getPrologTags();
+        Set<CompoundTermTag> grooveTags = query.getGrooveTags();
+        tags.addAll(module.getPredicateTags());
+        for (CompoundTermTag tag : tags) {
+            DefaultMutableTreeNode baseNode = nodes.get(tag.functor);
+            if (baseNode == null) {
+                baseNode = new DefaultMutableTreeNode(tag);
+                if (prologTags.contains(tag)) {
+                    this.prologRootNode.add(baseNode);
+                } else if (grooveTags.contains(tag)) {
+                    this.grooveRootNode.add(baseNode);
+                } else {
+                    this.userRootNode.add(baseNode);
+                }
+                nodes.put(tag.functor, baseNode);
+            } else {
+                if (baseNode.getChildCount() == 0) {
+                    baseNode.add(new DefaultMutableTreeNode(
+                        baseNode.getUserObject()));
+                    baseNode.setUserObject(tag.functor.value);
+                }
+                DefaultMutableTreeNode predNode =
+                    new DefaultMutableTreeNode(tag);
+                baseNode.add(predNode);
+            }
+        }
+        ((DefaultTreeModel) this.prologTree.getModel()).reload();
+        this.prologTree.expandPath(new TreePath(this.prologRootNode.getPath()));
+        ((DefaultTreeModel) this.grooveTree.getModel()).reload();
+        this.grooveTree.expandPath(new TreePath(this.grooveRootNode.getPath()));
+        ((DefaultTreeModel) this.userTree.getModel()).reload();
+        this.userTree.expandPath(new TreePath(this.userRootNode.getPath()));
+    }
+
+    /**
+     * Execute the given prolog query
+     */
+    public void executeQuery(String queryString) {
+        if (getGrammar() == null) {
+            getResultsArea().setText(
+                "Please first load a grammar and select a start graph.");
+            return;
         }
 
-        /** Returns the file from which the editor was loaded. */
-        public final File getFile() {
-            return this.file;
+        if (getGrammar().getStartGraphView() == null) {
+            getResultsArea().setText("Please first select a start graph.");
+            return;
         }
 
-        /** Changes the file to which the editor should be saved. */
-        public final void setFile(File file) {
-            this.file = file;
+        if (!ensureProlog()) {
+            getResultsArea().setText("Failed to initialize prolog.");
+            return;
         }
 
-        /** Returns the editor panel. */
-        public final RSyntaxTextArea getEditor() {
-            return this.editor;
+        if (queryString == null) {
+            return;
+        }
+        queryString = queryString.trim();
+        if (queryString.length() == 0) {
+            return;
+        }
+        if (queryString.endsWith(".")) {
+            queryString = queryString.substring(0, queryString.length() - 1);
         }
 
-        /** Returns the scroll pane of the editor. */
-        public final RTextScrollPane getPane() {
-            return this.pane;
+        try {
+            addQueryHistory(queryString);
+            getResultsArea().setText("?- " + queryString + "\n");
+
+            this.prolog.setGrooveState(new GrooveState(
+                getGrammar().toGrammar(), getSimulatorModel().getGts(),
+                getSimulatorModel().getState(), getSimulatorModel().getMatch()));
+
+            this.solutionCount = 0;
+            processResults(this.prolog.newQuery(queryString));
+        } catch (Exception e) {
+            handlePrologException(e);
+        }
+    }
+
+    /**
+     * Add the query to the history
+     */
+    protected void addQueryHistory(String queryString) {
+        JComboBox query = getQuery();
+        query.removeItem(queryString);
+        query.insertItemAt(queryString, 0);
+        query.setSelectedIndex(0);
+        while (query.getItemCount() > MAX_HISTORY) {
+            query.removeItemAt(MAX_HISTORY);
         }
 
-        /**
-         * Editor contents has changed
-         */
-        private boolean dirty;
-        /**
-         * The origin file, can be null when it is a new file
-         */
-        private File file;
-        /**
-         * The associated editor
-         */
-        private final RSyntaxTextArea editor;
-        /**
-         * The panel the editor is in. This is needed in order to remove the
-         * editor from the tab when a file is closed
-         */
-        private final RTextScrollPane pane;
+        // store the history
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < query.getItemCount(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            sb.append(query.getItemAt(i));
+        }
+        PREFS.put("queryHistory", sb.toString());
+    }
+
+    /**
+     * Handler for the exceptions thrown by the prolog environment
+     */
+    protected void handlePrologException(Throwable e) {
+        try {
+            this.userOutput.flush();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        if (e.getCause() instanceof PrologException) {
+            PrologException pe = (PrologException) e.getCause();
+            if (pe.getCause() == null) {
+                getResultsArea().append(e.getCause().getMessage());
+                return;
+            } else {
+                e = pe;
+            }
+        }
+        // StringWriter sw = new StringWriter();
+        // e.printStackTrace(new PrintWriter(sw));
+        // this.results.append(sw.toString());
+        getResultsArea().append(e.getMessage());
+    }
+
+    /**
+     * Get the next set of results. Only works after a successful
+     * {@link #executeQuery(String)}
+     */
+    public void nextResults() {
+        if (this.prolog == null || !this.prolog.hasNext()) {
+            return;
+        }
+        getResultsArea().append("\n");
+        try {
+            processResults(this.prolog.next());
+        } catch (GroovePrologException e) {
+            handlePrologException(e);
+        }
+    }
+
+    /**
+     * Pretty print the results of the query in the output panel
+     */
+    protected void processResults(QueryResult queryResult) {
+        JTextArea results = getResultsArea();
+        try {
+            this.userOutput.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (queryResult == null) {
+            return;
+        }
+        if (!results.getText().endsWith("\n")) {
+            results.append("\n");
+        }
+        switch (queryResult.getReturnValue()) {
+        case SUCCESS:
+        case SUCCESS_LAST:
+            ++this.solutionCount;
+            for (Entry<String,Object> entry : queryResult.getVariables().entrySet()) {
+                results.append(entry.getKey());
+                results.append(" = ");
+                if (entry.getValue() instanceof Term) {
+                    results.append(TermWriter.toString((Term) entry.getValue()));
+                } else {
+                    results.append("" + entry.getValue());
+                }
+                results.append("\n");
+            }
+            results.append("Yes\n");
+            break;
+        case FAIL:
+            results.append("No\n");
+            break;
+        case HALT:
+            results.append("Interpreter was halted\n");
+            break;
+        default:
+            results.append(String.format("Unexpected return value: %s",
+                this.prolog.lastReturnValue().toString()));
+        }
+        this.nextResultBtn.setVisible(this.prolog.hasNext());
+        if (this.nextResultBtn.isVisible()) {
+            this.nextResultBtn.grabFocus();
+        }
+        this.statusBar.setText(String.format(
+            "%d solution(s); Executed in %fms", this.solutionCount,
+            queryResult.getExecutionTime() / 1000000.0));
+    }
+
+    /**
+     * (re)consult the user code. This doesn't execute any queries
+     */
+    protected void consultUserCode() {
+        this.prolog = null;
+        this.doConsultUserCode = true;
+        this.nextResultBtn.setVisible(false);
+        getResultsArea().setText("");
+        ensureProlog();
+    }
+
+    /**
+     * Prompt the user when there are dirty editors
+     */
+    protected boolean confirmDirty() {
+        boolean dirty = false;
+        for (PrologEditor pf : this.prologFiles) {
+            if (pf.isDirty()) {
+                dirty = true;
+                break;
+            }
+        }
+        if (dirty) {
+            int overwrite =
+                JOptionPane.showConfirmDialog(
+                    this.sim.getFrame(),
+                    "You have got unsaved changes. Are you sure you want to consult the files on disk?",
+                    "Ignore changes?", JOptionPane.YES_NO_OPTION);
+            if (overwrite == JOptionPane.NO_OPTION) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Convenience method to retrieve the simulator. */
+    private Simulator getSimulator() {
+        return this.sim;
+    }
+
+    /** Convenience method to retrieve the simulator state. */
+    private SimulatorModel getSimulatorModel() {
+        return this.sim.getModel();
+    }
+
+    /** Convenience method to retrieve the grammar view from the simulator. */
+    private StoredGrammarView getGrammar() {
+        return getSimulatorModel().getGrammar();
     }
 
     /**
@@ -265,153 +933,24 @@ public class PrologDisplay extends JPanel implements Display {
     /**
      * 
      */
-    protected JTabbedPane prologEditors;
+    protected JTabbedPane editorPane;
 
     /**
      * 
      */
-    protected Map<File,PrologFile> prologFileMap =
-        new HashMap<File,PrologFile>();
+    protected Map<File,PrologEditor> prologFileMap =
+        new HashMap<File,PrologEditor>();
 
     /**
      * 
      */
-    protected Set<PrologFile> prologFiles = new HashSet<PrologFile>();
+    protected Set<PrologEditor> prologFiles = new HashSet<PrologEditor>();
 
-    /**
-     * Construct a prolog panel
-     */
-    public PrologDisplay(Simulator simulator) {
-        super();
-        Font editFont = new Font("Monospaced", Font.PLAIN, 12);
+    /** panel on which the prolog list (and toolbar) are displayed. */
+    private JPanel prologListPanel;
 
-        this.sim = simulator;
-        setLayout(new BorderLayout());
-
-        JToolBar toolBar = Options.createToolBar();
-
-        this.query = new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
-        this.query.setFont(editFont);
-        this.query.setEditable(true);
-        this.query.setEnabled(true);
-        this.query.setPrototypeDisplayValue("groove+prolog");
-        this.queryEdit =
-            (JTextComponent) this.query.getEditor().getEditorComponent();
-        this.queryEdit.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    executeQuery();
-                }
-            }
-        });
-
-        JPanel queryPane = new JPanel(new BorderLayout());
-        queryPane.add(toolBar, BorderLayout.NORTH);
-        queryPane.add(this.query, BorderLayout.CENTER);
-        queryPane.add(createExecuteButton(), BorderLayout.EAST);
-
-        toolBar = Options.createToolBar();
-        toolBar.add(new JLabel("User code:"));
-        toolBar.addSeparator();
-        toolBar.add(createNewButton());
-        toolBar.add(createEditButton());
-        toolBar.add(createSaveButton());
-        toolBar.add(getCloseButton());
-        toolBar.addSeparator();
-        toolBar.add(createConsultButton());
-
-        this.userCodeConsulted = new JLabel("");
-        this.userCodeConsulted.setFont(this.userCodeConsulted.getFont().deriveFont(
-            Font.BOLD));
-        toolBar.addSeparator();
-        toolBar.add(this.userCodeConsulted);
-
-        this.prologEditors =
-            new JTabbedPane(SwingConstants.BOTTOM,
-                JTabbedPane.SCROLL_TAB_LAYOUT);
-
-        JPanel editorPane = new JPanel(new BorderLayout());
-        editorPane.add(toolBar, BorderLayout.NORTH);
-        editorPane.add(this.prologEditors, BorderLayout.CENTER);
-
-        this.results = new JTextArea();
-        this.results.setFont(editFont);
-        this.results.setText("");
-        this.results.setEditable(false);
-        this.results.setEnabled(true);
-        this.results.setBackground(null);
-        this.userOutput = new JTextAreaOutputStream(this.results);
-        Environment.setDefaultOutputStream(this.userOutput);
-
-        this.nextResultBtn = createNextResultButton();
-
-        JPanel resultsPane = new JPanel(new BorderLayout());
-        resultsPane.add(new JScrollPane(this.results), BorderLayout.CENTER);
-        resultsPane.add(this.nextResultBtn, BorderLayout.SOUTH);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setBorder(null);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setTopComponent(editorPane);
-        splitPane.setBottomComponent(resultsPane);
-
-        JPanel mainPane = new JPanel(new BorderLayout());
-        mainPane.add(queryPane, BorderLayout.NORTH);
-        mainPane.add(splitPane, BorderLayout.CENTER);
-
-        this.prologRootNode = new DefaultMutableTreeNode("Prolog", true);
-        this.prologTree = createPredicateTree(this.prologRootNode, false);
-        this.grooveRootNode = new DefaultMutableTreeNode("Prolog", true);
-        this.grooveTree = createPredicateTree(this.grooveRootNode, true);
-        this.userRootNode = new DefaultMutableTreeNode("Prolog", true);
-        this.userTree = createPredicateTree(this.userRootNode, false);
-        JTabbedPane treePane = new JTabbedPane();
-        treePane.add("Groove", new JScrollPane(this.grooveTree));
-        treePane.add("Prolog", new JScrollPane(this.prologTree));
-        treePane.add("User", new JScrollPane(this.userTree));
-
-        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        sp2.setResizeWeight(0.9);
-        sp2.setBorder(null);
-        sp2.setOneTouchExpandable(true);
-        sp2.setRightComponent(treePane);
-        sp2.setLeftComponent(mainPane);
-        add(sp2, BorderLayout.CENTER);
-
-        this.statusBar = new JLabel(" ");
-        add(this.statusBar, BorderLayout.SOUTH);
-        consultUserCode();
-    }
-
-    @Override
-    public DisplayKind getKind() {
-        return DisplayKind.PROLOG;
-    }
-
-    @Override
-    public JComponent getPanel() {
-        return this;
-    }
-
-    @Override
-    public String getName() {
-        PrologView prolog = getSimulatorModel().getProlog();
-        return prolog == null ? null : prolog.getName();
-    }
-
-    /**
-     * Creates the Execute button.
-     */
-    private JButton createExecuteButton() {
-        JButton execQuery = new JButton("Execute");
-        execQuery.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                executeQuery();
-            }
-        });
-        return execQuery;
-    }
+    /** Production system prolog program list. */
+    private PrologJList prologJList;
 
     /**
      * Creates the New button.
@@ -430,6 +969,9 @@ public class PrologDisplay extends JPanel implements Display {
 
     private NewPrologAction newPrologAction;
 
+    private final static Font EDIT_FONT =
+        new Font("Monospaced", Font.PLAIN, 12);
+
     /** Action that creates a new Prolog file. */
     public static class NewPrologAction extends SimulatorAction {
         /** Constructs an instance of this action for a given simulator. */
@@ -442,7 +984,7 @@ public class PrologDisplay extends JPanel implements Display {
         public boolean execute() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getPrologPanel().createEditor(null);
+                    getPrologPanel().createEditor(null, false);
                 }
             });
             return false;
@@ -522,13 +1064,13 @@ public class PrologDisplay extends JPanel implements Display {
         @Override
         public boolean execute() {
             Component comp =
-                getPrologPanel().prologEditors.getSelectedComponent();
+                getPrologPanel().getEditorPane().getSelectedComponent();
             if (comp == null) {
                 return false;
             }
-            PrologFile proFile = null;
-            for (PrologFile pf : getPrologPanel().prologFiles) {
-                if (pf.pane == comp) {
+            PrologEditor proFile = null;
+            for (PrologEditor pf : getPrologPanel().prologFiles) {
+                if (pf == comp) {
                     proFile = pf;
                 }
             }
@@ -563,9 +1105,9 @@ public class PrologDisplay extends JPanel implements Display {
                         }
 
                         if (getPrologPanel().prologFileMap.containsKey(fl)) {
-                            PrologFile other =
+                            PrologEditor other =
                                 getPrologPanel().prologFileMap.get(fl);
-                            getPrologPanel().prologEditors.remove(other.pane);
+                            getPrologPanel().getEditorPane().remove(other);
                             getPrologPanel().prologFileMap.remove(fl);
                             getPrologPanel().prologFiles.remove(other);
                         }
@@ -577,13 +1119,13 @@ public class PrologDisplay extends JPanel implements Display {
             }
 
             try {
-                proFile.getEditor().write(new FileWriter(proFile.file));
+                proFile.getEditor().write(new FileWriter(proFile.getFile()));
                 proFile.setDirty(false);
                 int index =
-                    getPrologPanel().prologEditors.indexOfComponent(proFile.pane);
+                    getPrologPanel().getEditorPane().indexOfComponent(proFile);
                 if (index > -1) {
-                    getPrologPanel().prologEditors.setTitleAt(index,
-                        proFile.file.getName());
+                    getPrologPanel().getEditorPane().setTitleAt(index,
+                        proFile.getFile().getName());
                 }
             } catch (IOException eex) {
                 eex.printStackTrace();
@@ -619,13 +1161,13 @@ public class PrologDisplay extends JPanel implements Display {
         @Override
         public boolean execute() {
             Component comp =
-                getPrologPanel().prologEditors.getSelectedComponent();
+                getPrologPanel().getEditorPane().getSelectedComponent();
             if (comp == null) {
                 return false;
             }
-            PrologFile proFile = null;
-            for (PrologFile pf : getPrologPanel().prologFiles) {
-                if (pf.pane == comp) {
+            PrologEditor proFile = null;
+            for (PrologEditor pf : getPrologPanel().prologFiles) {
+                if (pf == comp) {
                     proFile = pf;
                 }
             }
@@ -643,8 +1185,8 @@ public class PrologDisplay extends JPanel implements Display {
                 }
             }
 
-            getPrologPanel().prologEditors.remove(proFile.pane);
-            getPrologPanel().prologFileMap.remove(proFile.file);
+            getPrologPanel().getEditorPane().remove(proFile);
+            getPrologPanel().prologFileMap.remove(proFile.getFile());
             getPrologPanel().prologFiles.remove(proFile);
             getPrologPanel().consultUserCode();
             return false;
@@ -652,568 +1194,64 @@ public class PrologDisplay extends JPanel implements Display {
     }
 
     /**
-     * Creates the consult button.
-     */
-    private JButton createConsultButton() {
-        JButton result = new JButton("Consult");
-        result.setToolTipText("Reconsult the prolog code. This will cancel the current active query.");
-        result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                if (!confirmDirty()) {
-                    return;
-                }
-                consultUserCode();
-            }
-        });
-        return result;
-    }
-
-    /**
-     * Creates the next-result button.
-     */
-    private JButton createNextResultButton() {
-        JButton result = new JButton("More?");
-        result.setFont(result.getFont().deriveFont(Font.BOLD));
-        result.setVisible(false);
-        result.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                nextResults();
-            }
-        });
-        return result;
-    }
-
-    /**
-     * Creates the predicate tree component.
-     */
-    private JTree createPredicateTree(TreeNode rootNode, final boolean toolTips) {
-        final JTree result = new JTree(rootNode) {
-            @Override
-            public String getToolTipText(MouseEvent evt) {
-                if (!toolTips
-                    || getRowForLocation(evt.getX(), evt.getY()) == -1) {
-                    return null;
-                }
-                TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
-                Object userObject =
-                    ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
-                if (userObject instanceof CompoundTermTag) {
-                    return PrologDisplay.this.prolog.getToolTipText((CompoundTermTag) userObject);
-                } else {
-                    return null;
-                }
-            }
-        };
-        result.setRootVisible(false);
-        result.setShowsRootHandles(true);
-        DefaultTreeCellRenderer renderer =
-            (DefaultTreeCellRenderer) result.getCellRenderer();
-        renderer.setLeafIcon(null);
-        renderer.setClosedIcon(null);
-        renderer.setOpenIcon(null);
-        ToolTipManager.sharedInstance().registerComponent(result);
-        result.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1
-                    && e.getButton() == MouseEvent.BUTTON1) {
-                    // when double clicked add the selected predicate (with
-                    // template) to the current query
-                    TreePath sel = result.getSelectionPath();
-                    if (sel != null) {
-                        Object o = sel.getLastPathComponent();
-                        if (o instanceof DefaultMutableTreeNode) {
-                            o = ((DefaultMutableTreeNode) o).getUserObject();
-                            if (o instanceof CompoundTermTag) {
-                                CompoundTermTag tag = (CompoundTermTag) o;
-                                StringBuilder sb =
-                                    new StringBuilder(
-                                        PrologDisplay.this.query.getSelectedItem().toString());
-                                if (sb.length() > 0
-                                    && !sb.toString().endsWith(",")) {
-                                    sb.append(',');
-                                }
-                                sb.append(tag.functor.value);
-                                if (tag.arity > 0) {
-                                    sb.append('(');
-                                    for (int i = 0; i < tag.arity; i++) {
-                                        if (i > 0) {
-                                            sb.append(',');
-                                        }
-                                        sb.append('_');
-                                    }
-                                    sb.append(')');
-                                }
-                                PrologDisplay.this.query.setSelectedItem(sb.toString());
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (e.getSource() == result) {
-                    this.manager.setDismissDelay(Integer.MAX_VALUE);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (e.getSource() == result) {
-                    this.manager.setDismissDelay(this.standardDelay);
-                }
-            }
-
-            private final ToolTipManager manager =
-                ToolTipManager.sharedInstance();
-            private final int standardDelay = this.manager.getDismissDelay();
-        });
-        return result;
-    }
-
-    /**
-     * Creates and returns the panel with the control programs list.
-     */
-    public JPanel getListPanel() {
-        if (this.prologListPanel == null) {
-            JToolBar toolBar = Options.createToolBar();
-            getPrologList().fillToolBar(toolBar);
-            JScrollPane prologPane = new JScrollPane(getPrologList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.prologListPanel = new JPanel(new BorderLayout(), false);
-            this.prologListPanel.add(toolBar, BorderLayout.NORTH);
-            this.prologListPanel.add(prologPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(
-                this.prologListPanel);
-        }
-        return this.prologListPanel;
-    }
-
-    /** Returns the list of control programs. */
-    public PrologJList getPrologList() {
-        if (this.prologJList == null) {
-            this.prologJList = new PrologJList(getSimulator());
-        }
-        return this.prologJList;
-    }
-
-    /**
-     * Create a prolog editor tab for the given file
-     */
-    protected void createEditor(File file) {
-        createEditor(file, false);
-    }
-
-    /**
-     * Create a new prolog editor tab
+     * Data structure to keep track of the open/loaded prolog files
      * 
-     * @param delayLoading
-     *            if false then do not consule the file, used in case of new
-     *            files
+     * @author Michiel Hendriks
      */
-    protected void createEditor(File file, boolean delayLoading) {
-        if (file != null && this.prologFileMap.containsKey(file)) {
-            PrologFile proFile = this.prologFileMap.get(file);
-            this.prologEditors.setSelectedComponent(proFile.pane);
-            return;
+    public static class PrologEditor extends JPanel {
+        /** Constructs a prolog editor from a given file. */
+        public PrologEditor(File file) {
+            this.file = file;
+            this.dirty = file == null;
+            this.editor = new RSyntaxTextArea(25, 100);
+            this.editor.setFont(EDIT_FONT);
+            this.editor.setText("");
+            this.editor.setEditable(true);
+            this.editor.setEnabled(true);
+            this.editor.setTabSize(4);
+            setBorder(null);
+            setLayout(new BorderLayout());
+            add(new RTextScrollPane(this.editor, true));
         }
 
-        final PrologFile proFile = new PrologFile(file);
-        String title = "* untitled.pro";
-        if (file != null) {
-            title = file.getName();
-            this.prologFileMap.put(file, proFile);
-        }
-        this.prologFiles.add(proFile);
-        this.prologEditors.addTab(title, proFile.pane);
-        this.prologEditors.setSelectedComponent(proFile.pane);
-
-        if (file != null) {
-            try {
-                FileReader fis = new FileReader(file);
-                proFile.getEditor().read(fis, null);
-                if (delayLoading) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            consultUserCode();
-                        }
-                    });
-                }
-            } catch (IOException eex) {
-                eex.printStackTrace();
-            }
+        /** Indicates if the editor is currently dirty. */
+        public final boolean isDirty() {
+            return this.dirty;
         }
 
-        proFile.getEditor().getDocument().addDocumentListener(
-            new DocumentListener() {
+        /** Changes the dirty status of the editor. */
+        public final void setDirty(boolean dirty) {
+            this.dirty = dirty;
+        }
 
-                /**
-                 * Update the tab title
-                 */
-                protected void updateTab() {
-                    if (proFile.isDirty()) {
-                        return;
-                    }
-                    proFile.setDirty(true);
-                    String title = "untitled.pro";
-                    if (proFile.getFile() != null) {
-                        title = proFile.getFile().getName();
-                    }
-                    int index =
-                        PrologDisplay.this.prologEditors.indexOfComponent(proFile.pane);
-                    PrologDisplay.this.prologEditors.setTitleAt(index, "* "
-                        + title);
-                }
+        /** Returns the file from which the editor was loaded. */
+        public final File getFile() {
+            return this.file;
+        }
 
-                public void changedUpdate(DocumentEvent arg0) {
-                    PrologDisplay.this.userCodeConsulted.setText("Modified");
-                    updateTab();
-                }
+        /** Changes the file to which the editor should be saved. */
+        public final void setFile(File file) {
+            this.file = file;
+        }
 
-                public void insertUpdate(DocumentEvent arg0) {
-                    PrologDisplay.this.userCodeConsulted.setText("Modified");
-                    updateTab();
-                }
+        /** Returns the editor panel. */
+        public final RSyntaxTextArea getEditor() {
+            return this.editor;
+        }
 
-                public void removeUpdate(DocumentEvent arg0) {
-                    PrologDisplay.this.userCodeConsulted.setText("Modified");
-                    updateTab();
-                }
-            });
+        /**
+         * Editor contents has changed
+         */
+        private boolean dirty;
+        /**
+         * The origin file, can be null when it is a new file
+         */
+        private File file;
+        /**
+         * The associated editor
+         */
+        private final RSyntaxTextArea editor;
     }
-
-    /**
-     * Execute the current query
-     */
-    protected void executeQuery() {
-        executeQuery(this.queryEdit.getText());
-    }
-
-    /**
-     * Make sure the prolog environment is initialized and clean up previous
-     * results.
-     */
-    protected boolean ensureProlog() {
-        this.statusBar.setText(" ");
-        if (this.prolog == null) {
-            this.prolog = PrologQuery.instance();
-            if (this.doConsultUserCode) {
-                try {
-                    Environment env = this.prolog.getEnvironment();
-                    for (PrologFile pf : this.prologFiles) {
-                        if (pf.file == null) {
-                            continue;
-                        }
-                        CompoundTerm term =
-                            new CompoundTerm(
-                                AtomTerm.get("file"),
-                                new Term[] {AtomTerm.get(pf.file.getAbsolutePath())});
-                        env.ensureLoaded(term);
-                        if (!env.getLoadingErrors().isEmpty()) {
-                            throw new GroovePrologLoadingException(
-                                env.getLoadingErrors());
-                        }
-                    }
-                } catch (GroovePrologLoadingException e) {
-                    this.userCodeConsulted.setText("Error");
-                    this.results.append("\nError loading the prolog engine:\n");
-                    this.results.append(e.getMessage());
-                    this.prolog = null;
-                    this.doConsultUserCode = false;
-                    return false;
-                }
-                this.userCodeConsulted.setText("User code consulted");
-                this.statusBar.setText("User code accepted");
-            }
-
-            try {
-                updatePredicateTree(this.prolog);
-                this.prolog.init();
-            } catch (GroovePrologLoadingException e) {
-                this.results.append("\nError loading the prolog engine:\n");
-                this.results.append(e.getMessage());
-                this.prolog = null;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Update the predicate trees with all known predicates
-     */
-    protected void updatePredicateTree(PrologQuery query) {
-        this.prologRootNode.removeAllChildren();
-        this.grooveRootNode.removeAllChildren();
-        this.userRootNode.removeAllChildren();
-        Map<AtomTerm,DefaultMutableTreeNode> nodes =
-            new HashMap<AtomTerm,DefaultMutableTreeNode>();
-        SortedSet<CompoundTermTag> tags =
-            new TreeSet<CompoundTermTag>(new Comparator<CompoundTermTag>() {
-                public int compare(CompoundTermTag o1, CompoundTermTag o2) {
-                    int rc = o1.functor.value.compareTo(o2.functor.value);
-                    if (rc == 0) {
-                        rc = o1.arity - o2.arity;
-                    }
-                    return rc;
-                }
-            });
-        Module module = query.getEnvironment().getModule();
-        Set<CompoundTermTag> prologTags = query.getPrologTags();
-        Set<CompoundTermTag> grooveTags = query.getGrooveTags();
-        tags.addAll(module.getPredicateTags());
-        for (CompoundTermTag tag : tags) {
-            DefaultMutableTreeNode baseNode = nodes.get(tag.functor);
-            if (baseNode == null) {
-                baseNode = new DefaultMutableTreeNode(tag);
-                if (prologTags.contains(tag)) {
-                    this.prologRootNode.add(baseNode);
-                } else if (grooveTags.contains(tag)) {
-                    this.grooveRootNode.add(baseNode);
-                } else {
-                    this.userRootNode.add(baseNode);
-                }
-                nodes.put(tag.functor, baseNode);
-            } else {
-                if (baseNode.getChildCount() == 0) {
-                    baseNode.add(new DefaultMutableTreeNode(
-                        baseNode.getUserObject()));
-                    baseNode.setUserObject(tag.functor.value);
-                }
-                DefaultMutableTreeNode predNode =
-                    new DefaultMutableTreeNode(tag);
-                baseNode.add(predNode);
-            }
-        }
-        ((DefaultTreeModel) this.prologTree.getModel()).reload();
-        this.prologTree.expandPath(new TreePath(this.prologRootNode.getPath()));
-        ((DefaultTreeModel) this.grooveTree.getModel()).reload();
-        this.grooveTree.expandPath(new TreePath(this.grooveRootNode.getPath()));
-        ((DefaultTreeModel) this.userTree.getModel()).reload();
-        this.userTree.expandPath(new TreePath(this.userRootNode.getPath()));
-    }
-
-    /**
-     * Execute the given prolog query
-     */
-    public void executeQuery(String queryString) {
-        if (getGrammar() == null) {
-            this.results.setText("Please first load a grammar and select a start graph.");
-            return;
-        }
-
-        if (getGrammar().getStartGraphView() == null) {
-            this.results.setText("Please first select a start graph.");
-            return;
-        }
-
-        if (!ensureProlog()) {
-            this.results.setText("Failed to initialize prolog.");
-            return;
-        }
-
-        if (queryString == null) {
-            return;
-        }
-        queryString = queryString.trim();
-        if (queryString.length() == 0) {
-            return;
-        }
-        if (queryString.endsWith(".")) {
-            queryString = queryString.substring(0, queryString.length() - 1);
-        }
-
-        try {
-            addQueryHistory(queryString);
-            this.results.setText("?- " + queryString + "\n");
-
-            this.prolog.setGrooveState(new GrooveState(
-                getGrammar().toGrammar(), getSimulatorModel().getGts(),
-                getSimulatorModel().getState(), getSimulatorModel().getMatch()));
-
-            this.solutionCount = 0;
-            processResults(this.prolog.newQuery(queryString));
-        } catch (Exception e) {
-            handlePrologException(e);
-        }
-    }
-
-    /**
-     * Add the query to the history
-     */
-    protected void addQueryHistory(String queryString) {
-        this.query.removeItem(queryString);
-        this.query.insertItemAt(queryString, 0);
-        this.query.setSelectedIndex(0);
-        while (this.query.getItemCount() > MAX_HISTORY) {
-            this.query.removeItemAt(MAX_HISTORY);
-        }
-
-        // store the history
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < this.query.getItemCount(); i++) {
-            if (i > 0) {
-                sb.append("\n");
-            }
-            sb.append(this.query.getItemAt(i));
-        }
-        PREFS.put("queryHistory", sb.toString());
-    }
-
-    /**
-     * Handler for the exceptions thrown by the prolog environment
-     */
-    protected void handlePrologException(Throwable e) {
-        try {
-            this.userOutput.flush();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        if (e.getCause() instanceof PrologException) {
-            PrologException pe = (PrologException) e.getCause();
-            if (pe.getCause() == null) {
-                this.results.append(e.getCause().getMessage());
-                return;
-            } else {
-                e = pe;
-            }
-        }
-        // StringWriter sw = new StringWriter();
-        // e.printStackTrace(new PrintWriter(sw));
-        // this.results.append(sw.toString());
-        this.results.append(e.getMessage());
-    }
-
-    /**
-     * Get the next set of results. Only works after a successful
-     * {@link #executeQuery(String)}
-     */
-    public void nextResults() {
-        if (this.prolog == null || !this.prolog.hasNext()) {
-            return;
-        }
-        this.results.append("\n");
-        try {
-            processResults(this.prolog.next());
-        } catch (GroovePrologException e) {
-            handlePrologException(e);
-        }
-    }
-
-    /**
-     * Pretty print the results of the query in the output panel
-     */
-    protected void processResults(QueryResult queryResult) {
-        try {
-            this.userOutput.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (queryResult == null) {
-            return;
-        }
-        if (!this.results.getText().endsWith("\n")) {
-            this.results.append("\n");
-        }
-        switch (queryResult.getReturnValue()) {
-        case SUCCESS:
-        case SUCCESS_LAST:
-            ++this.solutionCount;
-            for (Entry<String,Object> entry : queryResult.getVariables().entrySet()) {
-                this.results.append(entry.getKey());
-                this.results.append(" = ");
-                if (entry.getValue() instanceof Term) {
-                    this.results.append(TermWriter.toString((Term) entry.getValue()));
-                } else {
-                    this.results.append("" + entry.getValue());
-                }
-                this.results.append("\n");
-            }
-            this.results.append("Yes\n");
-            break;
-        case FAIL:
-            this.results.append("No\n");
-            break;
-        case HALT:
-            this.results.append("Interpreter was halted\n");
-            break;
-        default:
-            this.results.append(String.format("Unexpected return value: %s",
-                this.prolog.lastReturnValue().toString()));
-        }
-        this.nextResultBtn.setVisible(this.prolog.hasNext());
-        if (this.nextResultBtn.isVisible()) {
-            this.nextResultBtn.grabFocus();
-        }
-        this.statusBar.setText(String.format(
-            "%d solution(s); Executed in %fms", this.solutionCount,
-            queryResult.getExecutionTime() / 1000000.0));
-    }
-
-    /**
-     * (re)consult the user code. This doesn't execute any queries
-     */
-    protected void consultUserCode() {
-        this.prolog = null;
-        this.doConsultUserCode = true;
-        this.nextResultBtn.setVisible(false);
-        this.results.setText("");
-        ensureProlog();
-    }
-
-    /**
-     * Prompt the user when there are dirty editors
-     */
-    protected boolean confirmDirty() {
-        boolean dirty = false;
-        for (PrologFile pf : this.prologFiles) {
-            if (pf.dirty) {
-                dirty = true;
-                break;
-            }
-        }
-        if (dirty) {
-            int overwrite =
-                JOptionPane.showConfirmDialog(
-                    this.sim.getFrame(),
-                    "You have got unsaved changes. Are you sure you want to consult the files on disk?",
-                    "Ignore changes?", JOptionPane.YES_NO_OPTION);
-            if (overwrite == JOptionPane.NO_OPTION) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** Convenience method to retrieve the simulator. */
-    private Simulator getSimulator() {
-        return this.sim;
-    }
-
-    /** Convenience method to retrieve the simulator state. */
-    private SimulatorModel getSimulatorModel() {
-        return this.sim.getModel();
-    }
-
-    /** Convenience method to retrieve the grammar view from the simulator. */
-    private StoredGrammarView getGrammar() {
-        return getSimulatorModel().getGrammar();
-    }
-
-    /** panel on which the prolog list (and toolbar) are displayed. */
-    private JPanel prologListPanel;
-
-    /** Production system prolog program list. */
-    private PrologJList prologJList;
 
     /**
      * Class used to redirect the standard output stream used by prolog to the
