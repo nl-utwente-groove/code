@@ -95,6 +95,9 @@ public final class Icons {
     public static final ImageIcon UNDO_ICON = createIcon("undo.gif");
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON = createIcon("gps.gif");
+    /** Icon for compressed GPS folders. */
+    public static final ImageIcon COMPRESSED_GPS_FOLDER_ICON =
+        createIcon("comp-gps.png");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON =
         createIcon("control-mode.gif");
