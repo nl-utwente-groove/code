@@ -111,6 +111,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         InputMap im = getInputMap();
         im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
+        im.put(Options.RENAME_KEY, Options.RENAME_RULE_ACTION_NAME);
         // add tool tips
         installListeners();
         ToolTipManager.sharedInstance().registerComponent(this);
