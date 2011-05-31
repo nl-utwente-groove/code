@@ -93,7 +93,7 @@ public class PreviewControlAction extends SimulatorAction {
             CtrlView controlView = getModel().getControl();
             result =
                 controlView == null ? grammar.getCtrlAut()
-                        : controlView.toCtrlAut(grammar);
+                        : controlView.toCtrlAut();
         }
         return result;
     }

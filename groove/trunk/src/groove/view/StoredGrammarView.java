@@ -26,6 +26,7 @@ import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
@@ -36,6 +37,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -245,20 +247,22 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.errors;
     }
 
-    /** Collects and returns the permanent errors of the active control view. */
-    public List<FormatError> getCtrlErrors() {
-        if (this.errors == null) {
-            initGrammar();
-        }
-        return this.ctrlErrors;
-    }
-
     /** Returns the labels occurring in this grammar view. */
     public final LabelStore getLabelStore() {
         if (this.labelStore == null) {
             this.labelStore = computeLabelStore();
         }
         return this.labelStore;
+    }
+
+    /** 
+     * Returns the modification count of the view.
+     * The modification count is increased any time the grammar is invalidated
+     * due to a change in the store or start graph.
+     * This method can be used by clients to check if the grammar has been invalidated.
+     */
+    public int getModificationCount() {
+        return this.modificationCount;
     }
 
     private LabelStore computeLabelStore() {
@@ -355,18 +359,30 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
-        this.ctrlErrors = new ArrayList<FormatError>();
         try {
             this.grammar = computeGrammar();
             this.errors = Collections.emptyList();
         } catch (FormatException exc) {
             this.errors = exc.getErrors();
-            for (FormatError error : this.errors) {
-                if (error.getControl() != null && error.getSubError() != null) {
-                    this.ctrlErrors.add(error);
+        }
+    }
+
+    /** Returns the set of enabled rules that do not have errors. */
+    public Set<Rule> getRules() {
+        Set<Rule> result = new HashSet<Rule>();
+        // set rules
+        for (String ruleName : getRuleNames()) {
+            RuleView ruleView = getRuleView(ruleName);
+            try {
+                // only add the enabled rules
+                if (ruleView.isEnabled()) {
+                    result.add(ruleView.toRule());
                 }
+            } catch (FormatException exc) {
+                // do not add this rule
             }
         }
+        return result;
     }
 
     /**
@@ -414,7 +430,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                     "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
-                    result.setCtrlAut(controlView.toCtrlAut(result));
+                    result.setCtrlAut(controlView.toCtrlAut());
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
@@ -468,9 +484,9 @@ public class StoredGrammarView implements GrammarView, Observer {
      * they are regenerated at a next call of {@link #toModel()}.
      */
     void invalidate() {
+        this.modificationCount++;
         this.grammar = null;
         this.errors = null;
-        this.ctrlErrors = null;
         this.labelStore = null;
         this.controlPropertyAdjusted = false;
         this.compositeTypeView = null;
@@ -485,7 +501,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     private void loadControlMap() {
         this.controlMap.clear();
         for (Map.Entry<String,String> storedRuleEntry : this.store.getControls().entrySet()) {
-            this.controlMap.put(storedRuleEntry.getKey(), new CtrlView(
+            this.controlMap.put(storedRuleEntry.getKey(), new CtrlView(this,
                 storedRuleEntry.getValue(), storedRuleEntry.getKey()));
         }
     }
@@ -521,6 +537,8 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** The store backing this view. */
     private final SystemStore store;
+    /** Counter of the number of invalidations of the grammar. */
+    private int modificationCount;
     /** 
      * Flag indicating that the system properties
      * have been adjusted to reflect the presence of a control program
@@ -537,8 +555,6 @@ public class StoredGrammarView implements GrammarView, Observer {
     private String startGraphName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<FormatError> errors;
-    /** Possibly empty list of errors found in the active control view. */
-    private List<FormatError> ctrlErrors;
     /** The graph grammar derived from the rule views. */
     private GraphGrammar grammar;
     /** The labels occurring in this view. */

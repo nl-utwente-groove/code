@@ -21,9 +21,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.action.SimulatorAction;
 import groove.gui.jgraph.JAttr;
-import groove.trans.GraphGrammar;
 import groove.view.CtrlView;
-import groove.view.FormatException;
 import groove.view.StoredGrammarView;
 
 import java.awt.Color;
@@ -286,16 +284,7 @@ public class ControlJList extends JList implements SimulatorListener {
             String ctrlName = value.toString();
             boolean isActiveControl =
                 ctrlName.equals(getGrammar().getControlName());
-            boolean error;
-            try {
-                GraphGrammar grammar =
-                    getSimulatorModel().getGrammar().toModel();
-                error =
-                    getGrammar().getControlView(ctrlName).hasErrors(grammar);
-            } catch (FormatException exc) {
-                error =
-                    isActiveControl && !getGrammar().getCtrlErrors().isEmpty();
-            }
+            boolean error = getGrammar().getControlView(ctrlName).hasErrors();
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             setText(ControlJList.this.display.getLabelText(ctrlName));
