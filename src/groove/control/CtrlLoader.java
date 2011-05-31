@@ -22,13 +22,16 @@ import groove.control.parse.CtrlChecker;
 import groove.control.parse.CtrlParser;
 import groove.control.parse.MyTree;
 import groove.control.parse.Namespace;
-import groove.trans.Rule;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
@@ -41,38 +44,62 @@ import org.antlr.runtime.RecognitionException;
 public class CtrlLoader {
     /**
      * Returns the control automaton for a given control program (given as string) and grammar. 
+     * @param grammar grammar containing the properties and rules needed in the compilation
      */
     public CtrlAut runString(String program, GraphGrammar grammar)
         throws FormatException {
-        CtrlAut result = runStream(new ANTLRStringStream(program), grammar);
+        CtrlAut result =
+            runStream(new ANTLRStringStream(program), grammar.getProperties(),
+                grammar.getRules());
         result.setProgram(program);
         return result;
     }
 
     /**
-     * Returns the control automaton for a given control program (given as filename) and grammar. 
+     * Returns the control automaton for a given control program (given as string) and 
+     * set of rules. 
+     * @param properties the system properties under which the automaton is compiled
+     * @param rules the set of rules that can be invoked.
      */
-    public CtrlAut runFile(String inputFileName, GraphGrammar grammar)
-        throws FormatException, IOException {
-        return runStream(new ANTLRFileStream(inputFileName), grammar);
+    public CtrlAut runString(String program, SystemProperties properties,
+            Set<Rule> rules) throws FormatException {
+        CtrlAut result =
+            runStream(new ANTLRStringStream(program), properties, rules);
+        result.setProgram(program);
+        return result;
     }
 
     /**
-     * Returns the control automaton for a given control program (given as input stream) and grammar. 
+     * Returns the control automaton for a given control program (given as filename) and 
+     * grammar.  
+     * @param grammar grammar containing the properties and rules needed in the compilation
      */
-    public CtrlAut runStream(CharStream inputStream, GraphGrammar grammar)
+    public CtrlAut runFile(String inputFileName, GraphGrammar grammar)
+        throws FormatException, IOException {
+        return runStream(new ANTLRFileStream(inputFileName),
+            grammar.getProperties(), grammar.getRules());
+    }
+
+    /**
+     * Returns the control automaton for a given control program (given as input stream) and 
+     * set of rules. 
+     * @param properties the system properties under which the automaton is compiled
+     * @param rules the set of rules that can be invoked.
+     */
+    public CtrlAut runStream(CharStream inputStream,
+            SystemProperties properties, Collection<Rule> rules)
         throws FormatException {
         try {
             Namespace namespace = new Namespace();
-            for (Rule rule : grammar.getRules()) {
+            for (Rule rule : rules) {
                 namespace.addRule(rule);
             }
             AlgebraFamily family;
-            if (grammar.getProperties() == null) {
+            if (properties == null) {
                 family = AlgebraFamily.getInstance();
             } else {
                 family =
-                    AlgebraFamily.getInstance(grammar.getProperties().getAlgebraFamily());
+                    AlgebraFamily.getInstance(properties.getAlgebraFamily());
             }
             MyTree tree = this.parser.run(inputStream, namespace, family);
             if (DEBUG) {

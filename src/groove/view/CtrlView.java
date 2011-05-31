@@ -18,10 +18,11 @@ package groove.view;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.trans.GraphGrammar;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Bridge between control programs (which are just strings) and control
@@ -31,25 +32,28 @@ import java.io.PrintWriter;
 public class CtrlView {
     /**
      * Constructs a control view from a given control program.
+     * @param grammarView the grammar view to which this control view belongs.
      * @param program the control program; non-null
      * @param name the name of the control program
      */
-    public CtrlView(String program, String name) {
+    public CtrlView(StoredGrammarView grammarView, String program, String name) {
         this.name = name;
         this.program = program;
+        this.grammarView = grammarView;
     }
 
     /**
      * Returns the control automaton for a given grammar. 
      */
-    public CtrlAut toCtrlAut(GraphGrammar grammar) throws FormatException {
-        if (this.program == null) {
-            throw new FormatException("Error in control: no program available");
-        }
+    public CtrlAut toCtrlAut() throws FormatException {
+        int modCount = this.grammarView.getModificationCount();
         // use the stored result if that was for the same grammar
-        if (grammar != this.lastGrammar) {
-            this.lastAut = this.parser.runString(this.program, grammar);
-            this.lastGrammar = grammar;
+        if (modCount != this.lastCount) {
+            this.lastAut =
+                this.parser.runString(this.program,
+                    this.grammarView.getProperties(),
+                    this.grammarView.getRules());
+            this.lastCount = modCount;
         }
         if (!this.lastAut.getInfo().getErrors().isEmpty()) {
             throw new FormatException(this.lastAut.getInfo().getErrors());
@@ -58,17 +62,24 @@ public class CtrlView {
         }
     }
 
-    /** Indicates if this control program has errors, when compiled against a given
-     * graph grammar.
+    /**
+     * Returns the syntax errors in this control program, if any.
      */
-    public boolean hasErrors(GraphGrammar grammar) {
-        boolean result = false;
+    public List<FormatError> getErrors() {
+        List<FormatError> result;
         try {
-            toCtrlAut(grammar);
+            toCtrlAut();
+            result = Collections.emptyList();
         } catch (FormatException e) {
-            result = true;
+            result = e.getErrors();
         }
         return result;
+    }
+
+    /** Indicates if this control program has errors.
+     */
+    public boolean hasErrors() {
+        return !getErrors().isEmpty();
     }
 
     /**
@@ -85,12 +96,13 @@ public class CtrlView {
         return this.program;
     }
 
+    private final StoredGrammarView grammarView;
     /** The control program loaded at construction time. */
     private final String program;
     /** The name of the control program, set at construction time. */
     private final String name;
     /** The grammar of the most recently computed control automaton. */
-    private GraphGrammar lastGrammar;
+    private int lastCount = -1;
     /** The most recently computed control automaton. */
     private CtrlAut lastAut;
     /** The control parser. */
