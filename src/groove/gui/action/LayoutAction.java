@@ -14,7 +14,7 @@
  * 
  * $Id: LayoutAction.java,v 1.4 2008-01-30 09:33:35 iovka Exp $
  */
-package groove.gui;
+package groove.gui.action;
 
 import groove.gui.layout.Layouter;
 
@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
  * Wraps a <tt>Layouter</tt> into an action. Invoking the action comes down to
  * starting the layout.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 3410 $
  */
 public class LayoutAction extends AbstractAction {
     /** Constructs a layout action for a given layouter. */

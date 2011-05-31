@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.gui.action.LayoutAction;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
