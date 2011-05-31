@@ -19,9 +19,11 @@ package groove.io;
 import static groove.io.FileType.CONTROL_FILTER;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
+import static groove.io.FileType.ZIP_FILTER;
 import groove.gui.Icons;
 
 import java.io.File;
@@ -53,6 +55,8 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     public Icon getIcon(File f) {
         if (isGpsFolder(f)) {
             return Icons.GPS_FOLDER_ICON;
+        } else if (isCompressedGpsFolder(f)) {
+            return Icons.COMPRESSED_GPS_FOLDER_ICON;
         } else if (isGraphFile(f)) {
             return Icons.GRAPH_FILE_ICON;
         } else if (isRuleFile(f)) {
@@ -208,5 +212,10 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      */
     static protected boolean isGpsFolder(File f) {
         return GRAMMAR_FILTER.acceptExtension(f);
+    }
+
+    /** Tests whether a given file is a compressed GPS. */
+    static protected boolean isCompressedGpsFolder(File f) {
+        return ZIP_FILTER.acceptExtension(f) || JAR_FILTER.acceptExtension(f);
     }
 }
