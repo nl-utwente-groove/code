@@ -53,7 +53,7 @@ import java.util.Set;
  * 
  * @author Michiel Hendriks
  */
-public class PrologQuery {
+public class PrologEngine {
     /** Classes of predefined Groove predicates. */
     @SuppressWarnings("unchecked")
     public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
@@ -103,7 +103,7 @@ public class PrologQuery {
     /**
      * Private no-args constructor for the singleton instance.
      */
-    private PrologQuery() {
+    private PrologEngine() {
         // empty by design
     }
 
@@ -255,6 +255,11 @@ public class PrologQuery {
         return QueryReturnValue.NOT_RUN;
     }
 
+    /** Resets the environment, discarding all loaded predicates. */
+    public void reset() {
+        this.env = null;
+    }
+
     /**
      * Create the prolog environment. This will initialize the environment in
      * the standard groove environment. It can be used when you need to make
@@ -308,15 +313,15 @@ public class PrologQuery {
         new HashMap<CompoundTermTag,String>();
 
     /** Returns the singleton instance of this class. */
-    public static PrologQuery instance() {
+    public static PrologEngine instance() {
         return instance;
     }
 
-    private static final PrologQuery instance = new PrologQuery();
+    private static final PrologEngine instance = new PrologEngine();
 
     /**
-     * The result object returned on {@link PrologQuery#newQuery(String)} and
-     * {@link PrologQuery#next()}
+     * The result object returned on {@link PrologEngine#newQuery(String)} and
+     * {@link PrologEngine#next()}
      * 
      * @author Michiel Hendriks
      */
