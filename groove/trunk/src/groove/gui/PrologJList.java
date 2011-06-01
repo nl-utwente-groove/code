@@ -142,7 +142,7 @@ public class PrologJList extends JList implements SimulatorListener {
         result.setFocusable(false);
         // add rest only if mouse is actually over a prolog name
         int index = locationToIndex(atPoint);
-        if (getCellBounds(index, index).contains(atPoint)) {
+        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
             //            result.add(getActions().getEditControlAction());
             //            result.addSeparator();
             //            result.add(getActions().getCopyControlAction());

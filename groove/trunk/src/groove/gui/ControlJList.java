@@ -131,7 +131,7 @@ public class ControlJList extends JList implements SimulatorListener {
         result.setFocusable(false);
         // add rest only if mouse is actually over a control name
         int index = locationToIndex(atPoint);
-        if (getCellBounds(index, index).contains(atPoint)) {
+        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
             result.add(getActions().getEditControlAction());
             result.addSeparator();
             result.add(getActions().getCopyControlAction());
