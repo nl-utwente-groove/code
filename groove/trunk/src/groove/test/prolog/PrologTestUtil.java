@@ -17,6 +17,7 @@
 package groove.test.prolog;
 
 import static org.junit.Assert.fail;
+import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
@@ -87,6 +88,7 @@ public class PrologTestUtil {
         throws GroovePrologException {
         if (prologQuery == null) {
             prologQuery = PrologEngine.instance();
+            prologQuery.setEnvironment(new GrooveEnvironment(null, null));
         }
 
         prologQuery.setGrooveState(grooveState);
