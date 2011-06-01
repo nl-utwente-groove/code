@@ -130,7 +130,7 @@ public class TypeJList extends JList implements SimulatorListener {
         result.setFocusable(false);
         // add rest only if mouse is actually over a type name
         int index = locationToIndex(atPoint);
-        if (getCellBounds(index, index).contains(atPoint)) {
+        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
             result.add(getActions().getEditTypeAction());
             result.addSeparator();
             result.add(getActions().getCopyTypeAction());
