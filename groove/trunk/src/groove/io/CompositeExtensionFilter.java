@@ -85,11 +85,12 @@ public final class CompositeExtensionFilter extends ExtensionFilter {
 
     /**
      * There is no single extension associated with a composite filter.
-     * This method always returns the empty string.
+     * This method always returns the extension from the first filter 
+     * in the composite.
      */
     @Override
     public String getExtension() {
-        return "";
+        return this.filters[0].getExtension();
     }
 
     /** 

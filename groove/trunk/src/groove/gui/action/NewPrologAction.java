@@ -15,18 +15,16 @@ public class NewPrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getControlPanel().cancelEditing(true)) {
-            String newName =
-                askNewControlName("Select Prolog program name",
-                    Simulator.NEW_PROLOG_NAME, true);
-            try {
-                if (newName != null) {
-                    getModel().doAddProlog(newName, "");
-                }
-            } catch (IOException exc) {
-                showErrorDialog(exc, "Error creating new Prolog program "
-                    + newName);
+        String newName =
+            askNewPrologName("Select Prolog program name",
+                Simulator.NEW_PROLOG_NAME, true);
+        try {
+            if (newName != null) {
+                getModel().doAddProlog(newName, "");
+                getPrologDisplay().createEditor(newName);
             }
+        } catch (IOException exc) {
+            showErrorDialog(exc, "Error creating new Prolog program " + newName);
         }
         return false;
     }

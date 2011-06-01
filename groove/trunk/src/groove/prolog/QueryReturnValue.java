@@ -31,19 +31,19 @@ public enum QueryReturnValue {
      */
     NOT_RUN,
     /**
-     * The query returned successfully, but there might be more solutions
+     * The query returned successfully, but there might be more solutions.
      */
     SUCCESS,
     /**
-     * The query returned successfully, and this is the last solution
+     * The query returned successfully, and this is the last solution.
      */
     SUCCESS_LAST,
     /**
-     * The query faild
+     * The query failed.
      */
     FAIL,
     /**
-     * The interpreter was halted
+     * The interpreter was halted.
      */
     HALT;
 

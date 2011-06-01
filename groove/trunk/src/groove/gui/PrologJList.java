@@ -38,7 +38,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -123,17 +122,6 @@ public class PrologJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    /** Creates a tool bar for the rule tree. */
-    void fillToolBar(JToolBar result) {
-        result.add(getActions().getNewPrologAction());
-        //        result.addSeparator();
-        //        result.add(getActions().getCopyControlAction());
-        //        result.add(getActions().getDeleteControlAction());
-        //        result.add(getActions().getRenameControlAction());
-        //        result.addSeparator();
-        //        result.add(getEnableButton());
-    }
-
     private JToggleButton getEnableButton() {
         if (this.enableButton == null) {
             this.enableButton =
@@ -179,8 +167,9 @@ public class PrologJList extends JList implements SimulatorListener {
                 setEnabled(true);
                 refresh();
             }
-        } else if (changes.contains(Change.PROLOG)) {
-            refresh();
+        }
+        if (changes.contains(Change.PROLOG) && source.hasProlog()) {
+            setSelectedValue(source.getProlog().getName(), true);
         }
         activateListeners();
     }

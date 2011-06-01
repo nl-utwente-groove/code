@@ -20,43 +20,40 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 /**
- * Bridge between control programs (which are just strings) and control
- * automata.
- * @author Staijen
+ * View for prolog programs (which are just strings).
+ * @author Arend Rensink
  */
 public class PrologView {
     /**
-     * Constructs a control view from a given control program.
-     * @param program the control program; non-null
-     * @param name the name of the control program
+     * Constructs a prolog view from a given prolog program.
+     * @param name the name of the prolog program; non-{@code null}
+     * @param program the prolog program; non-null
      */
-    public PrologView(String program, String name) {
+    public PrologView(String name, String program) {
         this.name = name;
-        this.prolog = program;
+        this.program = program;
     }
 
     /**
-     * Returns a unique identifier for the location, set by the
-     * LocationAutomatonBuilder
-     * @return name
+     * Returns the name of the prolog program.
      */
     public String getName() {
         return this.name;
     }
 
-    /** Returns the textual control program. */
-    public String getControl() {
-        return this.prolog;
+    /** Returns the textual prolog program. */
+    public String getProgram() {
+        return this.program;
     }
 
-    /** The control program loaded at construction time. */
-    private final String prolog;
-    /** The name of the control program, set at construction time. */
+    /** The prolog program loaded at construction time. */
+    private final String program;
+    /** The name of the prolog program, set at construction time. */
     private final String name;
 
     /**
      * Saves the program to the given OutputStream.
-     * @param out the output stream to write the control program to.
+     * @param out the output stream to write the prolog program to.
      */
     public static void store(String program, OutputStream out) {
         PrintWriter pw = new PrintWriter(out);

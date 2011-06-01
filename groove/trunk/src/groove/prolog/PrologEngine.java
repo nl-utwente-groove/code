@@ -20,33 +20,21 @@ package groove.prolog;
 
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
-import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
-import groove.lts.GraphState;
-import groove.prolog.builtin.AlgebraPredicates;
-import groove.prolog.builtin.GraphPredicates;
-import groove.prolog.builtin.GroovePredicates;
-import groove.prolog.builtin.LtsPredicates;
-import groove.prolog.builtin.RulePredicates;
-import groove.prolog.builtin.TransPredicates;
-import groove.prolog.builtin.TypePredicates;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
 import groove.prolog.util.TermConverter;
 
 import java.io.OutputStream;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Interface to the prolog engine
@@ -54,24 +42,13 @@ import java.util.Set;
  * @author Michiel Hendriks
  */
 public class PrologEngine {
-    /** Classes of predefined Groove predicates. */
-    @SuppressWarnings("unchecked")
-    public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
-        AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
-        RulePredicates.class, TransPredicates.class, TypePredicates.class};
-
     /**
      * The graph that will be queried.
      */
     protected Graph<?,?> graph;
 
     /**
-     * The graph state that will be queried.
-     */
-    protected GraphState graphState;
-
-    /**
-     * Will be true when the interface has been initialized.
+     * Will be true when the engine has been initialised.
      */
     protected boolean initialized;
 
@@ -91,11 +68,6 @@ public class PrologEngine {
     protected InternalQueryResult currentResult;
 
     /**
-     * The current "groove" state to work with
-     */
-    protected GrooveState grooveState;
-
-    /**
      * The stream to use as default output stream
      */
     protected OutputStream userOutput;
@@ -108,11 +80,10 @@ public class PrologEngine {
     }
 
     /**
-     * @param userOutput
-     *            the userOutput to set
+     * Sets the Groove environment to a given value.
      */
-    public void setUserOutput(OutputStream userOutput) {
-        this.userOutput = userOutput;
+    public void setEnvironment(GrooveEnvironment environment) {
+        this.env = environment;
     }
 
     /**
@@ -120,52 +91,38 @@ public class PrologEngine {
      * @param grooveState     The grooveState
      */
     public void setGrooveState(GrooveState grooveState) {
-        this.grooveState = grooveState;
-        if (this.env != null) {
-            this.env.setGrooveState(this.grooveState);
-        }
-    }
-
-    /**
-     * @return the initialized
-     */
-    public boolean isInitialized() {
-        return this.initialized;
+        getEnvironment().setGrooveState(grooveState);
     }
 
     /**
      * Initialize the environment
      */
     public void init() throws GroovePrologLoadingException {
-        init(null, null);
+        init(null);
     }
 
     /**
      * Initialize the environment
      * 
-     * @param initStream
+     * @param program
      *            Additional code to process during the loading of the
      *            environment. Typically used to load user code
-     * @param streamName
-     *            The name to use for the provided stream, is used when creating
-     *            errors. It's best to use the name of a file.
      */
-    public void init(Reader initStream, String streamName)
-        throws GroovePrologLoadingException {
+    public void init(String program) throws GroovePrologLoadingException {
         if (this.initialized) {
             return;
         }
         this.initialized = true;
         this.currentResult = null;
-        getEnvironment();
-        if (initStream != null) {
-            this.env.loadStream(initStream, streamName);
+        if (program != null) {
+            getEnvironment().loadProgram(program);
         }
-        this.interpreter = this.env.createInterpreter();
-        this.env.runInitialization(this.interpreter);
+        this.interpreter = getEnvironment().createInterpreter();
+        getEnvironment().runInitialization(this.interpreter);
 
-        if (!this.env.getLoadingErrors().isEmpty()) {
-            throw new GroovePrologLoadingException(this.env.getLoadingErrors());
+        if (!getEnvironment().getLoadingErrors().isEmpty()) {
+            throw new GroovePrologLoadingException(
+                getEnvironment().getLoadingErrors());
         }
     }
 
@@ -182,10 +139,10 @@ public class PrologEngine {
                 this.interpreter.stop(this.currentResult.getGoal());
             }
         }
-        ReadOptions readOpts = new ReadOptions(this.env.getOperatorSet());
-        readOpts.operatorSet = this.env.getOperatorSet();
+        ReadOptions readOpts =
+            new ReadOptions(getEnvironment().getOperatorSet());
         TermReader termReader =
-            new TermReader(new StringReader(term), this.env);
+            new TermReader(new StringReader(term), getEnvironment());
         try {
             Term goalTerm = termReader.readTermEof(readOpts);
             Goal goal = this.interpreter.prepareGoal(goalTerm);
@@ -266,51 +223,8 @@ public class PrologEngine {
      * changes to the environment before loading user code.
      */
     public GrooveEnvironment getEnvironment() {
-        if (this.env == null) {
-            this.env = new GrooveEnvironment(null, this.userOutput);
-            this.env.setGrooveState(this.grooveState);
-            this.prologTags.addAll(this.env.getModule().getPredicateTags());
-            for (Class<GroovePredicates> predicates : GROOVE_PREDS) {
-                this.toolTipMap.putAll(this.env.ensureLoaded(predicates));
-            }
-            this.grooveTags.addAll(this.env.getModule().getPredicateTags());
-            this.grooveTags.removeAll(this.prologTags);
-        }
         return this.env;
     }
-
-    /** Returns the set of built-in Prolog predicates. */
-    public Set<CompoundTermTag> getPrologTags() {
-        return this.prologTags;
-    }
-
-    /** Returns the set of built-in Groove predicates. */
-    public Set<CompoundTermTag> getGrooveTags() {
-        return this.grooveTags;
-    }
-
-    /**
-     * Retrieves the tool tip text for a given predicate from a map,
-     * creating it first if necessary.
-     */
-    public String getToolTipText(CompoundTermTag tag) {
-        return this.toolTipMap.get(tag);
-    }
-
-    /** The set of built-in Prolog predicates. */
-    private final Set<CompoundTermTag> prologTags =
-        new HashSet<CompoundTermTag>();
-
-    /** The set of built-in Groove predicates. */
-    private final Set<CompoundTermTag> grooveTags =
-        new HashSet<CompoundTermTag>();
-
-    /**
-     * Mapping from Groove built-in predicates to 
-     * corresponding tool tip text.
-     */
-    private final Map<CompoundTermTag,String> toolTipMap =
-        new HashMap<CompoundTermTag,String>();
 
     /** Returns the singleton instance of this class. */
     public static PrologEngine instance() {

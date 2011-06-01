@@ -1666,7 +1666,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** Edit consisting of the deletion of a control program. */
     private class DeletePrologEdit extends MyEdit {
         public DeletePrologEdit(String name, String prolog) {
-            super(CONTROL_CHANGE);
+            super(PROLOG_CHANGE);
             this.name = name;
             this.prolog = prolog;
         }
@@ -1708,7 +1708,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /** Edit consisting of the renaming of a prolog program. */
     private class RenamePrologEdit extends MyEdit {
         public RenamePrologEdit(String oldName, String newName, String oldProlog) {
-            super(CONTROL_CHANGE);
+            super(PROLOG_CHANGE);
             this.oldName = oldName;
             this.newName = newName;
             this.oldProlog = oldProlog;

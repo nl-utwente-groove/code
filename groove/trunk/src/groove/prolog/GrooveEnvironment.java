@@ -27,15 +27,23 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
+import groove.prolog.builtin.AlgebraPredicates;
+import groove.prolog.builtin.GraphPredicates;
 import groove.prolog.builtin.GroovePredicates;
+import groove.prolog.builtin.LtsPredicates;
+import groove.prolog.builtin.RulePredicates;
+import groove.prolog.builtin.TransPredicates;
+import groove.prolog.builtin.TypePredicates;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.io.StringReader;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Subclass of the normal GNU Prolog Environment, contains a reference to a
@@ -46,60 +54,30 @@ import java.util.Set;
  */
 public class GrooveEnvironment extends Environment {
     /**
-     * Atom term "no_groove_environment"
-     */
-    public final static AtomTerm NO_GROOVE_ENV =
-        AtomTerm.get("no_groove_environment");
-
-    /**
-     * Generic error to throw when the groove environment is missing
-     */
-    public static void invalidEnvironment() throws PrologException {
-        throw new PrologException(new CompoundTerm(PrologException.errorTag,
-            new CompoundTerm(CompoundTermTag.get("system_error", 1),
-                GrooveEnvironment.NO_GROOVE_ENV, PrologException.errorAtom),
-            PrologException.errorAtom), null);
-    }
-
-    /**
-     * The current groove state
-     */
-    protected GrooveState grooveState;
-
-    /**
-      * No-args constructor
-      */
-    public GrooveEnvironment() {
-        super();
-    }
-
-    /**
-     * Constructs a groove environment with an inputstream and outputstream
+     * Constructs a groove environment with an input stream and output stream.
+     * If the streams are {@code null}, {@link #getDefaultInputStream()}
+     * respectively {@link #getDefaultOutputStream()} are used.
      */
     public GrooveEnvironment(InputStream stdin, OutputStream stdout) {
         super(stdin, stdout);
+        initBuiltins();
     }
 
-    /**
-     * @return the grooveState
-     */
-    public GrooveState getGrooveState() {
-        return this.grooveState;
-    }
-
-    /**
-     * @param grooveState
-     *            the grooveState to set
-     */
-    public void setGrooveState(GrooveState grooveState) {
-        this.grooveState = grooveState;
+    private void initBuiltins() {
+        // also loads the built-in predicates
+        this.prologTags.addAll(getModule().getPredicateTags());
+        for (Class<GroovePredicates> predicates : GROOVE_PREDS) {
+            this.toolTipMap.putAll(ensureLoaded(predicates));
+        }
+        this.grooveTags.addAll(getModule().getPredicateTags());
+        this.grooveTags.removeAll(this.prologTags);
     }
 
     /** 
      * Loads all predicates defined in a given class.
      * Returns a map from loaded predicates to tool tip texts. 
      */
-    public Map<CompoundTermTag,String> ensureLoaded(
+    private Map<CompoundTermTag,String> ensureLoaded(
             Class<? extends GroovePredicates> source) {
         Map<CompoundTermTag,String> result = null;
         try {
@@ -170,13 +148,121 @@ public class GrooveEnvironment extends Environment {
         }
     }
 
-    /** Loads Prolog declarations from a named stream. */
-    public synchronized void loadStream(Reader stream, String streamName) {
-        if (isInitialized()) {
-            throw new IllegalStateException(
-                "no files can be loaded after inializtion was run");
+    /** Loads Prolog declarations from a program, given as a string. */
+    public void loadProgram(String program) {
+        //        if (isInitialized()) {
+        //            throw new IllegalStateException(
+        //                "no files can be loaded after inializtion was run");
+        //        }
+        DefinitionListener listener = new DefinitionListener();
+        getModule().addPredicateListener(listener);
+        new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
+            program), null);
+        getModule().removePredicateListener(listener);
+        this.userTags.addAll(listener.getPredicates());
+    }
+
+    /**
+     * @return the grooveState
+     */
+    public GrooveState getGrooveState() {
+        return this.grooveState;
+    }
+
+    /**
+     * @param grooveState
+     *            the grooveState to set
+     */
+    public void setGrooveState(GrooveState grooveState) {
+        this.grooveState = grooveState;
+    }
+
+    /** Returns the set of built-in Prolog predicates. */
+    public Set<CompoundTermTag> getPrologTags() {
+        return this.prologTags;
+    }
+
+    /** Returns the set of built-in Groove predicates. */
+    public Set<CompoundTermTag> getGrooveTags() {
+        return this.grooveTags;
+    }
+
+    /** Returns the set of user-defined predicates. */
+    public Set<CompoundTermTag> getUserTags() {
+        return this.userTags;
+    }
+
+    /** Removes all user-defined tags from the environment. */
+    public void clearUserTags() {
+        for (CompoundTermTag tag : this.userTags) {
+            getModule().removeDefinedPredicate(tag);
         }
-        new PrologTextLoader(getPrologTextLoaderState(), stream, streamName);
+        this.userTags.clear();
+    }
+
+    /**
+     * Retrieves the tool tip text for a given predicate.
+     */
+    public String getToolTipText(CompoundTermTag tag) {
+        return this.toolTipMap.get(tag);
+    }
+
+    /** The set of built-in Prolog predicates. */
+    private final Set<CompoundTermTag> prologTags = new TagSet();
+
+    /** The set of built-in Groove predicates. */
+    private final Set<CompoundTermTag> grooveTags = new TagSet();
+
+    /** The set of user-defined predicates. */
+    private final Set<CompoundTermTag> userTags = new TagSet();
+
+    /**
+     * Mapping from Groove built-in predicates to 
+     * corresponding tool tip text.
+     */
+    private final Map<CompoundTermTag,String> toolTipMap =
+        new HashMap<CompoundTermTag,String>();
+
+    /**
+     * The current groove state
+     */
+    private GrooveState grooveState;
+
+    /**
+     * Generic error to throw when the groove environment is missing
+     */
+    public static void invalidEnvironment() throws PrologException {
+        throw new PrologException(new CompoundTerm(PrologException.errorTag,
+            new CompoundTerm(CompoundTermTag.get("system_error", 1),
+                GrooveEnvironment.NO_GROOVE_ENV, PrologException.errorAtom),
+            PrologException.errorAtom), null);
+    }
+
+    /**
+     * Atom term "no_groove_environment"
+     */
+    public final static AtomTerm NO_GROOVE_ENV =
+        AtomTerm.get("no_groove_environment");
+
+    /** Classes of predefined Groove predicates. */
+    @SuppressWarnings("unchecked")
+    public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
+        AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
+        RulePredicates.class, TransPredicates.class, TypePredicates.class};
+
+    /** Alphabetically and arity-wise ordered set of compound tags. */
+    private static class TagSet extends TreeSet<CompoundTermTag> {
+        public TagSet() {
+            super(new Comparator<CompoundTermTag>() {
+                public int compare(CompoundTermTag o1, CompoundTermTag o2) {
+                    int rc = o1.functor.value.compareTo(o2.functor.value);
+                    if (rc == 0) {
+                        rc = o1.arity - o2.arity;
+                    }
+                    return rc;
+                }
+            });
+        }
     }
 
     /** Listener that collects predicate definitions. */
