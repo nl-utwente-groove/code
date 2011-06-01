@@ -110,7 +110,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Returns the prolog panel that owns the action. */
-    final protected PrologDisplay getPrologPanel() {
+    final protected PrologDisplay getPrologDisplay() {
         return this.simulator.getPrologPanel();
     }
 
@@ -151,15 +151,23 @@ public abstract class SimulatorAction extends AbstractAction implements
     final protected String askNewControlName(String title, String name,
             boolean mustBeFresh) {
         Set<String> existingNames = getModel().getGrammar().getControlNames();
-        FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
-                @Override
-                protected String createName(String name) {
-                    return name;
-                }
-            };
-        nameDialog.showDialog(getFrame(), title);
-        return nameDialog.getName();
+        return askNewName(title, existingNames, name, mustBeFresh);
+    }
+
+    /**
+     * Enters a dialog that results in a prolog name that does not yet occur in
+     * the current grammar, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing names
+     * @return a prolog name not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    final protected String askNewPrologName(String title, String name,
+            boolean mustBeFresh) {
+        Set<String> existingNames = getModel().getGrammar().getPrologNames();
+        return askNewName(title, existingNames, name, mustBeFresh);
     }
 
     /**
@@ -175,15 +183,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     final protected String askNewGraphName(String title, String name,
             boolean mustBeFresh) {
         Set<String> existingNames = getModel().getGrammar().getGraphNames();
-        FreshNameDialog<String> nameDialog =
-            new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
-                @Override
-                protected String createName(String name) {
-                    return name;
-                }
-            };
-        nameDialog.showDialog(getFrame(), title);
-        return nameDialog.getName();
+        return askNewName(title, existingNames, name, mustBeFresh);
     }
 
     /**
@@ -198,16 +198,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected String askNewRuleName(String title, String name,
             boolean mustBeFresh) {
-        FreshNameDialog<String> ruleNameDialog =
-            new FreshNameDialog<String>(getModel().getGrammar().getRuleNames(),
-                name, mustBeFresh) {
-                @Override
-                protected String createName(String name) {
-                    return name;
-                }
-            };
-        ruleNameDialog.showDialog(getFrame(), title);
-        return ruleNameDialog.getName();
+        Set<String> existingNames = getModel().getGrammar().getRuleNames();
+        return askNewName(title, existingNames, name, mustBeFresh);
     }
 
     /**
@@ -223,6 +215,22 @@ public abstract class SimulatorAction extends AbstractAction implements
     final protected String askNewTypeName(String title, String name,
             boolean mustBeFresh) {
         Set<String> existingNames = getModel().getGrammar().getTypeNames();
+        return askNewName(title, existingNames, name, mustBeFresh);
+    }
+
+    /**
+     * Enters a dialog that results in a name that is not in a set of
+     * current names, or <code>null</code> if the dialog was cancelled.
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param existingNames set of already existing names
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
+     *        to be distinct from the existing names
+     * @return a type graph not occurring in the current grammar, or
+     *         <code>null</code>
+     */
+    final protected String askNewName(String title, Set<String> existingNames,
+            String name, boolean mustBeFresh) {
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override

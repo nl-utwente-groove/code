@@ -24,6 +24,7 @@ import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
+import groove.prolog.GrooveEnvironment;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -33,6 +34,7 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -479,6 +481,21 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
     }
 
+    /** 
+     * Creates a Prolog environment that produces its standard output
+     * on a given output stream.
+     * The environment is kept in sync with the Prolog programs in the store.
+     */
+    public GrooveEnvironment getPrologEnvironment(OutputStream output) {
+        if (this.prologEnvironment == null) {
+            this.prologEnvironment = new GrooveEnvironment(null, output);
+            for (String program : getStore().getProlog().values()) {
+                this.prologEnvironment.loadProgram(program);
+            }
+        }
+        return this.prologEnvironment;
+    }
+
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
      * they are regenerated at a next call of {@link #toModel()}.
@@ -513,7 +530,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.prologMap.clear();
         for (Map.Entry<String,String> storedRuleEntry : this.store.getProlog().entrySet()) {
             this.prologMap.put(storedRuleEntry.getKey(), new PrologView(
-                storedRuleEntry.getValue(), storedRuleEntry.getKey()));
+                storedRuleEntry.getKey(), storedRuleEntry.getValue()));
         }
     }
 
@@ -525,6 +542,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         if ((change & SystemStore.PROLOG_CHANGE) > 0) {
             loadPrologMap();
+            this.prologEnvironment = null;
         }
         invalidate();
     }
@@ -559,6 +577,8 @@ public class StoredGrammarView implements GrammarView, Observer {
     private GraphGrammar grammar;
     /** The labels occurring in this view. */
     private LabelStore labelStore;
+    /** The prolog environment derived from the system store. */
+    private GrooveEnvironment prologEnvironment;
     /** The type view composed from the individual elements. */
     private CompositeTypeView compositeTypeView;
 

@@ -156,8 +156,8 @@ public class ControlJList extends JList implements SimulatorListener {
                 setEnabled(true);
                 refresh();
             }
-        } else if (changes.contains(Change.CONTROL)) {
-            refresh();
+        } else if (changes.contains(Change.CONTROL) || source.hasControl()) {
+            setSelectedValue(source.getControl().getName(), true);
         }
         activateListeners();
     }

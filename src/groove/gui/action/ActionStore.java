@@ -18,12 +18,12 @@ package groove.gui.action;
 
 import groove.graph.GraphRole;
 import groove.gui.Display;
+import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.TabbedDisplay;
 
 import java.util.ArrayList;
@@ -223,6 +223,23 @@ public class ActionStore implements SimulatorListener {
     private CopyRuleAction copyRuleAction;
 
     /**
+     * Returns the prolog copying action permanently associated with this
+     * simulator.
+     */
+    public CopyPrologAction getCopyPrologAction() {
+        // lazily create the action
+        if (this.copyPrologAction == null) {
+            this.copyPrologAction = new CopyPrologAction(this.simulator);
+        }
+        return this.copyPrologAction;
+    }
+
+    /**
+     * The prolog copying action permanently associated with this simulator.
+     */
+    private CopyPrologAction copyPrologAction;
+
+    /**
      * Lazily creates and returns the singleton instance of the
      * {@link CopyTypeAction}.
      */
@@ -300,6 +317,23 @@ public class ActionStore implements SimulatorListener {
     private DeleteRuleAction deleteRuleAction;
 
     /**
+     * Returns the rule deletion action permanently associated with this
+     * simulator.
+     */
+    public DeletePrologAction getDeletePrologAction() {
+        // lazily create the action
+        if (this.deletePrologAction == null) {
+            this.deletePrologAction = new DeletePrologAction(this.simulator);
+        }
+        return this.deletePrologAction;
+    }
+
+    /**
+     * The rule deletion action permanently associated with this simulator.
+     */
+    private DeletePrologAction deletePrologAction;
+
+    /**
      * Lazily creates and returns the singleton instance of the
      * {@link DeleteTypeAction}.
      */
@@ -342,6 +376,20 @@ public class ActionStore implements SimulatorListener {
 
     /** Singular instance of the EditAction. */
     private EditControlAction editControlAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link NewControlAction}.
+     */
+    public EditPrologAction getEditPrologAction() {
+        if (this.editPrologAction == null) {
+            this.editPrologAction = new EditPrologAction(this.simulator);
+        }
+        return this.editPrologAction;
+    }
+
+    /** Singular instance of the EditAction. */
+    private EditPrologAction editPrologAction;
 
     /**
      * Lazily creates and returns the state edit action permanently associated
@@ -877,6 +925,23 @@ public class ActionStore implements SimulatorListener {
     private RenameRuleAction renameRuleAction;
 
     /**
+     * Returns the prolog renaming action permanently associated with this
+     * simulator.
+     */
+    public RenamePrologAction getRenamePrologAction() {
+        // lazily create the action
+        if (this.renamePrologAction == null) {
+            this.renamePrologAction = new RenamePrologAction(this.simulator);
+        }
+        return this.renamePrologAction;
+    }
+
+    /**
+     * The rule renaming action permanently associated with this simulator.
+     */
+    private RenamePrologAction renamePrologAction;
+
+    /**
      * Lazily creates and returns the singleton instance of the
      * {@link RenameTypeAction}.
      */
@@ -923,6 +988,22 @@ public class ActionStore implements SimulatorListener {
     /** Singular instance of the {@link SaveControlAction} that 
      * saves within the grammar. */
     private SaveControlAction saveControlAction;
+
+    /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link SaveControlAction} that saves control programs within the
+     * grammar.
+     */
+    public SavePrologAction getSavePrologAction() {
+        if (this.savePrologAction == null) {
+            this.savePrologAction = new SavePrologAction(this.simulator);
+        }
+        return this.savePrologAction;
+    }
+
+    /** Singular instance of the {@link SavePrologAction} that 
+     * saves within the grammar. */
+    private SavePrologAction savePrologAction;
 
     /**
      * Lazily creates and returns the singleton instance of the

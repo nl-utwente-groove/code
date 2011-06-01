@@ -25,8 +25,6 @@ import groove.prolog.QueryReturnValue;
 import groove.prolog.exception.GroovePrologException;
 import groove.prolog.exception.GroovePrologLoadingException;
 
-import java.io.StringReader;
-
 /**
  * The condition is satisfied when the prolog clause unifies (either a single
  * result, or multiple results).
@@ -106,7 +104,7 @@ public class PrologCondition extends ExploreCondition<String> {
     protected void initProlog() throws GroovePrologLoadingException {
         this.engine = PrologEngine.instance();
         if (this.usercode != null && this.usercode.length() > 0) {
-            this.engine.init(new StringReader(this.usercode), "user_code");
+            this.engine.init(this.usercode);
         }
     }
 }

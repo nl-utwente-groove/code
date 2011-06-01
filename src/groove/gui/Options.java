@@ -76,6 +76,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
         addBehaviour(DELETE_CONTROL_OPTION, 2);
+        addBehaviour(DELETE_PROLOG_OPTION, 2);
         addBehaviour(DELETE_GRAPH_OPTION, 2);
         addBehaviour(DELETE_RULE_OPTION, 2);
         addBehaviour(DELETE_TYPE_OPTION, 2);
@@ -863,6 +864,8 @@ public class Options implements Cloneable {
     /** Option to delete control programs. */
     static public final String DELETE_CONTROL_OPTION =
         "Delete control program?";
+    /** Option to delete prolog programs. */
+    static public final String DELETE_PROLOG_OPTION = "Delete prolog program?";
     /** Option to delete rules. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
     /** Always delete graphs without confirmation. */
@@ -901,6 +904,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         intOptionDefaults.put(CANCEL_CONTROL_EDIT_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_CONTROL_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_PROLOG_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(DELETE_TYPE_OPTION, BehaviourOption.ASK);

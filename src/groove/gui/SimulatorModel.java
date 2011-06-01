@@ -326,8 +326,9 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             getStore().putProlog(name, program);
-            changeProlog(getGrammar().getPrologView(name));
-            changeDisplay(DisplayKind.CONTROL);
+            changeProlog(name);
+            changeGrammar(false);
+            changeDisplay(DisplayKind.PROLOG);
             return false;
         } finally {
             finish();
@@ -344,6 +345,33 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             getStore().deleteProlog(name);
+            if (name.equals(getProlog().getName())) {
+                changeProlog(null);
+            }
+            changeGrammar(false);
+            return false;
+        } finally {
+            finish();
+        }
+    }
+
+    /**
+     * Renames one of the prolog programs in the grammar.
+     * @param oldName old name of the program
+     * @param newName new name for the program
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the rename action failed
+     */
+    public boolean doRenameProlog(String oldName, String newName)
+        throws IOException {
+        start();
+        try {
+            getStore().renameProlog(oldName, newName);
+            changeGrammar(false);
+            if (oldName.equals(getProlog().getName())) {
+                changeProlog(newName);
+            }
+            changeDisplay(DisplayKind.PROLOG);
             return false;
         } finally {
             finish();
@@ -1212,22 +1240,8 @@ public class SimulatorModel implements Cloneable {
      * @return if {@code true}, the program was actually changed.
      */
     public final boolean setProlog(String prologName) {
-        if (prologName == null) {
-            return setProlog((PrologView) null);
-        } else {
-            PrologView prolog = getGrammar().getPrologView(prologName);
-            assert prolog != null;
-            return setProlog(prolog);
-        }
-    }
-
-    /**
-     * Changes the currently selected prolog program.
-     * @return if {@code true}, the program was actually changed.
-     */
-    public final boolean setProlog(PrologView prolog) {
         start();
-        changeProlog(prolog);
+        changeProlog(prologName);
         return finish();
     }
 
@@ -1236,10 +1250,13 @@ public class SimulatorModel implements Cloneable {
      * if the new program is different from the old.
      * @return {@code true} if a change was actually made
      */
-    private final boolean changeProlog(PrologView prolog) {
-        boolean result = prolog != this.prolog;
+    private final boolean changeProlog(String name) {
+        boolean result =
+            this.prolog == null ? name != null : !this.prolog.getName().equals(
+                name);
         if (result) {
-            this.prolog = prolog;
+            this.prolog =
+                name == null ? null : getGrammar().getPrologView(name);
             this.changes.add(Change.PROLOG);
         }
         return result;
