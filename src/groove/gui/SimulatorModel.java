@@ -913,6 +913,7 @@ public class SimulatorModel implements Cloneable {
         newRuleSet.retainAll(grammar.getRuleNames());
         changeRuleSet(newRuleSet);
         changeControl();
+        changeProlog();
         changeType();
     }
 
@@ -928,6 +929,7 @@ public class SimulatorModel implements Cloneable {
             changeRuleSet(Collections.<String>emptySet());
         }
         changeControl();
+        changeProlog();
         changeType();
         finish();
     }
@@ -1286,10 +1288,32 @@ public class SimulatorModel implements Cloneable {
     public final boolean setProlog(String prologName) {
         start();
         changeProlog(prologName);
-        if (prologName != null) {
+        if (getProlog() != null) {
             changeDisplay(DisplayKind.PROLOG);
         }
         return finish();
+    }
+
+    /** 
+     * Sets the selected prolog field, by using the current value if
+     * that exists in the current grammar, or choosing the best value from the
+     * prolog programs available in the grammar otherwise. Only sets {@code null} 
+     * if the grammar has no prolog programs.
+     */
+    private final boolean changeProlog() {
+        boolean result = false;
+        // check the selected control view
+        StoredGrammarView grammar = this.grammar;
+        PrologView prolog = this.prolog;
+        if (prolog == null
+            || !prolog.equals(grammar.getPrologView(prolog.getName()))) {
+            String newPrologName = null;
+            if (!grammar.getPrologNames().isEmpty()) {
+                newPrologName = grammar.getPrologNames().iterator().next();
+            }
+            result = changeProlog(newPrologName);
+        }
+        return result;
     }
 
     /**

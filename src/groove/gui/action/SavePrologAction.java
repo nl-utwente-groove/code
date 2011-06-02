@@ -43,11 +43,6 @@ public class SavePrologAction extends SimulatorAction {
 
     /** Returns the editor of the currently selected prolog program, if any. */
     private PrologEditor getEditor() {
-        PrologEditor result = null;
-        if (getModel().hasProlog()) {
-            result =
-                getPrologDisplay().getEditor(getModel().getProlog().getName());
-        }
-        return result;
+        return getPrologDisplay().getSelectedEditor();
     }
 }

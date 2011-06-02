@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -44,15 +43,15 @@ public class PrologEditor extends JPanel {
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
         this.textArea.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent arg0) {
-                updateTab();
+                display.updateTab(PrologEditor.this);
             }
 
             public void insertUpdate(DocumentEvent arg0) {
-                updateTab();
+                display.updateTab(PrologEditor.this);
             }
 
             public void removeUpdate(DocumentEvent arg0) {
-                updateTab();
+                display.updateTab(PrologEditor.this);
             }
         });
     }
@@ -138,7 +137,7 @@ public class PrologEditor extends JPanel {
     /** Discards the edit history. */
     public void discardEdits() {
         this.textArea.discardAllEdits();
-        updateTab();
+        this.display.updateTab(this);
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
@@ -164,16 +163,6 @@ public class PrologEditor extends JPanel {
         SavePrologAction result = getActions().getSavePrologAction();
         result.refresh();
         return result;
-    }
-
-    /**
-     * Update the tab title
-     */
-    protected void updateTab() {
-        JTabbedPane editorPane = this.display.getEditorPane();
-        int index = editorPane.indexOfComponent(this);
-        editorPane.setTitleAt(index, (isDirty() ? "* " : "") + getName());
-        getSaveAction().refresh();
     }
 
     /** Convenience method to retrieve the underlying simulator. */
