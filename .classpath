@@ -17,6 +17,6 @@
 	<classpathentry kind="lib" path="lib/ltl2buchi-2010-12.jar" sourcepath="lib/src/ltl2buchi-2010-12.zip"/>
 	<classpathentry kind="lib" path="lib/trove-2_1_0.jar" sourcepath="lib/src/trove-2.1.0-src.zip"/>
 	<classpathentry kind="lib" path="lib/gnuprologjava-0.2.6.jar" sourcepath="lib/src/gnuprologjava-0.2.6-src.zip"/>
-	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
