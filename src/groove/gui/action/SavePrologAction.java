@@ -2,9 +2,8 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.PrologDisplay;
+import groove.gui.PrologEditor;
 import groove.gui.Simulator;
-import groove.gui.PrologDisplay.PrologEditor;
 
 import java.io.IOException;
 
@@ -23,8 +22,9 @@ public class SavePrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (doSave(getEditor().getName(), getEditor().getProgram())) {
-            getEditor().discardEdits();
+        PrologEditor editor = getEditor();
+        if (doSave(editor.getName(), editor.getProgram())) {
+            editor.discardEdits();
         }
         return false;
     }
@@ -46,8 +46,7 @@ public class SavePrologAction extends SimulatorAction {
         PrologEditor result = null;
         if (getModel().hasProlog()) {
             result =
-                getPrologDisplay().getEditor(
-                    getModel().getProlog().getName());
+                getPrologDisplay().getEditor(getModel().getProlog().getName());
         }
         return result;
     }

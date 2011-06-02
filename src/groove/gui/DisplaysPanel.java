@@ -67,11 +67,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
-        this.tabbedPanelMap.put(kind, component);
+        this.displaysMap.put(kind, component);
         if (kind != DisplayKind.RULE) {
             JPanel listPanel = component.getListPanel();
             this.listKindMap.put(listPanel, kind);
-            this.tabbedListMap.put(kind, listPanel);
+            this.listsMap.put(kind, listPanel);
         }
         attach(component);
     }
@@ -94,7 +94,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         this.tabListener = new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
                 DisplaysPanel.this.changingTabs = true;
-                getSimulatorModel().setDisplay(getSelectedDisplay());
+                DisplayKind displayKind = getSelectedDisplay();
+                if (displayKind != null) {
+                    getSimulatorModel().setDisplay(displayKind);
+                }
                 DisplaysPanel.this.changingTabs = false;
             }
         };
@@ -162,20 +165,25 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         suspendListeners();
         if (changes.contains(Change.DISPLAY)) {
             if (!this.changingTabs) {
-                Display panel = this.tabbedPanelMap.get(source.getDisplay());
+                Display panel = this.displaysMap.get(source.getDisplay());
                 if (indexOfComponent(panel.getPanel()) >= 0) {
                     setSelectedComponent(panel.getPanel());
+                } else {
+                    DisplayWindow window =
+                        this.detachedMap.get(source.getDisplay());
+                    window.toFront();
                 }
             }
-            JPanel listPanel = this.tabbedListMap.get(source.getDisplay());
+            JPanel listPanel = this.listsMap.get(source.getDisplay());
             if (listPanel != null
                 && getListsPanel().indexOfComponent(listPanel) >= 0) {
                 getListsPanel().setSelectedComponent(listPanel);
             }
-        } else {
-            Display display = (Display) getSelectedComponent();
+        } else if (getSelectedComponent() != null) {
+            // switch tabs if the selection on the currently displayed tab
+            // was set to null
             String changedTo = null;
-            switch (display.getKind()) {
+            switch (((Display) getSelectedComponent()).getKind()) {
             case HOST:
                 if (changes.contains(Change.HOST)
                     && getSimulatorModel().hasHost()) {
@@ -184,19 +192,19 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             case RULE:
                 if (changes.contains(Change.RULE)
-                    && getSimulatorModel().getRule() != null) {
+                    && getSimulatorModel().hasRule()) {
                     changedTo = getSimulatorModel().getRule().getName();
                 }
                 break;
             case TYPE:
-                if (changes.contains(Change.HOST)
-                    && getSimulatorModel().getType() != null) {
+                if (changes.contains(Change.TYPE)
+                    && getSimulatorModel().hasType()) {
                     changedTo = getSimulatorModel().getType().getName();
                 }
                 break;
             }
             if (changedTo == null) {
-                Display panel = this.tabbedPanelMap.get(source.getDisplay());
+                Display panel = this.displaysMap.get(source.getDisplay());
                 if (panel != null && indexOfComponent(panel.getPanel()) >= 0) {
                     setSelectedComponent(panel.getPanel());
                 }
@@ -207,7 +215,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the kind of tab on top of the tabbed pane. */
     public DisplayKind getSelectedDisplay() {
-        return ((Display) getSelectedComponent()).getKind();
+        Display display = ((Display) getSelectedComponent());
+        return display == null ? null : display.getKind();
     }
 
     /**
@@ -228,7 +237,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the panel corresponding to a certain tab kind. */
     public Display getDisplayFor(DisplayKind tabKind) {
-        return this.tabbedPanelMap.get(tabKind);
+        return this.displaysMap.get(tabKind);
     }
 
     /** Returns the panel corresponding to a certain graph role. */
@@ -257,6 +266,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             // the component is already attached; don't do anything
             return;
         }
+        this.detachedMap.remove(display.getKind());
         DisplayKind myKind = display.getKind();
         int index;
         for (index = 0; index < getTabCount(); index++) {
@@ -299,7 +309,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Detaches a component (presumably shown as a tab) into its own window. */
     public void detach(Display display) {
         revertSelection();
-        new DisplayWindow(this, display);
+        this.detachedMap.put(display.getKind(),
+            new DisplayWindow(this, display));
     }
 
     /** Returns the parent frame of an editor panel, if the editor is not
@@ -384,16 +395,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /**
-     * Makes an attempt to dispose all editors from all tabs.
+     * Makes an attempt to dispose all editors from all displays.
      * @return {@code true} if all editors were disposed.
      */
     public boolean disposeAllEditors() {
-        boolean result = getStateDisplay().disposeAllEditors();
-        if (result) {
-            result = getRuleDisplay().disposeAllEditors();
-        }
-        if (result) {
-            result = getTypeDisplay().disposeAllEditors();
+        boolean result = true;
+        for (Display display : this.displaysMap.values()) {
+            result = display.disposeAllEditors();
+            if (!result) {
+                break;
+            }
         }
         return result;
     }
@@ -407,14 +418,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping from simulator tab list panels to their tab kinds. */
     private final Map<JPanel,DisplayKind> listKindMap =
         new HashMap<JPanel,DisplayKind>();
-    /** Mapping from tab kinds to the corresponding panels. */
-    private final Map<DisplayKind,Display> tabbedPanelMap =
+    /** Mapping from display kinds to the corresponding panels. */
+    private final Map<DisplayKind,Display> displaysMap =
         new HashMap<DisplayKind,Display>();
-    /** Mapping from tab kinds to the corresponding (possibly {@code null})
+    /** Mapping from display kinds to the corresponding (possibly {@code null})
      * label lists. */
-    private final Map<DisplayKind,JPanel> tabbedListMap =
+    private final Map<DisplayKind,JPanel> listsMap =
         new HashMap<DisplayKind,JPanel>();
-
+    /** Mapping of currently detached displays. */
+    private final Map<DisplayKind,DisplayWindow> detachedMap =
+        new HashMap<DisplayKind,DisplayWindow>();
     /** The rule tab shown on this panel. */
     private StateDisplay stateDisplay;
     /** The rule tab shown on this panel. */

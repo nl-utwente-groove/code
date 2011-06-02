@@ -105,7 +105,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Returns the control panel that owns the action. */
-    final protected ControlDisplay getControlPanel() {
+    final protected ControlDisplay getControlDisplay() {
         return this.simulator.getControlPanel();
     }
 

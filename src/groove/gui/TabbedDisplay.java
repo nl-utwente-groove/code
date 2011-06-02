@@ -191,7 +191,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         for (AspectGraph graph : graphs) {
             EditorPanel editor = editors.get(graph.getName());
             if (editor != null) {
-                result = editor.doCancel();
+                result = editor.cancelEditing(true);
                 if (!result) {
                     break;
                 }
@@ -209,7 +209,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         boolean result = true;
         for (EditorPanel editor : new ArrayList<EditorPanel>(
             getEditors().values())) {
-            result = editor.doCancel();
+            result = editor.cancelEditing(true);
             if (!result) {
                 break;
             }

@@ -11,12 +11,12 @@ public class EditControlAction extends SimulatorAction {
         super(simulator, Options.EDIT_CONTROL_ACTION_NAME,
             Icons.EDIT_CONTROL_ICON);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
-        getControlPanel().addRefreshable(this);
+        getControlDisplay().addRefreshable(this);
     }
 
     @Override
     public boolean execute() {
-        getControlPanel().startEditing();
+        getControlDisplay().startEditing();
         return false;
     }
 
@@ -24,6 +24,6 @@ public class EditControlAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getModel().getControl() != null
             && getModel().getStore().isModifiable()
-            && !getControlPanel().isEditing());
+            && !getControlDisplay().isEditing());
     }
 }

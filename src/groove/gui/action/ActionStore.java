@@ -130,6 +130,21 @@ public class ActionStore implements SimulatorListener {
     private CancelEditControlAction cancelEditControlAction;
 
     /**
+     * Lazily creates and returns the singleton instance of the
+     * {@link CancelEditPrologAction}.
+     */
+    public CancelEditPrologAction getCancelEditPrologAction() {
+        if (this.cancelEditPrologAction == null) {
+            this.cancelEditPrologAction =
+                new CancelEditPrologAction(this.simulator);
+        }
+        return this.cancelEditPrologAction;
+    }
+
+    /** Singular instance of the CancelAction. */
+    private CancelEditPrologAction cancelEditPrologAction;
+
+    /**
      * Returns the CTL formula providing action permanently associated with this
      * simulator.
      * @param full if {@code true}, the action first generates the full state

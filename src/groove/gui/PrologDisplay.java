@@ -47,6 +47,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,7 +59,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -70,16 +70,11 @@ import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
  * The Prolog editor tab for the improved simulator
@@ -98,26 +93,21 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      */
     public PrologDisplay(Simulator simulator) {
         this.simulator = simulator;
-        setLayout(new BorderLayout());
+        Environment.setDefaultOutputStream(getUserOutput());
 
         JPanel queryPane = new JPanel(new BorderLayout());
         queryPane.add(getQueryField(), BorderLayout.CENTER);
         queryPane.add(createExecuteButton(), BorderLayout.EAST);
 
-        JPanel editorPane = new JPanel(new BorderLayout());
-        editorPane.add(createToolBar(), BorderLayout.NORTH);
-        editorPane.add(getEditorPane(), BorderLayout.CENTER);
-
-        Environment.setDefaultOutputStream(getUserOutput());
-
         JPanel resultsPane = new JPanel(new BorderLayout());
+        resultsPane.setBorder(null);
         resultsPane.add(new JScrollPane(getResultsArea()), BorderLayout.CENTER);
         resultsPane.add(getNextResultButton(), BorderLayout.SOUTH);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setBorder(null);
         splitPane.setOneTouchExpandable(true);
-        splitPane.setTopComponent(editorPane);
+        splitPane.setTopComponent(getEditorPane());
         splitPane.setBottomComponent(resultsPane);
 
         JPanel mainPane = new JPanel(new BorderLayout());
@@ -130,8 +120,9 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         sp2.setOneTouchExpandable(true);
         sp2.setRightComponent(createSyntaxHelp());
         sp2.setLeftComponent(mainPane);
-        add(sp2, BorderLayout.CENTER);
 
+        setLayout(new BorderLayout());
+        add(sp2, BorderLayout.CENTER);
         add(this.statusBar, BorderLayout.SOUTH);
         simulator.getModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
         this.listening = true;
@@ -150,19 +141,29 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     /**
      * Creates and returns the tabbed pane on which the editors are placed.
      */
-    private JTabbedPane getEditorPane() {
+    JTabbedPane getEditorPane() {
         if (this.editorPane == null) {
-            this.editorPane =
-                new JTabbedPane(SwingConstants.BOTTOM,
-                    JTabbedPane.SCROLL_TAB_LAYOUT);
+            this.editorPane = new JTabbedPane(SwingConstants.BOTTOM) {
+                @Override
+                public void removeTabAt(int index) {
+                    // removes the editor panel from the map
+                    String name =
+                        ((PrologEditor) getComponentAt(index)).getName();
+                    super.removeTabAt(index);
+                    PrologDisplay.this.editorMap.remove(name);
+                }
+            };
+
             this.editorPane.setMinimumSize(new Dimension(0, 200));
             this.editorPane.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     if (PrologDisplay.this.listening) {
                         PrologDisplay.this.listening = false;
+                        PrologEditor editor =
+                            (PrologEditor) PrologDisplay.this.editorPane.getSelectedComponent();
                         getSimulatorModel().setProlog(
-                            ((PrologEditor) PrologDisplay.this.editorPane.getSelectedComponent()).getName());
+                            editor == null ? null : editor.getName());
                         PrologDisplay.this.listening = true;
                     }
 
@@ -254,17 +255,6 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         }
         ((DefaultTreeModel) tree.getModel()).reload();
         tree.expandPath(new TreePath(rootNode.getPath()));
-    }
-
-    /**
-     * Creates a tool bar for the display.
-     */
-    private JToolBar createToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(new JLabel("User code:"));
-        result.addSeparator();
-        result.add(createSaveButton());
-        return result;
     }
 
     private JTextArea getResultsArea() {
@@ -511,6 +501,19 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         return this.editorMap.get(title);
     }
 
+    @Override
+    public boolean disposeAllEditors() {
+        boolean result = true;
+        for (PrologEditor editor : new ArrayList<PrologEditor>(
+            this.editorMap.values())) {
+            result = editor.cancelEditing(true);
+            if (!result) {
+                break;
+            }
+        }
+        return result;
+    }
+
     /**
      * Cancels the current editing action, if any.
      * @param confirm indicates if the user should be asked for confirmation
@@ -519,12 +522,8 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     public boolean cancelEditing(String name, boolean confirm) {
         boolean result = true;
         PrologEditor editor = this.editorMap.get(name);
-        if (editor != null && editor.isDirty()) {
-            if (!confirm || editor.confirmAbandon()) {
-                editor.dispose();
-            } else {
-                result = false;
-            }
+        if (editor != null) {
+            result = editor.cancelEditing(confirm);
         }
         return result;
     }
@@ -741,7 +740,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     }
 
     /** Convenience method to retrieve the action store. */
-    private ActionStore getActions() {
+    ActionStore getActions() {
         return getSimulator().getActions();
     }
 
@@ -796,132 +795,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Counter used to show the number of found solutions (so far)
      */
     private int solutionCount;
-    private final static Font EDIT_FONT =
-        new Font("Monospaced", Font.PLAIN, 12);
-
-    /**
-     * Creates the save button.
-     */
-    private JButton createSaveButton() {
-        return Options.createButton(getActions().getSavePrologAction());
-    }
-
-    /**
-     * Data structure to keep track of the open/loaded prolog files
-     * 
-     * @author Michiel Hendriks
-     */
-    public static class PrologEditor extends JPanel {
-        /** 
-         * Constructs a prolog editor with a given name.
-         * @param display the display on which this editor is placed.
-         */
-        public PrologEditor(final PrologDisplay display, String name,
-                String program) {
-            this.display = display;
-            this.name = name;
-            this.editor = new RSyntaxTextArea(25, 100);
-            this.editor.setFont(EDIT_FONT);
-            this.editor.setText(program);
-            this.editor.setEditable(true);
-            this.editor.setEnabled(true);
-            this.editor.setTabSize(4);
-            this.editor.discardAllEdits();
-            setBorder(null);
-            setLayout(new BorderLayout());
-            add(new RTextScrollPane(this.editor, true));
-            this.editor.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent arg0) {
-                        updateTab();
-                    }
-
-                    public void insertUpdate(DocumentEvent arg0) {
-                        updateTab();
-                    }
-
-                    public void removeUpdate(DocumentEvent arg0) {
-                        updateTab();
-                    }
-                });
-        }
-
-        /** Indicates if the editor is currently dirty. */
-        public final boolean isDirty() {
-            return this.editor.canUndo();
-        }
-
-        /** Returns the file from which the editor was loaded. */
-        @Override
-        public final String getName() {
-            return this.name;
-        }
-
-        /** Returns the current program. */
-        public final String getProgram() {
-            return this.editor.getText();
-        }
-
-        /** Returns the editor panel. */
-        public final RSyntaxTextArea getEditor() {
-            return this.editor;
-        }
-
-        /**
-         * Creates and shows a confirmation dialog for abandoning the currently
-         * edited control program.
-         */
-        public boolean confirmAbandon() {
-            boolean result = true;
-            if (isDirty()) {
-                int answer =
-                    JOptionPane.showConfirmDialog(this,
-                        String.format("Save changes in '%s'?", getName()),
-                        null, JOptionPane.YES_NO_CANCEL_OPTION);
-                if (answer == JOptionPane.YES_OPTION) {
-                    this.display.getActions().getSavePrologAction().doSave(
-                        getName(), getProgram());
-                } else {
-                    result = answer == JOptionPane.NO_OPTION;
-                }
-            }
-            return result;
-        }
-
-        /** Removes this editor from the editor pane. */
-        public void dispose() {
-            this.display.getEditorPane().remove(this);
-        }
-
-        /** Discards the edit history. */
-        public void discardEdits() {
-            this.editor.discardAllEdits();
-            updateTab();
-        }
-
-        /**
-         * Update the tab title
-         */
-        protected void updateTab() {
-            JTabbedPane editorPane = this.display.getEditorPane();
-            int index = editorPane.indexOfComponent(PrologEditor.this);
-            editorPane.setTitleAt(index, (isDirty() ? "* " : "") + getName());
-            this.display.getActions().getSavePrologAction().refresh();
-        }
-
-        /**
-         * The display on which the editor is placed.
-         */
-        private final PrologDisplay display;
-        /**
-         * The name of the editor.
-         */
-        private final String name;
-        /**
-         * The associated editor
-         */
-        private final RSyntaxTextArea editor;
-    }
+    final static Font EDIT_FONT = new Font("Monospaced", Font.PLAIN, 12);
 
     /**
      * Class used to redirect the standard output stream used by prolog to the

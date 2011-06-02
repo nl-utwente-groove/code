@@ -42,4 +42,12 @@ public interface Display {
      * nothing to select.
      */
     String getName();
+
+    /**
+     * Attempts to close all editors on this display, asking permission 
+     * for the dirty ones and possibly saving them.
+     * This is done in preparation to changing the grammar.
+     * @return {@code true} if all editors were disposed.
+     */
+    boolean disposeAllEditors();
 }

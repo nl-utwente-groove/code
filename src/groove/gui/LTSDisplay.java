@@ -87,6 +87,12 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
+    public boolean disposeAllEditors() {
+        // there is nothing to be disposed
+        return true;
+    }
+
+    @Override
     protected JToolBar createToolBar() {
         JToolBar result = Options.createToolBar();
         result.add(getActions().getStartSimulationAction());

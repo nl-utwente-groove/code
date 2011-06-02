@@ -29,8 +29,8 @@ import groove.view.aspect.AspectGraph;
 import java.awt.BorderLayout;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -73,8 +73,8 @@ public class EditorPanel extends JPanel implements SimulatorListener {
                 @Override
                 JToolBar createToolBar() {
                     JToolBar toolbar = Options.createToolBar();
-                    toolbar.add(getSaveButton());
-                    toolbar.add(getCancelButton());
+                    toolbar.add(createSaveButton());
+                    toolbar.add(createCancelButton());
                     addModeButtons(toolbar);
                     addUndoButtons(toolbar);
                     addCopyPasteButtons(toolbar);
@@ -235,16 +235,47 @@ public class EditorPanel extends JPanel implements SimulatorListener {
         getEditor().setGraph(newGraph, false);
     }
 
-    /** Creates and returns a Cancel button, for use on the tool bar. */
-    private JButton getCancelButton() {
-        if (this.cancelButton == null) {
-            Action cancelAction = getCancelAction();
-            JButton result = new JButton(cancelAction);
-            result.setText(null);
-            result.setToolTipText("Cancel editing");
-            this.cancelButton = result;
+    /** Calls {@link CancelEditGraphAction#execute()}. */
+    public boolean cancelEditing(boolean confirm) {
+        boolean result = false;
+        if (!confirm || confirmAbandon()) {
+            dispose();
+            result = true;
         }
-        return this.cancelButton;
+        return result;
+    }
+
+    /**
+     * Creates and shows a confirmation dialog for abandoning the currently
+     * edited control program.
+     */
+    public boolean confirmAbandon() {
+        boolean result = true;
+        if (isDirty()) {
+            int answer =
+                JOptionPane.showConfirmDialog(this, String.format(
+                    "%s '%s' has been modified. Save changes?",
+                    this.graph.getRole().toString(true), getName()), null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (answer == JOptionPane.YES_OPTION) {
+                getSaveAction().doSave(getGraph());
+            }
+            result = answer != JOptionPane.CANCEL_OPTION;
+        }
+        return result;
+    }
+
+    /** Disposes the editor, by removing it as a listener and simulator panel component. */
+    public void dispose() {
+        getSaveAction().dispose();
+        getCancelAction().dispose();
+        this.parent.remove(this);
+        getSimulatorModel().removeListener(this);
+    }
+
+    /** Creates and returns a Cancel button, for use on the tool bar. */
+    private JButton createCancelButton() {
+        return Options.createButton(getCancelAction());
     }
 
     /** Creates and returns the cancel action. */
@@ -256,15 +287,8 @@ public class EditorPanel extends JPanel implements SimulatorListener {
     }
 
     /** Creates and returns an OK button, for use on the tool bar. */
-    private JButton getSaveButton() {
-        if (this.saveButton == null) {
-            Action saveAction = getSaveAction();
-            JButton result = new JButton(saveAction);
-            result.setText(null);
-            result.setToolTipText("Save changes");
-            this.saveButton = result;
-        }
-        return this.saveButton;
+    private JButton createSaveButton() {
+        return Options.createButton(getSaveAction());
     }
 
     /** Creates and returns the save action. */
@@ -275,28 +299,13 @@ public class EditorPanel extends JPanel implements SimulatorListener {
         return this.saveAction;
     }
 
-    /** Calls {@link CancelEditGraphAction#execute()}. */
-    public boolean doCancel() {
-        return getCancelAction().execute();
-    }
-
-    /** Disposes the editor, by removing it as a listener and simulator panel component. */
-    public void dispose() {
-        getSaveAction().dispose();
-        getCancelAction().dispose();
-        this.parent.remove(this);
-        getSimulatorModel().removeListener(this);
-    }
-
     /** Graph being edited.
      * This holds the graph as long as the editor is not yet initialised,
      * and then is set to {@code null}.
      * Use {@link #getGraph()} to access the graph.
      */
     private AspectGraph graph;
-    private JButton saveButton;
     private SaveGraphAction saveAction;
-    private JButton cancelButton;
     private CancelEditGraphAction cancelAction;
     /** Container of this editor. */
     private TabbedDisplay parent;

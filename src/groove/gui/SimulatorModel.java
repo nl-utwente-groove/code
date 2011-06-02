@@ -345,7 +345,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             getStore().deleteProlog(name);
-            if (name.equals(getProlog().getName())) {
+            if (getProlog() == null || name.equals(getProlog().getName())) {
                 changeProlog(null);
             }
             changeGrammar(false);

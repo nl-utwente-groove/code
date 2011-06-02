@@ -381,6 +381,11 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         return getControlTextArea().getText();
     }
 
+    @Override
+    public boolean disposeAllEditors() {
+        return cancelEditing(true);
+    }
+
     /**
      * Cancels the current editing action, if any.
      * @param confirm indicates if the user should be asked for confirmation

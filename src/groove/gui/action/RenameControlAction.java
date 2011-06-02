@@ -18,7 +18,7 @@ public class RenameControlAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (getControlPanel().cancelEditing(true)) {
+        if (getControlDisplay().cancelEditing(true)) {
             String oldName = getModel().getControl().getName();
             String newName =
                 askNewControlName("Select control program name", oldName, false);
@@ -34,7 +34,7 @@ public class RenameControlAction extends SimulatorAction {
         }
         return result;
     }
-
+    
     @Override
     public void refresh() {
         setEnabled(getModel().getControl() != null
