@@ -160,8 +160,9 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                     if (PrologDisplay.this.listening) {
                         PrologDisplay.this.listening = false;
                         PrologEditor editor = getSelectedEditor();
-                        getSimulatorModel().setProlog(
-                            editor == null ? null : editor.getName());
+                        if (editor != null) {
+                            getSimulatorModel().setProlog(editor.getName());
+                        }
                         PrologDisplay.this.listening = true;
                     }
 
@@ -404,6 +405,19 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         return result;
     }
 
+    /** 
+     * Returns the label to be used for a given (named) prolog program. 
+     * @param name the name of the control program
+     */
+    public String getLabelText(String name) {
+        StringBuilder result = new StringBuilder(name);
+        PrologEditor editor = this.editorMap.get(name);
+        if (editor != null && editor.isDirty()) {
+            result.insert(0, "*");
+        }
+        return result.toString();
+    }
+
     /**
      * Creates and returns the panel with the control programs list.
      */
@@ -439,7 +453,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     /** Returns the list of control programs. */
     public PrologJList getPrologList() {
         if (this.prologJList == null) {
-            this.prologJList = new PrologJList(getSimulator());
+            this.prologJList = new PrologJList(this);
         }
         return this.prologJList;
     }
@@ -732,8 +746,19 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             queryResult.getExecutionTime() / 1000000.0));
     }
 
+    /**
+     * Update the tab title
+     */
+    protected void updateTab(PrologEditor editor) {
+        JTabbedPane editorPane = getEditorPane();
+        int index = editorPane.indexOfComponent(editor);
+        editorPane.setTitleAt(index, getLabelText(editor.getName()));
+        getActions().getSavePrologAction().refresh();
+        getListPanel().repaint();
+    }
+
     /** Convenience method to retrieve the simulator. */
-    private Simulator getSimulator() {
+    public Simulator getSimulator() {
         return this.simulator;
     }
 

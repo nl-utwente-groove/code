@@ -19,6 +19,7 @@ package groove.gui;
 import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
+import groove.gui.jgraph.JAttr;
 import groove.view.PrologView;
 import groove.view.StoredGrammarView;
 
@@ -52,8 +53,9 @@ public class PrologJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected PrologJList(final Simulator simulator) {
-        this.simulator = simulator;
+    protected PrologJList(PrologDisplay display) {
+        this.display = display;
+        this.simulator = display.getSimulator();
         this.setEnabled(false);
         this.setCellRenderer(new MyCellRenderer());
         installListeners();
@@ -213,6 +215,7 @@ public class PrologJList extends JList implements SimulatorListener {
         return getSimulator().getActions();
     }
 
+    private final PrologDisplay display;
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
@@ -262,10 +265,10 @@ public class PrologJList extends JList implements SimulatorListener {
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
-                //            } else if (evt.getClickCount() == 2) { // Left double click
-                //                if (PrologJList.this.isEnabled() && cellSelected) {
-                //                    getActions().getEnableControlAction().execute();
-                //                }
+            } else if (evt.getClickCount() == 2) { // Left double click
+                if (PrologJList.this.isEnabled() && cellSelected) {
+                    getActions().getEditPrologAction().execute();
+                }
             }
         }
 
@@ -310,13 +313,11 @@ public class PrologJList extends JList implements SimulatorListener {
                 result.setForeground(foreground);
                 result.setBackground(background);
             }
-            // set tool tips and special formats
-            //            if (value.toString().equals(getGrammar().getControlName())) {
-            //                setFont(getFont().deriveFont(Font.BOLD));
-            //                setToolTipText("Enabled control program; doubleclick to disable");
-            //            } else {
-            //                setToolTipText("Disabled control program; doubleclick to enable");
-            //            }
+            String ctrlName = value.toString();
+            boolean error = getGrammar().getPrologView(ctrlName).hasErrors();
+            setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
+            setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
+            setText(PrologJList.this.display.getLabelText(ctrlName));
             return result;
         }
 
