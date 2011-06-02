@@ -29,6 +29,8 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
+import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.prolog.builtin.AlgebraPredicates;
 import groove.prolog.builtin.GraphPredicates;
 import groove.prolog.builtin.GroovePredicates;
@@ -43,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 /**
  * Subclass of the normal GNU Prolog Environment, contains a reference to a
@@ -77,6 +82,32 @@ public class GrooveEnvironment extends Environment {
         }
         this.grooveTags.addAll(getModule().getPredicateTags());
         this.grooveTags.removeAll(this.prologTags);
+        if (PRINT_PROLOG_FUNCTORS) {
+            printFunctors(this.prologTags);
+        }
+        if (PRINT_GROOVE_FUNCTORS) {
+            printFunctors(this.grooveTags);
+        }
+    }
+
+    /**
+     * Prints a list of functor names on stdout, surrounded by 
+     * an XML "function" tag.
+     * This can be pasted in the input of the {@link RSyntaxTextArea}
+     * TokenMakerMaker, to allow syntax highlighting of predefined tags.
+     */
+    private void printFunctors(Collection<CompoundTermTag> tags) {
+        TreeSet<String> functors = new TreeSet<String>();
+        HTMLTag functionTag = new HTMLConverter.HTMLTag("function");
+        for (CompoundTermTag tag : tags) {
+            String functor = tag.functor.value;
+            if (Character.isJavaIdentifierStart(functor.charAt(0))) {
+                functors.add(functor);
+            }
+        }
+        for (String functor : functors) {
+            System.out.println(functionTag.on(functor));
+        }
     }
 
     /** 
@@ -263,6 +294,19 @@ public class GrooveEnvironment extends Environment {
     public static final Class<GroovePredicates>[] GROOVE_PREDS = new Class[] {
         AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
         RulePredicates.class, TransPredicates.class, TypePredicates.class};
+
+    /** 
+     * Flag that causes all Prolog functor names to be printed on stdout.
+     * The result can be included in the TokenMakerMaker input for the
+     * {@link RSyntaxTextArea} syntax highlighting.
+     */
+    private static final boolean PRINT_PROLOG_FUNCTORS = false;
+    /** 
+     * Flag that causes all Groove functor names to be printed on stdout.
+     * The result can be included in the TokenMakerMaker input for the
+     * {@link RSyntaxTextArea} syntax highlighting.
+     */
+    private static final boolean PRINT_GROOVE_FUNCTORS = true;
 
     /** Alphabetically and arity-wise ordered set of compound tags. */
     private static class TagSet extends TreeSet<CompoundTermTag> {
