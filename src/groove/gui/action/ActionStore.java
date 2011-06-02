@@ -85,10 +85,10 @@ public class ActionStore implements SimulatorListener {
      * Returns the transition application action permanently associated with
      * this simulator.
      */
-    public ApplyTransitionAction getApplyTransitionAction() {
+    public ApplyMatchAction getApplyTransitionAction() {
         if (this.applyTransitionAction == null) {
             this.applyTransitionAction =
-                new ApplyTransitionAction(this.simulator);
+                new ApplyMatchAction(this.simulator);
         }
         return this.applyTransitionAction;
     }
@@ -97,7 +97,7 @@ public class ActionStore implements SimulatorListener {
      * The transition application action permanently associated with this
      * simulator.
      */
-    private ApplyTransitionAction applyTransitionAction;
+    private ApplyMatchAction applyTransitionAction;
 
     /**
      * Returns the back simulation action permanently associated with this

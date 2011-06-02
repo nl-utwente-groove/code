@@ -595,12 +595,15 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Fully explores a given state of the GTS. */
-    public void doExploreState(GraphState state) {
+    public void doExploreState() {
         start();
-        getExploreStateStrategy().prepare(getGts(), state);
+        getExploreStateStrategy().prepare(getGts(), getState());
         getExploreStateStrategy().next();
         changeGts(getGts(), true);
-        changeState(state);
+        GraphTransition outTrans = getOutTransition(getState());
+        if (outTrans != null) {
+            changeMatch(outTrans);
+        }
         finish();
     }
 
@@ -608,14 +611,40 @@ public class SimulatorModel implements Cloneable {
      * Applies a match to the current state. The current state is set to the
      * derivation's target, and the current derivation to null.
      */
-    public void applyMatch() {
+    public void doApplyMatch() {
         GraphTransition trans = getTransition();
         if (trans == null) {
             trans = getEventApplier().apply(getState(), getMatch().getEvent());
         }
         if (trans != null) {
-            setState(trans.target());
+            GraphTransition outTrans = null;
+            if (trans.target().isClosed()) {
+                outTrans = getOutTransition(trans.target());
+            }
+            if (outTrans == null) {
+                setState(trans.target());
+            } else {
+                setMatch(outTrans);
+            }
         }
+    }
+
+    /** Returns the first outgoing transition that is not a self-loop.
+     * Returns {@code null} if there is no such outgoing transition. */
+    private GraphTransition getOutTransition(GraphState state) {
+        GraphTransition result = null;
+        for (GraphTransition outTrans : getState().getTransitionSet()) {
+            if (outTrans.target() != getState()) {
+                result = outTrans;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** Indicates if there is an active GTS. */
+    public final boolean hasGts() {
+        return getGts() != null;
     }
 
     /** Returns the active GTS, if any. */
@@ -770,6 +799,11 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Indicates if there is a currently selected match result. */
+    public final boolean hasMatch() {
+        return getMatch() != null;
+    }
+
     /** Returns the currently selected match result. */
     public final MatchResult getMatch() {
         return this.match;
@@ -812,6 +846,13 @@ public class SimulatorModel implements Cloneable {
             this.changes.add(Change.MATCH);
         }
         return result;
+    }
+
+    /**
+     * Indicates if there is a loaded grammar.
+     */
+    public final boolean hasGrammar() {
+        return getGrammar() != null;
     }
 
     /**

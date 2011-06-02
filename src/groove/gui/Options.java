@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
@@ -231,6 +232,9 @@ public class Options implements Cloneable {
     static public void setLAF(final AbstractButton button) {
         button.setHideActionText(true);
         button.setFocusable(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEtchedBorder(),
+            BorderFactory.createEmptyBorder(3, 3, 3, 3)));
         button.setBorderPainted(button.isEnabled());
         button.addChangeListener(new ChangeListener() {
             @Override
@@ -359,8 +363,7 @@ public class Options implements Cloneable {
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
     /** Apply transition action name */
-    public static final String APPLY_TRANSITION_ACTION_NAME =
-        "Apply active match";
+    public static final String APPLY_MATCH_ACTION_NAME = "Apply active match";
     /** Back action name */
     public static final String BACK_ACTION_NAME = "Step Back";
     /** Action name for cancelling an edit. */
@@ -457,6 +460,9 @@ public class Options implements Cloneable {
     /** Exploration statistics dialog action name */
     public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME =
         "Last Exploration Statistics ...";
+    /** Explore single state action name */
+    public static final String EXPLORE_STATE_ACTION_NAME =
+        "Explore current state";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export control action name */
@@ -564,7 +570,8 @@ public class Options implements Cloneable {
     /**
      * Start simulation action name
      */
-    public static final String START_SIMULATION_ACTION_NAME = "Clear LTS";
+    public static final String START_SIMULATION_ACTION_NAME =
+        "Restart simulation";
 
     /** To abstract mode action name */
     public static final String TOGGLE_TO_ABS_ACTION_NAME =

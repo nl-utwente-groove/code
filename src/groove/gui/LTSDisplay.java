@@ -95,10 +95,12 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = Options.createToolBar();
-        result.add(getActions().getStartSimulationAction());
         result.add(getActions().getSaveLTSAsAction());
         result.addSeparator();
+        result.add(getActions().getStartSimulationAction());
+        result.add(getActions().getApplyTransitionAction());
         result.add(getActions().getExploreAction());
+        result.addSeparator();
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
@@ -333,7 +335,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getSimulatorModel().doExploreState(node);
+                            getSimulatorModel().doExploreState();
                         }
                     }
                 }
