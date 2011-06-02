@@ -18,12 +18,12 @@
  */
 package groove.explore.result;
 
+import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryReturnValue;
-import groove.prolog.exception.GroovePrologException;
-import groove.prolog.exception.GroovePrologLoadingException;
+import groove.view.FormatException;
 
 /**
  * The condition is satisfied when the prolog clause unifies (either a single
@@ -90,18 +90,19 @@ public class PrologCondition extends ExploreCondition<String> {
             // the graphstate is accepted when the prolog query succeeds
             return this.engine.lastReturnValue() == QueryReturnValue.SUCCESS
                 || this.engine.lastReturnValue() == QueryReturnValue.SUCCESS_LAST;
-        } catch (GroovePrologException e) {
+        } catch (FormatException e) {
+            e.printStackTrace();
+        } catch (PrologException e) {
             e.printStackTrace();
         }
         return false;
     }
 
     /**
-     * Initialize the prolog environment
-     * 
-     * @throws GroovePrologLoadingException TODO
+     * Initialises the prolog environment
+     * @throws FormatException if there was an error compiling the user code
      */
-    protected void initProlog() throws GroovePrologLoadingException {
+    protected void initProlog() throws FormatException {
         this.engine = PrologEngine.instance();
         if (this.usercode != null && this.usercode.length() > 0) {
             this.engine.init(this.usercode);

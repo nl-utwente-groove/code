@@ -21,6 +21,8 @@ package groove.prolog;
 import gnu.prolog.database.PredicateListener;
 import gnu.prolog.database.PredicateUpdatedEvent;
 import gnu.prolog.database.PrologTextLoader;
+import gnu.prolog.database.PrologTextLoaderError;
+import gnu.prolog.database.PrologTextLoaderState;
 import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.CompoundTerm;
 import gnu.prolog.term.CompoundTermTag;
@@ -34,13 +36,17 @@ import groove.prolog.builtin.LtsPredicates;
 import groove.prolog.builtin.RulePredicates;
 import groove.prolog.builtin.TransPredicates;
 import groove.prolog.builtin.TypePredicates;
+import groove.view.FormatError;
+import groove.view.FormatException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -149,17 +155,25 @@ public class GrooveEnvironment extends Environment {
     }
 
     /** Loads Prolog declarations from a program, given as a string. */
-    public void loadProgram(String program) {
-        //        if (isInitialized()) {
-        //            throw new IllegalStateException(
-        //                "no files can be loaded after inializtion was run");
-        //        }
+    public void loadProgram(String program) throws FormatException {
+        PrologTextLoaderState loaderState = new PrologTextLoaderState(this) {
+            {
+                this.module = GrooveEnvironment.this.getModule();
+            }
+        };
         DefinitionListener listener = new DefinitionListener();
         getModule().addPredicateListener(listener);
-        new PrologTextLoader(getPrologTextLoaderState(), new StringReader(
-            program), null);
+        new PrologTextLoader(loaderState, new StringReader(program), null);
         getModule().removePredicateListener(listener);
         this.userTags.addAll(listener.getPredicates());
+        if (!loaderState.getErrors().isEmpty()) {
+            List<FormatError> errors = new ArrayList<FormatError>();
+            for (PrologTextLoaderError error : loaderState.getErrors()) {
+                errors.add(new FormatError("%s", error.getMessage(),
+                    error.getLine(), error.getColumn()));
+            }
+            throw new FormatException(errors);
+        }
     }
 
     /**

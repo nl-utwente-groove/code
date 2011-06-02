@@ -100,7 +100,7 @@ public class ExploreAction extends SimulatorAction {
 
     /** Convenience method to retrieve the LTS panel. */
     private final LTSDisplay getLTSPanel() {
-        return getSimulator().getLtsPanel();
+        return getSimulator().getLtsDisplay();
     }
 
     /**

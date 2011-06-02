@@ -1182,6 +1182,9 @@ public class SimulatorModel implements Cloneable {
     public final boolean setControl(String controlName) {
         start();
         changeControl(controlName);
+        if (controlName != null) {
+            changeDisplay(DisplayKind.CONTROL);
+        }
         return finish();
     }
 
@@ -1242,6 +1245,9 @@ public class SimulatorModel implements Cloneable {
     public final boolean setProlog(String prologName) {
         start();
         changeProlog(prologName);
+        if (prologName != null) {
+            changeDisplay(DisplayKind.PROLOG);
+        }
         return finish();
     }
 

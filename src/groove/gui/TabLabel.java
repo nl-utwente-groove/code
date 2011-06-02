@@ -83,8 +83,6 @@ public class TabLabel extends JPanel {
         //unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
         this.panel = panel;
-        //No need to be focusable
-        setFocusable(false);
         setOpaque(false);
         setBorder(null);
         this.iconLabel = new JLabel(title, icon, 0);

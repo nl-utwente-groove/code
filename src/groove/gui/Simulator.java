@@ -316,12 +316,22 @@ public class Simulator implements SimulatorListener {
                                 int lineNr;
                                 try {
                                     lineNr = Integer.parseInt(line);
-                                    getControlPanel().selectLine(lineNr);
+                                    getControlDisplay().selectLine(lineNr);
                                 } catch (NumberFormatException e1) {
                                     // do nothing
                                 }
                             }
                             getModel().setDisplay(DisplayKind.CONTROL);
+                        } else if (error.getProlog() != null) {
+                            String prologName = error.getProlog().getName();
+                            getPrologDisplay().createEditor(prologName);
+                            getModel().setProlog(prologName);
+                            if (error.getNumbers().size() > 1) {
+                                int line = error.getNumbers().get(0);
+                                int column = error.getNumbers().get(1);
+                                getPrologDisplay().getSelectedEditor().select(
+                                    line, column);
+                            }
                         }
                     }
                 }
@@ -334,36 +344,36 @@ public class Simulator implements SimulatorListener {
     private ErrorListPanel errorPanel;
 
     /** Returns the panel containing the control program. */
-    public ControlDisplay getControlPanel() {
-        if (this.controlPanel == null) {
-            this.controlPanel = new ControlDisplay(this);
-            this.controlPanel.initialise();
-            this.controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+    public ControlDisplay getControlDisplay() {
+        if (this.controlDisplay == null) {
+            this.controlDisplay = new ControlDisplay(this);
+            this.controlDisplay.initialise();
+            this.controlDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
-        return this.controlPanel;
+        return this.controlDisplay;
     }
 
     /**
      * Returns the simulator panel on which the LTS. Note that this panel may
      * currently not be visible.
      */
-    public LTSDisplay getLtsPanel() {
-        if (this.ltsPanel == null) {
-            this.ltsPanel = new LTSDisplay(this);
-            this.ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+    public LTSDisplay getLtsDisplay() {
+        if (this.ltsDisplay == null) {
+            this.ltsDisplay = new LTSDisplay(this);
+            this.ltsDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
-        return this.ltsPanel;
+        return this.ltsDisplay;
     }
 
     /**
      * Returns the prolog panel.
      */
-    public PrologDisplay getPrologPanel() {
-        if (this.prologPanel == null) {
-            this.prologPanel = new PrologDisplay(this);
-            this.prologPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+    public PrologDisplay getPrologDisplay() {
+        if (this.prologDisplay == null) {
+            this.prologDisplay = new PrologDisplay(this);
+            this.prologDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
-        return this.prologPanel;
+        return this.prologDisplay;
     }
 
     /** Refreshes some of the menu item by assigning the right action. */
@@ -832,13 +842,13 @@ public class Simulator implements SimulatorListener {
     private JFrame frame;
 
     /** Control display panel. */
-    private ControlDisplay controlPanel;
+    private ControlDisplay controlDisplay;
 
     /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
-    private LTSDisplay ltsPanel;
+    private LTSDisplay ltsDisplay;
 
     /** Prolog display panel. */
-    private PrologDisplay prologPanel;
+    private PrologDisplay prologDisplay;
 
     /** Returns the history of simulation steps. */
     public StepHistory getStepHistory() {

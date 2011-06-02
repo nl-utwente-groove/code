@@ -20,6 +20,7 @@ import groove.graph.Element;
 import groove.view.aspect.AspectGraph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -53,14 +54,17 @@ public class FormatError implements Comparable<FormatError> {
     private void addContext(Object par) {
         if (par instanceof FormatError) {
             this.subError = (FormatError) par;
-            this.graph = this.subError.getGraph();
-            this.elements.addAll(this.subError.getElements());
+            this.subError.transferTo(null, this);
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
         } else if (par instanceof CtrlView) {
             this.control = (CtrlView) par;
+        } else if (par instanceof PrologView) {
+            this.prolog = (PrologView) par;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
+        } else if (par instanceof Integer) {
+            this.numbers.add((Integer) par);
         } else if (par instanceof Object[]) {
             for (Object subpar : (Object[]) par) {
                 addContext(subpar);
@@ -83,15 +87,7 @@ public class FormatError implements Comparable<FormatError> {
         boolean result = obj instanceof FormatError;
         if (result) {
             FormatError err = (FormatError) obj;
-            result =
-                getGraph() == null ? err.getGraph() == null
-                        : getGraph().equals(err.getGraph());
-            result &=
-                getControl() == null ? err.getControl() == null
-                        : getControl().equals(err.getControl());
-            result &=
-                getElements() == null ? err.getElements() == null
-                        : getElements().equals(err.getElements());
+            result = Arrays.equals(getArguments(), err.getArguments());
             result &= toString().equals(err.toString());
         }
         return result;
@@ -101,9 +97,7 @@ public class FormatError implements Comparable<FormatError> {
     @Override
     public int hashCode() {
         int result = toString().hashCode();
-        result += getGraph() == null ? 0 : getGraph().hashCode();
-        result += getControl() == null ? 0 : getControl().hashCode();
-        result += getElements() == null ? 0 : getElements().hashCode();
+        result += Arrays.hashCode(getArguments());
         return result;
     }
 
@@ -141,6 +135,11 @@ public class FormatError implements Comparable<FormatError> {
         return this.control;
     }
 
+    /** Returns the prolog view in which the error occurs. May be {@code null}. */
+    public final PrologView getProlog() {
+        return this.prolog;
+    }
+
     /** Returns the sub-error on which this one builds. May be {@code null}. */
     public final FormatError getSubError() {
         return this.subError;
@@ -151,9 +150,15 @@ public class FormatError implements Comparable<FormatError> {
         return this.graph;
     }
 
-    /** Returns the list of elements in which the error occurs. May be {@code null}. */
+    /** Returns the list of elements in which the error occurs. May be empty. */
     public final List<Element> getElements() {
         return this.elements;
+    }
+
+    /** Returns a list of numbers associated with the error; typically,
+     * line and column numbers. May be empty. */
+    public final List<Integer> getNumbers() {
+        return this.numbers;
     }
 
     /** Returns a new format error that extends this one with context information. */
@@ -163,23 +168,54 @@ public class FormatError implements Comparable<FormatError> {
 
     /** Returns a new format error in which the context information is transferred. */
     public FormatError transfer(Map<?,?> map) {
-        List<Element> newElements = new ArrayList<Element>();
-        for (Element errorObject : this.elements) {
-            if (map.containsKey(errorObject)) {
-                newElements.add((Element) map.get(errorObject));
-            } else {
-                newElements.add(errorObject);
-            }
-        }
-        return new FormatError(this.toString(), newElements.toArray());
+        FormatError result = new FormatError(toString());
+        transferTo(map, result);
+        return result;
     }
 
+    /**
+     * Transfers the context information of this error object to
+     * another, modulo a mapping.
+     * @param map mapping from the context of this error to the context
+     * of the result error; or {@code null} if there is no mapping
+     * @param result the target of the transfer
+     */
+    private void transferTo(Map<?,?> map, FormatError result) {
+        for (Object arg : getArguments()) {
+            if (map != null && map.containsKey(arg)) {
+                arg = map.get(arg);
+            }
+            result.addContext(arg);
+        }
+    }
+
+    /** Returns the relevant contextual arguments of this error. */
+    private Object[] getArguments() {
+        List<Object> newArguments = new ArrayList<Object>();
+        newArguments.addAll(this.elements);
+        if (this.control != null) {
+            newArguments.add(this.control);
+        }
+        if (this.prolog != null) {
+            newArguments.add(this.prolog);
+        }
+        newArguments.addAll(this.numbers);
+        if (this.subError != null) {
+            newArguments.addAll(Arrays.asList(this.subError.getArguments()));
+        }
+        return newArguments.toArray();
+    }
+
+    /** The prolog view in which the error occurs. */
+    private PrologView prolog;
     /** The control view in which the error occurs. */
     private CtrlView control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
-    /** The erroneous element. */
+    /** List of erroneous elements. */
     private final List<Element> elements = new ArrayList<Element>();
+    /** List of numbers; typically the line and column number in a textual program. */
+    private final List<Integer> numbers = new ArrayList<Integer>();
     /** Possible suberror. */
     private FormatError subError;
     /** The error message. */

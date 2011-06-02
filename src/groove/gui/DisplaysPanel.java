@@ -52,11 +52,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         this.simulator = simulator;
         addTab(getStateDisplay());
         addTab(getRuleDisplay());
-        addTab(simulator.getLtsPanel());
-        addTab(simulator.getControlPanel());
+        addTab(simulator.getLtsDisplay());
+        addTab(simulator.getControlDisplay());
         addTab(getTypeDisplay());
         if (Groove.INCLUDE_PROLOG) {
-            addTab(simulator.getPrologPanel());
+            addTab(simulator.getPrologDisplay());
         }
         setSelectedIndex(0);
         installListeners();

@@ -107,7 +107,7 @@ public class CheckCTLAction extends SimulatorAction {
                         "The property '%s' holds in the initial state", formula);
             }
         }
-        getSimulator().getLtsPanel().emphasiseStates(counterExamples, false);
+        getSimulator().getLtsDisplay().emphasiseStates(counterExamples, false);
         getModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getSimulator().getFrame(), message);
     }

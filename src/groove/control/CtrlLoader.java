@@ -116,7 +116,8 @@ public class CtrlLoader {
             }
             return this.builder.run(tree, namespace).normalise();
         } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage());
+            throw new FormatException(re.getMessage(), re.line,
+                re.charPositionInLine);
         }
     }
 
