@@ -128,6 +128,8 @@ public final class Icons {
     public static final ImageIcon GRID_ICON = createIcon("grid.gif");
     /** Icon for the LTS panel of the simulator. */
     public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
+    /** Icon restarting the simulation. */
+    public static final ImageIcon REWIND_ICON = createIcon("rewind.gif");
     /** Small icon for production rules, as shown in the rule tree. */
     public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
     /** Icon for rule (GPR) files. */
@@ -149,6 +151,8 @@ public final class Icons {
         createIcon("new-state-mode.gif");
     /** Select action icon. */
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
+    /** Icon for a single-step simulation. */
+    public static final ImageIcon STEP_ICON = createIcon("step.gif");
     /** Icon for type (GTY) files. */
     public static final ImageIcon TYPE_FILE_ICON = createIcon("type-file.gif");
     /** Icon for Type Panel. */

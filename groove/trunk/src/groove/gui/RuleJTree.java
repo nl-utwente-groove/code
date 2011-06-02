@@ -677,7 +677,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Object selectedNode = path.getLastPathComponent();
             if (selectedNode instanceof MatchTreeNode) {
                 if (evt.getClickCount() == 2) {
-                    getSimulatorModel().applyMatch();
+                    getSimulatorModel().doApplyMatch();
                 }
             }
         }
