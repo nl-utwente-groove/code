@@ -17,14 +17,14 @@ public class NewControlAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getControlPanel().cancelEditing(true)) {
+        if (getControlDisplay().cancelEditing(true)) {
             String newName =
                 askNewControlName("Select control program name",
                     Groove.DEFAULT_CONTROL_NAME, true);
             try {
                 if (newName != null) {
                     getModel().doAddControl(newName, "");
-                    getControlPanel().startEditing();
+                    getControlDisplay().startEditing();
                 }
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error creating new control program "

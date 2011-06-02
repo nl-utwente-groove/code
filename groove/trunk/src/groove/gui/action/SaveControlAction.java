@@ -25,13 +25,13 @@ public class SaveControlAction extends SimulatorAction {
                 ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON);
         putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         this.saveAs = saveAs;
-        getControlPanel().addRefreshable(this);
+        getControlDisplay().addRefreshable(this);
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
-        if (getControlPanel().isDirty()) {
+        if (getControlDisplay().isDirty()) {
             String name = getModel().getControl().getName();
             if (this.saveAs) {
                 result = doSaveAs(name);
@@ -48,7 +48,7 @@ public class SaveControlAction extends SimulatorAction {
     public boolean doSave(String name) {
         boolean result = false;
         try {
-            String program = getControlPanel().stopEditing();
+            String program = getControlDisplay().stopEditing();
             result = getModel().doAddControl(name, program);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error saving control program " + name);
@@ -58,7 +58,7 @@ public class SaveControlAction extends SimulatorAction {
 
     private boolean doSaveAs(String name) {
         boolean result = false;
-        getControlPanel().cancelEditing(false);
+        getControlDisplay().cancelEditing(false);
         ExtensionFilter filter = FileType.CONTROL_FILTER;
         GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
         chooser.setSelectedFile(new File(name));
@@ -90,7 +90,7 @@ public class SaveControlAction extends SimulatorAction {
     @Override
     public void refresh() {
         setEnabled(this.saveAs ? getModel().getControl() != null
-                : getControlPanel().isEditing());
+                : getControlDisplay().isEditing());
     }
 
     private final boolean saveAs;

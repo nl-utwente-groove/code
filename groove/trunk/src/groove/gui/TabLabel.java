@@ -147,7 +147,7 @@ public class TabLabel extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ((EditorPanel) TabLabel.this.panel).doCancel();
+            ((EditorPanel) TabLabel.this.panel).cancelEditing(true);
         }
 
         //we don't want to update UI for this button
