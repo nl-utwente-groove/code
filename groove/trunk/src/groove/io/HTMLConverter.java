@@ -295,7 +295,8 @@ public class HTMLConverter {
      * Class that allows some handling of HTML text.
      */
     static public class HTMLTag {
-        HTMLTag(String tag) {
+        /** Constructs a tag with a given name. */
+        public HTMLTag(String tag) {
             this.tagBegin = String.format("<%s>", tag);
             this.tagEnd = String.format("</%s>", tag);
         }

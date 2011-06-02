@@ -3,17 +3,20 @@ package groove.gui;
 import groove.gui.action.ActionStore;
 import groove.gui.action.CancelEditPrologAction;
 import groove.gui.action.SavePrologAction;
+import groove.prolog.util.PrologTokenMaker;
 
 import java.awt.BorderLayout;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
@@ -29,31 +32,19 @@ public class PrologEditor extends JPanel {
      */
     public PrologEditor(final PrologDisplay display, String name, String program) {
         this.display = display;
+        this.textArea = new PrologTextArea(program);
         this.name = name;
-        this.textArea = new RSyntaxTextArea(25, 100);
-        this.textArea.setFont(PrologDisplay.EDIT_FONT);
-        this.textArea.setText(program);
-        this.textArea.setEditable(true);
-        this.textArea.setEnabled(true);
-        this.textArea.setTabSize(4);
-        this.textArea.discardAllEdits();
         setBorder(null);
         setLayout(new BorderLayout());
         add(createToolBar(), BorderLayout.NORTH);
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
-        this.textArea.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent arg0) {
-                display.updateTab(PrologEditor.this);
-            }
-
-            public void insertUpdate(DocumentEvent arg0) {
-                display.updateTab(PrologEditor.this);
-            }
-
-            public void removeUpdate(DocumentEvent arg0) {
-                display.updateTab(PrologEditor.this);
-            }
-        });
+        this.textArea.getDocument().addUndoableEditListener(
+            new UndoableEditListener() {
+                @Override
+                public void undoableEditHappened(UndoableEditEvent e) {
+                    display.updateTab(PrologEditor.this);
+                }
+            });
     }
 
     /**
@@ -63,6 +54,14 @@ public class PrologEditor extends JPanel {
         JToolBar result = Options.createToolBar();
         result.add(createSaveButton());
         result.add(createCancelButton());
+        result.addSeparator();
+        result.add(this.textArea.getUndoAction());
+        result.add(this.textArea.getRedoAction());
+        result.addSeparator();
+        result.add(this.textArea.getCopyAction());
+        result.add(this.textArea.getPasteAction());
+        result.add(this.textArea.getCutAction());
+        result.add(this.textArea.getDeleteAction());
         return result;
     }
 
@@ -181,5 +180,54 @@ public class PrologEditor extends JPanel {
     /**
      * The associated text area.
      */
-    private final RSyntaxTextArea textArea;
+    private final PrologTextArea textArea;
+
+    private static class PrologTextArea extends RSyntaxTextArea {
+        public PrologTextArea(String text) {
+            super(30, 100);
+            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new PrologTokenMaker());
+            setFont(PrologDisplay.EDIT_FONT);
+            setText(text);
+            setEditable(true);
+            setEnabled(true);
+            setTabSize(4);
+            discardAllEdits();
+            getUndoAction().putValue(Action.SMALL_ICON, Icons.UNDO_ICON);
+            getRedoAction().putValue(Action.SMALL_ICON, Icons.REDO_ICON);
+            getCopyAction().putValue(Action.SMALL_ICON, Icons.COPY_ICON);
+            getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
+            getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON);
+            getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON);
+        }
+
+        /** Returns the undo action as applied to this text area. */
+        public Action getUndoAction() {
+            return getAction(UNDO_ACTION);
+        }
+
+        /** Returns the redo action as applied to this text area. */
+        public Action getRedoAction() {
+            return getAction(REDO_ACTION);
+        }
+
+        /** Returns the copy action as applied to this text area. */
+        public Action getCopyAction() {
+            return getAction(COPY_ACTION);
+        }
+
+        /** Returns the paste action as applied to this text area. */
+        public Action getPasteAction() {
+            return getAction(PASTE_ACTION);
+        }
+
+        /** Returns the cut action as applied to this text area. */
+        public Action getCutAction() {
+            return getAction(CUT_ACTION);
+        }
+
+        /** Returns the delete action as applied to this text area. */
+        public Action getDeleteAction() {
+            return getAction(DELETE_ACTION);
+        }
+    }
 }

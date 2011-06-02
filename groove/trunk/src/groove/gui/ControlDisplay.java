@@ -60,7 +60,6 @@ import javax.swing.tree.TreePath;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
@@ -612,11 +611,6 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
             } catch (BadLocationException e) {
                 // do nothing
             }
-        }
-
-        /** Returns the editor kit for this document. */
-        public RSyntaxTextAreaEditorKit getKit() {
-            return (RSyntaxTextAreaEditorKit) getUI().getEditorKit(this);
         }
 
         /** Returns the undo action as applied to this text area. */

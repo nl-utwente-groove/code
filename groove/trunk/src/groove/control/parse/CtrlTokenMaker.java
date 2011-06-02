@@ -127,10 +127,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
     }
 
     /**
-     * Returns the words to highlightfor the JavaScript programming language.
+     * Returns the words to highlight for the Groove control language.
      * 
      * @return A <code>TokenMap</code> containing the words to highlight for the
-     *         JavaScript programming language.
+     *         Groove control language.
      * @see org.fife.ui.rsyntaxtextarea.AbstractTokenMaker#getWordsToHighlight
      */
     @Override
