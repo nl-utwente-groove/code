@@ -31,8 +31,7 @@ import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
-import groove.prolog.exception.GroovePrologException;
-import groove.prolog.exception.GroovePrologLoadingException;
+import groove.view.FormatException;
 import groove.view.PrologView;
 import groove.view.StoredGrammarView;
 
@@ -160,8 +159,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                 public void stateChanged(ChangeEvent e) {
                     if (PrologDisplay.this.listening) {
                         PrologDisplay.this.listening = false;
-                        PrologEditor editor =
-                            (PrologEditor) PrologDisplay.this.editorPane.getSelectedComponent();
+                        PrologEditor editor = getSelectedEditor();
                         getSimulatorModel().setProlog(
                             editor == null ? null : editor.getName());
                         PrologDisplay.this.listening = true;
@@ -452,6 +450,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         if (this.listening) {
             this.listening = false;
             if (changes.contains(Change.GRAMMAR)) {
+                this.environment = null;
                 StoredGrammarView grammar = source.getGrammar();
                 for (PrologEditor editor : this.editorMap.values()) {
                     if (grammar == null
@@ -494,6 +493,11 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         this.editors.add(editor);
         getEditorPane().addTab(title, editor);
         getEditorPane().setSelectedComponent(editor);
+    }
+
+    /** Returns the currently selected editor, if any. */
+    public PrologEditor getSelectedEditor() {
+        return (PrologEditor) getEditorPane().getSelectedComponent();
     }
 
     /** Returns the editor for a control program with a given name, if any. */
@@ -541,8 +545,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                 this.environment = new GrooveEnvironment(null, getUserOutput());
             } else {
                 this.environment =
-                    getSimulatorModel().getGrammar().getPrologEnvironment(
-                        getUserOutput());
+                    getSimulatorModel().getGrammar().getPrologEnvironment();
             }
         }
         return this.environment;
@@ -559,7 +562,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             try {
                 this.engine.setEnvironment(getEnvironment());
                 this.engine.init();
-            } catch (GroovePrologLoadingException e) {
+            } catch (FormatException e) {
                 getResultsArea().append("\nError loading the prolog engine:\n");
                 getResultsArea().append(e.getMessage());
             }
@@ -673,7 +676,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         getResultsArea().append("\n");
         try {
             processResults(getEngine().next());
-        } catch (GroovePrologException e) {
+        } catch (PrologException e) {
             handlePrologException(e);
         }
     }

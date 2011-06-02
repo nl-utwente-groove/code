@@ -34,7 +34,6 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -361,11 +360,19 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
+        this.errors = new ArrayList<FormatError>();
         try {
             this.grammar = computeGrammar();
-            this.errors = Collections.emptyList();
         } catch (FormatException exc) {
-            this.errors = exc.getErrors();
+            this.errors.addAll(exc.getErrors());
+        }
+        getPrologEnvironment();
+        for (PrologView prologView : this.prologMap.values()) {
+            for (FormatError error : prologView.getErrors()) {
+                this.errors.add(new FormatError(
+                    "Error in prolog program '%s': %s", prologView.getName(),
+                    error, prologView));
+            }
         }
     }
 
@@ -483,14 +490,18 @@ public class StoredGrammarView implements GrammarView, Observer {
 
     /** 
      * Creates a Prolog environment that produces its standard output
-     * on a given output stream.
-     * The environment is kept in sync with the Prolog programs in the store.
+     * on a the default {@link GrooveEnvironment} output stream.
      */
-    public GrooveEnvironment getPrologEnvironment(OutputStream output) {
+    public GrooveEnvironment getPrologEnvironment() {
         if (this.prologEnvironment == null) {
-            this.prologEnvironment = new GrooveEnvironment(null, output);
-            for (String program : getStore().getProlog().values()) {
-                this.prologEnvironment.loadProgram(program);
+            this.prologEnvironment = new GrooveEnvironment(null, null);
+            for (PrologView prologView : this.prologMap.values()) {
+                try {
+                    this.prologEnvironment.loadProgram(prologView.getProgram());
+                    prologView.clearErrors();
+                } catch (FormatException e) {
+                    prologView.setErrors(e.getErrors());
+                }
             }
         }
         return this.prologEnvironment;

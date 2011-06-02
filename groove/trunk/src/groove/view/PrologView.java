@@ -18,6 +18,8 @@ package groove.view;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * View for prolog programs (which are just strings).
@@ -32,6 +34,7 @@ public class PrologView {
     public PrologView(String name, String program) {
         this.name = name;
         this.program = program;
+        this.errors = Collections.emptyList();
     }
 
     /**
@@ -46,10 +49,32 @@ public class PrologView {
         return this.program;
     }
 
+    /** Clears the errors in this view. */
+    public void clearErrors() {
+        this.errors = Collections.emptyList();
+    }
+
+    /** Sets the errors in this view to a given list. */
+    public void setErrors(List<FormatError> errors) {
+        this.errors = errors;
+    }
+
+    /** Returns the list of errors in this view. */
+    public List<FormatError> getErrors() {
+        return this.errors;
+    }
+
+    /** Indicates if there are errors in this view. */
+    public boolean hasErrors() {
+        return !this.errors.isEmpty();
+    }
+
     /** The prolog program loaded at construction time. */
     private final String program;
     /** The name of the prolog program, set at construction time. */
     private final String name;
+    /** List of Prolog formatting errors in this program. */
+    private List<FormatError> errors;
 
     /**
      * Saves the program to the given OutputStream.

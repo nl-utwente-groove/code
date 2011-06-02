@@ -106,12 +106,12 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Returns the control panel that owns the action. */
     final protected ControlDisplay getControlDisplay() {
-        return this.simulator.getControlPanel();
+        return this.simulator.getControlDisplay();
     }
 
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
-        return this.simulator.getPrologPanel();
+        return this.simulator.getPrologDisplay();
     }
 
     /** Disposes the action by unregistering it as a listener. */

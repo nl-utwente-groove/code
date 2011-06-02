@@ -17,13 +17,13 @@
 package groove.test.prolog;
 
 import static org.junit.Assert.fail;
+import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.prolog.QueryReturnValue;
-import groove.prolog.exception.GroovePrologException;
-import groove.prolog.exception.GroovePrologLoadingException;
+import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.StoredGrammarView;
 
@@ -67,10 +67,10 @@ public class PrologTestUtil {
             }
 
             return queryResult;
-        } catch (GroovePrologLoadingException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
             fail("Got exception: " + e.toString());
-        } catch (GroovePrologException e) {
+        } catch (PrologException e) {
             e.printStackTrace();
             fail("Got exception: " + e.toString());
         }
@@ -85,7 +85,7 @@ public class PrologTestUtil {
      * @return                  Did the query succeed?
      */
     public static boolean test(GrooveState grooveState, String query)
-        throws GroovePrologException {
+        throws FormatException, PrologException {
         if (prologQuery == null) {
             prologQuery = PrologEngine.instance();
             prologQuery.setEnvironment(new GrooveEnvironment(null, null));

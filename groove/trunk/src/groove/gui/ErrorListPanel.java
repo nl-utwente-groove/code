@@ -23,8 +23,10 @@ import groove.view.FormatError;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Observer;
 
@@ -89,18 +91,13 @@ public class ErrorListPanel extends JPanel {
                 listener.update(null, getErrorArea().getSelectedValue());
             }
         });
-        getErrorArea().addFocusListener(new FocusListener() {
+        getErrorArea().addMouseListener(new MouseAdapter() {
             @Override
-            public void focusLost(FocusEvent e) {
-                // do nothing
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (!e.isTemporary()) {
+            public void mouseClicked(MouseEvent e) {
+                int index = getIndexAt(e.getPoint());
+                if (index >= 0 && getErrorArea().isSelectedIndex(index)) {
                     listener.update(null, getErrorArea().getSelectedValue());
                 }
-
             }
         });
     }
@@ -140,6 +137,16 @@ public class ErrorListPanel extends JPanel {
             result.setCellRenderer(new CellRenderer());
         }
         return this.errorArea;
+    }
+
+    /** Returns the index of the error list component under a given point, or
+     * {@code -1} if there is no component under the point.
+     */
+    private int getIndexAt(Point point) {
+        int result = getErrorArea().locationToIndex(point);
+        Rectangle cellBounds = getErrorArea().getCellBounds(result, result);
+        boolean cellSelected = cellBounds != null && cellBounds.contains(point);
+        return cellSelected ? result : -1;
     }
 
     /** The text area containing the error messages. */

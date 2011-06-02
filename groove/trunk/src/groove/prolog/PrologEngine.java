@@ -18,6 +18,8 @@
  */
 package groove.prolog;
 
+import gnu.prolog.database.PrologTextLoaderError;
+import gnu.prolog.io.ParseException;
 import gnu.prolog.io.ReadOptions;
 import gnu.prolog.io.TermReader;
 import gnu.prolog.term.Term;
@@ -26,14 +28,16 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
 import groove.graph.Graph;
-import groove.prolog.exception.GroovePrologException;
-import groove.prolog.exception.GroovePrologLoadingException;
 import groove.prolog.util.TermConverter;
+import groove.view.FormatError;
+import groove.view.FormatException;
 
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -95,20 +99,22 @@ public class PrologEngine {
     }
 
     /**
-     * Initialize the environment
+     * Initialises the environment
+     * @throws FormatException TODO
      */
-    public void init() throws GroovePrologLoadingException {
+    public void init() throws FormatException {
         init(null);
     }
 
     /**
-     * Initialize the environment
+     * Initialises the environment, loading an initial program.
      * 
      * @param program
      *            Additional code to process during the loading of the
      *            environment. Typically used to load user code
+     * @throws FormatException list of syntax errors discovered during initialisation
      */
-    public void init(String program) throws GroovePrologLoadingException {
+    public void init(String program) throws FormatException {
         if (this.initialized) {
             return;
         }
@@ -121,15 +127,22 @@ public class PrologEngine {
         getEnvironment().runInitialization(this.interpreter);
 
         if (!getEnvironment().getLoadingErrors().isEmpty()) {
-            throw new GroovePrologLoadingException(
-                getEnvironment().getLoadingErrors());
+            List<FormatError> errors = new ArrayList<FormatError>();
+            for (PrologTextLoaderError error : getEnvironment().getLoadingErrors()) {
+                errors.add(new FormatError("%s", error.getMessage(),
+                    error.getLine(), error.getColumn()));
+            }
+            throw new FormatException(errors);
         }
     }
 
     /**
      * Execute a new prolog query
+     * @throws FormatException if there was an error compiling the term
+     * @throws PrologException if there was an error executing the query
      */
-    public QueryResult newQuery(String term) throws GroovePrologException {
+    public QueryResult newQuery(String term) throws FormatException,
+        PrologException {
         if (!this.initialized) {
             init();
         }
@@ -149,8 +162,9 @@ public class PrologEngine {
             this.currentResult = new InternalQueryResult(goal, term);
             this.currentResult.rawVars = readOpts.variableNames;
             return next();
-        } catch (Exception e) {
-            throw new GroovePrologException(e);
+        } catch (ParseException e) {
+            throw new FormatException("Parse error in Prolog program: %s",
+                e.getMessage());
         }
     }
 
@@ -165,8 +179,9 @@ public class PrologEngine {
      * Get the next results
      * 
      * @return Null if there is no next result
+     * @throws PrologException if there was an error during execution
      */
-    public QueryResult next() throws GroovePrologException {
+    public QueryResult next() throws PrologException {
         if (this.currentResult == null) {
             return null;
         }
@@ -177,11 +192,7 @@ public class PrologEngine {
 
         long startTime = System.nanoTime();
         int rc;
-        try {
-            rc = this.interpreter.execute(this.currentResult.goal);
-        } catch (PrologException e) {
-            throw new GroovePrologException(e);
-        }
+        rc = this.interpreter.execute(this.currentResult.goal);
         long stopTime = System.nanoTime();
         if (this.currentResult.getReturnValue() != QueryReturnValue.NOT_RUN) {
             this.currentResult = new InternalQueryResult(this.currentResult);

@@ -13,6 +13,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -80,6 +81,17 @@ public class PrologEditor extends JPanel {
     /** Returns the current program. */
     public final String getProgram() {
         return this.textArea.getText();
+    }
+
+    /** Selects a given line in the text area. */
+    public void select(int line, int column) {
+        try {
+            int pos = this.textArea.getLineStartOffset(line - 1) + column - 1;
+            this.textArea.select(pos, pos);
+            this.textArea.requestFocusInWindow();
+        } catch (BadLocationException e) {
+            // do nothing
+        }
     }
 
     /**
