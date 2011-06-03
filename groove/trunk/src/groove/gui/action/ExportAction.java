@@ -64,7 +64,7 @@ public class ExportAction extends SimulatorAction {
     private String getActionName(GraphRole role) {
         boolean isState =
             getSimulator() != null && role == GraphRole.HOST
-                && !getModel().hasHost();
+                && !getSimulatorModel().hasHost();
         String type = isState ? "State" : role.getDescription();
         return "Export " + type + " ...";
     }

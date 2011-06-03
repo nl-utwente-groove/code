@@ -19,18 +19,18 @@ public class ApplyMatchAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        if (getModel().hasMatch()) {
-            getModel().doApplyMatch();
+        if (getSimulatorModel().hasMatch()) {
+            getSimulatorModel().doApplyMatch();
         } else {
-            getModel().doExploreState();
+            getSimulatorModel().doExploreState();
         }
         return false;
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().hasState());
-        putValue(Action.SHORT_DESCRIPTION, getModel().hasMatch()
+        setEnabled(getSimulatorModel().hasState());
+        putValue(Action.SHORT_DESCRIPTION, getSimulatorModel().hasMatch()
                 ? Options.APPLY_MATCH_ACTION_NAME
                 : Options.EXPLORE_STATE_ACTION_NAME);
     }

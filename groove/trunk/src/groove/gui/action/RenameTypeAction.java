@@ -3,8 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.TypeView;
-import groove.view.aspect.AspectGraph;
+import groove.trans.ResourceKind;
 
 import java.io.IOException;
 
@@ -21,15 +20,14 @@ public class RenameTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        TypeView type = getModel().getType();
-        String oldName = type.getName();
+        String oldName = getSimulatorModel().getType().getName();
         String newName =
-            askNewTypeName("Select new type graph name", oldName, false);
+            askNewName(ResourceKind.TYPE, "Select new type graph name",
+                oldName, false);
         if (newName != null && !oldName.equals(newName)) {
-            AspectGraph typeGraph = type.getAspectGraph();
-            if (getTypeTab().disposeEditors(typeGraph)) {
+            if (getTypeTab().disposeEditors(oldName)) {
                 try {
-                    result = getModel().doRenameType(typeGraph, newName);
+                    result = getSimulatorModel().doRenameType(oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while renaming type graph '%s' into '%s'",
@@ -42,7 +40,7 @@ public class RenameTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getType() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

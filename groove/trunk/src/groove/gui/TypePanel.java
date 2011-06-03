@@ -25,7 +25,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.util.Set;
@@ -89,7 +89,7 @@ public class TypePanel extends JGraphPanel<AspectJGraph> implements
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
-            StoredGrammarView grammar = source.getGrammar();
+            GrammarModel grammar = source.getGrammar();
             if (grammar != null) {
                 // set either the type or the label store of the associated JGraph
                 TypeGraph type;

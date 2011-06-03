@@ -35,7 +35,7 @@ import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -182,17 +182,17 @@ public class TestShape {
     public void testShapeIso() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            GrammarModel view = GrammarModel.newInstance(file, false);
             GraphGrammar grammar = view.toGrammar();
 
             HostGraph graph0 =
-                view.getGraphView("materialisation-test-0").toModel();
+                view.getHostModel("materialisation-test-0").toResource();
             Shape shape0 = new Shape(graph0);
             HostGraph graph1 =
-                view.getGraphView("materialisation-test-1").toModel();
+                view.getHostModel("materialisation-test-1").toResource();
             Shape shape1 = new Shape(graph1);
             HostGraph graph2 =
-                view.getGraphView("materialisation-test-2").toModel();
+                view.getHostModel("materialisation-test-2").toResource();
             Shape shape2 = new Shape(graph2);
 
             // Basic tests.

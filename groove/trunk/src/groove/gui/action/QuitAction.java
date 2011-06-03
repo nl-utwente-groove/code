@@ -23,7 +23,7 @@ public class QuitAction extends SimulatorAction {
         if (result) {
             groove.gui.UserSettings.synchSettings(getFrame());
             // Saves the current user settings.
-            if (getModel().getGts() != null) {
+            if (getSimulatorModel().getGts() != null) {
                 result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             } else {
                 result = true;

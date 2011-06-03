@@ -43,31 +43,22 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * View translating an aspect graph (with type role) to a type graph.
+ *  translating an aspect graph (with type role) to a type graph.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultTypeView implements TypeView {
+public class TypeModel extends GraphBasedModel<TypeGraph> {
     /**
      * Constructs an instance from a given aspect graph.
      */
-    public DefaultTypeView(AspectGraph view) {
-        view.testFixed(true);
-        this.view = view;
+    public TypeModel(AspectGraph source) {
+        super(source);
+        source.testFixed(true);
     }
 
-    public String getName() {
-        return this.view.getName();
-    }
-
-    @Override
-    public AspectGraph getAspectGraph() {
-        return this.view;
-    }
-
-    @Override
+    /** Indicates that the type graph is currently enabled. */
     public boolean isEnabled() {
-        return GraphProperties.isEnabled(getAspectGraph());
+        return GraphProperties.isEnabled(getSource());
     }
 
     @Override
@@ -80,7 +71,8 @@ public class DefaultTypeView implements TypeView {
         throw new UnsupportedOperationException();
     }
 
-    public TypeGraph toModel() throws FormatException {
+    @Override
+    public TypeGraph toResource() throws FormatException {
         initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
@@ -89,21 +81,23 @@ public class DefaultTypeView implements TypeView {
         }
     }
 
+    @Override
     public List<FormatError> getErrors() {
         initialise();
         return this.errors;
     }
 
     @Override
-    public ViewToTypeMap getMap() {
+    public TypeModelMap getMap() {
         initialise();
-        return this.elementMap;
+        return this.modelMap;
     }
 
     /** 
      * Returns the set of labels used in this graph.
      * @return the set of labels, or {@code null} if the model could not be computed 
      */
+    @Override
     public Set<TypeLabel> getLabels() {
         initialise();
         return this.model == null ? null
@@ -111,65 +105,65 @@ public class DefaultTypeView implements TypeView {
     }
 
     /** Constructs the model and associated data structures from the view,
-     * if this has not already been done and the view itself does not contain
+     * if this has not already been done and the model itself does not contain
      * errors. */
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            this.errors = new ArrayList<FormatError>(this.view.getErrors());
+            this.errors = new ArrayList<FormatError>(getSource().getErrors());
             if (this.errors.isEmpty()) {
                 initialiseModel();
             }
         }
     }
 
-    /** Constructs the model and associated data structures from the view. */
+    /** Constructs the model and associated data structures for model. */
     private void initialiseModel() {
         this.model = new TypeGraph(getName());
-        this.elementMap = new ViewToTypeMap();
+        this.modelMap = new TypeModelMap();
         // collect primitive type nodes
-        for (AspectNode viewNode : this.view.nodeSet()) {
-            AspectKind attrKind = viewNode.getAttrKind();
+        for (AspectNode modelNode : getSource().nodeSet()) {
+            AspectKind attrKind = modelNode.getAttrKind();
             if (attrKind != NONE) {
                 TypeLabel modelLabel =
                     TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
-                addNodeType(viewNode, modelLabel);
+                addNodeType(modelNode, modelLabel);
             }
         }
-        // collect node type edges and build the view type map
-        for (AspectEdge viewEdge : this.view.edgeSet()) {
-            TypeLabel typeLabel = viewEdge.getTypeLabel();
+        // collect node type edges and build the model type map
+        for (AspectEdge modelEdge : getSource().edgeSet()) {
+            TypeLabel typeLabel = modelEdge.getTypeLabel();
             if (typeLabel != null && typeLabel.isNodeType()) {
-                addNodeType(viewEdge.source(), typeLabel);
+                addNodeType(modelEdge.source(), typeLabel);
             }
         }
         // check if there are untyped, non-virtual nodes
         Set<AspectNode> untypedNodes =
-            new HashSet<AspectNode>(this.view.nodeSet());
-        untypedNodes.removeAll(this.viewTypeMap.keySet());
+            new HashSet<AspectNode>(getSource().nodeSet());
+        untypedNodes.removeAll(this.modelTyping.keySet());
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
-            AspectNode viewNode = untypedNodeIter.next();
-            if (viewNode.getKind().isMeta()) {
+            AspectNode modelNode = untypedNodeIter.next();
+            if (modelNode.getKind().isMeta()) {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
-                TypeNode modelNode = new TypeNode(viewNode.getNumber());
-                this.model.addNode(modelNode);
-                this.elementMap.putNode(viewNode, modelNode);
+                TypeNode typeNode = new TypeNode(modelNode.getNumber());
+                this.model.addNode(typeNode);
+                this.modelMap.putNode(modelNode, typeNode);
             }
         }
         for (AspectNode untypedNode : untypedNodes) {
             this.errors.add(new FormatError("Node '%s' has no type label",
                 untypedNode));
         }
-        // copy the edges from view to model
-        for (AspectEdge viewEdge : this.view.edgeSet()) {
+        // copy the edges from model to model
+        for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
-            TypeLabel typeLabel = viewEdge.getTypeLabel();
+            TypeLabel typeLabel = modelEdge.getTypeLabel();
             if (typeLabel == null || !typeLabel.isNodeType()) {
                 try {
-                    processViewEdge(this.model, this.elementMap, viewEdge);
+                    processModelEdge(this.model, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
                     this.errors.addAll(exc.getErrors());
                 }
@@ -182,102 +176,100 @@ public class DefaultTypeView implements TypeView {
                 this.errors.addAll(exc.getErrors());
             }
         }
-        // transfer graph info such as layout from view to model
-        GraphInfo.transfer(this.view, this.model, this.elementMap);
+        // transfer graph info such as layout from model to model
+        GraphInfo.transfer(getSource(), this.model, this.modelMap);
 
     }
 
     /**
      * Adds a node type to the model.
-     * @param viewNode the node in the aspect graph that stands for a node type
-     * @param modelLabel the node type label
+     * @param modelNode the node in the aspect graph that stands for a node type
+     * @param typeLabel the node type label
      */
-    private void addNodeType(AspectNode viewNode, TypeLabel modelLabel) {
-        TypeNode oldTypeNode = this.elementMap.getNode(viewNode);
+    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel) {
+        TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
             this.errors.add(new FormatError(
-                "Node '%s' has types '%s' and '%s'", viewNode, modelLabel,
+                "Node '%s' has types '%s' and '%s'", modelNode, typeLabel,
                 oldTypeNode.getType()));
         } else {
-            this.viewTypeMap.put(viewNode, modelLabel);
-            TypeNode typeNode = this.typeNodeMap.get(modelLabel);
+            this.modelTyping.put(modelNode, typeLabel);
+            TypeNode typeNode = this.typeNodeMap.get(typeLabel);
             if (typeNode == null) {
-                typeNode = new TypeNode(viewNode.getNumber(), modelLabel);
-                typeNode.setAbstract(viewNode.getKind() == ABSTRACT);
-                typeNode.setImported(viewNode.hasImport());
-                if (viewNode.hasColor()) {
-                    typeNode.setColor((Color) viewNode.getColor().getContent());
+                typeNode = new TypeNode(modelNode.getNumber(), typeLabel);
+                typeNode.setAbstract(modelNode.getKind() == ABSTRACT);
+                typeNode.setImported(modelNode.hasImport());
+                if (modelNode.hasColor()) {
+                    typeNode.setColor((Color) modelNode.getColor().getContent());
                 }
                 this.model.addNode(typeNode);
-                this.typeNodeMap.put(modelLabel, typeNode);
-                this.modelTypeMap.put(typeNode, modelLabel);
+                this.typeNodeMap.put(typeLabel, typeNode);
+                this.resourceTyping.put(typeNode, typeLabel);
             }
-            this.elementMap.putNode(viewNode, typeNode);
+            this.modelMap.putNode(modelNode, typeNode);
         }
     }
 
     /**
-     * Processes the information in a view edge by updating the model, element
+     * Processes the information in a model edge by updating the model, element
      * map and subtypes.
      */
-    private void processViewEdge(TypeGraph model, ViewToTypeMap elementMap,
-            AspectEdge viewEdge) throws FormatException {
-        TypeNode modelSource = elementMap.getNode(viewEdge.source());
-        assert modelSource != null : String.format(
-            "Source of view edge '%s' not in element map %s",
-            viewEdge.source(), elementMap);
-        if (modelSource.isImported()) {
+    private void processModelEdge(TypeGraph model, TypeModelMap elementMap,
+            AspectEdge modelEdge) throws FormatException {
+        TypeNode typeSource = elementMap.getNode(modelEdge.source());
+        assert typeSource != null : String.format(
+            "Source of model edge '%s' not in element map %s",
+            modelEdge.source(), elementMap);
+        if (typeSource.isImported()) {
             throw new FormatException("Can't change imported type '%s'",
-                modelSource.getType(), viewEdge);
+                typeSource.getType(), modelEdge);
         }
-        TypeNode modelTarget = elementMap.getNode(viewEdge.target());
-        assert modelTarget != null : String.format(
-            "Target of view edge '%s' not in element map %s",
-            viewEdge.source(), elementMap);
-        if (viewEdge.getKind() == SUBTYPE) {
-            model.addSubtype(modelTarget, modelSource);
+        TypeNode typeTarget = elementMap.getNode(modelEdge.target());
+        assert typeTarget != null : String.format(
+            "Target of model edge '%s' not in element map %s",
+            modelEdge.source(), elementMap);
+        if (modelEdge.getKind() == SUBTYPE) {
+            model.addSubtype(typeTarget, typeSource);
         } else {
-            TypeLabel modelLabel = viewEdge.getTypeLabel();
-            TypeEdge modelEdge =
-                model.addEdge(modelSource, modelLabel, modelTarget);
-            modelEdge.setAbstract(viewEdge.getKind() == ABSTRACT);
-            elementMap.putEdge(viewEdge, modelEdge);
+            TypeLabel typeLabel = modelEdge.getTypeLabel();
+            TypeEdge typeEdge =
+                model.addEdge(typeSource, typeLabel, typeTarget);
+            typeEdge.setAbstract(modelEdge.getKind() == ABSTRACT);
+            elementMap.putEdge(modelEdge, typeEdge);
         }
     }
 
-    /** The view represented by this object. */
-    private final AspectGraph view;
-    /** The graph model that is being viewed. */
+    /** The resource being constructed. */
     private TypeGraph model;
     /**
-     * List of errors in the view that prevent the model from being constructed.
+     * List of errors in the model that prevent the resource from being constructed.
      */
     private List<FormatError> errors;
 
-    /** Auxiliary mapping from view nodes to types. */
-    private Map<AspectNode,TypeLabel> viewTypeMap =
+    /** Auxiliary mapping from model nodes to types. */
+    private Map<AspectNode,TypeLabel> modelTyping =
         new HashMap<AspectNode,TypeLabel>();
-    /** Auxiliary from model nodes to types */
-    private Map<TypeNode,TypeLabel> modelTypeMap =
+    /** Auxiliary from resource nodes to type labels */
+    private Map<TypeNode,TypeLabel> resourceTyping =
         new HashMap<TypeNode,TypeLabel>();
-    /** Auxiliary from types to model nodes */
+    /** Auxiliary from types to resource nodes */
     private Map<TypeLabel,TypeNode> typeNodeMap =
         new HashMap<TypeLabel,TypeNode>();
-    /** Map from view to model nodes. */
-    private ViewToTypeMap elementMap;
+    /** Map from model to resource nodes. */
+    private TypeModelMap modelMap;
 
     /** Mapping from type graph elements to rule graph elements. */
-    public static class ViewToTypeMap extends ViewToModelMap<TypeNode,TypeEdge> {
+    public static class TypeModelMap extends ModelMap<TypeNode,TypeEdge> {
         /**
          * Creates a new, empty map.
          */
-        public ViewToTypeMap() {
+        public TypeModelMap() {
             super(TypeFactory.instance());
         }
 
         @Override
-        public ViewToTypeMap newMap() {
-            return new ViewToTypeMap();
+        public TypeModelMap newMap() {
+            return new TypeModelMap();
         }
     }
 }

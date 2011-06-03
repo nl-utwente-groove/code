@@ -90,7 +90,7 @@ public class TabLabel extends JPanel {
         this.iconLabel.setBorder(null);
         add(this.iconLabel);
         //tab button
-        if (panel instanceof EditorPanel) {
+        if (panel instanceof GraphEditorPanel) {
             JButton button = new CancelButton();
             add(button);
         }
@@ -145,7 +145,7 @@ public class TabLabel extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ((EditorPanel) TabLabel.this.panel).cancelEditing(true);
+            ((EditorPanel<?>) TabLabel.this.panel).cancelEditing(true);
         }
 
         //we don't want to update UI for this button

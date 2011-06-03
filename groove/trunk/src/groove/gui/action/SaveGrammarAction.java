@@ -3,8 +3,8 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
-import groove.view.GraphView;
-import groove.view.StoredGrammarView;
+import groove.view.HostModel;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,17 +50,17 @@ public class SaveGrammarAction extends SimulatorAction {
         boolean result = false;
         if (getMainPanel().disposeAllEditors()) {
             SystemStore newStore =
-                getModel().getStore().save(grammarFile, clearDir);
-            StoredGrammarView newView = newStore.toGrammarView();
-            String startGraphName = getModel().getGrammar().getStartGraphName();
-            GraphView startGraphView =
-                getModel().getGrammar().getStartGraphView();
+                getSimulatorModel().getStore().save(grammarFile, clearDir);
+            GrammarModel newGrammar = newStore.toGrammarModel();
+            String startGraphName = getSimulatorModel().getGrammar().getStartGraphName();
+            HostModel startGraph =
+                getSimulatorModel().getGrammar().getStartGraphModel();
             if (startGraphName != null) {
-                newView.setStartGraph(startGraphName);
-            } else if (startGraphView != null) {
-                newView.setStartGraph(startGraphView.getAspectGraph());
+                newGrammar.setStartGraph(startGraphName);
+            } else if (startGraph != null) {
+                newGrammar.setStartGraph(startGraph.getSource());
             }
-            getModel().setGrammar(newView);
+            getSimulatorModel().setGrammar(newGrammar);
             getSimulator().setTitle();
             getGrammarFileChooser().setSelectedFile(grammarFile);
             result = true;
@@ -70,6 +70,6 @@ public class SaveGrammarAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

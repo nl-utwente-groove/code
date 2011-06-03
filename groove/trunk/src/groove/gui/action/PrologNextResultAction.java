@@ -16,36 +16,31 @@
  */
 package groove.gui.action;
 
-import static groove.gui.Options.START_SIMULATION_OPTION;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
-import javax.swing.Action;
-
-/** Action to start a new simulation. */
-public class StartSimulationAction extends SimulatorAction {
-    /** Constructs an instance of the action. */
-    public StartSimulationAction(Simulator simulator) {
-        super(simulator, Options.START_SIMULATION_ACTION_NAME,
-            Icons.GO_START_ICON);
-        putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
+/**
+ * Action to set the next result on the Prolog display.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class PrologNextResultAction extends SimulatorAction {
+    /** Creates an instance of this action. */
+    public PrologNextResultAction(Simulator simulator) {
+        super(simulator, Options.PROLOG_NEXT_ACTION_NAME, Icons.GO_NEXT_ICON);
+        putValue(SHORT_DESCRIPTION, Options.PROLOG_NEXT_ACTION_NAME);
+        setEnabled(false);
     }
 
     @Override
     public boolean execute() {
-        boolean result = false;
-        if (confirmAbandon() && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            result = getSimulatorModel().setGts();
-        }
-        return result;
+        getPrologDisplay().nextResults();
+        return false;
     }
 
     @Override
     public void refresh() {
-        boolean enabled =
-            getSimulatorModel().getGrammar() != null
-                && getSimulatorModel().getGrammar().getErrors().isEmpty();
-        setEnabled(enabled);
+        setEnabled(getSimulatorModel().hasGrammar());
     }
 }

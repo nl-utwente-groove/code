@@ -242,7 +242,7 @@ public final class GraphToKth {
         HashMap<String,String> attrs = new HashMap<String,String>();
         HostGraph model = null;
         try {
-            model = graph.toGraphView(null).toModel();
+            model = graph.toGraphModel(null).toHost();
         } catch (FormatException e) {
             // Should never happen...
             e.printStackTrace();

@@ -3,7 +3,7 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 
 /** Action to open the Exploration Dialog. */
@@ -22,8 +22,8 @@ public class ExplorationDialogAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        StoredGrammarView grammar = getModel().getGrammar();
-        setEnabled(grammar != null && grammar.getStartGraphView() != null
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        setEnabled(grammar != null && grammar.getStartGraphModel() != null
             && grammar.getErrors().isEmpty());
     }
 }

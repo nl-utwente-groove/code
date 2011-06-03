@@ -21,7 +21,7 @@ import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
-import groove.view.View;
+import groove.view.HostModel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -142,7 +142,7 @@ final public class StateDisplay extends TabbedDisplay implements
         getEnableButton().setSelected(
             source.hasHost()
                 && source.getHost().equals(
-                    source.getGrammar().getStartGraphView()));
+                    source.getGrammar().getStartGraphModel()));
         activateListeners();
     }
 
@@ -221,8 +221,8 @@ final public class StateDisplay extends TabbedDisplay implements
     }
 
     @Override
-    protected View<?> getView(String name) {
-        return getSimulatorModel().getGrammar().getGraphView(name);
+    protected HostModel getResource(String name) {
+        return getSimulatorModel().getGrammar().getHostModel(name);
     }
 
     @Override

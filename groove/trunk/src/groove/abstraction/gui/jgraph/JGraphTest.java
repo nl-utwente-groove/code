@@ -20,7 +20,7 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.Shape;
 import groove.trans.HostGraph;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -47,8 +47,8 @@ public class JGraphTest {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("rule-app-test-0").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("rule-app-test-0").toResource();
             Shape shape = new Shape(graph);
             showShape(shape);
         } catch (IOException e) {

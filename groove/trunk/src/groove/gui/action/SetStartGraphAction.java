@@ -13,14 +13,14 @@ public class SetStartGraphAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        String selection = getModel().getHost().getName();
-        return getModel().doSetStartGraph(selection);
+        String selection = getSimulatorModel().getHost().getName();
+        return getSimulatorModel().doSetStartGraph(selection);
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getHost() != null
-            && !getModel().getHost().equals(
-                getModel().getGrammar().getStartGraphView()));
+        setEnabled(getSimulatorModel().getHost() != null
+            && !getSimulatorModel().getHost().equals(
+                getSimulatorModel().getGrammar().getStartGraphModel()));
     }
 }

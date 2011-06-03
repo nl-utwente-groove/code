@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.PrologEditor;
+import groove.gui.PrologEditorPanel;
 import groove.gui.Simulator;
 
 /**
@@ -16,7 +16,7 @@ public class CancelEditPrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        PrologEditor editor = getEditor();
+        PrologEditorPanel editor = getEditor();
         if (editor != null) {
             editor.cancelEditing(true);
         }
@@ -29,7 +29,7 @@ public class CancelEditPrologAction extends SimulatorAction {
     }
 
     /** Returns the editor of the currently selected prolog program, if any. */
-    private PrologEditor getEditor() {
+    private PrologEditorPanel getEditor() {
         return getPrologDisplay().getSelectedEditor();
     }
 }

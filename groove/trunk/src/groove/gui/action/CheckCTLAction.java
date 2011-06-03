@@ -34,10 +34,10 @@ public class CheckCTLAction extends SimulatorAction {
         String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;
-            GTS gts = getModel().getGts();
-            if (gts.hasOpenStates() && this.full && getModel().setGts()) {
+            GTS gts = getSimulatorModel().getGts();
+            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGts()) {
                 getActions().getExploreAction().explore(
-                    getModel().getExploration(), true, false);
+                    getSimulatorModel().getExploration(), true, false);
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {
@@ -108,13 +108,13 @@ public class CheckCTLAction extends SimulatorAction {
             }
         }
         getSimulator().getLtsDisplay().emphasiseStates(counterExamples, false);
-        getModel().setDisplay(DisplayKind.LTS);
+        getSimulatorModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getSimulator().getFrame(), message);
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGts() != null);
     }
 
     private final boolean full;

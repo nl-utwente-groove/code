@@ -47,7 +47,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
     public RelabelGrammarAction(Simulator simulator) {
         super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
         addAsListener(getStateDisplay().getMainPanel());
-        addAsListener(getRuleTab().getMainPanel());
+        addAsListener(getRuleDisplay().getMainPanel());
         addAsListener(getTypeTab().getMainPanel());
     }
 
@@ -62,9 +62,9 @@ public class RelabelGrammarAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable()
-            && !getModel().getGrammar().getLabelStore().getLabels().isEmpty());
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable()
+            && !getSimulatorModel().getGrammar().getLabelStore().getLabels().isEmpty());
     }
 
     @Override

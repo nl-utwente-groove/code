@@ -80,7 +80,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Provides a graph view upon a production rule. The nodes and edges are divided
+ * Provides a graph-based resource model for a production rule. 
+ * The nodes and edges are divided
  * into embargoes, erasers, readers and creators, with the following intuition:
  * <ul>
  * <li>Maximal connected embargo subgraphs correspond to negative application
@@ -92,49 +93,57 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision: 1923 $
  */
-public class DefaultRuleView implements RuleView {
+public class RuleModel extends GraphBasedModel<Rule> implements
+        Comparable<RuleModel> {
     /**
-     * Constructs a rule view from an aspect graph. The rule properties are
+     * Constructs a rule model from an aspect graph. The rule properties are
      * explicitly given.
      * @param graph the graph to be converted (non-null)
      * @param properties object specifying rule properties, such as injectivity
      *        etc (nullable)
      */
-    public DefaultRuleView(AspectGraph graph, SystemProperties properties) {
+    public RuleModel(AspectGraph graph, SystemProperties properties) {
+        super(graph);
         graph.testFixed(true);
-        this.name = graph.getName();
         this.systemProperties = properties;
-        this.graph = graph;
     }
 
-    /** Convenience method for <code>getNameLabel().text()</code>. */
-    public String getName() {
-        return this.name;
-    }
-
+    /**
+     * Returns the priority of the rule of which this is a model. Yields the same
+     * result as <code>toRule().getPriority()</code>.
+     */
     public int getPriority() {
-        return GraphProperties.getPriority(getAspectGraph());
+        return GraphProperties.getPriority(getSource());
     }
 
     /** Convenience method */
     public String getTransitionLabel() {
-        return GraphProperties.getTransitionLabel(getAspectGraph());
+        return GraphProperties.getTransitionLabel(getSource());
     }
 
     /** Convenience method */
     public String getFormatString() {
-        return GraphProperties.getFormatString(getAspectGraph());
+        return GraphProperties.getFormatString(getSource());
     }
 
+    /**
+     * Indicates whether the rule is enabled, i.e., will be part of an actual
+     * graph grammar constructed from the rule.
+     */
     public boolean isEnabled() {
-        return GraphProperties.isEnabled(getAspectGraph());
+        return GraphProperties.isEnabled(getSource());
     }
 
+    /**
+     * Indicates whether the rule is marked as locally confluent. If the rule is
+     * marked as such, only match will be chosen among this and all other
+     * locally confluent rules.
+     */
     public boolean isConfluent() {
-        return GraphProperties.isConfluent(getAspectGraph());
+        return GraphProperties.isConfluent(getSource());
     }
 
-    public int compareTo(RuleView o) {
+    public int compareTo(RuleModel o) {
         int result = getPriority() - o.getPriority();
         if (result == 0) {
             result = getName().compareTo(o.getName());
@@ -145,7 +154,8 @@ public class DefaultRuleView implements RuleView {
     /**
      * Creates and returns the production rule corresponding to this rule graph.
      */
-    public Rule toModel() throws FormatException {
+    @Override
+    public Rule toResource() throws FormatException {
         return toRule();
     }
 
@@ -161,12 +171,14 @@ public class DefaultRuleView implements RuleView {
         }
     }
 
+    @Override
     public List<FormatError> getErrors() {
         initialise();
         return this.ruleErrors;
     }
 
     /** Returns the set of labels occurring in this rule. */
+    @Override
     public Set<TypeLabel> getLabels() {
         initialise();
         return this.levelTree == null ? Collections.<TypeLabel>emptySet()
@@ -174,19 +186,14 @@ public class DefaultRuleView implements RuleView {
     }
 
     @Override
-    final public AspectGraph getAspectGraph() {
-        return this.graph;
-    }
-
-    @Override
-    public ViewToRuleMap getMap() {
+    public RuleModelMap getMap() {
         initialise();
-        return this.levelTree == null ? new ViewToRuleMap()
-                : this.levelTree.getViewToRuleMap();
+        return this.levelTree == null ? new RuleModelMap()
+                : this.levelTree.getRuleModelMap();
     }
 
     /**
-     * Sets the properties of this view. This means that the previously
+     * Sets the properties of this model. This means that the previously
      * constructed model (if any) becomes invalid.
      */
     public final void setSystemProperties(SystemProperties properties) {
@@ -234,7 +241,7 @@ public class DefaultRuleView implements RuleView {
 
     @Override
     public String toString() {
-        return String.format("Rule view on '%s'", getName());
+        return String.format("Rule model on '%s'", getName());
     }
 
     /** Returns the internal tree of rule levels. */
@@ -286,8 +293,8 @@ public class DefaultRuleView implements RuleView {
         // only do something if there is something to be done
         if (this.ruleErrors == null) {
             this.ruleErrors = new ArrayList<FormatError>();
-            this.ruleErrors.addAll(getAspectGraph().getErrors());
-            // trying to initialise with view errors, e.g. an
+            this.ruleErrors.addAll(getSource().getErrors());
+            // trying to initialise with model errors, e.g. an
             // at-edge from a forall:-node, may throw exceptions
             if (this.ruleErrors.isEmpty()) {
                 this.levelTree = new LevelMap();
@@ -296,7 +303,7 @@ public class DefaultRuleView implements RuleView {
                     this.rule = computeRule();
                 } catch (FormatException exc) {
                     Map<RuleElement,AspectElement> inverseMap =
-                        this.levelTree.getRuleToViewMap();
+                        this.levelTree.getInverseModelMap();
                     for (FormatError error : exc.getErrors()) {
                         this.ruleErrors.add(error.transfer(inverseMap));
                     }
@@ -306,10 +313,10 @@ public class DefaultRuleView implements RuleView {
     }
 
     /**
-     * Callback method to compute a rule from the view graph. All auxiliary data
+     * Callback method to compute a rule from the source graph. All auxiliary data
      * structures are assumed to be initialised but empty. After method return,
      * the structures are filled.
-     * @throws FormatException if the view cannot be converted to a valid rule
+     * @throws FormatException if the model cannot be converted to a valid rule
      */
     private Rule computeRule() throws FormatException {
         Rule rule;
@@ -442,26 +449,19 @@ public class DefaultRuleView implements RuleView {
 
     /**
      * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @see #getAspectGraph()
+     * @see #getSource()
      */
     RuleGraph createGraph(String name) {
         return new RuleGraph(name);
     }
 
-    /**
-     * The name of the rule represented by this rule graph.
-     */
-    private final String name;
-
-    /** The view graph representation of the rule. */
-    private final AspectGraph graph;
-    /** The type graph for this view, if any. */
+    /** The type graph for this model, if any. */
     private TypeGraph type;
-    /** The label store for this view, if any. */
+    /** The label store for this model, if any. */
     private LabelStore labelStore;
-    /** The level tree for this rule view. */
+    /** The level tree for this rule model. */
     private LevelMap levelTree;
-    /** Errors found while converting the view to a rule. */
+    /** Errors found while converting the model to a rule. */
     private List<FormatError> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
@@ -480,7 +480,7 @@ public class DefaultRuleView implements RuleView {
             Comparable<LevelIndex> {
         /**
          * Constructs a new level, without setting parent or children.
-         * @param levelNode the view level node representing this level; may be
+         * @param levelNode the model level node representing this level; may be
          *        <code>null</code> for an implicit or top level
          */
         public LevelIndex(Condition.Op operator, boolean positive,
@@ -529,7 +529,7 @@ public class DefaultRuleView implements RuleView {
             String levelName =
                 isImplicit() ? null : this.levelNode.getLevelName();
             if (levelName == null) {
-                return DefaultRuleView.this.getName()
+                return RuleModel.this.getName()
                     + (isTopLevel() ? ""
                             : Groove.toString(this.index.toArray()));
             } else {
@@ -618,11 +618,11 @@ public class DefaultRuleView implements RuleView {
             return this.levelNode == null;
         }
 
-        /** The view node representing this quantification level. */
+        /** The model node representing this quantification level. */
         final Condition.Op operator;
         /** Flag indicating that this level has to be matched more than once. */
         final boolean positive;
-        /** The view node representing this quantification level. */
+        /** The model node representing this quantification level. */
         final AspectNode levelNode;
         /** The index uniquely identifying this level. */
         List<Integer> index;
@@ -630,7 +630,7 @@ public class DefaultRuleView implements RuleView {
         LevelIndex parent;
     }
 
-    /** Tree of quantification levels occurring in this rule view. */
+    /** Tree of quantification levels occurring in this rule model. */
     private class LevelMap extends DefaultFixable {
         public void initialise() throws FormatException {
             buildTree();
@@ -651,7 +651,7 @@ public class DefaultRuleView implements RuleView {
             indexTree.put(this.topLevelIndex, new ArrayList<LevelIndex>());
             // make an ordered collection of quantifier nodes
             SortedSet<AspectNode> quantNodes = new TreeSet<AspectNode>();
-            for (AspectNode node : getAspectGraph().nodeSet()) {
+            for (AspectNode node : getSource().nodeSet()) {
                 if (node.getKind().isQuantifier()) {
                     quantNodes.add(node);
                 }
@@ -761,7 +761,7 @@ public class DefaultRuleView implements RuleView {
         }
 
         private void initData() throws FormatException {
-            this.viewToRuleMap.clear();
+            this.modelMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
             // initialise the match count nodes
             // this is done straight away, to ensure that the rule graph
@@ -773,7 +773,7 @@ public class DefaultRuleView implements RuleView {
                     (VariableNode) getNodeImage(matchCount));
             }
             // add nodes to nesting data structures
-            for (AspectNode node : getAspectGraph().nodeSet()) {
+            for (AspectNode node : getSource().nodeSet()) {
                 if (!node.getKind().isMeta()) {
                     try {
                         Level level = getLevel(node);
@@ -784,7 +784,7 @@ public class DefaultRuleView implements RuleView {
                 }
             }
             // add edges to nesting data structures
-            for (AspectEdge edge : getAspectGraph().edgeSet()) {
+            for (AspectEdge edge : getSource().edgeSet()) {
                 if (edge.getKind() == CONNECT) {
                     Level level = getLevel(edge);
                     RuleNode sourceImage = getNodeImage(edge.source());
@@ -890,7 +890,7 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Lazily creates and returns the mapping from rule view nodes to the
+         * Lazily creates and returns the mapping from rule model nodes to the
          * corresponding quantification levels.
          */
         private Map<AspectNode,Level> getNodeLevelMap() {
@@ -909,38 +909,37 @@ public class DefaultRuleView implements RuleView {
         }
 
         /**
-         * Lazily creates and returns a rule image for a given view node.
-         * @param viewNode the node for which an image is to be created
+         * Lazily creates and returns a rule image for a given model node.
+         * @param modelNode the node for which an image is to be created
          * @throws FormatException if <code>node</code> does not occur in a
          *         correct way in <code>context</code>
          */
-        private RuleNode getNodeImage(AspectNode viewNode)
+        private RuleNode getNodeImage(AspectNode modelNode)
             throws FormatException {
-            RuleNode result = this.viewToRuleMap.getNode(viewNode);
+            RuleNode result = this.modelMap.getNode(modelNode);
             if (result == null) {
-                this.viewToRuleMap.putNode(viewNode, result =
-                    computeNodeImage(viewNode));
+                this.modelMap.putNode(modelNode, result =
+                    computeNodeImage(modelNode));
 
             }
             return result;
         }
 
         /**
-         * Lazily creates and returns a rule image for a given view edge.
-         * @param viewEdge the node for which an image is to be created
+         * Lazily creates and returns a rule image for a given model edge.
+         * @param modelEdge the node for which an image is to be created
          * @return the rule edge corresponding to <code>viewEdge</code>; may be
          *         <code>null</code>
          * @throws FormatException if <code>node</code> does not occur in a
          *         correct way in <code>context</code>
          */
-        private RuleEdge getEdgeImage(AspectEdge viewEdge)
+        private RuleEdge getEdgeImage(AspectEdge modelEdge)
             throws FormatException {
-            RuleEdge result = this.viewToRuleMap.getEdge(viewEdge);
+            RuleEdge result = this.modelMap.getEdge(modelEdge);
             if (result == null) {
-                result =
-                    computeEdgeImage(viewEdge, this.viewToRuleMap.nodeMap());
+                result = computeEdgeImage(modelEdge, this.modelMap.nodeMap());
                 if (result != null) {
-                    this.viewToRuleMap.putEdge(viewEdge, result);
+                    this.modelMap.putEdge(modelEdge, result);
                     RegExpr labelExpr = result.label().getMatchExpr();
                     if (labelExpr != null) {
                         this.labelSet.addAll(labelExpr.getTypeLabels());
@@ -950,19 +949,19 @@ public class DefaultRuleView implements RuleView {
             return result;
         }
 
-        /** Returns the view-to-rule element map. */
-        public final ViewToRuleMap getViewToRuleMap() {
-            return this.viewToRuleMap;
+        /** Returns the model-to-rule element map. */
+        public final RuleModelMap getRuleModelMap() {
+            return this.modelMap;
         }
 
-        /** Returns the inverse of the view-to-rule map. */
-        public final Map<RuleElement,AspectElement> getRuleToViewMap() {
+        /** Returns the inverse of the model-to-rule map. */
+        public final Map<RuleElement,AspectElement> getInverseModelMap() {
             Map<RuleElement,AspectElement> result =
                 new HashMap<RuleElement,AspectElement>();
-            for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.viewToRuleMap.nodeMap().entrySet()) {
+            for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
                 result.put(nodeEntry.getValue(), nodeEntry.getKey());
             }
-            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.viewToRuleMap.edgeMap().entrySet()) {
+            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
                 result.put(edgeEntry.getValue(), edgeEntry.getKey());
             }
             return result;
@@ -972,9 +971,9 @@ public class DefaultRuleView implements RuleView {
          * Mapping from the elements of the aspect graph representation to the
          * corresponding elements of the rule.
          */
-        private final ViewToRuleMap viewToRuleMap = new ViewToRuleMap();
+        private final RuleModelMap modelMap = new RuleModelMap();
 
-        /** Returns the set of labels occurring in the view. */
+        /** Returns the set of labels occurring in the model. */
         public final Set<TypeLabel> getLabelSet() {
             return this.labelSet;
         }
@@ -994,7 +993,7 @@ public class DefaultRuleView implements RuleView {
         private Map<AspectNode,LevelIndex> metaIndexMap;
         /** mapping from nesting level names to nesting levels. */
         private Map<String,LevelIndex> nameIndexMap;
-        /** Mapping from view nodes to the corresponding nesting level. */
+        /** Mapping from model nodes to the corresponding nesting level. */
         private Map<AspectNode,Level> nodeLevelMap;
         /** Mapping from (universal) levels to match count nodes. */
         private Map<LevelIndex,AspectNode> matchCountMap;
@@ -1052,16 +1051,16 @@ public class DefaultRuleView implements RuleView {
          * is also added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
          */
-        public void addNode(AspectNode viewNode, RuleNode ruleNode) {
+        public void addNode(AspectNode modelNode, RuleNode ruleNode) {
             testMode(LevelMode.TREE_SET);
-            if (isForThisLevel(viewNode)) {
+            if (isForThisLevel(modelNode)) {
                 // put the node on this level
-                this.viewToLevelMap.putNode(viewNode, ruleNode);
+                this.modelMap.putNode(modelNode, ruleNode);
             }
             // put the node on the sublevels, if it is supposed to be there
-            if (isForNextLevel(viewNode)) {
+            if (isForNextLevel(modelNode)) {
                 for (Level sublevel : this.children) {
-                    sublevel.addNode(viewNode, ruleNode);
+                    sublevel.addNode(modelNode, ruleNode);
                 }
             }
         }
@@ -1071,22 +1070,22 @@ public class DefaultRuleView implements RuleView {
          * is also added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
          */
-        public void addEdge(AspectEdge viewEdge, RuleEdge ruleEdge) {
+        public void addEdge(AspectEdge modelEdge, RuleEdge ruleEdge) {
             testMode(LevelMode.TREE_SET);
-            if (isForThisLevel(viewEdge)) {
+            if (isForThisLevel(modelEdge)) {
                 // put the edge on this level
-                this.viewToLevelMap.putEdge(viewEdge, ruleEdge);
+                this.modelMap.putEdge(modelEdge, ruleEdge);
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
-                addNodeToParents(viewEdge.source(), ruleEdge.source());
-                addNodeToParents(viewEdge.target(), ruleEdge.target());
+                addNodeToParents(modelEdge.source(), ruleEdge.source());
+                addNodeToParents(modelEdge.target(), ruleEdge.target());
             }
             // put the edge on the sublevels, if it is supposed to be there
-            if (isForNextLevel(viewEdge)) {
+            if (isForNextLevel(modelEdge)) {
                 for (Level sublevel : this.children) {
-                    sublevel.addEdge(viewEdge, ruleEdge);
+                    sublevel.addEdge(modelEdge, ruleEdge);
                 }
-            } else if (!viewEdge.getKind().inNAC()
+            } else if (!modelEdge.getKind().inNAC()
                 && ruleEdge.getRole() == NODE_TYPE) {
                 // add type edges to all sublevels
                 for (Level sublevel : this.children) {
@@ -1113,12 +1112,12 @@ public class DefaultRuleView implements RuleView {
         /**
          * Adds a node to this and all parent levels, if it is not yet there
          */
-        private void addNodeToParents(AspectNode viewNode, RuleNode ruleNode) {
+        private void addNodeToParents(AspectNode modelNode, RuleNode ruleNode) {
             Level ascendingLevel = this;
-            while (ascendingLevel.viewToLevelMap.putNode(viewNode, ruleNode) == null) {
+            while (ascendingLevel.modelMap.putNode(modelNode, ruleNode) == null) {
                 assert !ascendingLevel.index.isTopLevel() : String.format("Node not found at any level");
                 ascendingLevel = ascendingLevel.parent;
-                assert ascendingLevel.viewToLevelMap != null : String.format(
+                assert ascendingLevel.modelMap != null : String.format(
                     "Nodes on level %s not yet initialised",
                     ascendingLevel.getIndex());
             }
@@ -1146,7 +1145,7 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Indicates if a given element should be included on the level on which
-         * it it is defined in the view. Node creators should not appear on
+         * it it is defined in the model. Node creators should not appear on
          * universal levels since those get translated to conditions, not rules;
          * instead they are pushed to the next (existential) sublevels.
          * @param elem the element about which the question is asked
@@ -1157,7 +1156,7 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Indicates if a given element should occur on the sublevels of the
-         * level on which it is defined in the view. This is the case for nodes
+         * level on which it is defined in the model. This is the case for nodes
          * in injective rules (otherwise we cannot check injectivity) as well as
          * for edges that bind variables.
          * @param elem the element about which the question is asked
@@ -1185,23 +1184,22 @@ public class DefaultRuleView implements RuleView {
             return result;
         }
 
-        private void processView() throws FormatException {
+        private void processModel() throws FormatException {
             // initialise the rule data structures
             this.lhs = createGraph(getName() + "-" + getIndex() + "-lhs");
             this.rhs = createGraph(getName() + "-" + getIndex() + "-rhs");
             this.ruleMorph = createMorphism();
-            this.lhsMap = new ViewToRuleMap();
-            this.rhsMap = new ViewToRuleMap();
+            this.lhsMap = new RuleModelMap();
+            this.rhsMap = new RuleModelMap();
             this.nacNodeSet = new HashSet<RuleNode>();
             this.nacEdgeSet = new HashSet<RuleEdge>();
             this.typableNodes = new HashSet<RuleNode>();
             this.typableEdges = new HashSet<RuleEdge>();
             this.mergerMap = computeMergerMap();
             Set<FormatError> errors = new TreeSet<FormatError>();
-            for (Map.Entry<AspectNode,? extends RuleNode> viewNodeEntry : this.viewToLevelMap.nodeMap().entrySet()) {
+            for (Map.Entry<AspectNode,? extends RuleNode> modelEntry : this.modelMap.nodeMap().entrySet()) {
                 try {
-                    processNode(viewNodeEntry.getKey(),
-                        viewNodeEntry.getValue());
+                    processNode(modelEntry.getKey(), modelEntry.getValue());
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
@@ -1210,10 +1208,9 @@ public class DefaultRuleView implements RuleView {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            for (Map.Entry<AspectEdge,? extends RuleEdge> viewEdgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
+            for (Map.Entry<AspectEdge,? extends RuleEdge> modelEntry : this.modelMap.edgeMap().entrySet()) {
                 try {
-                    processEdge(viewEdgeEntry.getKey(),
-                        viewEdgeEntry.getValue());
+                    processEdge(modelEntry.getKey(), modelEntry.getValue());
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
@@ -1227,12 +1224,12 @@ public class DefaultRuleView implements RuleView {
         private Map<AspectEdge,RuleEdge> computeMergerMap() {
             Map<AspectEdge,RuleEdge> result =
                 new HashMap<AspectEdge,RuleEdge>();
-            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.viewToLevelMap.edgeMap().entrySet()) {
-                AspectEdge viewEdge = edgeEntry.getKey();
+            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
+                AspectEdge modelEdge = edgeEntry.getKey();
                 RuleEdge ruleEdge = edgeEntry.getValue();
-                AspectKind kind = viewEdge.getKind();
+                AspectKind kind = modelEdge.getKind();
                 if (kind.isCreator() && ruleEdge.label().isEmpty()) {
-                    result.put(viewEdge, ruleEdge);
+                    result.put(modelEdge, ruleEdge);
                 }
             }
             return result;
@@ -1242,13 +1239,13 @@ public class DefaultRuleView implements RuleView {
          * Adds a node to this level.
          * @return {@code true} if the node is fresh
          */
-        private boolean processNode(AspectNode viewNode, RuleNode lhsNode)
+        private boolean processNode(AspectNode modelNode, RuleNode lhsNode)
             throws FormatException {
             boolean result = true;
-            AspectKind nodeKind = viewNode.getKind();
+            AspectKind nodeKind = modelNode.getKind();
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
             if (nodeKind.inLHS() || nodeKind.inNAC()) {
-                RuleNode oldLhsNode = this.lhsMap.putNode(viewNode, lhsNode);
+                RuleNode oldLhsNode = this.lhsMap.putNode(modelNode, lhsNode);
                 assert oldLhsNode == null || oldLhsNode.equals(lhsNode) : String.format(
                     "Old and new LHS images '%s' and '%s' should be the same",
                     oldLhsNode, lhsNode);
@@ -1262,8 +1259,8 @@ public class DefaultRuleView implements RuleView {
             }
             if (nodeKind.inRHS()) {
                 this.typableNodes.add(lhsNode);
-                RuleNode rhsNode = getRepresentative(viewNode);
-                RuleNode oldRhsNode = this.rhsMap.putNode(viewNode, rhsNode);
+                RuleNode rhsNode = getRepresentative(modelNode);
+                RuleNode oldRhsNode = this.rhsMap.putNode(modelNode, rhsNode);
                 assert oldRhsNode == null || oldRhsNode.equals(rhsNode) : String.format(
                     "Old and new RHS images '%s' and '%s' should be the same",
                     oldRhsNode, lhsNode);
@@ -1280,12 +1277,12 @@ public class DefaultRuleView implements RuleView {
             return result;
         }
 
-        private void processEdge(AspectEdge viewEdge, RuleEdge lhsEdge)
+        private void processEdge(AspectEdge modelEdge, RuleEdge lhsEdge)
             throws FormatException {
-            AspectKind edgeKind = viewEdge.getKind();
+            AspectKind edgeKind = modelEdge.getKind();
             this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
             if (edgeKind.inLHS() || edgeKind.inNAC()) {
-                this.lhsMap.putEdge(viewEdge, lhsEdge);
+                this.lhsMap.putEdge(modelEdge, lhsEdge);
                 if (edgeKind.inLHS()) {
                     this.typableEdges.add(lhsEdge);
                     this.lhs.addEdge(lhsEdge);
@@ -1293,40 +1290,40 @@ public class DefaultRuleView implements RuleView {
                     this.nacEdgeSet.add(lhsEdge);
                 }
             }
-            if (edgeKind.inRHS() && !this.mergerMap.containsKey(viewEdge)) {
+            if (edgeKind.inRHS() && !this.mergerMap.containsKey(modelEdge)) {
                 this.typableEdges.add(lhsEdge);
                 RuleEdge rhsEdge =
-                    computeEdgeImage(viewEdge, this.rhsMap.nodeMap());
+                    computeEdgeImage(modelEdge, this.rhsMap.nodeMap());
                 assert rhsEdge != null : String.format(
-                    "View edge '%s' does not have image in %s", viewEdge,
+                    "Model edge '%s' does not have image in %s", modelEdge,
                     this.rhsMap);
-                this.rhsMap.putEdge(viewEdge, rhsEdge);
+                this.rhsMap.putEdge(modelEdge, rhsEdge);
                 this.rhs.addEdge(rhsEdge);
                 if (edgeKind.inLHS()) {
                     this.ruleMorph.putEdge(lhsEdge, rhsEdge);
                 } else if (isRhsAsNac()) {
                     this.nacEdgeSet.add(lhsEdge);
                 } else if (isCheckCreatorEdges()
-                    && viewEdge.source().getKind().inLHS()
-                    && viewEdge.target().getKind().inLHS()) {
+                    && modelEdge.source().getKind().inLHS()
+                    && modelEdge.target().getKind().inLHS()) {
                     this.nacEdgeSet.add(lhsEdge);
                 }
             }
         }
 
         /**
-         * Returns the mapping from LHS view elements to rule elements on this
+         * Returns the mapping from LHS model elements to rule elements on this
          * level.
          */
-        public ViewToRuleMap getLhsMap() {
+        public RuleModelMap getLhsMap() {
             testMode(LevelMode.FIXED);
             return this.lhsMap;
         }
 
         /**
-         * Returns the mapping from RHS view elements to rule elements on this level.
+         * Returns the mapping from RHS model elements to rule elements on this level.
          */
-        public ViewToRuleMap getRhsMap() {
+        public RuleModelMap getRhsMap() {
             testMode(LevelMode.FIXED);
             return this.rhsMap;
         }
@@ -1358,10 +1355,10 @@ public class DefaultRuleView implements RuleView {
 
         /**
          * Returns a mapping from the rule elements at a parent level to the
-         * rule elements at this level, given view-to-rule maps for both levels.
+         * rule elements at this level, given model-to-rule maps for both levels.
          */
-        private RuleGraphMorphism getConnectingMap(ViewToRuleMap parentMap,
-                ViewToRuleMap myMap) {
+        private RuleGraphMorphism getConnectingMap(RuleModelMap parentMap,
+                RuleModelMap myMap) {
             RuleGraphMorphism result = new RuleGraphMorphism();
             for (Map.Entry<AspectNode,RuleNode> parentEntry : parentMap.nodeMap().entrySet()) {
                 RuleNode image = myMap.getNode(parentEntry.getKey());
@@ -1405,7 +1402,7 @@ public class DefaultRuleView implements RuleView {
         /**
          * Returns a representative node from the set of merged nodes on a given
          * quantification level.
-         * @throws FormatException if a formatting error in the view is detected
+         * @throws FormatException if a formatting error in the model is detected
          */
         private RuleNode getRepresentative(AspectNode node)
             throws FormatException {
@@ -1419,9 +1416,9 @@ public class DefaultRuleView implements RuleView {
                 assert cell != null : String.format(
                     "Partition %s does not contain cell for '%s'",
                     getPartition(), node);
-                return this.viewToLevelMap.getNode(cell.first());
+                return this.modelMap.getNode(cell.first());
             } else {
-                return this.viewToLevelMap.getNode(node);
+                return this.modelMap.getNode(node);
             }
         }
 
@@ -1462,7 +1459,7 @@ public class DefaultRuleView implements RuleView {
             }
             // create singleton cells for the nodes appearing fresh on this
             // level
-            for (AspectNode newNode : this.viewToLevelMap.nodeMap().keySet()) {
+            for (AspectNode newNode : this.modelMap.nodeMap().keySet()) {
                 // test if the node is new
                 if (!result.containsKey(newNode)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
@@ -1865,8 +1862,8 @@ public class DefaultRuleView implements RuleView {
             Condition result =
                 new Condition(this.index.getName(), this.index.getOperator(),
                     pattern, root, getSystemProperties());
-            if (DefaultRuleView.this.labelStore != null) {
-                result.setLabelStore(DefaultRuleView.this.labelStore);
+            if (RuleModel.this.labelStore != null) {
+                result.setLabelStore(RuleModel.this.labelStore);
             }
             if (this.index.isPositive()) {
                 result.setPositive();
@@ -1900,7 +1897,7 @@ public class DefaultRuleView implements RuleView {
             }
             this.mode = mode;
             if (mode.equals(LevelMode.FIXED)) {
-                processView();
+                processModel();
             }
         }
 
@@ -1944,8 +1941,8 @@ public class DefaultRuleView implements RuleView {
         private final Level parent;
         /** Children level data. */
         private final List<Level> children = new ArrayList<Level>();
-        /** Map of all view nodes on this level. */
-        private final ViewToRuleMap viewToLevelMap = new ViewToRuleMap();
+        /** Map of all model nodes on this level. */
+        private final RuleModelMap modelMap = new RuleModelMap();
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap =
             new HashMap<AspectEdge,Set<RuleNode>>();
@@ -1956,10 +1953,10 @@ public class DefaultRuleView implements RuleView {
         private VariableNode matchCountImage;
         /** Flag indicating that modifiers have been found at this level. */
         private boolean isRule;
-        /** Mapping from view nodes to LHS and NAC nodes. */
-        private ViewToRuleMap lhsMap;
-        /** Mapping from view nodes to RHS nodes. */
-        private ViewToRuleMap rhsMap;
+        /** Mapping from model nodes to LHS and NAC nodes. */
+        private RuleModelMap lhsMap;
+        /** Mapping from model nodes to RHS nodes. */
+        private RuleModelMap rhsMap;
         /** The left hand side graph of the rule. */
         private RuleGraph lhs;
         /** The right hand side graph of the rule. */
@@ -1987,7 +1984,7 @@ public class DefaultRuleView implements RuleView {
         START, TREE_SET, FIXED
     }
 
-    /** Class that can extract parameter information from the view graph. */
+    /** Class that can extract parameter information from the model graph. */
     private class Parameters {
         /** Lazily creates and returns the rule's hidden parameters. */
         public Set<RuleNode> getHiddenPars() throws FormatException {
@@ -2014,7 +2011,7 @@ public class DefaultRuleView implements RuleView {
                 new HashMap<Integer,CtrlPar.Var>();
             int parCount = 0;
             // add nodes to nesting data structures
-            for (AspectNode node : getAspectGraph().nodeSet()) {
+            for (AspectNode node : getSource().nodeSet()) {
                 // check if the node is a parameter
                 if (node.hasParam()) {
                     Level level = getLevelTree().getLevel(node);
@@ -2133,17 +2130,17 @@ public class DefaultRuleView implements RuleView {
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    public static class ViewToRuleMap extends ViewToModelMap<RuleNode,RuleEdge> {
+    public static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
         /**
          * Creates a new, empty map.
          */
-        public ViewToRuleMap() {
+        public RuleModelMap() {
             super(RuleFactory.instance());
         }
 
         @Override
-        public ViewToRuleMap newMap() {
-            return new ViewToRuleMap();
+        public RuleModelMap newMap() {
+            return new RuleModelMap();
         }
     }
 }

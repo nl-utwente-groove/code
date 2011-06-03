@@ -42,9 +42,9 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.util.Groove;
+import groove.view.HostModel;
 import groove.view.FormatError;
-import groove.view.GraphView;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -784,10 +784,10 @@ public class Simulator implements SimulatorListener {
      */
     public void setTitle() {
         StringBuffer title = new StringBuffer();
-        StoredGrammarView grammar = getModel().getGrammar();
+        GrammarModel grammar = getModel().getGrammar();
         if (grammar != null && grammar.getName() != null) {
             title.append(grammar.getName());
-            GraphView startGraph = grammar.getStartGraphView();
+            HostModel startGraph = grammar.getStartGraphModel();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
                 title.append(startGraph.getName());

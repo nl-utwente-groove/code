@@ -2,6 +2,7 @@ package groove.view;
 
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
@@ -11,50 +12,54 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/** Class to store the views that are used to compose the type graph. */
-public class CompositeTypeView {
+/** Class to store the models that are used to compose the type graph. */
+public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
-    private Map<String,TypeView> typeViewMap;
+    private Map<String,TypeModel> typeModelMap;
     private Map<String,TypeGraph> typeGraphMap;
-    private TypeGraph model;
+    private TypeGraph resource;
     private List<FormatError> errors;
 
-    CompositeTypeView(GrammarView grammarView) {
-        this.typeViewMap = new HashMap<String,TypeView>();
-        this.model = null;
+    CompositeTypeModel(GrammarModel grammar) {
+        super(ResourceKind.TYPE, "Composed type for " + grammar.getName());
+        this.typeModelMap = new HashMap<String,TypeModel>();
+        this.resource = null;
         this.errors = new ArrayList<FormatError>();
-        for (String typeName : grammarView.getTypeNames()) {
-            TypeView typeView = grammarView.getTypeView(typeName);
-            if (typeView != null && typeView.isEnabled()) {
-                this.typeViewMap.put(typeName, typeView);
-                this.errors.addAll(typeView.getErrors());
+        for (String typeName : grammar.getTypeNames()) {
+            TypeModel typeModel = grammar.getTypeModel(typeName);
+            if (typeModel != null && typeModel.isEnabled()) {
+                this.typeModelMap.put(typeName, typeModel);
+                this.errors.addAll(typeModel.getErrors());
             }
         }
     }
 
     /**
-     * @return the composite type graph from the view list, or {@code null}
-     * if there are no active type views
-     * @throws FormatException if any of the views has errors.
+     * @return the composite type graph from the model list, or {@code null}
+     * if there are no active type models
+     * @throws FormatException if any of the models has errors.
      * @throws IllegalArgumentException if the composition of types gives
      *         rise to typing cycles.
      */
-    public TypeGraph toModel() throws FormatException, IllegalArgumentException {
+    @Override
+    public TypeGraph toResource() throws FormatException,
+        IllegalArgumentException {
         this.initialise();
-        if (this.model == null) {
+        if (this.resource == null) {
             throw new FormatException(this.getErrors());
         } else {
-            if (this.typeViewMap.isEmpty()) {
+            if (this.typeModelMap.isEmpty()) {
                 return null;
             } else {
-                return this.model;
+                return this.resource;
             }
         }
     }
 
     /**
-     * @return the errors in the underlying type views.
+     * @return the errors in the underlying type models.
      */
+    @Override
     public List<FormatError> getErrors() {
         this.initialise();
         return this.errors;
@@ -64,30 +69,30 @@ public class CompositeTypeView {
      * which together make up the combined type model. */
     public Map<String,TypeGraph> getTypeGraphMap() {
         this.initialise();
-        return this.model == null ? null
+        return this.resource == null ? null
                 : Collections.unmodifiableMap(this.typeGraphMap);
     }
 
-    /** Constructs the model and associated data structures from the view. */
+    /** Constructs the model and associated data structures from the model. */
     private void initialise() {
         // first test if there is something to be done
-        if (this.errors.isEmpty() && this.model == null) {
-            // There are no errors in each of the views, try to compose the
+        if (this.errors.isEmpty() && this.resource == null) {
+            // There are no errors in each of the models, try to compose the
             // type graph.
-            this.model = new TypeGraph("combined type");
+            this.resource = new TypeGraph("combined type");
             this.typeGraphMap = new TreeMap<String,TypeGraph>();
             Map<TypeNode,TypeNode> importNodes =
                 new HashMap<TypeNode,TypeNode>();
-            Map<TypeNode,TypeView> importViews =
-                new HashMap<TypeNode,TypeView>();
-            for (TypeView view : this.typeViewMap.values()) {
+            Map<TypeNode,TypeModel> importModels =
+                new HashMap<TypeNode,TypeModel>();
+            for (TypeModel model : this.typeModelMap.values()) {
                 try {
-                    TypeGraph graph = view.toModel();
-                    this.typeGraphMap.put(view.getName(), graph);
-                    Map<TypeNode,TypeNode> map = this.model.add(graph);
+                    TypeGraph graph = model.toResource();
+                    this.typeGraphMap.put(model.getName(), graph);
+                    Map<TypeNode,TypeNode> map = this.resource.add(graph);
                     for (TypeNode node : graph.getImports()) {
                         importNodes.put(node, map.get(node));
-                        importViews.put(node, view);
+                        importModels.put(node, model);
                     }
                 } catch (FormatException e) {
                     this.errors.addAll(e.getErrors());
@@ -99,18 +104,18 @@ public class CompositeTypeView {
             for (Map.Entry<TypeNode,TypeNode> importEntry : importNodes.entrySet()) {
                 if (importEntry.getValue().isImported()) {
                     TypeNode origNode = importEntry.getKey();
-                    TypeView origView = importViews.get(origNode);
+                    TypeModel origModel = importModels.get(origNode);
                     this.errors.add(new FormatError(
                         "Error in type graph '%s': Unresolved type import '%s'",
-                        origView.getName(), origNode.getType(), getInverse(
-                            origView.getMap().nodeMap(), origNode),
-                        origView.getAspectGraph()));
+                        origModel.getName(), origNode.getType(), getInverse(
+                            origModel.getMap().nodeMap(), origNode),
+                        origModel.getSource()));
                 }
             }
             if (this.errors.isEmpty()) {
-                this.model.setFixed();
+                this.resource.setFixed();
             } else {
-                this.model = null;
+                this.resource = null;
             }
         }
     }

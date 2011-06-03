@@ -27,8 +27,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -211,10 +210,10 @@ public class ExplorationTest {
     /** Tests various parameters settable through the system properties. */
     @Test
     public void testSystemProperties() {
-        StoredGrammarView gg = loadGrammar("simple.gps", null);
+        GrammarModel gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
         // test check creator edges property
-        StoredGrammarView ggCopy =
+        GrammarModel ggCopy =
             loadGrammar("simpleCheckCreatorEdges.gps", null);
         testExploration(ggCopy, null, 41, 188, 0);
         // test dangling edges property
@@ -256,7 +255,7 @@ public class ExplorationTest {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GrammarView view, String strategyDescr,
+    protected GTS testExploration(GrammarModel view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
             GraphGrammar gg = view.toGrammar();
@@ -307,7 +306,7 @@ public class ExplorationTest {
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(GrammarView view, String strategyDescr,
+    protected GTS testExploration(GrammarModel view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount) {
         return testExploration(view, strategyDescr, nodeCount, edgeCount,
             openCount, false);
@@ -326,7 +325,7 @@ public class ExplorationTest {
      */
     protected GTS testExploration(String grammarName, String startGraphName,
             String strategyDescr, int nodeCount, int edgeCount, int openCount) {
-        GrammarView gg = loadGrammar(grammarName, startGraphName);
+        GrammarModel gg = loadGrammar(grammarName, startGraphName);
         return testExploration(gg, strategyDescr, nodeCount, edgeCount,
             openCount);
     }
@@ -376,10 +375,10 @@ public class ExplorationTest {
             nodeCount, edgeCount);
     }
 
-    private StoredGrammarView loadGrammar(String grammarName,
+    private GrammarModel loadGrammar(String grammarName,
             String startGraphName) {
         try {
-            return StoredGrammarView.newInstance(new File(INPUT_DIR,
+            return GrammarModel.newInstance(new File(INPUT_DIR,
                 grammarName), startGraphName, false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);

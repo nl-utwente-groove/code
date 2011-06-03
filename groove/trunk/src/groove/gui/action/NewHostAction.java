@@ -20,6 +20,7 @@ import static groove.graph.GraphRole.HOST;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -40,16 +41,17 @@ public class NewHostAction extends SimulatorAction {
     @Override
     public boolean execute() {
         String newGraphName =
-            askNewGraphName("Select graph name", Simulator.NEW_GRAPH_NAME, true);
+            askNewName(ResourceKind.HOST, "Select graph name",
+                Simulator.NEW_GRAPH_NAME, true);
         if (newGraphName != null) {
             try {
                 final AspectGraph newGraph =
                     AspectGraph.emptyGraph(newGraphName, HOST);
-                getModel().doAddHost(newGraph);
+                getSimulatorModel().doAddHost(newGraph);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getMainPanel().getStateDisplay().doEdit(newGraph);
+                        getStateDisplay().doEdit(newGraph);
                     }
                 });
             } catch (IOException e) {
@@ -63,7 +65,7 @@ public class NewHostAction extends SimulatorAction {
     /** Enabled if there is a grammar loaded. */
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

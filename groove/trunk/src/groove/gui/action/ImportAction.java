@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.external.Importer;
@@ -16,7 +17,7 @@ import javax.swing.JFileChooser;
 public class ImportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
     public ImportAction(Simulator simulator) {
-        super(simulator, Options.IMPORT_ACTION_NAME, null);
+        super(simulator, Options.IMPORT_ACTION_NAME, Icons.IMPORT_ICON);
     }
 
     @Override
@@ -53,13 +54,13 @@ public class ImportAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 
     private boolean importRule(AspectGraph rule) throws IOException {
         boolean result = false;
         String ruleName = rule.getName();
-        if (getModel().getGrammar().getRuleView(ruleName) == null
+        if (getSimulatorModel().getGrammar().getRuleModel(ruleName) == null
             || confirmOverwriteRule(ruleName)) {
             result = getSimulator().getModel().doAddRule(rule);
         }
@@ -69,9 +70,9 @@ public class ImportAction extends SimulatorAction {
     private boolean importState(AspectGraph state) throws IOException {
         boolean result = false;
         String stateName = state.getName();
-        if (getModel().getGrammar().getGraphView(stateName) == null
+        if (getSimulatorModel().getGrammar().getHostModel(stateName) == null
             || confirmOverwriteGraph(stateName)) {
-            result = getModel().doAddHost(state);
+            result = getSimulatorModel().doAddHost(state);
         }
         return result;
     }
@@ -79,7 +80,7 @@ public class ImportAction extends SimulatorAction {
     private boolean importType(AspectGraph type) throws IOException {
         boolean result = false;
         String typeName = type.getName();
-        if (getModel().getGrammar().getTypeView(typeName) == null
+        if (getSimulatorModel().getGrammar().getTypeModel(typeName) == null
             || confirmOverwriteType(typeName)) {
             result = getSimulator().getModel().doAddType(type);
         }
@@ -89,7 +90,7 @@ public class ImportAction extends SimulatorAction {
     private boolean importControl(String name, String program)
         throws IOException {
         boolean result = false;
-        if (getModel().getGrammar().getControlView(name) == null
+        if (getSimulatorModel().getGrammar().getControlModel(name) == null
             || confirmOverwriteControl(name)) {
             result = getSimulator().getModel().doAddControl(name, program);
         }

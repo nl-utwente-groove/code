@@ -20,6 +20,7 @@ import static groove.graph.GraphRole.RULE;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -40,12 +41,12 @@ public class NewRuleAction extends SimulatorAction {
     @Override
     public boolean execute() {
         final String ruleName =
-            askNewRuleName(null, Simulator.NEW_RULE_NAME, true);
+            askNewName(ResourceKind.RULE, null, Simulator.NEW_RULE_NAME, true);
         if (ruleName != null) {
             try {
                 final AspectGraph newRule =
                     AspectGraph.emptyGraph(ruleName, RULE);
-                getModel().doAddRule(newRule);
+                getSimulatorModel().doAddRule(newRule);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -63,7 +64,7 @@ public class NewRuleAction extends SimulatorAction {
     /** Enabled if there is a grammar loaded. */
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

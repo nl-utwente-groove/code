@@ -23,7 +23,7 @@ public class RedoSimulatorAction extends SimulatorAction {
     @Override
     public boolean execute() {
         this.undoManager.redo();
-        getModel().synchronize();
+        getSimulatorModel().synchronize();
         return true;
     }
 

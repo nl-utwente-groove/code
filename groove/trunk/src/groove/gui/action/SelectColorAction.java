@@ -37,7 +37,7 @@ public class SelectColorAction extends SimulatorAction implements
         super(simulator, Options.SELECT_COLOR_ACTION_NAME, null);
         putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
         addAsListener(getStateDisplay().getMainPanel());
-        addAsListener(getRuleTab().getMainPanel());
+        addAsListener(getRuleDisplay().getMainPanel());
         addAsListener(getTypeTab().getMainPanel());
         refresh();
         this.chooser = new JColorChooser();
@@ -60,7 +60,7 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public boolean execute() {
         Color initColour =
-            getModel().getGrammar().getLabelStore().getColor(this.label);
+            getSimulatorModel().getGrammar().getLabelStore().getColor(this.label);
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
@@ -91,9 +91,9 @@ public class SelectColorAction extends SimulatorAction implements
                 assert false;
             }
         }
-        for (String typeName : getModel().getGrammar().getTypeNames()) {
+        for (String typeName : getSimulatorModel().getGrammar().getTypeNames()) {
             AspectGraph typeGraph =
-                getModel().getGrammar().getTypeView(typeName).getAspectGraph();
+                getSimulatorModel().getGrammar().getTypeModel(typeName).getSource();
             AspectGraph newTypeGraph =
                 typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
@@ -154,7 +154,7 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        super.setEnabled(this.label != null && getModel().getType() != null);
+        super.setEnabled(this.label != null && getSimulatorModel().getType() != null);
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

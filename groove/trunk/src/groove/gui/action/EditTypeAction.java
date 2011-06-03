@@ -15,14 +15,14 @@ public class EditTypeAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        final AspectGraph initType = getModel().getType().getAspectGraph();
+        final AspectGraph initType = getSimulatorModel().getType().getSource();
         getMainPanel().getTypeDisplay().doEdit(initType);
         return false;
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getType() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

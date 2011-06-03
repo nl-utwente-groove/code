@@ -3,10 +3,10 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.TypeView;
-import groove.view.aspect.AspectGraph;
+import groove.view.TypeModel;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * Action to delete the currently displayed type graph.
@@ -21,14 +21,14 @@ public class DeleteTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        TypeView type = getModel().getType();
+        TypeModel type = getSimulatorModel().getType();
         String typeName = type.getName();
-        AspectGraph typeGraph = type.getAspectGraph();
         if (confirmBehaviour(Options.DELETE_TYPE_OPTION,
             String.format("Delete type graph '%s'?", typeName))
-            && getTypeTab().disposeEditors(typeGraph)) {
+            && getTypeTab().disposeEditors(typeName)) {
             try {
-                result = getModel().doDeleteType(typeName);
+                result =
+                    getSimulatorModel().doDeleteTypes(Collections.singleton(typeName));
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while deleting type graph '%s'", typeName));
@@ -39,7 +39,7 @@ public class DeleteTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getType() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

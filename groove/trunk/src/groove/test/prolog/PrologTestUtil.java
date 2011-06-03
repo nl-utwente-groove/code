@@ -24,8 +24,7 @@ import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.prolog.QueryReturnValue;
 import groove.view.FormatException;
-import groove.view.GrammarView;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,12 +104,12 @@ public class PrologTestUtil {
      * @param startGraphName    The name of the start graph
      * @return                  A grammar view
      */
-    public static GrammarView loadGrammar(String grammarName,
+    public static GrammarModel loadGrammar(String grammarName,
             String startGraphName) {
-        GrammarView result = null;
+        GrammarModel result = null;
         try {
             result =
-                StoredGrammarView.newInstance(
+                GrammarModel.newInstance(
                     new File(GRAMMAR_DIR, grammarName), startGraphName, false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
@@ -122,7 +121,7 @@ public class PrologTestUtil {
      * Loads the prolog-test grammar
      * @return  A grammar view of the prolog-test grammar
      */
-    public static GrammarView testGrammar(String startGraph) {
+    public static GrammarModel testGrammar(String startGraph) {
         return PrologTestUtil.loadGrammar("prolog-test.gps", startGraph);
     }
 }

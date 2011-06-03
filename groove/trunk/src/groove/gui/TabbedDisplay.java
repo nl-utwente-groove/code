@@ -19,7 +19,7 @@ package groove.gui;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.view.View;
+import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -121,7 +121,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (name == null) {
             removeMainPanel();
         } else {
-            EditorPanel editor = getEditors().get(name);
+            GraphEditorPanel editor = getEditors().get(name);
             if (editor == null) {
                 selectMainPanel(name);
                 getMainPanel().repaint();
@@ -136,7 +136,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      * one that already exists.
      */
     public void doEdit(AspectGraph graph) {
-        EditorPanel result = getEditors().get(graph.getName());
+        GraphEditorPanel result = getEditors().get(graph.getName());
         if (result == null) {
             result = addEditorPanel(graph);
             if (this.jModelMap.remove(graph.getName()) != null) {
@@ -151,12 +151,12 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     }
 
     /** Creates and adds an editor panel for the given graph. */
-    private EditorPanel addEditorPanel(AspectGraph graph) {
-        final EditorPanel result = new EditorPanel(this, graph);
+    private GraphEditorPanel addEditorPanel(AspectGraph graph) {
+        final GraphEditorPanel result = new GraphEditorPanel(this, graph);
         this.editorMap.put(graph.getName(), result);
         addTab("", result);
         int index = indexOfComponent(result);
-        setTabComponentAt(index, result.getTabComponent());
+        setTabComponentAt(index, result.getTabLabel());
         // start the editor only after it has been added
         result.start();
         // make sure the list keeps track of dirty editors
@@ -174,22 +174,22 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     }
 
     /** Returns a list of all editor panels currently displayed. */
-    public Map<String,EditorPanel> getEditors() {
+    public Map<String,GraphEditorPanel> getEditors() {
         return this.editorMap;
     }
 
     /** 
      * Attempts to disposes the editor for certain aspect graphs, if any.
      * This is done in response to a change in the graph outside the editor.
-     * @param graphs the graphs that are about to be changed and whose editor 
+     * @param names the graphs that are about to be changed and whose editor 
      * therefore needs to be disposed
      * @return {@code true} if the operation was not cancelled
      */
-    public boolean disposeEditors(AspectGraph... graphs) {
+    public boolean disposeEditors(String... names) {
         boolean result = true;
-        Map<String,EditorPanel> editors = getEditors();
-        for (AspectGraph graph : graphs) {
-            EditorPanel editor = editors.get(graph.getName());
+        Map<String,GraphEditorPanel> editors = getEditors();
+        for (String name : names) {
+            GraphEditorPanel editor = editors.get(name);
             if (editor != null) {
                 result = editor.cancelEditing(true);
                 if (!result) {
@@ -207,7 +207,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      */
     public boolean disposeAllEditors() {
         boolean result = true;
-        for (EditorPanel editor : new ArrayList<EditorPanel>(
+        for (GraphEditorPanel editor : new ArrayList<GraphEditorPanel>(
             getEditors().values())) {
             result = editor.cancelEditing(true);
             if (!result) {
@@ -223,8 +223,8 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         boolean isIndexSelected = getSelectedIndex() == index;
         Component panel = getComponentAt(index);
         super.removeTabAt(index);
-        if (panel instanceof EditorPanel) {
-            String name = ((EditorPanel) panel).getName();
+        if (panel instanceof GraphEditorPanel) {
+            String name = ((GraphEditorPanel) panel).getName();
             this.editorMap.remove(name);
             if (isIndexSelected) {
                 selectMainPanel(name);
@@ -258,8 +258,8 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     public String getSelectedName() {
         String result = null;
         Component selection = getSelectedComponent();
-        if (selection instanceof EditorPanel) {
-            result = ((EditorPanel) selection).getName();
+        if (selection instanceof GraphEditorPanel) {
+            result = ((GraphEditorPanel) selection).getName();
         } else if (selection == getMainPanel()) {
             result = getMainPanel().getGraph().getName();
         }
@@ -356,7 +356,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (this.editorMap.containsKey(name)) {
             result = this.editorMap.get(name).hasErrors();
         } else {
-            result = !getView(name).getErrors().isEmpty();
+            result = !getResource(name).getErrors().isEmpty();
         }
         return result;
     }
@@ -366,7 +366,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (result == null) {
             this.jModelMap.put(name, result =
                 getMainPanel().getJGraph().newModel());
-            result.loadGraph(getView(name).getAspectGraph());
+            result.loadGraph(getResource(name).getSource());
         }
         return result;
     }
@@ -379,10 +379,9 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     /** Retrieves the graph for a given name from the grammar,
      * according to the graph role represented by this display.
      */
-    protected abstract View<?> getView(String name);
+    protected abstract GraphBasedModel<?> getResource(String name);
 
-    /** Returns the simulator to which this panel belongs. */
-    protected final Simulator getSimulator() {
+    public final Simulator getSimulator() {
         return this.simulator;
     }
 
@@ -400,8 +399,8 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     private final Simulator simulator;
 
     /** Mapping from graph names to editors for those graphs. */
-    private final Map<String,EditorPanel> editorMap =
-        new HashMap<String,EditorPanel>();
+    private final Map<String,GraphEditorPanel> editorMap =
+        new HashMap<String,GraphEditorPanel>();
     /** Mapping from names to graph models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();

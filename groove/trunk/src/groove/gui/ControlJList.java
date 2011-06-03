@@ -21,8 +21,8 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.action.SimulatorAction;
 import groove.gui.jgraph.JAttr;
-import groove.view.CtrlView;
-import groove.view.StoredGrammarView;
+import groove.view.ControlModel;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -169,7 +169,7 @@ public class ControlJList extends JList implements SimulatorListener {
         Object[] controlNames = getGrammar().getControlNames().toArray();
         Arrays.sort(controlNames);
         setListData(controlNames);
-        CtrlView selection = getSimulatorModel().getControl();
+        ControlModel selection = getSimulatorModel().getControl();
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
@@ -181,7 +181,7 @@ public class ControlJList extends JList implements SimulatorListener {
     /**
      * Returns the current grammar view from the simulator.
      */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
@@ -284,7 +284,7 @@ public class ControlJList extends JList implements SimulatorListener {
             String ctrlName = value.toString();
             boolean isActiveControl =
                 ctrlName.equals(getGrammar().getControlName());
-            boolean error = getGrammar().getControlView(ctrlName).hasErrors();
+            boolean error = getGrammar().getControlModel(ctrlName).hasErrors();
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             setText(ControlJList.this.display.getLabelText(ctrlName));

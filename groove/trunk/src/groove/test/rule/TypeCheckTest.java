@@ -18,7 +18,7 @@ package groove.test.rule;
 
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,7 +56,7 @@ public class TypeCheckTest {
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
-            GrammarView grammarView =
+            GrammarModel grammarView =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             for (String ruleName : grammarView.getRuleNames()) {
                 if (this.correct.contains(ruleName)) {
@@ -73,9 +73,9 @@ public class TypeCheckTest {
     }
 
     /** Tests that a given rule has no errors. */
-    private void testCorrect(GrammarView grammarView, String ruleName) {
+    private void testCorrect(GrammarModel grammarView, String ruleName) {
         try {
-            grammarView.getRuleView(ruleName).toModel();
+            grammarView.getRuleModel(ruleName).toResource();
         } catch (NullPointerException e) {
             Assert.fail("Rule " + ruleName + " does not exist");
         } catch (FormatException e) {
@@ -84,9 +84,9 @@ public class TypeCheckTest {
     }
 
     /** Tests that a given rule has errors. */
-    private void testErroneous(GrammarView grammarView, String ruleName) {
+    private void testErroneous(GrammarModel grammarView, String ruleName) {
         try {
-            grammarView.getRuleView(ruleName).toModel();
+            grammarView.getRuleModel(ruleName).toResource();
             Assert.fail("Rule " + ruleName + " has no errors");
         } catch (NullPointerException e) {
             Assert.fail("Rule " + ruleName + " does not exist");

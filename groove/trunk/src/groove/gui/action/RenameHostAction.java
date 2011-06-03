@@ -19,7 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.aspect.AspectGraph;
+import groove.trans.ResourceKind;
 
 import java.io.IOException;
 
@@ -37,9 +37,9 @@ public class RenameHostAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable()
-            && getModel().getHostSet().size() == 1);
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable()
+            && getSimulatorModel().getHostSet().size() == 1);
     }
 
     @Override
@@ -47,14 +47,14 @@ public class RenameHostAction extends SimulatorAction {
         boolean result = false;
         // Multiple selection
         // copy selected graph names
-        AspectGraph host = getModel().getHost().getAspectGraph();
-        if (getStateDisplay().disposeEditors(host)) {
-            String oldName = host.getName();
+        String oldName = getSimulatorModel().getHost().getName();
+        if (getStateDisplay().disposeEditors(oldName)) {
             String newName =
-                askNewGraphName("Select new graph name", oldName, false);
+                askNewName(ResourceKind.HOST, "Select new graph name", oldName,
+                    false);
             if (newName != null && !oldName.equals(newName)) {
                 try {
-                    result |= getModel().doRenameHost(host, newName);
+                    result |= getSimulatorModel().doRenameHost(oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while renaming graph '%s' into '%s'", oldName,

@@ -52,7 +52,7 @@ public class NewGrammarAction extends SimulatorAction {
                         ok = response != JOptionPane.NO_OPTION;
                     } else if (getMainPanel().disposeAllEditors()) {
                         try {
-                            result = getModel().doNewGrammar(selectedFile);
+                            result = getSimulatorModel().doNewGrammar(selectedFile);
                         } catch (IOException exc) {
                             showErrorDialog(exc, String.format(
                                 "Error while creating grammar at '%s'",

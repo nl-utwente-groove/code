@@ -20,14 +20,18 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.DefaultGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
+import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -125,9 +129,10 @@ public class Transform {
 
         // Create an instance model for each graph in the grammar that was
         // loaded
-        for (String graphName : grammar.getGraphs().keySet()) {
+        Map<String,AspectGraph> hostMap = grammar.getGraphs(ResourceKind.HOST);
+        for (String graphName : hostMap.keySet()) {
             start = new Date().getTime();
-            AspectGraph instanceGraph = grammar.getGraphs().get(graphName);
+            AspectGraph instanceGraph = hostMap.get(graphName);
             InstanceModelRep im = new InstanceModelRep(mh, instanceGraph);
             mh.saveModel(im.getInstanceModel(), instancesLoc + File.separator
                 + graphName);
@@ -183,14 +188,14 @@ public class Transform {
 
         // Store type graphs, but first delete the old ones
         Set<String> typeGraphsToDelete = new HashSet<String>();
-        for (String graphName : grammar.getTypes().keySet()) {
+        for (String graphName : grammar.getGraphs(ResourceKind.TYPE).keySet()) {
             typeGraphsToDelete.add(graphName);
         }
         for (String graphName : typeGraphsToDelete) {
-            grammar.deleteType(graphName);
+            grammar.deleteGraphs(ResourceKind.TYPE,
+                Collections.singleton(graphName));
         }
-        grammar.putType(atg);
-        grammar.putType(ecoreatg);
+        grammar.putGraphs(ResourceKind.TYPE, Arrays.asList(atg, ecoreatg));
 
         // Set grammar properties
         SystemProperties sp = new SystemProperties();
@@ -206,12 +211,12 @@ public class Transform {
         // Delete all former constraints since we are remaking them
         // and old ones need to go
         Set<String> rulesToDelete = new HashSet<String>();
-        for (String ruleName : grammar.getRules().keySet()) {
+        for (String ruleName : grammar.getGraphs(ResourceKind.RULE).keySet()) {
             if (ruleName.startsWith("constraint")) {
                 rulesToDelete.add(ruleName);
             }
         }
-        grammar.deleteRules(rulesToDelete);
+        grammar.deleteGraphs(ResourceKind.RULE, rulesToDelete);
 
         // Now create the required constraint rules and add them to the grammar
         start = new Date().getTime();
@@ -238,7 +243,7 @@ public class Transform {
 
             number++;
         }
-        grammar.putRules(rules);
+        grammar.putGraphs(ResourceKind.RULE, rules);
         System.out.println("Stored constraint rules: " + number + " ("
             + (new Date().getTime() - start) + " ms)");
 
@@ -266,7 +271,7 @@ public class Transform {
             aig.getInfo().setFile(f + File.separator + instanceName);
             graphs.add(aig);
         }
-        grammar.putGraphs(graphs);
+        grammar.putGraphs(ResourceKind.HOST, graphs);
 
         System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
     }

@@ -19,6 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -37,21 +38,22 @@ public class CopyHostAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getStore() != null
-            && getModel().getStore().isModifiable()
-            && getModel().getHostSet().size() == 1);
+        setEnabled(getSimulatorModel().getStore() != null
+            && getSimulatorModel().getStore().isModifiable()
+            && getSimulatorModel().getHostSet().size() == 1);
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
-        AspectGraph host = getModel().getHost().getAspectGraph();
+        AspectGraph host = getSimulatorModel().getHost().getSource();
         String oldName = host.getName();
         String newName =
-            askNewGraphName("Select new graph name", oldName, true);
+            askNewName(ResourceKind.HOST, "Select new graph name", oldName,
+                true);
         if (newName != null) {
             try {
-                result |= getModel().doAddHost(host.rename(newName));
+                result |= getSimulatorModel().doAddHost(host.rename(newName));
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying host graph '%s' to '%s'", oldName,

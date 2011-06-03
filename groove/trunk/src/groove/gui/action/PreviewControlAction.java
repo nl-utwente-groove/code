@@ -7,9 +7,9 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.trans.GraphGrammar;
-import groove.view.CtrlView;
+import groove.view.ControlModel;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.Point;
 
@@ -37,7 +37,7 @@ public class PreviewControlAction extends SimulatorAction {
             } catch (FormatException exc) {
                 showErrorDialog(exc, String.format(
                     "Error in control program '%s'",
-                    getModel().getControl().getName()));
+                    getSimulatorModel().getControl().getName()));
             }
         }
         return false;
@@ -87,10 +87,10 @@ public class PreviewControlAction extends SimulatorAction {
     /** Convenience method to obtain the currently selected control automaton. */
     private CtrlAut getCtrlAut() throws FormatException {
         CtrlAut result = null;
-        StoredGrammarView grammarView = getModel().getGrammar();
+        GrammarModel grammarView = getSimulatorModel().getGrammar();
         if (grammarView != null) {
             GraphGrammar grammar = grammarView.toGrammar();
-            CtrlView controlView = getModel().getControl();
+            ControlModel controlView = getSimulatorModel().getControl();
             result =
                 controlView == null ? grammar.getCtrlAut()
                         : controlView.toCtrlAut();

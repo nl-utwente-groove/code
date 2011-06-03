@@ -6,8 +6,7 @@ import groove.samples.calc.DefaultGraphCalculator;
 import groove.samples.calc.GraphCalculator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
-import groove.view.GrammarView;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,16 +21,17 @@ public class CalculatorTest {
     /** Tests the append sample. */
     @Test
     public void testCalculator() throws FormatException {
-        GrammarView view = loadGrammar("ferryman.gps", "start");
+        GrammarModel view = loadGrammar("ferryman.gps", "start");
         GraphGrammar gg = view.toGrammar();
         GraphCalculator calc = new DefaultGraphCalculator(gg);
         GraphState result = calc.getFinal();
         assertNull(result);
     }
 
-    private GrammarView loadGrammar(String grammarName, String startGraphName) {
+    private GrammarModel loadGrammar(String grammarName,
+            String startGraphName) {
         try {
-            return StoredGrammarView.newInstance(new File(INPUT_DIR,
+            return GrammarModel.newInstance(new File(INPUT_DIR,
                 grammarName), false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);

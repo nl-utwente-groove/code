@@ -21,8 +21,8 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.lts.GTS;
-import groove.view.GraphView;
-import groove.view.StoredGrammarView;
+import groove.view.HostModel;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -197,12 +197,12 @@ public class StateJList extends JList implements SimulatorListener {
      * Sets the list of names to a given set.
      * @param selection the set of names to be selected
      */
-    private void setList(Collection<GraphView> selection) {
-        Object[] hostNames = getGrammar().getGraphNames().toArray();
+    private void setList(Collection<HostModel> selection) {
+        Object[] hostNames = getGrammar().getHostNames().toArray();
         Arrays.sort(hostNames);
         // turn the selection into a set of names
         Set<String> selectionNames = new HashSet<String>();
-        for (GraphView hostView : selection) {
+        for (HostModel hostView : selection) {
             selectionNames.add(hostView.getName());
         }
         int[] selectedIndices = new int[selection.size()];
@@ -268,7 +268,7 @@ public class StateJList extends JList implements SimulatorListener {
     /**
      * Returns the current grammar view from the simulator.
      */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 

@@ -45,6 +45,6 @@ public class LoadStartGraphAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

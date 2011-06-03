@@ -363,7 +363,7 @@ public class Options implements Cloneable {
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
     /** Apply transition action name */
-    public static final String APPLY_MATCH_ACTION_NAME = "Apply active match";
+    public static final String APPLY_MATCH_ACTION_NAME = "Apply selected match";
     /** Back action name */
     public static final String BACK_ACTION_NAME = "Step Back";
     /** Action name for cancelling an edit. */

@@ -1,239 +1,52 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
- * University of Twente
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2011 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- * 
- * $Id: EditorDialog.java,v 1.15 2008-01-30 09:33:35 iovka Exp $
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
  */
 package groove.gui;
 
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
-import groove.graph.GraphRole;
-import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditGraphAction;
-import groove.gui.action.SaveGraphAction;
-import groove.view.StoredGrammarView;
-import groove.view.View;
-import groove.view.aspect.AspectGraph;
 
-import java.awt.BorderLayout;
-import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
 
 /**
- * Dialog wrapping a graph editor, such that no file operations are possible.
+ * Superclass for grammar component editors.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision $
  */
-public class EditorPanel extends JPanel implements SimulatorListener {
-    /**
-     * Constructs an instance of the dialog, for a given graph or rule.
-     * @param parent the component on which this panel is placed
-     * @param graph the input graph for the editor
-     */
-    public EditorPanel(final TabbedDisplay parent, final AspectGraph graph) {
+abstract public class EditorPanel<D extends Display> extends JPanel {
+    /** Creates a panel for a given display. */
+    public EditorPanel(D parent) {
         final Simulator simulator = parent.getSimulator();
-        this.parent = parent;
+        this.display = parent;
         this.simulator = simulator;
-        this.graph = graph;
-        this.editor =
-            new Editor(null, simulator.getOptions(),
-                simulator.getModel().getGrammar().getProperties()) {
-                @Override
-                protected void updateTitle() {
-                    getTabComponent().setTitle(parent.getLabelText(getName()));
-                    // an ugly way to ensure that the save action is enabled
-                    // upon changes to the graph
-                    getSaveAction().refresh();
-                }
-
-                @Override
-                protected void updateStatus() {
-                    super.updateStatus();
-                    TabLabel tab = getTabComponent();
-                    tab.setError(!getModel().getErrorMap().isEmpty());
-                }
-
-                @Override
-                JToolBar createToolBar() {
-                    JToolBar toolbar = Options.createToolBar();
-                    toolbar.add(createSaveButton());
-                    toolbar.add(createCancelButton());
-                    addModeButtons(toolbar);
-                    addUndoButtons(toolbar);
-                    addCopyPasteButtons(toolbar);
-                    addGridButtons(toolbar);
-                    return toolbar;
-                }
-
-                @Override
-                public GraphRole getRole() {
-                    return graph.getRole();
-                }
-            };
-        setFocusCycleRoot(true);
-        setName(graph.getName());
-        simulator.getModel().addListener(this, Change.GRAMMAR);
     }
 
-    @Override
-    public String getName() {
-        return getGraph().getName();
-    }
-
-    /** Starts the editor with the graph passed in at construction time. */
-    public void start() {
-        this.editor.setTypeView(getSimulatorModel().getGrammar().getCompositeTypeView());
-        this.editor.setGraph(getGraph(), true);
-        this.graph = null;
-        setLayout(new BorderLayout());
-        JSplitPane mainPanel = this.editor.getMainPanel();
-        mainPanel.setBorder(null);
-        add(mainPanel);
-    }
-
-    /** Returns the title of this panel. The title is the name plus an optional
+    /**
+     * Returns the title of this panel. The title is the name plus an optional
      * indication of the (dirty) status of the editor.
      */
     public String getTitle() {
-        String title = (isDirty() ? "*" : "") + getGraph().getName();
-        return title;
-    }
-
-    /** Returns the resulting aspect graph of the editor. */
-    public AspectGraph getGraph() {
-        return this.graph == null ? getEditor().getGraph() : this.graph;
-    }
-
-    /** Returns the editor instance of this panel. */
-    public Editor getEditor() {
-        return this.editor;
-    }
-
-    /** Convenience method to retrieve the simulator model. */
-    public final Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    /** Convenience method to retrieve the simulator model. */
-    private SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** 
-     * Returns the component to be used to fill the tab in a 
-     * {@link JTabbedPane}, when this panel is displayed.
-     */
-    public final TabLabel getTabComponent() {
-        if (this.tabComponent == null) {
-            this.tabComponent = createTabComponent();
-        }
-        return this.tabComponent;
-    }
-
-    /**
-     * Callback method to create a tab component for this panel,
-     * in case it is used in a {@link JTabbedPane}.
-     */
-    protected TabLabel createTabComponent() {
-        return new TabLabel(this, this.parent.getKind().getEditIcon(),
-            getTitle());
-    }
-
-    @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        assert changes.contains(Change.GRAMMAR);
-        StoredGrammarView grammar = source.getGrammar();
-        if (grammar == oldModel.getGrammar()) {
-            // test if the graph being edited is still in the grammar;
-            // if not, silently dispose it - it's too late to do anything else!
-            AspectGraph graph = getGraph();
-            View<?> view = null;
-            switch (graph.getRole()) {
-            case HOST:
-                view = grammar.getGraphView(graph.getName());
-                break;
-            case RULE:
-                view = grammar.getRuleView(graph.getName());
-                break;
-            case TYPE:
-                view = grammar.getTypeView(graph.getName());
-                break;
-            default:
-                assert false;
-            }
-            if (view != null) {
-                this.editor.setTypeView(grammar.getCompositeTypeView());
-                // check if the properties have changed
-                GraphProperties properties =
-                    GraphInfo.getProperties(view.getAspectGraph(), false);
-                if (properties != null
-                    && !properties.equals(GraphInfo.getProperties(getGraph(),
-                        false))) {
-                    AspectGraph newGraph = getGraph().clone();
-                    GraphInfo.setProperties(newGraph, properties);
-                    newGraph.setFixed();
-                    change(newGraph);
-                }
-            } else {
-                dispose();
-            }
-        } else {
-            dispose();
-        }
-    }
-
-    /** Indicates if the edited graph is currently in an error state. */
-    public boolean hasErrors() {
-        return !this.editor.getModel().getErrorMap().isEmpty();
+        return (isDirty() ? "*" : "") + getName();
     }
 
     /** Indicates if the editor has unsaved changes. */
-    public boolean isDirty() {
-        return getEditor().isDirty();
-    }
+    abstract public boolean isDirty();
 
-    /** Changes the startus of the editor to dirty. */
-    public void setDirty(boolean dirty) {
-        getEditor().setDirty(dirty);
-    }
-
-    /** Indicates if the editor is currently saving changes. */
-    public boolean isSaving() {
-        return this.saving;
-    }
-
-    /** Changes the edited graph. */
-    public void change(AspectGraph newGraph) {
-        assert newGraph.getName().equals(getGraph().getName())
-            && newGraph.getRole() == getGraph().getRole();
-        getEditor().setGraph(newGraph, false);
-    }
-
-    /** Renames the edited graph. */
-    public void rename(String newName) {
-        AspectGraph newGraph = getGraph().clone();
-        newGraph.setName(newName);
-        newGraph.setFixed();
-        getEditor().setGraph(newGraph, false);
-    }
+    /** Sets the status of the editor to clean. */
+    abstract public void setClean();
 
     /** Calls {@link CancelEditGraphAction#execute()}. */
     public boolean cancelEditing(boolean confirm) {
@@ -245,76 +58,54 @@ public class EditorPanel extends JPanel implements SimulatorListener {
         return result;
     }
 
+    /** 
+     * Returns the component to be used to fill the tab in a 
+     * {@link JTabbedPane}, when this panel is displayed.
+     */
+    public final TabLabel getTabLabel() {
+        if (this.tabComponent == null) {
+            this.tabComponent = createTabComponent();
+        }
+        return this.tabComponent;
+    }
+
+    /**
+     * Callback method to create a tab component for this panel,
+     * in case it is used in a {@link JTabbedPane}.
+     */
+    protected TabLabel createTabComponent() {
+        return new TabLabel(this, getDisplay().getKind().getEditIcon(),
+            getTitle());
+    }
+
     /**
      * Creates and shows a confirmation dialog for abandoning the currently
-     * edited control program.
+     * edited component.
      */
-    public boolean confirmAbandon() {
-        boolean result = true;
-        if (isDirty()) {
-            int answer =
-                JOptionPane.showConfirmDialog(this, String.format(
-                    "%s '%s' has been modified. Save changes?",
-                    this.graph.getRole().toString(true), getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (answer == JOptionPane.YES_OPTION) {
-                getSaveAction().doSave(getGraph());
-            }
-            result = answer != JOptionPane.CANCEL_OPTION;
-        }
-        return result;
-    }
+    public abstract boolean confirmAbandon();
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
-    public void dispose() {
-        getSaveAction().dispose();
-        getCancelAction().dispose();
-        this.parent.remove(this);
-        getSimulatorModel().removeListener(this);
+    public abstract void dispose();
+
+    /** Returns the display on which this editor is placed. */
+    protected final D getDisplay() {
+        return this.display;
     }
 
-    /** Creates and returns a Cancel button, for use on the tool bar. */
-    private JButton createCancelButton() {
-        return Options.createButton(getCancelAction());
+    /** Convenience method to retrieve the simulator. */
+    public final Simulator getSimulator() {
+        return this.simulator;
     }
 
-    /** Creates and returns the cancel action. */
-    private CancelEditGraphAction getCancelAction() {
-        if (this.cancelAction == null) {
-            this.cancelAction = new CancelEditGraphAction(this);
-        }
-        return this.cancelAction;
+    /** Convenience method to retrieve the simulator model. */
+    protected final SimulatorModel getSimulatorModel() {
+        return getSimulator().getModel();
     }
 
-    /** Creates and returns an OK button, for use on the tool bar. */
-    private JButton createSaveButton() {
-        return Options.createButton(getSaveAction());
-    }
-
-    /** Creates and returns the save action. */
-    public SaveGraphAction getSaveAction() {
-        if (this.saveAction == null) {
-            this.saveAction = new SaveGraphAction(this);
-        }
-        return this.saveAction;
-    }
-
-    /** Graph being edited.
-     * This holds the graph as long as the editor is not yet initialised,
-     * and then is set to {@code null}.
-     * Use {@link #getGraph()} to access the graph.
-     */
-    private AspectGraph graph;
-    private SaveGraphAction saveAction;
-    private CancelEditGraphAction cancelAction;
     /** Container of this editor. */
-    private TabbedDisplay parent;
+    private final D display;
     /** The simulator to which the panel reports. */
     private final Simulator simulator;
-    /** The editor wrapped in the panel. */
-    private final Editor editor;
     /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */
     private TabLabel tabComponent;
-    /** Flag indicating that the editor is in the process of saving. */
-    private boolean saving;
 }

@@ -23,7 +23,7 @@ import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import org.junit.Test;
 
@@ -64,7 +64,7 @@ public class ControlVariablesTest {
     private void explore(String control, int controlStates,
             int controlTransitions, int expectedNodes, int expectedEdges) {
         try {
-            StoredGrammarView sgv = Groove.loadGrammar(DIRECTORY);
+            GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
             sp.setUseControl(true);

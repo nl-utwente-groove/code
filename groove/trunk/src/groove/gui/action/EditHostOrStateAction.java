@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -25,11 +26,11 @@ public class EditHostOrStateAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        boolean enabled = getModel().hasHost() || getModel().getState() != null;
+        boolean enabled = getSimulatorModel().hasHost() || getSimulatorModel().getState() != null;
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
-        putValue(NAME, getModel().hasHost() ? Options.EDIT_GRAPH_ACTION_NAME
+        putValue(NAME, getSimulatorModel().hasHost() ? Options.EDIT_GRAPH_ACTION_NAME
                 : Options.EDIT_STATE_ACTION_NAME);
     }
 
@@ -40,18 +41,19 @@ public class EditHostOrStateAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
-        if (getModel().hasHost()) {
-            getStateDisplay().doEdit(getModel().getHost().getAspectGraph());
+        if (getSimulatorModel().hasHost()) {
+            getStateDisplay().doEdit(getSimulatorModel().getHost().getSource());
         } else {
             AspectGraph graph =
                 getStateDisplay().getStatePanel().getJModel().getGraph();
             // find out if we're editing a host graph or a state
             String newGraphName =
-                askNewGraphName("Select graph name", graph.getName(), true);
+                askNewName(ResourceKind.HOST, "Select graph name",
+                    graph.getName(), true);
             if (newGraphName != null) {
                 final AspectGraph newGraph = graph.rename(newGraphName);
                 try {
-                    getModel().doAddHost(newGraph);
+                    getSimulatorModel().doAddHost(newGraph);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

@@ -18,7 +18,7 @@ package groove.match.rete;
 
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import java.util.List;
 public class ReteTool extends CommandLineTool {
 
     private SaveNetworkOption saveNetworkOption = new SaveNetworkOption();
-    private StoredGrammarView grammarView;
+    private GrammarModel grammarView;
 
     /**
      * 
@@ -75,10 +75,10 @@ public class ReteTool extends CommandLineTool {
         new ReteNetwork(getGrammarView(), false).save(filePath, name);
     }
 
-    private StoredGrammarView loadGrammar(String path) {
-        StoredGrammarView result = null;
+    private GrammarModel loadGrammar(String path) {
+        GrammarModel result = null;
         try {
-            result = StoredGrammarView.newInstance(path);
+            result = GrammarModel.newInstance(path);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }
@@ -116,7 +116,7 @@ public class ReteTool extends CommandLineTool {
         return false;
     }
 
-    private StoredGrammarView getGrammarView() {
+    private GrammarModel getGrammarView() {
         return this.grammarView;
     }
 

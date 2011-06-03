@@ -23,81 +23,68 @@ import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * General interface for classes that provide a view upon some other object (the
- * model) in terms of an {@link AspectGraph}. This is not a view in the MVC
- * sense; here, the view is more a kind a syntactical description for the model.
- * This syntactical description may still contain errors which prevent it from
- * being translated to a model.
+ * General interface for resource models constructed from an
+ *  {@link AspectGraph}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface View<Model> {
+abstract public class GraphBasedModel<R> extends ResourceModel<R> {
+    /** Creates a graph-based resource model from a given source. */
+    protected GraphBasedModel(AspectGraph source) {
+        super(ResourceKind.toResource(source.getRole()), source.getName());
+        this.source = source;
+    }
+
     /**
-     * Returns the actual view graph.
+     * Returns the source of this graph-based resource model.
      */
-    AspectGraph getAspectGraph();
+    public AspectGraph getSource() {
+        return this.source;
+    }
 
     /** 
-     * Sets a type graph for this view.
+     * Sets a type graph for this resource.
      */
-    void setType(TypeGraph type);
+    abstract public void setType(TypeGraph type);
 
     /** 
-     * Sets a label store for this view.
+     * Sets a label store for this resource.
      * This is mutually exclusive with {@link #setType(TypeGraph)}.
      */
-    void setLabelStore(LabelStore labelStore);
+    abstract public void setLabelStore(LabelStore labelStore);
 
     /**
-     * Returns a mapping from the nodes in the view to the corresponding nodes
-     * in the model that is being viewed.
-     * @return the mapping from view to model elements; empty if the view
+     * Returns a mapping from the nodes in the model source to the corresponding 
+     * nodes in the resource that is constructed from it.
+     * @return the mapping from source graph to resource elements; empty if the model
      *         contains errors.
      */
-    ViewToModelMap<?,?> getMap();
+    abstract public ModelMap<?,?> getMap();
 
     /**
-     * Returns the (non-<code>null</code>) name of the underlying model.
+     * Returns the set of labels occurring in this resource.
+     * @return the set of labels occurring in the resource.
      */
-    String getName();
+    abstract public Set<TypeLabel> getLabels();
 
-    /**
-     * Returns the set of labels occurring in this view.
-     * @return the set of labels occurring in the view.
-     */
-    public Set<TypeLabel> getLabels();
+    private final AspectGraph source;
 
-    /**
-     * Returns the underlying model. This can only be successful if there are no
-     * syntax errors reported by {@link #getErrors()}.
-     * @throws FormatException if there are syntax errors in the view that
-     *         prevent it from being translated to a model
-     */
-    Model toModel() throws FormatException;
-
-    /**
-     * Retrieves the list of syntax errors in this view. Conversion to a model
-     * can only be successful if this list is empty.
-     * @return a non-<code>null</code>, possibly empty list of syntax errors
-     */
-    List<FormatError> getErrors();
-
-    /** Mapping from view graph elements to model graph elements. */
-    abstract class ViewToModelMap<N extends Node,E extends Edge<N>> extends
+    /** Mapping from source graph elements to resource elements. */
+    abstract static class ModelMap<N extends Node,E extends Edge<N>> extends
             ElementMap<AspectNode,AspectEdge,N,E> {
         /**
          * Creates a new map, on the basis of a given factory.
          */
-        public ViewToModelMap(ElementFactory<N,E> factory) {
+        public ModelMap(ElementFactory<N,E> factory) {
             super(factory);
         }
 

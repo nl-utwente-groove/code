@@ -23,8 +23,8 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
-import groove.view.CtrlView;
-import groove.view.StoredGrammarView;
+import groove.view.ControlModel;
+import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -324,7 +324,7 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
             getEnableButton().setSelected(false);
             getEnableButton().setSelected(
                 source.getControl() != null
-                    && source.getControl().equals(getGrammar().getControlView()));
+                    && source.getControl().equals(getGrammar().getControlModel()));
         }
     }
 
@@ -357,14 +357,14 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
     /**
      * Convenience method to return the current grammar view.
      */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
     /**
      * Convenience method to return the currently selected control view.
      */
-    public final CtrlView getSelectedControl() {
+    public final ControlModel getSelectedControl() {
         return getSimulatorModel().getControl();
     }
 
@@ -604,7 +604,7 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
                 setEnabled(isControlSelected());
                 String program = "";
                 if (isControlSelected()) {
-                    CtrlView cv = getSelectedControl();
+                    ControlModel cv = getSelectedControl();
                     if (cv != null) {
                         program = cv.getProgram();
                     }

@@ -28,7 +28,7 @@ import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +99,7 @@ public class RuleApplicationTest {
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
-            GrammarView view =
+            GrammarModel view =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             for (String ruleName : view.getRuleNames()) {
                 test(view, ruleName);
@@ -117,12 +117,12 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code ruleName-<i>i</i>-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarView view, String ruleName) {
+    private void test(GrammarModel view, String ruleName) {
         boolean cont = true;
         int i;
         for (i = 0; cont; i++) {
             String startName = ruleName + "-" + i;
-            cont = view.getGraphNames().contains(startName);
+            cont = view.getHostNames().contains(startName);
             if (cont) {
                 test(view, ruleName, startName);
             }
@@ -141,16 +141,16 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarView view, String ruleName, String startName) {
+    private void test(GrammarModel view, String ruleName, String startName) {
         try {
-            HostGraph start = view.getGraphView(startName).toModel();
+            HostGraph start = view.getHostModel(startName).toResource();
             List<HostGraph> results = new ArrayList<HostGraph>();
             boolean cont = true;
             for (int j = 0; cont; j++) {
                 String resultName = startName + "-" + j;
-                cont = view.getGraphNames().contains(resultName);
+                cont = view.getHostNames().contains(resultName);
                 if (cont) {
-                    results.add(view.getGraphView(resultName).toModel());
+                    results.add(view.getHostModel(resultName).toResource());
                 }
             }
             view.setStartGraph(startName);

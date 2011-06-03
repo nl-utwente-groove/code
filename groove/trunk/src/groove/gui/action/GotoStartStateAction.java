@@ -20,12 +20,12 @@ public class GotoStartStateAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        getModel().setState(getModel().getGts().startState());
+        getSimulatorModel().setState(getSimulatorModel().getGts().startState());
         return false;
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGts() != null);
     }
 }

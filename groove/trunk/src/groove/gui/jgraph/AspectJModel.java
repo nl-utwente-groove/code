@@ -29,9 +29,10 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.TypeModel;
 import groove.view.FormatError;
-import groove.view.TypeView;
-import groove.view.View;
+import groove.view.GraphBasedModel;
+import groove.view.ResourceModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -51,7 +52,7 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Implements jgraph's GraphModel interface on top of a {@link View}. This is
+ * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
  * used to visualise rules and attributed graphs.
  * @author Arend Rensink
  * @version $Revision: 2982 $
@@ -195,8 +196,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             jCell.setExtraError(false);
         }
         this.errorMap.clear();
-        View<?> view = getGraph().toView(this.systemProperties);
-        if (this.type != null && !(view instanceof TypeView)) {
+        GraphBasedModel<?> view = getGraph().toModel(this.systemProperties);
+        if (this.type != null && !(view instanceof TypeModel)) {
             view.setType(this.type);
         }
         for (FormatError error : view.getErrors()) {

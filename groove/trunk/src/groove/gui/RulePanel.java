@@ -33,9 +33,9 @@ import groove.trans.Rule;
 import groove.trans.RuleElement;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.RuleModel;
 import groove.view.FormatException;
-import groove.view.RuleView;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Sets the frame to a given rule system. Resets the display, and creates
      * and stores a model for each rule in the system.
      */
-    private synchronized void setGrammarUpdate(StoredGrammarView grammar) {
+    private synchronized void setGrammarUpdate(GrammarModel grammar) {
         // create a mapping from rule names to (fresh) rule models
         if (grammar != null) {
             // set either the type or the label store of the associated JGraph
@@ -141,7 +141,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     @Override
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
-        RuleView view = getSimulatorModel().getRule();
+        RuleModel view = getSimulatorModel().getRule();
         if (view != null) {
             text.append("Rule ");
             text.append(HTMLConverter.STRONG_TAG.on(view.getName()));
@@ -154,7 +154,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
             } catch (FormatException exc) {
                 // don't add the anchor
             }
-            String remark = GraphProperties.getRemark(view.getAspectGraph());
+            String remark = GraphProperties.getRemark(view.getSource());
             if (remark != null) {
                 text.append(": ");
                 text.append(HTMLConverter.toHtml(remark));
@@ -192,7 +192,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /** Convenience method to retrieve the current grammar view. */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 

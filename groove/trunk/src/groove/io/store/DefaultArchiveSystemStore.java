@@ -16,33 +16,33 @@
  */
 package groove.io.store;
 
-import static groove.io.FileType.CONTROL_FILTER;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.LAYOUT_FILTER;
-import static groove.io.FileType.PROLOG_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
-import static groove.io.FileType.STATE_FILTER;
-import static groove.io.FileType.TYPE_FILTER;
 import static groove.io.FileType.ZIP_FILTER;
+import static groove.trans.ResourceKind.PROPERTIES;
+import static groove.trans.ResourceKind.RULE;
+import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.GraphInfo;
-import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
+import groove.gui.EditType;
 import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.LayoutIO;
 import groove.io.xml.JaxbGxlIO;
+import groove.trans.ResourceKind;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -53,18 +53,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.UndoableEditSupport;
 
 /**
  * Implementation based on {@link AspectGraph} representations of the rules and
@@ -73,8 +73,7 @@ import javax.swing.undo.UndoableEditSupport;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultArchiveSystemStore extends UndoableEditSupport implements
-        SystemStore {
+public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSupport implements SystemStore {
     /**
      * Constructs a store from a given file. The file should be a JAR or ZIP
      * file containing a single subdirectory with extension
@@ -171,118 +170,49 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public Map<String,AspectGraph> getGraphs() {
+    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
-        return Collections.unmodifiableMap(this.graphMap);
+        return Collections.unmodifiableMap(getGraphMap(kind));
     }
 
     @Override
-    public Collection<AspectGraph> putGraphs(Collection<AspectGraph> graph)
-        throws IOException {
+    public Collection<AspectGraph> putGraphs(ResourceKind kind,
+            Collection<AspectGraph> graphs) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Collection<AspectGraph> deleteGraphs(Collection<String> name)
-        throws IOException {
-        throw new IOException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph renameGraph(String oldName, String newName)
-        throws IOException {
+    public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
+            Collection<String> names) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Map<String,AspectGraph> getRules() {
+    public AspectGraph renameGraph(ResourceKind kind, String oldName,
+            String newName) throws IOException {
+        throw createImmutable();
+    }
+
+    @Override
+    public Map<String,String> getTexts(ResourceKind kind) {
         testInit();
-        return Collections.unmodifiableMap(this.ruleMap);
+        return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public Collection<AspectGraph> putRules(Collection<AspectGraph> rule)
-        throws IOException {
+    public Map<String,String> putTexts(ResourceKind kind,
+            Map<String,String> texts) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Collection<AspectGraph> deleteRules(Collection<String> names)
-        throws IOException {
-        throw new IOException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph renameRule(String oldName, String newName)
-        throws IOException {
+    public Map<String,String> deleteTexts(ResourceKind kind,
+            Collection<String> names) throws IOException {
         throw createImmutable();
     }
 
     @Override
-    public Map<String,AspectGraph> getTypes() {
-        testInit();
-        return Collections.unmodifiableMap(this.typeMap);
-    }
-
-    @Override
-    public AspectGraph putType(AspectGraph type) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public AspectGraph deleteType(String name) throws IOException {
-        throw new IOException(String.format(
-            "Archived grammar '%s' is immutable", getName()));
-    }
-
-    @Override
-    public AspectGraph renameType(String oldName, String newName)
-        throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public Map<String,String> getControls() {
-        testInit();
-        return Collections.unmodifiableMap(this.controlMap);
-    }
-
-    @Override
-    public String putControl(String name, String control) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public String deleteControl(String name) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public String renameControl(String oldName, String newName)
-        throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public Map<String,String> getProlog() {
-        testInit();
-        return Collections.unmodifiableMap(this.prologMap);
-    }
-
-    @Override
-    public String putProlog(String name, String control) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public String deleteProlog(String name) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
-    public String renameProlog(String oldName, String newName)
+    public String renameText(ResourceKind kind, String oldName, String newName)
         throws IOException {
         throw createImmutable();
     }
@@ -322,11 +252,11 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             zipFile = new ZipFile(this.file);
         }
         // collect the relevant entries
-        Map<String,ZipEntry> rules = new HashMap<String,ZipEntry>();
-        Map<String,ZipEntry> graphs = new HashMap<String,ZipEntry>();
-        Map<String,ZipEntry> types = new HashMap<String,ZipEntry>();
-        Map<String,ZipEntry> controls = new HashMap<String,ZipEntry>();
-        Map<String,ZipEntry> prolog = new HashMap<String,ZipEntry>();
+        Map<ResourceKind,Map<String,ZipEntry>> zipEntryMap =
+            new EnumMap<ResourceKind,Map<String,ZipEntry>>(ResourceKind.class);
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
+        }
         ZipEntry properties = null;
         for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
             ZipEntry entry = entries.nextElement();
@@ -335,7 +265,15 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                 // strip off prefix + 1 to take case of file separator
                 String restName =
                     entryName.substring(this.entryName.length() + 1);
-                if (restName.endsWith(PROPERTIES_FILTER.getExtension())) {
+                // find out the resource kind by testing the extension
+                ResourceKind kind = null;
+                for (ResourceKind tryKind : EnumSet.allOf(ResourceKind.class)) {
+                    if (restName.endsWith(tryKind.getFilter().getExtension())) {
+                        kind = tryKind;
+                        break;
+                    }
+                }
+                if (kind == PROPERTIES) {
                     String propertiesName =
                         PROPERTIES_FILTER.stripExtension(restName);
                     if (propertiesName.equals(Groove.PROPERTY_NAME)) {
@@ -346,75 +284,57 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                         // otherwise, take the one with the grammar name
                         properties = entry;
                     }
-                } else if (restName.endsWith(RULE_FILTER.getExtension())) {
-                    Object oldEntry = rules.put(restName, entry);
-                    assert oldEntry == null : String.format(
-                        "Duplicate rule name '%s'", restName);
-                } else if (restName.endsWith(STATE_FILTER.getExtension())) {
-                    // check if the entry is top level
-                    if (new File(restName).getParent() == null) {
-                        Object oldEntry = graphs.put(restName, entry);
-                        assert oldEntry == null : String.format(
-                            "Duplicate graph name '%s'", restName);
-                    }
-                } else if (restName.endsWith(TYPE_FILTER.getExtension())) {
-                    // check if the entry is top level
-                    if (new File(restName).getParent() == null) {
-                        Object oldEntry = types.put(restName, entry);
-                        assert oldEntry == null : String.format(
-                            "Duplicate graph name '%s'", restName);
-                    }
-                } else if (restName.endsWith(CONTROL_FILTER.getExtension())) {
-                    // check if the entry is top level
-                    if (new File(restName).getParent() == null) {
-                        Object oldEntry = controls.put(restName, entry);
-                        assert oldEntry == null : String.format(
-                            "Duplicate control name '%s'", restName);
-                    }
-                } else if (restName.endsWith(PROLOG_FILTER.getExtension())) {
-                    // check if the entry is top level
-                    if (new File(restName).getParent() == null) {
-                        Object oldEntry = prolog.put(restName, entry);
-                        assert oldEntry == null : String.format(
-                            "Duplicate control name '%s'", restName);
-                    }
-                } else if (restName.endsWith(LAYOUT_FILTER.getExtension())) {
+                } else if (kind == null) {
+                    // must be a layout file
+                    assert restName.endsWith(LAYOUT_FILTER.getExtension());
                     String objectName = LAYOUT_FILTER.stripExtension(restName);
                     this.layoutEntryMap.put(objectName, entry);
+                } else if (kind == RULE
+                    || new File(restName).getParent() == null) {
+                    // only look at lower directories in case of rules
+                    Object oldEntry =
+                        zipEntryMap.get(kind).put(restName, entry);
+                    assert oldEntry == null : String.format(
+                        "Duplicate %s name '%s'", kind.getName(), restName);
                 }
             }
         }
-        loadProperties(zipFile, properties);
-        loadRules(zipFile, rules);
-        loadGraphs(zipFile, graphs);
-        loadTypes(zipFile, types);
-        loadControls(zipFile, controls);
-        loadProlog(zipFile, prolog);
+        // now process the entries
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            if (kind == PROPERTIES) {
+                loadProperties(zipFile, properties);
+            } else if (kind.isTextBased()) {
+                loadTexts(kind, zipFile, zipEntryMap.get(kind));
+            } else {
+                loadGraphs(kind, zipFile, zipEntryMap.get(kind));
+            }
+        }
         zipFile.close();
-        notify(SystemStore.PROPERTIES_CHANGE | SystemStore.RULE_CHANGE
-            | SystemStore.TYPE_CHANGE | SystemStore.GRAPH_CHANGE
-            | SystemStore.CONTROL_CHANGE | SystemStore.PROLOG_CHANGE);
+        notify(EnumSet.allOf(ResourceKind.class));
         this.initialised = true;
     }
 
-    public StoredGrammarView toGrammarView() {
-        if (this.view == null) {
-            this.view = new StoredGrammarView(this);
-            this.observable.addObserver(this.view);
+    @Override
+    public GrammarModel toGrammarModel() {
+        if (this.model == null) {
+            this.model = new GrammarModel(this);
+            this.observable.addObserver(this.model);
         }
-        return this.view;
+        return this.model;
     }
 
     /**
      * Returns the string representation of the URL or file this store was
      * loaded from.
      */
+    @Override
     public Object getLocation() {
         return this.location;
     }
 
+    @Override
     public SystemStore save(File file, boolean clearDir) throws IOException {
-        return DefaultFileSystemStore.save(file, this, clearDir);
+        return SystemStore.save(file, this, clearDir);
     }
 
     /** This type of system store is not modifiable. */
@@ -459,31 +379,15 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * Loads the named control programs from a zip file, using the prepared map
      * from program names to zip entries.
      */
-    private void loadControls(ZipFile file, Map<String,ZipEntry> controls)
-        throws IOException {
-        this.controlMap.clear();
-        for (Map.Entry<String,ZipEntry> controlEntry : controls.entrySet()) {
+    private void loadTexts(ResourceKind kind, ZipFile file,
+            Map<String,ZipEntry> texts) throws IOException {
+        getTextMap(kind).clear();
+        for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
             String controlName =
-                CONTROL_FILTER.stripExtension(controlEntry.getKey());
-            InputStream in = file.getInputStream(controlEntry.getValue());
+                kind.getFilter().stripExtension(textEntry.getKey());
+            InputStream in = file.getInputStream(textEntry.getValue());
             String program = groove.io.Util.readInputStreamToString(in);
-            this.controlMap.put(controlName, program);
-        }
-    }
-
-    /**
-     * Loads the named prolog programs from a zip file, using the prepared map
-     * from program names to zip entries.
-     */
-    private void loadProlog(ZipFile file, Map<String,ZipEntry> prologMap)
-        throws IOException {
-        this.prologMap.clear();
-        for (Map.Entry<String,ZipEntry> prologEntry : prologMap.entrySet()) {
-            String prologName =
-                PROLOG_FILTER.stripExtension(prologEntry.getKey());
-            InputStream in = file.getInputStream(prologEntry.getValue());
-            String program = groove.io.Util.readInputStreamToString(in);
-            this.prologMap.put(prologName, program);
+            getTextMap(kind).put(controlName, program);
         }
     }
 
@@ -491,40 +395,24 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * Loads the named graphs from a zip file, using the prepared map from graph
      * names to zip entries.
      */
-    private void loadGraphs(ZipFile file, Map<String,ZipEntry> graphs)
-        throws IOException {
-        this.graphMap.clear();
-        this.graphMap.putAll(loadObjects(file, graphs, STATE_FILTER,
-            GraphRole.HOST));
-    }
-
-    /**
-     * Loads all the rules from the file into {@link #ruleMap}.
-     */
-    private void loadRules(ZipFile file, Map<String,ZipEntry> rules)
-        throws IOException {
-        this.ruleMap.clear();
-        for (Map.Entry<String,AspectGraph> entry : loadObjects(file, rules,
-            RULE_FILTER, GraphRole.RULE).entrySet()) {
-            RuleName name = createRuleName(entry.getKey());
-            this.ruleMap.put(name.toString(), entry.getValue());
+    private void loadGraphs(ResourceKind kind, ZipFile file,
+            Map<String,ZipEntry> graphs) throws IOException {
+        Map<String,AspectGraph> graphMap = getGraphMap(kind);
+        graphMap.clear();
+        for (Map.Entry<String,AspectGraph> entry : loadObjects(kind, file,
+            graphs).entrySet()) {
+            String name =
+                kind == RULE ? createRuleName(entry.getKey()).toString()
+                        : entry.getKey();
+            graphMap.put(name, entry.getValue());
         }
-    }
-
-    /**
-     * Loads the named graphs from a zip file, using the prepared map from graph
-     * names to zip entries.
-     */
-    private void loadTypes(ZipFile file, Map<String,ZipEntry> graphs)
-        throws IOException {
-        this.typeMap.clear();
-        this.typeMap.putAll(loadObjects(file, graphs, TYPE_FILTER,
-            GraphRole.TYPE));
-        // enable the active types listed in the system properties
-        List<String> enabledTypes = this.properties.getTypeNames();
-        for (String enabledType : enabledTypes) {
-            GraphInfo.getProperties(this.typeMap.get(enabledType), true).setEnabled(
-                true);
+        if (kind == TYPE) {
+            // enable the active types listed in the system properties
+            Set<String> enabledTypes = this.properties.getTypeNames();
+            for (String enabledType : enabledTypes) {
+                GraphInfo.getProperties(graphMap.get(enabledType), true).setEnabled(
+                    true);
+            }
         }
     }
 
@@ -552,13 +440,10 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
      * names to zip entries. Returns a map from names to {@link AspectGraph}s.
      * @param file the file to read from
      * @param graphs the mapping from object names to zip entries
-     * @param filter extension filter to strip off the extensions of the object
-     *        names
-     * @param role the role to set for the loaded objects
      */
-    private Map<String,AspectGraph> loadObjects(ZipFile file,
-            Map<String,ZipEntry> graphs, ExtensionFilter filter, GraphRole role)
-        throws IOException {
+    private Map<String,AspectGraph> loadObjects(ResourceKind kind,
+            ZipFile file, Map<String,ZipEntry> graphs) throws IOException {
+        ExtensionFilter filter = kind.getFilter();
         Map<String,AspectGraph> result = new HashMap<String,AspectGraph>();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = filter.stripExtension(graphEntry.getKey());
@@ -571,7 +456,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
                  * For backward compatibility, we set the role and name of the
                  * graph.
                  */
-                plainGraph.setRole(role);
+                plainGraph.setRole(kind.getGraphRole());
                 plainGraph.setName(graphName);
                 addLayout(file, graphEntry.getKey(), plainGraph,
                     plainGraphAndMap.two());
@@ -589,12 +474,6 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
             }
         }
         return result;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return !this.hasSystemPropertiesFile && this.graphMap.isEmpty()
-            && this.typeMap.isEmpty() && this.ruleMap.isEmpty();
     }
 
     /**
@@ -636,7 +515,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     }
 
     /** Notifies the observers with a given string value. */
-    private void notify(int property) {
+    private void notify(Set<ResourceKind> property) {
         this.observable.hasChanged();
         this.observable.notifyObservers(new MyEdit(property));
     }
@@ -648,24 +527,15 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
         }
     }
 
-    /** The name-to-rule map of the source. */
-    private final Map<String,AspectGraph> ruleMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-type map of the source. */
-    private final Map<String,AspectGraph> typeMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-graph map of the source. */
-    private final Map<String,AspectGraph> graphMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-control-program map of the source. */
-    private final Map<String,String> controlMap = new TreeMap<String,String>();
-    /** The name-to-control-program map of the source. */
-    private final Map<String,String> prologMap = new TreeMap<String,String>();
+    @Override
+    protected boolean hasSystemProperties() {
+        return this.hasSystemPropertiesFile;
+    }
+
+    private SystemProperties properties;
     /** Map from entry name to layout entry. */
     private final Map<String,ZipEntry> layoutEntryMap =
         new HashMap<String,ZipEntry>();
-    /** The system properties object of the source. */
-    private SystemProperties properties;
     /**
      * The location from which the source is loaded. If <code>null</code>, the
      * location was specified by file rather than url.
@@ -685,7 +555,7 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** The grammar view associated with this store. */
-    private StoredGrammarView view;
+    private GrammarModel model;
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable();
     /** Flag whether this store contains a 'system.properties' file. */
@@ -695,15 +565,20 @@ public class DefaultArchiveSystemStore extends UndoableEditSupport implements
     static private final String JAR_PROTOCOL = FileType.JAR.getExtensionName();
 
     private static class MyEdit extends AbstractUndoableEdit implements Edit {
-        public MyEdit(int change) {
+        public MyEdit(Set<ResourceKind> change) {
             this.change = change;
         }
 
         @Override
-        public int getChange() {
+        public EditType getType() {
+            return EditType.CREATE;
+        }
+
+        @Override
+        public Set<ResourceKind> getChange() {
             return this.change;
         }
 
-        private final int change;
+        private final Set<ResourceKind> change;
     }
 }

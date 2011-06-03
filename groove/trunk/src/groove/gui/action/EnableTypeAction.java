@@ -3,7 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.TypeView;
+import groove.view.TypeModel;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class EnableTypeAction extends SimulatorAction {
         boolean result = false;
         try {
             result =
-                getModel().doEnableType(getModel().getType().getAspectGraph());
+                getSimulatorModel().doEnableType(getSimulatorModel().getType().getSource());
         } catch (IOException e) {
             showErrorDialog(e, "Error while enabling type graph");
         }
@@ -30,7 +30,7 @@ public class EnableTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        TypeView typeView = getModel().getType();
+        TypeModel typeView = getSimulatorModel().getType();
         setEnabled(typeView != null);
         if (isEnabled()) {
             putValue(SHORT_DESCRIPTION, typeView.isEnabled()

@@ -35,7 +35,7 @@ import groove.util.GraphReporter;
 import groove.util.Groove;
 import groove.util.StoreCommandLineOption;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -315,12 +315,9 @@ public class Generator extends CommandLineTool {
         // now we are guaranteed to have a URL
 
         try {
-            StoredGrammarView grammarView = StoredGrammarView.newInstance(url);
-
-            if (grammarView.getStore() instanceof Observable) {
-                ((Observable) grammarView.getStore()).addObserver(loadObserver);
-            }
-            this.grammar = grammarView.toGrammar();
+            GrammarModel grammarModel = GrammarModel.newInstance(url);
+            grammarModel.getStore().addObserver(loadObserver);
+            this.grammar = grammarModel.toGrammar();
             this.grammar.setFixed();
         } catch (IOException exc) {
             printError("Can't load grammar: " + exc.getMessage(), false);
