@@ -306,7 +306,7 @@ public class GrooveEnvironment extends Environment {
      * The result can be included in the TokenMakerMaker input for the
      * {@link RSyntaxTextArea} syntax highlighting.
      */
-    private static final boolean PRINT_GROOVE_FUNCTORS = true;
+    private static final boolean PRINT_GROOVE_FUNCTORS = false;
 
     /** Alphabetically and arity-wise ordered set of compound tags. */
     private static class TagSet extends TreeSet<CompoundTermTag> {

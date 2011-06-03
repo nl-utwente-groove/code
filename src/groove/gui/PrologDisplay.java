@@ -752,7 +752,9 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     protected void updateTab(PrologEditor editor) {
         JTabbedPane editorPane = getEditorPane();
         int index = editorPane.indexOfComponent(editor);
-        editorPane.setTitleAt(index, getLabelText(editor.getName()));
+        if (index >= 0) {
+            editorPane.setTitleAt(index, getLabelText(editor.getName()));
+        }
         getActions().getSavePrologAction().refresh();
         getListPanel().repaint();
     }

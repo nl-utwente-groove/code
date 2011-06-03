@@ -12,8 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
@@ -38,13 +38,13 @@ public class PrologEditor extends JPanel {
         setLayout(new BorderLayout());
         add(createToolBar(), BorderLayout.NORTH);
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
-        this.textArea.getDocument().addUndoableEditListener(
-            new UndoableEditListener() {
-                @Override
-                public void undoableEditHappened(UndoableEditEvent e) {
-                    display.updateTab(PrologEditor.this);
-                }
-            });
+        //        this.textArea.getDocument().addUndoableEditListener(
+        //            new UndoableEditListener() {
+        //                @Override
+        //                public void undoableEditHappened(UndoableEditEvent e) {
+        //                    display.updateTab(PrologEditor.this);
+        //                }
+        //            });
     }
 
     /**
@@ -55,7 +55,7 @@ public class PrologEditor extends JPanel {
         result.add(createSaveButton());
         result.add(createCancelButton());
         result.addSeparator();
-        result.add(this.textArea.getUndoAction());
+        result.add(createUndoButton());
         result.add(this.textArea.getRedoAction());
         result.addSeparator();
         result.add(this.textArea.getCopyAction());
@@ -137,6 +137,18 @@ public class PrologEditor extends JPanel {
     public void discardEdits() {
         this.textArea.discardAllEdits();
         this.display.updateTab(this);
+    }
+
+    /** Creates and returns a Cancel button, for use on the tool bar. */
+    private JButton createUndoButton() {
+        JButton result = Options.createButton(this.textArea.getUndoAction());
+        result.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                PrologEditor.this.display.updateTab(PrologEditor.this);
+            }
+        });
+        return result;
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
