@@ -18,6 +18,7 @@ package groove.view;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.trans.ResourceKind;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -29,30 +30,35 @@ import java.util.List;
  * automata.
  * @author Staijen
  */
-public class CtrlView {
+public class ControlModel extends ResourceModel<CtrlAut> {
     /**
      * Constructs a control view from a given control program.
-     * @param grammarView the grammar view to which this control view belongs.
-     * @param program the control program; non-null
+     * @param grammar the grammar view to which this control view belongs.
      * @param name the name of the control program
+     * @param program the control program; non-null
      */
-    public CtrlView(StoredGrammarView grammarView, String program, String name) {
-        this.name = name;
+    public ControlModel(GrammarModel grammar, String name, String program) {
+        super(ResourceKind.CONTROL, name);
         this.program = program;
-        this.grammarView = grammarView;
+        this.grammar = grammar;
+    }
+
+    @Override
+    public CtrlAut toResource() throws FormatException {
+        return toCtrlAut();
     }
 
     /**
      * Returns the control automaton for a given grammar. 
      */
     public CtrlAut toCtrlAut() throws FormatException {
-        int modCount = this.grammarView.getModificationCount();
+        int modCount = this.grammar.getModificationCount();
         // use the stored result if that was for the same grammar
         if (modCount != this.lastCount) {
             this.lastAut =
                 this.parser.runString(this.program,
-                    this.grammarView.getProperties(),
-                    this.grammarView.getRules());
+                    this.grammar.getProperties(),
+                    this.grammar.getRules());
             this.lastCount = modCount;
         }
         if (!this.lastAut.getInfo().getErrors().isEmpty()) {
@@ -65,6 +71,7 @@ public class CtrlView {
     /**
      * Returns the syntax errors in this control program, if any.
      */
+    @Override
     public List<FormatError> getErrors() {
         List<FormatError> result;
         try {
@@ -76,31 +83,14 @@ public class CtrlView {
         return result;
     }
 
-    /** Indicates if this control program has errors.
-     */
-    public boolean hasErrors() {
-        return !getErrors().isEmpty();
-    }
-
-    /**
-     * Returns a unique identifier for the location, set by the
-     * LocationAutomatonBuilder
-     * @return name
-     */
-    public String getName() {
-        return this.name;
-    }
-
     /** Returns the textual control program. */
     public String getProgram() {
         return this.program;
     }
 
-    private final StoredGrammarView grammarView;
+    private final GrammarModel grammar;
     /** The control program loaded at construction time. */
     private final String program;
-    /** The name of the control program, set at construction time. */
-    private final String name;
     /** The grammar of the most recently computed control automaton. */
     private int lastCount = -1;
     /** The most recently computed control automaton. */

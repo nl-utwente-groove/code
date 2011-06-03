@@ -25,7 +25,7 @@ public class RefreshGrammarAction extends SimulatorAction {
                 result = getSimulator().getModel().doRefreshGrammar();
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while refreshing grammar from "
-                        + getModel().getStore().getLocation());
+                        + getSimulatorModel().getStore().getLocation());
             }
         }
         return result;
@@ -33,6 +33,6 @@ public class RefreshGrammarAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

@@ -40,7 +40,7 @@ import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,13 +86,13 @@ public class ReteNetwork {
 
     /**
     * Creates a new RETE network from scratch out of 
-    * the rules of a {@link StoredGrammarView}.
+    * the rules of a {@link GrammarModel}.
     *  
     * @param grammarView is the stored grammar view whose rules' lhs will
     * be fed into the construction algorithm one by one.
     * @param enableInjectivity specifies if matching should be injectively
     */
-    public ReteNetwork(StoredGrammarView grammarView, boolean enableInjectivity) {
+    public ReteNetwork(GrammarModel grammarView, boolean enableInjectivity) {
         this.grammarName = grammarView.getName();
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
@@ -100,7 +100,7 @@ public class ReteNetwork {
         ArrayList<Rule> rules = new ArrayList<Rule>();
         for (String rn : grammarView.getRuleNames()) {
             try {
-                rules.add(grammarView.getRuleView(rn).toModel());
+                rules.add(grammarView.getRuleModel(rn).toResource());
             } catch (FormatException ex) {
                 throw new RuntimeException(String.format(
                     "Failed to add rule %s to the RETE network.", rn));

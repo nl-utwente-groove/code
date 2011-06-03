@@ -16,10 +16,13 @@
  */
 package groove.view;
 
-import static groove.graph.GraphRole.HOST;
+import static groove.trans.ResourceKind.HOST;
+import static groove.trans.ResourceKind.RULE;
+import static groove.trans.ResourceKind.TYPE;
 import groove.control.CtrlFactory;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.io.store.SystemStore;
@@ -27,6 +30,7 @@ import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
 import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -37,6 +41,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,25 +51,25 @@ import java.util.Observer;
 import java.util.Set;
 
 /**
- * Grammar view based on a backing system store.
+ * Grammar model based on a backing system store.
  */
-public class StoredGrammarView implements GrammarView, Observer {
+public class GrammarModel implements Observer {
     /**
-     * Constructs a grammar view from a rule system store. The start graph name
+     * Constructs a grammar model from a rule system store. The start graph name
      * is the default one.
      * @see Groove#DEFAULT_START_GRAPH_NAME
      */
-    public StoredGrammarView(SystemStore store) {
+    public GrammarModel(SystemStore store) {
         this(store, null);
     }
 
     /**
-     * Constructs a grammar view from a rule system store and a start graph
+     * Constructs a grammar model from a rule system store and a start graph
      * name.
      * @param startGraphName the name of the graph to be used as start state; if
      *        <code>null</code>, the default start graph name is used.
      */
-    public StoredGrammarView(SystemStore store, String startGraphName) {
+    public GrammarModel(SystemStore store, String startGraphName) {
         this.store = store;
         loadControlMap();
         loadPrologMap();
@@ -72,7 +77,7 @@ public class StoredGrammarView implements GrammarView, Observer {
                 : startGraphName);
     }
 
-    /** Returns the name of this grammar view. */
+    /** Returns the name of the rule system. */
     public String getName() {
         return this.store.getName();
     }
@@ -82,7 +87,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.store;
     }
 
-    /** Returns the system properties of this grammar view. */
+    /** Returns the system properties of this grammar model. */
     public SystemProperties getProperties() {
         SystemProperties result = this.store.getProperties();
         // take care that, if there is no explicit control program name,
@@ -101,12 +106,49 @@ public class StoredGrammarView implements GrammarView, Observer {
         return result;
     }
 
-    /** Returns a list of all available control program names. */
-    public Set<String> getControlNames() {
-        return Collections.unmodifiableSet(this.controlMap.keySet());
+    /** Returns all names of grammar resources of a given kind. */
+    public Set<String> getNames(ResourceKind kind) {
+        if (kind == ResourceKind.PROPERTIES) {
+            return null;
+        } else if (kind.isTextBased()) {
+            return getStore().getTexts(kind).keySet();
+        } else {
+            return getStore().getGraphs(kind).keySet();
+        }
     }
 
-    public CtrlView getControlView(String name) {
+    /** Returns a named resource model of a given kind. */
+    public ResourceModel<?> getResource(ResourceKind kind, String name) {
+        switch (kind) {
+        case CONTROL:
+            return getControlModel(name);
+        case HOST:
+            return getHostModel(name);
+        case PROLOG:
+            return getPrologModel(name);
+        case RULE:
+            return getRuleModel(name);
+        case TYPE:
+            return getTypeModel(name);
+        case PROPERTIES:
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /** Returns a list of all available control program names. */
+    public Set<String> getControlNames() {
+        return getNames(ResourceKind.CONTROL);
+    }
+
+    /**
+     * Returns the control model associated with a given (named) control program.
+     * @param name the name of the control program to return the model of;
+     * @return the corresponding control program model, or <code>null</code> if
+     *         no program by that name exists
+     */
+    public ControlModel getControlModel(String name) {
         return name == null ? null : this.controlMap.get(name);
     }
 
@@ -120,24 +162,34 @@ public class StoredGrammarView implements GrammarView, Observer {
                 ? getProperties().getControlName() : null;
     }
 
-    @Override
-    public CtrlView getControlView() {
-        return isUseControl() ? getControlView(getControlName()) : null;
+    /**
+     * Returns the control model set for the grammar.
+     * @return the control model for the grammar, or <code>null</code> if there
+     *         is no control program loaded.
+     */
+    public ControlModel getControlModel() {
+        return isUseControl() ? getControlModel(getControlName()) : null;
     }
 
-    public Set<String> getGraphNames() {
-        return Collections.unmodifiableSet(getStore().getGraphs().keySet());
+    /** Returns an unmodifiable view on the set of graph names in this grammar. */
+    public Set<String> getHostNames() {
+        return getNames(ResourceKind.HOST);
     }
 
-    public GraphView getGraphView(String name) {
-        GraphView result = null;
+    /**
+     * Returns the graph model for a given graph name.
+     * @return the graph model for graph <code>name</code>, or <code>null</code>
+     *         if there is no such graph.
+     */
+    public HostModel getHostModel(String name) {
+        HostModel result = null;
         AspectGraph stateGraph =
-            name == null ? null : getStore().getGraphs().get(name);
+            name == null ? null : getStore().getGraphs(HOST).get(name);
         if (stateGraph != null) {
-            result = stateGraph.toGraphView(getProperties());
+            result = stateGraph.toGraphModel(getProperties());
             TypeGraph type = null;
             try {
-                type = getCompositeTypeView().toModel();
+                type = getTypeModel().toResource();
             } catch (FormatException e) {
                 // don't set the type graph
             }
@@ -151,24 +203,35 @@ public class StoredGrammarView implements GrammarView, Observer {
         return Collections.unmodifiableSet(this.prologMap.keySet());
     }
 
-    public PrologView getPrologView(String name) {
+    /**
+     * Returns the prolog model associated with a given (named) prolog program.
+     * @param name the name of the prolog program to return the model of;
+     * @return the corresponding prolog model, or <code>null</code> if
+     *         no program by that name exists
+     */
+    public PrologModel getPrologModel(String name) {
         return name == null ? null : this.prologMap.get(name);
     }
 
+    /** Returns an unmodifiable view on the set of rule names in this grammar. */
     public Set<String> getRuleNames() {
-        return Collections.unmodifiableSet(getStore().getRules().keySet());
+        return getNames(ResourceKind.RULE);
     }
 
-    /** Convenience method to obtain a rule by the string version of its rule name. */
-    public RuleView getRuleView(String name) {
-        RuleView result = null;
+    /**
+     * Returns the rule model for a given rule name.
+     * @return the rule model for rule <code>name</code>, or <code>null</code> if
+     *         there is no such rule.
+     */
+    public RuleModel getRuleModel(String name) {
+        RuleModel result = null;
         AspectGraph ruleGraph =
-            name == null ? null : getStore().getRules().get(name);
+            name == null ? null : getStore().getGraphs(RULE).get(name);
         if (ruleGraph != null) {
-            result = ruleGraph.toRuleView(getProperties());
+            result = ruleGraph.toRuleModel(getProperties());
             boolean typed = false;
             try {
-                TypeGraph type = getCompositeTypeView().toModel();
+                TypeGraph type = getTypeModel().toResource();
                 if (type != null) {
                     result.setType(type);
                     typed = true;
@@ -183,64 +246,105 @@ public class StoredGrammarView implements GrammarView, Observer {
         return result;
     }
 
-    /** Returns a list of all available type graph names. */
+    /**
+     * Returns an unmodifiable view on the set of type graph names in this
+     * grammar.
+     */
     public Set<String> getTypeNames() {
-        return Collections.unmodifiableSet(getStore().getTypes().keySet());
-    }
-
-    public TypeView getTypeView(String name) {
-        AspectGraph typeGraph =
-            name == null ? null : getStore().getTypes().get(name);
-        return typeGraph == null ? null : typeGraph.toTypeView(getProperties());
+        return getNames(TYPE);
     }
 
     /**
-     * Lazily creates a list of selected type views.
-     * @return a list of type views that yield a composite type graph.
+     * Returns the type graph model for a given graph name.
+     * @return the type graph model for type <code>name</code>, or
+     *         <code>null</code> if there is no such graph.
      */
-    public CompositeTypeView getCompositeTypeView() {
-        if (this.compositeTypeView == null) {
-            this.compositeTypeView = new CompositeTypeView(this);
-        }
-        return this.compositeTypeView;
+    public TypeModel getTypeModel(String name) {
+        AspectGraph typeGraph =
+            name == null ? null : getStore().getGraphs(TYPE).get(name);
+        return typeGraph == null ? null
+                : typeGraph.toTypeModel(getProperties());
     }
 
+    /**
+     * Lazily creates a list of selected type models.
+     * @return a list of type models that yield a composite type graph.
+     */
+    public CompositeTypeModel getTypeModel() {
+        if (this.typeModel == null) {
+            this.typeModel = new CompositeTypeModel(this);
+        }
+        return this.typeModel;
+    }
+
+    /**
+     * Returns the name of the start graph, if it is one of the graphs stored
+     * with the rule system.
+     * @return the name of the start graph, or <code>null</code> if the start
+     *         graph is not one of the graphs stored with the rule system
+     */
     public String getStartGraphName() {
         return this.startGraphName;
     }
 
-    public GraphView getStartGraphView() {
+    /**
+     * Returns the start graph of this grammar model.
+     * @return the start graph model, or <code>null</code> if no start graph is
+     *         set.
+     */
+
+    public HostModel getStartGraphModel() {
         if (this.startGraph == null && this.startGraphName != null) {
-            this.startGraph = getGraphView(this.startGraphName);
+            this.startGraph = getHostModel(this.startGraphName);
         }
         return this.startGraph;
     }
 
-    @Override
+    /**
+     * Sets the start graph to a given graph, or to <code>null</code>. This
+     * implies the start graph is not one of the graphs stored in the rule
+     * system; correspondingly, the start graph name is set to <code>null</code>
+     * .
+     * @param startGraph the new start graph; if <code>null</code>, the start
+     *        graph is unset
+     * @throws IllegalArgumentException if <code>startGraph</code> does not have
+     *         a graph role
+     * @see #setStartGraph(String)
+     */
     public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
-        if (startGraph.getRole() != HOST) {
+        if (startGraph.getRole() != GraphRole.HOST) {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
-        this.startGraph = startGraph.toGraphView(getProperties());
+        this.startGraph = startGraph.toGraphModel(getProperties());
         this.startGraphName = null;
         invalidate();
     }
 
-    @Override
+    /**
+     * Sets the start graph to a given graph, or to <code>null</code>. This
+     * implies the start graph is not one of the graphs stored in the rule
+     * system; correspondingly, the start graph name is set to <code>null</code>
+     * .
+     * @param name the new start graph; if <code>null</code>, the start
+     *        graph is unset
+     * @throws IllegalArgumentException if <code>startGraph</code> does not have
+     *         a graph role
+     * @see #setStartGraph(String)
+     */
     public void setStartGraph(String name) {
         assert name != null;
         this.startGraphName = name;
         invalidate();
     }
 
-    @Override
+    /** Unsets the start graph. */
     public void removeStartGraph() {
         this.startGraph = null;
     }
 
-    /** Collects and returns the permanent errors of the rule views. */
+    /** Collects and returns the permanent errors of the rule models. */
     public List<FormatError> getErrors() {
         if (this.errors == null) {
             initGrammar();
@@ -248,7 +352,12 @@ public class StoredGrammarView implements GrammarView, Observer {
         return this.errors;
     }
 
-    /** Returns the labels occurring in this grammar view. */
+    /** Indicates if this grammar model has errors. */
+    public boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    /** Returns the labels occurring in this grammar model. */
     public final LabelStore getLabelStore() {
         if (this.labelStore == null) {
             this.labelStore = computeLabelStore();
@@ -257,7 +366,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /** 
-     * Returns the modification count of the view.
+     * Returns the modification count of the model.
      * The modification count is increased any time the grammar is invalidated
      * due to a change in the store or start graph.
      * This method can be used by clients to check if the grammar has been invalidated.
@@ -269,7 +378,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     private LabelStore computeLabelStore() {
         LabelStore result = null;
         try {
-            TypeGraph type = getCompositeTypeView().toModel();
+            TypeGraph type = getTypeModel().toResource();
             if (type != null) {
                 result = type.getLabelStore();
             }
@@ -278,15 +387,14 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         if (result == null) {
             result = new LabelStore();
-            for (AspectGraph rule : getStore().getRules().values()) {
-                result.addLabels(rule.toView(getProperties()).getLabels());
+            for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
+                for (AspectGraph graph : getStore().getGraphs(kind).values()) {
+                    result.addLabels(graph.toModel(getProperties()).getLabels());
+                }
             }
-            for (AspectGraph graph : getStore().getGraphs().values()) {
-                result.addLabels(graph.toView(getProperties()).getLabels());
-            }
-            if (getStartGraphView() != null) {
-                GraphView graphView = getStartGraphView();
-                result.addLabels(graphView.getLabels());
+            if (getStartGraphModel() != null) {
+                HostModel hostModel = getStartGraphModel();
+                result.addLabels(hostModel.getLabels());
             }
             try {
                 result.addDirectSubtypes(getProperties().getSubtypes());
@@ -304,7 +412,7 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Converts the grammar view to a real grammar. With respect to control, we
+     * Converts the grammar model to a real grammar. With respect to control, we
      * recognise the following cases:
      * <ul>
      * <li>Control is enabled (which is the default case), but no control name
@@ -367,11 +475,11 @@ public class StoredGrammarView implements GrammarView, Observer {
             this.errors.addAll(exc.getErrors());
         }
         getPrologEnvironment();
-        for (PrologView prologView : this.prologMap.values()) {
-            for (FormatError error : prologView.getErrors()) {
+        for (PrologModel prologModel : this.prologMap.values()) {
+            for (FormatError error : prologModel.getErrors()) {
                 this.errors.add(new FormatError(
-                    "Error in prolog program '%s': %s", prologView.getName(),
-                    error, prologView));
+                    "Error in prolog program '%s': %s", prologModel.getName(),
+                    error, prologModel));
             }
         }
     }
@@ -381,11 +489,11 @@ public class StoredGrammarView implements GrammarView, Observer {
         Set<Rule> result = new HashSet<Rule>();
         // set rules
         for (String ruleName : getRuleNames()) {
-            RuleView ruleView = getRuleView(ruleName);
+            RuleModel ruleModel = getRuleModel(ruleName);
             try {
                 // only add the enabled rules
-                if (ruleView.isEnabled()) {
-                    result.add(ruleView.toRule());
+                if (ruleModel.isEnabled()) {
+                    result.add(ruleModel.toRule());
                 }
             } catch (FormatException exc) {
                 // do not add this rule
@@ -395,16 +503,16 @@ public class StoredGrammarView implements GrammarView, Observer {
     }
 
     /**
-     * Computes a graph grammar from this view.
-     * @throws FormatException if there are syntax errors in the view
+     * Computes a graph grammar from this model.
+     * @throws FormatException if there are syntax errors in the model
      */
     private GraphGrammar computeGrammar() throws FormatException {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // Construct the composite type graph
         try {
-            result.setType(getCompositeTypeView().toModel(),
-                getCompositeTypeView().getTypeGraphMap());
+            result.setType(getTypeModel().toResource(),
+                getTypeModel().getTypeGraphMap());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -415,23 +523,23 @@ public class StoredGrammarView implements GrammarView, Observer {
         }
         // set rules
         for (String ruleName : getRuleNames()) {
-            RuleView ruleView = getRuleView(ruleName);
+            RuleModel ruleModel = getRuleModel(ruleName);
             try {
                 // only add the enabled rules
-                if (ruleView.isEnabled()) {
-                    result.add(ruleView.toRule());
+                if (ruleModel.isEnabled()) {
+                    result.add(ruleModel.toRule());
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
                     errors.add(new FormatError("Error in rule '%s': %s",
-                        ruleView.getName(), error, ruleView.getAspectGraph()));
+                        ruleModel.getName(), error, ruleModel.getSource()));
                 }
             }
         }
         // set control
         if (isUseControl()) {
-            CtrlView controlView = getControlView(getControlName());
-            if (controlView == null) {
+            ControlModel controlModel = getControlModel(getControlName());
+            if (controlModel == null) {
                 errors.add(new FormatError(
                     "Control program '%s' cannot be found", getControlName()));
             } else if (result.hasMultiplePriorities()) {
@@ -439,12 +547,12 @@ public class StoredGrammarView implements GrammarView, Observer {
                     "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
-                    result.setCtrlAut(controlView.toCtrlAut());
+                    result.setCtrlAut(controlModel.toCtrlAut());
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
                             "Error in control program '%s': %s",
-                            getControlName(), error, controlView));
+                            getControlName(), error, controlModel));
                     }
                 }
             }
@@ -454,7 +562,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         // set properties
         result.setProperties(getProperties());
         // set start graph
-        if (getStartGraphView() == null) {
+        if (getStartGraphModel() == null) {
             if (getStartGraphName() == null) {
                 errors.add(new FormatError("No start graph set"));
             } else {
@@ -464,7 +572,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         } else {
             List<FormatError> startGraphErrors;
             try {
-                DefaultHostGraph startGraph = getStartGraphView().toModel();
+                DefaultHostGraph startGraph = getStartGraphModel().toResource();
                 result.setStartGraph(startGraph);
                 startGraphErrors = GraphInfo.getErrors(startGraph);
             } catch (FormatException exc) {
@@ -472,7 +580,7 @@ public class StoredGrammarView implements GrammarView, Observer {
             }
             for (FormatError error : startGraphErrors) {
                 errors.add(new FormatError("Error in start graph: %s", error,
-                    getStartGraphView().getAspectGraph()));
+                    getStartGraphModel().getSource()));
             }
         }
         try {
@@ -495,12 +603,12 @@ public class StoredGrammarView implements GrammarView, Observer {
     public GrooveEnvironment getPrologEnvironment() {
         if (this.prologEnvironment == null) {
             this.prologEnvironment = new GrooveEnvironment(null, null);
-            for (PrologView prologView : this.prologMap.values()) {
+            for (PrologModel prologModel : this.prologMap.values()) {
                 try {
-                    this.prologEnvironment.loadProgram(prologView.getProgram());
-                    prologView.clearErrors();
+                    this.prologEnvironment.loadProgram(prologModel.getProgram());
+                    prologModel.clearErrors();
                 } catch (FormatException e) {
-                    prologView.setErrors(e.getErrors());
+                    prologModel.setErrors(e.getErrors());
                 }
             }
         }
@@ -517,7 +625,7 @@ public class StoredGrammarView implements GrammarView, Observer {
         this.errors = null;
         this.labelStore = null;
         this.controlPropertyAdjusted = false;
-        this.compositeTypeView = null;
+        this.typeModel = null;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -528,9 +636,10 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private void loadControlMap() {
         this.controlMap.clear();
-        for (Map.Entry<String,String> storedRuleEntry : this.store.getControls().entrySet()) {
-            this.controlMap.put(storedRuleEntry.getKey(), new CtrlView(this,
-                storedRuleEntry.getValue(), storedRuleEntry.getKey()));
+        for (Map.Entry<String,String> controlEntry : this.store.getTexts(
+            ResourceKind.CONTROL).entrySet()) {
+            this.controlMap.put(controlEntry.getKey(), new ControlModel(this,
+                controlEntry.getKey(), controlEntry.getValue()));
         }
     }
 
@@ -539,32 +648,35 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private void loadPrologMap() {
         this.prologMap.clear();
-        for (Map.Entry<String,String> storedRuleEntry : this.store.getProlog().entrySet()) {
-            this.prologMap.put(storedRuleEntry.getKey(), new PrologView(
+        for (Map.Entry<String,String> storedRuleEntry : this.store.getTexts(
+            ResourceKind.PROLOG).entrySet()) {
+            this.prologMap.put(storedRuleEntry.getKey(), new PrologModel(
                 storedRuleEntry.getKey(), storedRuleEntry.getValue()));
         }
     }
 
     @Override
     public void update(Observable source, Object edit) {
-        int change = ((SystemStore.Edit) edit).getChange();
-        if ((change & SystemStore.CONTROL_CHANGE) > 0) {
+        Set<ResourceKind> change = ((SystemStore.Edit) edit).getChange();
+        if (change.contains(ResourceKind.CONTROL)) {
             loadControlMap();
         }
-        if ((change & SystemStore.PROLOG_CHANGE) > 0) {
+        if (change.contains(ResourceKind.PROLOG)) {
             loadPrologMap();
             this.prologEnvironment = null;
         }
         invalidate();
     }
 
-    /** Mapping from control names to views on the corresponding automata. */
-    final Map<String,CtrlView> controlMap = new HashMap<String,CtrlView>();
+    /** Mapping from control names to models on the corresponding automata. */
+    private final Map<String,ControlModel> controlMap =
+        new HashMap<String,ControlModel>();
 
-    /** Mapping from prolog names to views on the corresponding views. */
-    final Map<String,PrologView> prologMap = new HashMap<String,PrologView>();
+    /** Mapping from prolog names to models on the corresponding programs. */
+    private final Map<String,PrologModel> prologMap =
+        new HashMap<String,PrologModel>();
 
-    /** The store backing this view. */
+    /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private int modificationCount;
@@ -576,7 +688,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      */
     private boolean controlPropertyAdjusted;
     /** The start graph of the grammar. */
-    private GraphView startGraph;
+    private HostModel startGraph;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.
@@ -584,14 +696,14 @@ public class StoredGrammarView implements GrammarView, Observer {
     private String startGraphName;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<FormatError> errors;
-    /** The graph grammar derived from the rule views. */
+    /** The graph grammar derived from the rule models. */
     private GraphGrammar grammar;
-    /** The labels occurring in this view. */
+    /** The labels occurring in this model. */
     private LabelStore labelStore;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
-    /** The type view composed from the individual elements. */
-    private CompositeTypeView compositeTypeView;
+    /** The type model composed from the individual elements. */
+    private CompositeTypeModel typeModel;
 
     /**
      * Creates an instance based on a store located at a given URL.
@@ -600,7 +712,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(URL url)
+    static public GrammarModel newInstance(URL url)
         throws IllegalArgumentException, IOException {
         return newInstance(url, url.getQuery());
     }
@@ -615,13 +727,13 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given URL
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(URL url, String startGraphName)
+    static public GrammarModel newInstance(URL url, String startGraphName)
         throws IllegalArgumentException, IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
-        StoredGrammarView result = store.toGrammarView();
+        GrammarModel result = store.toGrammarModel();
         if (startGraphName != null) {
-            if (result.getGraphNames().contains(startGraphName)) {
+            if (result.getHostNames().contains(startGraphName)) {
                 result.setStartGraph(startGraphName);
             } else {
                 DefaultGraph plainGraph = Groove.loadGraph(startGraphName);
@@ -643,7 +755,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *        exist, attempt to create it.
      * @throws IOException if an error occurred while creating the store
      */
-    static public StoredGrammarView newInstance(File file, boolean create)
+    static public GrammarModel newInstance(File file, boolean create)
         throws IOException {
         return newInstance(file, null, create);
     }
@@ -657,11 +769,11 @@ public class StoredGrammarView implements GrammarView, Observer {
      *        exist, attempt to create it.
      * @throws IOException if an error occurred while creating the store
      */
-    static public StoredGrammarView newInstance(File file,
-            String startGraphName, boolean create) throws IOException {
+    static public GrammarModel newInstance(File file, String startGraphName,
+            boolean create) throws IOException {
         SystemStore store = SystemStoreFactory.newStore(file, create);
         store.reload();
-        StoredGrammarView result = store.toGrammarView();
+        GrammarModel result = store.toGrammarModel();
         if (startGraphName != null) {
             result.setStartGraph(startGraphName);
         }
@@ -676,7 +788,7 @@ public class StoredGrammarView implements GrammarView, Observer {
      *         given location
      * @throws IOException if a store can be created but not loaded
      */
-    static public StoredGrammarView newInstance(String location)
+    static public GrammarModel newInstance(String location)
         throws IllegalArgumentException, IOException {
         try {
             return newInstance(new URL(location));

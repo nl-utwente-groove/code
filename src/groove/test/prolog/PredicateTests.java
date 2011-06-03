@@ -22,7 +22,7 @@ import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.prolog.GrooveState;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GrammarModel;
 
 import org.junit.Test;
 
@@ -411,7 +411,7 @@ public class PredicateTests {
     private static final GTS getGTS() {
         if (gts == null) {
             try {
-                GrammarView gv = PrologTestUtil.testGrammar("graph-a");
+                GrammarModel gv = PrologTestUtil.testGrammar("graph-a");
                 gts = new GTS(gv.toGrammar());
                 Exploration exploration = new Exploration();
                 exploration.play(gts, null);

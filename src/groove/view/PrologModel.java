@@ -16,6 +16,8 @@
  */
 package groove.view;
 
+import groove.trans.ResourceKind;
+
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -25,23 +27,25 @@ import java.util.List;
  * View for prolog programs (which are just strings).
  * @author Arend Rensink
  */
-public class PrologView {
+public class PrologModel extends ResourceModel<String> {
     /**
      * Constructs a prolog view from a given prolog program.
      * @param name the name of the prolog program; non-{@code null}
      * @param program the prolog program; non-null
      */
-    public PrologView(String name, String program) {
-        this.name = name;
+    public PrologModel(String name, String program) {
+        super(ResourceKind.PROLOG, name);
         this.program = program;
         this.errors = Collections.emptyList();
     }
 
-    /**
-     * Returns the name of the prolog program.
-     */
-    public String getName() {
-        return this.name;
+    @Override
+    public String toResource() throws FormatException {
+        if (hasErrors()) {
+            throw new FormatException(getErrors());
+        } else {
+            return getProgram();
+        }
     }
 
     /** Returns the textual prolog program. */
@@ -60,19 +64,13 @@ public class PrologView {
     }
 
     /** Returns the list of errors in this view. */
+    @Override
     public List<FormatError> getErrors() {
         return this.errors;
     }
 
-    /** Indicates if there are errors in this view. */
-    public boolean hasErrors() {
-        return !this.errors.isEmpty();
-    }
-
     /** The prolog program loaded at construction time. */
     private final String program;
-    /** The name of the prolog program, set at construction time. */
-    private final String name;
     /** List of Prolog formatting errors in this program. */
     private List<FormatError> errors;
 

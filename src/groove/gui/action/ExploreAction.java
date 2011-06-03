@@ -14,7 +14,7 @@ import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,7 +40,7 @@ public class ExploreAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        explore(getModel().getExploration(), true, true);
+        explore(getSimulatorModel().getExploration(), true, true);
         return false;
     }
 
@@ -52,24 +52,24 @@ public class ExploreAction extends SimulatorAction {
      */
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
-        getModel().setExploration(exploration);
+        getSimulatorModel().setExploration(exploration);
         LTSJModel ltsJModel = getLTSPanel().getJModel();
         if (ltsJModel == null) {
-            if (getModel().setGts()) {
+            if (getSimulatorModel().setGts()) {
                 ltsJModel = getLTSPanel().getJModel();
             } else {
                 return;
             }
         }
-        GTS gts = getModel().getGts();
+        GTS gts = getSimulatorModel().getGts();
         // unhook the lts' jmodel from the lts, for efficiency's sake
         gts.removeLTSListener(ltsJModel);
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread(exploration);
         // go!
-        getModel().getExplorationStats().start();
+        getSimulatorModel().getExplorationStats().start();
         generateThread.start();
-        getModel().getExplorationStats().stop();
+        getSimulatorModel().getExplorationStats().stop();
         gts.addLTSListener(ltsJModel);
         // collect the result states
         if (setResult) {
@@ -82,19 +82,19 @@ public class ExploreAction extends SimulatorAction {
             getLTSPanel().emphasiseStates(new ArrayList<GraphState>(result),
                 true);
         }
-        getModel().setGts(gts, true);
+        getSimulatorModel().setGts(gts, true);
     }
 
     @Override
     public void refresh() {
-        StoredGrammarView grammar = getModel().getGrammar();
-        setEnabled(grammar != null && grammar.getStartGraphView() != null
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        setEnabled(grammar != null && grammar.getStartGraphModel() != null
             && grammar.getErrors().isEmpty());
         String toolTipText =
             HTMLConverter.HTML_TAG.on(String.format(
                 "%s (%s)",
                 Options.DEFAULT_EXPLORATION_ACTION_NAME,
-                HTMLConverter.STRONG_TAG.on(getModel().getExploration().getIdentifier())));
+                HTMLConverter.STRONG_TAG.on(getSimulatorModel().getExploration().getIdentifier())));
         putValue(Action.SHORT_DESCRIPTION, toolTipText);
     }
 
@@ -141,7 +141,7 @@ public class ExploreAction extends SimulatorAction {
          */
         @Override
         final public void run() {
-            SimulatorModel simulatorModel = getModel();
+            SimulatorModel simulatorModel = getSimulatorModel();
             GTS gts = simulatorModel.getGts();
             GraphState state = simulatorModel.getState();
             displayProgress(gts);

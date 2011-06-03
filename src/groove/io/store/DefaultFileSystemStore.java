@@ -16,31 +16,30 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io.store;
 
-import static groove.graph.GraphRole.RULE;
-import static groove.io.FileType.CONTROL_FILTER;
 import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.PROLOG_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
-import static groove.io.FileType.STATE_FILTER;
-import static groove.io.FileType.TYPE_FILTER;
+import static groove.trans.ResourceKind.CONTROL;
+import static groove.trans.ResourceKind.PROPERTIES;
+import static groove.trans.ResourceKind.RULE;
+import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
+import groove.gui.EditType;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.PriorityFileName;
-import groove.io.Util;
 import groove.io.xml.DefaultGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
+import groove.trans.ResourceKind;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -55,20 +54,20 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.UndoableEditSupport;
 
 /**
  * Implementation based on {@link AspectGraph} representations of the rules and
@@ -77,8 +76,7 @@ import javax.swing.undo.UndoableEditSupport;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultFileSystemStore extends UndoableEditSupport implements
-        SystemStore {
+public class DefaultFileSystemStore extends SystemStore {
     /**
      * Constructs a store from a given file. The file should be a directory with
      * extension {@link FileType#GRAMMAR}. The store is writable.
@@ -151,204 +149,141 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     @Override
-    public Map<String,String> getControls() {
+    public Map<String,String> getTexts(ResourceKind kind) {
         testInit();
-        return Collections.unmodifiableMap(this.controlMap);
+        return Collections.unmodifiableMap(getTextMap(kind));
     }
 
     @Override
-    public String putControl(String name, String control) throws IOException {
-        String result = null;
-        PutControlEdit edit = doPutControl(name, control);
+    public Map<String,String> putTexts(ResourceKind kind,
+            Map<String,String> texts) throws IOException {
+        Map<String,String> result = null;
+        TextBasedEdit edit = doPutTexts(kind, texts);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldControl();
+            result = edit.getOldTexts();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of {@link #putControl(String, String)}.
+     * Implements the functionality of {@link #putTexts(ResourceKind, Map)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private PutControlEdit doPutControl(String name, String control)
-        throws IOException {
+    private TextBasedEdit doPutTexts(ResourceKind kind,
+            Map<String,String> newTexts) throws IOException {
         testInit();
-        saveControl(name, control);
-        String oldControl = this.controlMap.put(name, control);
-        return new PutControlEdit(name, oldControl, control);
+        Map<String,String> oldTexts = new HashMap<String,String>();
+        for (Map.Entry<String,String> entry : newTexts.entrySet()) {
+            String name = entry.getKey();
+            String newText = entry.getValue();
+            saveText(kind, name, newText);
+            String oldText = getTextMap(kind).put(name, newText);
+            if (oldText != null) {
+                oldTexts.put(name, oldText);
+            }
+        }
+        return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE
+                : EditType.MODIFY, oldTexts, newTexts, null, null);
     }
 
     @Override
-    public String deleteControl(String name) throws IOException {
-        String result = null;
-        DeleteControlEdit deleteEdit = doDeleteControl(name);
+    public Map<String,String> deleteTexts(ResourceKind kind,
+            Collection<String> names) throws IOException {
+        Map<String,String> result = null;
+        TextBasedEdit deleteEdit = doDeleteTexts(kind, names);
         if (deleteEdit != null) {
             deleteEdit.checkAndSetVersion();
             postEdit(deleteEdit);
-            result = deleteEdit.getControl();
+            result = deleteEdit.getOldTexts();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of the {@link #deleteControl(String)}
+     * Implements the functionality of the {@link #deleteTexts(ResourceKind, Collection)}
      * method. Returns a corresponding undoable edit.
      */
-    private DeleteControlEdit doDeleteControl(String name) throws IOException {
-        DeleteControlEdit result = null;
+    private TextBasedEdit doDeleteTexts(ResourceKind kind,
+            Collection<String> names) throws IOException {
         testInit();
-        String control = this.controlMap.remove(name);
-        if (control != null) {
-            createControlFile(name).delete();
-            // change the control-related system properties, if necessary
-            SystemProperties oldProps = null;
-            SystemProperties newProps = null;
-            if (name.equals(getProperties().getControlName())) {
-                oldProps = getProperties();
-                newProps = getProperties().clone();
-                newProps.setUseControl(false);
-                newProps.setControlName("");
-                doPutProperties(newProps);
+        Map<String,String> oldTexts = new HashMap<String,String>();
+        for (String name : names) {
+            String text = getTextMap(kind).remove(name);
+            if (text != null) {
+                oldTexts.put(name, text);
+                createFile(kind, name).delete();
             }
-            result = new DeleteControlEdit(name, control, oldProps, newProps);
         }
-        return result;
+        // change the control-related system properties, if necessary
+        SystemProperties oldProps = null;
+        SystemProperties newProps = null;
+        if (kind == CONTROL
+            && oldTexts.keySet().equals(getProperties().getControlName())) {
+            oldProps = getProperties();
+            newProps = getProperties().clone();
+            newProps.setUseControl(false);
+            newProps.setControlName("");
+            doPutProperties(newProps);
+        }
+        return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
+            Collections.<String,String>emptyMap(), oldProps, newProps);
     }
 
     @Override
-    public String renameControl(String oldName, String newName)
+    public String renameText(ResourceKind kind, String oldName, String newName)
         throws IOException {
         String result = null;
-        RenameControlEdit edit = doRenameControl(oldName, newName);
+        TextBasedEdit edit = doRenameText(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getOldControl();
+            result = edit.getNewTexts().values().iterator().next();
         }
         return result;
     }
 
     /**
-     * Implements the functionality of {@link #renameRule(String, String)}.
+     * Implements the functionality of {@link #renameText(ResourceKind, String, String)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private RenameControlEdit doRenameControl(String oldName, String newName)
-        throws IOException {
+    private TextBasedEdit doRenameText(ResourceKind kind, String oldName,
+            String newName) throws IOException {
         testInit();
-        String control = this.controlMap.remove(oldName);
-        assert control != null;
-        createControlFile(oldName).renameTo(createControlFile(newName));
-        String oldControl = this.controlMap.put(newName, control);
-        assert oldControl == null;
+        Map<String,String> oldTexts = new HashMap<String,String>();
+        Map<String,String> newTexts = new HashMap<String,String>();
+        String text = getTextMap(kind).remove(oldName);
+        assert text != null;
+        oldTexts.put(oldName, text);
+        createFile(kind, oldName).renameTo(createFile(kind, newName));
+        String previous = getTextMap(kind).put(newName, text);
+        assert previous == null;
+        newTexts.put(newName, text);
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
         String activeControl = getProperties().getControlName();
-        if (oldName.equals(activeControl)) {
+        if (kind == CONTROL && oldName.equals(activeControl)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
             newProps.setControlName(newName);
             doPutProperties(newProps);
         }
-        return new RenameControlEdit(oldName, newName, oldProps, newProps,
-            control);
+        return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts,
+            oldProps, newProps);
     }
 
     @Override
-    public Map<String,String> getProlog() {
+    public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
-        return Collections.unmodifiableMap(this.prologMap);
+        return Collections.unmodifiableMap(getGraphMap(kind));
     }
 
     @Override
-    public String putProlog(String name, String prolog) throws IOException {
-        String result = null;
-        PutPrologEdit edit = doPutProlog(name, prolog);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldProlog();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #putControl(String, String)}.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private PutPrologEdit doPutProlog(String name, String prolog)
-        throws IOException {
-        testInit();
-        saveProlog(name, prolog);
-        String oldProlog = this.prologMap.put(name, prolog);
-        return new PutPrologEdit(name, oldProlog, prolog);
-    }
-
-    @Override
-    public String deleteProlog(String name) {
-        String result = null;
-        DeletePrologEdit deleteEdit = doDeleteProlog(name);
-        if (deleteEdit != null) {
-            deleteEdit.checkAndSetVersion();
-            postEdit(deleteEdit);
-            result = deleteEdit.getProlog();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of the {@link #deleteControl(String)}
-     * method. Returns a corresponding undoable edit.
-     */
-    private DeletePrologEdit doDeleteProlog(String name) {
-        DeletePrologEdit result = null;
-        testInit();
-        String prolog = this.prologMap.remove(name);
-        if (prolog != null) {
-            createPrologFile(name).delete();
-            result = new DeletePrologEdit(name, prolog);
-        }
-        return result;
-    }
-
-    @Override
-    public String renameProlog(String oldName, String newName) {
-        String result = null;
-        RenamePrologEdit edit = doRenameProlog(oldName, newName);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldProlog();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #renameRule(String, String)}.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private RenamePrologEdit doRenameProlog(String oldName, String newName) {
-        testInit();
-        String prolog = this.prologMap.remove(oldName);
-        assert prolog != null;
-        createPrologFile(oldName).renameTo(createPrologFile(newName));
-        String oldProlog = this.prologMap.put(newName, prolog);
-        assert oldProlog == null;
-        return new RenamePrologEdit(oldName, newName, prolog);
-    }
-
-    @Override
-    public Map<String,AspectGraph> getGraphs() {
-        testInit();
-        return Collections.unmodifiableMap(this.graphMap);
-    }
-
-    @Override
-    public Collection<AspectGraph> putGraphs(Collection<AspectGraph> graphs)
-        throws IOException {
+    public Collection<AspectGraph> putGraphs(ResourceKind kind,
+            Collection<AspectGraph> graphs) throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
-        GraphEdit edit = doPutGraphs(graphs);
+        GraphBasedEdit edit = doPutGraphs(kind, graphs);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -358,29 +293,33 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Implements the functionality of {@link #putGraphs(Collection)}. Returns
+     * Implements the functionality of {@link #putGraphs(ResourceKind, Collection)}. Returns
      * an undoable edit wrapping this functionality.
      */
-    private GraphEdit doPutGraphs(Collection<AspectGraph> newGraphs)
-        throws IOException {
+    private GraphBasedEdit doPutGraphs(ResourceKind kind,
+            Collection<AspectGraph> newGraphs) throws IOException {
         testInit();
+        // if we're relabelling, it may be that there are already graphs
+        // under the names of the new ones
         Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
         for (AspectGraph newGraph : newGraphs) {
             String name = newGraph.getName();
             this.marshaller.marshalGraph(newGraph.toPlainGraph(),
-                createGraphFile(name));
-            AspectGraph oldGraph = this.graphMap.put(name, newGraph);
+                createFile(kind, name));
+            AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
             if (oldGraph != null) {
                 oldGraphs.add(oldGraph);
             }
         }
-        return new GraphEdit(oldGraphs, newGraphs);
+        return new GraphBasedEdit(kind, oldGraphs.isEmpty() ? EditType.CREATE
+                : EditType.MODIFY, oldGraphs, newGraphs, null, null);
     }
 
     @Override
-    public Collection<AspectGraph> deleteGraphs(Collection<String> name) {
+    public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
+            Collection<String> name) throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
-        GraphEdit edit = doDeleteGraphs(name);
+        GraphBasedEdit edit = doDeleteGraphs(kind, name);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -390,27 +329,42 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Implements the functionality of the {@link #deleteGraphs(Collection)} method.
+     * Implements the functionality of the {@link #deleteGraphs(ResourceKind, Collection)} method.
      * Returns a corresponding undoable edit.
      */
-    private GraphEdit doDeleteGraphs(Collection<String> names) {
+    private GraphBasedEdit doDeleteGraphs(ResourceKind kind,
+            Collection<String> names) throws IOException {
         testInit();
         List<AspectGraph> deletedGraphs =
             new ArrayList<AspectGraph>(names.size());
+        Set<String> typeNames =
+            kind == TYPE ? new TreeSet<String>(getProperties().getTypeNames())
+                    : Collections.<String>emptySet();
+        boolean typesChanged = false;
         for (String name : names) {
-            AspectGraph graph = this.graphMap.remove(name);
+            AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
-            this.marshaller.deleteGraph(createGraphFile(name));
+            this.marshaller.deleteGraph(createFile(kind, name));
             deletedGraphs.add(graph);
+            typesChanged |= typeNames.remove(name);
         }
-        return new GraphEdit(deletedGraphs, Collections.<AspectGraph>emptySet());
+        SystemProperties oldProps = null;
+        SystemProperties newProps = null;
+        if (typesChanged) {
+            oldProps = getProperties();
+            newProps = getProperties().clone();
+            newProps.setTypeNames(typeNames);
+            doPutProperties(newProps);
+        }
+        return new GraphBasedEdit(kind, EditType.DELETE, deletedGraphs,
+            Collections.<AspectGraph>emptySet(), oldProps, newProps);
     }
 
     @Override
-    public AspectGraph renameGraph(String oldName, String newName)
-        throws IOException {
+    public AspectGraph renameGraph(ResourceKind kind, String oldName,
+            String newName) throws IOException {
         AspectGraph result = null;
-        GraphEdit edit = doRenameGraph(oldName, newName);
+        GraphBasedEdit edit = doRenameGraph(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -420,248 +374,36 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Implements the functionality of {@link #renameGraph(String, String)}.
+     * Implements the functionality of {@link #renameGraph(ResourceKind, String, String)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private GraphEdit doRenameGraph(String oldName, String newName)
-        throws IOException {
+    private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName,
+            String newName) throws IOException {
         testInit();
-        AspectGraph oldGraph = this.graphMap.remove(oldName);
+        AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
         assert oldGraph != null;
-        this.marshaller.deleteGraph(createGraphFile(oldName));
+        this.marshaller.deleteGraph(createFile(kind, oldName));
         AspectGraph newGraph = oldGraph.rename(newName);
-        AspectGraph previous = this.graphMap.put(newName, newGraph);
+        AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
         assert previous == null;
         this.marshaller.marshalGraph(newGraph.toPlainGraph(),
-            createGraphFile(newName));
-        return new GraphEdit(Collections.singleton(oldGraph),
-            Collections.singleton(newGraph));
-    }
-
-    @Override
-    public Map<String,AspectGraph> getRules() {
-        testInit();
-        return Collections.unmodifiableMap(this.ruleMap);
-    }
-
-    @Override
-    public Collection<AspectGraph> putRules(Collection<AspectGraph> rule)
-        throws IOException {
-        Collection<AspectGraph> result = Collections.emptySet();
-        RuleEdit edit = doPutRules(rule);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldRules();
+            createFile(kind, newName));
+        // change the properties if there is a change in the enabled types
+        SystemProperties oldProps = null;
+        SystemProperties newProps = null;
+        Set<String> typeNames = getProperties().getTypeNames();
+        if (kind == TYPE && typeNames.contains(oldName)) {
+            oldProps = getProperties();
+            typeNames = new TreeSet<String>(typeNames);
+            typeNames.remove(oldName);
+            typeNames.add(newName);
+            newProps = oldProps.clone();
+            newProps.setTypeNames(typeNames);
+            doPutProperties(newProps);
         }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #putRules(Collection)}. Returns an
-     * undoable edit wrapping this functionality.
-     */
-    private RuleEdit doPutRules(Collection<AspectGraph> rules)
-        throws IOException {
-        testInit();
-        Set<AspectGraph> oldRules = new HashSet<AspectGraph>();
-        for (AspectGraph newRule : rules) {
-            String name = newRule.getName();
-            this.marshaller.marshalGraph(newRule.toPlainGraph(),
-                createRuleFile(name));
-            AspectGraph oldRule = this.ruleMap.put(name, newRule);
-            if (oldRule != null) {
-                oldRules.add(oldRule);
-            }
-        }
-        return new RuleEdit(oldRules, rules);
-    }
-
-    @Override
-    public Collection<AspectGraph> deleteRules(Collection<String> names) {
-        Collection<AspectGraph> result = Collections.emptySet();
-        RuleEdit edit = doDeleteRules(names);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldRules();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of the {@link #deleteRules(Collection)} method.
-     * Returns a corresponding undoable edit.
-     */
-    private RuleEdit doDeleteRules(Collection<String> names) {
-        testInit();
-        List<AspectGraph> deletedRules =
-            new ArrayList<AspectGraph>(names.size());
-        for (String name : names) {
-            AspectGraph rule = this.ruleMap.remove(name);
-            assert rule != null;
-            this.marshaller.deleteGraph(new File(
-                this.file,
-                RULE_FILTER.addExtension(Groove.toString(
-                    new RuleName(name).tokens(), "", "", Groove.FILE_SEPARATOR))));
-            deletedRules.add(rule);
-        }
-        return new RuleEdit(deletedRules, Collections.<AspectGraph>emptySet());
-    }
-
-    @Override
-    public AspectGraph renameRule(String oldName, String newName)
-        throws IOException {
-        AspectGraph result = null;
-        RuleEdit edit = doRenameRule(oldName, newName);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getNewRules().iterator().next();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #renameRule(String, String)}.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private RuleEdit doRenameRule(String oldName, String newName)
-        throws IOException {
-        testInit();
-        AspectGraph oldRule = this.ruleMap.remove(oldName);
-        assert oldRule != null;
-        this.marshaller.deleteGraph(createRuleFile(oldName));
-        AspectGraph newRule = oldRule.rename(newName);
-        AspectGraph previous = this.ruleMap.put(newName, newRule);
-        assert previous == null;
-        this.marshaller.marshalGraph(newRule.toPlainGraph(),
-            createRuleFile(newName));
-        return new RuleEdit(Collections.singleton(oldRule),
-            Collections.singleton(newRule));
-    }
-
-    @Override
-    public Map<String,AspectGraph> getTypes() {
-        testInit();
-        return Collections.unmodifiableMap(this.typeMap);
-    }
-
-    @Override
-    public AspectGraph putType(AspectGraph type) throws IOException {
-        AspectGraph result = null;
-        PutTypeEdit edit = doPutType(type);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldType();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #putType(AspectGraph)}. Returns an
-     * undoable edit wrapping this functionality.
-     */
-    private PutTypeEdit doPutType(AspectGraph type) throws IOException {
-        testInit();
-        String name = type.getName();
-        this.marshaller.marshalGraph(type.toPlainGraph(), createTypeFile(name));
-        AspectGraph oldType = this.typeMap.put(name, type);
-        return new PutTypeEdit(oldType, type);
-    }
-
-    @Override
-    public AspectGraph deleteType(String name) throws IOException {
-        AspectGraph result = null;
-        DeleteTypeEdit edit = doDeleteType(name);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getType();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of the {@link #deleteType(String)} method.
-     * Returns a corresponding undoable edit.
-     */
-    private DeleteTypeEdit doDeleteType(String name) throws IOException {
-        DeleteTypeEdit result = null;
-        testInit();
-        AspectGraph type = this.typeMap.remove(name);
-        if (type != null) {
-            this.marshaller.deleteGraph(createTypeFile(name));
-            // change the type-related system properties, if necessary
-            SystemProperties oldProps = null;
-            SystemProperties newProps = null;
-            List<String> types =
-                new ArrayList<String>(getProperties().getTypeNames());
-            if (types.remove(name)) {
-                oldProps = getProperties();
-                newProps = getProperties().clone();
-                newProps.setTypeNames(types);
-                doPutProperties(newProps);
-            }
-            result = new DeleteTypeEdit(type, oldProps, newProps);
-        }
-        return result;
-    }
-
-    @Override
-    public AspectGraph renameType(String oldName, String newName)
-        throws IOException {
-        AspectGraph result = null;
-        RenameTypeEdit edit = doRenameType(oldName, newName);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getOldType();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #renameType(String, String)}.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private RenameTypeEdit doRenameType(String oldName, String newName)
-        throws IOException {
-        RenameTypeEdit result = null;
-        testInit();
-        AspectGraph type = this.typeMap.remove(oldName);
-        boolean edited = false;
-        AspectGraph oldType = null;
-        if (type != null) {
-            this.marshaller.deleteGraph(createTypeFile(oldName));
-            type = type.rename(newName);
-            oldType = this.typeMap.put(newName, type);
-            this.marshaller.marshalGraph(type.toPlainGraph(),
-                createTypeFile(newName));
-            edited = true;
-        } else if (this.typeMap.containsKey(newName)) {
-            oldType = this.typeMap.remove(newName);
-            this.marshaller.deleteGraph(createTypeFile(newName));
-            edited = true;
-        }
-        if (edited) {
-            SystemProperties oldProps = null;
-            SystemProperties newProps = null;
-            List<String> types =
-                new ArrayList<String>(getProperties().getTypeNames());
-            if (types.remove(oldName)) {
-                oldProps = getProperties();
-                newProps = getProperties().clone();
-                types.add(newName);
-                newProps.setTypeNames(types);
-                doPutProperties(newProps);
-            }
-            result =
-                new RenameTypeEdit(oldName, newName, oldType, oldProps,
-                    newProps);
-        }
-        return result;
+        return new GraphBasedEdit(kind, EditType.RENAME,
+            Collections.singleton(oldGraph), Collections.singleton(newGraph),
+            oldProps, newProps);
     }
 
     @Override
@@ -717,32 +459,19 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws IOException {
         MyCompoundEdit result = new MyCompoundEdit(Options.RELABEL_ACTION_NAME);
-
-        List<AspectGraph> newGraphs =
-            new ArrayList<AspectGraph>(getGraphs().size());
-        for (AspectGraph graph : getGraphs().values()) {
-            AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
-            if (newGraph != graph) {
-                newGraphs.add(newGraph);
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            if (kind.isGraphBased()) {
+                List<AspectGraph> newGraphs =
+                    new ArrayList<AspectGraph>(getGraphs(kind).size());
+                for (AspectGraph graph : getGraphs(kind).values()) {
+                    AspectGraph newGraph = graph.relabel(oldLabel, newLabel);
+                    if (newGraph != graph) {
+                        newGraphs.add(newGraph);
+                    }
+                }
+                result.addEdit(doPutGraphs(kind, newGraphs));
             }
         }
-        result.addEdit(doPutGraphs(newGraphs));
-        for (AspectGraph type : getTypes().values()) {
-            AspectGraph newType = type.relabel(oldLabel, newLabel);
-            if (newType != type) {
-                Edit edit = doPutType(newType);
-                result.addEdit(edit);
-            }
-        }
-        List<AspectGraph> newRules =
-            new ArrayList<AspectGraph>(getRules().size());
-        for (AspectGraph rule : getRules().values()) {
-            AspectGraph newRule = rule.relabel(oldLabel, newLabel);
-            if (newRule != rule) {
-                newRules.add(newRule);
-            }
-        }
-        result.addEdit(doPutRules(newRules));
         SystemProperties newProperties =
             this.properties.relabel(oldLabel, newLabel);
         if (newProperties != this.properties) {
@@ -750,7 +479,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             result.addEdit(edit);
         }
         result.end();
-        return result.getChange() == 0 ? null : result;
+        return result.getChange().isEmpty() ? null : result;
     }
 
     /** Renumbers all nodes in the rules and graphs of this grammar
@@ -771,58 +500,41 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private MyCompoundEdit doRenumber() throws IOException {
         MyCompoundEdit result =
             new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
-        List<AspectGraph> newGraphs =
-            new ArrayList<AspectGraph>(getGraphs().size());
-        for (AspectGraph graph : getGraphs().values()) {
-            AspectGraph newGraph = graph.renumber();
-            if (newGraph != graph) {
-                newGraphs.add(newGraph);
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            if (kind.isGraphBased()) {
+                List<AspectGraph> newGraphs =
+                    new ArrayList<AspectGraph>(getGraphs(kind).size());
+                for (AspectGraph graph : getGraphs(kind).values()) {
+                    AspectGraph newGraph = graph.renumber();
+                    if (newGraph != graph) {
+                        newGraphs.add(newGraph);
+                    }
+                }
+                result.addEdit(doPutGraphs(kind, newGraphs));
             }
         }
-        result.addEdit(doPutGraphs(newGraphs));
-        for (AspectGraph type : getTypes().values()) {
-            AspectGraph newType = type.renumber();
-            if (newType != type) {
-                Edit edit = doPutType(newType);
-                result.addEdit(edit);
-            }
-        }
-        List<AspectGraph> newRules =
-            new ArrayList<AspectGraph>(getRules().size());
-        for (AspectGraph rule : getRules().values()) {
-            AspectGraph newRule = rule.renumber();
-            if (newRule != rule) {
-                newRules.add(newRule);
-            }
-        }
-        result.addEdit(doPutRules(newRules));
         result.end();
-        return result.getChange() == 0 ? null : result;
+        return result.getChange().isEmpty() ? null : result;
     }
 
     @Override
     public void reload() throws IOException {
-        loadProperties();
-        loadRules();
-        loadGraphs();
-        loadTypes();
-        loadControls();
-        loadProlog();
-        notifyObservers(new MyEdit(SystemStore.PROPERTIES_CHANGE
-            | SystemStore.RULE_CHANGE | SystemStore.GRAPH_CHANGE
-            | SystemStore.TYPE_CHANGE | SystemStore.CONTROL_CHANGE
-            | SystemStore.PROLOG_CHANGE));
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            if (kind == PROPERTIES) {
+                loadProperties();
+            } else if (kind.isTextBased()) {
+                loadTexts(kind, kind.getFilter());
+            } else {
+                loadGraphs(kind, kind.getFilter());
+            }
+        }
+        enableTypes();
+        notifyObservers(new MyEdit(EditType.CREATE,
+            EnumSet.allOf(ResourceKind.class)));
         this.initialised = true;
     }
 
-    public StoredGrammarView toGrammarView() {
-        if (this.view == null) {
-            this.view = new StoredGrammarView(this);
-            this.observable.addObserver(this.view);
-        }
-        return this.view;
-    }
-
+    @Override
     public Object getLocation() {
         if (this.file == null) {
             return this.url;
@@ -831,8 +543,9 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         }
     }
 
+    @Override
     public SystemStore save(File file, boolean clearDir) throws IOException {
-        return save(file, this, clearDir);
+        return SystemStore.save(file, this, clearDir);
     }
 
     /** This type of system store is modifiable. */
@@ -886,23 +599,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Loads the named graphs from specified location and returns the
-     * corresponding AspectGraphs
-     */
-    private void loadGraphs() throws IOException {
-        collectObjects(this.graphMap, STATE_FILTER, GraphRole.HOST);
-    }
-
-    /**
-     * Loads the named graphs from specified location and returns the
-     * corresponding AspectGraphs
-     */
-    private void loadTypes() throws IOException {
-        collectObjects(this.typeMap, TYPE_FILTER, GraphRole.TYPE);
-        enableTypes();
-    }
-
-    /**
      * Processes the {@link SystemProperties#getTypeNames()} field by
      * setting the enabling of the rtype graphs accordingly
      */
@@ -910,7 +606,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         // enable the active types listed in the system properties
         Set<String> enabledTypes =
             new HashSet<String>(getProperties().getTypeNames());
-        for (AspectGraph typeGraph : this.typeMap.values()) {
+        for (AspectGraph typeGraph : getGraphMap(TYPE).values()) {
             GraphInfo.getProperties(typeGraph, true).setEnabled(
                 enabledTypes.contains(typeGraph.getName()));
         }
@@ -920,56 +616,94 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
      * Collects all aspect graphs from the {@link #file} directory with a given
      * extension, and a given role.
      */
-    private void collectObjects(Map<String,AspectGraph> result,
-            ExtensionFilter filter, GraphRole role) throws IOException {
-        result.clear();
+    private void loadGraphs(ResourceKind kind, ExtensionFilter filter)
+        throws IOException {
+        getGraphMap(kind).clear();
+        if (kind == RULE) {
+            try {
+                collectRules(this.file, null);
+            } catch (FormatException e) {
+                throw new IOException(e.getMessage());
+            }
+        } else {
+            File[] files = this.file.listFiles(filter);
+            // read in production rules
+            for (File file : files) {
+                // check for overlapping rule and directory names
+                if (!file.isDirectory()) {
+                    DefaultGraph plainGraph =
+                        this.marshaller.unmarshalGraph(file);
+                    String graphName = filter.stripExtension(file.getName());
+                    /*
+                     * For backward compatibility, we set the role and name of the
+                     * graph
+                     */
+                    plainGraph.setRole(kind.getGraphRole());
+                    plainGraph.setName(graphName);
+                    AspectGraph graph = AspectGraph.newInstance(plainGraph);
+                    /* Store the graph */
+                    Object oldEntry = getGraphMap(kind).put(graphName, graph);
+                    assert oldEntry == null : String.format(
+                        "Duplicate %s name '%s'", kind.getGraphRole(),
+                        graphName);
+                }
+            }
+        }
+    }
+
+    /**
+     * Auxiliary method to descend recursively into subdirectories and load all
+     * rules found there into the rule map
+     * @param directory directory to descend into
+     * @param rulePath rule name prefix for the current directory (with respect
+     *        to the global file)
+     * @throws IOException if an error occurs while loading a rule graph
+     * @throws FormatException if there is a rule name with an error
+     */
+    private void collectRules(File directory, RuleName rulePath)
+        throws IOException, FormatException {
+        File[] files = directory.listFiles(RULE_FILTER);
+        if (files == null) {
+            throw new IOException(LOAD_ERROR + ": no files found at "
+                + directory);
+        } else {
+            Map<String,AspectGraph> ruleMap = getGraphMap(RULE);
+            // read in production rules
+            for (File file : files) {
+                String fileName = RULE_FILTER.stripExtension(file.getName());
+                PriorityFileName priorityFileName =
+                    new PriorityFileName(fileName);
+                RuleName ruleName =
+                    new RuleName(rulePath, priorityFileName.getActualName());
+                // check for overlapping rule and directory names
+                if (file.isDirectory()) {
+                    if (!file.getName().startsWith(".")) {
+                        collectRules(file, ruleName);
+                    }
+                } else {
+                    DefaultGraph plainGraph =
+                        this.marshaller.unmarshalGraph(file);
+                    /*
+                     * For backward compatibility, we set the role and name of
+                     * the rule graph
+                     */
+                    plainGraph.setRole(GraphRole.RULE);
+                    plainGraph.setName(ruleName.toString());
+                    AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
+                    /* Store the rule graph */
+                    AspectGraph oldRule =
+                        ruleMap.put(ruleName.toString(), ruleGraph);
+                    assert oldRule == null : String.format(
+                        "Duplicate rule name '%s'", ruleName);
+                }
+            }
+        }
+    }
+
+    private void loadTexts(ResourceKind kind, ExtensionFilter filter)
+        throws IOException {
+        getTextMap(kind).clear();
         File[] files = this.file.listFiles(filter);
-        // read in production rules
-        for (File file : files) {
-            // check for overlapping rule and directory names
-            if (!file.isDirectory()) {
-                DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
-                String graphName = filter.stripExtension(file.getName());
-                /*
-                 * For backward compatibility, we set the role and name of the
-                 * graph
-                 */
-                plainGraph.setRole(role);
-                plainGraph.setName(graphName);
-                AspectGraph graph = AspectGraph.newInstance(plainGraph);
-                /* Store the graph */
-                Object oldEntry = result.put(graphName, graph);
-                assert oldEntry == null : String.format(
-                    "Duplicate %s name '%s'", role, graphName);
-            }
-        }
-    }
-
-    /**
-     * Loads the control programs.
-     */
-    private void loadControls() throws IOException {
-        this.controlMap.clear();
-        File[] files = this.file.listFiles(CONTROL_FILTER);
-        // read in the control files
-        for (File file : files) {
-            // check for overlapping rule and directory names
-            if (!file.isDirectory()) {
-                // read the program in as a single string
-                String program = groove.io.Util.readFileToString(file);
-                // insert the string into the control map
-                this.controlMap.put(
-                    CONTROL_FILTER.stripExtension(file.getName()), program);
-            }
-        }
-    }
-
-    /**
-     * Loads the control programs.
-     */
-    private void loadProlog() throws IOException {
-        this.prologMap.clear();
-        File[] files = this.file.listFiles(PROLOG_FILTER);
         // read in the prolog files
         for (File file : files) {
             // check for overlapping rule and directory names
@@ -977,8 +711,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
                 // read the program in as a single string
                 String program = groove.io.Util.readFileToString(file);
                 // insert the string into the control map
-                this.prologMap.put(
-                    PROLOG_FILTER.stripExtension(file.getName()), program);
+                getTextMap(kind).put(filter.stripExtension(file.getName()),
+                    program);
             }
         }
     }
@@ -994,7 +728,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     /**
      * Loads the properties file from file (if any), and returns them.
      */
-    public SystemProperties loadGrammarProperties() throws IOException {
+    private SystemProperties loadGrammarProperties() throws IOException {
         SystemProperties properties = new SystemProperties();
         File propertiesFile =
             new File(this.file,
@@ -1020,37 +754,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         return properties;
     }
 
-    /**
-     * Loads all the rules from the file into {@link #ruleMap}.
-     */
-    private void loadRules() throws IOException {
-        this.ruleMap.clear();
-        try {
-            collectRules(this.file, null);
-        } catch (FormatException e) {
-            throw new IOException(e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return !this.hasSystemPropertiesFile && this.graphMap.isEmpty()
-            && this.typeMap.isEmpty() && this.ruleMap.isEmpty();
-    }
-
-    private void saveControl(String name, String program) throws IOException {
-        File controlFile = createControlFile(name);
-        Writer writer = new FileWriter(controlFile);
-        try {
-            writer.write(program);
-        } finally {
-            writer.close();
-        }
-    }
-
-    private void saveProlog(String name, String program) throws IOException {
-        File prologFile = createPrologFile(name);
-        Writer writer = new FileWriter(prologFile);
+    private void saveText(ResourceKind kind, String name, String program)
+        throws IOException {
+        File file = createFile(kind, name);
+        Writer writer = new FileWriter(file);
         try {
             writer.write(program);
         } finally {
@@ -1075,54 +782,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         enableTypes();
     }
 
-    /**
-     * Auxiliary method to descend recursively into subdirectories and load all
-     * rules found there into the rule map
-     * @param directory directory to descend into
-     * @param rulePath rule name prefix for the current directory (with respect
-     *        to the global file)
-     * @throws IOException if an error occurs while loading a rule graph
-     * @throws FormatException if there is a rule name with an error
-     */
-    private void collectRules(File directory, RuleName rulePath)
-        throws IOException, FormatException {
-        File[] files = directory.listFiles(RULE_FILTER);
-        if (files == null) {
-            throw new IOException(LOAD_ERROR + ": no files found at "
-                + directory);
-        } else {
-            // read in production rules
-            for (File file : files) {
-                String fileName = RULE_FILTER.stripExtension(file.getName());
-                PriorityFileName priorityFileName =
-                    new PriorityFileName(fileName);
-                RuleName ruleName =
-                    new RuleName(rulePath, priorityFileName.getActualName());
-                // check for overlapping rule and directory names
-                if (file.isDirectory()) {
-                    if (!file.getName().startsWith(".")) {
-                        collectRules(file, ruleName);
-                    }
-                } else {
-                    DefaultGraph plainGraph =
-                        this.marshaller.unmarshalGraph(file);
-                    /*
-                     * For backward compatibility, we set the role and name of
-                     * the rule graph
-                     */
-                    plainGraph.setRole(RULE);
-                    plainGraph.setName(ruleName.toString());
-                    AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
-                    /* Store the rule graph */
-                    AspectGraph oldRule =
-                        this.ruleMap.put(ruleName.toString(), ruleGraph);
-                    assert oldRule == null : String.format(
-                        "Duplicate rule name '%s'", ruleName);
-                }
-            }
-        }
-    }
-
     private void testInit() throws IllegalStateException {
         if (!this.initialised) {
             throw new IllegalStateException(
@@ -1131,44 +790,10 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     }
 
     /**
-     * Creates a file name from a given control program name. The file name
-     * consists of the store location, the program, and the control extension.
+     * Creates a file name for a given resource kind.
      */
-    private File createControlFile(String controlName) {
-        return new File(this.file, CONTROL_FILTER.addExtension(controlName));
-    }
-
-    /**
-     * Creates a file name from a given graph name. The file name consists of
-     * the store location, the name, and the state extension.
-     */
-    private File createGraphFile(String graphName) {
-        return new File(this.file, STATE_FILTER.addExtension(graphName));
-    }
-
-    /**
-     * Creates a file name from a given control program name. The file name
-     * consists of the store location, the program, and the control extension.
-     */
-    private File createPrologFile(String controlName) {
-        return new File(this.file, PROLOG_FILTER.addExtension(controlName));
-    }
-
-    /**
-     * Creates a file name from a given graph name. The file name consists of
-     * the store location, the name, and the state extension.
-     */
-    private File createTypeFile(String graphName) {
-        return new File(this.file, TYPE_FILTER.addExtension(graphName));
-    }
-
-    /**
-     * Creates a file name from a given rule name. The file name consists of a
-     * given parent file, the name, and the state extension.
-     */
-    private File createRuleFile(String ruleName) {
-        return new File(this.file, RULE_FILTER.addExtension(Groove.toString(
-            new RuleName(ruleName).tokens(), "", "", Groove.FILE_SEPARATOR)));
+    private File createFile(ResourceKind kind, String name) {
+        return new File(this.file, kind.getFilter().addExtension(name));
     }
 
     /** Posts the edit, and also notifies the observers. */
@@ -1178,25 +803,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         notifyObservers((Edit) e);
     }
 
-    /** Notifies the observers with a given string value. */
-    private void notifyObservers(Edit edit) {
-        this.observable.notifyObservers(edit);
+    @Override
+    protected boolean hasSystemProperties() {
+        return this.hasSystemPropertiesFile;
     }
 
-    /** The name-to-rule map of the source. */
-    private final Map<String,AspectGraph> ruleMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-graph map of the source. */
-    private final Map<String,AspectGraph> graphMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-types map of the source. */
-    private final Map<String,AspectGraph> typeMap =
-        new TreeMap<String,AspectGraph>();
-    /** The name-to-control-program map of the source. */
-    private final Map<String,String> controlMap = new TreeMap<String,String>();
-    /** The name-to-prolog-program map of the source. */
-    private final Map<String,String> prologMap = new TreeMap<String,String>();
-    /** The system properties object of the source. */
     private SystemProperties properties;
     /**
      * The location from which the source is loaded. If <code>null</code>, the
@@ -1211,97 +822,8 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private final Xml<DefaultGraph> marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
-    /** The grammar view associated with this store. */
-    private StoredGrammarView view;
-    /** The observable object associated with this system store. */
-    private final Observable observable = new Observable() {
-        /** Always invokes {@link #setChanged()}. */
-        @Override
-        public void notifyObservers(Object arg) {
-            setChanged();
-            super.notifyObservers(arg);
-        }
-    };
     /** Flag whether this store contains a 'system.properties' file. */
     private boolean hasSystemPropertiesFile = false;
-
-    /** Saves the content of a given system store to file. */
-    static public SystemStore save(File file, SystemStore store,
-            boolean clearDir) throws IOException {
-        if (!GRAMMAR_FILTER.accept(file)) {
-            throw new IOException(String.format(
-                "File '%s' does not refer to a production system", file));
-        }
-        // if the file already exists, rename it
-        // in order to be able to restore if saving fails
-        File newFile = null;
-        if (file.exists()) {
-            newFile = file;
-            do {
-                newFile =
-                    new File(newFile.getParent(), "Copy of "
-                        + newFile.getName());
-            } while (newFile.exists());
-            if (clearDir) {
-                if (!file.renameTo(newFile)) {
-                    throw new IOException(String.format(
-                        "Can't save grammar to existing file '%s'", file));
-                }
-            } else {
-                Util.copyDirectory(file, newFile, true);
-            }
-        }
-        try {
-            DefaultFileSystemStore result =
-                new DefaultFileSystemStore(file, true);
-            result.reload();
-            // save properties
-            result.doPutProperties(store.getProperties());
-            // save control programs
-            for (Map.Entry<String,String> controlEntry : store.getControls().entrySet()) {
-                result.doPutControl(controlEntry.getKey(),
-                    controlEntry.getValue());
-            }
-            // save graphs
-            result.doPutGraphs(store.getGraphs().values());
-            // save rules
-            result.doPutRules(store.getRules().values());
-            // save type graphs
-            for (AspectGraph typeGraph : store.getTypes().values()) {
-                result.doPutType(typeGraph);
-            }
-            if (newFile != null) {
-                boolean deleted = deleteRecursive(newFile);
-                assert deleted : String.format("Failed to delete '%s'", newFile);
-            }
-            return result;
-        } catch (IOException exc) {
-            file.delete();
-            // attempt to re-rename previously existing file
-            if (newFile != null) {
-                newFile.renameTo(file);
-            }
-            throw exc;
-        }
-    }
-
-    /**
-     * Recursively traverses all subdirectories and deletes all files and
-     * directories.
-     */
-    private static boolean deleteRecursive(File location) {
-        if (location.isDirectory()) {
-            for (File file : location.listFiles()) {
-                if (!deleteRecursive(file)) {
-                    return false;
-                }
-            }
-            return location.delete();
-        } else {
-            location.delete();
-            return true;
-        }
-    }
 
     /**
      * Returns a file based on a given URL, if there is one such.
@@ -1328,13 +850,39 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     static private final String LOAD_ERROR = "Can't load graph grammar";
 
     private class MyEdit extends AbstractUndoableEdit implements Edit {
-        public MyEdit(int change) {
+        public MyEdit(EditType type, ResourceKind first, ResourceKind... rest) {
+            this.type = type;
+            this.change = EnumSet.of(first, rest);
+            this.kind = first;
+        }
+
+        public MyEdit(EditType type, Set<ResourceKind> change) {
+            this.type = type;
             this.change = change;
+            this.kind = null;
+        }
+
+        /** Adds a resource kind to the ones that this edit is changing. */
+        protected void addChange(ResourceKind kind) {
+            this.change.add(kind);
         }
 
         @Override
-        public int getChange() {
+        public Set<ResourceKind> getChange() {
             return this.change;
+        }
+
+        /** 
+         * Returns the main resource kind affected by this edit.
+         * Used to construct the presentation name of the edit.
+         */
+        public ResourceKind getResourceKind() {
+            return this.kind;
+        }
+
+        @Override
+        public EditType getType() {
+            return this.type;
         }
 
         public void checkAndSetVersion() {
@@ -1378,11 +926,15 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             return result;
         }
 
+        /** The main resource kind of this edit. */
+        private final ResourceKind kind;
+        /** The type of this edit. */
+        private final EditType type;
         /**
          * The change information in this edit.
          * @see #getChange()
          */
-        private final int change;
+        private final Set<ResourceKind> change;
 
         private SystemProperties origProp = null;
     }
@@ -1392,6 +944,11 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         /** Constructs a compound edit with a given name. */
         public MyCompoundEdit(String presentationName) {
             this.presentationName = presentationName;
+        }
+
+        @Override
+        public EditType getType() {
+            return EditType.MODIFY;
         }
 
         @Override
@@ -1414,13 +971,13 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
             boolean result = super.addEdit(anEdit);
             if (result) {
                 assert anEdit instanceof Edit;
-                this.change |= ((Edit) anEdit).getChange();
+                this.change.addAll(((Edit) anEdit).getChange());
             }
             return result;
         }
 
         @Override
-        public int getChange() {
+        public Set<ResourceKind> getChange() {
             return this.change;
         }
 
@@ -1428,207 +985,45 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
          * The change information in this edit.
          * @see #getChange()
          */
-        private int change;
+        private Set<ResourceKind> change;
         /** The name of this edit. */
         private final String presentationName;
     }
 
-    /** Edit consisting of the addition of a control program. */
-    private class PutControlEdit extends MyEdit {
-        public PutControlEdit(String name, String oldControl, String newControl) {
-            super(CONTROL_CHANGE);
-            this.name = name;
-            this.oldControl = oldControl;
-            this.newControl = newControl;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return this.oldControl == null ? Options.NEW_CONTROL_ACTION_NAME
-                    : Options.EDIT_CONTROL_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                doPutControl(this.name, this.newControl);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                if (this.oldControl == null) {
-                    doDeleteControl(this.name);
-                } else {
-                    doPutControl(this.name, this.oldControl);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted control program, if any. */
-        public final String getOldControl() {
-            return this.oldControl;
-        }
-
-        /** The name of the deleted control program. */
-        private final String name;
-        /** The old control program with this name. */
-        private final String oldControl;
-        /** The new control program with this name. */
-        private final String newControl;
-    }
-
-    /** Edit consisting of the deletion of a control program. */
-    private class DeleteControlEdit extends MyEdit {
-        public DeleteControlEdit(String name, String control,
+    /** Edit consisting of additions and deletions of text-based resources. */
+    private class TextBasedEdit extends MyEdit {
+        public TextBasedEdit(ResourceKind kind, EditType type,
+                Map<String,String> oldTexts, Map<String,String> newTexts,
                 SystemProperties oldProps, SystemProperties newProps) {
-            super(CONTROL_CHANGE);
-            this.name = name;
-            this.control = control;
+            super(type, kind);
+            this.oldTexts = oldTexts;
+            this.newTexts = newTexts;
             this.oldProps = oldProps;
             this.newProps = newProps;
+            if (oldProps != null) {
+                addChange(PROPERTIES);
+            }
         }
 
         @Override
         public String getPresentationName() {
-            return Options.DELETE_CONTROL_ACTION_NAME;
+            String result =
+                getType().getName() + " " + getResourceKind().getName();
+            if (this.newTexts.size() > 1 || this.oldTexts.size() > 1) {
+                result += "s";
+            }
+            return result;
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
             try {
+                doDeleteTexts(getResourceKind(), this.oldTexts.keySet());
                 if (this.newProps != null) {
                     doPutProperties(this.newProps);
                 }
-                doDeleteControl(this.name);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doPutControl(this.name, this.control);
-                if (this.oldProps != null) {
-                    doPutProperties(this.oldProps);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted control program. */
-        public final String getControl() {
-            return this.control;
-        }
-
-        /** The name of the deleted control program. */
-        private final String name;
-        /** The deleted control program. */
-        private final String control;
-        /** The old system properties; possibly {@code null}. */
-        private final SystemProperties oldProps;
-        /** The new system properties; possibly {@code null}. */
-        private final SystemProperties newProps;
-    }
-
-    /** Edit consisting of the renaming of a control program. */
-    private class RenameControlEdit extends MyEdit {
-        public RenameControlEdit(String oldName, String newName,
-                SystemProperties oldProps, SystemProperties newProps,
-                String oldControl) {
-            super(CONTROL_CHANGE);
-            this.oldName = oldName;
-            this.newName = newName;
-            this.oldProps = oldProps;
-            this.newProps = newProps;
-            this.oldControl = oldControl;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.RENAME_RULE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                if (this.newProps != null) {
-                    doPutProperties(this.newProps);
-                }
-                doRenameControl(this.oldName, this.newName);
-                notifyObservers(this);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                if (this.oldProps != null) {
-                    doPutProperties(this.oldProps);
-                }
-                doRenameControl(this.newName, this.oldName);
-                notifyObservers(this);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-        }
-
-        /** Returns the text of the renamed control program. */
-        public final String getOldControl() {
-            return this.oldControl;
-        }
-
-        /** The old name of the renamed control program. */
-        private final String oldName;
-        /** The new name of the renamed control program. */
-        private final String newName;
-        /** The text of the renamed control program. */
-        private final String oldControl;
-        /** The old system properties; possibly {@code null}. */
-        private final SystemProperties oldProps;
-        /** The new system properties; possibly {@code null}. */
-        private final SystemProperties newProps;
-    }
-
-    /** Edit consisting of the addition of a control program. */
-    private class PutPrologEdit extends MyEdit {
-        public PutPrologEdit(String name, String oldProlog, String newProlog) {
-            super(PROLOG_CHANGE);
-            this.name = name;
-            this.oldProlog = oldProlog;
-            this.newProlog = newProlog;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return this.oldProlog == null ? Options.NEW_PROLOG_ACTION_NAME
-                    : Options.EDIT_PROLOG_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                doPutProlog(this.name, this.newProlog);
+                doPutTexts(getResourceKind(), this.newTexts);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1638,148 +1033,73 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (this.oldProlog == null) {
-                doDeleteProlog(this.name);
-            } else {
-                try {
-                    doPutProlog(this.name, this.oldProlog);
-                } catch (IOException exc) {
-                    throw new CannotUndoException();
-                }
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted control program, if any. */
-        public final String getOldProlog() {
-            return this.oldProlog;
-        }
-
-        /** The name of the deleted control program. */
-        private final String name;
-        /** The old control program with this name. */
-        private final String oldProlog;
-        /** The new control program with this name. */
-        private final String newProlog;
-    }
-
-    /** Edit consisting of the deletion of a control program. */
-    private class DeletePrologEdit extends MyEdit {
-        public DeletePrologEdit(String name, String prolog) {
-            super(PROLOG_CHANGE);
-            this.name = name;
-            this.prolog = prolog;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.DELETE_PROLOG_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            doDeleteProlog(this.name);
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
             try {
-                doPutProlog(this.name, this.prolog);
+                doDeleteTexts(getResourceKind(), this.newTexts.keySet());
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
+                doPutTexts(getResourceKind(), this.oldTexts);
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
             notifyObservers(this);
         }
 
-        /** Returns the deleted control program. */
-        public final String getProlog() {
-            return this.prolog;
+        /** Returns the deleted texts. */
+        public final Map<String,String> getOldTexts() {
+            return this.oldTexts;
         }
 
-        /** The name of the deleted control program. */
-        private final String name;
-        /** The deleted control program. */
-        private final String prolog;
+        /** Returns the created texts. */
+        public final Map<String,String> getNewTexts() {
+            return this.newTexts;
+        }
+
+        /** The deleted texts, if any. */
+        private final Map<String,String> oldTexts;
+        /** The added texts. */
+        private final Map<String,String> newTexts;
+        /** The old system properties; possibly {@code null}. */
+        private final SystemProperties oldProps;
+        /** The new system properties; possibly {@code null}. */
+        private final SystemProperties newProps;
     }
 
-    /** Edit consisting of the renaming of a prolog program. */
-    private class RenamePrologEdit extends MyEdit {
-        public RenamePrologEdit(String oldName, String newName, String oldProlog) {
-            super(PROLOG_CHANGE);
-            this.oldName = oldName;
-            this.newName = newName;
-            this.oldProlog = oldProlog;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.RENAME_RULE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            doRenameProlog(this.oldName, this.newName);
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            doRenameProlog(this.newName, this.oldName);
-            notifyObservers(this);
-        }
-
-        /** Returns the text of the renamed prolog program. */
-        public final String getOldProlog() {
-            return this.oldProlog;
-        }
-
-        /** The old name of the renamed prolog program. */
-        private final String oldName;
-        /** The new name of the renamed prolog program. */
-        private final String newName;
-        /** The text of the renamed prolog program. */
-        private final String oldProlog;
-    }
-
-    /** Edit consisting of the addition (or replacement) of a graph. */
-    private class GraphEdit extends MyEdit {
-        public GraphEdit(Collection<AspectGraph> oldGraphs,
-                Collection<AspectGraph> newGraphs) {
-            super(GRAPH_CHANGE);
+    /** Edit consisting of additions and deletions of graph-based resources. */
+    private class GraphBasedEdit extends MyEdit {
+        public GraphBasedEdit(ResourceKind kind, EditType type,
+                Collection<AspectGraph> oldGraphs,
+                Collection<AspectGraph> newGraphs, SystemProperties oldProps,
+                SystemProperties newProps) {
+            super(type, kind);
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;
+            this.oldProps = oldProps;
+            this.newProps = newProps;
+            if (oldProps != null) {
+                addChange(PROPERTIES);
+            }
         }
 
         @Override
         public String getPresentationName() {
-            if (this.oldGraphs.isEmpty()) {
-                return Options.NEW_GRAPH_ACTION_NAME;
-            } else if (this.newGraphs.isEmpty()) {
-                return Options.DELETE_GRAPH_ACTION_NAME;
-            } else if (this.newGraphs.size() == 1 && this.oldGraphs.size() == 1) {
-                String oldRuleName = this.oldGraphs.iterator().next().getName();
-                String newRuleName = this.newGraphs.iterator().next().getName();
-                if (oldRuleName.equals(newRuleName)) {
-                    return Options.EDIT_GRAPH_ACTION_NAME;
-                } else {
-                    return Options.RENAME_GRAPH_ACTION_NAME;
-                }
-            } else {
-                return Options.CHANGE_GRAPHS_ACTION_NAME;
+            String result =
+                getType().getName() + " " + getResourceKind().getName();
+            if (this.newGraphs.size() > 1 || this.oldGraphs.size() > 1) {
+                result += "s";
             }
+            return result;
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            doDeleteGraphs(getNames(this.oldGraphs));
             try {
-                doPutGraphs(this.newGraphs);
+                doDeleteGraphs(getResourceKind(), getNames(this.oldGraphs));
+                if (this.newProps != null) {
+                    doPutProperties(this.newProps);
+                }
+                doPutGraphs(getResourceKind(), this.newGraphs);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1789,9 +1109,12 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            doDeleteGraphs(getNames(this.newGraphs));
             try {
-                doPutGraphs(this.oldGraphs);
+                doDeleteGraphs(getResourceKind(), getNames(this.newGraphs));
+                if (this.oldProps != null) {
+                    doPutProperties(this.oldProps);
+                }
+                doPutGraphs(getResourceKind(), this.oldGraphs);
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }
@@ -1812,243 +1135,6 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
         private final Collection<AspectGraph> oldGraphs;
         /** The added graph. */
         private final Collection<AspectGraph> newGraphs;
-    }
-
-    /** Edit consisting adding and removing sets of rules. */
-    private class RuleEdit extends MyEdit {
-        public RuleEdit(Collection<AspectGraph> oldRules,
-                Collection<AspectGraph> newRules) {
-            super(RULE_CHANGE);
-            this.oldRules = oldRules;
-            this.newRules = newRules;
-        }
-
-        @Override
-        public String getPresentationName() {
-            if (this.oldRules.isEmpty()) {
-                return Options.NEW_RULE_ACTION_NAME;
-            } else if (this.newRules.isEmpty()) {
-                return Options.DELETE_RULE_ACTION_NAME;
-            } else if (this.newRules.size() == 1 && this.oldRules.size() == 1) {
-                String oldRuleName = this.oldRules.iterator().next().getName();
-                String newRuleName = this.newRules.iterator().next().getName();
-                if (oldRuleName.equals(newRuleName)) {
-                    return Options.EDIT_RULE_ACTION_NAME;
-                } else {
-                    return Options.RENAME_RULE_ACTION_NAME;
-                }
-            } else {
-                return Options.CHANGE_RULES_ACTION_NAME;
-            }
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            doDeleteRules(getNames(this.oldRules));
-            try {
-                doPutRules(this.newRules);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            doDeleteRules(getNames(this.newRules));
-            try {
-                doPutRules(this.oldRules);
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted rules, if any. */
-        public final Collection<AspectGraph> getOldRules() {
-            return this.oldRules;
-        }
-
-        /** Returns the created rules, if any. */
-        public final Collection<AspectGraph> getNewRules() {
-            return this.newRules;
-        }
-
-        /** The deleted rule, if any. */
-        private final Collection<AspectGraph> oldRules;
-        /** The added rule. */
-        private final Collection<AspectGraph> newRules;
-    }
-
-    /** Edit consisting of the addition (or replacement) of a type graph. */
-    private class PutTypeEdit extends MyEdit {
-        public PutTypeEdit(AspectGraph oldType, AspectGraph newType) {
-            super(TYPE_CHANGE);
-            this.oldType = oldType;
-            this.newType = newType;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return this.oldType == null ? Options.NEW_TYPE_ACTION_NAME
-                    : Options.EDIT_TYPE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                doPutType(this.newType);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                if (this.oldType == null) {
-                    doDeleteType(this.newType.getName());
-                } else {
-                    doPutType(this.oldType);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted graph. */
-        public final AspectGraph getOldType() {
-            return this.oldType;
-        }
-
-        /** The deleted graph, if any. */
-        private final AspectGraph oldType;
-        /** The added graph. */
-        private final AspectGraph newType;
-    }
-
-    /** Edit consisting of the deletion of a graph type. */
-    private class DeleteTypeEdit extends MyEdit {
-        public DeleteTypeEdit(AspectGraph type, SystemProperties oldProps,
-                SystemProperties newProps) {
-            super(TYPE_CHANGE);
-            this.type = type;
-            this.oldProps = oldProps;
-            this.newProps = newProps;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.DELETE_TYPE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                if (this.newProps != null) {
-                    doPutProperties(this.newProps);
-                }
-                doDeleteType(this.type.getName());
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                doPutType(this.type);
-                if (this.oldProps != null) {
-                    doPutProperties(this.oldProps);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the deleted graph. */
-        public final AspectGraph getType() {
-            return this.type;
-        }
-
-        /** The deleted graph. */
-        private final AspectGraph type;
-        /** The old system properties; possibly {@code null}. */
-        private final SystemProperties oldProps;
-        /** The new system properties; possibly {@code null}. */
-        private final SystemProperties newProps;
-    }
-
-    /** Edit consisting of the renaming of a type graph. */
-    private class RenameTypeEdit extends MyEdit {
-        public RenameTypeEdit(String oldName, String newName,
-                AspectGraph oldType, SystemProperties oldProps,
-                SystemProperties newProps) {
-            super(TYPE_CHANGE);
-            this.oldName = oldName;
-            this.newName = newName;
-            this.oldType = oldType;
-            this.oldProps = oldProps;
-            this.newProps = newProps;
-        }
-
-        @Override
-        public String getPresentationName() {
-            return Options.RENAME_TYPE_ACTION_NAME;
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            try {
-                if (this.newProps != null) {
-                    doPutProperties(this.newProps);
-                }
-                doRenameType(this.oldName, this.newName);
-            } catch (IOException exc) {
-                throw new CannotRedoException();
-            }
-            notifyObservers(this);
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                if (this.oldProps != null) {
-                    doPutProperties(this.oldProps);
-                }
-                doRenameType(this.newName, this.oldName);
-                if (this.oldType != null) {
-                    doPutType(this.oldType);
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
-            }
-            notifyObservers(this);
-        }
-
-        /** Returns the graph previously stored under {@link #newName}, if any. */
-        public final AspectGraph getOldType() {
-            return this.oldType;
-        }
-
-        /** The old name of the renamed graph. */
-        private final String oldName;
-        /** The new name of the renamed graph. */
-        private final String newName;
-        /** The graph previously stored under {@link #newName}, if any. */
-        private final AspectGraph oldType;
         /** The old system properties; possibly {@code null}. */
         private final SystemProperties oldProps;
         /** The new system properties; possibly {@code null}. */
@@ -2059,7 +1145,7 @@ public class DefaultFileSystemStore extends UndoableEditSupport implements
     private class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(SystemProperties oldProperties,
                 SystemProperties newProperties) {
-            super(PROPERTIES_CHANGE);
+            super(EditType.MODIFY, PROPERTIES);
             this.oldProperties = oldProperties;
             this.newProperties = newProperties;
         }

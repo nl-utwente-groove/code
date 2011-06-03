@@ -21,6 +21,7 @@ import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.SystemStore;
+import groove.trans.ResourceKind;
 import groove.trans.RuleName;
 import groove.util.Duo;
 import groove.util.Groove;
@@ -70,7 +71,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the simulator model. */
-    protected final SimulatorModel getModel() {
+    protected final SimulatorModel getSimulatorModel() {
         return this.simulator.getModel();
     }
 
@@ -95,7 +96,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the rule panel of the simulator */
-    protected final RuleDisplay getRuleTab() {
+    protected final RuleDisplay getRuleDisplay() {
         return getMainPanel().getRuleDisplay();
     }
 
@@ -139,98 +140,19 @@ public abstract class SimulatorAction extends AbstractAction implements
     public abstract boolean execute();
 
     /**
-     * Enters a dialog that results in a control name that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing names
-     * @return a control name not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    final protected String askNewControlName(String title, String name,
-            boolean mustBeFresh) {
-        Set<String> existingNames = getModel().getGrammar().getControlNames();
-        return askNewName(title, existingNames, name, mustBeFresh);
-    }
-
-    /**
-     * Enters a dialog that results in a prolog name that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing names
-     * @return a prolog name not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    final protected String askNewPrologName(String title, String name,
-            boolean mustBeFresh) {
-        Set<String> existingNames = getModel().getGrammar().getPrologNames();
-        return askNewName(title, existingNames, name, mustBeFresh);
-    }
-
-    /**
-     * Enters a dialog that results in a graph name that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing graph names
-     * @return a graph name not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    final protected String askNewGraphName(String title, String name,
-            boolean mustBeFresh) {
-        Set<String> existingNames = getModel().getGrammar().getGraphNames();
-        return askNewName(title, existingNames, name, mustBeFresh);
-    }
-
-    /**
-     * Enters a dialog that results in a name label that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing rule names
-     * @return a rule name not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    final protected String askNewRuleName(String title, String name,
-            boolean mustBeFresh) {
-        Set<String> existingNames = getModel().getGrammar().getRuleNames();
-        return askNewName(title, existingNames, name, mustBeFresh);
-    }
-
-    /**
-     * Enters a dialog that results in a type graph that does not yet occur in
-     * the current grammar, or <code>null</code> if the dialog was cancelled.
-     * @param title dialog title; if <code>null</code>, a default title is used
-     * @param name an initially proposed name
-     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
-     *        to be distinct from the existing names
-     * @return a type graph not occurring in the current grammar, or
-     *         <code>null</code>
-     */
-    final protected String askNewTypeName(String title, String name,
-            boolean mustBeFresh) {
-        Set<String> existingNames = getModel().getGrammar().getTypeNames();
-        return askNewName(title, existingNames, name, mustBeFresh);
-    }
-
-    /**
      * Enters a dialog that results in a name that is not in a set of
      * current names, or <code>null</code> if the dialog was cancelled.
+     * @param kind kind of resource for which we want a name
      * @param title dialog title; if <code>null</code>, a default title is used
-     * @param existingNames set of already existing names
      * @param name an initially proposed name
      * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
      *        to be distinct from the existing names
      * @return a type graph not occurring in the current grammar, or
      *         <code>null</code>
      */
-    final protected String askNewName(String title, Set<String> existingNames,
+    final protected String askNewName(ResourceKind kind, String title,
             String name, boolean mustBeFresh) {
+        Set<String> existingNames = getSimulatorModel().getGrammar().getNames(kind);
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -263,7 +185,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
         RelabelDialog dialog =
-            new RelabelDialog(getModel().getGrammar().getLabelStore(), oldLabel);
+            new RelabelDialog(getSimulatorModel().getGrammar().getLabelStore(), oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
             return new Duo<TypeLabel>(dialog.getOldLabel(),
                 dialog.getNewLabel());
@@ -288,7 +210,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected boolean confirmAbandon() {
         boolean result;
-        if (getModel().getGts() != null) {
+        if (getSimulatorModel().getGts() != null) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
         } else {
             result = true;
@@ -426,7 +348,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected File getLastGrammarFile() {
         File result = null;
-        SystemStore store = getModel().getStore();
+        SystemStore store = getSimulatorModel().getStore();
         Object location = store == null ? null : store.getLocation();
         if (location instanceof File) {
             result = (File) location;
@@ -447,7 +369,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     final protected String getNameInGrammar(String selectedPath,
             boolean structured) throws IOException {
         String name = null;
-        Object location = getModel().getStore().getLocation();
+        Object location = getSimulatorModel().getStore().getLocation();
         if (location instanceof File) {
             String grammarPath = ((File) location).getCanonicalPath();
             if (selectedPath.startsWith(grammarPath)) {

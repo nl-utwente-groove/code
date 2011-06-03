@@ -22,8 +22,8 @@ public class EditControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getControl() != null
-            && getModel().getStore().isModifiable()
+        setEnabled(getSimulatorModel().getControl() != null
+            && getSimulatorModel().getStore().isModifiable()
             && !getControlDisplay().isEditing());
     }
 }

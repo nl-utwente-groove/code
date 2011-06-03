@@ -65,7 +65,7 @@ public class SaveLTSAsAction extends SimulatorAction {
             boolean showStart = dialog.showStart();
             boolean showOpen = dialog.showOpen();
 
-            GTS gts = getModel().getGts();
+            GTS gts = getSimulatorModel().getGts();
             gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
             DefaultGraph lts =
                 gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
@@ -98,6 +98,6 @@ public class SaveLTSAsAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGts() != null);
+        setEnabled(getSimulatorModel().getGts() != null);
     }
 }

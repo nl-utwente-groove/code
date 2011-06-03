@@ -3,8 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.RuleView;
-import groove.view.aspect.AspectGraph;
+import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,10 +21,10 @@ public class EnableRuleAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean ruleSelected = getModel().getRule() != null;
-        setEnabled(ruleSelected && getModel().getStore().isModifiable());
+        boolean ruleSelected = getSimulatorModel().getRule() != null;
+        setEnabled(ruleSelected && getSimulatorModel().getStore().isModifiable());
         String description;
-        if (ruleSelected && getModel().getRule().isEnabled()) {
+        if (ruleSelected && getSimulatorModel().getRule().isEnabled()) {
             description = Options.DISABLE_RULE_ACTION_NAME;
         } else {
             description = Options.ENABLE_RULE_ACTION_NAME;
@@ -38,14 +37,14 @@ public class EnableRuleAction extends SimulatorAction {
     public boolean execute() {
         boolean result = false;
         // collect the selected rule graphs
-        List<AspectGraph> ruleGraphs =
-            new ArrayList<AspectGraph>(getModel().getRuleSet().size());
-        for (RuleView ruleView : getModel().getRuleSet()) {
-            ruleGraphs.add(ruleView.getAspectGraph());
+        List<String> ruleGraphs =
+            new ArrayList<String>(getSimulatorModel().getRuleSet().size());
+        for (RuleModel ruleView : getSimulatorModel().getRuleSet()) {
+            ruleGraphs.add(ruleView.getName());
         }
         if (confirmAbandon()
-            && getRuleTab().disposeEditors(
-                ruleGraphs.toArray(new AspectGraph[0]))) {
+            && getRuleDisplay().disposeEditors(
+                ruleGraphs.toArray(new String[0]))) {
             try {
                 result |= getSimulator().getModel().doEnableRules(ruleGraphs);
             } catch (IOException exc) {

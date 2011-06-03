@@ -5,7 +5,8 @@ import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.RuleView;
+import groove.trans.ResourceKind;
+import groove.view.RuleModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -35,8 +36,8 @@ public class ShiftPriorityAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean ruleSelected = getModel().getRule() != null;
-        setEnabled(ruleSelected && getModel().getStore().isModifiable());
+        boolean ruleSelected = getSimulatorModel().getRule() != null;
+        setEnabled(ruleSelected && getSimulatorModel().getStore().isModifiable());
     }
 
     @Override
@@ -45,7 +46,8 @@ public class ShiftPriorityAction extends SimulatorAction {
         // collect all rules according to current priority
         NavigableMap<Integer,Set<AspectGraph>> rulesMap =
             new TreeMap<Integer,Set<AspectGraph>>();
-        for (AspectGraph ruleGraph : getModel().getStore().getRules().values()) {
+        for (AspectGraph ruleGraph : getSimulatorModel().getStore().getGraphs(
+            ResourceKind.RULE).values()) {
             int priority = GraphProperties.getPriority(ruleGraph);
             Set<AspectGraph> cell = rulesMap.get(priority);
             if (cell == null) {
@@ -58,8 +60,8 @@ public class ShiftPriorityAction extends SimulatorAction {
         }
         // collect the selected rules
         Set<AspectGraph> selectedRules = new HashSet<AspectGraph>();
-        for (RuleView ruleView : getModel().getRuleSet()) {
-            selectedRules.add(ruleView.getAspectGraph());
+        for (RuleModel ruleView : getSimulatorModel().getRuleSet()) {
+            selectedRules.add(ruleView.getSource());
         }
         // now shift rules to higher or lower priority classes
         List<Integer> priorities = new ArrayList<Integer>();

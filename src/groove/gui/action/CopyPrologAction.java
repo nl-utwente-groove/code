@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 
 /**
  * Action to copy the currently displayed prolog program.
@@ -15,14 +16,14 @@ public class CopyPrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        String oldName = getModel().getProlog().getName();
+        String oldName = getSimulatorModel().getProlog().getName();
         if (getPrologDisplay().cancelEditing(oldName, true)) {
             String newName =
-                askNewPrologName("Select new prolog program name", oldName,
-                    true);
+                askNewName(ResourceKind.PROLOG,
+                    "Select new prolog program name", oldName, true);
             if (newName != null) {
                 getActions().getSavePrologAction().doSave(newName,
-                    getModel().getProlog().getProgram());
+                    getSimulatorModel().getProlog().getProgram());
             }
         }
         return false;
@@ -30,7 +31,7 @@ public class CopyPrologAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getProlog() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getProlog() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

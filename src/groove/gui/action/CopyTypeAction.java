@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -19,14 +20,15 @@ public class CopyTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        String oldName = getModel().getType().getName();
+        String oldName = getSimulatorModel().getType().getName();
         String newName =
-            askNewTypeName("Select new type graph name", oldName, true);
+            askNewName(ResourceKind.TYPE, "Select new type graph name",
+                oldName, true);
         if (newName != null) {
             AspectGraph newType =
-                getModel().getType().getAspectGraph().rename(newName);
+                getSimulatorModel().getType().getSource().rename(newName);
             try {
-                result = getModel().doAddType(newType);
+                result = getSimulatorModel().doAddType(newType);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying type graph '%s' to '%s'", oldName,
@@ -38,7 +40,7 @@ public class CopyTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getType() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getType() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

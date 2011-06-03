@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 
 import java.io.IOException;
@@ -19,11 +20,11 @@ public class NewControlAction extends SimulatorAction {
     public boolean execute() {
         if (getControlDisplay().cancelEditing(true)) {
             String newName =
-                askNewControlName("Select control program name",
+                askNewName(ResourceKind.CONTROL, "Select control program name",
                     Groove.DEFAULT_CONTROL_NAME, true);
             try {
                 if (newName != null) {
-                    getModel().doAddControl(newName, "");
+                    getSimulatorModel().doAddControl(newName, "");
                     getControlDisplay().startEditing();
                 }
             } catch (IOException exc) {
@@ -36,6 +37,6 @@ public class NewControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

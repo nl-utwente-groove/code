@@ -19,7 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.aspect.AspectGraph;
+import groove.trans.ResourceKind;
 
 import java.io.IOException;
 
@@ -37,23 +37,23 @@ public class RenameRuleAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getStore() != null
-            && getModel().getStore().isModifiable()
-            && getModel().getRuleSet().size() == 1);
+        setEnabled(getSimulatorModel().getStore() != null
+            && getSimulatorModel().getStore().isModifiable()
+            && getSimulatorModel().getRuleSet().size() == 1);
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
         // first collect the rule graphs involved
-        AspectGraph rule = getModel().getRule().getAspectGraph();
-        if (confirmAbandon() && getRuleTab().disposeEditors(rule)) {
-            String oldName = rule.getName();
+        String oldName = getSimulatorModel().getRule().getName();
+        if (confirmAbandon() && getRuleDisplay().disposeEditors(oldName)) {
             String newName =
-                askNewRuleName("Select new rule name", oldName, true);
+                askNewName(ResourceKind.RULE, "Select new rule name", oldName,
+                    true);
             if (newName != null) {
                 try {
-                    result |= getModel().doRenameRule(rule, newName);
+                    result |= getSimulatorModel().doRenameRule(oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while renaming rule '%s' into '%s'", oldName,

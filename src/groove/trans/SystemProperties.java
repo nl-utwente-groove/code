@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Properties class for graph production systems.
@@ -273,7 +275,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Sets the type graph names property.
      * @param types the list of type graphs that are in use.
      */
-    public void setTypeNames(List<String> types) {
+    public void setTypeNames(Collection<String> types) {
         setProperty(TYPE_NAME_KEY,
             Groove.toString(types.toArray(), "", "", " "));
     }
@@ -281,12 +283,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     /**
      * Returns a list of type graph names that are in use.
      */
-    public ArrayList<String> getTypeNames() {
+    public Set<String> getTypeNames() {
         String types = getProperty(SystemProperties.TYPE_NAME_KEY);
         if (types == null || "".equals(types)) {
-            return new ArrayList<String>();
+            return Collections.emptySet();
         } else {
-            return new ArrayList<String>(Arrays.asList(types.split("\\s")));
+            return new TreeSet<String>(Arrays.asList(types.split("\\s")));
         }
     }
 

@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 
 import java.io.IOException;
 
@@ -18,13 +19,14 @@ public class RenamePrologAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        String oldName = getModel().getProlog().getName();
+        String oldName = getSimulatorModel().getProlog().getName();
         if (getPrologDisplay().cancelEditing(oldName, true)) {
             String newName =
-                askNewControlName("Select prolog program name", oldName, false);
+                askNewName(ResourceKind.PROLOG, "Select prolog program name",
+                    oldName, false);
             if (newName != null) {
                 try {
-                    result = getModel().doRenameProlog(oldName, newName);
+                    result = getSimulatorModel().doRenameProlog(oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while renaming prolog program '%s' into '%s'",
@@ -37,7 +39,7 @@ public class RenamePrologAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getProlog() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getProlog() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

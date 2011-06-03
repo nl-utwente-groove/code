@@ -34,8 +34,8 @@ import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Rule;
 import groove.trans.RuleName;
-import groove.view.GrammarView;
-import groove.view.RuleView;
+import groove.view.RuleModel;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -132,17 +132,18 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Loads the j-tree with the data of the given (non-<code>null</code>)
      * grammar.
      */
-    private void loadGrammar(GrammarView grammar) {
+    private void loadGrammar(GrammarModel grammar) {
         setShowAnchorsOptionListener();
         Map<RuleName,DirectoryTreeNode> dirNodeMap =
             new HashMap<RuleName,DirectoryTreeNode>();
         this.clearAllMaps();
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
-        Map<Integer,Set<RuleView>> priorityMap = getPriorityMap(grammar);
-        Collection<RuleView> selectedRules = getSimulatorModel().getRuleSet();
+        Map<Integer,Set<RuleModel>> priorityMap = getPriorityMap(grammar);
+        Collection<RuleModel> selectedRules =
+            getSimulatorModel().getRuleSet();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
-        for (Map.Entry<Integer,Set<RuleView>> priorityEntry : priorityMap.entrySet()) {
+        for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -150,7 +151,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
-            for (RuleView ruleView : priorityEntry.getValue()) {
+            for (RuleModel ruleView : priorityEntry.getValue()) {
                 String ruleName = ruleView.getName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
@@ -175,15 +176,17 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * priority from the rule in a given grammar view.
      * @param grammar the source of the rule map
      */
-    private Map<Integer,Set<RuleView>> getPriorityMap(GrammarView grammar) {
-        Map<Integer,Set<RuleView>> result =
-            new TreeMap<Integer,Set<RuleView>>(Rule.PRIORITY_COMPARATOR);
+    private Map<Integer,Set<RuleModel>> getPriorityMap(
+            GrammarModel grammar) {
+        Map<Integer,Set<RuleModel>> result =
+            new TreeMap<Integer,Set<RuleModel>>(Rule.PRIORITY_COMPARATOR);
         for (String ruleName : grammar.getRuleNames()) {
-            RuleView ruleView = grammar.getRuleView(ruleName);
+            RuleModel ruleView = grammar.getRuleModel(ruleName);
             int priority = ruleView.getPriority();
-            Set<RuleView> priorityRules = result.get(priority);
+            Set<RuleModel> priorityRules = result.get(priority);
             if (priorityRules == null) {
-                result.put(priority, priorityRules = new TreeSet<RuleView>());
+                result.put(priority, priorityRules =
+                    new TreeSet<RuleModel>());
             }
             priorityRules.add(ruleView);
         }
@@ -200,7 +203,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Set<Change> changes) {
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
-            GrammarView grammar = source.getGrammar();
+            GrammarModel grammar = source.getGrammar();
             if (grammar == null) {
                 this.clearAllMaps();
                 this.topDirectoryNode.removeAllChildren();
@@ -210,8 +213,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 loadGrammar(grammar);
             } else {
                 // compare the individual rule views
-                for (RuleView ruleView : this.ruleNodeMap.keySet()) {
-                    if (!ruleView.equals(grammar.getRuleView(ruleView.getName()))) {
+                for (RuleModel ruleView : this.ruleNodeMap.keySet()) {
+                    if (!ruleView.equals(grammar.getRuleModel(ruleView.getName()))) {
                         loadGrammar(grammar);
                         break;
                     }
@@ -386,7 +389,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * @param rule the rule to be selected if the event is {@code null}
      * @param match the match result to be selected
      */
-    private void selectMatch(RuleView rule, MatchResult match) {
+    private void selectMatch(RuleModel rule, MatchResult match) {
         DefaultMutableTreeNode treeNode = null;
         if (match != null) {
             treeNode = this.matchNodeMap.get(match);
@@ -434,7 +437,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         // insert new matches
         for (MatchResult match : orderedEvents) {
             String ruleName = match.getEvent().getRule().getName();
-            RuleView ruleView = getGrammar().getRuleView(ruleName);
+            RuleModel ruleView = getGrammar().getRuleModel(ruleName);
             assert ruleView != null : String.format(
                 "Rule view %s does not exist in grammar", ruleView);
             RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleView);
@@ -490,7 +493,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
         String result;
         if (value instanceof RuleTreeNode) {
-            RuleView ruleView = ((RuleTreeNode) value).getRule();
+            RuleModel ruleView = ((RuleTreeNode) value).getRule();
             result = this.display.getLabelText(ruleView.getName());
         } else {
             result =
@@ -501,7 +504,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /** Convenience method to retrieve the current grammar view. */
-    private final GrammarView getGrammar() {
+    private final GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
@@ -546,8 +549,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Mapping from rule names in the current grammar to rule nodes in the
      * current rule directory.
      */
-    private final Map<RuleView,RuleTreeNode> ruleNodeMap =
-        new HashMap<RuleView,RuleTreeNode>();
+    private final Map<RuleModel,RuleTreeNode> ruleNodeMap =
+        new HashMap<RuleModel,RuleTreeNode>();
 
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
@@ -717,15 +720,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
          * Creates a new rule node based on a given rule name. The node can have
          * children.
          */
-        public RuleTreeNode(RuleView rule) {
+        public RuleTreeNode(RuleModel rule) {
             super(rule, true);
         }
 
         /**
          * Convenience method to retrieve the user object as a rule name.
          */
-        public RuleView getRule() {
-            return (RuleView) getUserObject();
+        public RuleModel getRule() {
+            return (RuleModel) getUserObject();
         }
 
         /**
@@ -748,7 +751,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             result.append("Rule ");
             result.append(HTMLConverter.STRONG_TAG.on(getRule().getName()));
             GraphProperties properties =
-                GraphInfo.getProperties(getRule().getAspectGraph(), false);
+                GraphInfo.getProperties(getRule().getSource(), false);
             if (properties != null && !properties.isEmpty()) {
                 boolean hasProperties;
                 String remark = properties.getRemark();

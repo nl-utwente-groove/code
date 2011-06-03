@@ -18,12 +18,12 @@ public class DeleteControlAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        String controlName = getModel().getControl().getName();
+        String controlName = getSimulatorModel().getControl().getName();
         if (confirmBehaviour(Options.DELETE_CONTROL_OPTION,
             String.format("Delete control program '%s'?", controlName))) {
             getControlDisplay().cancelEditing(false);
             try {
-                result = getModel().doDeleteControl(controlName);
+                result = getSimulatorModel().doDeleteControl(controlName);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while deleting control program '%s'", controlName));
@@ -34,7 +34,7 @@ public class DeleteControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getControl() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getControl() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

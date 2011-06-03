@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -25,26 +24,20 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * 
  * @author Michiel Hendriks
  */
-public class PrologEditor extends JPanel {
+public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
     /** 
      * Constructs a prolog editor with a given name.
      * @param display the display on which this editor is placed.
      */
-    public PrologEditor(final PrologDisplay display, String name, String program) {
-        this.display = display;
+    public PrologEditorPanel(final PrologDisplay display, String name,
+            String program) {
+        super(display);
         this.textArea = new PrologTextArea(program);
         this.name = name;
         setBorder(null);
         setLayout(new BorderLayout());
         add(createToolBar(), BorderLayout.NORTH);
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
-        //        this.textArea.getDocument().addUndoableEditListener(
-        //            new UndoableEditListener() {
-        //                @Override
-        //                public void undoableEditHappened(UndoableEditEvent e) {
-        //                    display.updateTab(PrologEditor.this);
-        //                }
-        //            });
     }
 
     /**
@@ -66,8 +59,15 @@ public class PrologEditor extends JPanel {
     }
 
     /** Indicates if the editor is currently dirty. */
+    @Override
     public final boolean isDirty() {
         return this.textArea.canUndo();
+    }
+
+    @Override
+    public void setClean() {
+        this.textArea.discardAllEdits();
+        getDisplay().updateTab(this);
     }
 
     /** Returns the file from which the editor was loaded. */
@@ -93,24 +93,10 @@ public class PrologEditor extends JPanel {
     }
 
     /**
-     * Attempts to cancel the editing action.
-     * Optionally saves the content if it is dirty.
-     * @param confirm indicates if the user should be asked for confirmation
-     * @return if editing was indeed stopped
-     */
-    public boolean cancelEditing(boolean confirm) {
-        boolean result = false;
-        if (!confirm || confirmAbandon()) {
-            dispose();
-            result = true;
-        }
-        return result;
-    }
-
-    /**
      * Creates and shows a confirmation dialog for abandoning the currently
      * edited control program.
      */
+    @Override
     public boolean confirmAbandon() {
         boolean result = true;
         if (isDirty()) {
@@ -119,8 +105,8 @@ public class PrologEditor extends JPanel {
                     String.format("Save changes in '%s'?", getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
-                this.display.getActions().getSavePrologAction().doSave(
-                    getName(), getProgram());
+                getActions().getSavePrologAction().doSave(getName(),
+                    getProgram());
             } else {
                 result = answer == JOptionPane.NO_OPTION;
             }
@@ -129,14 +115,9 @@ public class PrologEditor extends JPanel {
     }
 
     /** Removes this editor from the editor pane. */
+    @Override
     public void dispose() {
-        this.display.getEditorPane().remove(this);
-    }
-
-    /** Discards the edit history. */
-    public void discardEdits() {
-        this.textArea.discardAllEdits();
-        this.display.updateTab(this);
+        getDisplay().getEditorPane().remove(this);
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
@@ -145,7 +126,7 @@ public class PrologEditor extends JPanel {
         result.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                PrologEditor.this.display.updateTab(PrologEditor.this);
+                getDisplay().updateTab(PrologEditorPanel.this);
             }
         });
         return result;
@@ -178,13 +159,9 @@ public class PrologEditor extends JPanel {
 
     /** Convenience method to retrieve the underlying simulator. */
     private ActionStore getActions() {
-        return this.display.getActions();
+        return getDisplay().getActions();
     }
 
-    /**
-     * The display on which the editor is placed.
-     */
-    private final PrologDisplay display;
     /**
      * The name of the editor.
      */

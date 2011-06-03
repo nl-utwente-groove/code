@@ -5,6 +5,7 @@ import groove.graph.GraphInfo;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
@@ -22,15 +23,15 @@ public class NewTypeAction extends SimulatorAction {
     @Override
     public boolean execute() {
         String typeName =
-            askNewTypeName("Select type graph name", Groove.DEFAULT_TYPE_NAME,
-                true);
+            askNewName(ResourceKind.TYPE, "Select type graph name",
+                Groove.DEFAULT_TYPE_NAME, true);
         if (typeName != null) {
             final AspectGraph initType =
                 AspectGraph.emptyGraph(typeName, TYPE).clone();
             GraphInfo.getProperties(initType, true).setEnabled(false);
             initType.setFixed();
             try {
-                getModel().doAddType(initType);
+                getSimulatorModel().doAddType(initType);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -47,6 +48,6 @@ public class NewTypeAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

@@ -87,8 +87,7 @@ public class ActionStore implements SimulatorListener {
      */
     public ApplyMatchAction getApplyTransitionAction() {
         if (this.applyTransitionAction == null) {
-            this.applyTransitionAction =
-                new ApplyMatchAction(this.simulator);
+            this.applyTransitionAction = new ApplyMatchAction(this.simulator);
         }
         return this.applyTransitionAction;
     }
@@ -826,6 +825,36 @@ public class ActionStore implements SimulatorListener {
      * The quit action permanently associated with this simulator.
      */
     private QuitAction quitAction;
+
+    /** Returns the action that displays the first result of a Prolog query. */
+    public PrologFirstResultAction getPrologFirstResultAction() {
+        // lazily create the action
+        if (this.prologFirstResultAction == null) {
+            this.prologFirstResultAction =
+                new PrologFirstResultAction(this.simulator);
+        }
+        return this.prologFirstResultAction;
+    }
+
+    /**
+     * The quit action permanently associated with this simulator.
+     */
+    private PrologFirstResultAction prologFirstResultAction;
+
+    /** Returns the action that displays the next result of a Prolog query. */
+    public PrologNextResultAction getPrologNextResultAction() {
+        // lazily create the action
+        if (this.prologNexttResultAction == null) {
+            this.prologNexttResultAction =
+                new PrologNextResultAction(this.simulator);
+        }
+        return this.prologNexttResultAction;
+    }
+
+    /**
+     * The quit action permanently associated with this simulator.
+     */
+    private PrologNextResultAction prologNexttResultAction;
 
     /**
      * Returns the redo action permanently associated with this simulator.

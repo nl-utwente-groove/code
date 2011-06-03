@@ -16,8 +16,8 @@
  */
 package groove.gui.jgraphx;
 
-import groove.view.RuleView;
-import groove.view.StoredGrammarView;
+import groove.view.RuleModel;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -42,9 +42,9 @@ public class JGraphXTest {
         final String DIRECTORY = "junit/samples/abs-test.gps/";
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            RuleView ruleView = view.getRuleView("del");
-            AspectGraph rule = ruleView.getAspectGraph();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            RuleModel ruleView = view.getRuleModel("del");
+            AspectGraph rule = ruleView.getSource();
             showRule(rule);
         } catch (IOException e) {
             e.printStackTrace();

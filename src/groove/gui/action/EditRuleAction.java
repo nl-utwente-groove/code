@@ -21,8 +21,8 @@ public class EditRuleAction extends SimulatorAction {
     @Override
     public void refresh() {
         boolean enabled =
-            getModel().getRule() != null
-                && getModel().getStore().isModifiable();
+            getSimulatorModel().getRule() != null
+                && getSimulatorModel().getStore().isModifiable();
         if (enabled != isEnabled()) {
             setEnabled(enabled);
         }
@@ -37,7 +37,7 @@ public class EditRuleAction extends SimulatorAction {
     @Override
     public boolean execute() {
         getMainPanel().getRuleDisplay().doEdit(
-            getModel().getRule().getAspectGraph());
+            getSimulatorModel().getRule().getSource());
         return false;
     }
 }

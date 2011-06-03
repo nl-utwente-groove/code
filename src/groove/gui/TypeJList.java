@@ -20,8 +20,8 @@ import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.view.StoredGrammarView;
-import groove.view.TypeView;
+import groove.view.TypeModel;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -168,7 +168,7 @@ public class TypeJList extends JList implements SimulatorListener {
         Object[] typeNames = getGrammar().getTypeNames().toArray();
         Arrays.sort(typeNames);
         setListData(typeNames);
-        TypeView selection = getSimulatorModel().getType();
+        TypeModel selection = getSimulatorModel().getType();
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
@@ -180,7 +180,7 @@ public class TypeJList extends JList implements SimulatorListener {
     /**
      * Returns the current grammar view from the simulator.
      */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
@@ -277,7 +277,7 @@ public class TypeJList extends JList implements SimulatorListener {
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             // set tool tips and special formats
-            if (getGrammar().getTypeView(value.toString()).isEnabled()) {
+            if (getGrammar().getTypeModel(value.toString()).isEnabled()) {
                 setToolTipText("Enabled type graph; doubleclick to edit");
             } else {
                 setToolTipText("Disabled type graph; doubleclick to edit");

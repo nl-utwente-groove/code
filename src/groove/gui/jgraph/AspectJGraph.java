@@ -33,7 +33,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
@@ -215,7 +215,7 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /** Convenience method to retrieve the grammar view from the simulator. */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 

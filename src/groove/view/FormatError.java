@@ -57,10 +57,10 @@ public class FormatError implements Comparable<FormatError> {
             this.subError.transferTo(null, this);
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
-        } else if (par instanceof CtrlView) {
-            this.control = (CtrlView) par;
-        } else if (par instanceof PrologView) {
-            this.prolog = (PrologView) par;
+        } else if (par instanceof ControlModel) {
+            this.control = (ControlModel) par;
+        } else if (par instanceof PrologModel) {
+            this.prolog = (PrologModel) par;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Integer) {
@@ -131,12 +131,12 @@ public class FormatError implements Comparable<FormatError> {
     }
 
     /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final CtrlView getControl() {
+    public final ControlModel getControl() {
         return this.control;
     }
 
     /** Returns the prolog view in which the error occurs. May be {@code null}. */
-    public final PrologView getProlog() {
+    public final PrologModel getProlog() {
         return this.prolog;
     }
 
@@ -207,9 +207,9 @@ public class FormatError implements Comparable<FormatError> {
     }
 
     /** The prolog view in which the error occurs. */
-    private PrologView prolog;
+    private PrologModel prolog;
     /** The control view in which the error occurs. */
-    private CtrlView control;
+    private ControlModel control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
     /** List of erroneous elements. */

@@ -29,7 +29,7 @@ import groove.explore.strategy.Strategy;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringUtilities;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -282,8 +282,8 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         exploreButton.addActionListener(this);
         exploreButton.setToolTipText(EXPLORE_TOOLTIP);
         buttonPanel.add(exploreButton);
-        StoredGrammarView grammar = this.simulator.getModel().getGrammar();
-        if (grammar == null || grammar.getStartGraphView() == null) {
+        GrammarModel grammar = this.simulator.getModel().getGrammar();
+        if (grammar == null || grammar.getStartGraphModel() == null) {
             exploreButton.setEnabled(false);
         }
         JButton cancelButton = new JButton(CANCEL_COMMAND);

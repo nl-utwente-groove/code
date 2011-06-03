@@ -67,7 +67,7 @@ public class CheckLTLAction extends ExploreAction {
         } else {
             BoundedModelCheckingDialog dialog =
                 new BoundedModelCheckingDialog();
-            dialog.setGrammar(getModel().getGts().getGrammar());
+            dialog.setGrammar(getSimulatorModel().getGts().getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {

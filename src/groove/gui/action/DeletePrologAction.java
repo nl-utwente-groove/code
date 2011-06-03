@@ -18,12 +18,12 @@ public class DeletePrologAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        String name = getModel().getProlog().getName();
+        String name = getSimulatorModel().getProlog().getName();
         if (confirmBehaviour(Options.DELETE_PROLOG_OPTION,
             String.format("Delete prolog program '%s'?", name))) {
             getPrologDisplay().cancelEditing(name, false);
             try {
-                result = getModel().doDeleteProlog(name);
+                result = getSimulatorModel().doDeleteProlog(name);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while deleting control program '%s'", name));
@@ -34,7 +34,7 @@ public class DeletePrologAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getProlog() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getProlog() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

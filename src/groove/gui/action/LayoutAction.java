@@ -16,6 +16,7 @@
  */
 package groove.gui.action;
 
+import groove.gui.Icons;
 import groove.gui.layout.Layouter;
 
 import java.awt.event.ActionEvent;
@@ -31,7 +32,7 @@ import javax.swing.AbstractAction;
 public class LayoutAction extends AbstractAction {
     /** Constructs a layout action for a given layouter. */
     public LayoutAction(Layouter layouter) {
-        super(layouter.getName());
+        super(layouter.getName(), Icons.LAYOUT_ICON);
         this.layouter = layouter;
     }
 

@@ -23,7 +23,7 @@ import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSimpleMatch;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -304,7 +304,7 @@ public class ReteNetworkTest extends TestCase {
         GraphGrammar result = null;
         try {
             result =
-                StoredGrammarView.newInstance(new File(INPUT_DIR, grammarName),
+                GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
                     startGraphName, false).toGrammar();
         } catch (IOException exc) {
             throw new RuntimeException(exc);

@@ -22,7 +22,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        Properties systemProperties = getModel().getGrammar().getProperties();
+        Properties systemProperties = getSimulatorModel().getGrammar().getProperties();
         PropertiesDialog dialog =
             new PropertiesDialog(systemProperties,
                 SystemProperties.DEFAULT_KEYS, true);
@@ -44,7 +44,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

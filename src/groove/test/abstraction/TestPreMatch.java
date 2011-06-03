@@ -27,7 +27,7 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,8 +58,8 @@ public class TestPreMatch {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("shape-build-test-2").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("shape-build-test-2").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-0");
@@ -79,8 +79,8 @@ public class TestPreMatch {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("shape-build-test-2").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("shape-build-test-2").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-4");
@@ -100,8 +100,8 @@ public class TestPreMatch {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("shape-build-test-8").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("shape-build-test-8").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-1");
@@ -121,8 +121,8 @@ public class TestPreMatch {
     public void testPreMatch3() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("shape-build-test-9").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("shape-build-test-9").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-match-3");

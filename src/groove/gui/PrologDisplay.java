@@ -32,15 +32,14 @@ import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.view.FormatException;
-import groove.view.PrologView;
-import groove.view.StoredGrammarView;
+import groove.view.PrologModel;
+import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -55,7 +54,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -152,7 +151,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                 public void removeTabAt(int index) {
                     // removes the editor panel from the map
                     String name =
-                        ((PrologEditor) getComponentAt(index)).getName();
+                        ((PrologEditorPanel) getComponentAt(index)).getName();
                     super.removeTabAt(index);
                     PrologDisplay.this.editorMap.remove(name);
                     getListPanel().repaint();
@@ -165,7 +164,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                 public void stateChanged(ChangeEvent e) {
                     if (PrologDisplay.this.listening) {
                         PrologDisplay.this.listening = false;
-                        PrologEditor editor = getSelectedEditor();
+                        PrologEditorPanel editor = getSelectedEditor();
                         if (editor != null) {
                             getSimulatorModel().setProlog(editor.getName());
                         }
@@ -286,7 +285,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
 
     @Override
     public String getName() {
-        PrologView prolog = getSimulatorModel().getProlog();
+        PrologModel prolog = getSimulatorModel().getProlog();
         return prolog == null ? null : prolog.getName();
     }
 
@@ -294,69 +293,19 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Creates the Execute button.
      */
     private JButton createExecuteButton() {
-        return Options.createButton(getFirstResultAction());
-    }
-
-    /** Creates and returns the instance of the {@link FirstPrologResultAction}. */
-    public FirstPrologResultAction getFirstResultAction() {
-        if (this.firstResultAction == null) {
-            this.firstResultAction = new FirstPrologResultAction(this);
-        }
-        return this.firstResultAction;
-    }
-
-    /** Fixed instance of the action. */
-    private FirstPrologResultAction firstResultAction;
-
-    private static class FirstPrologResultAction extends AbstractAction {
-        /** Creates an instance of this action. */
-        public FirstPrologResultAction(PrologDisplay display) {
-            super(Options.PROLOG_FIRST_ACTION_NAME, Icons.GO_START_ICON);
-            putValue(SHORT_DESCRIPTION, Options.PROLOG_FIRST_ACTION_NAME);
-            this.display = display;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            this.display.executeQuery();
-        }
-
-        private final PrologDisplay display;
-    }
-
-    /** Creates and returns the instance of the {@link FirstPrologResultAction}. */
-    public NextPrologResultAction getNextResultAction() {
-        if (this.nextResultAction == null) {
-            this.nextResultAction = new NextPrologResultAction(this);
-        }
-        return this.nextResultAction;
-    }
-
-    /** Fixed instance of the action. */
-    private NextPrologResultAction nextResultAction;
-
-    private static class NextPrologResultAction extends AbstractAction {
-        /** Creates an instance of this action. */
-        public NextPrologResultAction(PrologDisplay display) {
-            super(Options.PROLOG_NEXT_ACTION_NAME, Icons.GO_NEXT_ICON);
-            putValue(SHORT_DESCRIPTION, Options.PROLOG_NEXT_ACTION_NAME);
-            setEnabled(false);
-            this.display = display;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            this.display.nextResults();
-        }
-
-        private final PrologDisplay display;
+        return Options.createButton(getActions().getPrologFirstResultAction());
     }
 
     /**
      * Creates the next-result button.
      */
     private JButton getNextResultButton() {
-        return Options.createButton(getNextResultAction());
+        return Options.createButton(getActions().getPrologNextResultAction());
+    }
+
+    /** Convenience method to retrieve the next-result action. */
+    private Action getNextResultAction() {
+        return getActions().getPrologNextResultAction();
     }
 
     /**
@@ -468,10 +417,11 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * @param name the name of the control program
      */
     public String getLabelText(String name) {
-        StringBuilder result = new StringBuilder(name);
-        PrologEditor editor = this.editorMap.get(name);
-        if (editor != null && editor.isDirty()) {
-            result.insert(0, "*");
+        StringBuilder result = new StringBuilder();
+        if (this.editorMap.containsKey(name)) {
+            result.append(this.editorMap.get(name).getTitle());
+        } else {
+            result.append(name);
         }
         return result.toString();
     }
@@ -509,7 +459,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     }
 
     /** Returns the list of control programs. */
-    public PrologJList getPrologList() {
+    private PrologJList getPrologList() {
         if (this.prologJList == null) {
             this.prologJList = new PrologJList(this);
         }
@@ -523,8 +473,8 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             this.listening = false;
             if (changes.contains(Change.GRAMMAR)) {
                 this.environment = null;
-                StoredGrammarView grammar = source.getGrammar();
-                for (PrologEditor editor : this.editorMap.values()) {
+                GrammarModel grammar = source.getGrammar();
+                for (PrologEditorPanel editor : this.editorMap.values()) {
                     if (grammar == null
                         || !grammar.getPrologNames().contains(editor.getName())) {
                         editor.dispose();
@@ -538,7 +488,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                     getEnvironment().getUserTags());
             }
             if (changes.contains(Change.PROLOG) && source.hasProlog()) {
-                PrologEditor editor =
+                PrologEditorPanel editor =
                     this.editorMap.get(source.getProlog().getName());
                 if (editor != null) {
                     getEditorPane().setSelectedComponent(editor);
@@ -553,34 +503,36 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      */
     public void createEditor(String title) {
         if (this.editorMap.containsKey(title)) {
-            PrologEditor editor = this.editorMap.get(title);
+            PrologEditorPanel editor = this.editorMap.get(title);
             getEditorPane().setSelectedComponent(editor);
         } else {
             String program =
-                getSimulatorModel().getGrammar().getPrologView(title).getProgram();
-            final PrologEditor editor = new PrologEditor(this, title, program);
+                getSimulatorModel().getGrammar().getPrologModel(title).getProgram();
+            final PrologEditorPanel editor =
+                new PrologEditorPanel(this, title, program);
             this.editorMap.put(title, editor);
             this.editors.add(editor);
-            getEditorPane().addTab(title, editor);
-            getEditorPane().setSelectedComponent(editor);
+            getEditorPane().addTab("", editor);
+            int index = getEditorPane().indexOfComponent(editor);
+            getEditorPane().setTabComponentAt(index, editor.getTabLabel());
             getListPanel().repaint();
         }
     }
 
     /** Returns the currently selected editor, if any. */
-    public PrologEditor getSelectedEditor() {
-        return (PrologEditor) getEditorPane().getSelectedComponent();
+    public PrologEditorPanel getSelectedEditor() {
+        return (PrologEditorPanel) getEditorPane().getSelectedComponent();
     }
 
     /** Returns the editor for a control program with a given name, if any. */
-    public PrologEditor getEditor(String title) {
+    public PrologEditorPanel getEditor(String title) {
         return this.editorMap.get(title);
     }
 
     @Override
     public boolean disposeAllEditors() {
         boolean result = true;
-        for (PrologEditor editor : new ArrayList<PrologEditor>(
+        for (PrologEditorPanel editor : new ArrayList<PrologEditorPanel>(
             this.editorMap.values())) {
             result = editor.cancelEditing(true);
             if (!result) {
@@ -597,7 +549,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      */
     public boolean cancelEditing(String name, boolean confirm) {
         boolean result = true;
-        PrologEditor editor = this.editorMap.get(name);
+        PrologEditorPanel editor = this.editorMap.get(name);
         if (editor != null) {
             result = editor.cancelEditing(confirm);
         }
@@ -607,7 +559,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     /**
      * Execute the current query
      */
-    private void executeQuery() {
+    public void executeQuery() {
         executeQuery(getQueryEdit().getText());
     }
 
@@ -652,7 +604,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             return;
         }
 
-        if (getGrammar().getStartGraphView() == null) {
+        if (getGrammar().getStartGraphModel() == null) {
             getResultsArea().setText("Please first select a start graph.");
             return;
         }
@@ -741,7 +693,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Get the next set of results. Only works after a successful
      * {@link #executeQuery(String)}
      */
-    private void nextResults() {
+    public void nextResults() {
         if (getEngine() != null) {
             getResultsArea().append("\n");
             try {
@@ -806,12 +758,8 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     /**
      * Update the tab title
      */
-    protected void updateTab(PrologEditor editor) {
-        JTabbedPane editorPane = getEditorPane();
-        int index = editorPane.indexOfComponent(editor);
-        if (index >= 0) {
-            editorPane.setTitleAt(index, getLabelText(editor.getName()));
-        }
+    protected void updateTab(PrologEditorPanel editor) {
+        editor.getTabLabel().setTitle(editor.getTitle());
         getActions().getSavePrologAction().refresh();
         getListPanel().repaint();
     }
@@ -832,7 +780,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     }
 
     /** Convenience method to retrieve the grammar view from the simulator. */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
@@ -866,9 +814,9 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     private JTree userTree;
 
     private JTabbedPane editorPane;
-    private Map<String,PrologEditor> editorMap =
-        new HashMap<String,PrologEditor>();
-    private Set<PrologEditor> editors = new HashSet<PrologEditor>();
+    private Map<String,PrologEditorPanel> editorMap =
+        new HashMap<String,PrologEditorPanel>();
+    private Set<PrologEditorPanel> editors = new HashSet<PrologEditorPanel>();
 
     /** panel on which the prolog list (and toolbar) are displayed. */
     private JPanel prologListPanel;

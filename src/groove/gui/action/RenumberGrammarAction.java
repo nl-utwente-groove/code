@@ -33,15 +33,15 @@ public class RenumberGrammarAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getGrammar() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
         try {
-            result = getModel().doRenumber();
+            result = getSimulatorModel().doRenumber();
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while renumbering");
         }

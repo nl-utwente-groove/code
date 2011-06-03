@@ -4,7 +4,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.trans.SystemProperties;
-import groove.view.CtrlView;
+import groove.view.ControlModel;
 
 import java.io.IOException;
 
@@ -19,14 +19,14 @@ public class EnableControlAction extends SimulatorAction {
     public boolean execute() {
         boolean result = false;
         if (getControlDisplay().cancelEditing(true)) {
-            String controlName = getModel().getControl().getName();
+            String controlName = getSimulatorModel().getControl().getName();
             SystemProperties oldProperties =
-                getModel().getGrammar().getProperties();
+                getSimulatorModel().getGrammar().getProperties();
             SystemProperties newProperties = oldProperties.clone();
             newProperties.setUseControl(!isControlEnabled());
             newProperties.setControlName(controlName);
             try {
-                result = getModel().doSetProperties(newProperties);
+                result = getSimulatorModel().doSetProperties(newProperties);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while enabling control program "
                     + controlName);
@@ -37,7 +37,7 @@ public class EnableControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        CtrlView control = getModel().getControl();
+        ControlModel control = getSimulatorModel().getControl();
         setEnabled(control != null);
         if (isEnabled()) {
             putValue(SHORT_DESCRIPTION, isControlEnabled()
@@ -47,8 +47,8 @@ public class EnableControlAction extends SimulatorAction {
     }
 
     private boolean isControlEnabled() {
-        CtrlView control = getModel().getControl();
+        ControlModel control = getSimulatorModel().getControl();
         return control != null
-            && control.equals(getModel().getGrammar().getControlView());
+            && control.equals(getSimulatorModel().getGrammar().getControlModel());
     }
 }

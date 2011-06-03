@@ -23,7 +23,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.Graph;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -153,10 +153,10 @@ public class Groove {
      * @throws IOException if <code>dirname</code> does not exist or is wrongly
      *         formatted
      */
-    static public StoredGrammarView loadGrammar(String dirname)
+    static public GrammarModel loadGrammar(String dirname)
         throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return StoredGrammarView.newInstance(dir, false);
+        return GrammarModel.newInstance(dir, false);
     }
 
     /**
@@ -182,10 +182,10 @@ public class Groove {
      * @throws IOException if <code>dirname</code> or <code>startfilename</code>
      *         do not exist or are wrongly formatted
      */
-    static public StoredGrammarView loadGrammar(String dirname,
+    static public GrammarModel loadGrammar(String dirname,
             String startfilename) throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return StoredGrammarView.newInstance(dir, startfilename, false);
+        return GrammarModel.newInstance(dir, startfilename, false);
     }
 
     /**

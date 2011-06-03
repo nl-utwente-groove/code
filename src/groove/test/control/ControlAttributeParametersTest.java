@@ -23,7 +23,7 @@ import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 
@@ -46,7 +46,7 @@ public class ControlAttributeParametersTest {
     private void explore(String control, int controlStates,
             int controlTransitions, int expectedNodes, int expectedEdges) {
         try {
-            StoredGrammarView sgv = Groove.loadGrammar(DIRECTORY);
+            GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
             sp.setUseControl(true);

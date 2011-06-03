@@ -42,7 +42,7 @@ import groove.io.xml.AspectGxl;
 import groove.trans.SystemProperties;
 import groove.util.Property;
 import groove.util.Version;
-import groove.view.CompositeTypeView;
+import groove.view.CompositeTypeModel;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
@@ -207,11 +207,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Sets the type graph for this editor. */
-    public void setTypeView(CompositeTypeView typeView) {
+    public void setTypeView(CompositeTypeModel typeView) {
         this.type = null;
         if (typeView != null) {
             try {
-                this.type = typeView.toModel();
+                this.type = typeView.toResource();
             } catch (FormatException e) {
                 // do nothing
             }

@@ -7,7 +7,7 @@ import groove.gui.dialog.SaveDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
-import groove.view.CtrlView;
+import groove.view.ControlModel;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +32,7 @@ public class SaveControlAction extends SimulatorAction {
     public boolean execute() {
         boolean result = false;
         if (getControlDisplay().isDirty()) {
-            String name = getModel().getControl().getName();
+            String name = getSimulatorModel().getControl().getName();
             if (this.saveAs) {
                 result = doSaveAs(name);
             } else {
@@ -49,7 +49,7 @@ public class SaveControlAction extends SimulatorAction {
         boolean result = false;
         try {
             String program = getControlDisplay().stopEditing();
-            result = getModel().doAddControl(name, program);
+            result = getSimulatorModel().doAddControl(name, program);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error saving control program " + name);
         }
@@ -70,13 +70,13 @@ public class SaveControlAction extends SimulatorAction {
                     getNameInGrammar(
                         filter.stripExtension(selectedFile.getCanonicalPath()),
                         false);
-                String program = getModel().getControl().getProgram();
+                String program = getSimulatorModel().getControl().getProgram();
                 if (nameInGrammar == null) {
                     // store as external file
-                    CtrlView.store(program, new FileOutputStream(selectedFile));
+                    ControlModel.store(program, new FileOutputStream(selectedFile));
                 } else {
                     // store in grammar
-                    getModel().doAddControl(nameInGrammar, program);
+                    getSimulatorModel().doAddControl(nameInGrammar, program);
                 }
                 result = true;
             } catch (IOException exc) {
@@ -89,7 +89,7 @@ public class SaveControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(this.saveAs ? getModel().getControl() != null
+        setEnabled(this.saveAs ? getSimulatorModel().getControl() != null
                 : getControlDisplay().isEditing());
     }
 

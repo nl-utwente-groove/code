@@ -36,7 +36,7 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -153,7 +153,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        StoredGrammarView grammar =
+                        GrammarModel grammar =
                             getSimulatorModel().getGrammar();
                         if (grammar != null && grammar.getErrors().isEmpty()) {
                             getActions().getStartSimulationAction().execute();

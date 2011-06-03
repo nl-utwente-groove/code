@@ -27,11 +27,11 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphTransition;
-import groove.trans.HostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.util.Groove;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 
@@ -58,7 +58,7 @@ public class AntWorld {
 
     private static void go(String grammarName, int rounds) {
         try {
-            GrammarView grammarView = Groove.loadGrammar(grammarName);
+            GrammarModel grammarView = Groove.loadGrammar(grammarName);
             grammarView.setStartGraph("start-" + rounds);
             GraphGrammar grammar = grammarView.toGrammar();
             GTS gts = new GTS(grammar);

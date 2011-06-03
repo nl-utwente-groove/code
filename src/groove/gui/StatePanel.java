@@ -50,9 +50,9 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.SystemProperties;
+import groove.view.TypeModel;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
-import groove.view.TypeView;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -253,9 +253,9 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
-    private void setGrammar(StoredGrammarView grammar) {
+    private void setGrammar(GrammarModel grammar) {
         getJGraph().getFilteredLabels().clear();
-        if (grammar == null || grammar.getStartGraphView() == null) {
+        if (grammar == null || grammar.getStartGraphModel() == null) {
             getJGraph().setType(null, null);
         } else {
             // set the type or the label store for the JGraph
@@ -263,14 +263,14 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 new HashMap<String,Set<TypeLabel>>();
             try {
                 for (String typeName : grammar.getTypeNames()) {
-                    TypeView view = grammar.getTypeView(typeName);
+                    TypeModel view = grammar.getTypeModel(typeName);
                     // the view may be null if type names
                     // overlap modulo upper/lowercase
                     if (view != null && view.isEnabled()) {
                         labelsMap.put(typeName, view.getLabels());
                     }
                 }
-                getJGraph().setType(grammar.getCompositeTypeView().toModel(),
+                getJGraph().setType(grammar.getTypeModel().toResource(),
                     labelsMap);
             } catch (FormatException e) {
                 getJGraph().setLabelStore(grammar.getLabelStore());
@@ -413,7 +413,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
                 assert state instanceof StartGraphState;
                 // this is the start state
                 AspectGraph startGraph =
-                    getGrammar().getStartGraphView().getAspectGraph();
+                    getGrammar().getStartGraphModel().getSource();
                 AspectJModel startModel = getAspectJModel(startGraph);
                 for (AspectNode node : startGraph.nodeSet()) {
                     AspectJVertex stateVertex = result.getJCellForNode(node);
@@ -541,7 +541,7 @@ public class StatePanel extends JGraphPanel<AspectJGraph> implements
     }
 
     /** Convenience method to retrieve the current grammar view. */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 

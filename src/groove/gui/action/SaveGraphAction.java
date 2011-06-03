@@ -2,15 +2,16 @@ package groove.gui.action;
 
 import static groove.graph.GraphRole.RULE;
 import groove.graph.GraphRole;
-import groove.gui.EditorPanel;
+import groove.gui.GraphEditorPanel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.xml.AspectGxl;
-import groove.view.RuleView;
-import groove.view.TypeView;
+import groove.trans.ResourceKind;
+import groove.view.RuleModel;
+import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -28,7 +29,7 @@ public final class SaveGraphAction extends SimulatorAction {
     /** 
      * Creates an instance of the action for a simulator.
      */
-    private SaveGraphAction(Simulator simulator, EditorPanel editor,
+    private SaveGraphAction(Simulator simulator, GraphEditorPanel editor,
             boolean saveAs) {
         super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
                 : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
@@ -39,7 +40,7 @@ public final class SaveGraphAction extends SimulatorAction {
     }
 
     /** Creates an instance of the action for a given editor panel. */
-    public SaveGraphAction(EditorPanel editor) {
+    public SaveGraphAction(GraphEditorPanel editor) {
         this(editor.getSimulator(), editor, false);
     }
 
@@ -51,7 +52,7 @@ public final class SaveGraphAction extends SimulatorAction {
      * a file outside the grammar.
      */
     public SaveGraphAction(Simulator simulator, GraphRole role, boolean saveAs) {
-        this(simulator, (EditorPanel) null, saveAs);
+        this(simulator, (GraphEditorPanel) null, saveAs);
         this.role = role;
     }
 
@@ -65,7 +66,7 @@ public final class SaveGraphAction extends SimulatorAction {
                 result = doSave(getGraph());
             }
             if (this.editor != null) {
-                this.editor.setDirty(false);
+                this.editor.setClean();
             }
         }
         return result;
@@ -81,23 +82,23 @@ public final class SaveGraphAction extends SimulatorAction {
         try {
             switch (graph.getRole()) {
             case HOST:
-                if (this.editor != null || getModel().hasHost()) {
-                    result = getModel().doAddHost(graph);
+                if (this.editor != null || getSimulatorModel().hasHost()) {
+                    result = getSimulatorModel().doAddHost(graph);
                 } else {
                     // we're saving a state
                     String newName =
-                        askNewGraphName("Select new graph name",
+                        askNewName(ResourceKind.HOST, "Select new graph name",
                             graph.getName(), true);
                     if (newName != null) {
-                        result |= getModel().doAddHost(graph.rename(newName));
+                        result |= getSimulatorModel().doAddHost(graph.rename(newName));
                     }
                 }
                 break;
             case RULE:
-                result = getModel().doAddRule(graph);
+                result = getSimulatorModel().doAddRule(graph);
                 break;
             case TYPE:
-                result = getModel().doAddType(graph);
+                result = getSimulatorModel().doAddType(graph);
                 break;
             }
         } catch (IOException exc) {
@@ -145,13 +146,13 @@ public final class SaveGraphAction extends SimulatorAction {
         if (this.editor == null) {
             switch (getRole()) {
             case HOST:
-                enabled = getModel().hasHost() || getModel().hasState();
+                enabled = getSimulatorModel().hasHost() || getSimulatorModel().hasState();
                 break;
             case RULE:
-                enabled = getModel().hasRule();
+                enabled = getSimulatorModel().hasRule();
                 break;
             case TYPE:
-                enabled = getModel().hasType();
+                enabled = getSimulatorModel().hasType();
                 break;
             default:
                 assert false;
@@ -163,7 +164,7 @@ public final class SaveGraphAction extends SimulatorAction {
         setEnabled(enabled);
         if (enabled) {
             String name;
-            if (getRole() == GraphRole.HOST && !getModel().hasHost()) {
+            if (getRole() == GraphRole.HOST && !getSimulatorModel().hasHost()) {
                 name = Options.getSaveStateActionName(this.saveAs);
             } else {
                 name = Options.getSaveActionName(getRole(), this.saveAs);
@@ -184,17 +185,17 @@ public final class SaveGraphAction extends SimulatorAction {
         if (this.editor == null) {
             switch (getRole()) {
             case HOST:
-                if (getModel().hasHost()) {
-                    return getModel().getHost().getAspectGraph();
+                if (getSimulatorModel().hasHost()) {
+                    return getSimulatorModel().getHost().getSource();
                 } else {
                     return getStateDisplay().getStatePanel().getGraph();
                 }
             case RULE:
-                RuleView rule = getModel().getRule();
-                return rule == null ? null : rule.getAspectGraph();
+                RuleModel rule = getSimulatorModel().getRule();
+                return rule == null ? null : rule.getSource();
             case TYPE:
-                TypeView type = getModel().getType();
-                return type == null ? null : type.getAspectGraph();
+                TypeModel type = getSimulatorModel().getType();
+                return type == null ? null : type.getSource();
             default:
                 assert false;
                 return null;
@@ -216,7 +217,7 @@ public final class SaveGraphAction extends SimulatorAction {
         return this.role;
     }
 
-    private final EditorPanel editor;
+    private final GraphEditorPanel editor;
     private GraphRole role;
     private final boolean saveAs;
 }

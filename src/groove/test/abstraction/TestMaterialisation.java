@@ -29,7 +29,7 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,9 +56,9 @@ public class TestMaterialisation {
     public void testMaterialisation0() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getGraphView("materialisation-test-0").toModel();
+                view.getHostModel("materialisation-test-0").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-0");
@@ -86,9 +86,9 @@ public class TestMaterialisation {
     public void testMaterialisation1() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getGraphView("materialisation-test-1").toModel();
+                view.getHostModel("materialisation-test-1").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
@@ -116,9 +116,9 @@ public class TestMaterialisation {
     public void testMaterialisation2() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
+            GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getGraphView("materialisation-test-2").toModel();
+                view.getHostModel("materialisation-test-2").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-1");
@@ -146,8 +146,8 @@ public class TestMaterialisation {
     public void testRuleApplicationAndShapeNormalisation() {
         File file = new File(DIRECTORY);
         try {
-            StoredGrammarView view = StoredGrammarView.newInstance(file, false);
-            HostGraph graph = view.getGraphView("rule-app-test-0").toModel();
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph = view.getHostModel("rule-app-test-0").toResource();
             Shape shape = new Shape(graph);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("add");

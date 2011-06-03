@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 
 import java.io.IOException;
 
@@ -16,11 +17,11 @@ public class NewPrologAction extends SimulatorAction {
     @Override
     public boolean execute() {
         String newName =
-            askNewPrologName("Select Prolog program name",
+            askNewName(ResourceKind.PROLOG, "Select Prolog program name",
                 Simulator.NEW_PROLOG_NAME, true);
         try {
             if (newName != null) {
-                getModel().doAddProlog(newName, "");
+                getSimulatorModel().doAddProlog(newName, "");
                 getPrologDisplay().createEditor(newName);
             }
         } catch (IOException exc) {
@@ -31,6 +32,6 @@ public class NewPrologAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getGrammar() != null);
+        setEnabled(getSimulatorModel().getGrammar() != null);
     }
 }

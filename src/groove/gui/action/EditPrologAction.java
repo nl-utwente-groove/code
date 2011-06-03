@@ -15,13 +15,13 @@ public class EditPrologAction extends SimulatorAction {
 
     @Override
     public boolean execute() {
-        getPrologDisplay().createEditor(getModel().getProlog().getName());
+        getPrologDisplay().createEditor(getSimulatorModel().getProlog().getName());
         return false;
     }
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getProlog() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getProlog() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

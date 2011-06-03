@@ -455,7 +455,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /** Returns the simulator of which this panel is part. */
-    protected final Simulator getSimulator() {
+    public final Simulator getSimulator() {
         return this.simulator;
     }
 

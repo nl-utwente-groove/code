@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.trans.ResourceKind;
 
 /**
  * Action to copy the currently displayed control program.
@@ -17,10 +18,10 @@ public class CopyControlAction extends SimulatorAction {
     public boolean execute() {
         boolean result = false;
         if (getControlDisplay().cancelEditing(true)) {
-            String oldName = getModel().getControl().getName();
+            String oldName = getSimulatorModel().getControl().getName();
             String newName =
-                askNewControlName("Select new control program name", oldName,
-                    true);
+                askNewName(ResourceKind.CONTROL,
+                    "Select new control program name", oldName, true);
             if (newName != null) {
                 result = getActions().getSaveControlAction().doSave(newName);
             }
@@ -30,7 +31,7 @@ public class CopyControlAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getControl() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getControl() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 }

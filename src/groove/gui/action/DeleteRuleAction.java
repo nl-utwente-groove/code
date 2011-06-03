@@ -19,8 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.RuleView;
-import groove.view.aspect.AspectGraph;
+import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,32 +41,31 @@ public class DeleteRuleAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getModel().getRule() != null
-            && getModel().getStore().isModifiable());
+        setEnabled(getSimulatorModel().getRule() != null
+            && getSimulatorModel().getStore().isModifiable());
     }
 
     @Override
     public boolean execute() {
         boolean result = false;
         // copy the selected rules to avoid concurrent modifications
-        Collection<RuleView> ruleViews = getModel().getRuleSet();
+        Collection<RuleModel> ruleViews = getSimulatorModel().getRuleSet();
         // collect the affected graphs and compose the question
-        AspectGraph[] rules = new AspectGraph[ruleViews.size()];
         List<String> ruleNames = new ArrayList<String>(ruleViews.size());
-        for (RuleView ruleView : ruleViews) {
-            rules[ruleNames.size()] = ruleView.getAspectGraph();
+        for (RuleModel ruleView : ruleViews) {
             ruleNames.add(ruleView.getName());
         }
         String question;
-        if (rules.length == 1) {
-            question = String.format("Delete rule '%s'?", rules[0].getName());
+        if (ruleNames.size() == 1) {
+            question = String.format("Delete rule '%s'?", ruleNames.get(0));
         } else {
-            question = String.format("Delete these %s rules?", rules.length);
+            question =
+                String.format("Delete these %s rules?", ruleNames.size());
         }
         if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)
-            && getRuleTab().disposeEditors(rules)) {
+            && getRuleDisplay().disposeEditors(ruleNames.toArray(new String[0]))) {
             try {
-                result |= getModel().doDeleteRules(ruleNames);
+                result |= getSimulatorModel().doDeleteRules(ruleNames);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error during rule deletion");
             }

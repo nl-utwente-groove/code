@@ -7,7 +7,7 @@ import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.SystemProperties;
 import groove.util.Version;
-import groove.view.StoredGrammarView;
+import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,11 +133,11 @@ public class LoadGrammarAction extends SimulatorAction {
             newGrammarFile = null;
         }
         // store.reload(); - MdM - moved to version check code
-        final StoredGrammarView grammar = store.toGrammarView();
+        final GrammarModel grammar = store.toGrammarModel();
         if (startGraphName != null) {
             grammar.setStartGraph(startGraphName);
         }
-        getModel().setGrammar(grammar);
+        getSimulatorModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {
             getActions().getSaveGrammarAction().save(newGrammarFile,

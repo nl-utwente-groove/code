@@ -20,7 +20,7 @@ import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
-import groove.view.TypeView;
+import groove.view.TypeModel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -71,7 +71,7 @@ final public class TypeDisplay extends TabbedDisplay implements
 
     @Override
     public String getName() {
-        TypeView type = getSimulatorModel().getType();
+        TypeModel type = getSimulatorModel().getType();
         return type == null ? null : type.getName();
     }
 
@@ -83,7 +83,7 @@ final public class TypeDisplay extends TabbedDisplay implements
             clearJModelMap();
         }
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
-            TypeView type = source.getType();
+            TypeModel type = source.getType();
             setSelectedTab(type == null ? null : type.getName());
             getEnableButton().setSelected(type != null && type.isEnabled());
         }
@@ -91,8 +91,8 @@ final public class TypeDisplay extends TabbedDisplay implements
     }
 
     @Override
-    protected TypeView getView(String name) {
-        return getSimulatorModel().getGrammar().getTypeView(name);
+    protected TypeModel getResource(String name) {
+        return getSimulatorModel().getGrammar().getTypeModel(name);
     }
 
     /**
@@ -165,7 +165,7 @@ final public class TypeDisplay extends TabbedDisplay implements
     @Override
     protected void decorateLabelText(String name, StringBuilder text) {
         super.decorateLabelText(name, text);
-        if (getView(name).isEnabled()) {
+        if (getResource(name).isEnabled()) {
             HTMLConverter.STRONG_TAG.on(text);
             HTMLConverter.HTML_TAG.on(text);
         } else {

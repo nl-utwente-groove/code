@@ -25,7 +25,6 @@ import groove.graph.GraphInfo;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
@@ -51,31 +50,26 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Aspectual view upon an attributed graph. The attribute values are represented
- * by {@link ValueNode}s with self-{@link OperatorEdge}s.
+ * Graph-based model of a host graph graph. Attribute values are represented
+ * by {@link ValueNode}s.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultGraphView implements GraphView {
+public class HostModel extends GraphBasedModel<HostGraph> {
     /**
-     * Constructs an instance from a given aspect graph view.
+     * Constructs an instance from a given aspect graph.
      */
-    public DefaultGraphView(AspectGraph view, SystemProperties properties) {
-        view.testFixed(true);
-        this.view = view;
+    public HostModel(AspectGraph source, SystemProperties properties) {
+        super(source);
+        source.testFixed(true);
         this.algebraFamily = getFamily(properties);
     }
 
-    public String getName() {
-        return this.view.getName();
-    }
-
-    @Override
-    public AspectGraph getAspectGraph() {
-        return this.view;
-    }
-
-    public DefaultHostGraph toModel() throws FormatException {
+    /** 
+     * Constructs the host graph from this resource.
+     * @throws FormatException if the resource contains errors. 
+     */
+    public DefaultHostGraph toHost() throws FormatException {
         initialise();
         if (this.model == null) {
             throw new FormatException(getErrors());
@@ -84,19 +78,25 @@ public class DefaultGraphView implements GraphView {
         }
     }
 
+    @Override
+    public DefaultHostGraph toResource() throws FormatException {
+        return toHost();
+    }
+
+    @Override
     public List<FormatError> getErrors() {
         initialise();
         return this.errors;
     }
 
     @Override
-    public ViewToHostMap getMap() {
+    public HostModelMap getMap() {
         initialise();
-        return this.viewToModelMap;
+        return this.hostModelMap;
     }
 
     /**
-     * Changes the system properties under which the model is to be created.
+     * Changes the system properties under which the resource is to be created.
      */
     public void setProperties(SystemProperties properties) {
         AlgebraFamily newFamily = getFamily(properties);
@@ -121,6 +121,7 @@ public class DefaultGraphView implements GraphView {
     }
 
     /** Returns the set of labels used in this graph. */
+    @Override
     public Set<TypeLabel> getLabels() {
         initialise();
         return this.labelSet == null ? Collections.<TypeLabel>emptySet()
@@ -141,31 +142,31 @@ public class DefaultGraphView implements GraphView {
         return result;
     }
 
-    /** Constructs the model and associated data structures from the view. */
+    /** Constructs the resource and associated data structures from the model. */
     private void initialise() {
         // first test if there is something to be done
         if (this.errors == null) {
-            if (getAspectGraph().hasErrors()) {
-                this.errors = getAspectGraph().getErrors();
+            if (getSource().hasErrors()) {
+                this.errors = getSource().getErrors();
             } else {
                 this.labelSet = new HashSet<TypeLabel>();
-                Pair<DefaultHostGraph,ViewToHostMap> modelPlusMap =
-                    computeModel(this.view);
+                Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
+                    computeModel(getSource());
                 this.model = modelPlusMap.one();
-                this.viewToModelMap = modelPlusMap.two();
+                this.hostModelMap = modelPlusMap.two();
                 this.errors = GraphInfo.getErrors(this.model);
             }
         }
     }
 
     /**
-     * Resets the constructed fields of this view to {@code null}, so that they
+     * Resets the constructed fields of this model to {@code null}, so that they
      * will be reconstructed again.
      */
     private void invalidate() {
         this.errors = null;
         this.model = null;
-        this.viewToModelMap = null;
+        this.hostModelMap = null;
         this.labelSet = null;
     }
 
@@ -173,28 +174,28 @@ public class DefaultGraphView implements GraphView {
      * Computes a fresh model from a given aspect graph, together with a mapping
      * from the aspect graph's node to the (fresh) graph nodes.
      */
-    private Pair<DefaultHostGraph,ViewToHostMap> computeModel(AspectGraph view) {
-        Set<FormatError> errors = new TreeSet<FormatError>(view.getErrors());
-        DefaultHostGraph model = createGraph(view.getName());
-        // we need to record the view-to-model element map for layout transfer
-        ViewToHostMap elementMap = new ViewToHostMap(model.getFactory());
-        // copy the nodes from view to model
+    private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
+        Set<FormatError> errors = new TreeSet<FormatError>(source.getErrors());
+        DefaultHostGraph result = createGraph(source.getName());
+        // we need to record the model-to-resource element map for layout transfer
+        HostModelMap elementMap = new HostModelMap(result.getFactory());
+        // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
-        for (AspectNode viewNode : view.nodeSet()) {
-            if (!viewNode.getAttrKind().isData()) {
-                processViewNode(model, elementMap, viewNode);
+        for (AspectNode modelNode : source.nodeSet()) {
+            if (!modelNode.getAttrKind().isData()) {
+                processModelNode(result, elementMap, modelNode);
             }
         }
         // then the value nodes because their numbers are generated
-        for (AspectNode viewNode : view.nodeSet()) {
-            if (viewNode.getAttrKind().isData()) {
-                processViewNode(model, elementMap, viewNode);
+        for (AspectNode modelNode : source.nodeSet()) {
+            if (modelNode.getAttrKind().isData()) {
+                processModelNode(result, elementMap, modelNode);
             }
         }
-        // copy the edges from view to model
-        for (AspectEdge viewEdge : view.edgeSet()) {
+        // copy the edges from model to resource
+        for (AspectEdge modelEdge : source.edgeSet()) {
             try {
-                processViewEdge(model, elementMap, viewEdge);
+                processModelEdge(result, elementMap, modelEdge);
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
@@ -202,9 +203,9 @@ public class DefaultGraphView implements GraphView {
         // remove isolated value nodes from the result graph
         for (HostNode modelNode : elementMap.nodeMap().values()) {
             if (modelNode instanceof ValueNode
-                && model.edgeSet(modelNode).isEmpty()) {
+                && result.edgeSet(modelNode).isEmpty()) {
                 // the node is an isolated value node; remove it
-                model.removeNode(modelNode);
+                result.removeNode(modelNode);
             }
         }
         // test against the type graph, if any
@@ -212,7 +213,7 @@ public class DefaultGraphView implements GraphView {
             Collection<FormatError> typeErrors;
             try {
                 TypeGraph.Typing<HostNode,HostEdge> typing =
-                    this.type.checkTyping(model);
+                    this.type.checkTyping(result);
                 typeErrors = new TreeSet<FormatError>();
                 for (Element elem : typing.getAbstractElements()) {
                     if (elem instanceof HostNode) {
@@ -243,82 +244,78 @@ public class DefaultGraphView implements GraphView {
                 }
             }
         }
-        // transfer graph info such as layout from view to model
-        GraphInfo.transfer(view, model, elementMap);
-        GraphInfo.setErrors(model, errors);
-        model.setFixed();
-        return new Pair<DefaultHostGraph,ViewToHostMap>(model, elementMap);
+        // transfer graph info such as layout from model to resource
+        GraphInfo.transfer(source, result, elementMap);
+        GraphInfo.setErrors(result, errors);
+        result.setFixed();
+        return new Pair<DefaultHostGraph,HostModelMap>(result, elementMap);
     }
 
     /**
-     * Processes the information in a view node by updating the model and
+     * Processes the information in a model node by updating the model and
      * element map.
      */
-    private void processViewNode(DefaultHostGraph model,
-            ViewToHostMap elementMap, AspectNode viewNode) {
+    private void processModelNode(DefaultHostGraph result,
+            HostModelMap elementMap, AspectNode modelNode) {
         // include the node in the model if it is not virtual
-        if (!viewNode.getKind().isMeta()) {
+        if (!modelNode.getKind().isMeta()) {
             HostNode nodeImage = null;
-            AspectKind attrType = viewNode.getAttrKind();
+            AspectKind attrType = modelNode.getAttrKind();
             if (attrType.isData()) {
                 assert attrType != UNTYPED;
                 Algebra<?> nodeAlgebra =
                     this.algebraFamily.getAlgebra(attrType.getName());
-                Aspect dataType = viewNode.getAttrAspect();
+                Aspect dataType = modelNode.getAttrAspect();
                 String symbol = ((Constant) dataType.getContent()).getSymbol();
-                // don't reuse value node numbers in the image
-                //                                nodeImage =
-                //                                    model.getFactory().createNode(viewNode.getNumber(),
-                //                                        nodeAlgebra, nodeAlgebra.getValueFromString(symbol));
                 nodeImage =
-                    model.getFactory().createNodeFromString(nodeAlgebra, symbol);
-                model.addNode(nodeImage);
+                    result.getFactory().createNodeFromString(nodeAlgebra,
+                        symbol);
+                result.addNode(nodeImage);
             } else {
-                nodeImage = model.addNode(viewNode.getNumber());
+                nodeImage = result.addNode(modelNode.getNumber());
             }
-            elementMap.putNode(viewNode, nodeImage);
+            elementMap.putNode(modelNode, nodeImage);
         }
     }
 
     /**
-     * Processes the information in a view edge by updating the model, element
+     * Processes the information in a model edge by updating the resource, element
      * map and subtypes.
      * @throws FormatException if the presence of the edge signifies an error
      */
-    private void processViewEdge(HostGraph model, ViewToHostMap elementMap,
-            AspectEdge viewEdge) throws FormatException {
-        if (viewEdge.getKind().isMeta()) {
+    private void processModelEdge(HostGraph result, HostModelMap elementMap,
+            AspectEdge modelEdge) throws FormatException {
+        if (modelEdge.getKind().isMeta()) {
             return;
         }
-        HostNode modelSource = elementMap.getNode(viewEdge.source());
-        assert modelSource != null : String.format(
-            "Source of '%s' is not in element map %s", viewEdge.source(),
+        HostNode hostSource = elementMap.getNode(modelEdge.source());
+        assert hostSource != null : String.format(
+            "Source of '%s' is not in element map %s", modelEdge.source(),
             elementMap);
-        HostNode modelTarget = elementMap.getNode(viewEdge.target());
-        assert modelTarget != null : String.format(
-            "Target of '%s' is not in element map %s", viewEdge.target(),
+        HostNode hostNode = elementMap.getNode(modelEdge.target());
+        assert hostNode != null : String.format(
+            "Target of '%s' is not in element map %s", modelEdge.target(),
             elementMap);
-        TypeLabel modelLabel = viewEdge.getTypeLabel();
-        assert modelLabel == null || !modelLabel.isDataType();
+        TypeLabel hostLabel = modelEdge.getTypeLabel();
+        assert hostLabel == null || !hostLabel.isDataType();
 
-        if (viewEdge.isPredicate()) {
-            Predicate pred = viewEdge.getPredicate();
+        if (modelEdge.isPredicate()) {
+            Predicate pred = modelEdge.getPredicate();
             // Create the value node.
             Algebra<?> nodeAlgebra =
                 this.algebraFamily.getAlgebra(pred.getSignature());
-            modelTarget =
-                model.getFactory().createNodeFromString(nodeAlgebra,
+            hostNode =
+                result.getFactory().createNodeFromString(nodeAlgebra,
                     pred.getValue().getSymbol());
-            model.addNode(modelTarget);
+            result.addNode(hostNode);
 
             // Update the label for the edge.
-            modelLabel = model.getFactory().createLabel(pred.getName());
+            hostLabel = result.getFactory().createLabel(pred.getName());
         }
 
-        HostEdge modelEdge =
-            model.addEdge(modelSource, modelLabel, modelTarget);
-        this.labelSet.add(modelLabel);
-        elementMap.putEdge(viewEdge, modelEdge);
+        HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
+        this.labelSet.add(hostLabel);
+        elementMap.putEdge(modelEdge, hostEdge);
     }
 
     /**
@@ -328,35 +325,33 @@ public class DefaultGraphView implements GraphView {
         return new DefaultHostGraph(name);
     }
 
-    /** The view represented by this object. */
-    private final AspectGraph view;
-    /** The graph model that is being viewed. */
+    /** The host graph that is being constructed. */
     private DefaultHostGraph model;
     /**
-     * List of errors in the view that prevent the model from being constructed.
+     * List of errors in the model that prevent the resource from being constructed.
      */
     private List<FormatError> errors;
-    /** Map from view to model nodes. */
-    private ViewToHostMap viewToModelMap;
+    /** Map from model to resource nodes. */
+    private HostModelMap hostModelMap;
     /** Set of labels occurring in this graph. */
     private Set<TypeLabel> labelSet;
-    /** The attribute element factory for this view. */
+    /** The attribute element factory for this model. */
     private AlgebraFamily algebraFamily;
     /** Optional type graph for this aspect graph. */
     private TypeGraph type;
 
     /** Mapping from aspect graph to type graph. */
-    public static class ViewToHostMap extends ViewToModelMap<HostNode,HostEdge> {
+    public static class HostModelMap extends ModelMap<HostNode,HostEdge> {
         /**
          * Creates a new, empty map.
          */
-        public ViewToHostMap(HostFactory factory) {
+        public HostModelMap(HostFactory factory) {
             super(factory);
         }
 
         @Override
-        public ViewToHostMap newMap() {
-            return new ViewToHostMap(getFactory());
+        public HostModelMap newMap() {
+            return new HostModelMap(getFactory());
         }
 
         @Override

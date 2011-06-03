@@ -35,14 +35,11 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.SystemProperties;
-import groove.view.DefaultGraphView;
-import groove.view.DefaultRuleView;
-import groove.view.DefaultTypeView;
 import groove.view.FormatError;
-import groove.view.GraphView;
-import groove.view.RuleView;
-import groove.view.TypeView;
-import groove.view.View;
+import groove.view.GraphBasedModel;
+import groove.view.HostModel;
+import groove.view.RuleModel;
+import groove.view.TypeModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -448,113 +445,113 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /** 
-     * Method to make sure that the graph, rule or type view is reconstructed.
+     * Method to make sure that the graph, rule or type model is reconstructed.
      * This is necessary after a change to the aspect graph properties, in particular the rule priority. 
      */
-    public void invalidateView() {
-        this.graphView = null;
-        this.ruleView = null;
-        this.typeView = null;
+    public void invalidateModel() {
+        this.graphModel = null;
+        this.ruleModel = null;
+        this.typeModel = null;
     }
 
     /**
-     * Creates a graph view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The view object is
+     * Creates a graph model from this aspect graph. Further information for the
+     * conversion is given through a properties object. The model object is
      * reused when possible.
      * @param properties the properties object with respect to which the graph
      *        is to be constructed
-     * @return the resulting state graph view (non-null)
+     * @return the resulting state graph model (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link GraphRole#HOST}
      */
-    public GraphView toGraphView(SystemProperties properties)
+    public HostModel toGraphModel(SystemProperties properties)
         throws IllegalStateException {
         if (getRole() != HOST) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a graph");
         }
-        boolean refreshView = this.graphView == null;
-        if (!refreshView) {
-            String viewName = this.graphView.getName();
-            refreshView = !getName().equals(viewName);
+        boolean refreshModel = this.graphModel == null;
+        if (!refreshModel) {
+            String modelName = this.graphModel.getName();
+            refreshModel = !getName().equals(modelName);
         }
-        if (refreshView) {
-            this.graphView = new DefaultGraphView(this, properties);
+        if (refreshModel) {
+            this.graphModel = new HostModel(this, properties);
         } else {
-            this.graphView.setProperties(properties);
+            this.graphModel.setProperties(properties);
         }
-        return this.graphView;
+        return this.graphModel;
 
     }
 
     /**
-     * Creates a type view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The view object is
+     * Creates a type model from this aspect graph. Further information for the
+     * conversion is given through a properties object. The model object is
      * reused when possible.
      * @param properties the properties object with respect to which the type
      *        graph is to be constructed
-     * @return the resulting type graph view (non-null)
+     * @return the resulting type graph model (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link GraphRole#TYPE}
      */
-    public TypeView toTypeView(SystemProperties properties)
+    public TypeModel toTypeModel(SystemProperties properties)
         throws IllegalStateException {
         if (getRole() != TYPE) {
             throw new IllegalStateException(
                 String.format("Aspect graph does not represent a type graph"));
         }
-        boolean refreshView = this.typeView == null;
-        if (!refreshView) {
-            String viewName = this.typeView.getName();
-            refreshView = !getName().equals(viewName);
+        boolean refreshModel = this.typeModel == null;
+        if (!refreshModel) {
+            String modelName = this.typeModel.getName();
+            refreshModel = !getName().equals(modelName);
         }
-        if (refreshView) {
-            this.typeView = new DefaultTypeView(this);
+        if (refreshModel) {
+            this.typeModel = new TypeModel(this);
         }
-        return this.typeView;
+        return this.typeModel;
     }
 
     /**
-     * Creates a rule view from this aspect graph. Further information for the
-     * conversion is given through a properties object. The view object is
+     * Creates a rule model from this aspect graph. Further information for the
+     * conversion is given through a properties object. The model object is
      * reused when possible.
      * @param properties the properties object with respect to which the rule is
      *        to be constructed
-     * @return the resulting rule view (non-null)
+     * @return the resulting rule model (non-null)
      * @throws IllegalStateException if the aspect graph role is not
      *         {@link GraphRole#RULE}
      */
-    public RuleView toRuleView(SystemProperties properties)
+    public RuleModel toRuleModel(SystemProperties properties)
         throws IllegalStateException {
         if (this.getRole() != RULE) {
             throw new IllegalStateException(
                 "Aspect graph does not represent a rule graph");
         }
-        boolean refreshView = this.ruleView == null;
-        if (!refreshView) {
-            String viewName = this.ruleView.getName();
-            refreshView = !getName().equals(viewName);
+        boolean refreshModel = this.ruleModel == null;
+        if (!refreshModel) {
+            String modelName = this.ruleModel.getName();
+            refreshModel = !getName().equals(modelName);
         }
-        if (refreshView) {
-            this.ruleView = new DefaultRuleView(this, properties);
+        if (refreshModel) {
+            this.ruleModel = new RuleModel(this, properties);
         } else {
-            this.ruleView.setSystemProperties(properties);
+            this.ruleModel.setSystemProperties(properties);
         }
-        return this.ruleView;
+        return this.ruleModel;
     }
 
     /**
-     * Creates a graph or rule view from this aspect graph, depending on the
+     * Creates a graph or rule model from this aspect graph, depending on the
      * role of the aspect graph and a given system properties object.
      */
-    public View<?> toView(SystemProperties properties) {
+    public GraphBasedModel<?> toModel(SystemProperties properties) {
         switch (getRole()) {
         case RULE:
-            return toRuleView(properties);
+            return toRuleModel(properties);
         case TYPE:
-            return toTypeView(properties);
+            return toTypeModel(properties);
         case HOST:
-            return toGraphView(properties);
+            return toGraphModel(properties);
         }
         assert false;
         return null;
@@ -563,13 +560,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /** The graph role of the aspect graph. */
     private final GraphRole role;
     /** Auxiliary object for converting this aspect graph to a type graph. */
-    private TypeView typeView;
+    private TypeModel typeModel;
 
     /** Auxiliary object for converting this aspect graph to a state graph. */
-    private DefaultGraphView graphView;
+    private HostModel graphModel;
 
     /** Auxiliary object for converting this aspect graph to a rule. */
-    private RuleView ruleView;
+    private RuleModel ruleModel;
 
     /**
      * Creates an aspect graph from a given (plain) graph. Convenience method

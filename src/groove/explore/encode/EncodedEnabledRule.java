@@ -20,7 +20,7 @@ import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
-import groove.view.GrammarView;
+import groove.view.GrammarModel;
 
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +43,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
     public Map<String,String> generateOptions(Simulator simulator) {
 
         // Get the grammar from the simulator.
-        GrammarView grammar = simulator.getModel().getGrammar();
+        GrammarModel grammar = simulator.getModel().getGrammar();
 
         // Get all the rule names from the grammar.
         Set<String> ruleNames = grammar.getRuleNames();
@@ -52,7 +52,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
         // a sorted map.
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();
         for (String ruleName : ruleNames) {
-            if (grammar.getRuleView(ruleName).isEnabled()) {
+            if (grammar.getRuleModel(ruleName).isEnabled()) {
                 enabledRules.put(ruleName, ruleName);
             }
         }

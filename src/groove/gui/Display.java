@@ -50,4 +50,7 @@ public interface Display {
      * @return {@code true} if all editors were disposed.
      */
     boolean disposeAllEditors();
+
+    /** Returns the simulator to which this display belongs. */
+    Simulator getSimulator();
 }

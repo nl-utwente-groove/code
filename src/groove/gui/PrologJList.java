@@ -20,8 +20,8 @@ import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.view.PrologView;
-import groove.view.StoredGrammarView;
+import groove.view.PrologModel;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -183,7 +183,7 @@ public class PrologJList extends JList implements SimulatorListener {
         Object[] prologNames = getGrammar().getPrologNames().toArray();
         Arrays.sort(prologNames);
         setListData(prologNames);
-        PrologView selection = getSimulatorModel().getProlog();
+        PrologModel selection = getSimulatorModel().getProlog();
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
@@ -196,7 +196,7 @@ public class PrologJList extends JList implements SimulatorListener {
     /**
      * Returns the current grammar view from the simulator.
      */
-    private StoredGrammarView getGrammar() {
+    private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
@@ -314,7 +314,7 @@ public class PrologJList extends JList implements SimulatorListener {
                 result.setBackground(background);
             }
             String ctrlName = value.toString();
-            boolean error = getGrammar().getPrologView(ctrlName).hasErrors();
+            boolean error = getGrammar().getPrologModel(ctrlName).hasErrors();
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             setText(PrologJList.this.display.getLabelText(ctrlName));

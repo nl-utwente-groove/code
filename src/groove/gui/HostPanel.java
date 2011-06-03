@@ -31,9 +31,9 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
 import groove.trans.SystemProperties;
+import groove.view.TypeModel;
 import groove.view.FormatException;
-import groove.view.StoredGrammarView;
-import groove.view.TypeView;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -159,7 +159,7 @@ public class HostPanel extends JGraphPanel<AspectJGraph> implements
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
-    private void setGrammar(StoredGrammarView grammar) {
+    private void setGrammar(GrammarModel grammar) {
         getJGraph().getFilteredLabels().clear();
         if (grammar == null) {
             setJModel(null);
@@ -170,14 +170,14 @@ public class HostPanel extends JGraphPanel<AspectJGraph> implements
                 new HashMap<String,Set<TypeLabel>>();
             try {
                 for (String typeName : grammar.getTypeNames()) {
-                    TypeView view = grammar.getTypeView(typeName);
+                    TypeModel view = grammar.getTypeModel(typeName);
                     // the view may be null if type names
                     // overlap modulo upper/lowercase
                     if (view != null && view.isEnabled()) {
                         labelsMap.put(typeName, view.getLabels());
                     }
                 }
-                getJGraph().setType(grammar.getCompositeTypeView().toModel(),
+                getJGraph().setType(grammar.getTypeModel().toResource(),
                     labelsMap);
             } catch (FormatException e) {
                 labelsMap.clear();
