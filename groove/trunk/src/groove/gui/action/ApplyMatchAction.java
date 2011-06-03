@@ -12,7 +12,7 @@ import javax.swing.Action;
 public class ApplyMatchAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public ApplyMatchAction(Simulator simulator) {
-        super(simulator, Options.APPLY_MATCH_ACTION_NAME, Icons.STEP_ICON);
+        super(simulator, Options.APPLY_MATCH_ACTION_NAME, Icons.GO_NEXT_ICON);
         putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
         simulator.addAccelerator(this);
     }

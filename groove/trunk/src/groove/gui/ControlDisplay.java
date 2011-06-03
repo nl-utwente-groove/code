@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -452,6 +453,20 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
             HTMLConverter.HTML_TAG.on(result);
         }
         return result.toString();
+    }
+
+    /** 
+     * Returns the label to be used for a given (named) control program. 
+     * @param name the name of the control program
+     */
+    public Icon getListIcon(String name) {
+        Icon result;
+        if (name.equals(getSelectedControl().getName()) && isEditing()) {
+            result = Icons.EDIT_ICON;
+        } else {
+            result = getKind().getListIcon();
+        }
+        return result;
     }
 
     /**

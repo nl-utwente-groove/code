@@ -20,6 +20,7 @@ import static groove.io.FileType.CONTROL_FILTER;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
 import static groove.io.FileType.JAR_FILTER;
+import static groove.io.FileType.PROLOG_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
@@ -56,7 +57,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
         if (isGpsFolder(f)) {
             return Icons.GPS_FOLDER_ICON;
         } else if (isCompressedGpsFolder(f)) {
-            return Icons.COMPRESSED_GPS_FOLDER_ICON;
+            return Icons.GPS_COMPRESSED_FOLDER_ICON;
         } else if (isGraphFile(f)) {
             return Icons.GRAPH_FILE_ICON;
         } else if (isRuleFile(f)) {
@@ -65,6 +66,8 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
             return Icons.TYPE_FILE_ICON;
         } else if (isControlFile(f)) {
             return Icons.CONTROL_FILE_ICON;
+        } else if (isPrologFile(f)) {
+            return Icons.PROLOG_FILE_ICON;
         } else {
             return null;
         }
@@ -182,6 +185,15 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      */
     static protected boolean isGxlFile(File f) {
         return GXL_FILTER.acceptExtension(f);
+    }
+
+    /**
+     * Tests whether a given file is a prolog program.
+     * @param f the file to be tested
+     * @return <tt>true</tt> if <code>f</code> is a prolog program file
+     */
+    static protected boolean isPrologFile(File f) {
+        return PROLOG_FILTER.acceptExtension(f);
     }
 
     /**

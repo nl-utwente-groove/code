@@ -288,6 +288,7 @@ public class ControlJList extends JList implements SimulatorListener {
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             setText(ControlJList.this.display.getLabelText(ctrlName));
+            setIcon(ControlJList.this.display.getListIcon(value.toString()));
             // set tool tips and special formats
             String tip;
             if (isActiveControl) {

@@ -728,7 +728,7 @@ public class LabelTree extends JTree implements GraphModelListener,
      * parameter.
      */
     private static Icon getModeIcon(boolean subtypes) {
-        return subtypes ? Icons.OPEN_UP_ARROW_ICON : Icons.OPEN_DOWN_ARROW_ICON;
+        return subtypes ? Icons.ARROW_OPEN_UP_ICON : Icons.ARROW_OPEN_DOWN_ICON;
     }
 
     /**

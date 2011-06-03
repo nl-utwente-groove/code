@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import groove.graph.GraphRole;
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
@@ -20,7 +21,7 @@ public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public ExportAction(Simulator simulator, GraphJGraph jGraph) {
         // fill in a generic name, as the JGraph may not yet hold a graph.
-        super(simulator, Options.EXPORT_ACTION_NAME, null);
+        super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.jGraph = jGraph;
     }

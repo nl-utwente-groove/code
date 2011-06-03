@@ -532,6 +532,10 @@ public class Options implements Cloneable {
         "Preview Control ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
+    /** Name of the "First Prolog Result" action. */
+    public static final String PROLOG_FIRST_ACTION_NAME = "Start Query";
+    /** Name of the "Next Prolog Result" action. */
+    public static final String PROLOG_NEXT_ACTION_NAME = "Next Result";
     /** Name of the "Raise Priority" action. */
     public static final String RAISE_PRIORITY_ACTION_NAME = "Raise Priority";
     /** Redo action name */

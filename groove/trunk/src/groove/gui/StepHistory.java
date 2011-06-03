@@ -124,7 +124,7 @@ public class StepHistory implements SimulatorListener {
     private class ForwardAction extends AbstractAction {
         /** Creates an instance of the redo action. */
         ForwardAction() {
-            super(Options.FORWARD_ACTION_NAME, Icons.CLASSIC_RIGHT_ARROW_ICON);
+            super(Options.FORWARD_ACTION_NAME, Icons.ARROW_SIMPLE_RIGHT_ICON);
             putValue(ACCELERATOR_KEY, Options.FORWARD_KEY);
             putValue(SHORT_DESCRIPTION, Options.FORWARD_ACTION_NAME);
             StepHistory.this.simulator.addAccelerator(this);
@@ -151,7 +151,7 @@ public class StepHistory implements SimulatorListener {
     private class BackAction extends AbstractAction {
         /** Creates an instance of the undo action. */
         BackAction() {
-            super(Options.BACK_ACTION_NAME, Icons.CLASSIC_LEFT_ARROW_ICON);
+            super(Options.BACK_ACTION_NAME, Icons.ARROW_SIMPLE_LEFT_ICON);
             putValue(ACCELERATOR_KEY, Options.BACK_KEY);
             putValue(SHORT_DESCRIPTION, Options.BACK_ACTION_NAME);
             StepHistory.this.simulator.addAccelerator(this);

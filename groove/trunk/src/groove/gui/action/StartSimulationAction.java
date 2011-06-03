@@ -28,7 +28,7 @@ public class StartSimulationAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public StartSimulationAction(Simulator simulator) {
         super(simulator, Options.START_SIMULATION_ACTION_NAME,
-            Icons.REWIND_ICON);
+            Icons.GO_PREVIOUS_ICON);
         putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
     }
 

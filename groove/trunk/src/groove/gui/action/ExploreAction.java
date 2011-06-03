@@ -34,7 +34,7 @@ public class ExploreAction extends SimulatorAction {
     /** Constructs a new action, for a given simulator. */
     public ExploreAction(Simulator simulator) {
         super(simulator, Options.DEFAULT_EXPLORATION_ACTION_NAME,
-            Icons.FORWARD_ICON);
+            Icons.GO_FORWARD_ICON);
         putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
     }
 

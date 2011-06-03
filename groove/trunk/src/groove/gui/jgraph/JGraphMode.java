@@ -14,8 +14,8 @@ public enum JGraphMode {
     SELECT_MODE(Options.SELECT_MODE_NAME, Options.SELECT_MODE_KEY,
             Icons.SELECT_ICON),
     /** Panning and zooming. */
-    PAN_MODE(Options.PAN_MODE_NAME, null, Icons.OPEN_HAND_ICON,
-            Icons.OPEN_HAND_CURSOR, Icons.CLOSED_HAND_CURSOR),
+    PAN_MODE(Options.PAN_MODE_NAME, null, Icons.HAND_OPEN_ICON,
+            Icons.HAND_OPEN_CURSOR, Icons.HAND_CLOSED_CURSOR),
     /** Edge edit mode. */
     EDIT_MODE(Options.EDIT_MODE_NAME, Options.EDIT_MODE_KEY, Icons.EDGE_ICON),
     /** JGraph preview mode. */
