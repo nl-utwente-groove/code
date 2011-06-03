@@ -36,20 +36,19 @@ public final class Icons {
     /** Open action icon. */
     public static final ImageIcon OPEN_ICON = createIcon("open.gif");
     /** Cancel action icon. */
-    public static final ImageIcon CANCEL_ICON =
-        createIcon("cancel-smaller.gif");
+    public static final ImageIcon CANCEL_ICON = createIcon("cancel.gif");
     /** Classic (simple) down-arrow icon. */
-    public static final ImageIcon CLASSIC_DOWN_ARROW_ICON =
-        createIcon("classic-down-arrow.gif");
+    public static final ImageIcon ARROW_SIMPLE_DOWN_ICON =
+        createIcon("arrow-simple-down.gif");
     /** Classic (simple) down-arrow icon. */
-    public static final ImageIcon CLASSIC_LEFT_ARROW_ICON =
-        createIcon("new-left-arrow.gif");
+    public static final ImageIcon ARROW_SIMPLE_LEFT_ICON =
+        createIcon("arrow-wide-left.gif");
     /** Classic (simple) down-arrow icon. */
-    public static final ImageIcon CLASSIC_RIGHT_ARROW_ICON =
-        createIcon("new-right-arrow.gif");
+    public static final ImageIcon ARROW_SIMPLE_RIGHT_ICON =
+        createIcon("arrow-wide-right.gif");
     /** Classic (simple) up-arrow icon. */
-    public static final ImageIcon CLASSIC_UP_ARROW_ICON =
-        createIcon("classic-up-arrow.gif");
+    public static final ImageIcon ARROW_SIMPLE_UP_ICON =
+        createIcon("arrow-simple-up.gif");
     /** Copy action icon. */
     public static final ImageIcon COPY_ICON = createIcon("copy.gif");
     /** Cut action icon. */
@@ -57,8 +56,7 @@ public final class Icons {
     /** Delete action icon. */
     public static final ImageIcon DELETE_ICON = createIcon("delete.gif");
     /** Disable action icon. */
-    public static final ImageIcon DISABLE_ICON =
-        createIcon("disable-smaller.gif");
+    public static final ImageIcon DISABLE_ICON = createIcon("disable.gif");
     /** Edit action icon. */
     public static final ImageIcon EDIT_ICON = createIcon("edit.gif");
     /** Control edit action icon. */
@@ -73,12 +71,12 @@ public final class Icons {
     public static final ImageIcon EDIT_PROLOG_ICON = createIcon("edit-P.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
+    /** Export action icon. */
+    public static final ImageIcon EXPORT_ICON = createIcon("export.gif");
     /** Icon for a New action. */
     public static final ImageIcon NEW_ICON = createIcon("new.gif");
     /** Icon for a New Graph action. */
     public static final ImageIcon NEW_GRAPH_ICON = createIcon("new-G.gif");
-    /** Icon for a Start Simulation action. */
-    public static final ImageIcon NEW_LTS_ICON = createIcon("new-LTS.gif");
     /** Icon for a New Rule action. */
     public static final ImageIcon NEW_RULE_ICON = createIcon("new-R.gif");
     /** Icon for a New Type action. */
@@ -96,19 +94,32 @@ public final class Icons {
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON = createIcon("gps.gif");
     /** Icon for compressed GPS folders. */
-    public static final ImageIcon COMPRESSED_GPS_FOLDER_ICON =
-        createIcon("comp-gps.png");
+    public static final ImageIcon GPS_COMPRESSED_FOLDER_ICON =
+        createIcon("gps-compressed.png");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON =
         createIcon("control-mode.gif");
     /** Icon for Control Panel. */
     public static final ImageIcon CONTROL_FRAME_ICON =
-        createIcon("cp-frame.gif");
+        createIcon("control-frame.gif");
     /** Icon for Control Files. */
     public static final ImageIcon CONTROL_FILE_ICON =
         createIcon("control-file.gif");
-    /** Icon starting automatic simulation. */
-    public static final ImageIcon FORWARD_ICON = createIcon("forward.gif");
+    /** Small icon for control programs, as shown in the control list. */
+    public static final ImageIcon CONTROL_LIST_ICON =
+        createIcon("control-file.gif");
+    /** Icon for restart movement. */
+    public static final ImageIcon GO_PREVIOUS_ICON =
+        createIcon("go-previous.gif");
+    /** Icon for fast-forward movement. */
+    public static final ImageIcon GO_FORWARD_ICON =
+        createIcon("go-forward.gif");
+    /** Icon for single-step movement. */
+    public static final ImageIcon GO_NEXT_ICON = createIcon("go-next.gif");
+    /** Icon for normal forward movement. */
+    public static final ImageIcon GO_START_ICON = createIcon("go-start.gif");
+    /** Icon for fast-backward movement. */
+    public static final ImageIcon GO_REWIND_ICON = createIcon("go-rewind.gif");
     /** Icon for graph (GXL or GST) files. */
     public static final ImageIcon GRAPH_FILE_ICON =
         createIcon("graph-file.gif");
@@ -123,13 +134,17 @@ public final class Icons {
         createIcon("graph-small.gif");
     /** Graph editing mode icon. */
     public static final ImageIcon GRAPH_MODE_ICON =
-        createIcon("new-graph-mode.gif");
+        createIcon("graph-mode.gif");
     /** Icon for snap to grid action. */
     public static final ImageIcon GRID_ICON = createIcon("grid.gif");
     /** Icon for the LTS panel of the simulator. */
     public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
-    /** Icon restarting the simulation. */
-    public static final ImageIcon REWIND_ICON = createIcon("rewind.gif");
+    /** Icon for Prolog Files. */
+    public static final ImageIcon PROLOG_FILE_ICON =
+        createIcon("prolog-file.gif");
+    /** Small icon for production rules, as shown in the prolog list. */
+    public static final ImageIcon PROLOG_LIST_ICON =
+        createIcon("prolog-file.gif");
     /** Small icon for production rules, as shown in the rule tree. */
     public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
     /** Icon for rule (GPR) files. */
@@ -138,21 +153,16 @@ public final class Icons {
     public static final ImageIcon RULE_FRAME_ICON =
         createIcon("rule-frame.gif");
     /** Rule editing mode icon. */
-    public static final ImageIcon RULE_MODE_ICON =
-        createIcon("new-rule-mode.gif");
+    public static final ImageIcon RULE_MODE_ICON = createIcon("rule-mode.gif");
     /** Save action icon. */
     public static final ImageIcon SAVE_ICON = createIcon("save.gif");
     /** Save-as action icon. */
     public static final ImageIcon SAVE_AS_ICON = createIcon("saveas.gif");
-    /** Start action icon. */
-    public static final ImageIcon START_ICON = createIcon("start.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON =
-        createIcon("new-state-mode.gif");
+        createIcon("state-mode.gif");
     /** Select action icon. */
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
-    /** Icon for a single-step simulation. */
-    public static final ImageIcon STEP_ICON = createIcon("step.gif");
     /** Icon for type (GTY) files. */
     public static final ImageIcon TYPE_FILE_ICON = createIcon("type-file.gif");
     /** Icon for Type Panel. */
@@ -161,8 +171,7 @@ public final class Icons {
     /** Type editing mode icon. */
     public static final ImageIcon TYPE_LIST_ICON = createIcon("type-small.gif");
     /** Type editing mode icon. */
-    public static final ImageIcon TYPE_MODE_ICON =
-        createIcon("new-type-mode.gif");
+    public static final ImageIcon TYPE_MODE_ICON = createIcon("type-mode.gif");
     /** Icon for Prolog Panel. */
     public static final ImageIcon PROLOG_FRAME_ICON =
         createIcon("prolog-frame.gif");
@@ -170,11 +179,11 @@ public final class Icons {
     public static final ImageIcon GROOVE_ICON_16x16 =
         createIcon("groove-g-16x16.gif");
     /** Transparent open up-arrow icon. */
-    public static final ImageIcon OPEN_UP_ARROW_ICON =
-        createIcon("open-up-arrow.gif");
+    public static final ImageIcon ARROW_OPEN_UP_ICON =
+        createIcon("arrow-open-up.gif");
     /** Transparent open down-arrow icon. */
-    public static final ImageIcon OPEN_DOWN_ARROW_ICON =
-        createIcon("open-down-arrow.gif");
+    public static final ImageIcon ARROW_OPEN_DOWN_ICON =
+        createIcon("arrow-open-down.gif");
     /** Paste action icon. */
     public static final ImageIcon PASTE_ICON = createIcon("paste.gif");
     /** Special icon denoting choice e/a. */
@@ -186,25 +195,25 @@ public final class Icons {
     public static final ImageIcon PREVIEW_ICON = createIcon("preview.gif");
 
     /** Icon in the shape of an open hand, to be used as cursor. */
-    public static final ImageIcon OPEN_HAND_CURSOR_ICON =
-        createIcon("openhand.gif");
+    public static final ImageIcon HAND_OPEN_CURSOR_ICON =
+        createIcon("hand-open.gif");
     /** Icon in the shape of an open hand. */
-    public static final ImageIcon OPEN_HAND_ICON =
-        createIcon("openhand-small.gif");
+    public static final ImageIcon HAND_OPEN_ICON =
+        createIcon("hand-open-small.gif");
     /** Icon in the shape of a closed hand. */
-    public static final ImageIcon CLOSED_HAND_ICON =
-        createIcon("closedhand.gif");
+    public static final ImageIcon HAND_CLOSED_ICON =
+        createIcon("hand-closed.gif");
     /** Icon in the shape of a + magnifying class. */
     public static final ImageIcon ZOOM_IN_ICON = createIcon("zoomin.gif");
     /** Icon in the shape of a - magnifying class. */
     public static final ImageIcon ZOOM_OUT_ICON = createIcon("zoomout.gif");
 
     /** Custom cursor in the shape of an open hand. */
-    public static final Cursor OPEN_HAND_CURSOR = createCursor("Open Hand",
-        OPEN_HAND_CURSOR_ICON);
+    public static final Cursor HAND_OPEN_CURSOR = createCursor("Open Hand",
+        HAND_OPEN_CURSOR_ICON);
     /** Custom cursor in the shape of a closed hand. */
-    public static final Cursor CLOSED_HAND_CURSOR = createCursor("Closed Hand",
-        CLOSED_HAND_ICON);
+    public static final Cursor HAND_CLOSED_CURSOR = createCursor("Closed Hand",
+        HAND_CLOSED_ICON);
 
     /** Creates a named cursor from a given file. */
     static private ImageIcon createIcon(String filename) {

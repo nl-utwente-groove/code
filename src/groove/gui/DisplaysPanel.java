@@ -450,30 +450,27 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Type of components in the panel. */
     public static enum DisplayKind {
         /** State panel. */
-        HOST(Icons.GRAPH_FRAME_ICON, Icons.GRAPH_FILE_ICON,
-                Icons.EDIT_GRAPH_ICON, Icons.GRAPH_LIST_ICON, "Graphs",
-                "Current graph state"),
+        HOST(Icons.GRAPH_FRAME_ICON, Icons.EDIT_GRAPH_ICON,
+                Icons.GRAPH_LIST_ICON, "Graphs", "Current graph state"),
         /** Rule panel. */
-        RULE(Icons.RULE_FRAME_ICON, Icons.RULE_FILE_ICON, Icons.EDIT_RULE_ICON,
-                Icons.RULE_LIST_ICON, "Rules", "Selected rule"),
+        RULE(Icons.RULE_FRAME_ICON, Icons.EDIT_RULE_ICON, Icons.RULE_LIST_ICON,
+                "Rules", "Selected rule"),
         /** LTS panel. */
-        LTS(Icons.LTS_FRAME_ICON, null, null, null, "State space",
+        LTS(Icons.LTS_FRAME_ICON, null, null, "State space",
                 "Labelled transition system"),
         /** Type panel. */
-        TYPE(Icons.TYPE_FRAME_ICON, Icons.TYPE_FILE_ICON, Icons.EDIT_TYPE_ICON,
-                Icons.TYPE_LIST_ICON, "Types", "Type graphs"),
+        TYPE(Icons.TYPE_FRAME_ICON, Icons.EDIT_TYPE_ICON, Icons.TYPE_LIST_ICON,
+                "Types", "Type graphs"),
         /** Control panel. */
-        CONTROL(Icons.CONTROL_FRAME_ICON, Icons.CONTROL_FILE_ICON,
-                Icons.EDIT_CONTROL_ICON, null, "Control",
-                "Control specifications"),
+        CONTROL(Icons.CONTROL_FRAME_ICON, Icons.EDIT_CONTROL_ICON,
+                Icons.CONTROL_LIST_ICON, "Control", "Control specifications"),
         /** Prolog panel. */
-        PROLOG(Icons.PROLOG_FRAME_ICON, null, Icons.EDIT_ICON, null, "Prolog",
-                "Prolog programs");
+        PROLOG(Icons.PROLOG_FRAME_ICON, Icons.EDIT_PROLOG_ICON,
+                Icons.PROLOG_LIST_ICON, "Prolog", "Prolog programs");
 
-        private DisplayKind(ImageIcon tabIcon, ImageIcon frameIcon,
-                ImageIcon editIcon, ImageIcon listIcon, String title, String tip) {
+        private DisplayKind(ImageIcon tabIcon, ImageIcon editIcon,
+                ImageIcon listIcon, String title, String tip) {
             this.tabIcon = tabIcon;
-            this.frameIcon = frameIcon;
             this.editIcon = editIcon;
             this.listIcon = listIcon;
             this.title = title;
@@ -483,11 +480,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         /** Returns the icon that should be used on the tab for a display of this kind. */
         public final ImageIcon getTabIcon() {
             return this.tabIcon;
-        }
-
-        /** Returns the icon that should be used in case this display is detached. */
-        public final ImageIcon getFrameIcon() {
-            return this.frameIcon;
         }
 
         /** Returns the icon that should be used for the label list. */
@@ -516,7 +508,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
 
         private final ImageIcon tabIcon;
-        private final ImageIcon frameIcon;
         private final ImageIcon editIcon;
         private final ImageIcon listIcon;
         private final String title;

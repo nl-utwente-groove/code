@@ -318,9 +318,10 @@ public class PrologJList extends JList implements SimulatorListener {
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             setText(PrologJList.this.display.getLabelText(ctrlName));
+            setIcon(PrologJList.this.display.getListIcon(value.toString()));
             return result;
         }
 
-        private final Border emptyBorder = new EmptyBorder(0, 3, 0, 0);
+        private final Border emptyBorder = new EmptyBorder(1, 3, 1, 0);
     }
 }

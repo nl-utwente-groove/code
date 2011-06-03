@@ -29,7 +29,7 @@ public class ShiftPriorityAction extends SimulatorAction {
     public ShiftPriorityAction(Simulator simulator, boolean up) {
         super(simulator, up ? Options.RAISE_PRIORITY_ACTION_NAME
                 : Options.LOWER_PRIORITY_ACTION_NAME, up
-                ? Icons.CLASSIC_UP_ARROW_ICON : Icons.CLASSIC_DOWN_ARROW_ICON);
+                ? Icons.ARROW_SIMPLE_UP_ICON : Icons.ARROW_SIMPLE_DOWN_ICON);
         this.up = up;
     }
 

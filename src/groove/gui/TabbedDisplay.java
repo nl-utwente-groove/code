@@ -232,6 +232,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         }
         // make sure the tab component of the selected tab is enabled
         setTabEnabled(getSelectedIndex(), true);
+        getListPanel().repaint();
     }
 
     @Override

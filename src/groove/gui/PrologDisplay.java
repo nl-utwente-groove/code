@@ -36,10 +36,11 @@ import groove.view.PrologView;
 import groove.view.StoredGrammarView;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -54,6 +55,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -95,19 +98,21 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         Environment.setDefaultOutputStream(getUserOutput());
 
         JPanel queryPane = new JPanel(new BorderLayout());
+        JLabel leading = new JLabel(" ?- ");
+        leading.setFont(leading.getFont().deriveFont(Font.BOLD));
+        queryPane.add(leading, BorderLayout.WEST);
         queryPane.add(getQueryField(), BorderLayout.CENTER);
-        queryPane.add(createExecuteButton(), BorderLayout.EAST);
-
-        JPanel resultsPane = new JPanel(new BorderLayout());
-        resultsPane.setBorder(null);
-        resultsPane.add(new JScrollPane(getResultsArea()), BorderLayout.CENTER);
-        resultsPane.add(getNextResultButton(), BorderLayout.SOUTH);
+        JPanel buttonsPane =
+            new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonsPane.add(createExecuteButton());
+        buttonsPane.add(getNextResultButton());
+        buttonsPane.setBorder(null);
+        queryPane.add(buttonsPane, BorderLayout.EAST);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setBorder(null);
         splitPane.setOneTouchExpandable(true);
         splitPane.setTopComponent(getEditorPane());
-        splitPane.setBottomComponent(resultsPane);
+        splitPane.setBottomComponent(getResultsArea());
 
         JPanel mainPane = new JPanel(new BorderLayout());
         mainPane.add(queryPane, BorderLayout.NORTH);
@@ -150,10 +155,11 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                         ((PrologEditor) getComponentAt(index)).getName();
                     super.removeTabAt(index);
                     PrologDisplay.this.editorMap.remove(name);
+                    getListPanel().repaint();
                 }
             };
 
-            this.editorPane.setMinimumSize(new Dimension(0, 200));
+            this.editorPane.setMinimumSize(new Dimension(0, 300));
             this.editorPane.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
@@ -263,7 +269,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             this.results.setText("");
             this.results.setEditable(false);
             this.results.setEnabled(true);
-            this.results.setBackground(null);
+            this.results.setBackground(Color.WHITE);
         }
         return this.results;
     }
@@ -288,31 +294,69 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Creates the Execute button.
      */
     private JButton createExecuteButton() {
-        JButton execQuery = new JButton("Execute");
-        execQuery.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                executeQuery();
-            }
-        });
-        return execQuery;
+        return Options.createButton(getFirstResultAction());
+    }
+
+    /** Creates and returns the instance of the {@link FirstPrologResultAction}. */
+    public FirstPrologResultAction getFirstResultAction() {
+        if (this.firstResultAction == null) {
+            this.firstResultAction = new FirstPrologResultAction(this);
+        }
+        return this.firstResultAction;
+    }
+
+    /** Fixed instance of the action. */
+    private FirstPrologResultAction firstResultAction;
+
+    private static class FirstPrologResultAction extends AbstractAction {
+        /** Creates an instance of this action. */
+        public FirstPrologResultAction(PrologDisplay display) {
+            super(Options.PROLOG_FIRST_ACTION_NAME, Icons.GO_START_ICON);
+            putValue(SHORT_DESCRIPTION, Options.PROLOG_FIRST_ACTION_NAME);
+            this.display = display;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            this.display.executeQuery();
+        }
+
+        private final PrologDisplay display;
+    }
+
+    /** Creates and returns the instance of the {@link FirstPrologResultAction}. */
+    public NextPrologResultAction getNextResultAction() {
+        if (this.nextResultAction == null) {
+            this.nextResultAction = new NextPrologResultAction(this);
+        }
+        return this.nextResultAction;
+    }
+
+    /** Fixed instance of the action. */
+    private NextPrologResultAction nextResultAction;
+
+    private static class NextPrologResultAction extends AbstractAction {
+        /** Creates an instance of this action. */
+        public NextPrologResultAction(PrologDisplay display) {
+            super(Options.PROLOG_NEXT_ACTION_NAME, Icons.GO_NEXT_ICON);
+            putValue(SHORT_DESCRIPTION, Options.PROLOG_NEXT_ACTION_NAME);
+            setEnabled(false);
+            this.display = display;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            this.display.nextResults();
+        }
+
+        private final PrologDisplay display;
     }
 
     /**
      * Creates the next-result button.
      */
     private JButton getNextResultButton() {
-        if (this.nextResultBtn == null) {
-            JButton result = new JButton("More?");
-            result.setFont(result.getFont().deriveFont(Font.BOLD));
-            result.setVisible(false);
-            result.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent arg0) {
-                    nextResults();
-                }
-            });
-            this.nextResultBtn = result;
-        }
-        return this.nextResultBtn;
+        return Options.createButton(getNextResultAction());
     }
 
     /**
@@ -409,6 +453,20 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Returns the label to be used for a given (named) prolog program. 
      * @param name the name of the control program
      */
+    public Icon getListIcon(String name) {
+        Icon result;
+        if (this.editorMap.containsKey(name)) {
+            result = Icons.EDIT_ICON;
+        } else {
+            result = getKind().getListIcon();
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the label to be used for a given (named) prolog program. 
+     * @param name the name of the control program
+     */
     public String getLabelText(String name) {
         StringBuilder result = new StringBuilder(name);
         PrologEditor editor = this.editorMap.get(name);
@@ -479,7 +537,7 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
                 loadSyntaxHelpTree(this.userTree,
                     getEnvironment().getUserTags());
             }
-            if (changes.contains(Change.PROLOG)) {
+            if (changes.contains(Change.PROLOG) && source.hasProlog()) {
                 PrologEditor editor =
                     this.editorMap.get(source.getProlog().getName());
                 if (editor != null) {
@@ -497,16 +555,16 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         if (this.editorMap.containsKey(title)) {
             PrologEditor editor = this.editorMap.get(title);
             getEditorPane().setSelectedComponent(editor);
-            return;
+        } else {
+            String program =
+                getSimulatorModel().getGrammar().getPrologView(title).getProgram();
+            final PrologEditor editor = new PrologEditor(this, title, program);
+            this.editorMap.put(title, editor);
+            this.editors.add(editor);
+            getEditorPane().addTab(title, editor);
+            getEditorPane().setSelectedComponent(editor);
+            getListPanel().repaint();
         }
-
-        String program =
-            getSimulatorModel().getGrammar().getPrologView(title).getProgram();
-        final PrologEditor editor = new PrologEditor(this, title, program);
-        this.editorMap.put(title, editor);
-        this.editors.add(editor);
-        getEditorPane().addTab(title, editor);
-        getEditorPane().setSelectedComponent(editor);
     }
 
     /** Returns the currently selected editor, if any. */
@@ -684,14 +742,13 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * {@link #executeQuery(String)}
      */
     private void nextResults() {
-        if (getEngine() == null || !getEngine().hasNext()) {
-            return;
-        }
-        getResultsArea().append("\n");
-        try {
-            processResults(getEngine().next());
-        } catch (PrologException e) {
-            handlePrologException(e);
+        if (getEngine() != null) {
+            getResultsArea().append("\n");
+            try {
+                processResults(getEngine().next());
+            } catch (PrologException e) {
+                handlePrologException(e);
+            }
         }
     }
 
@@ -704,46 +761,46 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (queryResult == null) {
-            return;
-        }
         JTextArea results = getResultsArea();
         if (!results.getText().endsWith("\n")) {
             results.append("\n");
         }
-        switch (queryResult.getReturnValue()) {
-        case SUCCESS:
-        case SUCCESS_LAST:
-            ++this.solutionCount;
-            for (Entry<String,Object> entry : queryResult.getVariables().entrySet()) {
-                results.append(entry.getKey());
-                results.append(" = ");
-                if (entry.getValue() instanceof Term) {
-                    results.append(TermWriter.toString((Term) entry.getValue()));
-                } else {
-                    results.append("" + entry.getValue());
-                }
-                results.append("\n");
-            }
-            results.append("Yes\n");
-            break;
-        case FAIL:
+        if (queryResult == null) {
             results.append("No\n");
-            break;
-        case HALT:
-            results.append("Interpreter was halted\n");
-            break;
-        default:
-            results.append(String.format("Unexpected return value: %s",
-                getEngine().lastReturnValue().toString()));
+            getNextResultAction().setEnabled(false);
+        } else {
+            switch (queryResult.getReturnValue()) {
+            case SUCCESS:
+            case SUCCESS_LAST:
+                this.solutionCount++;
+                for (Entry<String,Object> entry : queryResult.getVariables().entrySet()) {
+                    results.append(entry.getKey());
+                    results.append(" = ");
+                    if (entry.getValue() instanceof Term) {
+                        results.append(TermWriter.toString((Term) entry.getValue()));
+                    } else {
+                        results.append("" + entry.getValue());
+                    }
+                    results.append("\n");
+                }
+                results.append("Yes\n");
+                getNextResultAction().setEnabled(true);
+                break;
+            case FAIL:
+                results.append("No\n");
+                getNextResultAction().setEnabled(false);
+                break;
+            case HALT:
+                results.append("Interpreter was halted\n");
+                break;
+            default:
+                results.append(String.format("Unexpected return value: %s",
+                    getEngine().lastReturnValue().toString()));
+            }
+            this.statusBar.setText(String.format(
+                "%d solution(s); Executed in %fms", this.solutionCount,
+                queryResult.getExecutionTime() / 1000000.0));
         }
-        getNextResultButton().setVisible(getEngine().hasNext());
-        if (getNextResultButton().isVisible()) {
-            getNextResultButton().grabFocus();
-        }
-        this.statusBar.setText(String.format(
-            "%d solution(s); Executed in %fms", this.solutionCount,
-            queryResult.getExecutionTime() / 1000000.0));
     }
 
     /**
@@ -793,7 +850,6 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     private JComboBox queryField;
     private JTextComponent queryEdit;
     private JTextArea results;
-    private JButton nextResultBtn;
     private final JLabel statusBar = new JLabel(" ");
     private OutputStream userOutput;
     /**
