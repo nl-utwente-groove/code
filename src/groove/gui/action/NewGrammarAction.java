@@ -50,7 +50,7 @@ public class NewGrammarAction extends SimulatorAction {
                             }
                         }
                         ok = response != JOptionPane.NO_OPTION;
-                    } else if (getMainPanel().disposeAllEditors()) {
+                    } else if (getDisplaysPanel().disposeAllEditors()) {
                         try {
                             result = getSimulatorModel().doNewGrammar(selectedFile);
                         } catch (IOException exc) {

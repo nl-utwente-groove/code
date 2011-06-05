@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.graph.GraphRole;
 import groove.gui.jgraph.JAttr;
+import groove.trans.ResourceKind;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -32,6 +33,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -76,11 +79,9 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
-        addBehaviour(DELETE_CONTROL_OPTION, 2);
-        addBehaviour(DELETE_PROLOG_OPTION, 2);
-        addBehaviour(DELETE_GRAPH_OPTION, 2);
-        addBehaviour(DELETE_RULE_OPTION, 2);
-        addBehaviour(DELETE_TYPE_OPTION, 2);
+        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
+            addBehaviour(getDeleteOption(resource), 2);
+        }
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
         addBehaviour(STOP_SIMULATION_OPTION, 2);
@@ -275,6 +276,26 @@ public class Options implements Cloneable {
         return result;
     }
 
+    /**
+     * Returns an action name for a resource edit.
+     * A further parameter determines if the name is a description <i>before</i>
+     * the action occurs, or after.
+     * @param edit the edit for which the name is required
+     * @param kind the kind of resource that has been edited
+     * @param dots if {@code true}, a ... prefix is appended
+     * @return The appropriate action name
+     */
+    public static String getEditActionName(EditType edit, ResourceKind kind,
+            boolean dots) {
+        StringBuilder result = new StringBuilder(edit.getName());
+        result.append(' ');
+        result.append(kind.getName());
+        if (dots) {
+            result.append(" ...");
+        }
+        return result.toString();
+    }
+
     /** The default font set in the look-and-feel. */
     public static Font DEFAULT_FONT = null;
     // Menus
@@ -294,6 +315,8 @@ public class Options implements Cloneable {
     public static final String FILE_MENU_NAME = "File";
     /** File menu mnemonic. */
     static public final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
+    /** New menu name */
+    public static final String NEW_MENU_NAME = "New";
     /** Open Recent menu name * */
     public static final String OPEN_RECENT_MENU_NAME = "Load Recent Grammar";
     /** Open Recent menu mnemonic. */
@@ -847,6 +870,19 @@ public class Options implements Cloneable {
     static public final String MANHATTAN_LINE_STYLE_NAME = "Manhattan";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
+
+    /** Returns the delete option text for a given resource kind. */
+    public static String getDeleteOption(ResourceKind kind) {
+        String result = deleteOptionMap.get(kind);
+        if (result == null) {
+            deleteOptionMap.put(kind,
+                result = String.format("Delete %s?", kind.getDescription()));
+        }
+        return result;
+    }
+
+    private static final Map<ResourceKind,String> deleteOptionMap =
+        new EnumMap<ResourceKind,String>(ResourceKind.class);
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show node ids option */
@@ -866,23 +902,9 @@ public class Options implements Cloneable {
     /** Show data values as nodes rather than assignments. */
     static public final String SHOW_VALUE_NODES_OPTION =
         "Show data values as nodes";
-    // /** Parse attributed graphs option */
-    // static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed
-    // graph";
     /** Always delete rules without confirmation. */
     static public final String CANCEL_CONTROL_EDIT_OPTION =
         "Abandon edited control program?";
-    /** Option to delete control programs. */
-    static public final String DELETE_CONTROL_OPTION =
-        "Delete control program?";
-    /** Option to delete prolog programs. */
-    static public final String DELETE_PROLOG_OPTION = "Delete prolog program?";
-    /** Option to delete rules. */
-    static public final String DELETE_RULE_OPTION = "Delete rule?";
-    /** Always delete graphs without confirmation. */
-    static public final String DELETE_GRAPH_OPTION = "Delete graph?";
-    /** Option to delete type graphs. */
-    static public final String DELETE_TYPE_OPTION = "Delete type graph?";
     /** Always replace edited rules. */
     static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
     /** Always replace edited rules. */
@@ -914,11 +936,10 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         intOptionDefaults.put(CANCEL_CONTROL_EDIT_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_CONTROL_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_PROLOG_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_GRAPH_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(DELETE_TYPE_OPTION, BehaviourOption.ASK);
+        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
+            intOptionDefaults.put(getDeleteOption(resource),
+                BehaviourOption.ASK);
+        }
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);

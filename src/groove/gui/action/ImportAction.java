@@ -4,6 +4,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.external.Importer;
+import groove.trans.ResourceKind;
 import groove.util.Duo;
 import groove.view.aspect.AspectGraph;
 
@@ -28,17 +29,25 @@ public class ImportAction extends SimulatorAction {
         // now load, if so required
         if (approve == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
             try {
-                AspectGraph importGraph;
-                if ((importGraph = importer.importRule()) != null) {
-                    result = importRule(importGraph);
-                } else if ((importGraph = importer.importState(true)) != null) {
-                    result = importState(importGraph);
-                } else if ((importGraph = importer.importType()) != null) {
-                    result = importType(importGraph);
-                } else {
-                    Duo<String> control;
-                    if ((control = importer.importControl()) != null) {
-                        result = importControl(control.one(), control.two());
+                AspectGraph graph = null;
+                Duo<String> text = null;
+                ResourceKind kind = null;
+                if ((graph = importer.importRule()) != null) {
+                    kind = ResourceKind.RULE;
+                } else if ((graph = importer.importState(true)) != null) {
+                    kind = ResourceKind.HOST;
+                } else if ((graph = importer.importType()) != null) {
+                    kind = ResourceKind.TYPE;
+                } else if ((text = importer.importControl()) != null) {
+                    kind = ResourceKind.CONTROL;
+                } else if ((text = importer.importProlog()) != null) {
+                    kind = ResourceKind.PROLOG;
+                }
+                if (kind != null) {
+                    if (kind.isGraphBased()) {
+                        result = importGraph(kind, graph);
+                    } else {
+                        result = importText(kind, text);
                     }
                 }
             } catch (IOException e) {
@@ -57,42 +66,40 @@ public class ImportAction extends SimulatorAction {
         setEnabled(getSimulatorModel().getGrammar() != null);
     }
 
-    private boolean importRule(AspectGraph rule) throws IOException {
-        boolean result = false;
-        String ruleName = rule.getName();
-        if (getSimulatorModel().getGrammar().getRuleModel(ruleName) == null
-            || confirmOverwriteRule(ruleName)) {
-            result = getSimulator().getModel().doAddRule(rule);
-        }
-        return result;
-    }
-
-    private boolean importState(AspectGraph state) throws IOException {
-        boolean result = false;
-        String stateName = state.getName();
-        if (getSimulatorModel().getGrammar().getHostModel(stateName) == null
-            || confirmOverwriteGraph(stateName)) {
-            result = getSimulatorModel().doAddHost(state);
-        }
-        return result;
-    }
-
-    private boolean importType(AspectGraph type) throws IOException {
-        boolean result = false;
-        String typeName = type.getName();
-        if (getSimulatorModel().getGrammar().getTypeModel(typeName) == null
-            || confirmOverwriteType(typeName)) {
-            result = getSimulator().getModel().doAddType(type);
-        }
-        return result;
-    }
-
-    private boolean importControl(String name, String program)
+    private boolean importGraph(ResourceKind kind, AspectGraph graph)
         throws IOException {
         boolean result = false;
-        if (getSimulatorModel().getGrammar().getControlModel(name) == null
-            || confirmOverwriteControl(name)) {
-            result = getSimulator().getModel().doAddControl(name, program);
+        String name = graph.getName();
+        if (getGrammarModel().getResource(kind, name) == null
+            || confirmOverwrite(kind, name)) {
+            switch (kind) {
+            case RULE:
+                result = getSimulatorModel().doAddRule(graph);
+                break;
+            case HOST:
+                result = getSimulatorModel().doAddHost(graph);
+                break;
+            case TYPE:
+                result = getSimulatorModel().doAddType(graph);
+            }
+        }
+        return result;
+    }
+
+    private boolean importText(ResourceKind kind, Duo<String> text)
+        throws IOException {
+        boolean result = false;
+        String name = text.one();
+        String program = text.two();
+        if (getGrammarModel().getResource(kind, name) == null
+            || confirmOverwrite(kind, name)) {
+            switch (kind) {
+            case PROLOG:
+                result = getSimulatorModel().doAddProlog(name, program);
+                break;
+            case CONTROL:
+                result = getSimulatorModel().doAddControl(name, program);
+            }
         }
         return result;
     }

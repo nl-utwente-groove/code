@@ -24,7 +24,6 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
@@ -57,8 +56,7 @@ import javax.swing.SwingUtilities;
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
 public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
-        SimulatorListener, Display {
-
+        SimulatorListener, Display, Display.Panel {
     /** Creates a LTS panel for a given simulator. */
     public LTSDisplay(Simulator simulator) {
         super(new LTSJGraph(simulator), true);
@@ -77,6 +75,11 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
+    public Display getDisplay() {
+        return this;
+    }
+
+    @Override
     public DisplayKind getKind() {
         return DisplayKind.LTS;
     }
@@ -84,6 +87,11 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     @Override
     public String getName() {
         return null;
+    }
+
+    @Override
+    public boolean cancelEditing(String name, boolean confirm) {
+        return false;
     }
 
     @Override
@@ -153,8 +161,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        GrammarModel grammar =
-                            getSimulatorModel().getGrammar();
+                        GrammarModel grammar = getSimulatorModel().getGrammar();
                         if (grammar != null && grammar.getErrors().isEmpty()) {
                             getActions().getStartSimulationAction().execute();
                         }

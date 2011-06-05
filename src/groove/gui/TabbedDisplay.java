@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.view.GraphBasedModel;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -42,16 +40,13 @@ import org.jgraph.event.GraphModelListener;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class TabbedDisplay extends JTabbedPane implements Display,
+abstract public class TabbedDisplay extends ResourceDisplay implements
         SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
-    public TabbedDisplay(Simulator simulator) {
-        super(BOTTOM);
-        this.simulator = simulator;
-        setFocusable(false);
-        setBorder(new EmptyBorder(0, 0, -4, 0));
+    public TabbedDisplay(Simulator simulator, DisplayKind kind) {
+        super(simulator, kind);
     }
 
     /** Installs all listeners to this display. */
@@ -82,7 +77,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (this.listening) {
             throw new IllegalStateException();
         }
-        addChangeListener(this.tabListener);
+        getPanel().addChangeListener(this.tabListener);
         this.listening = true;
     }
 
@@ -96,7 +91,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (!this.listening) {
             throw new IllegalStateException();
         }
-        removeChangeListener(this.tabListener);
+        getPanel().removeChangeListener(this.tabListener);
         this.listening = false;
     }
 
@@ -106,8 +101,11 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     }
 
     @Override
-    public JComponent getPanel() {
-        return this;
+    public MyTabbedPane getPanel() {
+        if (this.mainPanel == null) {
+            this.mainPanel = new MyTabbedPane();
+        }
+        return this.mainPanel;
     }
 
     /** Callback to obtain the main panel of this display. */
@@ -126,7 +124,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
                 selectMainPanel(name);
                 getMainPanel().repaint();
             } else {
-                setSelectedComponent(editor);
+                getPanel().setSelectedComponent(editor);
             }
         }
     }
@@ -140,13 +138,13 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         if (result == null) {
             result = addEditorPanel(graph);
             if (this.jModelMap.remove(graph.getName()) != null) {
-                remove(getMainPanel());
+                getPanel().remove(getMainPanel());
             }
         }
-        if (getSelectedComponent() == result) {
+        if (getPanel().getSelectedComponent() == result) {
             getSimulatorModel().setDisplay(getKind());
         } else {
-            setSelectedComponent(result);
+            getPanel().setSelectedComponent(result);
         }
     }
 
@@ -154,9 +152,9 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     private GraphEditorPanel addEditorPanel(AspectGraph graph) {
         final GraphEditorPanel result = new GraphEditorPanel(this, graph);
         this.editorMap.put(graph.getName(), result);
-        addTab("", result);
-        int index = indexOfComponent(result);
-        setTabComponentAt(index, result.getTabLabel());
+        getPanel().addTab("", result);
+        int index = getPanel().indexOfComponent(result);
+        getPanel().setTabComponentAt(index, result.getTabLabel());
         // start the editor only after it has been added
         result.start();
         // make sure the list keeps track of dirty editors
@@ -178,6 +176,16 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         return this.editorMap;
     }
 
+    @Override
+    public boolean cancelEditing(String name, boolean confirm) {
+        boolean result = true;
+        GraphEditorPanel editor = getEditors().get(name);
+        if (editor != null) {
+            result = editor.cancelEditing(true);
+        }
+        return result;
+    }
+
     /** 
      * Attempts to disposes the editor for certain aspect graphs, if any.
      * This is done in response to a change in the graph outside the editor.
@@ -187,14 +195,10 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      */
     public boolean disposeEditors(String... names) {
         boolean result = true;
-        Map<String,GraphEditorPanel> editors = getEditors();
         for (String name : names) {
-            GraphEditorPanel editor = editors.get(name);
-            if (editor != null) {
-                result = editor.cancelEditing(true);
-                if (!result) {
-                    break;
-                }
+            result = cancelEditing(name, true);
+            if (!result) {
+                break;
             }
         }
         return result;
@@ -217,47 +221,13 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         return result;
     }
 
-    @Override
-    public void removeTabAt(int index) {
-        // removes the editor panel from the map
-        boolean isIndexSelected = getSelectedIndex() == index;
-        Component panel = getComponentAt(index);
-        super.removeTabAt(index);
-        if (panel instanceof GraphEditorPanel) {
-            String name = ((GraphEditorPanel) panel).getName();
-            this.editorMap.remove(name);
-            if (isIndexSelected) {
-                selectMainPanel(name);
-            }
-        }
-        // make sure the tab component of the selected tab is enabled
-        setTabEnabled(getSelectedIndex(), true);
-        getListPanel().repaint();
-    }
-
-    @Override
-    public void setSelectedIndex(int index) {
-        int selectedIndex = getSelectedIndex();
-        if (index == selectedIndex) {
-            if (isListening()) {
-                selectionChanged();
-            }
-        } else {
-            if (selectedIndex >= 0) {
-                setTabEnabled(selectedIndex, false);
-            }
-            super.setSelectedIndex(index);
-            setTabEnabled(index, true);
-        }
-    }
-
     /**
      * Returns the name of the currently selected component, or {@code null}
      * if none is selected. 
      */
     public String getSelectedName() {
         String result = null;
-        Component selection = getSelectedComponent();
+        Component selection = getPanel().getSelectedComponent();
         if (selection instanceof GraphEditorPanel) {
             result = ((GraphEditorPanel) selection).getName();
         } else if (selection == getMainPanel()) {
@@ -266,21 +236,11 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
         return result;
     }
 
-    /** Changes the enabled status of the tab component at a given index. */
-    private void setTabEnabled(int index, boolean enabled) {
-        if (index >= 0) {
-            Component label = getTabComponentAt(index);
-            if (label != null) {
-                label.setEnabled(enabled);
-            }
-        }
-    }
-
     /** 
      * Removes the main panel from the display.
      */
     protected void removeMainPanel() {
-        remove(getMainPanel());
+        getPanel().remove(getMainPanel());
     }
 
     /** 
@@ -289,16 +249,16 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     protected void selectMainPanel(String name) {
         getMainPanel().setJModel(getJModel(name));
         TabLabel tabLabel = getMainPanel().getTabLabel();
-        int index = indexOfComponent(getMainPanel());
+        int index = getPanel().indexOfComponent(getMainPanel());
         if (index < 0) {
             index = getMainPanelIndex();
-            add(getMainPanel(), index);
-            setTabComponentAt(index, tabLabel);
+            getPanel().add(getMainPanel(), index);
+            getPanel().setTabComponentAt(index, tabLabel);
         }
         tabLabel.setEnabled(true);
         tabLabel.setTitle(getLabelText(name));
         tabLabel.setError(hasError(name));
-        setSelectedIndex(index);
+        getPanel().setSelectedIndex(index);
     }
 
     /** Clears the mapping from names to aspect models.
@@ -381,23 +341,7 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
      */
     protected abstract GraphBasedModel<?> getResource(String name);
 
-    public final Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    /** Convenience method to retrieve the simulator. */
-    protected final SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** Convenience method to retrieve the action store. */
-    protected final ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
-    /** The simulator to which this panel belongs. */
-    private final Simulator simulator;
-
+    private MyTabbedPane mainPanel;
     /** Mapping from graph names to editors for those graphs. */
     private final Map<String,GraphEditorPanel> editorMap =
         new HashMap<String,GraphEditorPanel>();
@@ -408,4 +352,62 @@ abstract public class TabbedDisplay extends JTabbedPane implements Display,
     private boolean listening;
     /** Listener that forwards tab changes to the simulator model. */
     private ChangeListener tabListener;
+
+    class MyTabbedPane extends JTabbedPane implements Panel {
+        /** Constructs an instance of the panel. */
+        public MyTabbedPane() {
+            super(BOTTOM);
+            setFocusable(false);
+            setBorder(new EmptyBorder(0, 0, -4, 0));
+        }
+
+        @Override
+        public void removeTabAt(int index) {
+            // removes the editor panel from the map
+            boolean isIndexSelected = getSelectedIndex() == index;
+            Component panel = getComponentAt(index);
+            super.removeTabAt(index);
+            if (panel instanceof GraphEditorPanel) {
+                String name = ((GraphEditorPanel) panel).getName();
+                TabbedDisplay.this.editorMap.remove(name);
+                if (isIndexSelected) {
+                    selectMainPanel(name);
+                }
+            }
+            // make sure the tab component of the selected tab is enabled
+            setTabEnabled(getSelectedIndex(), true);
+            getListPanel().repaint();
+        }
+
+        @Override
+        public void setSelectedIndex(int index) {
+            int selectedIndex = getSelectedIndex();
+            if (index == selectedIndex) {
+                if (isListening()) {
+                    selectionChanged();
+                }
+            } else {
+                if (selectedIndex >= 0) {
+                    setTabEnabled(selectedIndex, false);
+                }
+                super.setSelectedIndex(index);
+                setTabEnabled(index, true);
+            }
+        }
+
+        /** Changes the enabled status of the tab component at a given index. */
+        private void setTabEnabled(int index, boolean enabled) {
+            if (index >= 0) {
+                Component label = getTabComponentAt(index);
+                if (label != null) {
+                    label.setEnabled(enabled);
+                }
+            }
+        }
+
+        @Override
+        public Display getDisplay() {
+            return TabbedDisplay.this;
+        }
+    }
 }

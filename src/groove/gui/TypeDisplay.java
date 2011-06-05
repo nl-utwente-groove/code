@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
@@ -43,7 +42,7 @@ final public class TypeDisplay extends TabbedDisplay implements
      * Constructs a panel for a given simulator.
      */
     public TypeDisplay(Simulator simulator) {
-        super(simulator);
+        super(simulator, DisplayKind.TYPE);
         installListeners();
     }
 
@@ -62,17 +61,6 @@ final public class TypeDisplay extends TabbedDisplay implements
     @Override
     public JGraphPanel<AspectJGraph> getMainPanel() {
         return getTypePanel();
-    }
-
-    @Override
-    public DisplayKind getKind() {
-        return DisplayKind.TYPE;
-    }
-
-    @Override
-    public String getName() {
-        TypeModel type = getSimulatorModel().getType();
-        return type == null ? null : type.getName();
     }
 
     @Override
@@ -120,13 +108,9 @@ final public class TypeDisplay extends TabbedDisplay implements
     }
 
     /** Creates a tool bar for the types list. */
-    private JToolBar createListToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(getActions().getNewTypeAction());
-        result.addSeparator();
-        result.add(getActions().getCopyTypeAction());
-        result.add(getActions().getDeleteTypeAction());
-        result.add(getActions().getRenameTypeAction());
+    @Override
+    protected JToolBar createListToolBar() {
+        JToolBar result = super.createListToolBar();
         result.addSeparator();
         result.add(getEnableButton());
         return result;

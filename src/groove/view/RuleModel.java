@@ -127,14 +127,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     /**
-     * Indicates whether the rule is enabled, i.e., will be part of an actual
-     * graph grammar constructed from the rule.
-     */
-    public boolean isEnabled() {
-        return GraphProperties.isEnabled(getSource());
-    }
-
-    /**
      * Indicates whether the rule is marked as locally confluent. If the rule is
      * marked as such, only match will be chosen among this and all other
      * locally confluent rules.

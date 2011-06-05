@@ -25,7 +25,7 @@ public class RenameTypeAction extends SimulatorAction {
             askNewName(ResourceKind.TYPE, "Select new type graph name",
                 oldName, false);
         if (newName != null && !oldName.equals(newName)) {
-            if (getTypeTab().disposeEditors(oldName)) {
+            if (getTypeDisplay().disposeEditors(oldName)) {
                 try {
                     result = getSimulatorModel().doRenameType(oldName, newName);
                 } catch (IOException exc) {

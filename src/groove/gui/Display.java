@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -43,6 +41,13 @@ public interface Display {
      */
     String getName();
 
+    /** Attempts to cancel an edit action for a given named resource.
+     * @param name the name of the editor to be cancelled
+     * @param confirm if {@code true}, the user should explicitly confirm
+     * @return {@code true} if the editing was cancelled
+     */
+    boolean cancelEditing(String name, boolean confirm);
+
     /**
      * Attempts to close all editors on this display, asking permission 
      * for the dirty ones and possibly saving them.
@@ -53,4 +58,10 @@ public interface Display {
 
     /** Returns the simulator to which this display belongs. */
     Simulator getSimulator();
+
+    /** Interface of the panel being used for the display. */
+    interface Panel {
+        /** Returns the display to which this panel belongs. */
+        Display getDisplay();
+    }
 }

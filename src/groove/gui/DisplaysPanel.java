@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,7 +82,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             public void mouseClicked(MouseEvent e) {
                 int index = indexAtLocation(e.getX(), e.getY());
                 if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
-                    Display panel = (Display) getComponentAt(index);
+                    Display panel = getDisplayAt(index);
                     createDetachMenu(panel).show(DisplaysPanel.this, e.getX(),
                         e.getY());
                 }
@@ -94,7 +93,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         this.tabListener = new ChangeListener() {
             public void stateChanged(ChangeEvent evt) {
                 DisplaysPanel.this.changingTabs = true;
-                DisplayKind displayKind = getSelectedDisplay();
+                DisplayKind displayKind = getSelectedDisplay().getKind();
                 if (displayKind != null) {
                     getSimulatorModel().setDisplay(displayKind);
                 }
@@ -183,7 +182,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             // switch tabs if the selection on the currently displayed tab
             // was set to null
             String changedTo = null;
-            switch (((Display) getSelectedComponent()).getKind()) {
+            switch (getSelectedDisplay().getKind()) {
             case HOST:
                 if (changes.contains(Change.HOST)
                     && getSimulatorModel().hasHost()) {
@@ -214,9 +213,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the kind of tab on top of the tabbed pane. */
-    public DisplayKind getSelectedDisplay() {
-        Display display = ((Display) getSelectedComponent());
-        return display == null ? null : display.getKind();
+    public Display getSelectedDisplay() {
+        return getDisplayAt(getSelectedIndex());
     }
 
     /**
@@ -224,15 +222,20 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      * {@link JGraphPanel}. Returns {@code null} otherwise.
      */
     public JGraphPanel<?> getGraphPanel() {
-        Component selectedComponent = getSelectedComponent();
-        if (selectedComponent instanceof GraphEditorPanel) {
-            return ((GraphEditorPanel) selectedComponent).getEditor().getGraphPanel();
+        JGraphPanel<?> result = null;
+        Display display = getSelectedDisplay();
+        if (display instanceof TabbedDisplay) {
+            Component selectedComponent =
+                ((TabbedDisplay) display).getPanel().getSelectedComponent();
+            if (selectedComponent instanceof GraphEditorPanel) {
+                result =
+                    ((GraphEditorPanel) selectedComponent).getEditor().getGraphPanel();
+            }
+            if (selectedComponent instanceof JGraphPanel<?>) {
+                result = (JGraphPanel<?>) selectedComponent;
+            }
         }
-        if (!(selectedComponent instanceof JGraphPanel<?>)) {
-            return null;
-        } else {
-            return (JGraphPanel<?>) selectedComponent;
-        }
+        return result;
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
@@ -270,7 +273,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         DisplayKind myKind = display.getKind();
         int index;
         for (index = 0; index < getTabCount(); index++) {
-            DisplayKind otherKind = ((Display) getComponentAt(index)).getKind();
+            DisplayKind otherKind = getDisplayAt(index).getKind();
             if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                 // insert here
                 break;
@@ -378,9 +381,18 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (label != null) {
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);
-            label.setText(enabled
-                    ? ((Display) getComponentAt(index)).getKind().getTitle()
+            label.setText(enabled ? getDisplayAt(index).getKind().getTitle()
                     : null);
+        }
+    }
+
+    /** Returns the display component corresponding to the tab at a given position. */
+    protected Display getDisplayAt(int index) {
+        Component component = getComponentAt(index);
+        if (component instanceof Display.Panel) {
+            return ((Display.Panel) component).getDisplay();
+        } else {
+            return null;
         }
     }
 
@@ -446,71 +458,4 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private boolean changingTabs;
     /** The previously selected tab. */
     private Component lastSelected;
-
-    /** Type of components in the panel. */
-    public static enum DisplayKind {
-        /** State panel. */
-        HOST(Icons.GRAPH_FRAME_ICON, Icons.EDIT_GRAPH_ICON,
-                Icons.GRAPH_LIST_ICON, "Graphs", "Current graph state"),
-        /** Rule panel. */
-        RULE(Icons.RULE_FRAME_ICON, Icons.EDIT_RULE_ICON, Icons.RULE_LIST_ICON,
-                "Rules", "Selected rule"),
-        /** LTS panel. */
-        LTS(Icons.LTS_FRAME_ICON, null, null, "State space",
-                "Labelled transition system"),
-        /** Type panel. */
-        TYPE(Icons.TYPE_FRAME_ICON, Icons.EDIT_TYPE_ICON, Icons.TYPE_LIST_ICON,
-                "Types", "Type graphs"),
-        /** Control panel. */
-        CONTROL(Icons.CONTROL_FRAME_ICON, Icons.EDIT_CONTROL_ICON,
-                Icons.CONTROL_LIST_ICON, "Control", "Control specifications"),
-        /** Prolog panel. */
-        PROLOG(Icons.PROLOG_FRAME_ICON, Icons.EDIT_PROLOG_ICON,
-                Icons.PROLOG_LIST_ICON, "Prolog", "Prolog programs");
-
-        private DisplayKind(ImageIcon tabIcon, ImageIcon editIcon,
-                ImageIcon listIcon, String title, String tip) {
-            this.tabIcon = tabIcon;
-            this.editIcon = editIcon;
-            this.listIcon = listIcon;
-            this.title = title;
-            this.tip = tip;
-        }
-
-        /** Returns the icon that should be used on the tab for a display of this kind. */
-        public final ImageIcon getTabIcon() {
-            return this.tabIcon;
-        }
-
-        /** Returns the icon that should be used for the label list. */
-        public final ImageIcon getListIcon() {
-            return this.listIcon;
-        }
-
-        /** Returns the icon that should be used for editors in this display. */
-        public final ImageIcon getEditIcon() {
-            return this.editIcon;
-        }
-
-        /** Returns the title of this display. */
-        public final String getTitle() {
-            return this.title;
-        }
-
-        /** Returns the tool tip description for this display. */
-        public final String getTip() {
-            return this.tip;
-        }
-
-        /** Returns the graph role corresponding to this tab kind, if any. */
-        public final GraphRole getGraphRole() {
-            return GraphRole.valueOf(name());
-        }
-
-        private final ImageIcon tabIcon;
-        private final ImageIcon editIcon;
-        private final ImageIcon listIcon;
-        private final String title;
-        private final String tip;
-    }
 }

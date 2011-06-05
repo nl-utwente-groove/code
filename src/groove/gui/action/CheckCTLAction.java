@@ -1,7 +1,7 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import groove.gui.DisplaysPanel.DisplayKind;
+import groove.gui.DisplayKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.StringDialog;

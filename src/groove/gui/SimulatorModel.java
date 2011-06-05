@@ -9,7 +9,6 @@ import groove.explore.util.RuleEventApplier;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeLabel;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
@@ -23,8 +22,10 @@ import groove.trans.SystemProperties;
 import groove.view.ControlModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.GraphBasedModel;
 import groove.view.HostModel;
 import groove.view.PrologModel;
+import groove.view.ResourceModel;
 import groove.view.RuleModel;
 import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
@@ -49,6 +50,33 @@ import java.util.Set;
  * a transaction on this object.
  */
 public class SimulatorModel implements Cloneable {
+    /**
+     * Deletes a set of named resources from the grammar.
+     * @param resource the kind of the resources
+     * @param names the names of the resources to be deleted
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the add action failed
+     */
+    public boolean doDelete(ResourceKind resource, Set<String> names)
+        throws IOException {
+        switch (resource) {
+        case CONTROL:
+            return doDeleteControl(names.iterator().next());
+        case HOST:
+            return doDeleteHosts(names);
+        case PROLOG:
+            return doDeleteProlog(names.iterator().next());
+        case RULE:
+            return doDeleteRules(names);
+        case TYPE:
+            return doDeleteTypes(names);
+        case PROPERTIES:
+        default:
+            assert false;
+            return false;
+        }
+    }
+
     /**
      * Adds a given host graph to the host graphs in this grammar
      * @param newHost the new host graph
@@ -943,6 +971,81 @@ public class SimulatorModel implements Cloneable {
         // do not attempt to keep the host graph and rule selections
         this.grammar = grammar;
         this.changes.add(Change.GRAMMAR);
+        return result;
+    }
+
+    /** 
+     * Tests if there is a selected resource of a given kind.
+     * Convenience method for {@code getResource(ResourceKind) != null}.
+     */
+    public final boolean isSelected(ResourceKind kind) {
+        return getSelected(kind) != null;
+    }
+
+    /** 
+     * Returns the currently selected resource name of a given kind.
+     * @param kind the resource kind
+     * @return the currently selected resource, or {@code null} if
+     * none is selected
+     */
+    public final String getSelected(ResourceKind kind) {
+        switch (kind) {
+        case CONTROL:
+            return hasControl() ? getControl().getName() : null;
+        case HOST:
+            return hasHost() ? getHost().getName() : null;
+        case PROLOG:
+            return hasProlog() ? getProlog().getName() : null;
+        case RULE:
+            return hasRule() ? getRule().getName() : null;
+        case TYPE:
+            return hasType() ? getType().getName() : null;
+        case PROPERTIES:
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /** 
+     * Returns set of names of the currently selected resources of a given kind.
+     * @param kind the resource kind
+     * @return the names of the currently selected resource
+     */
+    public final Set<String> getAllSelected(ResourceKind kind) {
+        Set<String> result;
+        if (kind == ResourceKind.HOST || kind == ResourceKind.RULE) {
+            result = new LinkedHashSet<String>();
+            Collection<? extends GraphBasedModel<?>> set =
+                kind == ResourceKind.HOST ? getHostSet() : getRuleSet();
+            for (ResourceModel<?> resource : set) {
+                result.add(resource.getName());
+            }
+        } else {
+            String name = getSelected(kind);
+            result =
+                name == null ? Collections.<String>emptySet()
+                        : Collections.singleton(name);
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the number of currently selected resources of a given kind.
+     * @param kind the resource kind
+     * @return the number of currently selected resources
+     */
+    public final int getCount(ResourceKind kind) {
+        int result;
+        if (kind == ResourceKind.HOST) {
+            result = getHostSet().size();
+        } else if (kind == ResourceKind.RULE) {
+            result = getRuleSet().size();
+        } else if (getSelected(kind) == null) {
+            result = 0;
+        } else {
+            result = 1;
+        }
         return result;
     }
 

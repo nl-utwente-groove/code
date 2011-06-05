@@ -22,8 +22,8 @@ import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditGraphAction;
 import groove.gui.action.SaveGraphAction;
-import groove.view.GraphBasedModel;
 import groove.view.GrammarModel;
+import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -222,7 +222,7 @@ public class GraphEditorPanel extends EditorPanel<TabbedDisplay> implements
     public void dispose() {
         getSaveAction().dispose();
         getCancelAction().dispose();
-        getDisplay().remove(this);
+        getDisplay().getPanel().remove(this);
         getSimulatorModel().removeListener(this);
     }
 

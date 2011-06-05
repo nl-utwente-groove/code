@@ -40,6 +40,11 @@ public class PrologModel extends ResourceModel<String> {
     }
 
     @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
     public String toResource() throws FormatException {
         if (hasErrors()) {
             throw new FormatException(getErrors());

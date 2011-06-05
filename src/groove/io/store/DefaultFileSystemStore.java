@@ -1008,7 +1008,7 @@ public class DefaultFileSystemStore extends SystemStore {
         @Override
         public String getPresentationName() {
             String result =
-                getType().getName() + " " + getResourceKind().getName();
+                Options.getEditActionName(getType(), getResourceKind(), false);
             if (this.newTexts.size() > 1 || this.oldTexts.size() > 1) {
                 result += "s";
             }
@@ -1084,7 +1084,7 @@ public class DefaultFileSystemStore extends SystemStore {
         @Override
         public String getPresentationName() {
             String result =
-                getType().getName() + " " + getResourceKind().getName();
+                Options.getEditActionName(getType(), getResourceKind(), false);
             if (this.newGraphs.size() > 1 || this.oldGraphs.size() > 1) {
                 result += "s";
             }

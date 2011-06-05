@@ -81,7 +81,7 @@ public class LoadGrammarAction extends SimulatorAction {
      */
     public boolean load(final SystemStore store, final String startGraphName)
         throws IOException {
-        if (!getMainPanel().disposeAllEditors()) {
+        if (!getDisplaysPanel().disposeAllEditors()) {
             return false;
         }
 

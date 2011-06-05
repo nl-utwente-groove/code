@@ -48,7 +48,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
         super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
         addAsListener(getStateDisplay().getMainPanel());
         addAsListener(getRuleDisplay().getMainPanel());
-        addAsListener(getTypeTab().getMainPanel());
+        addAsListener(getTypeDisplay().getMainPanel());
     }
 
     /**

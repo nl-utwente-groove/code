@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import static groove.gui.Options.DELETE_RULE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
 import static groove.gui.Options.REPLACE_RULE_OPTION;
@@ -34,17 +33,17 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
-import groove.view.HostModel;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
+import groove.view.HostModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -55,6 +54,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -348,7 +348,6 @@ public class Simulator implements SimulatorListener {
         if (this.controlDisplay == null) {
             this.controlDisplay = new ControlDisplay(this);
             this.controlDisplay.initialise();
-            this.controlDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.controlDisplay;
     }
@@ -371,51 +370,50 @@ public class Simulator implements SimulatorListener {
     public PrologDisplay getPrologDisplay() {
         if (this.prologDisplay == null) {
             this.prologDisplay = new PrologDisplay(this);
-            this.prologDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.prologDisplay;
     }
 
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
-        DisplayKind tabKind = getModel().getDisplay();
+        DisplayKind displayKind = getModel().getDisplay();
         JMenuItem exportItem = getExportMenuItem();
-        Action exportAction = getActions().getExportAction(tabKind);
+        Action exportAction = getActions().getExportAction(displayKind);
         if (exportAction == null) {
             exportItem.setEnabled(false);
         } else {
             exportItem.setAction(exportAction);
         }
         JMenuItem editItem = getEditMenuItem();
-        Action editAction = getActions().getEditAction(tabKind);
+        Action editAction = getActions().getEditAction(displayKind);
         if (editAction == null) {
             editItem.setEnabled(false);
         } else {
             editItem.setAction(editAction);
         }
         JMenuItem copyItem = getCopyMenuItem();
-        Action copyAction = getActions().getCopyAction(tabKind);
+        Action copyAction = getActions().getCopyAction(displayKind);
         if (copyAction == null) {
             copyItem.setEnabled(false);
         } else {
             copyItem.setAction(copyAction);
         }
         JMenuItem deleteItem = getDeleteMenuItem();
-        Action deleteAction = getActions().getDeleteAction(tabKind);
+        Action deleteAction = getActions().getDeleteAction(displayKind);
         if (deleteAction == null) {
             deleteItem.setEnabled(false);
         } else {
             deleteItem.setAction(deleteAction);
         }
         JMenuItem renameItem = getRenameMenuItem();
-        Action renameAction = getActions().getRenameAction(tabKind);
+        Action renameAction = getActions().getRenameAction(displayKind);
         if (renameAction == null) {
             renameItem.setEnabled(false);
         } else {
             renameItem.setAction(renameAction);
         }
         JMenuItem saveItem = getSaveMenuItem();
-        Action saveAction = getActions().getSaveAsAction(tabKind);
+        Action saveAction = getActions().getSaveAsAction(displayKind);
         if (saveAction == null) {
             saveItem.setEnabled(false);
         } else {
@@ -514,9 +512,13 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(this.actions.getNewHostAction());
-        result.add(this.actions.getNewRuleAction());
-        result.add(this.actions.getNewTypeAction());
+        JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
+        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
+            if (resource != ResourceKind.PROPERTIES) {
+                newMenu.add(this.actions.getNewAction(resource));
+            }
+        }
+        result.add(newMenu);
 
         result.addSeparator();
 
@@ -549,7 +551,7 @@ public class Simulator implements SimulatorListener {
         if (this.editGraphItem == null) {
             this.editGraphItem = new JMenuItem();
             // load the graph edit action as default
-            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedDisplay()));
+            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedDisplay().getKind()));
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
@@ -564,7 +566,7 @@ public class Simulator implements SimulatorListener {
             this.copyGraphItem = new JMenuItem();
             // load the graph copy action as default
             this.copyGraphItem.setAction(getActions().getCopyAction(
-                getSimulatorPanel().getSelectedDisplay()));
+                getSimulatorPanel().getSelectedDisplay().getKind()));
         }
         return this.copyGraphItem;
     }
@@ -578,7 +580,7 @@ public class Simulator implements SimulatorListener {
             this.deleteGraphItem = new JMenuItem();
             // load the graph delete action as default
             this.deleteGraphItem.setAction(getActions().getDeleteAction(
-                getSimulatorPanel().getSelectedDisplay()));
+                getSimulatorPanel().getSelectedDisplay().getKind()));
         }
         return this.deleteGraphItem;
     }
@@ -591,7 +593,7 @@ public class Simulator implements SimulatorListener {
         if (this.renameGraphItem == null) {
             this.renameGraphItem =
                 new JMenuItem(getActions().getRenameAction(
-                    getSimulatorPanel().getSelectedDisplay()));
+                    getSimulatorPanel().getSelectedDisplay().getKind()));
         }
         return this.renameGraphItem;
     }
@@ -604,7 +606,7 @@ public class Simulator implements SimulatorListener {
         if (this.exportMenuItem == null) {
             this.exportMenuItem =
                 new JMenuItem(getActions().getExportAction(
-                    getSimulatorPanel().getSelectedDisplay()));
+                    getSimulatorPanel().getSelectedDisplay().getKind()));
         }
         return this.exportMenuItem;
     }
@@ -617,7 +619,7 @@ public class Simulator implements SimulatorListener {
         if (this.saveMenuItem == null) {
             this.saveMenuItem =
                 new JMenuItem(getActions().getSaveAsAction(
-                    getSimulatorPanel().getSelectedDisplay()));
+                    getSimulatorPanel().getSelectedDisplay().getKind()));
         }
         return this.saveMenuItem;
     }
@@ -671,9 +673,9 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
-        result.add(getOptions().getItem(Options.DELETE_CONTROL_OPTION));
-        result.add(getOptions().getItem(Options.DELETE_GRAPH_OPTION));
-        result.add(getOptions().getItem(DELETE_RULE_OPTION));
+        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
+            result.add(getOptions().getItem(Options.getDeleteOption(resource)));
+        }
         result.add(getOptions().getItem(START_SIMULATION_OPTION));
         result.add(getOptions().getItem(STOP_SIMULATION_OPTION));
         result.add(getOptions().getItem(REPLACE_RULE_OPTION));

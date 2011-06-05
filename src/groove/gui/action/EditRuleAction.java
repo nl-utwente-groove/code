@@ -36,7 +36,7 @@ public class EditRuleAction extends SimulatorAction {
      */
     @Override
     public boolean execute() {
-        getMainPanel().getRuleDisplay().doEdit(
+        getDisplaysPanel().getRuleDisplay().doEdit(
             getSimulatorModel().getRule().getSource());
         return false;
     }
