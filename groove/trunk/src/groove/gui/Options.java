@@ -277,23 +277,55 @@ public class Options implements Cloneable {
     }
 
     /**
-     * Returns an action name for a resource edit.
+     * Returns the action name for a resource edit.
      * A further parameter determines if the name is a description <i>before</i>
      * the action occurs, or after.
      * @param edit the edit for which the name is required
-     * @param kind the kind of resource that has been edited
+     * @param resource the kind of resource that is edited
      * @param dots if {@code true}, a ... prefix is appended
      * @return The appropriate action name
      */
-    public static String getEditActionName(EditType edit, ResourceKind kind,
-            boolean dots) {
+    public static String getEditActionName(EditType edit,
+            ResourceKind resource, boolean dots) {
         StringBuilder result = new StringBuilder(edit.getName());
         result.append(' ');
-        result.append(kind.getName());
+        result.append(resource.getName());
         if (dots) {
             result.append(" ...");
         }
         return result.toString();
+    }
+
+    /**
+     * Returns the action name for resource enabling and disabling.
+     * @param resource the kind of resource that is enabled/disabled
+     * @param enable {@code true} if the resource is to be enabled,
+     * {@code false} if it is to be disabled
+     * @return The appropriate action name
+     */
+    public static String getEnableName(ResourceKind resource, boolean enable) {
+        StringBuilder result =
+            new StringBuilder(EditType.getEnableName(enable));
+        result.append(' ');
+        result.append(resource.getName());
+        return result.toString();
+    }
+
+    /** Returns the initially suggested name for a new resource of
+     * a given type.
+     */
+    public static String getNewResourceName(ResourceKind resource) {
+        String result;
+        if (resource == ResourceKind.TYPE) {
+            result = Groove.DEFAULT_CONTROL_NAME;
+        } else if (resource == ResourceKind.HOST) {
+            result = Groove.DEFAULT_START_GRAPH_NAME;
+        } else if (resource == ResourceKind.TYPE) {
+            result = Groove.DEFAULT_TYPE_NAME;
+        } else {
+            result = "new" + resource.getName();
+        }
+        return result;
     }
 
     /** The default font set in the look-and-feel. */
@@ -449,6 +481,8 @@ public class Options implements Cloneable {
     public static final String DELETE_TYPE_ACTION_NAME = "Delete Type";
     /** Name of the "Disable Control" action. */
     public static final String DISABLE_CONTROL_ACTION_NAME = "Disable Control";
+    /** Name of the "Disable" action. */
+    public static final String DISABLE_ACTION_NAME = "Disable";
     /** Name of the "Disable Rule" action. */
     public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
     /** Name of the "Disable Type Graph" action. */

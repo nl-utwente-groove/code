@@ -27,7 +27,6 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
@@ -184,8 +183,6 @@ final public class StateDisplay extends TabbedDisplay implements
         JToolBar result;
         if (getSimulatorModel().hasHost()) {
             result = super.createListToolBar();
-            result.addSeparator();
-            result.add(getEnableButton());
         } else {
             result = Options.createToolBar();
             result.add(getNewAction());
@@ -208,15 +205,6 @@ final public class StateDisplay extends TabbedDisplay implements
             this.listToolBar.add(newBar.getComponentAtIndex(0));
         }
         getListPanel().repaint();
-    }
-
-    /** The type enable button. */
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                Options.createToggleButton(getActions().getSetStartGraphAction());
-        }
-        return this.enableButton;
     }
 
     @Override
@@ -248,6 +236,4 @@ final public class StateDisplay extends TabbedDisplay implements
     private HostPanel hostPanel;
     /** Panel displaying the current state. */
     private StatePanel statePanel;
-    /** The type enable button. */
-    private JToggleButton enableButton;
 }

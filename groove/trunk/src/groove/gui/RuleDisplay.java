@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
@@ -93,8 +92,6 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     @Override
     protected JToolBar createListToolBar() {
         JToolBar result = super.createListToolBar(7);
-        result.addSeparator(new Dimension(7, 0));
-        result.add(getEnableButton());
         result.add(getActions().getShiftPriorityAction(true));
         result.add(getActions().getShiftPriorityAction(false));
         return result;
@@ -157,15 +154,6 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
         getSimulatorModel().setRule(getSelectedName());
     }
 
-    /** The type enable button. */
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                Options.createToggleButton(getActions().getEnableRuleAction());
-        }
-        return this.enableButton;
-    }
-
     private RulePanel rulePanel;
     /** Production rule directory. */
     private RuleJTree ruleJTree;
@@ -173,8 +161,6 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     /** Panel with the ruleJTree plus toolbar. */
     private JPanel ruleTreePanel;
 
-    /** The type enable button. */
-    private JToggleButton enableButton;
     /**
      * Minimum width of the rule tree component.
      */

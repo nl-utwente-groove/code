@@ -232,20 +232,20 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public String renameText(ResourceKind kind, String oldName, String newName)
+    public void rename(ResourceKind kind, String oldName, String newName)
         throws IOException {
-        String result = null;
-        TextBasedEdit edit = doRenameText(kind, oldName, newName);
+        MyEdit edit =
+            kind.isGraphBased() ? doRenameGraph(kind, oldName, newName)
+                    : doRenameText(kind, oldName, newName);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
-            result = edit.getNewTexts().values().iterator().next();
         }
-        return result;
     }
 
     /**
-     * Implements the functionality of {@link #renameText(ResourceKind, String, String)}.
+     * Implements the functionality of {@link #rename(ResourceKind, String, String)}
+     * for text-based resources.
      * Returns an undoable edit wrapping this functionality.
      */
     private TextBasedEdit doRenameText(ResourceKind kind, String oldName,
@@ -270,6 +270,40 @@ public class DefaultFileSystemStore extends SystemStore {
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts,
+            oldProps, newProps);
+    }
+
+    /**
+     * Implements the functionality of {@link #rename(ResourceKind, String, String)}
+     * for graph-based resources.
+     * Returns an undoable edit wrapping this functionality.
+     */
+    private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName,
+            String newName) throws IOException {
+        testInit();
+        AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
+        assert oldGraph != null;
+        this.marshaller.deleteGraph(createFile(kind, oldName));
+        AspectGraph newGraph = oldGraph.rename(newName);
+        AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
+        assert previous == null;
+        this.marshaller.marshalGraph(newGraph.toPlainGraph(),
+            createFile(kind, newName));
+        // change the properties if there is a change in the enabled types
+        SystemProperties oldProps = null;
+        SystemProperties newProps = null;
+        Set<String> typeNames = getProperties().getTypeNames();
+        if (kind == TYPE && typeNames.contains(oldName)) {
+            oldProps = getProperties();
+            typeNames = new TreeSet<String>(typeNames);
+            typeNames.remove(oldName);
+            typeNames.add(newName);
+            newProps = oldProps.clone();
+            newProps.setTypeNames(typeNames);
+            doPutProperties(newProps);
+        }
+        return new GraphBasedEdit(kind, EditType.RENAME,
+            Collections.singleton(oldGraph), Collections.singleton(newGraph),
             oldProps, newProps);
     }
 
@@ -358,52 +392,6 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         return new GraphBasedEdit(kind, EditType.DELETE, deletedGraphs,
             Collections.<AspectGraph>emptySet(), oldProps, newProps);
-    }
-
-    @Override
-    public AspectGraph renameGraph(ResourceKind kind, String oldName,
-            String newName) throws IOException {
-        AspectGraph result = null;
-        GraphBasedEdit edit = doRenameGraph(kind, oldName, newName);
-        if (edit != null) {
-            edit.checkAndSetVersion();
-            postEdit(edit);
-            result = edit.getNewGraphs().iterator().next();
-        }
-        return result;
-    }
-
-    /**
-     * Implements the functionality of {@link #renameGraph(ResourceKind, String, String)}.
-     * Returns an undoable edit wrapping this functionality.
-     */
-    private GraphBasedEdit doRenameGraph(ResourceKind kind, String oldName,
-            String newName) throws IOException {
-        testInit();
-        AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
-        assert oldGraph != null;
-        this.marshaller.deleteGraph(createFile(kind, oldName));
-        AspectGraph newGraph = oldGraph.rename(newName);
-        AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
-        assert previous == null;
-        this.marshaller.marshalGraph(newGraph.toPlainGraph(),
-            createFile(kind, newName));
-        // change the properties if there is a change in the enabled types
-        SystemProperties oldProps = null;
-        SystemProperties newProps = null;
-        Set<String> typeNames = getProperties().getTypeNames();
-        if (kind == TYPE && typeNames.contains(oldName)) {
-            oldProps = getProperties();
-            typeNames = new TreeSet<String>(typeNames);
-            typeNames.remove(oldName);
-            typeNames.add(newName);
-            newProps = oldProps.clone();
-            newProps.setTypeNames(typeNames);
-            doPutProperties(newProps);
-        }
-        return new GraphBasedEdit(kind, EditType.RENAME,
-            Collections.singleton(oldGraph), Collections.singleton(newGraph),
-            oldProps, newProps);
     }
 
     @Override
@@ -1050,11 +1038,6 @@ public class DefaultFileSystemStore extends SystemStore {
             return this.oldTexts;
         }
 
-        /** Returns the created texts. */
-        public final Map<String,String> getNewTexts() {
-            return this.newTexts;
-        }
-
         /** The deleted texts, if any. */
         private final Map<String,String> oldTexts;
         /** The added texts. */
@@ -1124,11 +1107,6 @@ public class DefaultFileSystemStore extends SystemStore {
         /** Returns the deleted graphs. */
         public final Collection<AspectGraph> getOldGraphs() {
             return this.oldGraphs;
-        }
-
-        /** Returns the created graphs. */
-        public final Collection<AspectGraph> getNewGraphs() {
-            return this.newGraphs;
         }
 
         /** The deleted graph, if any. */

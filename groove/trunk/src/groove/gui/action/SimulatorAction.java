@@ -209,15 +209,17 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Enters a dialog that results in a name that is not in a set of
      * current names, or <code>null</code> if the dialog was cancelled.
      * @param kind kind of resource for which we want a name
-     * @param title dialog title; if <code>null</code>, a default title is used
      * @param name an initially proposed name
      * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
      *        to be distinct from the existing names
      * @return a type graph not occurring in the current grammar, or
      *         <code>null</code>
      */
-    final protected String askNewName(ResourceKind kind, String title,
-            String name, boolean mustBeFresh) {
+    final protected String askNewName(ResourceKind kind, String name,
+            boolean mustBeFresh) {
+        String title =
+            String.format("Select %s%s name", mustBeFresh ? "new " : "",
+                kind.getDescription());
         Set<String> existingNames =
             getSimulatorModel().getGrammar().getNames(kind);
         FreshNameDialog<String> nameDialog =
@@ -276,9 +278,10 @@ public abstract class SimulatorAction extends AbstractAction implements
      * abandoned.
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
-    final protected boolean confirmAbandon() {
+    final protected boolean confirmStopSimulation() {
         boolean result;
-        if (getSimulatorModel().getGts() != null) {
+        if (getSimulatorModel().getGts() != null
+            && getSimulatorModel().getGts().size() > 1) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
         } else {
             result = true;

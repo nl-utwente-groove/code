@@ -104,19 +104,6 @@ abstract public class SystemStore extends UndoableEditSupport {
     abstract public Collection<AspectGraph> deleteGraphs(ResourceKind kind,
             Collection<String> names) throws IOException;
 
-    /**
-     * Renames a graph-based resource in the store.
-     * It is an error if no resource with the old name exists, or if a rule
-     * with the new name exists.
-     * @param kind the resource kind; must be graph-based
-     * @param oldName the name of the rule to be renamed (non-null)
-     * @param newName the intended new name of the rule (non-null)
-     * @return the new renamed rule
-     * @throws IOException if an error occurred while storing the renamed rule
-     */
-    abstract public AspectGraph renameGraph(ResourceKind kind, String oldName,
-            String newName) throws IOException;
-
     /** 
      * Immutable view on the name-to-text map of a given text-based resource kind. 
      * @param kind the kind of resource for which the map is requested
@@ -150,10 +137,9 @@ abstract public class SystemStore extends UndoableEditSupport {
      * @param kind the resource kind; must be text-based
      * @param oldName the name of the rule to be renamed (non-null)
      * @param newName the intended new name of the rule (non-null)
-     * @return the new renamed rule
      * @throws IOException if an error occurred while storing the renamed rule
      */
-    abstract public String renameText(ResourceKind kind, String oldName,
+    abstract public void rename(ResourceKind kind, String oldName,
             String newName) throws IOException;
 
     /** The system properties object in the store (non-null). */

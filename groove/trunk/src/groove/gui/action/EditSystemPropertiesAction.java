@@ -26,7 +26,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
         PropertiesDialog dialog =
             new PropertiesDialog(systemProperties,
                 SystemProperties.DEFAULT_KEYS, true);
-        if (dialog.showDialog(getFrame()) && confirmAbandon()) {
+        if (dialog.showDialog(getFrame()) && confirmStopSimulation()) {
             SystemProperties newProperties = new SystemProperties();
             newProperties.putAll(dialog.getEditedProperties());
             try {

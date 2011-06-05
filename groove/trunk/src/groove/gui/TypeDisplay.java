@@ -27,7 +27,6 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
 
@@ -111,18 +110,7 @@ final public class TypeDisplay extends TabbedDisplay implements
     @Override
     protected JToolBar createListToolBar() {
         JToolBar result = super.createListToolBar();
-        result.addSeparator();
-        result.add(getEnableButton());
         return result;
-    }
-
-    /** The type enable button. */
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                Options.createToggleButton(getActions().getEnableTypeAction());
-        }
-        return this.enableButton;
     }
 
     /** Returns the list of states and host graphs. */
@@ -164,6 +152,4 @@ final public class TypeDisplay extends TabbedDisplay implements
 
     /** Production system type list */
     private TypeJList typeJList;
-    /** The type enable button. */
-    private JToggleButton enableButton;
 }

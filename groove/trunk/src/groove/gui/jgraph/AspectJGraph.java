@@ -31,6 +31,7 @@ import groove.gui.Simulator;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
+import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
 import groove.view.GrammarModel;
@@ -256,18 +257,16 @@ final public class AspectJGraph extends GraphJGraph {
             case HOST:
                 result.add(getActions().getApplyTransitionAction());
                 result.addSeparator();
-                result.add(getActions().getEditHostOrStateAction());
                 break;
             case RULE:
                 JMenu setRuleMenu = createSetRuleMenu();
                 setRuleMenu.setEnabled(getGrammar() != null);
                 result.add(setRuleMenu);
                 result.addSeparator();
-                result.add(getActions().getEditRuleAction());
                 break;
-            case TYPE:
-                result.add(getActions().getEditTypeAction());
             }
+            result.add(getActions().getEditAction(
+                ResourceKind.toResource(getGraphRole())));
         }
         addSubmenu(result, createEditMenu(atPoint));
         addSubmenu(result, super.createPopupMenu(atPoint));

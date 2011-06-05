@@ -27,7 +27,7 @@ public class ImportAction extends SimulatorAction {
         Importer importer = Importer.getInstance();
         int approve = importer.showDialog(getFrame(), true);
         // now load, if so required
-        if (approve == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+        if (approve == JFileChooser.APPROVE_OPTION && confirmStopSimulation()) {
             try {
                 AspectGraph graph = null;
                 Duo<String> text = null;
@@ -72,16 +72,7 @@ public class ImportAction extends SimulatorAction {
         String name = graph.getName();
         if (getGrammarModel().getResource(kind, name) == null
             || confirmOverwrite(kind, name)) {
-            switch (kind) {
-            case RULE:
-                result = getSimulatorModel().doAddRule(graph);
-                break;
-            case HOST:
-                result = getSimulatorModel().doAddHost(graph);
-                break;
-            case TYPE:
-                result = getSimulatorModel().doAddType(graph);
-            }
+            result = getSimulatorModel().doAddGraph(kind, graph);
         }
         return result;
     }

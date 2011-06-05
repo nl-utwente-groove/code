@@ -20,7 +20,7 @@ public class RefreshGrammarAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (confirmAbandon()) {
+        if (confirmStopSimulation()) {
             try {
                 result = getSimulator().getModel().doRefreshGrammar();
             } catch (IOException exc) {

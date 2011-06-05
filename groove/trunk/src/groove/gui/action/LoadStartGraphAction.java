@@ -25,7 +25,7 @@ public class LoadStartGraphAction extends SimulatorAction {
         // stateFileChooser.setSelectedFile(currentStartStateFile);
         int approve = getStateFileChooser().showOpenDialog(getFrame());
         // now load, if so required
-        if (approve == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+        if (approve == JFileChooser.APPROVE_OPTION && confirmStopSimulation()) {
             File file = getStateFileChooser().getSelectedFile();
             try {
                 AspectGraph startGraph =

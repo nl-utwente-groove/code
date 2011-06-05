@@ -19,7 +19,7 @@ public class NewGrammarAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        if (confirmAbandon()) {
+        if (confirmStopSimulation()) {
             File grammarFile = getLastGrammarFile();
             File newGrammar;
             if (grammarFile == null) {

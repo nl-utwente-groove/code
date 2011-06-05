@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.gui.action.SimulatorAction;
 import groove.gui.jgraph.JAttr;
 import groove.view.ControlModel;
@@ -129,11 +128,6 @@ public class ControlJList extends JList implements SimulatorListener {
         boolean overItem =
             index != -1 && getCellBounds(index, index).contains(atPoint);
         JPopupMenu result = this.display.createListPopupMenu(overItem);
-        // add rest only if mouse is actually over a control name
-        if (overItem) {
-            result.addSeparator();
-            result.add(getActions().getEnableControlAction());
-        }
         return result;
     }
 
@@ -189,11 +183,6 @@ public class ControlJList extends JList implements SimulatorListener {
         return getSimulator().getModel();
     }
 
-    /** Returns the simulator to which the state list belongs. */
-    private ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
     private final ControlDisplay display;
     private boolean listening;
     /**
@@ -236,7 +225,7 @@ public class ControlJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 SimulatorAction editAction =
-                    getActions().getEditControlAction();
+                    ControlJList.this.display.getEditAction();
                 if (ControlJList.this.isEnabled() && editAction.isEnabled()
                     && cellSelected) {
                     editAction.execute();
@@ -290,7 +279,7 @@ public class ControlJList extends JList implements SimulatorListener {
             } else {
                 tip = "Inactive control program";
             }
-            if (getActions().getEditControlAction().isEnabled()) {
+            if (ControlJList.this.display.getEditAction().isEnabled()) {
                 tip += "; doubleclick to edit";
             }
             return result;

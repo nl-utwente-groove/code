@@ -188,12 +188,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public AspectGraph renameGraph(ResourceKind kind, String oldName,
-            String newName) throws IOException {
-        throw createImmutable();
-    }
-
-    @Override
     public Map<String,String> getTexts(ResourceKind kind) {
         testInit();
         return Collections.unmodifiableMap(getTextMap(kind));
@@ -212,7 +206,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public String renameText(ResourceKind kind, String oldName, String newName)
+    public void rename(ResourceKind kind, String oldName, String newName)
         throws IOException {
         throw createImmutable();
     }
