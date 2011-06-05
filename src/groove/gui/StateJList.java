@@ -143,10 +143,7 @@ public class StateJList extends JList implements SimulatorListener {
         boolean overHost =
             index > 0 && getCellBounds(index, index).contains(atPoint);
         JPopupMenu result = this.display.createListPopupMenu(overHost);
-        if (overHost) {
-            result.addSeparator();
-            result.add(getActions().getSetStartGraphAction());
-        } else if (index == 0) {
+        if (index == 0) {
             result.addSeparator();
             result.add(getActions().getBackAction());
             result.add(getActions().getForwardAction());
@@ -345,7 +342,7 @@ public class StateJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (StateJList.this.isEnabled() && cellSelected) {
-                    getActions().getEditHostOrStateAction().execute();
+                    StateJList.this.display.getEditAction().execute();
                 }
             }
         }

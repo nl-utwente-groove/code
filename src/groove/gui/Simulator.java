@@ -412,6 +412,13 @@ public class Simulator implements SimulatorListener {
         } else {
             renameItem.setAction(renameAction);
         }
+        JMenuItem enableItem = getEnableMenuItem();
+        Action enableAction = getActions().getEnableAction(displayKind);
+        if (enableAction == null) {
+            enableItem.setEnabled(false);
+        } else {
+            enableItem.setAction(enableAction);
+        }
         JMenuItem saveItem = getSaveMenuItem();
         Action saveAction = getActions().getSaveAsAction(displayKind);
         if (saveAction == null) {
@@ -526,6 +533,7 @@ public class Simulator implements SimulatorListener {
         result.add(getCopyMenuItem());
         result.add(getDeleteMenuItem());
         result.add(getRenameMenuItem());
+        result.add(getEnableMenuItem());
 
         result.addSeparator();
 
@@ -534,7 +542,6 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(this.actions.getEnableRuleAction());
         result.add(this.actions.getShiftPriorityAction(true));
         result.add(this.actions.getShiftPriorityAction(false));
         result.add(this.actions.getEditRulePropertiesAction());
@@ -590,12 +597,25 @@ public class Simulator implements SimulatorListener {
      * currently displayed graph or rule.
      */
     private JMenuItem getRenameMenuItem() {
-        if (this.renameGraphItem == null) {
-            this.renameGraphItem =
+        if (this.renameMenuItem == null) {
+            this.renameMenuItem =
                 new JMenuItem(getActions().getRenameAction(
                     getSimulatorPanel().getSelectedDisplay().getKind()));
         }
-        return this.renameGraphItem;
+        return this.renameMenuItem;
+    }
+
+    /**
+     * Returns the menu item in the edit menu that specifies deletion of
+     * the currently selected resource.
+     */
+    private JMenuItem getEnableMenuItem() {
+        if (this.enableMenuItem == null) {
+            this.enableMenuItem =
+                new JMenuItem(getActions().getEnableAction(
+                    getSimulatorPanel().getSelectedDisplay().getKind()));
+        }
+        return this.enableMenuItem;
     }
 
     /**
@@ -884,7 +904,8 @@ public class Simulator implements SimulatorListener {
     private JMenuItem editGraphItem;
     private JMenuItem copyGraphItem;
     private JMenuItem deleteGraphItem;
-    private JMenuItem renameGraphItem;
+    private JMenuItem renameMenuItem;
+    private JMenuItem enableMenuItem;
 
     /** Returns the undo manager of this simulator. */
     public final UndoManager getUndoManager() {

@@ -21,6 +21,7 @@ import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
             new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
                 true);
 
-        if (dialog.showDialog(getFrame()) && confirmAbandon()
+        if (dialog.showDialog(getFrame()) && confirmStopSimulation()
             && getRuleDisplay().disposeEditors(rule.getName())) {
 
             // We go through the results of the dialog.
@@ -63,7 +64,8 @@ public class EditRulePropertiesAction extends SimulatorAction {
             GraphInfo.setProperties(newGraph, editedProperties);
             newGraph.setFixed();
             try {
-                result = getSimulatorModel().doAddRule(newGraph);
+                result =
+                    getSimulatorModel().doAddGraph(ResourceKind.RULE, newGraph);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while modifying rule '%s'",
                     rule.getName());

@@ -1,6 +1,5 @@
 package groove.gui.action;
 
-import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -12,6 +11,7 @@ import groove.view.aspect.AspectGraph;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,8 @@ public class ShiftPriorityAction extends SimulatorAction {
     @Override
     public void refresh() {
         boolean ruleSelected = getSimulatorModel().getRule() != null;
-        setEnabled(ruleSelected && getSimulatorModel().getStore().isModifiable());
+        setEnabled(ruleSelected
+            && getSimulatorModel().getStore().isModifiable());
     }
 
     @Override
@@ -124,22 +125,19 @@ public class ShiftPriorityAction extends SimulatorAction {
                 }
             }
         }
-        // change the priorities in the rule graphs
-        Set<AspectGraph> changedRules = new HashSet<AspectGraph>();
+        // Create the new priorities map
+        Map<String,Integer> priorityMap = new HashMap<String,Integer>();
         for (int i = 0; i < newPriorities.size(); i++) {
             int priority = newPriorities.get(i);
             for (AspectGraph rule : newCells.get(i)) {
                 if (GraphProperties.getPriority(rule) != priority) {
-                    AspectGraph newRule = rule.clone();
-                    GraphInfo.getProperties(newRule, true).setPriority(priority);
-                    newRule.setFixed();
-                    changedRules.add(newRule);
+                    priorityMap.put(rule.getName(), priority);
                 }
             }
         }
-        if (!changedRules.isEmpty() && confirmAbandon()) {
+        if (!priorityMap.isEmpty() && confirmStopSimulation()) {
             try {
-                result |= getSimulator().getModel().doAddRules(changedRules);
+                result = getSimulatorModel().doSetPriority(priorityMap);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error during rule priority change");
             }

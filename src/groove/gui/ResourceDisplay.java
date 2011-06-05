@@ -22,8 +22,10 @@ import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 
 import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 /**
@@ -77,6 +79,8 @@ abstract public class ResourceDisplay implements Display {
             res.add(getCopyAction());
             res.add(getDeleteAction());
             res.add(getRenameAction());
+            res.addSeparator();
+            res.add(getEnableAction());
         }
         return res;
     }
@@ -104,6 +108,14 @@ abstract public class ResourceDisplay implements Display {
         result.add(getCopyAction());
         result.add(getDeleteAction());
         result.add(getRenameAction());
+        if (separation >= 0) {
+            result.addSeparator(new Dimension(separation, 0));
+        } else {
+            result.addSeparator();
+        }
+        if (getKind() != DisplayKind.PROLOG) {
+            result.add(getEnableButton());
+        }
         return result;
     }
 
@@ -122,6 +134,11 @@ abstract public class ResourceDisplay implements Display {
         return getActions().getEditAction(getKind());
     }
 
+    /** Returns the edit action associated with this kind of resource. */
+    protected final SimulatorAction getEnableAction() {
+        return getActions().getEnableAction(getKind());
+    }
+
     /** Returns the new action associated with this kind of resource. */
     protected final SimulatorAction getNewAction() {
         return getActions().getNewAction(getKind());
@@ -135,6 +152,16 @@ abstract public class ResourceDisplay implements Display {
     /** Returns the save action associated with this kind of resource. */
     protected final SimulatorAction getSaveAction(boolean saveAs) {
         return getActions().getSaveGraphAction(getResource().getGraphRole());
+    }
+
+    /** Creates a toggle button wrapping the enable action of this display. */
+    protected final JToggleButton getEnableButton() {
+        if (this.enableButton == null) {
+            this.enableButton = Options.createToggleButton(getEnableAction());
+            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
+            this.enableButton.setText(null);
+        }
+        return this.enableButton;
     }
 
     /** Convenience method to retrieve the simulator model. */
@@ -155,4 +182,5 @@ abstract public class ResourceDisplay implements Display {
     private final Simulator simulator;
     private final ResourceKind resource;
     private final DisplayKind kind;
+    private JToggleButton enableButton;
 }

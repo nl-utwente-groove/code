@@ -8,6 +8,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
+import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectGraph;
@@ -60,7 +61,8 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public boolean execute() {
         Color initColour =
-            getSimulatorModel().getGrammar().getLabelStore().getColor(this.label);
+            getSimulatorModel().getGrammar().getLabelStore().getColor(
+                this.label);
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
@@ -98,7 +100,8 @@ public class SelectColorAction extends SimulatorAction implements
                 typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
                 try {
-                    getSimulator().getModel().doAddType(newTypeGraph);
+                    getSimulator().getModel().doAddGraph(ResourceKind.TYPE,
+                        newTypeGraph);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while saving type graph '%s'", typeName));
@@ -154,7 +157,8 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        super.setEnabled(this.label != null && getSimulatorModel().getType() != null);
+        super.setEnabled(this.label != null
+            && getSimulatorModel().getType() != null);
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

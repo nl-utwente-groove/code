@@ -177,7 +177,8 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
     public void testFixed(boolean fixed) throws IllegalStateException {
         if (isFixed() != fixed) {
             throw new IllegalStateException(String.format(
-                "Expected graph to be %s", fixed ? "fixed" : "unfixed"));
+                "Expected graph '%s' to be %s", getName(), fixed ? "fixed"
+                        : "unfixed"));
         }
     }
 

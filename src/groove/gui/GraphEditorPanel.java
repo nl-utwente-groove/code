@@ -207,7 +207,7 @@ public class GraphEditorPanel extends EditorPanel<TabbedDisplay> implements
             int answer =
                 JOptionPane.showConfirmDialog(this, String.format(
                     "%s '%s' has been modified. Save changes?",
-                    this.graph.getRole().toString(true), getName()), null,
+                    getGraph().getRole().toString(true), getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 getSaveAction().doSave(getGraph());

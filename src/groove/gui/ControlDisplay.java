@@ -44,7 +44,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -210,14 +209,6 @@ final public class ControlDisplay extends ResourceDisplay implements
         }
     }
 
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                Options.createToggleButton(getActions().getEnableControlAction());
-        }
-        return this.enableButton;
-    }
-
     /**
      * Returns the status bar of this panel, if any.
      */
@@ -371,7 +362,7 @@ final public class ControlDisplay extends ResourceDisplay implements
 
     @Override
     public boolean cancelEditing(String name, boolean confirm) {
-        return name.equals(getSelectedControl()) && cancelEditing(confirm);
+        return !name.equals(getSelectedControl()) || cancelEditing(confirm);
     }
 
     /**
@@ -468,8 +459,6 @@ final public class ControlDisplay extends ResourceDisplay implements
     private JPanel listPanel;
 
     private JToolBar toolBar;
-    /** The type enable button. */
-    private JToggleButton enableButton;
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
     private final JLabel statusBar = new JLabel(" ");
@@ -659,8 +648,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         public JPopupMenu getPopupMenu() {
             JPopupMenu result = super.createPopupMenu();
             int i = 0;
-            result.insert(
-                ControlDisplay.this.getActions().getEditControlAction(), i++);
+            result.insert(ControlDisplay.this.getEditAction(), i++);
             result.insert(new JPopupMenu.Separator(), i++);
             result.insert(
                 ControlDisplay.this.getActions().getSaveControlAction(), i++);

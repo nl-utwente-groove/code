@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.view.GrammarModel;
 import groove.view.TypeModel;
@@ -128,11 +127,6 @@ public class TypeJList extends JList implements SimulatorListener {
         boolean overItem =
             index != -1 && getCellBounds(index, index).contains(atPoint);
         JPopupMenu result = this.display.createListPopupMenu(overItem);
-        // add rest only if mouse is actually over a type name
-        if (overItem) {
-            result.addSeparator();
-            result.add(getActions().getEnableTypeAction());
-        }
         return result;
     }
 
@@ -183,11 +177,6 @@ public class TypeJList extends JList implements SimulatorListener {
         return this.display.getSimulatorModel();
     }
 
-    /** Returns the simulator to which the state list belongs. */
-    private ActionStore getActions() {
-        return this.display.getActions();
-    }
-
     /** The display from which this list is derived. */
     private final TypeDisplay display;
     private boolean listening;
@@ -231,7 +220,7 @@ public class TypeJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (TypeJList.this.isEnabled() && cellSelected) {
-                    getActions().getEditTypeAction().execute();
+                    TypeJList.this.display.getEditAction().execute();
                 }
             }
         }

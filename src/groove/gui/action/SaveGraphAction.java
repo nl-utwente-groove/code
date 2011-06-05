@@ -79,27 +79,15 @@ public final class SaveGraphAction extends SimulatorAction {
      */
     public boolean doSave(AspectGraph graph) {
         boolean result = false;
+        ResourceKind resource = ResourceKind.toResource(graph.getRole());
+        if (isForState()) {
+            // we're saving a state
+            String newName = askNewName(resource, graph.getName(), true);
+            graph = newName == null ? null : graph.rename(newName);
+        }
         try {
-            switch (graph.getRole()) {
-            case HOST:
-                if (this.editor != null || getSimulatorModel().hasHost()) {
-                    result = getSimulatorModel().doAddHost(graph);
-                } else {
-                    // we're saving a state
-                    String newName =
-                        askNewName(ResourceKind.HOST, "Select new graph name",
-                            graph.getName(), true);
-                    if (newName != null) {
-                        result |= getSimulatorModel().doAddHost(graph.rename(newName));
-                    }
-                }
-                break;
-            case RULE:
-                result = getSimulatorModel().doAddRule(graph);
-                break;
-            case TYPE:
-                result = getSimulatorModel().doAddType(graph);
-                break;
+            if (graph != null) {
+                result = getSimulatorModel().doAddGraph(resource, graph);
             }
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while saving edited graph '%s'",
@@ -146,7 +134,9 @@ public final class SaveGraphAction extends SimulatorAction {
         if (this.editor == null) {
             switch (getRole()) {
             case HOST:
-                enabled = getSimulatorModel().hasHost() || getSimulatorModel().hasState();
+                enabled =
+                    getSimulatorModel().hasHost()
+                        || getSimulatorModel().hasState();
                 break;
             case RULE:
                 enabled = getSimulatorModel().hasRule();
@@ -215,6 +205,11 @@ public final class SaveGraphAction extends SimulatorAction {
             this.role = this.editor.getGraph().getRole();
         }
         return this.role;
+    }
+
+    private boolean isForState() {
+        return getRole() == GraphRole.HOST && this.editor == null
+            || !getSimulatorModel().hasHost();
     }
 
     private final GraphEditorPanel editor;

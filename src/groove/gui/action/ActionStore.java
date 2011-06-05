@@ -217,68 +217,23 @@ public class ActionStore implements SimulatorListener {
         new EnumMap<ResourceKind,SimulatorAction>(ResourceKind.class);
 
     /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getEditAction(DisplayKind kind) {
-        switch (kind) {
-        case CONTROL:
-            return getEditControlAction();
-        case HOST:
-            return getEditHostOrStateAction();
-        case RULE:
-            return getEditRuleAction();
-        case TYPE:
-            return getEditTypeAction();
-        case PROLOG:
-            return getEditPrologAction();
-        default:
-            return null;
-        }
+    public EditAction getEditAction(DisplayKind display) {
+        ResourceKind resource = display.getResource();
+        return resource == null ? null : getEditAction(resource);
     }
 
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    public EditControlAction getEditControlAction() {
-        if (this.editControlAction == null) {
-            this.editControlAction = new EditControlAction(this.simulator);
+    /** Returns the delete action appropriate for a given resource kind. */
+    public EditAction getEditAction(ResourceKind resource) {
+        EditAction result = this.editActionMap.get(resource);
+        if (result == null) {
+            result = new EditAction(this.simulator, resource);
+            this.editActionMap.put(resource, result);
         }
-        return this.editControlAction;
+        return result;
     }
 
-    /** Singular instance of the EditAction. */
-    private EditControlAction editControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    public EditPrologAction getEditPrologAction() {
-        if (this.editPrologAction == null) {
-            this.editPrologAction = new EditPrologAction(this.simulator);
-        }
-        return this.editPrologAction;
-    }
-
-    /** Singular instance of the EditAction. */
-    private EditPrologAction editPrologAction;
-
-    /**
-     * Lazily creates and returns the state edit action permanently associated
-     * with this simulator.
-     */
-    public EditHostOrStateAction getEditHostOrStateAction() {
-        // lazily create the action
-        if (this.editHostOrStateAction == null) {
-            this.editHostOrStateAction =
-                new EditHostOrStateAction(this.simulator);
-        }
-        return this.editHostOrStateAction;
-    }
-
-    /**
-     * The state edit action permanently associated with this simulator.
-     */
-    private EditHostOrStateAction editHostOrStateAction;
+    private final Map<ResourceKind,EditAction> editActionMap =
+        new EnumMap<ResourceKind,EditAction>(ResourceKind.class);
 
     /**
      * Returns the properties edit action permanently associated with this
@@ -299,23 +254,6 @@ public class ActionStore implements SimulatorListener {
      */
     private EditRulePropertiesAction editRulePropertiesAction;
 
-    /**
-     * Lazily creates and returns the rule edit action permanently associated
-     * with this simulator.
-     */
-    public EditRuleAction getEditRuleAction() {
-        // lazily create the action
-        if (this.editRuleAction == null) {
-            this.editRuleAction = new EditRuleAction(this.simulator);
-        }
-        return this.editRuleAction;
-    }
-
-    /**
-     * The rule edit action permanently associated with this simulator.
-     */
-    private EditRuleAction editRuleAction;
-
     /** Returns the action to show the system properties of the current grammar. */
     public Action getEditSystemPropertiesAction() {
         // lazily create the action
@@ -332,64 +270,24 @@ public class ActionStore implements SimulatorListener {
      */
     private EditSystemPropertiesAction editSystemPropertiesAction;
 
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link EditTypeAction}.
-     */
-    public EditTypeAction getEditTypeAction() {
-        if (this.editTypeAction == null) {
-            this.editTypeAction = new EditTypeAction(this.simulator);
-        }
-        return this.editTypeAction;
+    /** Returns the copy action appropriate for a given display kind. */
+    public EnableAction getEnableAction(DisplayKind display) {
+        ResourceKind resource = display.getResource();
+        return resource == null ? null : getEnableAction(resource);
     }
 
-    /** Singular instance of the EditTypeAction. */
-    private EditTypeAction editTypeAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
-     */
-    public EnableControlAction getEnableControlAction() {
-        if (this.enableControlAction == null) {
-            this.enableControlAction = new EnableControlAction(this.simulator);
+    /** Returns the delete action appropriate for a given resource kind. */
+    public EnableAction getEnableAction(ResourceKind resource) {
+        EnableAction result = this.enableActionMap.get(resource);
+        if (result == null) {
+            result = new EnableAction(this.simulator, resource);
+            this.enableActionMap.put(resource, result);
         }
-        return this.enableControlAction;
+        return result;
     }
 
-    /** Singular instance of the EnableAction. */
-    private EnableControlAction enableControlAction;
-
-    /**
-     * Lazily creates and returns the appropriate instance of the
-     * {@link EnableTypeAction}.
-     */
-    public EnableTypeAction getEnableTypeAction() {
-        if (this.enableTypeAction == null) {
-            this.enableTypeAction = new EnableTypeAction(this.simulator);
-        }
-        return this.enableTypeAction;
-    }
-
-    /** Singular instance of the CheckAllAction. */
-    private EnableTypeAction enableTypeAction;
-
-    /**
-     * Returns the rule enabling action permanently associated with this
-     * simulator.
-     */
-    public EnableRuleAction getEnableRuleAction() {
-        // lazily create the action
-        if (this.enableRuleAction == null) {
-            this.enableRuleAction = new EnableRuleAction(this.simulator);
-        }
-        return this.enableRuleAction;
-    }
-
-    /**
-     * The rule enabling action permanently associated with this simulator.
-     */
-    private EnableRuleAction enableRuleAction;
+    private final Map<ResourceKind,EnableAction> enableActionMap =
+        new EnumMap<ResourceKind,EnableAction>(ResourceKind.class);
 
     /**
      * Returns the 'default exploration' action that is associated with the
@@ -570,25 +468,7 @@ public class ActionStore implements SimulatorListener {
     public SimulatorAction getNewAction(ResourceKind resource) {
         SimulatorAction result = this.newActionMap.get(resource);
         if (result == null) {
-            switch (resource) {
-            case CONTROL:
-                result = new NewControlAction(this.simulator);
-                break;
-            case HOST:
-                result = new NewHostAction(this.simulator);
-                break;
-            case PROLOG:
-                result = new NewPrologAction(this.simulator);
-                break;
-            case RULE:
-                result = new NewRuleAction(this.simulator);
-                break;
-            case TYPE:
-                result = new NewTypeAction(this.simulator);
-                break;
-            default:
-                assert false;
-            }
+            result = new NewAction(this.simulator, resource);
             this.newActionMap.put(resource, result);
         }
         return result;
@@ -596,21 +476,6 @@ public class ActionStore implements SimulatorListener {
 
     private final Map<ResourceKind,SimulatorAction> newActionMap =
         new EnumMap<ResourceKind,SimulatorAction>(ResourceKind.class);
-
-    //
-    //    /**
-    //     * Lazily creates and returns the singleton instance of the
-    //     * {@link NewControlAction}.
-    //     */
-    //    public NewControlAction getNewControlAction() {
-    //        if (this.newControlAction == null) {
-    //            this.newControlAction = new NewControlAction(this.simulator);
-    //        }
-    //        return this.newControlAction;
-    //    }
-    //
-    //    /** Singular instance of the NewAction. */
-    //    private NewControlAction newControlAction;
 
     /**
      * Returns the rule system creation action permanently associated with this
@@ -630,72 +495,9 @@ public class ActionStore implements SimulatorListener {
      */
     private NewGrammarAction newGrammarAction;
 
-    //
-    //    /**
-    //     * Returns the graph creation action permanently associated with this
-    //     * simulator.
-    //     */
-    //    public NewHostAction getNewHostAction() {
-    //        // lazily create the action
-    //        if (this.newHostAction == null) {
-    //            this.newHostAction = new NewHostAction(this.simulator);
-    //        }
-    //        return this.newHostAction;
-    //    }
-    //
-    //    /**
-    //     * The graph creation action permanently associated with this simulator.
-    //     */
-    //    private NewHostAction newHostAction;
-    //
-    //    /**
-    //     * Lazily creates and returns the singleton instance of the
-    //     * {@link NewControlAction}.
-    //     */
-    //    public NewPrologAction getNewPrologAction() {
-    //        if (this.newPrologAction == null) {
-    //            this.newPrologAction = new NewPrologAction(this.simulator);
-    //        }
-    //        return this.newPrologAction;
-    //    }
-    //
-    //    /** Singular instance of the NewAction. */
-    //    private NewPrologAction newPrologAction;
-    //
-    //    /**
-    //     * Returns the rule creation action permanently associated with this
-    //     * simulator.
-    //     */
-    //    public NewRuleAction getNewRuleAction() {
-    //        // lazily create the action
-    //        if (this.newRuleAction == null) {
-    //            this.newRuleAction = new NewRuleAction(this.simulator);
-    //        }
-    //        return this.newRuleAction;
-    //    }
-    //
-    //    /**
-    //     * The rule creation action permanently associated with this simulator.
-    //     */
-    //    private NewRuleAction newRuleAction;
-    //
-    //    /**
-    //     * Lazily creates and returns the singleton instance of the
-    //     * {@link NewTypeAction}.
-    //     */
-    //    public NewTypeAction getNewTypeAction() {
-    //        if (this.newTypeAction == null) {
-    //            this.newTypeAction = new NewTypeAction(this.simulator);
-    //        }
-    //        return this.newTypeAction;
-    //    }
-    //
-    //    /** Singular instance of the NewTypeAction. */
-    //    private NewTypeAction newTypeAction;
-
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link NewControlAction}.
+     * {@link PreviewControlAction}.
      */
     public PreviewControlAction getPreviewControlAction() {
         if (this.previewControlAction == null) {
@@ -800,102 +602,24 @@ public class ActionStore implements SimulatorListener {
      */
     private RelabelGrammarAction relabelAction;
 
-    /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getRenameAction(DisplayKind kind) {
-        switch (kind) {
-        case CONTROL:
-            return getRenameControlAction();
-        case HOST:
-            return getRenameHostAction();
-        case RULE:
-            return getRenameRuleAction();
-        case TYPE:
-            return getRenameTypeAction();
-        case PROLOG:
-            return getRenamePrologAction();
-        default:
-            return null;
-        }
+    /** Returns the copy action appropriate for a given display kind. */
+    public RenameAction getRenameAction(DisplayKind display) {
+        ResourceKind resource = display.getResource();
+        return resource == null ? null : getRenameAction(resource);
     }
 
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameControlAction}.
-     */
-    public RenameControlAction getRenameControlAction() {
-        if (this.renameControlAction == null) {
-            this.renameControlAction = new RenameControlAction(this.simulator);
+    /** Returns the delete action appropriate for a given resource kind. */
+    public RenameAction getRenameAction(ResourceKind resource) {
+        RenameAction result = this.renameActionMap.get(resource);
+        if (result == null) {
+            result = new RenameAction(this.simulator, resource);
+            this.renameActionMap.put(resource, result);
         }
-        return this.renameControlAction;
+        return result;
     }
 
-    /** Singular instance of the RenameAction. */
-    private RenameControlAction renameControlAction;
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameHostAction getRenameHostAction() {
-        // lazily create the action
-        if (this.renameHostAction == null) {
-            this.renameHostAction = new RenameHostAction(this.simulator);
-        }
-        return this.renameHostAction;
-    }
-
-    /**
-     * The graph renaming action permanently associated with this simulator.
-     */
-    private RenameHostAction renameHostAction;
-
-    /**
-     * Returns the rule renaming action permanently associated with this
-     * simulator.
-     */
-    public RenameRuleAction getRenameRuleAction() {
-        // lazily create the action
-        if (this.renameRuleAction == null) {
-            this.renameRuleAction = new RenameRuleAction(this.simulator);
-        }
-        return this.renameRuleAction;
-    }
-
-    /**
-     * The rule renaming action permanently associated with this simulator.
-     */
-    private RenameRuleAction renameRuleAction;
-
-    /**
-     * Returns the prolog renaming action permanently associated with this
-     * simulator.
-     */
-    public RenamePrologAction getRenamePrologAction() {
-        // lazily create the action
-        if (this.renamePrologAction == null) {
-            this.renamePrologAction = new RenamePrologAction(this.simulator);
-        }
-        return this.renamePrologAction;
-    }
-
-    /**
-     * The rule renaming action permanently associated with this simulator.
-     */
-    private RenamePrologAction renamePrologAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link RenameTypeAction}.
-     */
-    public RenameTypeAction getRenameTypeAction() {
-        if (this.renameTypeAction == null) {
-            this.renameTypeAction = new RenameTypeAction(this.simulator);
-        }
-        return this.renameTypeAction;
-    }
-
-    /** Singular instance of the RenameTypeAction. */
-    private RenameTypeAction renameTypeAction;
+    private final Map<ResourceKind,RenameAction> renameActionMap =
+        new EnumMap<ResourceKind,RenameAction>(ResourceKind.class);
 
     /**
      * Returns the renumbering action permanently associated with this
@@ -1080,20 +804,6 @@ public class ActionStore implements SimulatorListener {
      * The undo action permanently associated with this simulator.
      */
     private SelectColorAction selectColorAction;
-
-    /**
-     * Lazily creates and returns an instance of SetStartGraphAction.
-     */
-    public SetStartGraphAction getSetStartGraphAction() {
-        // lazily create the action
-        if (this.setStartGraphAction == null) {
-            this.setStartGraphAction = new SetStartGraphAction(this.simulator);
-        }
-        return this.setStartGraphAction;
-    }
-
-    /** Singleton instance of {@link SetStartGraphAction}. */
-    private SetStartGraphAction setStartGraphAction;
 
     /**
      * Returns the priority up- or down-shifting action permanently associated with the simulator.

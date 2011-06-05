@@ -55,224 +55,193 @@ public class SimulatorModel implements Cloneable {
      * @param resource the kind of the resources
      * @param names the names of the resources to be deleted
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
+     * @throws IOException if the action failed due to an IO error
      */
     public boolean doDelete(ResourceKind resource, Set<String> names)
         throws IOException {
-        switch (resource) {
-        case CONTROL:
-            return doDeleteControl(names.iterator().next());
-        case HOST:
-            return doDeleteHosts(names);
-        case PROLOG:
-            return doDeleteProlog(names.iterator().next());
-        case RULE:
-            return doDeleteRules(names);
-        case TYPE:
-            return doDeleteTypes(names);
-        case PROPERTIES:
-        default:
-            assert false;
-            return false;
-        }
-    }
-
-    /**
-     * Adds a given host graph to the host graphs in this grammar
-     * @param newHost the new host graph
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddHost(AspectGraph newHost) throws IOException {
-        return doAddHosts(Collections.singleton(newHost));
-    }
-
-    /**
-     * Adds a given set of host graphs to the host graphs in this grammar
-     * @param newHosts the new host graph
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddHosts(Collection<AspectGraph> newHosts)
-        throws IOException {
-        start();
-        try {
-            boolean result = false;
-            GrammarModel grammar = getGrammar();
-            getStore().putGraphs(ResourceKind.HOST, newHosts);
-            Set<String> newHostNames = new HashSet<String>();
-            for (AspectGraph newHost : newHosts) {
-                newHostNames.add(newHost.getName());
-                result |= newHost.getName().equals(grammar.getStartGraphName());
-            }
-            changeGrammar(result);
-            changeHostSet(newHostNames);
-            changeDisplay(DisplayKind.HOST);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Deletes a set of host graphs from the grammar view.
-     * @param hostNames names of the host graphs to be deleted
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
-     */
-    public boolean doDeleteHosts(Collection<String> hostNames)
-        throws IOException {
+        boolean result = false;
+        String name = names.iterator().next();
         start();
         try {
             GrammarModel grammar = getGrammar();
-            // test now if this is the start state, before it is deleted from the
-            // grammar
-            boolean result = hostNames.contains(grammar.getStartGraphName());
-            grammar.getStore().deleteGraphs(ResourceKind.HOST, hostNames);
-            if (result) {
-                // reset the start graph to null
-                grammar.removeStartGraph();
+            switch (resource) {
+            case CONTROL:
+                result = name.equals(grammar.getControlName());
+                grammar.getStore().deleteTexts(ResourceKind.CONTROL, names);
+                break;
+            case HOST:
+                // test now if this is the start state, before it is deleted from the
+                // grammar
+                result = names.contains(grammar.getStartGraphName());
+                grammar.getStore().deleteGraphs(ResourceKind.HOST, names);
+                if (result) {
+                    // reset the start graph to null
+                    grammar.removeStartGraph();
+                }
+                break;
+            case PROLOG:
+                getStore().deleteTexts(ResourceKind.PROLOG, names);
+                if (getProlog() == null || name.equals(getProlog().getName())) {
+                    changeProlog(null);
+                }
+                break;
+            case RULE:
+                for (AspectGraph oldRule : getStore().deleteGraphs(
+                    ResourceKind.RULE, names)) {
+                    result |= GraphProperties.isEnabled(oldRule);
+                }
+                break;
+            case TYPE:
+                for (AspectGraph oldType : getStore().deleteGraphs(
+                    ResourceKind.TYPE, names)) {
+                    result |= GraphProperties.isEnabled(oldType);
+                }
+                changeGrammar(result);
+                break;
+            case PROPERTIES:
+            default:
+                assert false;
             }
             changeGrammar(result);
-            return result;
         } finally {
             finish();
         }
+        return false;
     }
 
     /**
-     * Renames one of the graphs in the graph list. If the graph was the start
-     * graph, uses the renamed graph again as start graph.
-     * @param oldName the old host graph name
-     * @param newName new name for the host graph
+     * Renames a resource of a given kind.
+     * @param resource the kind of the resource to be renamed
+     * @param oldName the name of the resource to be renamed
+     * @param newName the new name for the rule
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the rename action failed
+     * @throws IOException if the action failed due to an IO error
      */
-    public boolean doRenameHost(String oldName, String newName)
-        throws IOException {
+    public boolean doRename(ResourceKind resource, String oldName,
+            String newName) throws IOException {
+        boolean result = false;
         start();
         try {
-            // test now if this is the start state, before it is deleted from the
-            // grammar
-            GrammarModel grammar = getGrammar();
-            String startGraphName = grammar.getStartGraphName();
-            boolean result =
-                oldName.equals(startGraphName)
-                    || newName.equals(startGraphName);
-            getStore().renameGraph(ResourceKind.HOST, oldName, newName);
-            if (result) {
-                // reset the start graph to the renamed graph
-                grammar.setStartGraph(newName);
+            switch (resource) {
+            case CONTROL:
+                result = oldName.equals(getGrammar().getControlName());
+                break;
+            case HOST:
+                GrammarModel grammar = getGrammar();
+                String startGraphName = grammar.getStartGraphName();
+                result =
+                    oldName.equals(startGraphName)
+                        || newName.equals(startGraphName);
+                if (result) {
+                    // reset the start graph to the renamed graph
+                    grammar.setStartGraph(newName);
+                }
+                break;
+            case RULE:
+                result =
+                    getGrammar().getResource(resource, oldName).isEnabled();
+                break;
+            case TYPE:
+                result = getGrammar().getTypeModel(oldName).isEnabled();
+                break;
             }
+            getStore().rename(resource, oldName, newName);
+            changeResource(resource, newName);
             changeGrammar(result);
-            changeDisplay(DisplayKind.HOST);
-            return result;
+            changeDisplay(DisplayKind.toDisplay(resource));
         } finally {
             finish();
         }
+        return result;
     }
 
     /**
-     * Saves a new rule in the store, and fires an update event.
-     * @param newRule the new rule, given as an aspect graph
+     * Changes the enabling of a set of named resources from the grammar.
+     * @param resource the kind of the resources
+     * @param names the names of the resources to be changed
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
+     * @throws IOException if the action failed due to an IO error
      */
-    public boolean doAddRule(AspectGraph newRule) throws IOException {
-        return doAddRules(Collections.singleton(newRule));
-    }
-
-    /**
-     * Saves a set of new rules in the store, and fires an update event.
-     * @param newRules the new rules, given as aspect graphs
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddRules(Collection<AspectGraph> newRules)
+    public boolean doEnable(ResourceKind resource, Set<String> names)
         throws IOException {
         start();
+        boolean result = true;
         try {
-            Collection<AspectGraph> oldRules =
+            String name = names.iterator().next();
+            SystemProperties oldProperties = getGrammar().getProperties();
+            SystemProperties newProperties = oldProperties.clone();
+            switch (resource) {
+            case CONTROL:
+                boolean enable = !name.equals(getGrammar().getControlName());
+                newProperties.setUseControl(enable);
+                if (enable) {
+                    newProperties.setControlName(name);
+                }
+                getStore().putProperties(newProperties);
+                break;
+            case HOST:
+                getGrammar().setStartGraph(name);
+                break;
+            case RULE:
+                Collection<AspectGraph> newRules =
+                    new ArrayList<AspectGraph>(names.size());
+                for (String ruleName : names) {
+                    AspectGraph oldRule =
+                        getStore().getGraphs(ResourceKind.RULE).get(ruleName);
+                    GraphProperties properties =
+                        GraphInfo.getProperties(oldRule, true).clone();
+                    properties.setEnabled(!properties.isEnabled());
+                    AspectGraph newRule = oldRule.clone();
+                    GraphInfo.setProperties(newRule, properties);
+                    newRule.setFixed();
+                    newRules.add(newRule);
+                }
                 getStore().putGraphs(ResourceKind.RULE, newRules);
-            boolean result = false;
-            for (AspectGraph oldRule : oldRules) {
-                result |= GraphProperties.isEnabled(oldRule);
+                changeRuleSet(names);
+                break;
+            case TYPE:
+                List<String> activeTypes =
+                    new ArrayList<String>(newProperties.getTypeNames());
+                for (String typeName : names) {
+                    if (!activeTypes.remove(typeName)) {
+                        activeTypes.add(typeName);
+                    }
+                }
+                newProperties.setTypeNames(activeTypes);
+                getStore().putProperties(newProperties);
+                break;
+            case PROLOG:
+            case PROPERTIES:
+            default:
+                assert false;
             }
-            Set<String> newRuleNames = new HashSet<String>();
-            for (AspectGraph newRule : newRules) {
-                result |= GraphProperties.isEnabled(newRule);
-                newRuleNames.add(newRule.getName());
-            }
-            changeRuleSet(newRuleNames);
+            changeDisplay(DisplayKind.toDisplay(resource));
             changeGrammar(result);
-            changeDisplay(DisplayKind.RULE);
-            return result;
         } finally {
             finish();
         }
+        return result;
     }
 
     /**
-     * Deletes set of rules from the grammar and the file system, and resets the
-     * grammar model.
-     * @param names names of the rules to be deleted
+     * Adds a given graph-based resource resources in this grammar
+     * @param newGraph the new host graph
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
+     * @throws IOException if the add action failed
      */
-    public boolean doDeleteRules(Collection<String> names) throws IOException {
+    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph)
+        throws IOException {
         start();
         try {
-            boolean result = false;
-            for (AspectGraph oldRule : getStore().deleteGraphs(
-                ResourceKind.RULE, names)) {
-                result |= GraphProperties.isEnabled(oldRule);
+            boolean result = GraphProperties.isEnabled(newGraph);
+            Collection<AspectGraph> oldGraphs =
+                getStore().putGraphs(kind, Collections.singleton(newGraph));
+            for (AspectGraph oldGraph : oldGraphs) {
+                result |= GraphProperties.isEnabled(oldGraph);
             }
             changeGrammar(result);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Inverts the enabledness of a set of rules, and stores the result.
-     * @param oldRules rules whose enabledness should be changed
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
-     */
-    public boolean doEnableRules(Collection<String> oldRules)
-        throws IOException {
-        Collection<AspectGraph> newRules =
-            new ArrayList<AspectGraph>(oldRules.size());
-        for (String ruleName : oldRules) {
-            AspectGraph oldRule =
-                getStore().getGraphs(ResourceKind.RULE).get(ruleName);
-            GraphProperties properties =
-                GraphInfo.getProperties(oldRule, true).clone();
-            properties.setEnabled(!properties.isEnabled());
-            AspectGraph newRule = oldRule.clone();
-            GraphInfo.setProperties(newRule, properties);
-            newRule.setFixed();
-            newRules.add(newRule);
-        }
-        return doAddRules(newRules);
-    }
-
-    /**
-     * Renames one of the rules in the grammar.
-     * @param oldName rule to be renamed
-     * @param newName new name for the rule
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the rename action failed
-     */
-    public boolean doRenameRule(String oldName, String newName)
-        throws IOException {
-        start();
-        try {
-            boolean result = getGrammar().getRuleModel(oldName).isEnabled();
-            getStore().renameGraph(ResourceKind.RULE, oldName, newName);
-            changeGrammar(result);
-            changeRule(newName);
+            changeResource(kind, newGraph.getName());
+            changeDisplay(DisplayKind.toDisplay(kind));
             return result;
         } finally {
             finish();
@@ -302,47 +271,6 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
-     * Removes a control program from this grammar. 
-     * @param name name of the prolog program
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
-     */
-    public boolean doDeleteControl(String name) throws IOException {
-        start();
-        try {
-            GrammarModel grammar = getGrammar();
-            boolean result = name.equals(grammar.getControlName());
-            grammar.getStore().deleteTexts(ResourceKind.CONTROL,
-                Collections.singleton(name));
-            changeGrammar(result);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Renames one of the control programs in the grammar.
-     * @param oldName old name of the program
-     * @param newName new name for the program
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the rename action failed
-     */
-    public boolean doRenameControl(String oldName, String newName)
-        throws IOException {
-        start();
-        try {
-            boolean result = oldName.equals(getGrammar().getControlName());
-            getStore().renameText(ResourceKind.CONTROL, oldName, newName);
-            changeGrammar(result);
-            changeDisplay(DisplayKind.CONTROL);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
     /**
      * Adds a prolog program to this grammar.
      * @param name the name of the prolog program
@@ -364,136 +292,35 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** 
-     * Removes a prolog program from this grammar.
-     * @param name name of the prolog program
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
-     */
-    public boolean doDeleteProlog(String name) throws IOException {
-        start();
-        try {
-            getStore().deleteTexts(ResourceKind.PROLOG,
-                Collections.singleton(name));
-            if (getProlog() == null || name.equals(getProlog().getName())) {
-                changeProlog(null);
-            }
-            changeGrammar(false);
-            return false;
-        } finally {
-            finish();
-        }
-    }
-
     /**
-     * Renames one of the prolog programs in the grammar.
-     * @param oldName old name of the program
-     * @param newName new name for the program
+     * Sets the priority of a set of rules.
+     * @param priorityMap mapping from rule names to their new priorities
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the rename action failed
+     * @throws IOException if the action failed due to an IO error
      */
-    public boolean doRenameProlog(String oldName, String newName)
+    public boolean doSetPriority(Map<String,Integer> priorityMap)
         throws IOException {
         start();
+        ResourceKind resource = ResourceKind.RULE;
+        Set<AspectGraph> newGraphs = new HashSet<AspectGraph>();
+        for (Map.Entry<String,Integer> entry : priorityMap.entrySet()) {
+            AspectGraph oldGraph =
+                getStore().getGraphs(resource).get(entry.getKey());
+            AspectGraph newGraph = oldGraph.clone();
+            GraphInfo.getProperties(newGraph, true).setPriority(
+                entry.getValue());
+            newGraph.setFixed();
+            newGraphs.add(newGraph);
+        }
         try {
-            getStore().renameText(ResourceKind.PROLOG, oldName, newName);
-            changeGrammar(false);
-            if (oldName.equals(getProlog().getName())) {
-                changeProlog(newName);
-            }
-            changeDisplay(DisplayKind.PROLOG);
-            return false;
+            getStore().putGraphs(resource, newGraphs);
+            changeRuleSet(priorityMap.keySet());
+            changeGrammar(true);
+            changeDisplay(DisplayKind.toDisplay(resource));
+            return true;
         } finally {
             finish();
         }
-    }
-
-    /**
-     * Saves an aspect graph as a type graph under a given name, and puts the
-     * type graph into the current grammar view.
-     * @param typeGraph the new type, given as an aspect graph
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddType(AspectGraph typeGraph) throws IOException {
-        start();
-        try {
-            GrammarModel grammar = getGrammar();
-            boolean result = GraphProperties.isEnabled(typeGraph);
-            grammar.getStore().putGraphs(ResourceKind.TYPE,
-                Collections.singleton(typeGraph));
-            changeGrammar(result);
-            changeType(typeGraph.getName());
-            changeDisplay(DisplayKind.TYPE);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /** 
-     * Removes a set of type graphs from this grammar. 
-     * @param names names of the type graphs to be deleted
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the delete action failed
-     */
-    public boolean doDeleteTypes(Collection<String> names) throws IOException {
-        start();
-        try {
-            boolean result = false;
-            for (AspectGraph oldType : getStore().deleteGraphs(
-                ResourceKind.TYPE, names)) {
-                result |= GraphProperties.isEnabled(oldType);
-            }
-            changeGrammar(result);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Renames a given type graph.
-     * @param oldName the type graph to be renamed
-     * @param newName new name for the type graph
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the rename action failed
-     */
-    public boolean doRenameType(String oldName, String newName)
-        throws IOException {
-        start();
-        try {
-            // test now if this is the type graph, before it is deleted from the
-            // grammar
-            boolean result = getGrammar().getTypeModel(oldName).isEnabled();
-            getStore().renameGraph(ResourceKind.TYPE, oldName, newName);
-            changeGrammar(result);
-            if (oldName.equals(getType().getName())) {
-                changeType(newName);
-            }
-            changeDisplay(DisplayKind.TYPE);
-            return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Inverts the enabledness of a type graph.
-     * @param oldType type graph whose enabledness should be changed
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the enabling failed
-     */
-    public boolean doEnableType(AspectGraph oldType) throws IOException {
-        SystemProperties oldProperties = getGrammar().getProperties();
-        SystemProperties newProperties = oldProperties.clone();
-        List<String> activeTypes =
-            new ArrayList<String>(newProperties.getTypeNames());
-        if (!activeTypes.remove(oldType.getName())) {
-            activeTypes.add(oldType.getName());
-        }
-        newProperties.setTypeNames(activeTypes);
-        return doSetProperties(newProperties);
     }
 
     /**
@@ -524,24 +351,6 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             getGrammar().setStartGraph(graph);
-            changeGrammar(true);
-            changeDisplay(DisplayKind.HOST);
-            return true;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Sets a graph with given name as start state. This results in a reset of
-     * the LTS.
-     * @param name name of the new start graph
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     */
-    public boolean doSetStartGraph(String name) {
-        start();
-        try {
-            getGrammar().setStartGraph(name);
             changeGrammar(true);
             changeDisplay(DisplayKind.HOST);
             return true;
@@ -1049,6 +858,26 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Changes the selected value of a given resource kind. */
+    private void changeResource(ResourceKind kind, String name) {
+        switch (kind) {
+        case CONTROL:
+            changeControl(name);
+            break;
+        case HOST:
+            changeHost(name);
+            break;
+        case PROLOG:
+            changeProlog(name);
+            break;
+        case RULE:
+            changeRule(name);
+            break;
+        case TYPE:
+            changeType(name);
+        }
+    }
+
     /** 
      * Returns the first of the currently selected host graphs, or {@code null}
      * if none is currently selected.
@@ -1118,6 +947,14 @@ public class SimulatorModel implements Cloneable {
             changeDisplay(DisplayKind.HOST);
         }
         return finish();
+    }
+
+    /** 
+     * Changes the currently selected host graph.
+     * @see #setHost(String)
+     */
+    private boolean changeHost(String hostName) {
+        return changeHostSet(Collections.singleton(hostName));
     }
 
     /** 

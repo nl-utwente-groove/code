@@ -17,14 +17,12 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.view.GrammarModel;
 import groove.view.PrologModel;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -37,7 +35,6 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -123,17 +120,6 @@ public class PrologJList extends JList implements SimulatorListener {
         super.setEnabled(enabled);
     }
 
-    private JToggleButton getEnableButton() {
-        if (this.enableButton == null) {
-            this.enableButton =
-                new JToggleButton(getActions().getEnableControlAction());
-            this.enableButton.setText(null);
-            this.enableButton.setMargin(new Insets(3, 1, 3, 1));
-            this.enableButton.setFocusable(false);
-        }
-        return this.enableButton;
-    }
-
     /**
      * Creates a popup menu.
      */
@@ -184,7 +170,6 @@ public class PrologJList extends JList implements SimulatorListener {
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
-            getEnableButton().setSelected(false);
         } else {
             setSelectedValue(selection.getName(), true);
         }
@@ -207,19 +192,12 @@ public class PrologJList extends JList implements SimulatorListener {
         return getSimulator().getModel();
     }
 
-    /** Returns the simulator to which the state list belongs. */
-    private ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
     private final PrologDisplay display;
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
      */
     private final Simulator simulator;
-    /** The type enable button. */
-    private JToggleButton enableButton;
     private boolean listening;
     /**
      * Temporary store of suspended list selection listeners.
@@ -264,7 +242,7 @@ public class PrologJList extends JList implements SimulatorListener {
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
                 if (PrologJList.this.isEnabled() && cellSelected) {
-                    getActions().getEditPrologAction().execute();
+                    PrologJList.this.display.getEditAction().execute();
                 }
             }
         }

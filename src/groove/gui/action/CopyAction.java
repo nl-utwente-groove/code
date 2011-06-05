@@ -21,12 +21,9 @@ public class CopyAction extends SimulatorAction {
         boolean result = false;
         String oldName = getSimulatorModel().getSelected(getResourceKind());
         if (getDisplay().cancelEditing(oldName, true)) {
-            String newName =
-                askNewName(getResourceKind(), String.format(
-                    "Select new %s name", getResourceKind().getDescription()),
-                    oldName, true);
+            String newName = askNewName(getResourceKind(), oldName, true);
             if (newName != null) {
-                result = doRename(oldName, newName);
+                result = doCopy(oldName, newName);
             }
         }
         return result;
@@ -35,7 +32,7 @@ public class CopyAction extends SimulatorAction {
     /**
      * Renames the resource from one name to the other.
      */
-    private boolean doRename(String oldName, String newName) {
+    private boolean doCopy(String oldName, String newName) {
         boolean result = false;
         switch (getResourceKind()) {
         case CONTROL:
@@ -49,7 +46,8 @@ public class CopyAction extends SimulatorAction {
             AspectGraph host = getSimulatorModel().getHost().getSource();
             AspectGraph newHost = host.rename(newName);
             try {
-                result = getSimulatorModel().doAddHost(newHost);
+                result =
+                    getSimulatorModel().doAddGraph(getResourceKind(), newHost);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying host graph '%s' to '%s'", oldName,
@@ -60,7 +58,8 @@ public class CopyAction extends SimulatorAction {
             AspectGraph rule = getSimulatorModel().getRule().getSource();
             AspectGraph newRule = rule.rename(newName);
             try {
-                result = getSimulatorModel().doAddRule(newRule);
+                result =
+                    getSimulatorModel().doAddGraph(getResourceKind(), newRule);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying rule '%s' to '%s'", oldName, newName));
@@ -70,7 +69,8 @@ public class CopyAction extends SimulatorAction {
             AspectGraph newType =
                 getSimulatorModel().getType().getSource().rename(newName);
             try {
-                result = getSimulatorModel().doAddType(newType);
+                result =
+                    getSimulatorModel().doAddGraph(getResourceKind(), newType);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying type graph '%s' to '%s'", oldName,

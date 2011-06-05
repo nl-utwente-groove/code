@@ -3,6 +3,10 @@ package groove.gui;
 import groove.graph.GraphRole;
 import groove.trans.ResourceKind;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import javax.swing.ImageIcon;
 
 /** Type of components in the panel. */
@@ -79,4 +83,21 @@ public enum DisplayKind {
     private final ImageIcon listIcon;
     private final String title;
     private final String tip;
+
+    /** Returns the display kind for a given resource kind. */
+    public static final DisplayKind toDisplay(ResourceKind resource) {
+        return resourceMap.get(resource);
+    }
+
+    private static final Map<ResourceKind,DisplayKind> resourceMap =
+        new EnumMap<ResourceKind,DisplayKind>(ResourceKind.class);
+
+    static {
+        for (DisplayKind kind : EnumSet.allOf(DisplayKind.class)) {
+            ResourceKind resource = kind.getResource();
+            if (resource != null) {
+                resourceMap.put(resource, kind);
+            }
+        }
+    }
 }

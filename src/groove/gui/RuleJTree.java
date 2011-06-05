@@ -466,8 +466,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         boolean overRule = node instanceof RuleTreeNode;
         JPopupMenu res = this.display.createListPopupMenu(overRule);
         if (overRule) {
-            res.addSeparator();
-            res.add(getActions().getEnableRuleAction());
             res.add(getActions().getShiftPriorityAction(true));
             res.add(getActions().getShiftPriorityAction(false));
             res.add(getActions().getEditRulePropertiesAction());
@@ -633,21 +631,21 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 }
             }
             if (path != null) {
-                DisplayKind display = null;
+                DisplayKind toDisplay = null;
                 if (path.getLastPathComponent() instanceof RuleTreeNode) {
-                    display = DisplayKind.RULE;
+                    toDisplay = DisplayKind.RULE;
                 } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
-                    display = DisplayKind.HOST;
+                    toDisplay = DisplayKind.HOST;
                 } else {
-                    display = DisplayKind.LTS;
+                    toDisplay = DisplayKind.LTS;
                 }
                 if (evt.getClickCount() == 1) {
-                    if (display != null) {
-                        getSimulatorModel().setDisplay(display);
+                    if (toDisplay != null) {
+                        getSimulatorModel().setDisplay(toDisplay);
                     }
                 } else if (evt.getClickCount() == 2
-                    && display == DisplayKind.RULE) { // Left double click
-                    getActions().getEditRuleAction().execute();
+                    && toDisplay == DisplayKind.RULE) { // Left double click
+                    RuleJTree.this.display.getEditAction().execute();
                 }
             }
             maybeShowPopup(evt);

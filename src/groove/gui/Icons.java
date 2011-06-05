@@ -83,6 +83,8 @@ public final class Icons {
             }
         case RENAME:
             return RENAME_ICON;
+        case ENABLE:
+            return ENABLE_ICON;
         default:
             assert false;
             return null;
