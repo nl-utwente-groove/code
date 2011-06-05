@@ -19,6 +19,7 @@ package groove.view;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
+import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
@@ -42,6 +43,11 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
     protected GraphBasedModel(AspectGraph source) {
         super(ResourceKind.toResource(source.getRole()), source.getName());
         this.source = source;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return GraphProperties.isEnabled(getSource());
     }
 
     /**

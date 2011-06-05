@@ -5,7 +5,11 @@ import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
+import groove.gui.Display;
 import groove.gui.DisplaysPanel;
+import groove.gui.EditType;
+import groove.gui.Icons;
+import groove.gui.Options;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
 import groove.gui.RuleDisplay;
@@ -26,6 +30,7 @@ import groove.trans.RuleName;
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -51,18 +56,38 @@ import javax.swing.JOptionPane;
 public abstract class SimulatorAction extends AbstractAction implements
         Refreshable {
     /**
-     * Creates an initially disabled action for a given simulator,
-     * and with a given name and (possibly {@code null}) icon.
-     * The action adds itself to the refreshables of the simulator.
+     * Internal constructor to set all fields.
      */
-    public SimulatorAction(Simulator simulator, String name, Icon icon) {
+    public SimulatorAction(Simulator simulator, String name, Icon icon,
+            ResourceKind resource) {
         super(name, icon);
         this.simulator = simulator;
+        this.resource = resource;
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
         if (simulator != null) {
             simulator.getActions().addRefreshable(this);
         }
+    }
+
+    /**
+     * Creates an initially disabled action for a given simulator,
+     * and with a given name and (possibly {@code null}) icon.
+     * The action adds itself to the refreshables of the simulator.
+     */
+    public SimulatorAction(Simulator simulator, String name, Icon icon) {
+        this(simulator, name, icon, null);
+    }
+
+    /**
+     * Creates an initially disabled edit action for a given simulator.
+     * The edit type and edited resource automatically generate the name and icon.
+     * The action adds itself to the refreshables of the simulator.
+     */
+    public SimulatorAction(Simulator simulator, EditType edit,
+            ResourceKind resource) {
+        this(simulator, Options.getEditActionName(edit, resource, false),
+            Icons.getIcon(edit, resource), resource);
     }
 
     /** The simulator on which this action works. */
@@ -72,47 +97,88 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Convenience method to retrieve the simulator model. */
     protected final SimulatorModel getSimulatorModel() {
-        return this.simulator.getModel();
+        return getSimulator().getModel();
+    }
+
+    /** Convenience method to retrieve the grammar model from the simulator model. */
+    protected final GrammarModel getGrammarModel() {
+        return getSimulatorModel().getGrammar();
+    }
+
+    /** Convenience method to retrieve the grammar store from the simulator model. */
+    protected final SystemStore getGrammarStore() {
+        return getSimulatorModel().getStore();
     }
 
     /** Convenience method to retrieve the simulator action store. */
     protected final ActionStore getActions() {
-        return this.simulator.getActions();
+        return getSimulator().getActions();
     }
 
     /** Convenience method to retrieve the frame of the simulator. */
     protected final JFrame getFrame() {
-        return this.simulator.getFrame();
+        return getSimulator().getFrame();
     }
 
     /** Convenience method to retrieve the main simulator panel. */
-    protected final DisplaysPanel getMainPanel() {
-        return this.simulator.getSimulatorPanel();
+    protected final DisplaysPanel getDisplaysPanel() {
+        return getSimulator().getSimulatorPanel();
+    }
+
+    /** 
+     * Returns the simulator display for the resource kind of this action.
+     * @throws IllegalStateException if there is no resource kind
+     */
+    protected final Display getDisplay() {
+        if (getResourceKind() == null) {
+            throw new IllegalStateException();
+        }
+        switch (getResourceKind()) {
+        case CONTROL:
+            return getControlDisplay();
+        case HOST:
+            return getStateDisplay();
+        case PROLOG:
+            return getPrologDisplay();
+        case RULE:
+            return getRuleDisplay();
+        case TYPE:
+            return getTypeDisplay();
+        case PROPERTIES:
+        default:
+            assert false;
+            return null;
+        }
     }
 
     /** Convenience method to retrieve the state panel of the simulator. */
     protected final StateDisplay getStateDisplay() {
-        return getMainPanel().getStateDisplay();
+        return getDisplaysPanel().getStateDisplay();
     }
 
     /** Convenience method to retrieve the rule panel of the simulator */
     protected final RuleDisplay getRuleDisplay() {
-        return getMainPanel().getRuleDisplay();
+        return getDisplaysPanel().getRuleDisplay();
     }
 
     /** Convenience method to retrieve the type panel of the simulator. */
-    protected final TypeDisplay getTypeTab() {
-        return getMainPanel().getTypeDisplay();
+    protected final TypeDisplay getTypeDisplay() {
+        return getDisplaysPanel().getTypeDisplay();
     }
 
     /** Returns the control panel that owns the action. */
     final protected ControlDisplay getControlDisplay() {
-        return this.simulator.getControlDisplay();
+        return getSimulator().getControlDisplay();
     }
 
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
-        return this.simulator.getPrologDisplay();
+        return getSimulator().getPrologDisplay();
+    }
+
+    /** Returns the (possibly {@code null}) grammar resource being edited by this action.*/
+    final protected ResourceKind getResourceKind() {
+        return this.resource;
     }
 
     /** Disposes the action by unregistering it as a listener. */
@@ -152,7 +218,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected String askNewName(ResourceKind kind, String title,
             String name, boolean mustBeFresh) {
-        Set<String> existingNames = getSimulatorModel().getGrammar().getNames(kind);
+        Set<String> existingNames =
+            getSimulatorModel().getGrammar().getNames(kind);
         FreshNameDialog<String> nameDialog =
             new FreshNameDialog<String>(existingNames, name, mustBeFresh) {
                 @Override
@@ -185,7 +252,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
         RelabelDialog dialog =
-            new RelabelDialog(getSimulatorModel().getGrammar().getLabelStore(), oldLabel);
+            new RelabelDialog(getSimulatorModel().getGrammar().getLabelStore(),
+                oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
             return new Duo<TypeLabel>(dialog.getOldLabel(),
                 dialog.getNewLabel());
@@ -236,50 +304,24 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /**
-     * Asks whether a given existing rule should be replaced by a newly loaded
-     * one.
+     * Asks whether a given existing resource, of a the kind of this action,
+     * should be replaced by a newly loaded one.
      */
-    final protected boolean confirmOverwriteRule(String ruleName) {
+    final protected boolean confirmOverwrite(String name) {
+        return confirmOverwrite(getResourceKind(), name);
+    }
+
+    /**
+     * Asks whether a given existing resource, of a given kind,
+     * should be replaced by a newly loaded one.
+     */
+    final protected boolean confirmOverwrite(ResourceKind resource, String name) {
         int response =
-            JOptionPane.showConfirmDialog(getFrame(),
-                String.format("Replace existing rule '%s'?", ruleName), null,
+            JOptionPane.showConfirmDialog(
+                getFrame(),
+                String.format("Replace existing %s '%s'?",
+                    resource.getDescription(), name), null,
                 JOptionPane.OK_CANCEL_OPTION);
-        return response == JOptionPane.OK_OPTION;
-    }
-
-    /**
-     * Asks whether a given existing type graph should be replaced by a newly
-     * loaded one.
-     */
-    final protected boolean confirmOverwriteType(String typeName) {
-        int response =
-            JOptionPane.showConfirmDialog(getFrame(),
-                String.format("Replace existing type graph '%s'?", typeName),
-                null, JOptionPane.OK_CANCEL_OPTION);
-        return response == JOptionPane.OK_OPTION;
-    }
-
-    /**
-     * Asks whether a given existing control program should be replaced by a 
-     * newly loaded one.
-     */
-    final protected boolean confirmOverwriteControl(String controlName) {
-        int response =
-            JOptionPane.showConfirmDialog(getFrame(), String.format(
-                "Replace existing control program '%s'?", controlName), null,
-                JOptionPane.OK_CANCEL_OPTION);
-        return response == JOptionPane.OK_OPTION;
-    }
-
-    /**
-     * Asks whether a given existing host graph should be replaced by a newly
-     * loaded one.
-     */
-    final protected boolean confirmOverwriteGraph(String graphName) {
-        int response =
-            JOptionPane.showConfirmDialog(getFrame(),
-                String.format("Replace existing host graph '%s'?", graphName),
-                null, JOptionPane.OK_CANCEL_OPTION);
         return response == JOptionPane.OK_OPTION;
     }
 
@@ -406,4 +448,6 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** The simulator on which this action works. */
     private final Simulator simulator;
+    /** Possibly {@code null} resource being edited by this action. */
+    private final ResourceKind resource;
 }

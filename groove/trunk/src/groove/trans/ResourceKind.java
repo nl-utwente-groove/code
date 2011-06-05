@@ -31,29 +31,30 @@ import java.util.Map;
  */
 public enum ResourceKind {
     /** Host graph resources; in other words, potential start graphs of the grammar. */
-    HOST("Graph", GraphRole.HOST, FileType.STATE_FILTER),
+    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE_FILTER),
     /** Transformation rule resources. */
-    RULE("Rule", GraphRole.RULE, FileType.RULE_FILTER),
+    RULE("Rule", "rule", GraphRole.RULE, FileType.RULE_FILTER),
     /** Type graph resources. */
-    TYPE("Type", GraphRole.TYPE, FileType.TYPE_FILTER),
+    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE_FILTER),
     /**
      * Control program resources.
      */
-    CONTROL("Control", FileType.CONTROL_FILTER),
+    CONTROL("Control", "control program", FileType.CONTROL_FILTER),
     /** Prolog program resources. */
-    PROLOG("Prolog", FileType.PROLOG_FILTER),
+    PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER),
     /** Grammar properties resource. */
-    PROPERTIES("Properties", FileType.PROPERTIES_FILTER);
+    PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER);
 
     /** Constructs a value with no corresponding graph role. */
-    private ResourceKind(String name, ExtensionFilter filter) {
-        this(name, GraphRole.NONE, filter);
+    private ResourceKind(String name, String description, ExtensionFilter filter) {
+        this(name, description, GraphRole.NONE, filter);
     }
 
     /** Constructs a value with a given graph role. */
-    private ResourceKind(String name, GraphRole graphRole,
+    private ResourceKind(String name, String description, GraphRole graphRole,
             ExtensionFilter filter) {
         this.graphRole = graphRole;
+        this.description = description;
         this.name = name;
         this.filter = filter;
     }
@@ -84,9 +85,17 @@ public enum ResourceKind {
         return this != PROPERTIES && !isGraphBased();
     }
 
-    /** Returns the name of this kind of resource. */
+    /** Returns the (capitalised) name of this kind of resource. */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Returns a short description of this resource kind,
+     * starting with lowercase.
+     */
+    public String getDescription() {
+        return this.description;
     }
 
     /** Returns the file filter for this kind of resource. */
@@ -100,6 +109,8 @@ public enum ResourceKind {
     private final GraphRole graphRole;
     /** Name of this resource kind. */
     private final String name;
+    /** Description starting with lowercase letter. */
+    private final String description;
     /** File filter for this resource kind. */
     private final ExtensionFilter filter;
 

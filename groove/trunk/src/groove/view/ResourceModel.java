@@ -47,6 +47,12 @@ abstract public class ResourceModel<R> {
         return this.name;
     }
 
+    /** 
+     * Indicates if this resource is currently enabled for use in the grammar.
+     * Enabledness means different things for different resource kinds.
+     */
+    abstract public boolean isEnabled();
+
     /**
      * Constructs the resource from the model. This can only be successful if there are no
      * syntax errors reported by {@link #getErrors()}.

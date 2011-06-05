@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 
 import java.awt.Cursor;
@@ -32,6 +33,61 @@ import javax.swing.ImageIcon;
  * @author Eduardo Zambon
  */
 public final class Icons {
+    /** Returns the icon for a certain edit on a grammar resource. */
+    public static ImageIcon getIcon(EditType edit, ResourceKind resource) {
+        switch (edit) {
+        case COPY:
+            return COPY_ICON;
+        case CREATE:
+            if (resource == null) {
+                return NEW_ICON;
+            }
+            switch (resource) {
+            case CONTROL:
+                return NEW_CONTROL_ICON;
+            case HOST:
+                return NEW_GRAPH_ICON;
+            case PROLOG:
+                return NEW_PROLOG_ICON;
+            case RULE:
+                return NEW_RULE_ICON;
+            case TYPE:
+                return NEW_TYPE_ICON;
+            case PROPERTIES:
+            default:
+                assert false;
+                return null;
+            }
+        case DELETE:
+            return DELETE_ICON;
+        case MODIFY:
+            if (resource == null) {
+                return EDIT_ICON;
+            }
+            switch (resource) {
+            case CONTROL:
+                return EDIT_CONTROL_ICON;
+            case HOST:
+                return EDIT_GRAPH_ICON;
+            case PROLOG:
+                return EDIT_PROLOG_ICON;
+            case PROPERTIES:
+                return EDIT_ICON;
+            case RULE:
+                return EDIT_RULE_ICON;
+            case TYPE:
+                return EDIT_TYPE_ICON;
+            default:
+                assert false;
+                return null;
+            }
+        case RENAME:
+            return RENAME_ICON;
+        default:
+            assert false;
+            return null;
+        }
+    }
 
     /** Transparent open up-arrow icon. */
     public static final ImageIcon ARROW_OPEN_UP_ICON =

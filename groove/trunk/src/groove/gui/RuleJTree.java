@@ -24,7 +24,6 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
@@ -34,8 +33,8 @@ import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Rule;
 import groove.trans.RuleName;
-import groove.view.RuleModel;
 import groove.view.GrammarModel;
+import groove.view.RuleModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -140,8 +139,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<RuleModel>> priorityMap = getPriorityMap(grammar);
-        Collection<RuleModel> selectedRules =
-            getSimulatorModel().getRuleSet();
+        Collection<RuleModel> selectedRules = getSimulatorModel().getRuleSet();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
             // if the rule system has multiple priorities, we want an extra
@@ -176,8 +174,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * priority from the rule in a given grammar view.
      * @param grammar the source of the rule map
      */
-    private Map<Integer,Set<RuleModel>> getPriorityMap(
-            GrammarModel grammar) {
+    private Map<Integer,Set<RuleModel>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<RuleModel>> result =
             new TreeMap<Integer,Set<RuleModel>>(Rule.PRIORITY_COMPARATOR);
         for (String ruleName : grammar.getRuleNames()) {
@@ -185,8 +182,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             int priority = ruleView.getPriority();
             Set<RuleModel> priorityRules = result.get(priority);
             if (priorityRules == null) {
-                result.put(priority, priorityRules =
-                    new TreeSet<RuleModel>());
+                result.put(priority, priorityRules = new TreeSet<RuleModel>());
             }
             priorityRules.add(ruleView);
         }
@@ -467,15 +463,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * @param node the node for which the menu is created
      */
     private JPopupMenu createPopupMenu(TreeNode node) {
-        JPopupMenu res = new JPopupMenu();
-        res.setFocusable(false);
-        res.add(getActions().getNewRuleAction());
-        if (node instanceof RuleTreeNode) {
-            res.add(getActions().getEditRuleAction());
-            res.addSeparator();
-            res.add(getActions().getCopyRuleAction());
-            res.add(getActions().getDeleteRuleAction());
-            res.add(getActions().getRenameRuleAction());
+        boolean overRule = node instanceof RuleTreeNode;
+        JPopupMenu res = this.display.createListPopupMenu(overRule);
+        if (overRule) {
             res.addSeparator();
             res.add(getActions().getEnableRuleAction());
             res.add(getActions().getShiftPriorityAction(true));

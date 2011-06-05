@@ -18,9 +18,7 @@ package groove.gui;
 
 import groove.control.parse.CtrlDoc;
 import groove.control.parse.CtrlTokenMaker;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.view.ControlModel;
@@ -39,7 +37,6 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.InputMap;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -70,16 +67,13 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Tom Staijen
  * @version $0.9$
  */
-final public class ControlDisplay extends JPanel implements SimulatorListener,
-        Display {
+final public class ControlDisplay extends ResourceDisplay implements
+        SimulatorListener, Display {
     /**
      * @param simulator The Simulator the panel is added to.
      */
     public ControlDisplay(Simulator simulator) {
-        this.simulator = simulator;
-        // create the layout for this JPanel
-        this.setLayout(new BorderLayout());
-        setFocusable(false);
+        super(simulator, DisplayKind.CONTROL);
     }
 
     @Override
@@ -88,8 +82,11 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
     }
 
     @Override
-    public JComponent getPanel() {
-        return this;
+    public ControlPanel getPanel() {
+        if (this.panel == null) {
+            this.panel = new ControlPanel();
+        }
+        return this.panel;
     }
 
     @Override
@@ -103,31 +100,8 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
      * before using the object in any way.
      */
     public void initialise() {
-        add(getToolBar(), BorderLayout.NORTH);
-        // fill in the GUI
-        RTextScrollPane scroller =
-            new RTextScrollPane(getControlTextArea(), true);
-        // set up the split editor pane
-        JSplitPane splitPane =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroller,
-                new JScrollPane(getDocPane()));
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setResizeWeight(1.0);
-
-        add(splitPane, BorderLayout.CENTER);
-        add(getStatusBar(), BorderLayout.SOUTH);
-        // add keyboard binding for Save key
-        InputMap focusedInputMap =
-            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        String actionName = Options.getSaveControlActionName(false);
-        focusedInputMap.put(Options.SAVE_KEY, actionName);
-        focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(actionName, getActions().getSaveControlAction());
-        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-            getActions().getCancelEditControlAction());
         // start listening
-        this.simulator.getModel().addListener(this, Change.GRAMMAR,
-            Change.CONTROL);
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
     }
 
     private JTree getDocPane() {
@@ -267,23 +241,10 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         return HTMLConverter.HTML_TAG.on(result).toString();
     }
 
-    @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        if (aFlag && getControlTextArea() != null) {
-            getControlTextArea().requestFocus();
-        }
-    }
-
     /** Returns the GUI component showing the list of control program names. */
     public JPanel getListPanel() {
         if (this.listPanel == null) {
-            JToolBar toolBar = Options.createToolBar();
-            toolBar.add(getActions().getNewControlAction());
-            toolBar.addSeparator();
-            toolBar.add(getActions().getCopyControlAction());
-            toolBar.add(getActions().getDeleteControlAction());
-            toolBar.add(getActions().getRenameControlAction());
+            JToolBar toolBar = createListToolBar();
             toolBar.addSeparator();
             toolBar.add(getEnableButton());
             toolBar.add(getActions().getPreviewControlAction());
@@ -324,7 +285,8 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
             getEnableButton().setSelected(false);
             getEnableButton().setSelected(
                 source.getControl() != null
-                    && source.getControl().equals(getGrammar().getControlModel()));
+                    && source.getControl().equals(
+                        getGrammar().getControlModel()));
         }
     }
 
@@ -342,7 +304,7 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         if (isDirty()) {
             String name = getSelectedControl().getName();
             int answer =
-                JOptionPane.showConfirmDialog(this,
+                JOptionPane.showConfirmDialog(getPanel(),
                     String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
@@ -396,7 +358,7 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         if (isEditing()) {
             if (!confirm || confirmAbandon()) {
                 stopEditing();
-                getParent().requestFocusInWindow();
+                getPanel().getParent().requestFocusInWindow();
                 refreshAll();
             } else {
                 result = false;
@@ -405,6 +367,11 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
             assert !isDirty();
         }
         return result;
+    }
+
+    @Override
+    public boolean cancelEditing(String name, boolean confirm) {
+        return name.equals(getSelectedControl()) && cancelEditing(confirm);
     }
 
     /**
@@ -416,7 +383,7 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         this.editing = true;
         refreshAll();
         fillToolBar();
-        getParent().requestFocusInWindow();
+        getPanel().getParent().requestFocusInWindow();
         getControlTextArea().requestFocus();
     }
 
@@ -486,26 +453,10 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
         getStatusBar().setText(getStatusText());
     }
 
+    /** The main panel of this display. */
+    private ControlPanel panel;
     /** List of registered refreshables. */
     private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
-
-    /** Convenience method to retrieve the simulator model. */
-    private SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** Convenience method to return the action store. */
-    private ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
-    /** Returns the simulator to which the control panel belongs. */
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    /** Simulator to which the control panel belongs. */
-    private final Simulator simulator;
 
     /** Production system control program list. */
     private ControlJList controlJList;
@@ -533,6 +484,52 @@ final public class ControlDisplay extends JPanel implements SimulatorListener,
 
     /** Panel showing the control program. */
     private ControlTextArea controlTextArea;
+
+    /** Panel of this display. */
+    private class ControlPanel extends JPanel implements Panel {
+        /** Constructs an instance of the panel. */
+        public ControlPanel() {
+            // create the layout for this JPanel
+            this.setLayout(new BorderLayout());
+            setFocusable(false);
+            add(getToolBar(), BorderLayout.NORTH);
+            // fill in the GUI
+            RTextScrollPane scroller =
+                new RTextScrollPane(getControlTextArea(), true);
+            // set up the split editor pane
+            JSplitPane splitPane =
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroller,
+                    new JScrollPane(getDocPane()));
+            splitPane.setOneTouchExpandable(true);
+            splitPane.setResizeWeight(1.0);
+
+            add(splitPane, BorderLayout.CENTER);
+            add(getStatusBar(), BorderLayout.SOUTH);
+            // add keyboard binding for Save key
+            InputMap focusedInputMap =
+                getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            String actionName = Options.getSaveControlActionName(false);
+            focusedInputMap.put(Options.SAVE_KEY, actionName);
+            focusedInputMap.put(Options.CANCEL_KEY,
+                Options.CANCEL_EDIT_ACTION_NAME);
+            getActionMap().put(actionName, getActions().getSaveControlAction());
+            getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
+                getActions().getCancelEditControlAction());
+        }
+
+        @Override
+        public void setVisible(boolean aFlag) {
+            super.setVisible(aFlag);
+            if (aFlag && getControlTextArea() != null) {
+                getControlTextArea().requestFocus();
+            }
+        }
+
+        @Override
+        public Display getDisplay() {
+            return ControlDisplay.this;
+        }
+    }
 
     /** Text area that holds the current control program. */
     public class ControlTextArea extends RSyntaxTextArea implements Refreshable {

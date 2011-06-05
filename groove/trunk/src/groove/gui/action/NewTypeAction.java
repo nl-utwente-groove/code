@@ -35,7 +35,7 @@ public class NewTypeAction extends SimulatorAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getMainPanel().getTypeDisplay().doEdit(initType);
+                        getDisplaysPanel().getTypeDisplay().doEdit(initType);
                     }
                 });
             } catch (IOException e) {

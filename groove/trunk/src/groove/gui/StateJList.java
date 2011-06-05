@@ -16,13 +16,12 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
 import groove.lts.GTS;
-import groove.view.HostModel;
 import groove.view.GrammarModel;
+import groove.view.HostModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -139,23 +138,18 @@ public class StateJList extends JList implements SimulatorListener {
      * Creates a popup menu, consisting of "use as start graph" & "preview".
      */
     protected JPopupMenu createPopupMenu(Point atPoint) {
-        JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewHostAction());
-        result.setFocusable(false);
         // add rest only if mouse is actually over a graph name
         int index = locationToIndex(atPoint);
-        if (index == 0) {
+        boolean overHost =
+            index > 0 && getCellBounds(index, index).contains(atPoint);
+        JPopupMenu result = this.display.createListPopupMenu(overHost);
+        if (overHost) {
+            result.addSeparator();
+            result.add(getActions().getSetStartGraphAction());
+        } else if (index == 0) {
             result.addSeparator();
             result.add(getActions().getBackAction());
             result.add(getActions().getForwardAction());
-        } else if (index > 0 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(getActions().getEditHostOrStateAction());
-            result.addSeparator();
-            result.add(getActions().getCopyHostAction());
-            result.add(getActions().getDeleteHostAction());
-            result.add(getActions().getRenameHostAction());
-            result.addSeparator();
-            result.add(getActions().getSetStartGraphAction());
         }
         return result;
     }

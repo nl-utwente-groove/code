@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import groove.graph.GraphRole;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
@@ -44,9 +42,9 @@ final public class StateDisplay extends TabbedDisplay implements
      * Constructs a panel for a given simulator.
      */
     public StateDisplay(Simulator simulator) {
-        super(simulator);
-        add(getStatePanel(), 0);
-        setTabComponentAt(0, getStatePanel().getTabLabel());
+        super(simulator, DisplayKind.HOST);
+        getPanel().add(getStatePanel(), 0);
+        getPanel().setTabComponentAt(0, getStatePanel().getTabLabel());
         installListeners();
     }
 
@@ -75,13 +73,11 @@ final public class StateDisplay extends TabbedDisplay implements
 
     @Override
     public String getName() {
-        if (getSimulatorModel().hasHost()) {
-            return getSimulatorModel().getHost().getName();
-        } else if (getSimulatorModel().getState() != null) {
-            return getSimulatorModel().getState().toString();
-        } else {
-            return null;
+        String result = super.getName();
+        if (result == null && getSimulatorModel().hasState()) {
+            result = getSimulatorModel().getState().toString();
         }
+        return result;
     }
 
     /**
@@ -122,7 +118,7 @@ final public class StateDisplay extends TabbedDisplay implements
                 setSelectedTab(source.getHost().getName());
             } else {
                 removeMainPanel();
-                setSelectedComponent(getStatePanel());
+                getPanel().setSelectedComponent(getStatePanel());
             }
             refreshToolbars();
         }
@@ -131,7 +127,7 @@ final public class StateDisplay extends TabbedDisplay implements
             refreshToolbars();
         }
         if (changes.contains(Change.MATCH)) {
-            setSelectedComponent(getStatePanel());
+            getPanel().setSelectedComponent(getStatePanel());
             refreshToolbars();
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
@@ -177,37 +173,40 @@ final public class StateDisplay extends TabbedDisplay implements
 
     private JToolBar getListToolBar() {
         if (this.listToolBar == null) {
-            this.listToolBar = Options.createToolBar();
-            fillListToolBar();
+            this.listToolBar = createListToolBar();
         }
         return this.listToolBar;
     }
 
     /** Creates a tool bar for the states list. */
-    private void fillListToolBar() {
-        JToolBar bar = this.listToolBar;
-        bar.removeAll();
-        bar.add(getActions().getNewHostAction());
+    @Override
+    protected JToolBar createListToolBar() {
+        JToolBar result;
         if (getSimulatorModel().hasHost()) {
-            bar.addSeparator();
-            bar.add(getActions().getCopyHostAction());
-            bar.add(getActions().getDeleteHostAction());
-            bar.add(getActions().getRenameHostAction());
-            bar.addSeparator();
-            bar.add(getEnableButton());
+            result = super.createListToolBar();
+            result.addSeparator();
+            result.add(getEnableButton());
         } else {
-            bar.add(getActions().getSaveGraphAction(GraphRole.HOST));
-            bar.addSeparator();
-            bar.add(getActions().getBackAction());
-            bar.add(getActions().getForwardAction());
+            result = Options.createToolBar();
+            result.add(getNewAction());
+            result.add(getSaveAction(false));
+            result.addSeparator();
+            result.add(getActions().getBackAction());
+            result.add(getActions().getForwardAction());
         }
+        return result;
     }
 
     /**
      * Refreshes the tool bar of the label list.
      */
     private void refreshToolbars() {
-        fillListToolBar();
+        // fill the tool bar from a fresh copy
+        this.listToolBar.removeAll();
+        JToolBar newBar = createListToolBar();
+        while (newBar.getComponentCount() > 0) {
+            this.listToolBar.add(newBar.getComponentAtIndex(0));
+        }
         getListPanel().repaint();
     }
 

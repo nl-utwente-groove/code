@@ -21,7 +21,6 @@ import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.graph.LabelStore;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
@@ -54,11 +53,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     public TypeModel(AspectGraph source) {
         super(source);
         source.testFixed(true);
-    }
-
-    /** Indicates that the type graph is currently enabled. */
-    public boolean isEnabled() {
-        return GraphProperties.isEnabled(getSource());
     }
 
     @Override

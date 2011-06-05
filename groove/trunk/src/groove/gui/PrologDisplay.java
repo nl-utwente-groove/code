@@ -24,15 +24,12 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.view.FormatException;
-import groove.view.PrologModel;
 import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
@@ -82,7 +79,7 @@ import javax.swing.tree.TreePath;
  * 
  * @author Michiel Hendriks
  */
-public class PrologDisplay extends JPanel implements Display, SimulatorListener {
+public class PrologDisplay extends ResourceDisplay implements SimulatorListener {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
@@ -93,40 +90,9 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
      * Construct a prolog panel
      */
     public PrologDisplay(Simulator simulator) {
-        this.simulator = simulator;
+        super(simulator, DisplayKind.PROLOG);
         Environment.setDefaultOutputStream(getUserOutput());
 
-        JPanel queryPane = new JPanel(new BorderLayout());
-        JLabel leading = new JLabel(" ?- ");
-        leading.setFont(leading.getFont().deriveFont(Font.BOLD));
-        queryPane.add(leading, BorderLayout.WEST);
-        queryPane.add(getQueryField(), BorderLayout.CENTER);
-        JPanel buttonsPane =
-            new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        buttonsPane.add(createExecuteButton());
-        buttonsPane.add(getNextResultButton());
-        buttonsPane.setBorder(null);
-        queryPane.add(buttonsPane, BorderLayout.EAST);
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setTopComponent(getEditorPane());
-        splitPane.setBottomComponent(getResultsArea());
-
-        JPanel mainPane = new JPanel(new BorderLayout());
-        mainPane.add(queryPane, BorderLayout.NORTH);
-        mainPane.add(splitPane, BorderLayout.CENTER);
-
-        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        sp2.setResizeWeight(0.9);
-        sp2.setBorder(null);
-        sp2.setOneTouchExpandable(true);
-        sp2.setRightComponent(createSyntaxHelp());
-        sp2.setLeftComponent(mainPane);
-
-        setLayout(new BorderLayout());
-        add(sp2, BorderLayout.CENTER);
-        add(this.statusBar, BorderLayout.SOUTH);
         simulator.getModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
         this.listening = true;
     }
@@ -274,19 +240,11 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     }
 
     @Override
-    public DisplayKind getKind() {
-        return DisplayKind.PROLOG;
-    }
-
-    @Override
     public JComponent getPanel() {
-        return this;
-    }
-
-    @Override
-    public String getName() {
-        PrologModel prolog = getSimulatorModel().getProlog();
-        return prolog == null ? null : prolog.getName();
+        if (this.mainPanel == null) {
+            this.mainPanel = new PrologPanel();
+        }
+        return this.mainPanel;
     }
 
     /**
@@ -432,12 +390,12 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
     public JPanel getListPanel() {
         if (this.prologListPanel == null) {
             JToolBar toolBar = Options.createToolBar();
-            toolBar.add(getActions().getNewPrologAction());
-            toolBar.add(getActions().getEditPrologAction());
+            toolBar.add(getNewAction());
+            toolBar.add(getEditAction());
             toolBar.addSeparator();
-            toolBar.add(getActions().getCopyPrologAction());
-            toolBar.add(getActions().getDeletePrologAction());
-            toolBar.add(getActions().getRenamePrologAction());
+            toolBar.add(getCopyAction());
+            toolBar.add(getDeleteAction());
+            toolBar.add(getRenameAction());
 
             JScrollPane prologPane = new JScrollPane(getPrologList()) {
                 @Override
@@ -764,32 +722,15 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
         getListPanel().repaint();
     }
 
-    /** Convenience method to retrieve the simulator. */
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    /** Convenience method to retrieve the simulator state. */
-    private SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** Convenience method to retrieve the action store. */
-    ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
     /** Convenience method to retrieve the grammar view from the simulator. */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
-    /**
-     * The Simulator UI
-     */
-    private final Simulator simulator;
     /** The environment, initialised from the grammar view. */
     private GrooveEnvironment environment;
+    /** The main display panel. */
+    private PrologPanel mainPanel;
     /**
      * The current instance of the prolog interpreter. Will be recreated every
      * time "reconsult" action is performed.
@@ -864,6 +805,50 @@ public class PrologDisplay extends JPanel implements Display, SimulatorListener 
             this.dest.append(new String(this.buffer, 0, this.pos));
             this.buffer = new int[BUFFER_SIZE];
             this.pos = 0;
+        }
+    }
+
+    /** Main panel component of this display. */
+    private class PrologPanel extends JPanel implements Panel {
+        /** Constructs the panel. */
+        public PrologPanel() {
+            JPanel queryPane = new JPanel(new BorderLayout());
+            JLabel leading = new JLabel(" ?- ");
+            leading.setFont(leading.getFont().deriveFont(Font.BOLD));
+            queryPane.add(leading, BorderLayout.WEST);
+            queryPane.add(getQueryField(), BorderLayout.CENTER);
+            JPanel buttonsPane =
+                new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            buttonsPane.add(createExecuteButton());
+            buttonsPane.add(getNextResultButton());
+            buttonsPane.setBorder(null);
+            queryPane.add(buttonsPane, BorderLayout.EAST);
+
+            JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            splitPane.setOneTouchExpandable(true);
+            splitPane.setTopComponent(getEditorPane());
+            splitPane.setBottomComponent(getResultsArea());
+
+            JPanel mainPane = new JPanel(new BorderLayout());
+            mainPane.add(queryPane, BorderLayout.NORTH);
+            mainPane.add(splitPane, BorderLayout.CENTER);
+
+            JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            sp2.setResizeWeight(0.9);
+            sp2.setBorder(null);
+            sp2.setOneTouchExpandable(true);
+            sp2.setRightComponent(createSyntaxHelp());
+            sp2.setLeftComponent(mainPane);
+
+            setLayout(new BorderLayout());
+            add(sp2, BorderLayout.CENTER);
+            add(PrologDisplay.this.statusBar, BorderLayout.SOUTH);
+
+        }
+
+        @Override
+        public Display getDisplay() {
+            return PrologDisplay.this;
         }
     }
 }

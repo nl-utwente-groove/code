@@ -16,12 +16,11 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.view.TypeModel;
 import groove.view.GrammarModel;
+import groove.view.TypeModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -125,17 +124,12 @@ public class TypeJList extends JList implements SimulatorListener {
      * Creates a popup menu.
      */
     private JPopupMenu createPopupMenu(Point atPoint) {
-        JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewTypeAction());
-        result.setFocusable(false);
-        // add rest only if mouse is actually over a type name
         int index = locationToIndex(atPoint);
-        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(getActions().getEditTypeAction());
-            result.addSeparator();
-            result.add(getActions().getCopyTypeAction());
-            result.add(getActions().getDeleteTypeAction());
-            result.add(getActions().getRenameTypeAction());
+        boolean overItem =
+            index != -1 && getCellBounds(index, index).contains(atPoint);
+        JPopupMenu result = this.display.createListPopupMenu(overItem);
+        // add rest only if mouse is actually over a type name
+        if (overItem) {
             result.addSeparator();
             result.add(getActions().getEnableTypeAction());
         }

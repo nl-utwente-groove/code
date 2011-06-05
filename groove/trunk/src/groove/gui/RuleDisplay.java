@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.AspectJGraph;
 import groove.view.RuleModel;
@@ -41,7 +40,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
      * Constructs a panel for a given simulator.
      */
     public RuleDisplay(Simulator simulator) {
-        super(simulator);
+        super(simulator, DisplayKind.RULE);
         installListeners();
     }
 
@@ -64,14 +63,9 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     }
 
     @Override
-    public DisplayKind getKind() {
-        return DisplayKind.RULE;
-    }
-
-    @Override
     public JPanel getListPanel() {
         if (this.ruleTreePanel == null) {
-            JToolBar labelTreeToolbar = createRuleTreeToolBar();
+            JToolBar labelTreeToolbar = createListToolBar();
             // make sure the preferred width is not smaller than the minimum
             // width
             JScrollPane ruleJTreePanel = new JScrollPane(getRuleTree()) {
@@ -96,13 +90,9 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     }
 
     /** Creates a tool bar for the rule tree. */
-    private JToolBar createRuleTreeToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(getActions().getNewRuleAction());
-        result.addSeparator(new Dimension(7, 0));
-        result.add(getActions().getCopyRuleAction());
-        result.add(getActions().getDeleteRuleAction());
-        result.add(getActions().getRenameRuleAction());
+    @Override
+    protected JToolBar createListToolBar() {
+        JToolBar result = super.createListToolBar(7);
         result.addSeparator(new Dimension(7, 0));
         result.add(getEnableButton());
         result.add(getActions().getShiftPriorityAction(true));
@@ -142,8 +132,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
 
     @Override
     protected RuleModel getResource(String name) {
-        RuleModel result =
-            getSimulatorModel().getGrammar().getRuleModel(name);
+        RuleModel result = getSimulatorModel().getGrammar().getRuleModel(name);
         return result;
     }
 

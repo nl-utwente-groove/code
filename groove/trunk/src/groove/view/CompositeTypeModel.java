@@ -34,6 +34,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         }
     }
 
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
     /**
      * @return the composite type graph from the model list, or {@code null}
      * if there are no active type models

@@ -16,12 +16,11 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.view.PrologModel;
 import groove.view.GrammarModel;
+import groove.view.PrologModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -140,18 +139,16 @@ public class PrologJList extends JList implements SimulatorListener {
      */
     private JPopupMenu createPopupMenu(Point atPoint) {
         JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewPrologAction());
+        result.add(this.display.getNewAction());
         result.setFocusable(false);
         // add rest only if mouse is actually over a prolog name
         int index = locationToIndex(atPoint);
         if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
-            //            result.add(getActions().getEditControlAction());
-            //            result.addSeparator();
-            //            result.add(getActions().getCopyControlAction());
-            //            result.add(getActions().getDeleteControlAction());
-            //            result.add(getActions().getRenameControlAction());
-            //            result.addSeparator();
-            //            result.add(getActions().getEnableControlAction());
+            result.add(this.display.getEditAction());
+            result.addSeparator();
+            result.add(this.display.getCopyAction());
+            result.add(this.display.getDeleteAction());
+            result.add(this.display.getRenameAction());
         }
         return result;
     }

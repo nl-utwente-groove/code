@@ -44,6 +44,12 @@ public class ControlModel extends ResourceModel<CtrlAut> {
     }
 
     @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return getName().equals(this.grammar.getControlName());
+    }
+
+    @Override
     public CtrlAut toResource() throws FormatException {
         return toCtrlAut();
     }
@@ -57,8 +63,7 @@ public class ControlModel extends ResourceModel<CtrlAut> {
         if (modCount != this.lastCount) {
             this.lastAut =
                 this.parser.runString(this.program,
-                    this.grammar.getProperties(),
-                    this.grammar.getRules());
+                    this.grammar.getProperties(), this.grammar.getRules());
             this.lastCount = modCount;
         }
         if (!this.lastAut.getInfo().getErrors().isEmpty()) {

@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.DisplaysPanel.DisplayKind;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.action.SimulatorAction;
@@ -126,17 +125,12 @@ public class ControlJList extends JList implements SimulatorListener {
      * Creates a popup menu.
      */
     private JPopupMenu createPopupMenu(Point atPoint) {
-        JPopupMenu result = new JPopupMenu();
-        result.add(getActions().getNewControlAction());
-        result.setFocusable(false);
-        // add rest only if mouse is actually over a control name
         int index = locationToIndex(atPoint);
-        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(getActions().getEditControlAction());
-            result.addSeparator();
-            result.add(getActions().getCopyControlAction());
-            result.add(getActions().getDeleteControlAction());
-            result.add(getActions().getRenameControlAction());
+        boolean overItem =
+            index != -1 && getCellBounds(index, index).contains(atPoint);
+        JPopupMenu result = this.display.createListPopupMenu(overItem);
+        // add rest only if mouse is actually over a control name
+        if (overItem) {
             result.addSeparator();
             result.add(getActions().getEnableControlAction());
         }

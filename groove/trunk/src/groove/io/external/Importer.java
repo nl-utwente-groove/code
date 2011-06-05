@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.filechooser.FileFilter;
+
 /**
  * Class providing functionality to import a graph from a file in
  * different formats.
@@ -248,6 +250,24 @@ public class Importer {
                 this.getNativeFilter(FileType.CONTROL))) {
             String name = ExtensionFilter.getPureName(controlFile);
             String program = groove.io.Util.readFileToString(controlFile);
+            return new Duo<String>(name, program);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Tries to import the currently selected file as a prolog program.
+     * @return the name of the program and its content as a string.
+     * @throws IOException if something went wrong when opening the file.
+     */
+    public Duo<String> importProlog() throws IOException {
+        File prologFile = this.allFormatsChooser.getSelectedFile();
+        FileFilter filter = this.allFormatsChooser.getFileFilter();
+        if (prologFile != null
+            && (filter.equals(this.getNativeFilter(FileType.PROLOG1)) || filter.equals(this.getNativeFilter(FileType.PROLOG2)))) {
+            String name = ExtensionFilter.getPureName(prologFile);
+            String program = groove.io.Util.readFileToString(prologFile);
             return new Duo<String>(name, program);
         } else {
             return null;
