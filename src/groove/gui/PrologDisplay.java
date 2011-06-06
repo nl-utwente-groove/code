@@ -829,7 +829,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
             JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             splitPane.setOneTouchExpandable(true);
             splitPane.setTopComponent(getEditorPane());
-            splitPane.setBottomComponent(getResultsArea());
+            splitPane.setBottomComponent(new JScrollPane(getResultsArea()));
 
             JPanel mainPane = new JPanel(new BorderLayout());
             mainPane.add(queryPane, BorderLayout.NORTH);
