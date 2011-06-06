@@ -16,6 +16,7 @@
  */
 package groove.gui.dialog;
 
+import groove.io.HTMLConverter;
 import groove.trans.SystemProperties;
 import groove.util.Version;
 
@@ -60,53 +61,32 @@ public class VersionDialog {
      */
     public static int showOldFile(Component parent,
             SystemProperties grammarProperties) {
+        StringBuilder msg = new StringBuilder(HTMLConverter.HTML_TAG.tagBegin);
+        msg.append("<FONT color=#770000>Warning: </FONT>");
         if (grammarProperties.getGrooveVersion().equals("0.0.0")) {
-            return showUnrecognizedFile(parent);
+            msg.append("loading unrecognized grammar version "
+                + "(absent or outdated system properties file).\n");
+        } else {
+            msg.append("loading grammar from old GROOVE version (<FONT color=#000077>"
+                + grammarProperties.getGrooveVersion()
+                + "</FONT>, current is "
+                + "<FONT color=#000077>"
+                + Version.getCurrentGrooveVersion()
+                + "</FONT>).\n");
         }
-        String msg =
-            "<HTML><FONT color=#770000>Warning: </FONT>"
-                + "loading grammar from old GROOVE version (<FONT color=#000077>"
-                + grammarProperties.getGrooveVersion() + "</FONT>, current is "
-                + "<FONT color=#000077>" + Version.getCurrentGrooveVersion()
-                + "</FONT>).\nLoading this grammar will automatically convert "
-                + "it to the current version.\n\n";
+        msg.append("Loading this grammar will automatically convert "
+            + "it to the current version.");
         String overwrite_text = "Convert";
         String save_as_text = "Convert As";
         String cancel_text = "Cancel";
         String[] options = {overwrite_text, save_as_text, cancel_text};
-        switch (JOptionPane.showOptionDialog(parent, msg,
+        switch (JOptionPane.showOptionDialog(parent, msg.toString().toString(),
             "Warning: loading old grammar", JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
         case JOptionPane.YES_OPTION:
             return 0;
         case JOptionPane.NO_OPTION:
             return 1;
-        default:
-            return -1;
-        }
-    }
-
-    /**
-     * Shows the dialog for loading an unrecognized grammar version.
-     * @param parent the parent frame
-     * @return 0 if loading should continue, overwriting the current file,
-     *         -1 otherwise
-     */
-    public static int showUnrecognizedFile(Component parent) {
-        String msg =
-            "<HTML><FONT color=#770000>Warning: </FONT>"
-                + "loading unrecognized grammar version "
-                + "(no system properties file found).\n"
-                + "Loading this grammar will automatically convert "
-                + "it to the current version.\n\n";
-        String overwrite_text = "Convert";
-        String cancel_text = "Cancel";
-        String[] options = {overwrite_text, cancel_text};
-        switch (JOptionPane.showOptionDialog(parent, msg,
-            "Warning: loading unrecognized grammar", JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE, null, options, overwrite_text)) {
-        case JOptionPane.YES_OPTION:
-            return 0;
         default:
             return -1;
         }
