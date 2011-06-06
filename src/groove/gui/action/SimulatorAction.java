@@ -89,7 +89,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     public SimulatorAction(Simulator simulator, EditType edit,
             ResourceKind resource) {
         this(simulator, Options.getEditActionName(edit, resource, false),
-            Icons.getIcon(edit, resource), edit, resource);
+            Icons.getEditIcon(edit, resource), edit, resource);
     }
 
     /** Returns the edit name for this action, if it is an edit action. */
