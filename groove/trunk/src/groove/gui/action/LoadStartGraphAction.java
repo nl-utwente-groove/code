@@ -30,10 +30,10 @@ public class LoadStartGraphAction extends SimulatorAction {
             try {
                 AspectGraph startGraph =
                     AspectGxl.getInstance().unmarshalGraph(file);
-                result = getSimulator().getModel().doSetStartGraph(startGraph);
+                result = getSimulatorModel().doSetStartGraph(startGraph);
             } catch (IOException exc) {
-                showErrorDialog(
-                    exc, "Could not load start graph from " + file.getName());
+                showErrorDialog(exc,
+                    "Could not load start graph from " + file.getName());
             }
         }
         return result;
@@ -45,6 +45,6 @@ public class LoadStartGraphAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGrammar() != null);
+        setEnabled(getGrammarModel() != null);
     }
 }

@@ -62,9 +62,9 @@ public class RelabelGrammarAction extends SimulatorAction implements
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGrammar() != null
-            && getSimulatorModel().getStore().isModifiable()
-            && !getSimulatorModel().getGrammar().getLabelStore().getLabels().isEmpty());
+        setEnabled(getGrammarStore() != null
+            && getGrammarStore().isModifiable()
+            && !getGrammarModel().getLabelStore().getLabels().isEmpty());
     }
 
     @Override
@@ -74,7 +74,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
         if (relabelling != null) {
             try {
                 result =
-                    getSimulator().getModel().doRelabel(relabelling.one(),
+                    getSimulatorModel().doRelabel(relabelling.one(),
                         relabelling.two());
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(

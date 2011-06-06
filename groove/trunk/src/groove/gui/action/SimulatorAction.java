@@ -9,6 +9,7 @@ import groove.gui.Display;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
 import groove.gui.Icons;
+import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
@@ -185,6 +186,11 @@ public abstract class SimulatorAction extends AbstractAction implements
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
         return getSimulator().getPrologDisplay();
+    }
+
+    /** Returns the prolog panel that owns the action. */
+    final protected LTSDisplay getLtsDisplay() {
+        return getSimulator().getLtsDisplay();
     }
 
     /** Returns the (possibly {@code null}) edit type of this action.*/

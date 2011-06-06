@@ -2,7 +2,6 @@ package groove.gui.action;
 
 import groove.explore.Exploration;
 import groove.gui.Icons;
-import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -53,10 +52,10 @@ public class ExploreAction extends SimulatorAction {
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
         getSimulatorModel().setExploration(exploration);
-        LTSJModel ltsJModel = getLTSPanel().getJModel();
+        LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
-                ltsJModel = getLTSPanel().getJModel();
+                ltsJModel = getLtsDisplay().getJModel();
             } else {
                 return;
             }
@@ -79,7 +78,7 @@ public class ExploreAction extends SimulatorAction {
         if (emphasise) {
             Collection<GraphState> result =
                 exploration.getLastResult().getValue();
-            getLTSPanel().emphasiseStates(new ArrayList<GraphState>(result),
+            getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result),
                 true);
         }
         getSimulatorModel().setGts(gts, true);
@@ -96,11 +95,6 @@ public class ExploreAction extends SimulatorAction {
                 Options.DEFAULT_EXPLORATION_ACTION_NAME,
                 HTMLConverter.STRONG_TAG.on(getSimulatorModel().getExploration().getIdentifier())));
         putValue(Action.SHORT_DESCRIPTION, toolTipText);
-    }
-
-    /** Convenience method to retrieve the LTS panel. */
-    private final LTSDisplay getLTSPanel() {
-        return getSimulator().getLtsDisplay();
     }
 
     /**
@@ -200,7 +194,7 @@ public class ExploreAction extends SimulatorAction {
             cancelButton.addActionListener(createCancelListener());
             message.setOptions(new Object[] {cancelButton});
             result =
-                message.createDialog(getLTSPanel(), "Exploring state space");
+                message.createDialog(getLtsDisplay(), "Exploring state space");
             result.pack();
             return result;
         }

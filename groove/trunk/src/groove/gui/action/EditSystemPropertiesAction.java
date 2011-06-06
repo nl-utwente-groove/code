@@ -22,7 +22,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
     @Override
     public boolean execute() {
         boolean result = false;
-        Properties systemProperties = getSimulatorModel().getGrammar().getProperties();
+        Properties systemProperties = getGrammarModel().getProperties();
         PropertiesDialog dialog =
             new PropertiesDialog(systemProperties,
                 SystemProperties.DEFAULT_KEYS, true);
@@ -30,7 +30,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
             SystemProperties newProperties = new SystemProperties();
             newProperties.putAll(dialog.getEditedProperties());
             try {
-                result = getSimulator().getModel().doSetProperties(newProperties);
+                result = getSimulatorModel().doSetProperties(newProperties);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while saving edited properties");
             }
@@ -44,7 +44,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      */
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGrammar() != null
-            && getSimulatorModel().getStore().isModifiable());
+        setEnabled(getGrammarStore() != null
+            && getGrammarStore().isModifiable());
     }
 }
