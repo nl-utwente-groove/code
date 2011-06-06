@@ -781,7 +781,16 @@ public class DefaultFileSystemStore extends SystemStore {
      * Creates a file name for a given resource kind.
      */
     private File createFile(ResourceKind kind, String name) {
-        return new File(this.file, kind.getFilter().addExtension(name));
+        File basis = this.file;
+        if (kind == RULE) {
+            RuleName ruleName = new RuleName(name);
+            for (int i = 0; i < ruleName.size() - 1; i++) {
+                basis = new File(basis, ruleName.get(i));
+                basis.mkdir();
+            }
+            name = ruleName.get(ruleName.size() - 1);
+        }
+        return new File(basis, kind.getFilter().addExtension(name));
     }
 
     /** Posts the edit, and also notifies the observers. */
