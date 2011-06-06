@@ -22,7 +22,6 @@ import groove.trans.SystemProperties;
 import groove.view.ControlModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.GraphBasedModel;
 import groove.view.HostModel;
 import groove.view.PrologModel;
 import groove.view.ResourceModel;
@@ -824,7 +823,7 @@ public class SimulatorModel implements Cloneable {
         Set<String> result;
         if (kind == ResourceKind.HOST || kind == ResourceKind.RULE) {
             result = new LinkedHashSet<String>();
-            Collection<? extends GraphBasedModel<?>> set =
+            Collection<? extends ResourceModel<?>> set =
                 kind == ResourceKind.HOST ? getHostSet() : getRuleSet();
             for (ResourceModel<?> resource : set) {
                 result.add(resource.getName());

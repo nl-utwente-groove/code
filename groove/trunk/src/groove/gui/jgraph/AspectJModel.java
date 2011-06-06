@@ -196,11 +196,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             jCell.setExtraError(false);
         }
         this.errorMap.clear();
-        GraphBasedModel<?> view = getGraph().toModel(this.systemProperties);
-        if (this.type != null && !(view instanceof TypeModel)) {
-            view.setType(this.type);
+        GraphBasedModel<?> resource = getGraph().toModel(this.systemProperties);
+        if (this.type != null && !(resource instanceof TypeModel)) {
+            resource.setType(this.type);
         }
-        for (FormatError error : view.getErrors()) {
+        for (FormatError error : resource.getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {

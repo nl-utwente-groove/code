@@ -38,10 +38,10 @@ abstract public class ResourceDisplay implements Display {
      * Constructs an instance for a given simulator and display kind.
      * The display kind should have an associated resource kind.
      */
-    protected ResourceDisplay(Simulator simulator, DisplayKind kind) {
+    protected ResourceDisplay(Simulator simulator, ResourceKind resource) {
         this.simulator = simulator;
-        this.kind = kind;
-        this.resource = kind.getResource();
+        this.kind = DisplayKind.toDisplay(resource);
+        this.resource = resource;
         assert this.resource != null;
     }
 

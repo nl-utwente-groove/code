@@ -253,9 +253,6 @@ public final class Icons {
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON =
         createIcon("prolog-file.gif");
-    /** Prolog program preview icon. */
-    public static final ImageIcon PROLOG_MODE_ICON =
-        createIcon("prolog-mode.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
     /** Rename action icon. */

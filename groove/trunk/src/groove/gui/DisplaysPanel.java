@@ -165,8 +165,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (changes.contains(Change.DISPLAY)) {
             if (!this.changingTabs) {
                 Display panel = this.displaysMap.get(source.getDisplay());
-                if (indexOfComponent(panel.getPanel()) >= 0) {
-                    setSelectedComponent(panel.getPanel());
+                if (indexOfComponent(panel.getDisplayPanel()) >= 0) {
+                    setSelectedComponent(panel.getDisplayPanel());
                 } else {
                     DisplayWindow window =
                         this.detachedMap.get(source.getDisplay());
@@ -204,8 +204,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             if (changedTo == null) {
                 Display panel = this.displaysMap.get(source.getDisplay());
-                if (panel != null && indexOfComponent(panel.getPanel()) >= 0) {
-                    setSelectedComponent(panel.getPanel());
+                if (panel != null && indexOfComponent(panel.getDisplayPanel()) >= 0) {
+                    setSelectedComponent(panel.getDisplayPanel());
                 }
             }
         }
@@ -224,9 +224,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public JGraphPanel<?> getGraphPanel() {
         JGraphPanel<?> result = null;
         Display display = getSelectedDisplay();
-        if (display instanceof TabbedDisplay) {
+        if (display instanceof GraphDisplay) {
             Component selectedComponent =
-                ((TabbedDisplay) display).getPanel().getSelectedComponent();
+                ((GraphDisplay) display).getDisplayPanel().getSelectedComponent();
             if (selectedComponent instanceof GraphEditorPanel) {
                 result =
                     ((GraphEditorPanel) selectedComponent).getEditor().getGraphPanel();
@@ -259,13 +259,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         default:
             assert false;
         }
-        TabbedDisplay display = (TabbedDisplay) getDisplayFor(tabKind);
-        return display.getMainPanel();
+        GraphDisplay display = (GraphDisplay) getDisplayFor(tabKind);
+        return display.getMainTab();
     }
 
     /** Reattaches a component at its proper place. */
     public void attach(Display display) {
-        if (indexOfComponent(display.getPanel()) >= 0) {
+        if (indexOfComponent(display.getDisplayPanel()) >= 0) {
             // the component is already attached; don't do anything
             return;
         }
@@ -279,7 +279,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             }
         }
-        insertTab(null, null, display.getPanel(), myKind.getTip(), index);
+        insertTab(null, null, display.getDisplayPanel(), myKind.getTip(), index);
         JLabel tabComponent = new JLabel(myKind.getTabIcon());
         tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
         tabComponent.setFocusable(false);
@@ -306,7 +306,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
                 myKind.getTip(), index);
         }
-        setSelectedComponent(display.getPanel());
+        setSelectedComponent(display.getDisplayPanel());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
@@ -351,7 +351,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Creates a popup menu with a detach action for a given component. */
     private JPopupMenu createDetachMenu(final Display component) {
-        assert indexOfComponent(component.getPanel()) >= 0;
+        assert indexOfComponent(component.getDisplayPanel()) >= 0;
         JPopupMenu result = new JPopupMenu();
         result.add(new AbstractAction("Detach") {
             @Override

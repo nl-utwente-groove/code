@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +50,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Grammar model based on a backing system store.
@@ -619,7 +622,7 @@ public class GrammarModel implements Observer {
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
      * they are regenerated at a next call of {@link #toModel()}.
      */
-    void invalidate() {
+    private void invalidate() {
         this.modificationCount++;
         this.grammar = null;
         this.errors = null;
@@ -666,6 +669,16 @@ public class GrammarModel implements Observer {
             this.prologEnvironment = null;
         }
         invalidate();
+    }
+
+    /** Mapping from resource kinds and names to resource models. */
+    private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
+        new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(
+            ResourceKind.class);
+    {
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
+        }
     }
 
     /** Mapping from control names to models on the corresponding automata. */

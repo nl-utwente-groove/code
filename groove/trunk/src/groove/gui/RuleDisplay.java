@@ -17,7 +17,7 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.AspectJGraph;
+import groove.trans.ResourceKind;
 import groove.view.RuleModel;
 
 import java.awt.BorderLayout;
@@ -34,30 +34,25 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
+final public class RuleDisplay extends GraphDisplay implements
+        SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
     public RuleDisplay(Simulator simulator) {
-        super(simulator, DisplayKind.RULE);
+        super(simulator, ResourceKind.RULE);
         installListeners();
     }
 
     @Override
-    protected void activateListeners() {
-        super.activateListeners();
+    protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.RULE,
             Change.ABSTRACT);
+        super.installListeners();
     }
 
     @Override
-    protected void suspendListeners() {
-        super.suspendListeners();
-        getSimulatorModel().removeListener(this);
-    }
-
-    @Override
-    public JGraphPanel<AspectJGraph> getMainPanel() {
+    public RulePanel getMainTab() {
         return getRulePanel();
     }
 
@@ -110,13 +105,15 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
+        if (!suspendListening()) {
+            return;
+        }
         if (changes.contains(Change.GRAMMAR)) {
-            clearJModelMap();
+            getMainTab().updateGrammar(source.getGrammar());
         }
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.RULE)) {
             RuleModel rule = source.getRule();
-            setSelectedTab(rule == null ? null : rule.getName());
+            setSelected(rule == null ? null : rule.getName());
             getEnableButton().setSelected(rule != null && rule.isEnabled());
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
@@ -124,7 +121,7 @@ public class RuleDisplay extends TabbedDisplay implements SimulatorListener {
             this.ruleJTree = null;
             this.ruleTreePanel = null;
         }
-        activateListeners();
+        activateListening();
     }
 
     @Override

@@ -70,7 +70,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
-    public JComponent getPanel() {
+    public JComponent getDisplayPanel() {
         return this;
     }
 

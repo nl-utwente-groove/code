@@ -16,21 +16,28 @@
  */
 package groove.gui;
 
+import groove.graph.GraphRole;
+import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.trans.ResourceKind;
+import groove.view.FormatException;
+import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
+import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -40,91 +47,47 @@ import org.jgraph.event.GraphModelListener;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class TabbedDisplay extends ResourceDisplay implements
+abstract public class GraphDisplay extends TabbedResourceDisplay implements
         SimulatorListener {
     /**
-     * Constructs a panel for a given simulator.
+     * Constructs a panel for a given simulator and (graph-based) resource kind.
      */
-    public TabbedDisplay(Simulator simulator, DisplayKind kind) {
-        super(simulator, kind);
-    }
-
-    /** Installs all listeners to this display. */
-    protected void installListeners() {
-        this.tabListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent evt) {
-                if (isListening()) {
-                    suspendListeners();
-                    selectionChanged();
-                    activateListeners();
-                }
-                getListPanel().repaint();
-            }
-        };
-        activateListeners();
-    }
-
-    /** Callback method that is invoked when the tab selection has changed. */
-    abstract protected void selectionChanged();
-
-    /** 
-     * Activates those listeners that may give rise to a circular dependency.
-     * This is only allowed if listening is currently suspended.
-     * @see #isListening()
-     * @see #suspendListeners()
-     */
-    protected void activateListeners() {
-        if (this.listening) {
-            throw new IllegalStateException();
-        }
-        getPanel().addChangeListener(this.tabListener);
-        this.listening = true;
-    }
-
-    /** 
-     * Suspends those listeners that may give rise to a circular dependency.
-     * This is only allowed if listening is currently active.
-     * @see #isListening()
-     * @see #activateListeners() 
-     */
-    protected void suspendListeners() {
-        if (!this.listening) {
-            throw new IllegalStateException();
-        }
-        getPanel().removeChangeListener(this.tabListener);
-        this.listening = false;
-    }
-
-    /** Indicates that the action listeners are currently active. */
-    protected boolean isListening() {
-        return this.listening;
+    public GraphDisplay(Simulator simulator, ResourceKind resource) {
+        super(simulator, resource);
+        assert resource.isGraphBased();
     }
 
     @Override
-    public MyTabbedPane getPanel() {
-        if (this.mainPanel == null) {
-            this.mainPanel = new MyTabbedPane();
+    public GraphDisplayPanel getDisplayPanel() {
+        if (this.displayPanel == null) {
+            this.displayPanel = new GraphDisplayPanel();
         }
-        return this.mainPanel;
+        return this.displayPanel;
     }
 
-    /** Callback to obtain the main panel of this display. */
-    abstract public JGraphPanel<AspectJGraph> getMainPanel();
+    @Override
+    protected JTabbedPane getTabPane() {
+        // In this display class, the tab pane is the same as the display panel
+        return getDisplayPanel();
+    }
+
+    @Override
+    abstract public GraphTab getMainTab();
 
     /** 
-     * Selects an editor tab with a given name, or the main tab if there
-     * is no such editor.
+     * Switches to the display of a given (named) resource,
+     * either in an open editor or in the main tab.
      */
-    public void setSelectedTab(String name) {
+    public void setSelected(String name) {
         if (name == null) {
-            removeMainPanel();
+            removeMainTab();
         } else {
             GraphEditorPanel editor = getEditors().get(name);
             if (editor == null) {
-                selectMainPanel(name);
-                getMainPanel().repaint();
+                selectMainTab(name);
+                getMainTab().repaint();
             } else {
-                getPanel().setSelectedComponent(editor);
+                getTabPane().setSelectedComponent(editor);
             }
         }
     }
@@ -139,15 +102,15 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
         if (result == null) {
             result =
                 addEditorPanel(getSimulatorModel().getStore().getGraphs(
-                    getKind().getResource()).get(name));
-            if (this.jModelMap.remove(name) != null) {
-                getPanel().remove(getMainPanel());
+                    getResource()).get(name));
+            if (getMainTab().removeResource(name)) {
+                getTabPane().remove(getMainTab().getComponent());
             }
         }
-        if (getPanel().getSelectedComponent() == result) {
+        if (getTabPane().getSelectedComponent() == result) {
             getSimulatorModel().setDisplay(getKind());
         } else {
-            getPanel().setSelectedComponent(result);
+            getTabPane().setSelectedComponent(result);
         }
     }
 
@@ -155,9 +118,9 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
     private GraphEditorPanel addEditorPanel(AspectGraph graph) {
         final GraphEditorPanel result = new GraphEditorPanel(this, graph);
         this.editorMap.put(graph.getName(), result);
-        getPanel().addTab("", result);
-        int index = getPanel().indexOfComponent(result);
-        getPanel().setTabComponentAt(index, result.getTabLabel());
+        getTabPane().addTab("", result);
+        int index = getTabPane().indexOfComponent(result);
+        getTabPane().setTabComponentAt(index, result.getTabLabel());
         // start the editor only after it has been added
         result.start();
         // make sure the list keeps track of dirty editors
@@ -230,11 +193,11 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
      */
     public String getSelectedName() {
         String result = null;
-        Component selection = getPanel().getSelectedComponent();
+        Component selection = getDisplayPanel().getSelectedComponent();
         if (selection instanceof GraphEditorPanel) {
             result = ((GraphEditorPanel) selection).getName();
-        } else if (selection == getMainPanel()) {
-            result = getMainPanel().getGraph().getName();
+        } else if (selection == getMainTab()) {
+            result = getMainTab().getName();
         }
         return result;
     }
@@ -242,34 +205,26 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
     /** 
      * Removes the main panel from the display.
      */
-    protected void removeMainPanel() {
-        getPanel().remove(getMainPanel());
+    protected void removeMainTab() {
+        getTabPane().remove(getMainTab().getComponent());
     }
 
     /** 
      * Sets the main panel  to a given (named) graph.
      */
-    protected void selectMainPanel(String name) {
-        getMainPanel().setJModel(getJModel(name));
-        TabLabel tabLabel = getMainPanel().getTabLabel();
-        int index = getPanel().indexOfComponent(getMainPanel());
+    protected void selectMainTab(String name) {
+        getMainTab().setResource(name);
+        TabLabel tabLabel = getMainTab().getTabLabel();
+        int index = getTabPane().indexOfComponent(getMainTab().getComponent());
         if (index < 0) {
-            index = getMainPanelIndex();
-            getPanel().add(getMainPanel(), index);
-            getPanel().setTabComponentAt(index, tabLabel);
+            index = getMainTabIndex();
+            getTabPane().add(getMainTab().getComponent(), index);
+            getTabPane().setTabComponentAt(index, tabLabel);
         }
         tabLabel.setEnabled(true);
         tabLabel.setTitle(getLabelText(name));
         tabLabel.setError(hasError(name));
-        getPanel().setSelectedIndex(index);
-    }
-
-    /** Clears the mapping from names to aspect models.
-     * Should be called whenever the grammar changes, before
-     * {@link #getJModel(String)} is called again.
-     */
-    final protected void clearJModelMap() {
-        this.jModelMap.clear();
+        getDisplayPanel().setSelectedIndex(index);
     }
 
     /**
@@ -319,23 +274,13 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
         if (this.editorMap.containsKey(name)) {
             result = this.editorMap.get(name).hasErrors();
         } else {
-            result = !getResource(name).getErrors().isEmpty();
-        }
-        return result;
-    }
-
-    private AspectJModel getJModel(String name) {
-        AspectJModel result = this.jModelMap.get(name);
-        if (result == null) {
-            this.jModelMap.put(name, result =
-                getMainPanel().getJGraph().newModel());
-            result.loadGraph(getResource(name).getSource());
+            result = getResource(name).hasErrors();
         }
         return result;
     }
 
     /** Index of the pain panel. This returns {@code 0} by default. */
-    protected int getMainPanelIndex() {
+    protected int getMainTabIndex() {
         return 0;
     }
 
@@ -344,21 +289,14 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
      */
     protected abstract GraphBasedModel<?> getResource(String name);
 
-    private MyTabbedPane mainPanel;
+    private GraphDisplayPanel displayPanel;
     /** Mapping from graph names to editors for those graphs. */
     private final Map<String,GraphEditorPanel> editorMap =
         new HashMap<String,GraphEditorPanel>();
-    /** Mapping from names to graph models. */
-    private final Map<String,AspectJModel> jModelMap =
-        new HashMap<String,AspectJModel>();
-    /** Flag indicating that the listeners are currently active. */
-    private boolean listening;
-    /** Listener that forwards tab changes to the simulator model. */
-    private ChangeListener tabListener;
 
-    class MyTabbedPane extends JTabbedPane implements Panel {
+    class GraphDisplayPanel extends JTabbedPane implements Panel {
         /** Constructs an instance of the panel. */
-        public MyTabbedPane() {
+        public GraphDisplayPanel() {
             super(BOTTOM);
             setFocusable(false);
             setBorder(new EmptyBorder(0, 0, -4, 0));
@@ -372,9 +310,9 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
             super.removeTabAt(index);
             if (panel instanceof GraphEditorPanel) {
                 String name = ((GraphEditorPanel) panel).getName();
-                TabbedDisplay.this.editorMap.remove(name);
+                GraphDisplay.this.editorMap.remove(name);
                 if (isIndexSelected) {
-                    selectMainPanel(name);
+                    selectMainTab(name);
                 }
             }
             // make sure the tab component of the selected tab is enabled
@@ -410,7 +348,83 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
 
         @Override
         public Display getDisplay() {
-            return TabbedDisplay.this;
+            return GraphDisplay.this;
         }
+    }
+
+    abstract public static class GraphTab extends JGraphPanel<AspectJGraph>
+            implements Tab {
+        public GraphTab(Simulator simulator, GraphRole role) {
+            super(new AspectJGraph(simulator, role), false);
+            this.resourceKind = ResourceKind.toResource(role);
+            this.simulatorModel = simulator.getModel();
+            setFocusable(false);
+            setEnabled(false);
+        }
+
+        @Override
+        public void setResource(String name) {
+            AspectJModel jModel = this.jModelMap.get(name);
+            if (jModel == null) {
+                this.jModelMap.put(name, jModel = getJGraph().newModel());
+                AspectGraph graph =
+                    this.simulatorModel.getStore().getGraphs(this.resourceKind).get(
+                        name);
+                jModel.loadGraph(graph);
+            }
+            setJModel(jModel);
+        }
+
+        public boolean removeResource(String name) {
+            return this.jModelMap.remove(name) != null;
+        }
+
+        @Override
+        protected final TabLabel createTabLabel() {
+            return new TabLabel(this, Icons.getMainTabIcon(this.resourceKind),
+                "");
+        }
+
+        @Override
+        protected final JToolBar createToolBar() {
+            return null;
+        }
+
+        @Override
+        public Component getComponent() {
+            return this;
+        }
+
+        public void updateGrammar(GrammarModel grammar) {
+            this.jModelMap.clear();
+            if (grammar == null) {
+                getJGraph().setType(null, null);
+            } else {
+                // set either the type or the label store of the associated JGraph
+                try {
+                    TypeGraph type = grammar.getTypeModel().toResource();
+                    Map<String,Set<TypeLabel>> labelsMap =
+                        new HashMap<String,Set<TypeLabel>>();
+                    for (String typeName : grammar.getTypeNames()) {
+                        TypeModel typeModel = grammar.getTypeModel(typeName);
+                        // the view may be null if type names
+                        // overlap modulo upper/lowercase
+                        if (typeModel != null && typeModel.isEnabled()) {
+                            labelsMap.put(typeName, typeModel.getLabels());
+                        }
+                    }
+                    getJGraph().setType(type, labelsMap);
+                } catch (FormatException e) {
+                    getJGraph().setLabelStore(grammar.getLabelStore());
+                }
+            }
+            refreshStatus();
+        }
+
+        private final SimulatorModel simulatorModel;
+        private final ResourceKind resourceKind;
+        /** Mapping from resource names to aspect models. */
+        private final Map<String,AspectJModel> jModelMap =
+            new HashMap<String,AspectJModel>();
     }
 }

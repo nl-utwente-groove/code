@@ -73,7 +73,7 @@ final public class ControlDisplay extends ResourceDisplay implements
      * @param simulator The Simulator the panel is added to.
      */
     public ControlDisplay(Simulator simulator) {
-        super(simulator, DisplayKind.CONTROL);
+        super(simulator, ResourceKind.CONTROL);
     }
 
     @Override
@@ -82,7 +82,7 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     @Override
-    public ControlPanel getPanel() {
+    public ControlPanel getDisplayPanel() {
         if (this.panel == null) {
             this.panel = new ControlPanel();
         }
@@ -296,7 +296,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         if (isDirty()) {
             String name = getSelectedControl().getName();
             int answer =
-                JOptionPane.showConfirmDialog(getPanel(),
+                JOptionPane.showConfirmDialog(getDisplayPanel(),
                     String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
@@ -356,7 +356,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         if (isEditing()) {
             if (!confirm || confirmAbandon()) {
                 stopEditing();
-                getPanel().getParent().requestFocusInWindow();
+                getDisplayPanel().getParent().requestFocusInWindow();
                 refreshAll();
             } else {
                 result = false;
@@ -381,7 +381,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         this.editing = true;
         refreshAll();
         fillToolBar();
-        getPanel().getParent().requestFocusInWindow();
+        getDisplayPanel().getParent().requestFocusInWindow();
         getControlTextArea().requestFocus();
     }
 

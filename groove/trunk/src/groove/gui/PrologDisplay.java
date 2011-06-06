@@ -29,6 +29,7 @@ import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
+import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -64,7 +65,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -90,7 +90,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
      * Construct a prolog panel
      */
     public PrologDisplay(Simulator simulator) {
-        super(simulator, DisplayKind.PROLOG);
+        super(simulator, ResourceKind.PROLOG);
         Environment.setDefaultOutputStream(getUserOutput());
 
         simulator.getModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
@@ -112,33 +112,8 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
      */
     JTabbedPane getEditorPane() {
         if (this.editorPane == null) {
-            this.editorPane = new JTabbedPane(SwingConstants.BOTTOM) {
-                @Override
-                public void removeTabAt(int index) {
-                    // removes the editor panel from the map
-                    String name =
-                        ((PrologEditorPanel) getComponentAt(index)).getName();
-                    super.removeTabAt(index);
-                    PrologDisplay.this.editorMap.remove(name);
-                    getListPanel().repaint();
-                }
-            };
+            this.editorPane = new MyTabbedPane();
 
-            this.editorPane.setMinimumSize(new Dimension(0, 300));
-            this.editorPane.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    if (PrologDisplay.this.listening) {
-                        PrologDisplay.this.listening = false;
-                        PrologEditorPanel editor = getSelectedEditor();
-                        if (editor != null) {
-                            getSimulatorModel().setProlog(editor.getName());
-                        }
-                        PrologDisplay.this.listening = true;
-                    }
-
-                }
-            });
         }
         return this.editorPane;
     }
@@ -240,9 +215,9 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     }
 
     @Override
-    public JComponent getPanel() {
+    public JComponent getDisplayPanel() {
         if (this.mainPanel == null) {
-            this.mainPanel = new PrologPanel();
+            this.mainPanel = new MyDisplayPanel();
         }
         return this.mainPanel;
     }
@@ -726,7 +701,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     /** The environment, initialised from the grammar view. */
     private GrooveEnvironment environment;
     /** The main display panel. */
-    private PrologPanel mainPanel;
+    private MyDisplayPanel mainPanel;
     /**
      * The current instance of the prolog interpreter. Will be recreated every
      * time "reconsult" action is performed.
@@ -805,9 +780,9 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     }
 
     /** Main panel component of this display. */
-    private class PrologPanel extends JPanel implements Panel {
+    private class MyDisplayPanel extends JPanel implements Panel {
         /** Constructs the panel. */
-        public PrologPanel() {
+        public MyDisplayPanel() {
             JPanel queryPane = new JPanel(new BorderLayout());
             JLabel leading = new JLabel(" ?- ");
             leading.setFont(leading.getFont().deriveFont(Font.BOLD));
@@ -845,6 +820,36 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
         @Override
         public Display getDisplay() {
             return PrologDisplay.this;
+        }
+    }
+
+    private final class MyTabbedPane extends JTabbedPane {
+        private MyTabbedPane() {
+            super(BOTTOM);
+            setMinimumSize(new Dimension(0, 300));
+            addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (PrologDisplay.this.listening) {
+                        PrologDisplay.this.listening = false;
+                        PrologEditorPanel editor = getSelectedEditor();
+                        if (editor != null) {
+                            getSimulatorModel().setProlog(editor.getName());
+                        }
+                        PrologDisplay.this.listening = true;
+                    }
+
+                }
+            });
+        }
+
+        @Override
+        public void removeTabAt(int index) {
+            // removes the editor panel from the map
+            String name = ((PrologEditorPanel) getComponentAt(index)).getName();
+            super.removeTabAt(index);
+            PrologDisplay.this.editorMap.remove(name);
+            getListPanel().repaint();
         }
     }
 }

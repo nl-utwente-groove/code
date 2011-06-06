@@ -39,14 +39,14 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphEditorPanel extends EditorPanel<TabbedDisplay> implements
+public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
         SimulatorListener {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param parent the component on which this panel is placed
      * @param graph the input graph for the editor
      */
-    public GraphEditorPanel(final TabbedDisplay parent, final AspectGraph graph) {
+    public GraphEditorPanel(final GraphDisplay parent, final AspectGraph graph) {
         super(parent);
         final Simulator simulator = parent.getSimulator();
         this.graph = graph;
@@ -222,7 +222,7 @@ public class GraphEditorPanel extends EditorPanel<TabbedDisplay> implements
     public void dispose() {
         getSaveAction().dispose();
         getCancelAction().dispose();
-        getDisplay().getPanel().remove(this);
+        getDisplay().getDisplayPanel().remove(this);
         getSimulatorModel().removeListener(this);
     }
 

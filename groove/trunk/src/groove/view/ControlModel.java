@@ -30,7 +30,7 @@ import java.util.List;
  * automata.
  * @author Staijen
  */
-public class ControlModel extends ResourceModel<CtrlAut> {
+public class ControlModel extends TextBasedModel<CtrlAut> {
     /**
      * Constructs a control view from a given control program.
      * @param grammar the grammar view to which this control view belongs.
@@ -38,14 +38,12 @@ public class ControlModel extends ResourceModel<CtrlAut> {
      * @param program the control program; non-null
      */
     public ControlModel(GrammarModel grammar, String name, String program) {
-        super(ResourceKind.CONTROL, name);
-        this.program = program;
+        super(ResourceKind.CONTROL, name, program);
         this.grammar = grammar;
     }
 
     @Override
     public boolean isEnabled() {
-        // TODO Auto-generated method stub
         return getName().equals(this.grammar.getControlName());
     }
 
@@ -62,7 +60,7 @@ public class ControlModel extends ResourceModel<CtrlAut> {
         // use the stored result if that was for the same grammar
         if (modCount != this.lastCount) {
             this.lastAut =
-                this.parser.runString(this.program,
+                this.parser.runString(getProgram(),
                     this.grammar.getProperties(), this.grammar.getRules());
             this.lastCount = modCount;
         }
@@ -88,14 +86,7 @@ public class ControlModel extends ResourceModel<CtrlAut> {
         return result;
     }
 
-    /** Returns the textual control program. */
-    public String getProgram() {
-        return this.program;
-    }
-
     private final GrammarModel grammar;
-    /** The control program loaded at construction time. */
-    private final String program;
     /** The grammar of the most recently computed control automaton. */
     private int lastCount = -1;
     /** The most recently computed control automaton. */
