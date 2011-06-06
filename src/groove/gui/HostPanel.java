@@ -26,14 +26,14 @@ import static groove.gui.SimulatorModel.Change.HOST;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
+import groove.gui.GraphDisplay.GraphTab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.ErrorDialog;
-import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
 import groove.trans.SystemProperties;
-import groove.view.TypeModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.TypeModel;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,7 +42,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 /**
@@ -51,8 +50,7 @@ import javax.swing.SwingUtilities;
  * @author Arend Rensink
  * @version $Revision: 3419 $
  */
-public class HostPanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener {
+public class HostPanel extends GraphTab implements SimulatorListener {
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
 
@@ -62,31 +60,16 @@ public class HostPanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new state panel.
      */
     public HostPanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), false);
+        super(simulator, GraphRole.HOST);
         initialise();
         setBorder(null);
         getJGraph().setToolTipEnabled(true);
     }
 
     @Override
-    public String getName() {
-        return null;//getJModel() == null ? null : getJModel().getName();
-    }
-
-    @Override
     public void dispose() {
         super.dispose();
         suspendListeners();
-    }
-
-    @Override
-    protected JToolBar createToolBar() {
-        return null;
-    }
-
-    @Override
-    protected TabLabel createTabLabel() {
-        return new TabLabel(this, Icons.GRAPH_MODE_ICON, "");
     }
 
     @Override
@@ -148,10 +131,10 @@ public class HostPanel extends JGraphPanel<AspectJGraph> implements
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(GRAMMAR)) {
-            setGrammar(source.getGrammar());
-        }
-        refreshStatus();
+        //        if (changes.contains(GRAMMAR)) {
+        //            setGrammar(source.getGrammar());
+        //        }
+        //        refreshStatus();
         activateListeners();
     }
 

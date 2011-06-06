@@ -17,8 +17,8 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
+import groove.trans.ResourceKind;
 import groove.view.HostModel;
 
 import java.awt.BorderLayout;
@@ -35,33 +35,27 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class StateDisplay extends TabbedDisplay implements
+final public class StateDisplay extends GraphDisplay implements
         SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
     public StateDisplay(Simulator simulator) {
-        super(simulator, DisplayKind.HOST);
-        getPanel().add(getStatePanel(), 0);
-        getPanel().setTabComponentAt(0, getStatePanel().getTabLabel());
+        super(simulator, ResourceKind.HOST);
+        getDisplayPanel().add(getStatePanel(), 0);
+        getDisplayPanel().setTabComponentAt(0, getStatePanel().getTabLabel());
         installListeners();
     }
 
     @Override
-    protected void activateListeners() {
-        super.activateListeners();
+    protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.STATE,
             Change.HOST, Change.MATCH, Change.ABSTRACT);
+        super.installListeners();
     }
 
     @Override
-    protected void suspendListeners() {
-        super.suspendListeners();
-        getSimulatorModel().removeListener(this);
-    }
-
-    @Override
-    public JGraphPanel<AspectJGraph> getMainPanel() {
+    public GraphTab getMainTab() {
         return getHostPanel();
     }
 
@@ -105,19 +99,21 @@ final public class StateDisplay extends TabbedDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
+        if (!suspendListening()) {
+            return;
+        }
         if (changes.contains(Change.GRAMMAR)) {
-            clearJModelMap();
+            getMainTab().updateGrammar(source.getGrammar());
             if (source.hasHost()) {
-                setSelectedTab(source.getHost().getName());
+                setSelected(source.getHost().getName());
             }
         }
         if (changes.contains(Change.HOST)) {
             if (source.hasHost()) {
-                setSelectedTab(source.getHost().getName());
+                setSelected(source.getHost().getName());
             } else {
-                removeMainPanel();
-                getPanel().setSelectedComponent(getStatePanel());
+                removeMainTab();
+                getDisplayPanel().setSelectedComponent(getStatePanel());
             }
             refreshToolbars();
         }
@@ -126,19 +122,19 @@ final public class StateDisplay extends TabbedDisplay implements
             refreshToolbars();
         }
         if (changes.contains(Change.MATCH)) {
-            getPanel().setSelectedComponent(getStatePanel());
+            getDisplayPanel().setSelectedComponent(getStatePanel());
             refreshToolbars();
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
             getStatePanel().dispose();
             this.statePanel = null;
-            removeMainPanel();
+            removeMainTab();
         }
         getEnableButton().setSelected(
             source.hasHost()
                 && source.getHost().equals(
                     source.getGrammar().getStartGraphModel()));
-        activateListeners();
+        activateListening();
     }
 
     /** Returns the host subpanel. */
@@ -213,7 +209,7 @@ final public class StateDisplay extends TabbedDisplay implements
     }
 
     @Override
-    protected int getMainPanelIndex() {
+    protected int getMainTabIndex() {
         return 1;
     }
 

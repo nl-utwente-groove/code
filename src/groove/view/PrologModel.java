@@ -27,15 +27,14 @@ import java.util.List;
  * View for prolog programs (which are just strings).
  * @author Arend Rensink
  */
-public class PrologModel extends ResourceModel<String> {
+public class PrologModel extends TextBasedModel<String> {
     /**
      * Constructs a prolog view from a given prolog program.
      * @param name the name of the prolog program; non-{@code null}
      * @param program the prolog program; non-null
      */
     public PrologModel(String name, String program) {
-        super(ResourceKind.PROLOG, name);
-        this.program = program;
+        super(ResourceKind.PROLOG, name, program);
         this.errors = Collections.emptyList();
     }
 
@@ -51,11 +50,6 @@ public class PrologModel extends ResourceModel<String> {
         } else {
             return getProgram();
         }
-    }
-
-    /** Returns the textual prolog program. */
-    public String getProgram() {
-        return this.program;
     }
 
     /** Clears the errors in this view. */
@@ -74,8 +68,6 @@ public class PrologModel extends ResourceModel<String> {
         return this.errors;
     }
 
-    /** The prolog program loaded at construction time. */
-    private final String program;
     /** List of Prolog formatting errors in this program. */
     private List<FormatError> errors;
 

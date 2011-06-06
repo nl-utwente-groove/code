@@ -24,7 +24,7 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.TabbedDisplay;
+import groove.gui.GraphDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -350,9 +350,9 @@ public class ActionStore implements SimulatorListener {
             ExportAction result = null;
             Display display =
                 this.simulator.getSimulatorPanel().getDisplayFor(kind);
-            if (display instanceof TabbedDisplay) {
+            if (display instanceof GraphDisplay) {
                 result =
-                    ((TabbedDisplay) display).getMainPanel().getJGraph().getExportAction();
+                    ((GraphDisplay) display).getMainTab().getJGraph().getExportAction();
             }
             // also put it in the map when the result is null,
             // so we don't try to compute it again

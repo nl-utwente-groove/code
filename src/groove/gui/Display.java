@@ -26,7 +26,7 @@ import javax.swing.JPanel;
  */
 public interface Display {
     /** Main panel of this tab; typically this is {@code this}. */
-    JComponent getPanel();
+    JComponent getDisplayPanel();
 
     /** List panel corresponding to this tab; may be {@code null}. */
     JPanel getListPanel();

@@ -25,17 +25,17 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
+import groove.gui.GraphDisplay.GraphTab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.ErrorDialog;
-import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
 import groove.trans.Rule;
 import groove.trans.RuleElement;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.RuleModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,16 +47,13 @@ import java.util.Observer;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.swing.JToolBar;
-
 /**
  * Window that displays and controls the current rule graph. Auxiliary class for
  * Simulator.
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class RulePanel extends JGraphPanel<AspectJGraph> implements
-        SimulatorListener {
+final public class RulePanel extends GraphTab implements SimulatorListener {
     /** Frame name when no rule is selected. */
     private static final String INITIAL_FRAME_NAME = "No rule selected";
 
@@ -64,18 +61,8 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.RULE), false);
+        super(simulator, GraphRole.RULE);
         initialise();
-    }
-
-    @Override
-    protected JToolBar createToolBar() {
-        return null;
-    }
-
-    @Override
-    protected TabLabel createTabLabel() {
-        return new TabLabel(this, Icons.RULE_MODE_ICON, "");
     }
 
     @Override
@@ -109,7 +96,7 @@ final public class RulePanel extends JGraphPanel<AspectJGraph> implements
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
-            setGrammarUpdate(source.getGrammar());
+            //            setGrammarUpdate(source.getGrammar());
         }
     }
 

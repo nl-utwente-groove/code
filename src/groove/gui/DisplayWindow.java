@@ -23,11 +23,11 @@ class DisplayWindow extends JFrame {
         this.panel = panel;
         JPanel listPanel = panel.getListPanel();
         if (panel.getKind() == DisplayKind.RULE || listPanel == null) {
-            getContentPane().add(panel.getPanel());
+            getContentPane().add(panel.getDisplayPanel());
         } else {
             JSplitPane splitPane =
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
-                    panel.getPanel());
+                    panel.getDisplayPanel());
             getContentPane().add(splitPane);
         }
         setAlwaysOnTop(true);

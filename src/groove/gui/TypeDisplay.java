@@ -17,8 +17,8 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.AspectJGraph;
 import groove.io.HTMLConverter;
+import groove.trans.ResourceKind;
 import groove.view.TypeModel;
 
 import java.awt.BorderLayout;
@@ -35,46 +35,42 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class TypeDisplay extends TabbedDisplay implements
+final public class TypeDisplay extends GraphDisplay implements
         SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
     public TypeDisplay(Simulator simulator) {
-        super(simulator, DisplayKind.TYPE);
+        super(simulator, ResourceKind.TYPE);
         installListeners();
     }
 
     @Override
-    protected void activateListeners() {
-        super.activateListeners();
+    protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
+        super.installListeners();
     }
 
     @Override
-    protected void suspendListeners() {
-        super.suspendListeners();
-        getSimulatorModel().removeListener(this);
-    }
-
-    @Override
-    public JGraphPanel<AspectJGraph> getMainPanel() {
+    public TypePanel getMainTab() {
         return getTypePanel();
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
+        if (!suspendListening()) {
+            return;
+        }
         if (changes.contains(Change.GRAMMAR)) {
-            clearJModelMap();
+            getMainTab().updateGrammar(source.getGrammar());
         }
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
             TypeModel type = source.getType();
-            setSelectedTab(type == null ? null : type.getName());
+            setSelected(type == null ? null : type.getName());
             getEnableButton().setSelected(type != null && type.isEnabled());
         }
-        activateListeners();
+        activateListening();
     }
 
     @Override
