@@ -185,7 +185,7 @@ final public class StateDisplay extends TabbedDisplay implements
             result = super.createListToolBar();
         } else {
             result = Options.createToolBar();
-            result.add(getNewAction());
+            result.add(getEditAction());
             result.add(getSaveAction(false));
             result.addSeparator();
             result.add(getActions().getBackAction());
