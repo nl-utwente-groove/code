@@ -87,8 +87,7 @@ public class EditAction extends SimulatorAction {
             enabled |=
                 getSimulatorModel().getState() != null
                     && getGrammarStore().isModifiable();
-            putValue(NAME, getSimulatorModel().hasHost()
-                    ? Options.EDIT_GRAPH_ACTION_NAME
+            putValue(NAME, getSimulatorModel().hasHost() ? getEditActionName()
                     : Options.EDIT_STATE_ACTION_NAME);
         }
         setEnabled(enabled);

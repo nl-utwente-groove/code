@@ -27,12 +27,10 @@ import gnu.prolog.term.VariableTerm;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
-import groove.graph.Graph;
 import groove.prolog.util.TermConverter;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,47 +45,26 @@ import java.util.Map;
  */
 public class PrologEngine {
     /**
-     * The graph that will be queried.
-     */
-    protected Graph<?,?> graph;
-
-    /**
-     * Will be true when the engine has been initialised.
-     */
-    protected boolean initialized;
-
-    /**
      * The used environment
      */
-    protected GrooveEnvironment env;
+    private final GrooveEnvironment env;
 
     /**
      * The prolog interpreter
      */
-    protected Interpreter interpreter;
+    private Interpreter interpreter;
 
     /**
      * The current result of the query
      */
-    protected InternalQueryResult currentResult;
-
-    /**
-     * The stream to use as default output stream
-     */
-    protected OutputStream userOutput;
+    private InternalQueryResult currentResult;
 
     /**
      * Private no-args constructor for the singleton instance.
      */
-    private PrologEngine() {
-        // empty by design
-    }
-
-    /**
-     * Sets the Groove environment to a given value.
-     */
-    public void setEnvironment(GrooveEnvironment environment) {
+    public PrologEngine(GrooveEnvironment environment) throws FormatException {
         this.env = environment;
+        init();
     }
 
     /**
@@ -99,30 +76,12 @@ public class PrologEngine {
     }
 
     /**
-     * Initialises the environment
-     * @throws FormatException TODO
-     */
-    public void init() throws FormatException {
-        init(null);
-    }
-
-    /**
      * Initialises the environment, loading an initial program.
      * 
-     * @param program
-     *            Additional code to process during the loading of the
-     *            environment. Typically used to load user code
      * @throws FormatException list of syntax errors discovered during initialisation
      */
-    public void init(String program) throws FormatException {
-        if (this.initialized) {
-            return;
-        }
-        this.initialized = true;
+    private void init() throws FormatException {
         this.currentResult = null;
-        if (program != null) {
-            getEnvironment().loadProgram(program);
-        }
         this.interpreter = getEnvironment().createInterpreter();
         getEnvironment().runInitialization(this.interpreter);
 
@@ -143,9 +102,6 @@ public class PrologEngine {
      */
     public QueryResult newQuery(String term) throws FormatException,
         PrologException {
-        if (!this.initialized) {
-            init();
-        }
         if (this.currentResult != null) {
             // terminate the previous goal
             if (this.currentResult.getReturnValue() == QueryReturnValue.SUCCESS) {
@@ -223,11 +179,6 @@ public class PrologEngine {
         return QueryReturnValue.NOT_RUN;
     }
 
-    /** Resets the environment, discarding all loaded predicates. */
-    public void reset() {
-        this.env = null;
-    }
-
     /**
      * Create the prolog environment. This will initialize the environment in
      * the standard groove environment. It can be used when you need to make
@@ -236,13 +187,6 @@ public class PrologEngine {
     public GrooveEnvironment getEnvironment() {
         return this.env;
     }
-
-    /** Returns the singleton instance of this class. */
-    public static PrologEngine instance() {
-        return instance;
-    }
-
-    private static final PrologEngine instance = new PrologEngine();
 
     /**
      * The result object returned on {@link PrologEngine#newQuery(String)} and

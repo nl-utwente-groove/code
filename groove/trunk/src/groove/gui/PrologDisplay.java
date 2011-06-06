@@ -431,16 +431,13 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
             this.listening = false;
             if (changes.contains(Change.GRAMMAR)) {
                 this.environment = null;
+                this.engine = null;
                 GrammarModel grammar = source.getGrammar();
                 for (PrologEditorPanel editor : this.editorMap.values()) {
                     if (grammar == null
                         || !grammar.getPrologNames().contains(editor.getName())) {
                         editor.dispose();
                     }
-                }
-                if (grammar != null) {
-                    this.environment = null;
-                    this.engine = null;
                 }
                 loadSyntaxHelpTree(this.userTree,
                     getEnvironment().getUserTags());
@@ -540,10 +537,8 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     private PrologEngine getEngine() {
         this.statusBar.setText(" ");
         if (this.engine == null) {
-            this.engine = PrologEngine.instance();
             try {
-                this.engine.setEnvironment(getEnvironment());
-                this.engine.init();
+                this.engine = new PrologEngine(getEnvironment());
             } catch (FormatException e) {
                 getResultsArea().append("\nError loading the prolog engine:\n");
                 getResultsArea().append(e.getMessage());
@@ -660,6 +655,13 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
                 handlePrologException(e);
             }
         }
+    }
+
+    /** Indicates if the last query has outstanding results,
+     * i.e., if a call to #nextResults would be successful.
+     */
+    public boolean hasNextResult() {
+        return getEngine() != null && getEngine().hasNext();
     }
 
     /**

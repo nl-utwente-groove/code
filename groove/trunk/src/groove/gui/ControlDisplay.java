@@ -21,6 +21,7 @@ import groove.control.parse.CtrlTokenMaker;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
+import groove.trans.ResourceKind;
 import groove.view.ControlModel;
 import groove.view.GrammarModel;
 
@@ -494,10 +495,11 @@ final public class ControlDisplay extends ResourceDisplay implements
 
             add(splitPane, BorderLayout.CENTER);
             add(getStatusBar(), BorderLayout.SOUTH);
-            // add keyboard binding for Save key
+            // add keyboard binding for Save and Cancel key
             InputMap focusedInputMap =
                 getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            String actionName = Options.getSaveControlActionName(false);
+            String actionName =
+                Options.getSaveActionName(ResourceKind.CONTROL, false);
             focusedInputMap.put(Options.SAVE_KEY, actionName);
             focusedInputMap.put(Options.CANCEL_KEY,
                 Options.CANCEL_EDIT_ACTION_NAME);

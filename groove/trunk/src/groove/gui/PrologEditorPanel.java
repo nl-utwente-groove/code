@@ -4,10 +4,12 @@ import groove.gui.action.ActionStore;
 import groove.gui.action.CancelEditPrologAction;
 import groove.gui.action.SavePrologAction;
 import groove.prolog.util.PrologTokenMaker;
+import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
 
 import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
@@ -38,6 +40,16 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         setLayout(new BorderLayout());
         add(createToolBar(), BorderLayout.NORTH);
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
+        // add keyboard binding for Save and Cancel key
+        InputMap focusedInputMap =
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        String actionName =
+            Options.getSaveActionName(ResourceKind.PROLOG, false);
+        focusedInputMap.put(Options.SAVE_KEY, actionName);
+        focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
+        getActionMap().put(actionName, getActions().getSavePrologAction());
+        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
+            getActions().getCancelEditPrologAction());
     }
 
     /**
