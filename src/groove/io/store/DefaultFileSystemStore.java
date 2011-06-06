@@ -718,13 +718,10 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private SystemProperties loadGrammarProperties() throws IOException {
         SystemProperties properties = new SystemProperties();
-        File propertiesFile =
-            new File(this.file,
-                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+        File propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
         if (!propertiesFile.exists()) {
-            propertiesFile =
-                new File(this.file, PROPERTIES_FILTER.addExtension(this.name));
+            propertiesFile = getOldDefaultPropertiesFile();
         }
         if (propertiesFile.exists()) {
             Properties grammarProperties = new Properties();
@@ -740,6 +737,17 @@ public class DefaultFileSystemStore extends SystemStore {
             this.hasSystemPropertiesFile = false;
         }
         return properties;
+    }
+
+    /** Returns the file that by default holds the system properties. */
+    private File getDefaultPropertiesFile() {
+        return new File(this.file,
+            PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+    }
+
+    /** Returns the file that held the system properties in the distant past. */
+    private File getOldDefaultPropertiesFile() {
+        return new File(this.file, PROPERTIES_FILTER.addExtension(this.name));
     }
 
     private void saveText(ResourceKind kind, String name, String program)
@@ -758,14 +766,17 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     private void saveProperties(SystemProperties properties) throws IOException {
-        File propertiesFile =
-            new File(this.file,
-                PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+        File propertiesFile = getDefaultPropertiesFile();
         Writer propertiesWriter = new FileWriter(propertiesFile);
         try {
             properties.store(propertiesWriter, null);
         } finally {
             propertiesWriter.close();
+        }
+        // delete the old-style properties file, if any
+        File oldPropertiesFile = getOldDefaultPropertiesFile();
+        if (oldPropertiesFile.exists()) {
+            oldPropertiesFile.delete();
         }
         enableTypes();
     }
