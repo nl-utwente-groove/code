@@ -61,15 +61,13 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public boolean execute() {
         Color initColour =
-            getSimulatorModel().getGrammar().getLabelStore().getColor(
-                this.label);
+            getGrammarModel().getLabelStore().getColor(this.label);
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
         JDialog dialog =
-            JColorChooser.createDialog(getSimulator().getSimulatorPanel(),
-                "Choose colour for type", false, this.chooser,
-                new ActionListener() {
+            JColorChooser.createDialog(getFrame(), "Choose colour for type",
+                false, this.chooser, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         setColour(SelectColorAction.this.chooser.getColor());
@@ -93,14 +91,14 @@ public class SelectColorAction extends SimulatorAction implements
                 assert false;
             }
         }
-        for (String typeName : getSimulatorModel().getGrammar().getTypeNames()) {
+        for (String typeName : getGrammarModel().getTypeNames()) {
             AspectGraph typeGraph =
-                getSimulatorModel().getGrammar().getTypeModel(typeName).getSource();
+                getGrammarModel().getTypeModel(typeName).getSource();
             AspectGraph newTypeGraph =
                 typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
                 try {
-                    getSimulator().getModel().doAddGraph(ResourceKind.TYPE,
+                    getSimulatorModel().doAddGraph(ResourceKind.TYPE,
                         newTypeGraph);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(

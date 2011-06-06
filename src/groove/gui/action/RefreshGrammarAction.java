@@ -22,10 +22,10 @@ public class RefreshGrammarAction extends SimulatorAction {
         boolean result = false;
         if (confirmStopSimulation()) {
             try {
-                result = getSimulator().getModel().doRefreshGrammar();
+                result = getSimulatorModel().doRefreshGrammar();
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while refreshing grammar from "
-                        + getSimulatorModel().getStore().getLocation());
+                    + getGrammarStore().getLocation());
             }
         }
         return result;
@@ -33,6 +33,6 @@ public class RefreshGrammarAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getGrammar() != null);
+        setEnabled(getGrammarModel() != null);
     }
 }

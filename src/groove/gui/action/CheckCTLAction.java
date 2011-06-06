@@ -35,7 +35,8 @@ public class CheckCTLAction extends SimulatorAction {
         if (property != null) {
             boolean doCheck = true;
             GTS gts = getSimulatorModel().getGts();
-            if (gts.hasOpenStates() && this.full && getSimulatorModel().setGts()) {
+            if (gts.hasOpenStates() && this.full
+                && getSimulatorModel().setGts()) {
                 getActions().getExploreAction().explore(
                     getSimulatorModel().getExploration(), true, false);
                 doCheck = !gts.hasOpenStates();
@@ -107,9 +108,9 @@ public class CheckCTLAction extends SimulatorAction {
                         "The property '%s' holds in the initial state", formula);
             }
         }
-        getSimulator().getLtsDisplay().emphasiseStates(counterExamples, false);
+        getLtsDisplay().emphasiseStates(counterExamples, false);
         getSimulatorModel().setDisplay(DisplayKind.LTS);
-        JOptionPane.showMessageDialog(getSimulator().getFrame(), message);
+        JOptionPane.showMessageDialog(getFrame(), message);
     }
 
     @Override

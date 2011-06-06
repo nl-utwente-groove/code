@@ -70,12 +70,10 @@ public class PreviewControlAction extends SimulatorAction {
                 new JGraphPanel<CtrlJGraph>(getJGraph(), true);
             autPanel.initialise();
             autPanel.setEnabled(true);
-            result =
-                this.dialog =
-                    new JDialog(getSimulator().getFrame(), "Control Automaton");
+            result = this.dialog = new JDialog(getFrame(), "Control Automaton");
             result.add(autPanel);
             result.setSize(600, 700);
-            Point p = getSimulator().getFrame().getLocation();
+            Point p = getFrame().getLocation();
             result.setLocation(new Point(p.x + 50, p.y + 50));
             result.setVisible(true);
         }
@@ -87,13 +85,13 @@ public class PreviewControlAction extends SimulatorAction {
     /** Convenience method to obtain the currently selected control automaton. */
     private CtrlAut getCtrlAut() throws FormatException {
         CtrlAut result = null;
-        GrammarModel grammarView = getSimulatorModel().getGrammar();
-        if (grammarView != null) {
-            GraphGrammar grammar = grammarView.toGrammar();
-            ControlModel controlView = getSimulatorModel().getControl();
+        GrammarModel grammarModel = getGrammarModel();
+        if (grammarModel != null) {
+            GraphGrammar grammar = grammarModel.toGrammar();
+            ControlModel controlModel = getSimulatorModel().getControl();
             result =
-                controlView == null ? grammar.getCtrlAut()
-                        : controlView.toCtrlAut();
+                controlModel == null ? grammar.getCtrlAut()
+                        : controlModel.toCtrlAut();
         }
         return result;
     }
