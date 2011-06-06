@@ -103,6 +103,7 @@ abstract public class ResourceDisplay implements Display {
     protected JToolBar createListToolBar(int separation) {
         JToolBar result = Options.createToolBar();
         result.add(getNewAction());
+        result.add(getEditAction());
         if (separation >= 0) {
             result.addSeparator(new Dimension(separation, 0));
         } else {

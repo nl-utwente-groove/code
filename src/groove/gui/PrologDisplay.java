@@ -389,14 +389,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
      */
     public JPanel getListPanel() {
         if (this.prologListPanel == null) {
-            JToolBar toolBar = Options.createToolBar();
-            toolBar.add(getNewAction());
-            toolBar.add(getEditAction());
-            toolBar.addSeparator();
-            toolBar.add(getCopyAction());
-            toolBar.add(getDeleteAction());
-            toolBar.add(getRenameAction());
-
+            JToolBar toolBar = createListToolBar();
             JScrollPane prologPane = new JScrollPane(getPrologList()) {
                 @Override
                 public Dimension getPreferredSize() {
