@@ -34,7 +34,7 @@ import javax.swing.ImageIcon;
  */
 public final class Icons {
     /** Returns the icon for a certain edit on a grammar resource. */
-    public static ImageIcon getIcon(EditType edit, ResourceKind resource) {
+    public static ImageIcon getEditIcon(EditType edit, ResourceKind resource) {
         switch (edit) {
         case COPY:
             return COPY_ICON;
@@ -85,6 +85,28 @@ public final class Icons {
             return RENAME_ICON;
         case ENABLE:
             return ENABLE_ICON;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /** 
+     * Returns the icon used for the main tab labels 
+     * in the display of a given resource kind.
+     */
+    public static ImageIcon getMainTabIcon(ResourceKind resource) {
+        switch (resource) {
+        case CONTROL:
+            return CONTROL_FILE_ICON;
+        case HOST:
+            return GRAPH_MODE_ICON;
+        case PROLOG:
+            return PROLOG_FILE_ICON;
+        case RULE:
+            return RULE_MODE_ICON;
+        case TYPE:
+            return TYPE_MODE_ICON;
         default:
             assert false;
             return null;
@@ -231,6 +253,9 @@ public final class Icons {
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON =
         createIcon("prolog-file.gif");
+    /** Prolog program preview icon. */
+    public static final ImageIcon PROLOG_MODE_ICON =
+        createIcon("prolog-mode.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
     /** Rename action icon. */
