@@ -25,6 +25,7 @@ import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -89,7 +90,14 @@ public class CtrlDoc {
             } else {
                 // We can read the file directly.
                 File file = new File(url.getFile());
-                grammarText = groove.io.Util.readFileToString(file);
+                try {
+                    grammarText = groove.io.Util.readFileToString(file);
+                } catch (FileNotFoundException e) {
+                    // we have some weird url, e.g. because Groove is used as an OSGi bundle.
+                    //let's try to use the url's stream...
+                    grammarText =
+                        groove.io.Util.readInputStreamToString(url.openStream());
+                }
             }
         } catch (IOException e) {
             throw new IllegalStateException(String.format(
