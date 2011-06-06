@@ -188,6 +188,14 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
+     * Execute the quit action as a method of the Simulator class.
+     * Needed for Command-Q shortcut on MacOS only (see {@link #getFrame}).
+     */
+    public void tryQuit() {
+        this.getActions().getQuitAction().execute();
+    }
+
+    /**
      * Lazily creates and returns the frame of this simulator.
      */
     public JFrame getFrame() {
@@ -205,9 +213,9 @@ public class Simulator implements SimulatorListener {
             if (Groove.IS_PLATFORM_MAC) {
                 try {
                     OSXAdapter.setQuitHandler(this,
-                        this.getClass().getDeclaredMethod("doQuit"));
+                        this.getClass().getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
-                    // should not happen (thrown when 'doQuit' does not exist)
+                    // should not happen (thrown when 'tryQuit' does not exist)
                     e1.printStackTrace();
                 }
             }
