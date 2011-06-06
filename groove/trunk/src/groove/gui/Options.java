@@ -234,7 +234,7 @@ public class Options implements Cloneable {
         button.setFocusable(false);
         button.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createEtchedBorder(),
-            BorderFactory.createEmptyBorder(3, 3, 3, 3)));
+            BorderFactory.createEmptyBorder(3, 2, 3, 2)));
         button.setBorderPainted(button.isEnabled());
         button.addChangeListener(new ChangeListener() {
             @Override
