@@ -133,11 +133,14 @@ abstract public class TabbedDisplay extends ResourceDisplay implements
      * Adds an editor panel for the given graph, or selects the 
      * one that already exists.
      */
-    public void doEdit(AspectGraph graph) {
-        GraphEditorPanel result = getEditors().get(graph.getName());
+    @Override
+    public void createEditor(String name) {
+        GraphEditorPanel result = getEditors().get(name);
         if (result == null) {
-            result = addEditorPanel(graph);
-            if (this.jModelMap.remove(graph.getName()) != null) {
+            result =
+                addEditorPanel(getSimulatorModel().getStore().getGraphs(
+                    getKind().getResource()).get(name));
+            if (this.jModelMap.remove(name) != null) {
                 getPanel().remove(getMainPanel());
             }
         }

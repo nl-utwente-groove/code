@@ -5,7 +5,6 @@ import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
-import groove.gui.Display;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
 import groove.gui.Icons;
@@ -13,6 +12,7 @@ import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
+import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -141,7 +141,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Returns the simulator display for the resource kind of this action.
      * @throws IllegalStateException if there is no resource kind
      */
-    protected final Display getDisplay() {
+    protected final ResourceDisplay getDisplay() {
         if (getResourceKind() == null) {
             throw new IllegalStateException();
         }

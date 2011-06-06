@@ -43,6 +43,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -348,6 +349,24 @@ final public class AspectJGraph extends GraphJGraph {
         setConnectable(editable);
         setDisconnectable(editable);
         super.setEditable(editable);
+    }
+
+    /**
+     * Overrides the method so as to ensure the width does not shrink.
+     * @param r
+     *            a rectangle in screen coordinates.
+     * @return the same rectangle applied to the grid.
+     */
+    @Override
+    public Rectangle2D snap(Rectangle2D r) {
+        if (isGridEnabled() && r != null) {
+            double sgs = getGridSize() * getScale();
+            r.setFrame(Math.round(Math.round(r.getX() / sgs) * sgs),
+                Math.round(Math.round(r.getY() / sgs) * sgs),
+                1 + Math.round(Math.ceil(r.getWidth() / sgs) * sgs),
+                1 + Math.round(Math.round(r.getHeight() / sgs) * sgs));
+        }
+        return r;
     }
 
     /**

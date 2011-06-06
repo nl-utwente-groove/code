@@ -20,7 +20,7 @@ public class NewAction extends SimulatorAction {
     @Override
     public boolean execute() {
         ResourceKind resource = getResourceKind();
-        String newName =
+        final String newName =
             askNewName(resource, Options.getNewResourceName(resource), true);
         if (newName != null) {
             try {
@@ -40,7 +40,7 @@ public class NewAction extends SimulatorAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getStateDisplay().doEdit(newGraph);
+                            getDisplay().createEditor(newName);
                         }
                     });
                     break;
