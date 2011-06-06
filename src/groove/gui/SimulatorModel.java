@@ -882,7 +882,8 @@ public class SimulatorModel implements Cloneable {
      * if none is currently selected.
      */
     public final HostModel getHost() {
-        return hasHost() ? this.hostSet.iterator().next() : null;
+        HostModel result = hasHost() ? this.hostSet.iterator().next() : null;
+        return result;
     }
 
     /** 
@@ -910,26 +911,6 @@ public class SimulatorModel implements Cloneable {
     public final boolean setHost(String name) {
         return setHostSet(name == null ? Collections.<String>emptySet()
                 : Collections.singleton(name));
-        //        Set<String> hostNameSet;
-        //        if (name == null) {
-        //            if (hasState() || getGrammar() == null) {
-        //                hostNameSet = Collections.emptySet();
-        //            } else {
-        //                Set<String> allHostNames = getGrammar().getGraphNames();
-        //                String startGraphName = getGrammar().getStartGraphName();
-        //                if (allHostNames.isEmpty()) {
-        //                    hostNameSet = Collections.<String>emptySet();
-        //                } else {
-        //                    hostNameSet =
-        //                        Collections.singleton(allHostNames.contains(startGraphName)
-        //                                ? startGraphName
-        //                                : allHostNames.iterator().next());
-        //                }
-        //            }
-        //        } else {
-        //            hostNameSet = Collections.singleton(name);
-        //        }
-        //        return setHostSet(hostNameSet);
     }
 
     /** 
@@ -953,7 +934,8 @@ public class SimulatorModel implements Cloneable {
      * @see #setHost(String)
      */
     private boolean changeHost(String hostName) {
-        return changeHostSet(Collections.singleton(hostName));
+        return changeHostSet(hostName == null ? Collections.<String>emptySet()
+                : Collections.singleton(hostName));
     }
 
     /** 
@@ -976,16 +958,18 @@ public class SimulatorModel implements Cloneable {
         hostNames = new HashSet<String>(hostNames);
         for (HostModel oldHost : this.hostSet) {
             if (hostNames.remove(oldHost.getName())) {
-                HostModel newRule =
+                HostModel newHost =
                     this.grammar.getHostModel(oldHost.getName());
-                newHostSet.add(newRule);
-                result |= oldHost != newRule;
+                assert newHost != null;
+                newHostSet.add(newHost);
+                result |= oldHost != newHost;
             } else {
                 result = true;
             }
         }
         for (String hostName : hostNames) {
-            newHostSet.add(this.grammar.getHostModel(hostName));
+            HostModel newHost = this.grammar.getHostModel(hostName);
+            newHostSet.add(newHost);
             result = true;
         }
         if (result) {

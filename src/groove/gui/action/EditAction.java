@@ -31,13 +31,13 @@ public class EditAction extends SimulatorAction {
             break;
         case HOST:
             if (getSimulatorModel().hasHost()) {
-                getStateDisplay().doEdit(
-                    getSimulatorModel().getHost().getSource());
+                getStateDisplay().createEditor(
+                    getSimulatorModel().getHost().getName());
             } else {
                 AspectGraph graph =
                     getStateDisplay().getStatePanel().getJModel().getGraph();
                 // find out if we're editing a host graph or a state
-                String newGraphName =
+                final String newGraphName =
                     askNewName(ResourceKind.HOST, graph.getName(), true);
                 if (newGraphName != null) {
                     final AspectGraph newGraph = graph.rename(newGraphName);
@@ -47,8 +47,8 @@ public class EditAction extends SimulatorAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                getDisplaysPanel().getStateDisplay().doEdit(
-                                    newGraph);
+                                getDisplaysPanel().getStateDisplay().createEditor(
+                                    newGraphName);
                             }
                         });
                     } catch (IOException e) {
@@ -59,13 +59,12 @@ public class EditAction extends SimulatorAction {
             }
             break;
         case RULE:
-            getDisplaysPanel().getRuleDisplay().doEdit(
-                getSimulatorModel().getRule().getSource());
+            getDisplaysPanel().getRuleDisplay().createEditor(
+                getSimulatorModel().getRule().getName());
             break;
         case TYPE:
-            final AspectGraph initType =
-                getSimulatorModel().getType().getSource();
-            getDisplaysPanel().getTypeDisplay().doEdit(initType);
+            final String initType = getSimulatorModel().getType().getName();
+            getDisplaysPanel().getTypeDisplay().createEditor(initType);
             break;
         case PROPERTIES:
         default:

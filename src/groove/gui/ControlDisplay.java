@@ -315,6 +315,12 @@ final public class ControlDisplay extends ResourceDisplay implements
         return getSimulatorModel().getGrammar();
     }
 
+    @Override
+    public void createEditor(String name) {
+        assert name.equals(getSelectedControl().getName());
+        startEditing();
+    }
+
     /**
      * Convenience method to return the currently selected control view.
      */

@@ -64,6 +64,9 @@ abstract public class ResourceDisplay implements Display {
         }
     }
 
+    /** Creates an editor for the resource with given name. */
+    public abstract void createEditor(String name);
+
     /** 
      * Creates a popup menu for the label list.
      * @param overResource flag indicating that the mouse is over a 

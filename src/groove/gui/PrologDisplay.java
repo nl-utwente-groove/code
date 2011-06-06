@@ -456,6 +456,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     /**
      * Create a new prolog editor tab
      */
+    @Override
     public void createEditor(String title) {
         if (this.editorMap.containsKey(title)) {
             PrologEditorPanel editor = this.editorMap.get(title);
