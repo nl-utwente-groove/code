@@ -314,7 +314,6 @@ public class SimulatorModel implements Cloneable {
         }
         try {
             getStore().putGraphs(resource, newGraphs);
-            changeRuleSet(priorityMap.keySet());
             changeGrammar(true);
             changeDisplay(DisplayKind.toDisplay(resource));
             return true;

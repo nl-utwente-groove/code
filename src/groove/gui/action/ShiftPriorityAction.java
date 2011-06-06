@@ -47,7 +47,7 @@ public class ShiftPriorityAction extends SimulatorAction {
         // collect all rules according to current priority
         NavigableMap<Integer,Set<AspectGraph>> rulesMap =
             new TreeMap<Integer,Set<AspectGraph>>();
-        for (AspectGraph ruleGraph : getSimulatorModel().getStore().getGraphs(
+        for (AspectGraph ruleGraph : getGrammarStore().getGraphs(
             ResourceKind.RULE).values()) {
             int priority = GraphProperties.getPriority(ruleGraph);
             Set<AspectGraph> cell = rulesMap.get(priority);
