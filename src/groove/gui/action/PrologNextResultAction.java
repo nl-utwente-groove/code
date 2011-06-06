@@ -41,6 +41,7 @@ public class PrologNextResultAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().hasGrammar());
+        setEnabled(getSimulatorModel().hasGrammar()
+            && getPrologDisplay().hasNextResult());
     }
 }

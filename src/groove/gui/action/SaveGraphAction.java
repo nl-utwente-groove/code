@@ -26,19 +26,6 @@ import javax.swing.Action;
  * @version $Revision $
  */
 public final class SaveGraphAction extends SimulatorAction {
-    /** 
-     * Creates an instance of the action for a simulator.
-     */
-    private SaveGraphAction(Simulator simulator, GraphEditorPanel editor,
-            boolean saveAs) {
-        super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
-                : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
-                : Icons.SAVE_ICON);
-        this.saveAs = saveAs;
-        this.editor = editor;
-        putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);
-    }
-
     /** Creates an instance of the action for a given editor panel. */
     public SaveGraphAction(GraphEditorPanel editor) {
         this(editor.getSimulator(), editor, false);
@@ -54,6 +41,19 @@ public final class SaveGraphAction extends SimulatorAction {
     public SaveGraphAction(Simulator simulator, GraphRole role, boolean saveAs) {
         this(simulator, (GraphEditorPanel) null, saveAs);
         this.role = role;
+    }
+
+    /** 
+     * Internal constructor.
+     */
+    private SaveGraphAction(Simulator simulator, GraphEditorPanel editor,
+            boolean saveAs) {
+        super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
+                : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
+                : Icons.SAVE_ICON);
+        this.saveAs = saveAs;
+        this.editor = editor;
+        putValue(Action.ACCELERATOR_KEY, Options.SAVE_KEY);
     }
 
     @Override
@@ -131,34 +131,21 @@ public final class SaveGraphAction extends SimulatorAction {
     @Override
     public void refresh() {
         boolean enabled;
+        ResourceKind resource = ResourceKind.toResource(getRole());
         if (this.editor == null) {
-            switch (getRole()) {
-            case HOST:
-                enabled =
-                    getSimulatorModel().hasHost()
-                        || getSimulatorModel().hasState();
-                break;
-            case RULE:
-                enabled = getSimulatorModel().hasRule();
-                break;
-            case TYPE:
-                enabled = getSimulatorModel().hasType();
-                break;
-            default:
-                assert false;
-                enabled = false;
+            if (isForState()) {
+                enabled = getSimulatorModel().hasState();
+            } else {
+                enabled = getSimulatorModel().isSelected(resource);
             }
         } else {
             enabled = this.editor.isDirty();
         }
         setEnabled(enabled);
         if (enabled) {
-            String name;
-            if (getRole() == GraphRole.HOST && !getSimulatorModel().hasHost()) {
-                name = Options.getSaveStateActionName(this.saveAs);
-            } else {
-                name = Options.getSaveActionName(getRole(), this.saveAs);
-            }
+            String name =
+                isForState() ? Options.getSaveStateActionName(this.saveAs)
+                        : Options.getSaveActionName(resource, this.saveAs);
             if (this.saveAs) {
                 putValue(NAME, name);
             }

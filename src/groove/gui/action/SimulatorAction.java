@@ -58,11 +58,12 @@ public abstract class SimulatorAction extends AbstractAction implements
     /**
      * Internal constructor to set all fields.
      */
-    public SimulatorAction(Simulator simulator, String name, Icon icon,
-            ResourceKind resource) {
+    private SimulatorAction(Simulator simulator, String name, Icon icon,
+            EditType edit, ResourceKind resource) {
         super(name, icon);
         this.simulator = simulator;
         this.resource = resource;
+        this.edit = edit;
         putValue(SHORT_DESCRIPTION, name);
         setEnabled(false);
         if (simulator != null) {
@@ -76,7 +77,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * The action adds itself to the refreshables of the simulator.
      */
     public SimulatorAction(Simulator simulator, String name, Icon icon) {
-        this(simulator, name, icon, null);
+        this(simulator, name, icon, null, null);
     }
 
     /**
@@ -87,7 +88,17 @@ public abstract class SimulatorAction extends AbstractAction implements
     public SimulatorAction(Simulator simulator, EditType edit,
             ResourceKind resource) {
         this(simulator, Options.getEditActionName(edit, resource, false),
-            Icons.getIcon(edit, resource), resource);
+            Icons.getIcon(edit, resource), edit, resource);
+    }
+
+    /** Returns the edit name for this action, if it is an edit action. */
+    protected String getEditActionName() {
+        if (getEditType() == null) {
+            return null;
+        } else {
+            return Options.getEditActionName(getEditType(), getResourceKind(),
+                false);
+        }
     }
 
     /** The simulator on which this action works. */
@@ -174,6 +185,11 @@ public abstract class SimulatorAction extends AbstractAction implements
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
         return getSimulator().getPrologDisplay();
+    }
+
+    /** Returns the (possibly {@code null}) edit type of this action.*/
+    final protected EditType getEditType() {
+        return this.edit;
     }
 
     /** Returns the (possibly {@code null}) grammar resource being edited by this action.*/
@@ -451,6 +467,8 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** The simulator on which this action works. */
     private final Simulator simulator;
+    /** Possibly {@code null} edit type of this action. */
+    private final EditType edit;
     /** Possibly {@code null} resource being edited by this action. */
     private final ResourceKind resource;
 }

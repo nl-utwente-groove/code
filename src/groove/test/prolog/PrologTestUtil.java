@@ -16,7 +16,6 @@
  */
 package groove.test.prolog;
 
-import static org.junit.Assert.fail;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
@@ -46,38 +45,6 @@ public class PrologTestUtil {
     }
 
     /**
-     * Executes a query
-     * @param grooveState       The groove state to use for the query
-     * @param query             The query to execute
-     * @return                  The query result
-     */
-    public static QueryResult executeQuery(GrooveState grooveState, String query) {
-        if (prologQuery == null) {
-            prologQuery = PrologEngine.instance();
-        }
-
-        prologQuery.setGrooveState(grooveState);
-
-        try {
-            QueryResult queryResult = prologQuery.newQuery(query);
-
-            while (prologQuery.next() != null) {
-                // Load all results
-            }
-
-            return queryResult;
-        } catch (FormatException e) {
-            e.printStackTrace();
-            fail("Got exception: " + e.toString());
-        } catch (PrologException e) {
-            e.printStackTrace();
-            fail("Got exception: " + e.toString());
-        }
-
-        return null;
-    }
-
-    /**
      * Checks if a query succeeds
      * @param grooveState       A groove state
      * @param query             A query
@@ -86,8 +53,7 @@ public class PrologTestUtil {
     public static boolean test(GrooveState grooveState, String query)
         throws FormatException, PrologException {
         if (prologQuery == null) {
-            prologQuery = PrologEngine.instance();
-            prologQuery.setEnvironment(new GrooveEnvironment(null, null));
+            prologQuery = new PrologEngine(new GrooveEnvironment(null, null));
         }
 
         prologQuery.setGrooveState(grooveState);
@@ -109,8 +75,8 @@ public class PrologTestUtil {
         GrammarModel result = null;
         try {
             result =
-                GrammarModel.newInstance(
-                    new File(GRAMMAR_DIR, grammarName), startGraphName, false);
+                GrammarModel.newInstance(new File(GRAMMAR_DIR, grammarName),
+                    startGraphName, false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }

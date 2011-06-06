@@ -7,6 +7,7 @@ import groove.gui.dialog.SaveDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
+import groove.trans.ResourceKind;
 import groove.view.ControlModel;
 
 import java.io.File;
@@ -21,8 +22,9 @@ public class SaveControlAction extends SimulatorAction {
      * as a separate file outside the grammar
      */
     public SaveControlAction(Simulator simulator, boolean saveAs) {
-        super(simulator, Options.getSaveControlActionName(saveAs), saveAs
-                ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON);
+        super(simulator,
+            Options.getSaveActionName(ResourceKind.CONTROL, saveAs), saveAs
+                    ? Icons.SAVE_AS_ICON : Icons.SAVE_ICON);
         putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         this.saveAs = saveAs;
         getControlDisplay().addRefreshable(this);
@@ -73,7 +75,8 @@ public class SaveControlAction extends SimulatorAction {
                 String program = getSimulatorModel().getControl().getProgram();
                 if (nameInGrammar == null) {
                     // store as external file
-                    ControlModel.store(program, new FileOutputStream(selectedFile));
+                    ControlModel.store(program, new FileOutputStream(
+                        selectedFile));
                 } else {
                     // store in grammar
                     getSimulatorModel().doAddControl(nameInGrammar, program);

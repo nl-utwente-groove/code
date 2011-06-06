@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.graph.GraphRole;
 import groove.gui.jgraph.JAttr;
 import groove.trans.ResourceKind;
 import groove.util.ExprParser;
@@ -452,16 +451,6 @@ public class Options implements Cloneable {
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
-    /** Name of the "Copy Control Program" action. */
-    public static final String COPY_CONTROL_ACTION_NAME = "Copy Control";
-    /** Name of the "Copy Graph" action. */
-    public static final String COPY_GRAPH_ACTION_NAME = "Copy Graph";
-    /** Copy prolog action name */
-    public static final String COPY_PROLOG_ACTION_NAME = "Copy Prolog";
-    /** Copy rule action name */
-    public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
-    /** Name of the "Copy Type Graph" action. */
-    public static final String COPY_TYPE_ACTION_NAME = "Copy Type";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Default exploration action name */
@@ -469,48 +458,14 @@ public class Options implements Cloneable {
         "Explore State Space";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
-    /** Delete control program action name */
-    public static final String DELETE_CONTROL_ACTION_NAME = "Delete Control";
-    /** Delete graph action name */
-    public static final String DELETE_GRAPH_ACTION_NAME = "Delete Graph";
-    /** Delete prolog program action name */
-    public static final String DELETE_PROLOG_ACTION_NAME = "Delete Prolog";
-    /** Delete rule action name */
-    public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
-    /** Delete type graph action name */
-    public static final String DELETE_TYPE_ACTION_NAME = "Delete Type";
-    /** Name of the "Disable Control" action. */
-    public static final String DISABLE_CONTROL_ACTION_NAME = "Disable Control";
-    /** Name of the "Disable" action. */
-    public static final String DISABLE_ACTION_NAME = "Disable";
-    /** Name of the "Disable Rule" action. */
-    public static final String DISABLE_RULE_ACTION_NAME = "Disable Rule";
-    /** Name of the "Disable Type Graph" action. */
-    public static final String DISABLE_TYPE_ACTION_NAME = "Disable Type Graph";
     /** Edge mode action name */
     public static final String EDIT_MODE_NAME = "Edit mode";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
-    /** Edit control action name */
-    public static final String EDIT_CONTROL_ACTION_NAME = "Edit Control ...";
-    /** Edit graph action name */
-    public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edit label action name */
     static public final String EDIT_LABEL_ACTION = "Edit Label";
-    /** Edit prolog action name */
-    public static final String EDIT_PROLOG_ACTION_NAME = "Edit Prolog ...";
-    /** Edit rule action name */
-    public static final String EDIT_RULE_ACTION_NAME = "Edit Rule ...";
     /** Edit state action name */
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
-    /** Edit type action name */
-    public static final String EDIT_TYPE_ACTION_NAME = "Edit Type ...";
-    /** Name of the "Enable Control Program" action */
-    public static final String ENABLE_CONTROL_ACTION_NAME = "Enable Control";
-    /** Name of the "Enable Rule" action */
-    public static final String ENABLE_RULE_ACTION_NAME = "Enable Rule";
-    /** Name of the "Enable Type Graph" action */
-    public static final String ENABLE_TYPE_ACTION_NAME = "Enable Type Graph";
     /** Exploration dialog action name */
     public static final String EXPLORATION_DIALOG_ACTION_NAME =
         "Customize Exploration ...";
@@ -566,18 +521,8 @@ public class Options implements Cloneable {
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */
     public static final String NEW_ACTION_NAME = "New";
-    /** New control action name */
-    public static final String NEW_CONTROL_ACTION_NAME = "New Control";
-    /** New graph action name */
-    public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
     /** New grammar action name */
     public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar ...";
-    /** New prolog action name */
-    public static final String NEW_PROLOG_ACTION_NAME = "New Prolog";
-    /** New rule action name */
-    public static final String NEW_RULE_ACTION_NAME = "New Rule";
-    /** New type action name */
-    public static final String NEW_TYPE_ACTION_NAME = "New Type";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */
@@ -603,16 +548,6 @@ public class Options implements Cloneable {
     public static final String RELABEL_ACTION_NAME = "Replace Label";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** Control program rename action name */
-    public static final String RENAME_CONTROL_ACTION_NAME = "Rename Control";
-    /** Graph rename action name */
-    public static final String RENAME_GRAPH_ACTION_NAME = "Rename Graph";
-    /** Prolog rename action name */
-    public static final String RENAME_PROLOG_ACTION_NAME = "Rename Prolog";
-    /** Rule rename action name */
-    public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
-    /** Type rename action name */
-    public static final String RENAME_TYPE_ACTION_NAME = "Rename Type";
     /** Renumber action name */
     public static final String RENUMBER_ACTION_NAME = "Renumber Nodes";
     /** Reset label position action name */
@@ -657,14 +592,10 @@ public class Options implements Cloneable {
                 : SAVE_NAME_TEMPLATE, item);
     }
 
-    /** Returns the save-as action name for a given graph role. */
-    public static final String getSaveActionName(GraphRole role, boolean saveAs) {
-        return getSaveActionName(role.toString(true), saveAs);
-    }
-
-    /** Returns the save-as action name for a given graph role. */
-    public static final String getSaveControlActionName(boolean saveAs) {
-        return getSaveActionName("Control", saveAs);
+    /** Returns the save or save-as action name for a given resource kind. */
+    public static final String getSaveActionName(ResourceKind resource,
+            boolean saveAs) {
+        return getSaveActionName(resource.getName(), saveAs);
     }
 
     /** Returns the save-as action name for a given graph role. */
