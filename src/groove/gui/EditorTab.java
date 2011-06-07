@@ -17,7 +17,7 @@
 package groove.gui;
 
 import groove.gui.TabbedResourceDisplay.Tab;
-import groove.gui.action.CancelEditGraphAction;
+import groove.gui.action.CancelEditAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
@@ -91,12 +91,32 @@ abstract public class EditorTab extends JPanel implements Tab {
     /** Sets the status of the editor to clean. */
     abstract public void setClean();
 
-    /** Calls {@link CancelEditGraphAction#execute()}. */
+    /** Calls {@link CancelEditAction#execute()}. */
     public boolean cancelEditing(boolean confirm) {
         boolean result = false;
-        if (!confirm || confirmAbandon()) {
+        if (!confirm || confirmCancel()) {
             dispose();
             result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Creates and shows a confirmation dialog for abandoning the currently
+     * edited graph.
+     */
+    public boolean confirmCancel() {
+        boolean result = true;
+        if (isDirty()) {
+            int answer =
+                JOptionPane.showConfirmDialog(this, String.format(
+                    "%s '%s' has been modified. Save changes?",
+                    getResourceKind().getName(), getName()), null,
+                    JOptionPane.YES_NO_CANCEL_OPTION);
+            if (answer == JOptionPane.YES_OPTION) {
+                saveResource();
+            }
+            result = answer != JOptionPane.CANCEL_OPTION;
         }
         return result;
     }
@@ -127,26 +147,6 @@ abstract public class EditorTab extends JPanel implements Tab {
         getTabLabel().setTitle(this.display.getLabelText(getName()));
         getSaveAction().refresh();
         this.display.getListPanel().repaint();
-    }
-
-    /**
-     * Creates and shows a confirmation dialog for abandoning the currently
-     * edited graph.
-     */
-    public boolean confirmAbandon() {
-        boolean result = true;
-        if (isDirty()) {
-            int answer =
-                JOptionPane.showConfirmDialog(this, String.format(
-                    "%s '%s' has been modified. Save changes?",
-                    getResourceKind().getName(), getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (answer == JOptionPane.YES_OPTION) {
-                saveResource();
-            }
-            result = answer != JOptionPane.CANCEL_OPTION;
-        }
-        return result;
     }
 
     /** Saves the resource that is currently being edited. */
