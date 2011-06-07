@@ -7,6 +7,7 @@ import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
+import groove.gui.HostDisplay;
 import groove.gui.Icons;
 import groove.gui.LTSDisplay;
 import groove.gui.Options;
@@ -16,7 +17,6 @@ import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.StateDisplay;
 import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
@@ -59,7 +59,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     /**
      * Internal constructor to set all fields.
      */
-    private SimulatorAction(Simulator simulator, String name, Icon icon,
+    protected SimulatorAction(Simulator simulator, String name, Icon icon,
             EditType edit, ResourceKind resource) {
         super(name, icon);
         this.simulator = simulator;
@@ -77,7 +77,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * and with a given name and (possibly {@code null}) icon.
      * The action adds itself to the refreshables of the simulator.
      */
-    public SimulatorAction(Simulator simulator, String name, Icon icon) {
+    protected SimulatorAction(Simulator simulator, String name, Icon icon) {
         this(simulator, name, icon, null, null);
     }
 
@@ -86,7 +86,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * The edit type and edited resource automatically generate the name and icon.
      * The action adds itself to the refreshables of the simulator.
      */
-    public SimulatorAction(Simulator simulator, EditType edit,
+    protected SimulatorAction(Simulator simulator, EditType edit,
             ResourceKind resource) {
         this(simulator, Options.getEditActionName(edit, resource, false),
             Icons.getEditIcon(edit, resource), edit, resource);
@@ -164,7 +164,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the state panel of the simulator. */
-    protected final StateDisplay getStateDisplay() {
+    protected final HostDisplay getStateDisplay() {
         return getDisplaysPanel().getStateDisplay();
     }
 

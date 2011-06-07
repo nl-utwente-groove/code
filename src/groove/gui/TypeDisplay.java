@@ -21,14 +21,7 @@ import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 import groove.view.TypeModel;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.util.Set;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.ToolTipManager;
 
 /**
  * Panel that holds the type display and type graph editors.
@@ -52,11 +45,6 @@ final public class TypeDisplay extends GraphDisplay implements
     }
 
     @Override
-    public TypePanel getMainTab() {
-        return getTypePanel();
-    }
-
-    @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         if (!suspendListening()) {
@@ -67,67 +55,19 @@ final public class TypeDisplay extends GraphDisplay implements
         }
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
             TypeModel type = source.getType();
-            setSelected(type == null ? null : type.getName());
+            selectResource(type == null ? null : type.getName());
             getEnableButton().setSelected(type != null && type.isEnabled());
         }
         activateListening();
     }
 
-    @Override
-    protected TypeModel getResource(String name) {
-        return getSimulatorModel().getGrammar().getTypeModel(name);
-    }
-
-    /**
-     * Creates and returns the panel with the type graphs list.
-     */
-    public JPanel getListPanel() {
-        if (this.listPanel == null) {
-
-            JScrollPane typesPane = new JScrollPane(getList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
-            this.listPanel.add(typesPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
-        }
-        return this.listPanel;
-    }
-
-    /** Creates a tool bar for the types list. */
-    @Override
-    protected JToolBar createListToolBar() {
-        JToolBar result = super.createListToolBar();
-        return result;
-    }
-
     /** Returns the list of states and host graphs. */
+    @Override
     public TypeJList getList() {
         if (this.typeJList == null) {
             this.typeJList = new TypeJList(this);
         }
         return this.typeJList;
-    }
-
-    /** Returns the default type panel displayed on this pane. */
-    public final TypePanel getTypePanel() {
-        if (this.typePanel == null) {
-            this.typePanel = new TypePanel(getSimulator());
-        }
-        return this.typePanel;
-    }
-
-    @Override
-    protected void selectionChanged() {
-        getSimulatorModel().setType(getSelectedName());
     }
 
     @Override
@@ -141,10 +81,6 @@ final public class TypeDisplay extends GraphDisplay implements
             text.append(")");
         }
     }
-
-    private TypePanel typePanel;
-    /** panel on which the type list list (and toolbar) are displayed. */
-    private JPanel listPanel;
 
     /** Production system type list */
     private TypeJList typeJList;

@@ -25,7 +25,6 @@ import groove.view.HostModel;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -55,11 +54,11 @@ import javax.swing.event.ListSelectionListener;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class StateJList extends JList implements SimulatorListener {
+public class HostJList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected StateJList(StateDisplay display) {
+    protected HostJList(HostDisplay display) {
         this.display = display;
         this.simulator = display.getSimulator();
         this.listModel = new DefaultListModel();
@@ -76,12 +75,12 @@ public class StateJList extends JList implements SimulatorListener {
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                StateJList.this.repaint();
+                HostJList.this.repaint();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                StateJList.this.repaint();
+                HostJList.this.repaint();
             }
         });
         addMouseListener(new MyMouseListener());
@@ -292,7 +291,7 @@ public class StateJList extends JList implements SimulatorListener {
     }
 
     /** The display from which this list is derived. */
-    private final StateDisplay display;
+    private final HostDisplay display;
     /**
      * The simulator to which this directory belongs.
      * @invariant simulator != null
@@ -336,13 +335,13 @@ public class StateJList extends JList implements SimulatorListener {
                             setSelectedIndex(index);
                         }
                     }
-                    StateJList.this.requestFocus();
+                    HostJList.this.requestFocus();
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (StateJList.this.isEnabled() && cellSelected) {
-                    StateJList.this.display.getEditAction().execute();
+                if (HostJList.this.isEnabled() && cellSelected) {
+                    HostJList.this.display.getEditAction().execute();
                 }
             }
         }
@@ -378,17 +377,16 @@ public class StateJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            cellHasFocus = isSelected && StateJList.this.isFocusOwner();
+            cellHasFocus = isSelected && HostJList.this.isFocusOwner();
             // set tool tips and special formats
+            setText(HostJList.this.display.getLabelText(value.toString()));
             if (index == 0) {
                 // set the first item (the current state indicator) to special
                 // format
                 if (!isSelected) {
                     // distinguish the current start graph name
                     setBackground(JAttr.STATE_BACKGROUND);
-                    //                    ((JComponent) result).setBorder(START_GRAPH_BORDER);
                 }
-                setFont(getFont().deriveFont(Font.ITALIC));
                 setToolTipText("Currently selected state of the simulation");
                 setIcon(Icons.STATE_MODE_ICON);
             } else {
@@ -397,10 +395,9 @@ public class StateJList extends JList implements SimulatorListener {
                 } else {
                     setToolTipText("Potential start graph");
                 }
-                setText(StateJList.this.display.getLabelText(value.toString()));
-                setIcon(StateJList.this.display.getListIcon(value.toString()));
+                setIcon(HostJList.this.display.getListIcon(value.toString()));
                 boolean error =
-                    StateJList.this.display.hasError(value.toString());
+                    HostJList.this.display.hasError(value.toString());
                 setForeground(JAttr.getForeground(isSelected, cellHasFocus,
                     error));
                 setBackground(JAttr.getBackground(isSelected, cellHasFocus,

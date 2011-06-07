@@ -124,19 +124,11 @@ public class PrologJList extends JList implements SimulatorListener {
      * Creates a popup menu.
      */
     private JPopupMenu createPopupMenu(Point atPoint) {
-        JPopupMenu result = new JPopupMenu();
-        result.add(this.display.getNewAction());
-        result.setFocusable(false);
         // add rest only if mouse is actually over a prolog name
         int index = locationToIndex(atPoint);
-        if (index != -1 && getCellBounds(index, index).contains(atPoint)) {
-            result.add(this.display.getEditAction());
-            result.addSeparator();
-            result.add(this.display.getCopyAction());
-            result.add(this.display.getDeleteAction());
-            result.add(this.display.getRenameAction());
-        }
-        return result;
+        boolean overText =
+            index >= 0 && getCellBounds(index, index).contains(atPoint);
+        return this.display.createListPopupMenu(overText);
     }
 
     @Override

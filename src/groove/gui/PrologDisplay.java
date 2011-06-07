@@ -35,7 +35,6 @@ import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
@@ -44,16 +43,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -63,11 +59,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -79,7 +72,8 @@ import javax.swing.tree.TreePath;
  * 
  * @author Michiel Hendriks
  */
-public class PrologDisplay extends ResourceDisplay implements SimulatorListener {
+public class PrologDisplay extends TabbedResourceDisplay implements
+        SimulatorListener {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
@@ -105,17 +99,6 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
             this.userOutput = new JTextAreaOutputStream(getResultsArea());
         }
         return this.userOutput;
-    }
-
-    /**
-     * Creates and returns the tabbed pane on which the editors are placed.
-     */
-    JTabbedPane getEditorPane() {
-        if (this.editorPane == null) {
-            this.editorPane = new MyTabbedPane();
-
-        }
-        return this.editorPane;
     }
 
     /**
@@ -152,6 +135,13 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
             });
         }
         return this.queryField;
+    }
+
+    private JTabbedPane getSyntaxHelp() {
+        if (this.syntaxHelp == null) {
+            this.syntaxHelp = createSyntaxHelp();
+        }
+        return this.syntaxHelp;
     }
 
     /**
@@ -331,61 +321,9 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
         return result;
     }
 
-    /** 
-     * Returns the label to be used for a given (named) prolog program. 
-     * @param name the name of the control program
-     */
-    public Icon getListIcon(String name) {
-        Icon result;
-        if (this.editorMap.containsKey(name)) {
-            result = Icons.EDIT_ICON;
-        } else {
-            result = getKind().getListIcon();
-        }
-        return result;
-    }
-
-    /** 
-     * Returns the label to be used for a given (named) prolog program. 
-     * @param name the name of the control program
-     */
-    public String getLabelText(String name) {
-        StringBuilder result = new StringBuilder();
-        if (this.editorMap.containsKey(name)) {
-            result.append(this.editorMap.get(name).getTitle());
-        } else {
-            result.append(name);
-        }
-        return result.toString();
-    }
-
-    /**
-     * Creates and returns the panel with the control programs list.
-     */
-    public JPanel getListPanel() {
-        if (this.prologListPanel == null) {
-            JToolBar toolBar = createListToolBar();
-            JScrollPane prologPane = new JScrollPane(getPrologList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.prologListPanel = new JPanel(new BorderLayout(), false);
-            this.prologListPanel.add(toolBar, BorderLayout.NORTH);
-            this.prologListPanel.add(prologPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(
-                this.prologListPanel);
-        }
-        return this.prologListPanel;
-    }
-
     /** Returns the list of control programs. */
-    private PrologJList getPrologList() {
+    @Override
+    protected PrologJList getList() {
         if (this.prologJList == null) {
             this.prologJList = new PrologJList(this);
         }
@@ -401,83 +339,38 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
                 this.environment = null;
                 this.engine = null;
                 GrammarModel grammar = source.getGrammar();
-                for (PrologEditorPanel editor : this.editorMap.values()) {
+                for (EditorTab editor : getEditors().values()) {
                     if (grammar == null
                         || !grammar.getPrologNames().contains(editor.getName())) {
                         editor.dispose();
                     }
                 }
+                selectResource(source.getSelected(getResourceKind()));
                 loadSyntaxHelpTree(this.userTree,
                     getEnvironment().getUserTags());
             }
             if (changes.contains(Change.PROLOG) && source.hasProlog()) {
-                PrologEditorPanel editor =
-                    this.editorMap.get(source.getProlog().getName());
-                if (editor != null) {
-                    getEditorPane().setSelectedComponent(editor);
-                }
+                selectResource(source.getProlog().getName());
             }
             this.listening = true;
         }
     }
 
-    /**
-     * Create a new prolog editor tab
-     */
     @Override
-    public void createEditor(String title) {
-        if (this.editorMap.containsKey(title)) {
-            PrologEditorPanel editor = this.editorMap.get(title);
-            getEditorPane().setSelectedComponent(editor);
-        } else {
-            String program =
-                getSimulatorModel().getGrammar().getPrologModel(title).getProgram();
-            final PrologEditorPanel editor =
-                new PrologEditorPanel(this, title, program);
-            this.editorMap.put(title, editor);
-            this.editors.add(editor);
-            getEditorPane().addTab("", editor);
-            int index = getEditorPane().indexOfComponent(editor);
-            getEditorPane().setTabComponentAt(index, editor.getTabLabel());
-            getListPanel().repaint();
-        }
+    protected MainTab createMainTab() {
+        return new TextEditorTab(this);
+    }
+
+    @Override
+    protected EditorTab createEditorTab(String name) {
+        String program =
+            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
+        return new TextEditorTab(this, name, program);
     }
 
     /** Returns the currently selected editor, if any. */
-    public PrologEditorPanel getSelectedEditor() {
-        return (PrologEditorPanel) getEditorPane().getSelectedComponent();
-    }
-
-    /** Returns the editor for a control program with a given name, if any. */
-    public PrologEditorPanel getEditor(String title) {
-        return this.editorMap.get(title);
-    }
-
-    @Override
-    public boolean disposeAllEditors() {
-        boolean result = true;
-        for (PrologEditorPanel editor : new ArrayList<PrologEditorPanel>(
-            this.editorMap.values())) {
-            result = editor.cancelEditing(true);
-            if (!result) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Cancels the current editing action, if any.
-     * @param confirm indicates if the user should be asked for confirmation
-     * @return if editing was indeed stopped
-     */
-    public boolean cancelEditing(String name, boolean confirm) {
-        boolean result = true;
-        PrologEditorPanel editor = this.editorMap.get(name);
-        if (editor != null) {
-            result = editor.cancelEditing(confirm);
-        }
-        return result;
+    public TextEditorTab getSelectedEditor() {
+        return (TextEditorTab) getTabPane().getSelectedComponent();
     }
 
     /**
@@ -684,15 +577,6 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
         }
     }
 
-    /**
-     * Update the tab title
-     */
-    protected void updateTab(PrologEditorPanel editor) {
-        editor.getTabLabel().setTitle(editor.getTitle());
-        getActions().getSavePrologAction().refresh();
-        getListPanel().repaint();
-    }
-
     /** Convenience method to retrieve the grammar view from the simulator. */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
@@ -712,6 +596,8 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
     private JTextArea results;
     private final JLabel statusBar = new JLabel(" ");
     private OutputStream userOutput;
+
+    private JTabbedPane syntaxHelp;
     /**
      * The tree of built-in Prolog predicates
      */
@@ -724,14 +610,6 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
      * The tree of user-defined predicates
      */
     private JTree userTree;
-
-    private JTabbedPane editorPane;
-    private Map<String,PrologEditorPanel> editorMap =
-        new HashMap<String,PrologEditorPanel>();
-    private Set<PrologEditorPanel> editors = new HashSet<PrologEditorPanel>();
-
-    /** panel on which the prolog list (and toolbar) are displayed. */
-    private JPanel prologListPanel;
 
     private boolean listening;
     /** Production system prolog program list. */
@@ -797,7 +675,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
 
             JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             splitPane.setOneTouchExpandable(true);
-            splitPane.setTopComponent(getEditorPane());
+            splitPane.setTopComponent(getTabPane());
             splitPane.setBottomComponent(new JScrollPane(getResultsArea()));
 
             JPanel mainPane = new JPanel(new BorderLayout());
@@ -808,7 +686,7 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
             sp2.setResizeWeight(0.9);
             sp2.setBorder(null);
             sp2.setOneTouchExpandable(true);
-            sp2.setRightComponent(createSyntaxHelp());
+            sp2.setRightComponent(getSyntaxHelp());
             sp2.setLeftComponent(mainPane);
 
             setLayout(new BorderLayout());
@@ -820,36 +698,6 @@ public class PrologDisplay extends ResourceDisplay implements SimulatorListener 
         @Override
         public Display getDisplay() {
             return PrologDisplay.this;
-        }
-    }
-
-    private final class MyTabbedPane extends JTabbedPane {
-        private MyTabbedPane() {
-            super(BOTTOM);
-            setMinimumSize(new Dimension(0, 300));
-            addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    if (PrologDisplay.this.listening) {
-                        PrologDisplay.this.listening = false;
-                        PrologEditorPanel editor = getSelectedEditor();
-                        if (editor != null) {
-                            getSimulatorModel().setProlog(editor.getName());
-                        }
-                        PrologDisplay.this.listening = true;
-                    }
-
-                }
-            });
-        }
-
-        @Override
-        public void removeTabAt(int index) {
-            // removes the editor panel from the map
-            String name = ((PrologEditorPanel) getComponentAt(index)).getName();
-            super.removeTabAt(index);
-            PrologDisplay.this.editorMap.remove(name);
-            getListPanel().repaint();
         }
     }
 }

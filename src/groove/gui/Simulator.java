@@ -332,7 +332,7 @@ public class Simulator implements SimulatorListener {
                             getModel().setDisplay(DisplayKind.CONTROL);
                         } else if (error.getProlog() != null) {
                             String prologName = error.getProlog().getName();
-                            getPrologDisplay().createEditor(prologName);
+                            getPrologDisplay().startEditResource(prologName);
                             getModel().setProlog(prologName);
                             if (error.getNumbers().size() > 1) {
                                 int line = error.getNumbers().get(0);

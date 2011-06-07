@@ -11,7 +11,7 @@ public enum EditType {
     /** Copying of a resource. */
     COPY("Copy"),
     /** Modification of a resource. */
-    MODIFY("Change"),
+    MODIFY("Edit"),
     /** Enabling or disabling of a resource. */
     ENABLE("Enable");
 

@@ -58,7 +58,7 @@ public class DeleteAction extends SimulatorAction {
                 break;
             case PROLOG:
                 cancelEditing =
-                    getPrologDisplay().cancelEditing(names.iterator().next(),
+                    getPrologDisplay().cancelEditResource(names.iterator().next(),
                         false);
                 break;
             case RULE:

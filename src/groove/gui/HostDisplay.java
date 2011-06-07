@@ -19,7 +19,6 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
-import groove.view.HostModel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -35,12 +34,12 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class StateDisplay extends GraphDisplay implements
+final public class HostDisplay extends GraphDisplay implements
         SimulatorListener {
     /**
      * Constructs a panel for a given simulator.
      */
-    public StateDisplay(Simulator simulator) {
+    public HostDisplay(Simulator simulator) {
         super(simulator, ResourceKind.HOST);
         getDisplayPanel().add(getStatePanel(), 0);
         getDisplayPanel().setTabComponentAt(0, getStatePanel().getTabLabel());
@@ -55,18 +54,13 @@ final public class StateDisplay extends GraphDisplay implements
     }
 
     @Override
-    public GraphTab getMainTab() {
-        return getHostPanel();
-    }
-
-    @Override
     public DisplayKind getKind() {
         return DisplayKind.HOST;
     }
 
     @Override
-    public String getName() {
-        String result = super.getName();
+    public String getTitle() {
+        String result = super.getTitle();
         if (result == null && getSimulatorModel().hasState()) {
             result = getSimulatorModel().getState().toString();
         }
@@ -76,6 +70,7 @@ final public class StateDisplay extends GraphDisplay implements
     /**
      * Creates and returns the panel with the start states list.
      */
+    @Override
     public JPanel getListPanel() {
         if (this.listPanel == null) {
             JScrollPane startGraphsPane = new JScrollPane(getList()) {
@@ -105,14 +100,13 @@ final public class StateDisplay extends GraphDisplay implements
         if (changes.contains(Change.GRAMMAR)) {
             getMainTab().updateGrammar(source.getGrammar());
             if (source.hasHost()) {
-                setSelected(source.getHost().getName());
+                selectResource(source.getHost().getName());
             }
         }
         if (changes.contains(Change.HOST)) {
             if (source.hasHost()) {
-                setSelected(source.getHost().getName());
+                selectResource(source.getHost().getName());
             } else {
-                removeMainTab();
                 getDisplayPanel().setSelectedComponent(getStatePanel());
             }
             refreshToolbars();
@@ -137,40 +131,21 @@ final public class StateDisplay extends GraphDisplay implements
         activateListening();
     }
 
-    /** Returns the host subpanel. */
-    public HostPanel getHostPanel() {
-        if (this.hostPanel == null) {
-            this.hostPanel = new HostPanel(getSimulator());
-        }
-        return this.hostPanel;
-    }
-
     /** Returns the state subpanel. */
-    public StatePanel getStatePanel() {
+    public StateTab getStatePanel() {
         if (this.statePanel == null) {
-            this.statePanel = new StatePanel(getSimulator());
+            this.statePanel = new StateTab(getSimulator());
         }
         return this.statePanel;
     }
 
-    @Override
-    protected void selectionChanged() {
-        getSimulatorModel().setHost(getSelectedName());
-    }
-
     /** Returns the list of states and host graphs. */
-    private StateJList getList() {
+    @Override
+    final protected HostJList getList() {
         if (this.stateJList == null) {
-            this.stateJList = new StateJList(this);
+            this.stateJList = new HostJList(this);
         }
         return this.stateJList;
-    }
-
-    private JToolBar getListToolBar() {
-        if (this.listToolBar == null) {
-            this.listToolBar = createListToolBar();
-        }
-        return this.listToolBar;
     }
 
     /** Creates a tool bar for the states list. */
@@ -182,7 +157,7 @@ final public class StateDisplay extends GraphDisplay implements
         } else {
             result = Options.createToolBar();
             result.add(getEditAction());
-            result.add(getSaveAction(false));
+            result.add(getSaveAction());
             result.addSeparator();
             result.add(getActions().getBackAction());
             result.add(getActions().getForwardAction());
@@ -195,17 +170,12 @@ final public class StateDisplay extends GraphDisplay implements
      */
     private void refreshToolbars() {
         // fill the tool bar from a fresh copy
-        this.listToolBar.removeAll();
+        getListToolBar().removeAll();
         JToolBar newBar = createListToolBar();
         while (newBar.getComponentCount() > 0) {
-            this.listToolBar.add(newBar.getComponentAtIndex(0));
+            getListToolBar().add(newBar.getComponentAtIndex(0));
         }
         getListPanel().repaint();
-    }
-
-    @Override
-    protected HostModel getResource(String name) {
-        return getSimulatorModel().getGrammar().getHostModel(name);
     }
 
     @Override
@@ -224,12 +194,8 @@ final public class StateDisplay extends GraphDisplay implements
 
     /** panel on which the state list (and toolbar) are displayed. */
     private JPanel listPanel;
-    /** Toolbar for the {@link #listPanel}. */
-    private JToolBar listToolBar;
     /** Production system graph list */
-    private StateJList stateJList;
-    /** Panel displaying the current, non-edited host graph. */
-    private HostPanel hostPanel;
+    private HostJList stateJList;
     /** Panel displaying the current state. */
-    private StatePanel statePanel;
+    private StateTab statePanel;
 }

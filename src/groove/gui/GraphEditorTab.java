@@ -20,7 +20,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.CancelEditGraphAction;
+import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveGraphAction;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
@@ -29,8 +29,6 @@ import groove.view.aspect.AspectGraph;
 import java.awt.BorderLayout;
 import java.util.Set;
 
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
@@ -39,14 +37,13 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
-        SimulatorListener {
+public class GraphEditorTab extends EditorTab implements SimulatorListener {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param parent the component on which this panel is placed
      * @param graph the input graph for the editor
      */
-    public GraphEditorPanel(final GraphDisplay parent, final AspectGraph graph) {
+    public GraphEditorTab(final GraphDisplay parent, final AspectGraph graph) {
         super(parent);
         final Simulator simulator = parent.getSimulator();
         this.graph = graph;
@@ -55,10 +52,7 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
                 simulator.getModel().getGrammar().getProperties()) {
                 @Override
                 protected void updateTitle() {
-                    getTabLabel().setTitle(parent.getLabelText(getName()));
-                    // an ugly way to ensure that the save action is enabled
-                    // upon changes to the graph
-                    getSaveAction().refresh();
+                    updateDirty();
                 }
 
                 @Override
@@ -70,14 +64,12 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
 
                 @Override
                 JToolBar createToolBar() {
-                    JToolBar toolbar = Options.createToolBar();
-                    toolbar.add(createSaveButton());
-                    toolbar.add(createCancelButton());
-                    addModeButtons(toolbar);
-                    addUndoButtons(toolbar);
-                    addCopyPasteButtons(toolbar);
-                    addGridButtons(toolbar);
-                    return toolbar;
+                    JToolBar result = GraphEditorTab.this.createToolBar();
+                    addModeButtons(result);
+                    addUndoButtons(result);
+                    addCopyPasteButtons(result);
+                    addGridButtons(result);
+                    return result;
                 }
 
                 @Override
@@ -88,11 +80,6 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
         setFocusCycleRoot(true);
         setName(graph.getName());
         simulator.getModel().addListener(this, Change.GRAMMAR);
-    }
-
-    @Override
-    public String getName() {
-        return getGraph().getName();
     }
 
     /** Starts the editor with the graph passed in at construction time. */
@@ -160,8 +147,8 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
         }
     }
 
-    /** Indicates if the edited graph is currently in an error state. */
-    public boolean hasErrors() {
+    @Override
+    protected boolean hasErrors() {
         return !this.editor.getModel().getErrorMap().isEmpty();
     }
 
@@ -194,57 +181,31 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
         newGraph.setName(newName);
         newGraph.setFixed();
         getEditor().setGraph(newGraph, false);
+        setName(newName);
     }
 
-    /**
-     * Creates and shows a confirmation dialog for abandoning the currently
-     * edited graph.
-     */
     @Override
-    public boolean confirmAbandon() {
-        boolean result = true;
-        if (isDirty()) {
-            int answer =
-                JOptionPane.showConfirmDialog(this, String.format(
-                    "%s '%s' has been modified. Save changes?",
-                    getGraph().getRole().toString(true), getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (answer == JOptionPane.YES_OPTION) {
-                getSaveAction().doSave(getGraph());
-            }
-            result = answer != JOptionPane.CANCEL_OPTION;
-        }
-        return result;
+    protected void saveResource() {
+        getSaveAction().doSave(getGraph());
     }
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
     @Override
     public void dispose() {
         getSaveAction().dispose();
-        getCancelAction().dispose();
         getDisplay().getDisplayPanel().remove(this);
         getSimulatorModel().removeListener(this);
     }
 
-    /** Creates and returns a Cancel button, for use on the tool bar. */
-    private JButton createCancelButton() {
-        return Options.createButton(getCancelAction());
-    }
-
     /** Creates and returns the cancel action. */
-    private CancelEditGraphAction getCancelAction() {
-        if (this.cancelAction == null) {
-            this.cancelAction = new CancelEditGraphAction(this);
-        }
-        return this.cancelAction;
-    }
-
-    /** Creates and returns an OK button, for use on the tool bar. */
-    private JButton createSaveButton() {
-        return Options.createButton(getSaveAction());
+    @Override
+    protected CancelEditAction getCancelAction() {
+        return getSimulator().getActions().getCancelEditAction(
+            getResourceKind());
     }
 
     /** Creates and returns the save action. */
+    @Override
     public SaveGraphAction getSaveAction() {
         if (this.saveAction == null) {
             this.saveAction = new SaveGraphAction(this);
@@ -259,7 +220,6 @@ public class GraphEditorPanel extends EditorPanel<GraphDisplay> implements
      */
     private AspectGraph graph;
     private SaveGraphAction saveAction;
-    private CancelEditGraphAction cancelAction;
     /** The editor wrapped in the panel. */
     private final Editor editor;
     /** Flag indicating that the editor is in the process of saving. */

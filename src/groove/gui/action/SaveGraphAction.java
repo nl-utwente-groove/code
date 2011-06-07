@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import static groove.graph.GraphRole.RULE;
 import groove.graph.GraphRole;
-import groove.gui.GraphEditorPanel;
+import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -27,7 +27,7 @@ import javax.swing.Action;
  */
 public final class SaveGraphAction extends SimulatorAction {
     /** Creates an instance of the action for a given editor panel. */
-    public SaveGraphAction(GraphEditorPanel editor) {
+    public SaveGraphAction(GraphEditorTab editor) {
         this(editor.getSimulator(), editor, false);
     }
 
@@ -39,14 +39,14 @@ public final class SaveGraphAction extends SimulatorAction {
      * a file outside the grammar.
      */
     public SaveGraphAction(Simulator simulator, GraphRole role, boolean saveAs) {
-        this(simulator, (GraphEditorPanel) null, saveAs);
+        this(simulator, (GraphEditorTab) null, saveAs);
         this.role = role;
     }
 
     /** 
      * Internal constructor.
      */
-    private SaveGraphAction(Simulator simulator, GraphEditorPanel editor,
+    private SaveGraphAction(Simulator simulator, GraphEditorTab editor,
             boolean saveAs) {
         super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
                 : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
@@ -64,9 +64,6 @@ public final class SaveGraphAction extends SimulatorAction {
                 result = doSaveAs(getGraph());
             } else {
                 result = doSave(getGraph());
-            }
-            if (this.editor != null) {
-                this.editor.setClean();
             }
         }
         return result;
@@ -88,6 +85,9 @@ public final class SaveGraphAction extends SimulatorAction {
         try {
             if (graph != null) {
                 result = getSimulatorModel().doAddGraph(resource, graph);
+                if (this.editor != null) {
+                    this.editor.setClean();
+                }
             }
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while saving edited graph '%s'",
@@ -195,11 +195,11 @@ public final class SaveGraphAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getRole() == GraphRole.HOST && this.editor == null
-            || !getSimulatorModel().hasHost();
+        return getRole() == GraphRole.HOST
+            && (this.editor == null || !getSimulatorModel().hasHost());
     }
 
-    private final GraphEditorPanel editor;
+    private final GraphEditorTab editor;
     private GraphRole role;
     private final boolean saveAs;
 }

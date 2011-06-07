@@ -39,22 +39,7 @@ public interface Display {
      * panel; or {@code null} if there is nothing showing, or there is
      * nothing to select.
      */
-    String getName();
-
-    /** Attempts to cancel an edit action for a given named resource.
-     * @param name the name of the editor to be cancelled
-     * @param confirm if {@code true}, the user should explicitly confirm
-     * @return {@code true} if the editing was cancelled
-     */
-    boolean cancelEditing(String name, boolean confirm);
-
-    /**
-     * Attempts to close all editors on this display, asking permission 
-     * for the dirty ones and possibly saving them.
-     * This is done in preparation to changing the grammar.
-     * @return {@code true} if all editors were disposed.
-     */
-    boolean disposeAllEditors();
+    String getTitle();
 
     /** Returns the simulator to which this display belongs. */
     Simulator getSimulator();

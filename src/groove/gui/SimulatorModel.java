@@ -856,6 +856,25 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /** Changes the selection of a given resource kind. */
+    public final boolean setSelected(ResourceKind kind, String name) {
+        switch (kind) {
+        case CONTROL:
+            return setControl(name);
+        case HOST:
+            return setHost(name);
+        case PROLOG:
+            return setProlog(name);
+        case RULE:
+            return setRule(name);
+        case TYPE:
+            return setType(name);
+        default:
+            assert false;
+            return false;
+        }
+    }
+
     /** Changes the selected value of a given resource kind. */
     private void changeResource(ResourceKind kind, String name) {
         switch (kind) {
