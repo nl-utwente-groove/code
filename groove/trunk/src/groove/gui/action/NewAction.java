@@ -40,13 +40,13 @@ public class NewAction extends SimulatorAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getDisplay().createEditor(newName);
+                            getDisplay().startEditResource(newName);
                         }
                     });
                     break;
                 case PROLOG:
                     getSimulatorModel().doAddProlog(newName, "");
-                    getPrologDisplay().createEditor(newName);
+                    getPrologDisplay().startEditResource(newName);
                     break;
                 case PROPERTIES:
                 default:

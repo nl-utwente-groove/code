@@ -27,11 +27,11 @@ public class EditAction extends SimulatorAction {
             getControlDisplay().startEditing();
             break;
         case PROLOG:
-            getPrologDisplay().createEditor(name);
+            getPrologDisplay().startEditResource(name);
             break;
         case HOST:
             if (getSimulatorModel().hasHost()) {
-                getStateDisplay().createEditor(
+                getStateDisplay().startEditResource(
                     getSimulatorModel().getHost().getName());
             } else {
                 AspectGraph graph =
@@ -47,7 +47,7 @@ public class EditAction extends SimulatorAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                getDisplaysPanel().getStateDisplay().createEditor(
+                                getDisplaysPanel().getStateDisplay().startEditResource(
                                     newGraphName);
                             }
                         });
@@ -59,12 +59,12 @@ public class EditAction extends SimulatorAction {
             }
             break;
         case RULE:
-            getDisplaysPanel().getRuleDisplay().createEditor(
+            getDisplaysPanel().getRuleDisplay().startEditResource(
                 getSimulatorModel().getRule().getName());
             break;
         case TYPE:
             final String initType = getSimulatorModel().getType().getName();
-            getDisplaysPanel().getTypeDisplay().createEditor(initType);
+            getDisplaysPanel().getTypeDisplay().startEditResource(initType);
             break;
         case PROPERTIES:
         default:

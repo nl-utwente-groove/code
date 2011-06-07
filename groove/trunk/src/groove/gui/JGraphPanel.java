@@ -53,7 +53,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 
 import org.jgraph.JGraph;
@@ -245,7 +244,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         getJGraph().setModel(jModel);
         boolean enabled = jModel != null;
         setEnabled(enabled);
-        getTabLabel().setTitle(enabled ? jModel.getName() : null);
         refreshStatus();
     }
 
@@ -275,26 +273,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     private JLabel getStatusBar() {
         return this.statusBar;
-    }
-
-    /** 
-     * Returns the component to be used to fill the tab in a 
-     * {@link JTabbedPane}, when this panel is displayed.
-     */
-    public final TabLabel getTabLabel() {
-        if (this.tabLabel == null) {
-            this.tabLabel = createTabLabel();
-        }
-        return this.tabLabel;
-    }
-
-    /**
-     * Callback method to create a tab component for this panel,
-     * in case it is used in a {@link JTabbedPane}.
-     */
-    protected TabLabel createTabLabel() {
-        TabLabel result = new TabLabel(this, null, "");
-        return result;
     }
 
     /**
@@ -478,8 +456,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private Color enabledBackground = Color.WHITE;
     /** Options for this panel. */
     private final Options options;
-    /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */
-    private TabLabel tabLabel;
     /** Change listener that calls {@link #refresh()} when activated. */
     private RefreshListener refreshListener;
     /**

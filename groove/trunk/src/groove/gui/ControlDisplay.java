@@ -90,7 +90,7 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     @Override
-    public String getName() {
+    public String getTitle() {
         return isControlSelected() ? getSelectedControl().getName() : null;
     }
 
@@ -198,7 +198,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         bar.removeAll();
         if (isEditing()) {
             bar.add(getActions().getSaveControlAction());
-            bar.add(getActions().getCancelEditControlAction());
+            bar.add(getActions().getCancelEditAction(ResourceKind.CONTROL));
             bar.addSeparator();
             bar.add(getControlTextArea().getUndoAction());
             bar.add(getControlTextArea().getRedoAction());
@@ -234,12 +234,9 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     /** Returns the GUI component showing the list of control program names. */
+    @Override
     public JPanel getListPanel() {
         if (this.listPanel == null) {
-            JToolBar toolBar = createListToolBar();
-            toolBar.addSeparator();
-            toolBar.add(getEnableButton());
-            toolBar.add(getActions().getPreviewControlAction());
             JScrollPane controlPane = new JScrollPane(getList()) {
                 @Override
                 public Dimension getPreferredSize() {
@@ -250,7 +247,7 @@ final public class ControlDisplay extends ResourceDisplay implements
             };
 
             this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(toolBar, BorderLayout.NORTH);
+            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
             this.listPanel.add(controlPane, BorderLayout.CENTER);
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(this.listPanel);
@@ -258,8 +255,16 @@ final public class ControlDisplay extends ResourceDisplay implements
         return this.listPanel;
     }
 
+    @Override
+    protected JToolBar createListToolBar(int separation) {
+        JToolBar result = super.createListToolBar(separation);
+        result.add(getActions().getPreviewControlAction());
+        return result;
+    }
+
     /** Returns the list of control programs. */
-    private ControlJList getList() {
+    @Override
+    final protected ControlJList getList() {
         if (this.controlJList == null) {
             this.controlJList = new ControlJList(this);
         }
@@ -316,7 +321,7 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     @Override
-    public void createEditor(String name) {
+    public void startEditResource(String name) {
         assert name.equals(getSelectedControl().getName());
         startEditing();
     }
@@ -368,7 +373,7 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     @Override
-    public boolean cancelEditing(String name, boolean confirm) {
+    public boolean cancelEditResource(String name, boolean confirm) {
         return !name.equals(getSelectedControl()) || cancelEditing(confirm);
     }
 
@@ -381,6 +386,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         this.editing = true;
         refreshAll();
         fillToolBar();
+        getSimulatorModel().setDisplay(getKind());
         getDisplayPanel().getParent().requestFocusInWindow();
         getControlTextArea().requestFocus();
     }
@@ -429,7 +435,7 @@ final public class ControlDisplay extends ResourceDisplay implements
         if (name.equals(getSelectedControl().getName()) && isEditing()) {
             result = Icons.EDIT_ICON;
         } else {
-            result = getKind().getListIcon();
+            result = Icons.getListIcon(ResourceKind.CONTROL);
         }
         return result;
     }
@@ -511,7 +517,7 @@ final public class ControlDisplay extends ResourceDisplay implements
                 Options.CANCEL_EDIT_ACTION_NAME);
             getActionMap().put(actionName, getActions().getSaveControlAction());
             getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-                getActions().getCancelEditControlAction());
+                getActions().getCancelEditAction(ResourceKind.CONTROL));
         }
 
         @Override
@@ -661,8 +667,8 @@ final public class ControlDisplay extends ResourceDisplay implements
             result.insert(
                 ControlDisplay.this.getActions().getSaveControlAction(), i++);
             result.insert(
-                ControlDisplay.this.getActions().getCancelEditControlAction(),
-                i++);
+                ControlDisplay.this.getActions().getCancelEditAction(
+                    ResourceKind.CONTROL), i++);
             result.insert(new JPopupMenu.Separator(), i++);
             return result;
         }

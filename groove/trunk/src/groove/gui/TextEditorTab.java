@@ -1,17 +1,20 @@
 package groove.gui;
 
+import groove.gui.TabbedResourceDisplay.MainTab;
 import groove.gui.action.ActionStore;
-import groove.gui.action.CancelEditPrologAction;
+import groove.gui.action.CancelEditAction;
 import groove.gui.action.SavePrologAction;
+import groove.gui.action.SimulatorAction;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
 
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -22,23 +25,31 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
- * Data structure to keep track of the open/loaded prolog files
- * 
+ * Display tab showing a text-based resource.
  * @author Michiel Hendriks
  */
-public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
+public class TextEditorTab extends EditorTab implements MainTab {
+    /** Creates an initially empty display. */
+    public TextEditorTab(PrologDisplay display) {
+        this(display, null, null);
+    }
+
     /** 
      * Constructs a prolog editor with a given name.
      * @param display the display on which this editor is placed.
      */
-    public PrologEditorPanel(final PrologDisplay display, String name,
+    public TextEditorTab(final PrologDisplay display, String name,
             String program) {
         super(display);
-        this.textArea = new PrologTextArea(program);
-        this.name = name;
+        this.textArea = new TextArea();
+        this.editing = name != null;
+        this.textArea.setEditable(this.editing);
+        setName(name);
         setBorder(null);
         setLayout(new BorderLayout());
-        add(createToolBar(), BorderLayout.NORTH);
+        if (this.editing) {
+            add(createToolBar(), BorderLayout.NORTH);
+        }
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
         // add keyboard binding for Save and Cancel key
         InputMap focusedInputMap =
@@ -49,16 +60,16 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
         getActionMap().put(actionName, getActions().getSavePrologAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-            getActions().getCancelEditPrologAction());
+            getActions().getCancelEditAction(display.getResourceKind()));
+        this.textArea.setProgram(program);
     }
 
     /**
      * Creates a tool bar for the display.
      */
-    private JToolBar createToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(createSaveButton());
-        result.add(createCancelButton());
+    @Override
+    protected JToolBar createToolBar() {
+        JToolBar result = super.createToolBar();
         result.addSeparator();
         result.add(createUndoButton());
         result.add(this.textArea.getRedoAction());
@@ -67,6 +78,35 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         result.add(this.textArea.getPasteAction());
         result.add(this.textArea.getCutAction());
         result.add(this.textArea.getDeleteAction());
+        return result;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return isEditor() ? super.getIcon()
+                : Icons.getMainTabIcon(getDisplay().getResourceKind());
+    }
+
+    @Override
+    public boolean isEditor() {
+        return this.editing;
+    }
+
+    @Override
+    public void setResource(String name) {
+        String program =
+            getSimulatorModel().getStore().getTexts(
+                getDisplay().getResourceKind()).get(name);
+        setName(name);
+        this.textArea.setProgram(program);
+    }
+
+    @Override
+    public boolean removeResource(String name) {
+        boolean result = name.equals(getName());
+        if (result) {
+            this.textArea.setProgram(null);
+        }
         return result;
     }
 
@@ -79,18 +119,18 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
     @Override
     public void setClean() {
         this.textArea.discardAllEdits();
-        getDisplay().updateTab(this);
-    }
-
-    /** Returns the file from which the editor was loaded. */
-    @Override
-    public final String getName() {
-        return this.name;
+        updateDirty();
     }
 
     /** Returns the current program. */
     public final String getProgram() {
         return this.textArea.getText();
+    }
+
+    @Override
+    protected boolean hasErrors() {
+        return getSimulatorModel().getGrammar().getResource(
+            getDisplay().getResourceKind(), getName()).hasErrors();
     }
 
     /** Selects a given line in the text area. */
@@ -104,32 +144,15 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         }
     }
 
-    /**
-     * Creates and shows a confirmation dialog for abandoning the currently
-     * edited control program.
-     */
     @Override
-    public boolean confirmAbandon() {
-        boolean result = true;
-        if (isDirty()) {
-            int answer =
-                JOptionPane.showConfirmDialog(this,
-                    String.format("Save changes in '%s'?", getName()), null,
-                    JOptionPane.YES_NO_CANCEL_OPTION);
-            if (answer == JOptionPane.YES_OPTION) {
-                getActions().getSavePrologAction().doSave(getName(),
-                    getProgram());
-            } else {
-                result = answer == JOptionPane.NO_OPTION;
-            }
-        }
-        return result;
+    protected void saveResource() {
+        getActions().getSavePrologAction().doSave(getName(), getProgram());
     }
 
     /** Removes this editor from the editor pane. */
     @Override
     public void dispose() {
-        getDisplay().getEditorPane().remove(this);
+        getDisplay().getTabPane().remove(this);
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
@@ -138,32 +161,24 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         result.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                getDisplay().updateTab(PrologEditorPanel.this);
+                updateDirty();
             }
         });
         return result;
     }
 
-    /** Creates and returns a Cancel button, for use on the tool bar. */
-    private JButton createCancelButton() {
-        return Options.createButton(getCancelAction());
-    }
-
     /** Creates and returns the save action. */
-    private CancelEditPrologAction getCancelAction() {
-        CancelEditPrologAction result =
-            getActions().getCancelEditPrologAction();
+    @Override
+    protected SimulatorAction getCancelAction() {
+        CancelEditAction result =
+            getActions().getCancelEditAction(getDisplay().getResourceKind());
         result.refresh();
         return result;
     }
 
-    /** Creates and returns an OK button, for use on the tool bar. */
-    private JButton createSaveButton() {
-        return Options.createButton(getSaveAction());
-    }
-
     /** Creates and returns the save action. */
-    private SavePrologAction getSaveAction() {
+    @Override
+    protected SimulatorAction getSaveAction() {
         SavePrologAction result = getActions().getSavePrologAction();
         result.refresh();
         return result;
@@ -175,22 +190,17 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
     }
 
     /**
-     * The name of the editor.
-     */
-    private final String name;
-    /**
      * The associated text area.
      */
-    private final PrologTextArea textArea;
+    private final TextArea textArea;
+    /** Flag indicating if this tab should be editing. */
+    private final boolean editing;
 
-    private static class PrologTextArea extends RSyntaxTextArea {
-        public PrologTextArea(String text) {
+    private class TextArea extends RSyntaxTextArea {
+        public TextArea() {
             super(30, 100);
             ((RSyntaxDocument) getDocument()).setSyntaxStyle(new PrologTokenMaker());
             setFont(PrologDisplay.EDIT_FONT);
-            setText(text);
-            setEditable(true);
-            setEnabled(true);
             setTabSize(4);
             discardAllEdits();
             getUndoAction().putValue(Action.SMALL_ICON, Icons.UNDO_ICON);
@@ -199,6 +209,17 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
             getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
             getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON);
             getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON);
+        }
+
+        /** 
+         * Changes the edited program in the area.
+         * @param program the new program; if {@code null}, the text area will
+         * be disabled
+         */
+        public void setProgram(String program) {
+            setText(program == null ? "" : program);
+            setEnabled(program != null);
+            discardAllEdits();
         }
 
         /** Returns the undo action as applied to this text area. */
@@ -229,6 +250,22 @@ public class PrologEditorPanel extends EditorPanel<PrologDisplay> {
         /** Returns the delete action as applied to this text area. */
         public Action getDeleteAction() {
             return getAction(DELETE_ACTION);
+        }
+
+        @Override
+        protected JPopupMenu createPopupMenu() {
+            JPopupMenu result;
+            if (isEditable()) {
+                result = super.createPopupMenu();
+                int i = 0;
+                result.insert(getDisplay().getSaveAction(), i++);
+                result.insert(getDisplay().getCancelEditAction(), i++);
+                result.insert(new JPopupMenu.Separator(), i++);
+            } else {
+                result = new JPopupMenu();
+                result.add(getDisplay().getEditAction());
+            }
+            return result;
         }
     }
 }

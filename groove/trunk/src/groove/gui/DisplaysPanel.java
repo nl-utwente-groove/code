@@ -114,9 +114,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the state and graph display shown on this panel. */
-    public StateDisplay getStateDisplay() {
+    public HostDisplay getStateDisplay() {
         if (this.stateDisplay == null) {
-            this.stateDisplay = new StateDisplay(this.simulator);
+            this.stateDisplay = new HostDisplay(this.simulator);
         }
         return this.stateDisplay;
     }
@@ -204,7 +204,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             if (changedTo == null) {
                 Display panel = this.displaysMap.get(source.getDisplay());
-                if (panel != null && indexOfComponent(panel.getDisplayPanel()) >= 0) {
+                if (panel != null
+                    && indexOfComponent(panel.getDisplayPanel()) >= 0) {
                     setSelectedComponent(panel.getDisplayPanel());
                 }
             }
@@ -227,9 +228,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         if (display instanceof GraphDisplay) {
             Component selectedComponent =
                 ((GraphDisplay) display).getDisplayPanel().getSelectedComponent();
-            if (selectedComponent instanceof GraphEditorPanel) {
+            if (selectedComponent instanceof GraphEditorTab) {
                 result =
-                    ((GraphEditorPanel) selectedComponent).getEditor().getGraphPanel();
+                    ((GraphEditorTab) selectedComponent).getEditor().getGraphPanel();
             }
             if (selectedComponent instanceof JGraphPanel<?>) {
                 result = (JGraphPanel<?>) selectedComponent;
@@ -413,9 +414,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public boolean disposeAllEditors() {
         boolean result = true;
         for (Display display : this.displaysMap.values()) {
-            result = display.disposeAllEditors();
-            if (!result) {
-                break;
+            if (display instanceof ResourceDisplay) {
+                result = ((ResourceDisplay) display).disposeAllEditors();
+                if (!result) {
+                    break;
+                }
             }
         }
         return result;
@@ -441,7 +444,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
     /** The rule tab shown on this panel. */
-    private StateDisplay stateDisplay;
+    private HostDisplay stateDisplay;
     /** The rule tab shown on this panel. */
     private RuleDisplay ruleDisplay;
     /** The type tab shown on this panel. */

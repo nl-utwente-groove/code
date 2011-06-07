@@ -19,12 +19,12 @@ package groove.gui.action;
 import groove.graph.GraphRole;
 import groove.gui.Display;
 import groove.gui.DisplayKind;
+import groove.gui.GraphDisplay;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.GraphDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -116,33 +116,19 @@ public class ActionStore implements SimulatorListener {
 
     /**
      * Lazily creates and returns the singleton instance of the
-     * {@link CancelEditControlAction}.
+     * {@link CancelEditAction} for the given resource kind.
      */
-    public CancelEditControlAction getCancelEditControlAction() {
-        if (this.cancelEditControlAction == null) {
-            this.cancelEditControlAction =
-                new CancelEditControlAction(this.simulator);
+    public CancelEditAction getCancelEditAction(ResourceKind resource) {
+        CancelEditAction result = this.cancelEditActionMap.get(resource);
+        if (result == null) {
+            this.cancelEditActionMap.put(resource, result =
+                new CancelEditAction(this.simulator, resource));
         }
-        return this.cancelEditControlAction;
+        return result;
     }
 
-    /** Singular instance of the CancelAction. */
-    private CancelEditControlAction cancelEditControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link CancelEditPrologAction}.
-     */
-    public CancelEditPrologAction getCancelEditPrologAction() {
-        if (this.cancelEditPrologAction == null) {
-            this.cancelEditPrologAction =
-                new CancelEditPrologAction(this.simulator);
-        }
-        return this.cancelEditPrologAction;
-    }
-
-    /** Singular instance of the CancelAction. */
-    private CancelEditPrologAction cancelEditPrologAction;
+    private final Map<ResourceKind,CancelEditAction> cancelEditActionMap =
+        new EnumMap<ResourceKind,CancelEditAction>(ResourceKind.class);
 
     /**
      * Returns the CTL formula providing action permanently associated with this
@@ -704,6 +690,20 @@ public class ActionStore implements SimulatorListener {
      * The grammar save action permanently associated with this simulator.
      */
     private SaveGrammarAction saveGrammarAction;
+
+    /** Returns the save action for a given resource kind. */
+    public SimulatorAction getSaveAction(ResourceKind resource) {
+        if (resource.isGraphBased()) {
+            return getSaveGraphAction(resource.getGraphRole());
+        } else if (resource == ResourceKind.CONTROL) {
+            return getSaveControlAction();
+        } else if (resource == ResourceKind.PROLOG) {
+            return getSavePrologAction();
+        } else {
+            assert false;
+            return null;
+        }
+    }
 
     /**
      * Returns the graph save action for a given graph role that is permanently 

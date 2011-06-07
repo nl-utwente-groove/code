@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.gui.TabbedResourceDisplay.Tab;
 import groove.gui.jgraph.JAttr;
 
 import java.awt.BasicStroke;
@@ -35,7 +36,6 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.plaf.basic.BasicButtonUI;
@@ -79,10 +79,9 @@ public class TabLabel extends JPanel {
     /** 
      * Creates a new component, for a given pane. 
      */
-    public TabLabel(JComponent panel, Icon icon, String title) {
+    public TabLabel(Tab panel, Icon icon, String title) {
         //unset default FlowLayout' gaps
-        super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        this.panel = panel;
+        super(new FlowLayout(FlowLayout.LEFT, 1, 0));
         setOpaque(false);
         setBorder(null);
         this.iconLabel = new JLabel(title, icon, 0);
@@ -90,9 +89,11 @@ public class TabLabel extends JPanel {
         this.iconLabel.setBorder(null);
         add(this.iconLabel);
         //tab button
-        if (panel instanceof GraphEditorPanel) {
-            JButton button = new CancelButton();
-            add(button);
+        if (panel.isEditor()) {
+            add(new CancelButton());
+            this.panel = (EditorTab) panel;
+        } else {
+            this.panel = null;
         }
     }
 
@@ -118,7 +119,7 @@ public class TabLabel extends JPanel {
     }
 
     /** The editor panel in this tab. */
-    private final JComponent panel;
+    private final EditorTab panel;
     /** The label that the icon is displayed on. */
     private final JLabel iconLabel;
 
@@ -145,7 +146,7 @@ public class TabLabel extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ((EditorPanel<?>) TabLabel.this.panel).cancelEditing(true);
+            TabLabel.this.panel.cancelEditing(true);
         }
 
         //we don't want to update UI for this button

@@ -21,12 +21,17 @@ import groove.gui.action.CopyAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 
 /**
  * Display component for a grammar resource.
@@ -56,16 +61,70 @@ abstract public class ResourceDisplay implements Display {
     }
 
     @Override
-    public String getName() {
-        if (getSimulatorModel().isSelected(getResource())) {
-            return getSimulatorModel().getSelected(getResource());
+    public String getTitle() {
+        if (getSimulatorModel().isSelected(getResourceKind())) {
+            return getSimulatorModel().getSelected(getResourceKind());
         } else {
             return null;
         }
     }
 
     /** Creates an editor for the resource with given name. */
-    public abstract void createEditor(String name);
+    public abstract void startEditResource(String name);
+
+    /** Attempts to cancel an edit action for a given named resource.
+     * @param name the name of the editor to be cancelled
+     * @param confirm if {@code true}, the user should explicitly confirm
+     * @return {@code true} if the editing was cancelled
+     */
+    abstract public boolean cancelEditResource(String name, boolean confirm);
+
+    /**
+     * Attempts to close all editors on this display, asking permission 
+     * for the dirty ones and possibly saving them.
+     * This is done in preparation to changing the grammar.
+     * @return {@code true} if all editors were disposed.
+     */
+    abstract public boolean disposeAllEditors();
+
+    /** Returns the GUI component showing the list of control program names. */
+    public JPanel getListPanel() {
+        if (this.listPanel == null) {
+            JScrollPane controlPane = new JScrollPane(getList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+
+            this.listPanel = new JPanel(new BorderLayout(), false);
+            this.listPanel.add(getListToolBar(), BorderLayout.NORTH);
+            this.listPanel.add(controlPane, BorderLayout.CENTER);
+            // make sure tool tips get displayed
+            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
+        }
+        return this.listPanel;
+    }
+
+    /** Resets the list panel to {@code null}, so that the next invocation
+     * of {@link #getListPanel()} creates a fresh panel.
+     */
+    protected void resetListPanel() {
+        this.listPanel = null;
+    }
+
+    /** Returns the label list for this display. */
+    abstract protected JComponent getList();
+
+    /** Creates and returns the fixed tool bar for the label list. */
+    final protected JToolBar getListToolBar() {
+        if (this.listToolBar == null) {
+            this.listToolBar = createListToolBar();
+        }
+        return this.listToolBar;
+    }
 
     /** 
      * Creates a popup menu for the label list.
@@ -82,14 +141,16 @@ abstract public class ResourceDisplay implements Display {
             res.add(getCopyAction());
             res.add(getDeleteAction());
             res.add(getRenameAction());
-            res.addSeparator();
-            res.add(getEnableAction());
+            if (getResourceKind() != ResourceKind.PROLOG) {
+                res.addSeparator();
+                res.add(getEnableAction());
+            }
         }
         return res;
     }
 
     /** 
-     * Creates a tool bar for the list panel.
+     * Callback method to creates a tool bar for the list panel.
      */
     protected JToolBar createListToolBar() {
         return createListToolBar(-1);
@@ -154,8 +215,13 @@ abstract public class ResourceDisplay implements Display {
     }
 
     /** Returns the save action associated with this kind of resource. */
-    protected final SimulatorAction getSaveAction(boolean saveAs) {
-        return getActions().getSaveGraphAction(getResource().getGraphRole());
+    protected final SimulatorAction getSaveAction() {
+        return getActions().getSaveAction(getResourceKind());
+    }
+
+    /** Returns the save action associated with this kind of resource. */
+    protected final SimulatorAction getCancelEditAction() {
+        return getActions().getCancelEditAction(getResourceKind());
     }
 
     /** Creates a toggle button wrapping the enable action of this display. */
@@ -179,12 +245,16 @@ abstract public class ResourceDisplay implements Display {
     }
 
     /** Returns the resource kind shown on this display. */
-    final protected ResourceKind getResource() {
+    final protected ResourceKind getResourceKind() {
         return this.resource;
     }
 
     private final Simulator simulator;
     private final ResourceKind resource;
     private final DisplayKind kind;
+    /** Panel with the label list. */
+    private JPanel listPanel;
+    /** Toolbar for the {@link #listPanel}. */
+    private JToolBar listToolBar;
     private JToggleButton enableButton;
 }

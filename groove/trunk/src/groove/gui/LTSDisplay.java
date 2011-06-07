@@ -85,19 +85,8 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     }
 
     @Override
-    public String getName() {
+    public String getTitle() {
         return null;
-    }
-
-    @Override
-    public boolean cancelEditing(String name, boolean confirm) {
-        return false;
-    }
-
-    @Override
-    public boolean disposeAllEditors() {
-        // there is nothing to be disposed
-        return true;
     }
 
     @Override

@@ -242,7 +242,9 @@ public class ControlJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setControl((String) getSelectedValue());
+            if (ControlJList.this.display.cancelEditing(true)) {
+                getSimulatorModel().setControl((String) getSelectedValue());
+            }
         }
     }
 

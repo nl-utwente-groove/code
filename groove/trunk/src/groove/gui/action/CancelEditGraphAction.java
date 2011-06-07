@@ -1,6 +1,6 @@
 package groove.gui.action;
 
-import groove.gui.GraphEditorPanel;
+import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.view.aspect.AspectGraph;
@@ -15,7 +15,7 @@ import javax.swing.JOptionPane;
  */
 public final class CancelEditGraphAction extends SimulatorAction {
     /** Creates an instance of the action for a given editor panel. */
-    public CancelEditGraphAction(GraphEditorPanel editor) {
+    public CancelEditGraphAction(GraphEditorTab editor) {
         super(editor.getSimulator(), Options.CANCEL_EDIT_ACTION_NAME,
             Icons.CANCEL_ICON);
         putValue(ACCELERATOR_KEY, Options.CLOSE_KEY);
@@ -25,7 +25,7 @@ public final class CancelEditGraphAction extends SimulatorAction {
     /**
      * If the editor is dirty, asks if it should be saved, and does so if
      * the answer is yes.
-     * Disposes the editor if not cancelled, by calling {@link GraphEditorPanel#dispose()}.
+     * Disposes the editor if not cancelled, by calling {@link GraphEditorTab#dispose()}.
      * @return {@code true} if the editor was indeed disposed
      */
     @Override
@@ -49,5 +49,5 @@ public final class CancelEditGraphAction extends SimulatorAction {
         return result;
     }
 
-    private final GraphEditorPanel editor;
+    private final GraphEditorTab editor;
 }

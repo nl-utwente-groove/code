@@ -113,6 +113,50 @@ public final class Icons {
         }
     }
 
+    /** 
+     * Returns the icon used for the editor tab labels 
+     * in the display of a given resource kind.
+     */
+    public static ImageIcon getEditorTabIcon(ResourceKind resource) {
+        switch (resource) {
+        case CONTROL:
+            return EDIT_CONTROL_ICON;
+        case HOST:
+            return EDIT_GRAPH_ICON;
+        case PROLOG:
+            return EDIT_PROLOG_ICON;
+        case RULE:
+            return EDIT_RULE_ICON;
+        case TYPE:
+            return EDIT_TYPE_ICON;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /** 
+     * Returns the icon used for the label list
+     * of a given resource kind.
+     */
+    public static ImageIcon getListIcon(ResourceKind resource) {
+        switch (resource) {
+        case CONTROL:
+            return CONTROL_LIST_ICON;
+        case HOST:
+            return GRAPH_LIST_ICON;
+        case PROLOG:
+            return PROLOG_LIST_ICON;
+        case RULE:
+            return RULE_LIST_ICON;
+        case TYPE:
+            return TYPE_LIST_ICON;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     /** Transparent open up-arrow icon. */
     public static final ImageIcon ARROW_OPEN_UP_ICON =
         createIcon("arrow-open-up.gif");
