@@ -17,14 +17,14 @@
 package groove.gui.action;
 
 import groove.graph.GraphRole;
-import groove.gui.Display;
 import groove.gui.DisplayKind;
-import groove.gui.GraphDisplay;
+import groove.gui.GraphTab;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.TabbedResourceDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -334,11 +334,12 @@ public class ActionStore implements SimulatorListener {
     public ExportAction getExportAction(DisplayKind kind) {
         if (!this.exportActionMap.containsKey(kind)) {
             ExportAction result = null;
-            Display display =
-                this.simulator.getSimulatorPanel().getDisplayFor(kind);
-            if (display instanceof GraphDisplay) {
+            if (kind.getResource().isGraphBased()) {
+                TabbedResourceDisplay display =
+                    (TabbedResourceDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
+                        kind);
                 result =
-                    ((GraphDisplay) display).getMainTab().getJGraph().getExportAction();
+                    ((GraphTab) display.getMainTab()).getJGraph().getExportAction();
             }
             // also put it in the map when the result is null,
             // so we don't try to compute it again
