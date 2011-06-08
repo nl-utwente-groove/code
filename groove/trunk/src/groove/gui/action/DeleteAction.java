@@ -53,7 +53,7 @@ public class DeleteAction extends SimulatorAction {
                 break;
             case HOST:
                 cancelEditing =
-                    getStateDisplay().disposeEditors(
+                    getStateDisplay().cancelEdits(
                         names.toArray(new String[0]));
                 break;
             case PROLOG:
@@ -63,12 +63,12 @@ public class DeleteAction extends SimulatorAction {
                 break;
             case RULE:
                 cancelEditing =
-                    getRuleDisplay().disposeEditors(
+                    getRuleDisplay().cancelEdits(
                         names.toArray(new String[0]));
                 break;
             case TYPE:
                 cancelEditing =
-                    getTypeDisplay().disposeEditors(
+                    getTypeDisplay().cancelEdits(
                         names.toArray(new String[0]));
             }
             if (cancelEditing) {

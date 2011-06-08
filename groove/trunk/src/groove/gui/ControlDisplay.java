@@ -197,8 +197,8 @@ final public class ControlDisplay extends ResourceDisplay implements
         JToolBar bar = this.toolBar;
         bar.removeAll();
         if (isEditing()) {
-            bar.add(getActions().getSaveControlAction());
-            bar.add(getActions().getCancelEditAction(ResourceKind.CONTROL));
+            bar.add(getSaveAction());
+            bar.add(getCancelEditAction());
             bar.addSeparator();
             bar.add(getControlTextArea().getUndoAction());
             bar.add(getControlTextArea().getRedoAction());
@@ -305,7 +305,7 @@ final public class ControlDisplay extends ResourceDisplay implements
                     String.format("Save changes in '%s'?", name), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
-                getActions().getSaveControlAction().doSave(name);
+                getSaveAction().doSaveText(name, getControlTextArea().getText());
             } else {
                 result = answer == JOptionPane.NO_OPTION;
             }
@@ -347,7 +347,7 @@ final public class ControlDisplay extends ResourceDisplay implements
     }
 
     @Override
-    public boolean disposeAllEditors() {
+    public boolean cancelAllEdits() {
         return cancelEditing(true);
     }
 
@@ -515,9 +515,9 @@ final public class ControlDisplay extends ResourceDisplay implements
             focusedInputMap.put(Options.SAVE_KEY, actionName);
             focusedInputMap.put(Options.CANCEL_KEY,
                 Options.CANCEL_EDIT_ACTION_NAME);
-            getActionMap().put(actionName, getActions().getSaveControlAction());
+            getActionMap().put(actionName, getSaveAction());
             getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-                getActions().getCancelEditAction(ResourceKind.CONTROL));
+                getCancelEditAction());
         }
 
         @Override
@@ -664,11 +664,8 @@ final public class ControlDisplay extends ResourceDisplay implements
             int i = 0;
             result.insert(ControlDisplay.this.getEditAction(), i++);
             result.insert(new JPopupMenu.Separator(), i++);
-            result.insert(
-                ControlDisplay.this.getActions().getSaveControlAction(), i++);
-            result.insert(
-                ControlDisplay.this.getActions().getCancelEditAction(
-                    ResourceKind.CONTROL), i++);
+            result.insert(getSaveAction(), i++);
+            result.insert(getCancelEditAction(), i++);
             result.insert(new JPopupMenu.Separator(), i++);
             return result;
         }

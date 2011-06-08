@@ -116,7 +116,7 @@ public abstract class TabbedResourceDisplay extends ResourceDisplay {
      * @return {@code true} if the operation was not cancelled
      */
     @Override
-    public boolean disposeAllEditors() {
+    public boolean cancelAllEdits() {
         boolean result = true;
         for (EditorTab editor : new ArrayList<EditorTab>(getEditors().values())) {
             result = editor.cancelEditing(true);
@@ -134,7 +134,7 @@ public abstract class TabbedResourceDisplay extends ResourceDisplay {
      * therefore needs to be disposed
      * @return {@code true} if the operation was not cancelled
      */
-    public boolean disposeEditors(String... names) {
+    public boolean cancelEdits(String... names) {
         boolean result = true;
         for (String name : names) {
             result = cancelEditResource(name, true);
@@ -143,6 +143,12 @@ public abstract class TabbedResourceDisplay extends ResourceDisplay {
             }
         }
         return result;
+    }
+
+    /** Returns the currently selected editor tab, or {@code null} if no editor is selected. */
+    public EditorTab getSelectedEditor() {
+        Tab result = (Tab) getTabPane().getSelectedComponent();
+        return result != null && result.isEditor() ? (EditorTab) result : null;
     }
 
     /**

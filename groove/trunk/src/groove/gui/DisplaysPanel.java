@@ -415,7 +415,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         boolean result = true;
         for (Display display : this.displaysMap.values()) {
             if (display instanceof ResourceDisplay) {
-                result = ((ResourceDisplay) display).disposeAllEditors();
+                result = ((ResourceDisplay) display).cancelAllEdits();
                 if (!result) {
                     break;
                 }

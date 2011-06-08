@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
-import groove.graph.GraphRole;
 import groove.gui.LabelTree;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
@@ -28,6 +27,7 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.ResourceKind;
 import groove.util.Colors;
 
 import java.awt.Color;
@@ -126,7 +126,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
         if (getActiveState() != null) {
-            result.add(getActions().getSaveGraphAsAction(GraphRole.HOST));
+            result.add(getActions().getSaveAsAction(ResourceKind.HOST));
         }
         addMenuItems(result, super.createExportMenu());
         return result;

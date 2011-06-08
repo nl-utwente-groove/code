@@ -337,7 +337,7 @@ public class Simulator implements SimulatorListener {
                             if (error.getNumbers().size() > 1) {
                                 int line = error.getNumbers().get(0);
                                 int column = error.getNumbers().get(1);
-                                getPrologDisplay().getSelectedEditor().select(
+                                ((TextEditorTab) getPrologDisplay().getSelectedEditor()).select(
                                     line, column);
                             }
                         }
@@ -428,7 +428,8 @@ public class Simulator implements SimulatorListener {
             enableItem.setAction(enableAction);
         }
         JMenuItem saveItem = getSaveMenuItem();
-        Action saveAction = getActions().getSaveAsAction(displayKind);
+        Action saveAction =
+            getActions().getSaveAsAction(displayKind.getResource());
         if (saveAction == null) {
             saveItem.setEnabled(false);
         } else {
@@ -646,8 +647,9 @@ public class Simulator implements SimulatorListener {
         // lazily create the menu item
         if (this.saveMenuItem == null) {
             this.saveMenuItem =
-                new JMenuItem(getActions().getSaveAsAction(
-                    getSimulatorPanel().getSelectedDisplay().getKind()));
+                new JMenuItem(
+                    getActions().getSaveAsAction(
+                        getSimulatorPanel().getSelectedDisplay().getKind().getResource()));
         }
         return this.saveMenuItem;
     }
