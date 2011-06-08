@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.gui.TabbedResourceDisplay.Tab;
 import groove.gui.action.CancelEditAction;
-import groove.gui.action.SimulatorAction;
+import groove.gui.action.SaveAction;
 import groove.trans.ResourceKind;
 
 import java.awt.Component;
@@ -64,7 +64,7 @@ abstract public class EditorTab extends JPanel implements Tab {
     }
 
     /** Returns the resource kind of this editor tab. */
-    final protected ResourceKind getResourceKind() {
+    final public ResourceKind getResourceKind() {
         return this.resourceKind;
     }
 
@@ -174,10 +174,15 @@ abstract public class EditorTab extends JPanel implements Tab {
     }
 
     /** Creates and returns the cancel action. */
-    abstract protected SimulatorAction getCancelAction();
+    protected final CancelEditAction getCancelAction() {
+        return getSimulator().getActions().getCancelEditAction(
+            getResourceKind());
+    }
 
     /** Returns the save action of this editor. */
-    abstract protected SimulatorAction getSaveAction();
+    protected final SaveAction getSaveAction() {
+        return getSimulator().getActions().getSaveAction(getResourceKind());
+    }
 
     /** Convenience method to retrieve the simulator. */
     public final Simulator getSimulator() {

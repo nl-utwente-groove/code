@@ -34,52 +34,23 @@ public class CopyAction extends SimulatorAction {
      */
     private boolean doCopy(String oldName, String newName) {
         boolean result = false;
-        switch (getResourceKind()) {
-        case CONTROL:
-            result = getActions().getSaveControlAction().doSave(newName);
-            break;
-        case PROLOG:
-            getActions().getSavePrologAction().doSave(newName,
-                getSimulatorModel().getProlog().getProgram());
-            break;
-        case HOST:
-            AspectGraph host = getSimulatorModel().getHost().getSource();
+        ResourceKind resourceKind = getResourceKind();
+        if (resourceKind.isTextBased()) {
+            String text = getGrammarStore().getTexts(resourceKind).get(oldName);
+            result =
+                getActions().getSaveAction(resourceKind).doSaveText(newName,
+                    text);
+        } else {
+            AspectGraph host =
+                getGrammarStore().getGraphs(resourceKind).get(oldName);
             AspectGraph newHost = host.rename(newName);
             try {
-                result =
-                    getSimulatorModel().doAddGraph(getResourceKind(), newHost);
+                result = getSimulatorModel().doAddGraph(resourceKind, newHost);
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
-                    "Error while copying host graph '%s' to '%s'", oldName,
-                    newName));
+                    "Error while copying %s '%s' to '%s'",
+                    resourceKind.getDescription(), oldName, newName));
             }
-            break;
-        case RULE:
-            AspectGraph rule = getSimulatorModel().getRule().getSource();
-            AspectGraph newRule = rule.rename(newName);
-            try {
-                result =
-                    getSimulatorModel().doAddGraph(getResourceKind(), newRule);
-            } catch (IOException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error while copying rule '%s' to '%s'", oldName, newName));
-            }
-            break;
-        case TYPE:
-            AspectGraph newType =
-                getSimulatorModel().getType().getSource().rename(newName);
-            try {
-                result =
-                    getSimulatorModel().doAddGraph(getResourceKind(), newType);
-            } catch (IOException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error while copying type graph '%s' to '%s'", oldName,
-                    newName));
-            }
-            break;
-        default:
-            assert false;
-            result = false;
         }
         return result;
     }

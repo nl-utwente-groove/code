@@ -17,7 +17,9 @@
 package groove.gui;
 
 import groove.gui.action.ActionStore;
+import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
+import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
@@ -85,7 +87,7 @@ abstract public class ResourceDisplay implements Display {
      * This is done in preparation to changing the grammar.
      * @return {@code true} if all editors were disposed.
      */
-    abstract public boolean disposeAllEditors();
+    abstract public boolean cancelAllEdits();
 
     /** Returns the GUI component showing the list of control program names. */
     public JPanel getListPanel() {
@@ -215,12 +217,12 @@ abstract public class ResourceDisplay implements Display {
     }
 
     /** Returns the save action associated with this kind of resource. */
-    protected final SimulatorAction getSaveAction() {
+    protected final SaveAction getSaveAction() {
         return getActions().getSaveAction(getResourceKind());
     }
 
     /** Returns the save action associated with this kind of resource. */
-    protected final SimulatorAction getCancelEditAction() {
+    protected final CancelEditAction getCancelEditAction() {
         return getActions().getCancelEditAction(getResourceKind());
     }
 

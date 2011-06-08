@@ -16,7 +16,6 @@
  */
 package groove.gui.action;
 
-import groove.graph.GraphRole;
 import groove.gui.DisplayKind;
 import groove.gui.GraphTab;
 import groove.gui.Refreshable;
@@ -123,6 +122,7 @@ public class ActionStore implements SimulatorListener {
         if (result == null) {
             this.cancelEditActionMap.put(resource, result =
                 new CancelEditAction(this.simulator, resource));
+            result.refresh();
         }
         return result;
     }
@@ -626,57 +626,6 @@ public class ActionStore implements SimulatorListener {
     private RenumberGrammarAction renumberAction;
 
     /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link SaveControlAction} that saves control programs within the
-     * grammar.
-     */
-    public SaveControlAction getSaveControlAction() {
-        if (this.saveControlAction == null) {
-            this.saveControlAction =
-                new SaveControlAction(this.simulator, false);
-        }
-        return this.saveControlAction;
-    }
-
-    /** Singular instance of the {@link SaveControlAction} that 
-     * saves within the grammar. */
-    private SaveControlAction saveControlAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link SaveControlAction} that saves control programs within the
-     * grammar.
-     */
-    public SavePrologAction getSavePrologAction() {
-        if (this.savePrologAction == null) {
-            this.savePrologAction = new SavePrologAction(this.simulator);
-        }
-        return this.savePrologAction;
-    }
-
-    /** Singular instance of the {@link SavePrologAction} that 
-     * saves within the grammar. */
-    private SavePrologAction savePrologAction;
-
-    /**
-     * Lazily creates and returns the singleton instance of the
-     * {@link SaveControlAction} that saves control programs to files
-     * outside the 
-     * grammar directory
-     */
-    public SaveControlAction getSaveControlAsAction() {
-        if (this.saveControlAsAction == null) {
-            this.saveControlAsAction =
-                new SaveControlAction(this.simulator, true);
-        }
-        return this.saveControlAsAction;
-    }
-
-    /** Singular instance of the {@link SaveControlAction} that 
-     * saves outside the grammar. */
-    private SaveControlAction saveControlAsAction;
-
-    /**
      * Returns the graph save action permanently associated with this simulator.
      */
     public SaveGrammarAction getSaveGrammarAction() {
@@ -693,28 +642,11 @@ public class ActionStore implements SimulatorListener {
     private SaveGrammarAction saveGrammarAction;
 
     /** Returns the save action for a given resource kind. */
-    public SimulatorAction getSaveAction(ResourceKind resource) {
-        if (resource.isGraphBased()) {
-            return getSaveGraphAction(resource.getGraphRole());
-        } else if (resource == ResourceKind.CONTROL) {
-            return getSaveControlAction();
-        } else if (resource == ResourceKind.PROLOG) {
-            return getSavePrologAction();
-        } else {
-            assert false;
-            return null;
-        }
-    }
-
-    /**
-     * Returns the graph save action for a given graph role that is permanently 
-     * associated with this simulator.
-     */
-    public SaveGraphAction getSaveGraphAction(GraphRole role) {
-        SaveGraphAction result = this.saveGraphActionMap.get(role);
+    public SaveAction getSaveAction(ResourceKind resource) {
+        SaveAction result = this.saveActionMap.get(resource);
         if (result == null) {
-            this.saveGraphActionMap.put(role, result =
-                new SaveGraphAction(this.simulator, role, false));
+            this.saveActionMap.put(resource, result =
+                new SaveAction(this.simulator, resource, false));
         }
         return result;
     }
@@ -722,60 +654,25 @@ public class ActionStore implements SimulatorListener {
     /**
      * Mapping from graph roles to corresponding save actions.
      */
-    private Map<GraphRole,SaveGraphAction> saveGraphActionMap =
-        new EnumMap<GraphRole,SaveGraphAction>(GraphRole.class);
+    private Map<ResourceKind,SaveAction> saveActionMap =
+        new EnumMap<ResourceKind,SaveAction>(ResourceKind.class);
 
-    /**
-     * Returns the graph save-as action for a given graph role that is permanently 
-     * associated with this simulator.
-     */
-    public SaveGraphAction getSaveGraphAsAction(GraphRole role) {
-        SaveGraphAction result = this.saveGraphAsActionMap.get(role);
+    /** Returns the save action for a given resource kind. */
+    public SaveAction getSaveAsAction(ResourceKind resource) {
+        SaveAction result = this.saveAsActionMap.get(resource);
         if (result == null) {
-            this.saveGraphAsActionMap.put(role, result =
-                new SaveGraphAction(this.simulator, role, true));
+            this.saveAsActionMap.put(resource, result =
+                new SaveAction(this.simulator, resource, true));
+            result.refresh();
         }
         return result;
     }
 
     /**
-     * Mapping from graph roles to corresponding save-as actions.
+     * Mapping from graph roles to corresponding save actions.
      */
-    private Map<GraphRole,SaveGraphAction> saveGraphAsActionMap =
-        new EnumMap<GraphRole,SaveGraphAction>(GraphRole.class);
-
-    /**
-     * Returns the save-as action for a given tab kind permanently
-     * associated with this simulator.
-     */
-    public SimulatorAction getSaveAsAction(DisplayKind kind) {
-        SimulatorAction result = this.saveAsActionMap.get(kind);
-        if (result == null) {
-            switch (kind) {
-            case CONTROL:
-                result = getSaveControlAsAction();
-                break;
-            case HOST:
-            case RULE:
-            case TYPE:
-                result = getSaveGraphAsAction(kind.getGraphRole());
-                break;
-            case LTS:
-                result = getSaveLTSAsAction();
-                break;
-            case PROLOG:
-            default:
-                // null is good enough
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Mapping from simulator tabs to corresponding save-as actions.
-     */
-    private Map<DisplayKind,SimulatorAction> saveAsActionMap =
-        new EnumMap<DisplayKind,SimulatorAction>(DisplayKind.class);
+    private Map<ResourceKind,SaveAction> saveAsActionMap =
+        new EnumMap<ResourceKind,SaveAction>(ResourceKind.class);
 
     /**
      * Returns the Save LTS As action permanently associated with this simulator.

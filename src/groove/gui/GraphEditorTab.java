@@ -20,8 +20,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.CancelEditAction;
-import groove.gui.action.SaveGraphAction;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
@@ -112,20 +111,9 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
             // test if the graph being edited is still in the grammar;
             // if not, silently dispose it - it's too late to do anything else!
             AspectGraph graph = getGraph();
-            GraphBasedModel<?> resource = null;
-            switch (graph.getRole()) {
-            case HOST:
-                resource = grammar.getHostModel(graph.getName());
-                break;
-            case RULE:
-                resource = grammar.getRuleModel(graph.getName());
-                break;
-            case TYPE:
-                resource = grammar.getTypeModel(graph.getName());
-                break;
-            default:
-                assert false;
-            }
+            GraphBasedModel<?> resource =
+                (GraphBasedModel<?>) grammar.getResource(
+                    ResourceKind.toResource(graph.getRole()), graph.getName());
             if (resource != null) {
                 this.editor.setTypeView(grammar.getTypeModel());
                 // check if the properties have changed
@@ -186,31 +174,14 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSave(getGraph());
+        getSaveAction().doSaveGraph(getGraph());
     }
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
     @Override
     public void dispose() {
-        getSaveAction().dispose();
         getDisplay().getDisplayPanel().remove(this);
         getSimulatorModel().removeListener(this);
-    }
-
-    /** Creates and returns the cancel action. */
-    @Override
-    protected CancelEditAction getCancelAction() {
-        return getSimulator().getActions().getCancelEditAction(
-            getResourceKind());
-    }
-
-    /** Creates and returns the save action. */
-    @Override
-    public SaveGraphAction getSaveAction() {
-        if (this.saveAction == null) {
-            this.saveAction = new SaveGraphAction(this);
-        }
-        return this.saveAction;
     }
 
     /** Graph being edited.
@@ -219,7 +190,6 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
      * Use {@link #getGraph()} to access the graph.
      */
     private AspectGraph graph;
-    private SaveGraphAction saveAction;
     /** The editor wrapped in the panel. */
     private final Editor editor;
     /** Flag indicating that the editor is in the process of saving. */

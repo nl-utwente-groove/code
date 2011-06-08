@@ -1,10 +1,6 @@
 package groove.gui;
 
 import groove.gui.TabbedResourceDisplay.MainTab;
-import groove.gui.action.ActionStore;
-import groove.gui.action.CancelEditAction;
-import groove.gui.action.SavePrologAction;
-import groove.gui.action.SimulatorAction;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
 
@@ -58,9 +54,8 @@ public class TextEditorTab extends EditorTab implements MainTab {
             Options.getSaveActionName(ResourceKind.PROLOG, false);
         focusedInputMap.put(Options.SAVE_KEY, actionName);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(actionName, getActions().getSavePrologAction());
-        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-            getActions().getCancelEditAction(display.getResourceKind()));
+        getActionMap().put(actionName, getSaveAction());
+        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         this.textArea.setProgram(program);
     }
 
@@ -146,7 +141,7 @@ public class TextEditorTab extends EditorTab implements MainTab {
 
     @Override
     protected void saveResource() {
-        getActions().getSavePrologAction().doSave(getName(), getProgram());
+        getSaveAction().doSaveText(getName(), getProgram());
     }
 
     /** Removes this editor from the editor pane. */
@@ -165,28 +160,6 @@ public class TextEditorTab extends EditorTab implements MainTab {
             }
         });
         return result;
-    }
-
-    /** Creates and returns the save action. */
-    @Override
-    protected SimulatorAction getCancelAction() {
-        CancelEditAction result =
-            getActions().getCancelEditAction(getDisplay().getResourceKind());
-        result.refresh();
-        return result;
-    }
-
-    /** Creates and returns the save action. */
-    @Override
-    protected SimulatorAction getSaveAction() {
-        SavePrologAction result = getActions().getSavePrologAction();
-        result.refresh();
-        return result;
-    }
-
-    /** Convenience method to retrieve the underlying simulator. */
-    private ActionStore getActions() {
-        return getDisplay().getActions();
     }
 
     /**

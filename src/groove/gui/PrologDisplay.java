@@ -368,11 +368,6 @@ public class PrologDisplay extends TabbedResourceDisplay implements
         return new TextEditorTab(this, name, program);
     }
 
-    /** Returns the currently selected editor, if any. */
-    public TextEditorTab getSelectedEditor() {
-        return (TextEditorTab) getTabPane().getSelectedComponent();
-    }
-
     /**
      * Execute the current query
      */

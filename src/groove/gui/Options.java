@@ -575,7 +575,7 @@ public class Options implements Cloneable {
     /** To concrete mode action name */
     public static final String TOGGLE_TO_CONC_ACTION_NAME =
         "Return to Concrete Mode";
-    private static final String SAVE_NAME_TEMPLATE = "Save %s ...";
+    private static final String SAVE_NAME_TEMPLATE = "Save %s";
     private static final String SAVE_AS_NAME_TEMPLATE = "Save %s As ...";
     /**
      * Save action name
