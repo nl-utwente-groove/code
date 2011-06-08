@@ -429,7 +429,8 @@ public class Simulator implements SimulatorListener {
         }
         JMenuItem saveItem = getSaveMenuItem();
         Action saveAction =
-            getActions().getSaveAsAction(displayKind.getResource());
+            displayKind == DisplayKind.LTS ? getActions().getSaveLTSAsAction()
+                    : getActions().getSaveAsAction(displayKind.getResource());
         if (saveAction == null) {
             saveItem.setEnabled(false);
         } else {

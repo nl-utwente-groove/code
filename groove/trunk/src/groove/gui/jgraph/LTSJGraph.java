@@ -27,7 +27,6 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.ResourceKind;
 import groove.util.Colors;
 
 import java.awt.Color;
@@ -125,9 +124,7 @@ public class LTSJGraph extends GraphJGraph {
     @Override
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
-        if (getActiveState() != null) {
-            result.add(getActions().getSaveAsAction(ResourceKind.HOST));
-        }
+        result.add(getActions().getSaveLTSAsAction());
         addMenuItems(result, super.createExportMenu());
         return result;
     }
