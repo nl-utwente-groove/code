@@ -27,7 +27,8 @@ public class NewAction extends SimulatorAction {
                 switch (resource) {
                 case CONTROL:
                     if (getControlDisplay().cancelEditing(true)) {
-                        getSimulatorModel().doAddControl(newName, "");
+                        getSimulatorModel().doAddText(getResourceKind(),
+                            newName, "");
                         getControlDisplay().startEditing();
                     }
                     break;
@@ -45,7 +46,8 @@ public class NewAction extends SimulatorAction {
                     });
                     break;
                 case PROLOG:
-                    getSimulatorModel().doAddProlog(newName, "");
+                    getSimulatorModel().doAddText(getResourceKind(), newName,
+                        "");
                     getPrologDisplay().startEditResource(newName);
                     break;
                 case PROPERTIES:

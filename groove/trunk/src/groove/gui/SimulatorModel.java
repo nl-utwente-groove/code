@@ -137,11 +137,9 @@ public class SimulatorModel implements Cloneable {
                 }
                 break;
             case RULE:
+            case TYPE:
                 result =
                     getGrammar().getResource(resource, oldName).isEnabled();
-                break;
-            case TYPE:
-                result = getGrammar().getTypeModel(oldName).isEnabled();
                 break;
             }
             getStore().rename(resource, oldName, newName);
@@ -248,44 +246,25 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Adds a control program to this grammar.
-     * @param name the name of the control program
-     * @param program the control program text
+     * Adds a text-based resource to this grammar.
+     * @param name the name of the resource
+     * @param program the resource text
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddControl(String name, String program) throws IOException {
+    public boolean doAddText(ResourceKind kind, String name, String program)
+        throws IOException {
         start();
         try {
             GrammarModel grammar = getGrammar();
-            boolean result = name.equals(grammar.getControlName());
-            getStore().putTexts(ResourceKind.CONTROL,
-                Collections.singletonMap(name, program));
+            boolean result =
+                kind != ResourceKind.CONTROL
+                    || name.equals(grammar.getControlName());
+            getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
-            changeControl(name);
-            changeDisplay(DisplayKind.CONTROL);
+            changeResource(kind, name);
+            changeDisplay(DisplayKind.toDisplay(kind));
             return result;
-        } finally {
-            finish();
-        }
-    }
-
-    /**
-     * Adds a prolog program to this grammar.
-     * @param name the name of the prolog program
-     * @param program the prolog program text
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the add action failed
-     */
-    public boolean doAddProlog(String name, String program) throws IOException {
-        start();
-        try {
-            getStore().putTexts(ResourceKind.PROLOG,
-                Collections.singletonMap(name, program));
-            changeProlog(name);
-            changeGrammar(false);
-            changeDisplay(DisplayKind.PROLOG);
-            return false;
         } finally {
             finish();
         }

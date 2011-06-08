@@ -84,13 +84,7 @@ public class ImportAction extends SimulatorAction {
         String program = text.two();
         if (getGrammarModel().getResource(kind, name) == null
             || confirmOverwrite(kind, name)) {
-            switch (kind) {
-            case PROLOG:
-                result = getSimulatorModel().doAddProlog(name, program);
-                break;
-            case CONTROL:
-                result = getSimulatorModel().doAddControl(name, program);
-            }
+            result = getSimulatorModel().doAddText(kind, name, program);
         }
         return result;
     }

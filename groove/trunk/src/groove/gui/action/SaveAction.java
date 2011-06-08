@@ -141,9 +141,7 @@ public final class SaveAction extends SimulatorAction {
         boolean result = false;
         try {
             result =
-                getResourceKind() == ResourceKind.PROLOG
-                        ? getSimulatorModel().doAddProlog(name, text)
-                        : getSimulatorModel().doAddControl(name, text);
+                getSimulatorModel().doAddText(getResourceKind(), name, text);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error saving %s %s",
                 getResourceKind().getDescription(), name);
