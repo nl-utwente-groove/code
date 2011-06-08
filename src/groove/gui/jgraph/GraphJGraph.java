@@ -99,12 +99,13 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph.
-     * @param options display options object to be used
+     * @param simulator simulator to which the JGraph belongs.
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
-    public GraphJGraph(Options options, boolean hasFilters) {
+    public GraphJGraph(Simulator simulator, boolean hasFilters) {
         super((GraphJModel<?,?>) null);
-        this.options = options == null ? new Options() : options;
+        this.simulator = simulator;
+        this.options = simulator.getOptions();
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
             this.filteredLabels.addObserver(this.refreshListener);
@@ -200,17 +201,17 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Returns the simulator associated with this {@link GraphJGraph}, if any. */
     public Simulator getSimulator() {
-        return null;
+        return this.simulator;
     }
 
     /** Convenience method to retrieve the state of the simulator, if any. */
     final protected SimulatorModel getSimulatorModel() {
-        return getSimulator() == null ? null : getSimulator().getModel();
+        return getSimulator().getModel();
     }
 
     /** Convenience method to retrieve the state of the simulator, if any. */
     final protected ActionStore getActions() {
-        return getSimulator() == null ? null : getSimulator().getActions();
+        return getSimulator().getActions();
     }
 
     /**
@@ -1092,6 +1093,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     private Map<JGraphMode,JToggleButton> modeButtonMap;
 
+    /** Simulator tool to which this JGraph belongs. */
+    private final Simulator simulator;
     /** The options object with which this {@link GraphJGraph} was constructed. */
     private final Options options;
     /** The set of labels currently filtered from view. */

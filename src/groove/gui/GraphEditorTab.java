@@ -47,7 +47,7 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
         final Simulator simulator = parent.getSimulator();
         this.graph = graph;
         this.editor =
-            new Editor(null, simulator.getOptions(),
+            new Editor(simulator,
                 simulator.getModel().getGrammar().getProperties()) {
                 @Override
                 protected void updateTitle() {

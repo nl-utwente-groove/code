@@ -73,9 +73,7 @@ final public class AspectJGraph extends GraphJGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public AspectJGraph(Simulator simulator, GraphRole role) {
-        super(simulator == null ? null : simulator.getOptions(),
-            role != GraphRole.RULE);
-        this.simulator = simulator;
+        super(simulator, role != GraphRole.RULE);
         this.editor = null;
         assert role.inGrammar();
         this.graphRole = role;
@@ -85,8 +83,7 @@ final public class AspectJGraph extends GraphJGraph {
      * Creates a j-graph for a given simulator, with an initially empty j-model.
      */
     public AspectJGraph(Editor editor) {
-        super(editor.getOptions(), false);
-        this.simulator = null;
+        super(editor.getSimulator(), false);
         this.editor = editor;
         this.graphRole = null;
         //        addMouseListener(new MyMouseListener());
@@ -211,11 +208,6 @@ final public class AspectJGraph extends GraphJGraph {
         return this.editor != null && getMode() != PREVIEW_MODE;
     }
 
-    @Override
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
     /** Convenience method to retrieve the grammar view from the simulator. */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
@@ -243,32 +235,26 @@ final public class AspectJGraph extends GraphJGraph {
      * whichever is set.
      */
     public GraphRole getGraphRole() {
-        if (this.simulator == null) {
-            return this.editor.getRole();
-        } else {
-            return this.graphRole;
-        }
+        return this.graphRole;
     }
 
     @Override
     public JMenu createPopupMenu(Point atPoint) {
         JMenu result = new JMenu("Popup");
-        if (this.simulator != null) {
-            switch (getGraphRole()) {
-            case HOST:
-                result.add(getActions().getApplyTransitionAction());
-                result.addSeparator();
-                break;
-            case RULE:
-                JMenu setRuleMenu = createSetRuleMenu();
-                setRuleMenu.setEnabled(getGrammar() != null);
-                result.add(setRuleMenu);
-                result.addSeparator();
-                break;
-            }
-            result.add(getActions().getEditAction(
-                ResourceKind.toResource(getGraphRole())));
+        switch (getGraphRole()) {
+        case HOST:
+            result.add(getActions().getApplyTransitionAction());
+            result.addSeparator();
+            break;
+        case RULE:
+            JMenu setRuleMenu = createSetRuleMenu();
+            setRuleMenu.setEnabled(getGrammar() != null);
+            result.add(setRuleMenu);
+            result.addSeparator();
+            break;
         }
+        result.add(getActions().getEditAction(
+            ResourceKind.toResource(getGraphRole())));
         addSubmenu(result, createEditMenu(atPoint));
         addSubmenu(result, super.createPopupMenu(atPoint));
         return result;
@@ -572,13 +558,7 @@ final public class AspectJGraph extends GraphJGraph {
      */
     private final boolean startEditingNewEdge = true;
     /**
-     * The simulator with which this j-graph is associated.
-     * Either this or {@link #editor} is set.
-     */
-    private final Simulator simulator;
-    /**
-     * The editor with which this j-graph is associated.
-     * Either this or {@link #simulator} is set.
+     * The (possibly {@code null}) editor with which this j-graph is associated.
      */
     private final Editor editor;
 

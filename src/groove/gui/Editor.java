@@ -108,37 +108,28 @@ import org.jgraph.graph.GraphUndoManager;
  */
 public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
-     * Constructs an editor frame with an initially empty graph and a given
-     * display options setting.
-     * @param options the display options object; may be <code>null</code>
+     * Constructs an editor frame with an initially empty graph.
      */
-    Editor(JFrame frame, Options options, SystemProperties properties) {
+    Editor(Simulator simulator, SystemProperties properties) {
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
         // Construct the main components
-        this.options = options;
+        this.simulator = simulator;
+        this.options = simulator.getOptions();
         this.properties = properties;
-        if (frame == null) {
-            this.frame = new JFrame(EDITOR_NAME);
-            // this.frame.getRootPane().setDoubleBuffered(false);
-        } else {
-            this.frame = frame;
-            this.frame.setTitle(EDITOR_NAME);
-        }
+        //        if (frame == null) {
+        //            this.frame = new JFrame(EDITOR_NAME);
+        //            // this.frame.getRootPane().setDoubleBuffered(false);
+        //        } else {
+        //            this.frame = frame;
+        //            this.frame.setTitle(EDITOR_NAME);
+        //        }
         this.jgraph = new AspectJGraph(this);
         AspectJModel newModel = this.jgraph.newModel();
         newModel.loadGraph(AspectGraph.emptyGraph(HOST));
         this.jgraph.setModel(newModel);
         initListeners();
-        initGUI();
-    }
-
-    /**
-     * Constructs an editor frame with an initially empty graph. It is not
-     * configured as an auxiliary component.
-     */
-    public Editor() {
-        this(null, null, null);
+        //        initGUI();
     }
 
     /** Creates the frame and makes it visible. */
@@ -148,8 +139,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Returns the frame in which the editor is displayed. */
+    @Deprecated
     public final JFrame getFrame() {
-        return this.frame;
+        return null; //this.frame;
     }
 
     /**
@@ -324,6 +316,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * If the editor has unsaved changes, asks if these should be abandoned;
      * then calls {@link #doQuit()}.
      */
+    @Deprecated
     protected void handleQuit() {
         if (confirmAbandon()) {
             doQuit();
@@ -428,6 +421,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Initialises the GUI. */
+    @Deprecated
     protected void initGUI() {
         getFrame().setIconImage(Icons.GROOVE_ICON_16x16.getImage());
         // Set Close Operation to Exit
@@ -1032,13 +1026,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /**
+     * Returns the simulator.
+     */
+    public final Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    /**
      * Returns the options object associated with the simulator.
      */
     public final Options getOptions() {
-        // lazily creates the options
-        if (this.options == null) {
-            this.options = new Options();
-        }
         return this.options;
     }
 
@@ -1074,14 +1071,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      */
     private final SystemProperties properties;
     /**
+     * The simulator parent tool.
+     */
+    private final Simulator simulator;
+    /**
      * The options object of this editor.
      */
-    private Options options;
+    private final Options options;
     /** The (optional) type graph against which he edited model is checked. */
     private TypeGraph type;
-
-    /** The frame of the editor. */
-    private final JFrame frame;
 
     /** The jgraph instance used in this editor. */
     final AspectJGraph jgraph;
@@ -1486,6 +1484,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Lazily creates and returns the action to quit the editor.
      */
+    @Deprecated
     private Action getQuitAction() {
         if (this.quitAction == null) {
             this.quitAction = new QuitAction();
@@ -1494,12 +1493,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Action to quit the editor. */
+    @Deprecated
     private Action quitAction;
 
     /**
      * Action for quitting the editor. Calls {@link Editor#handleQuit()} to
      * execute the action.
      */
+    @Deprecated
     private class QuitAction extends AbstractAction {
         /** Constructs an instance of the action. */
         public QuitAction() {
@@ -1870,25 +1871,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
             this.filterRoleMap.put(getRuleFilter(), RULE);
             this.filterRoleMap.put(getTypeFilter(), TYPE);
             this.filterRoleMap.put(getGxlFilter(), HOST);
-        }
-    }
-
-    /**
-     * @param args empty or a singleton containing a filename of the graph to be
-     *        edited
-     */
-    public static void main(String[] args) {
-        try {
-            // Add an Editor Panel
-            final Editor editor = new Editor();
-            if (args.length == 0) {
-                editor.setGraph(AspectGraph.emptyGraph(editor.getRole()), true);
-            } else {
-                editor.doOpenGraph(new File(args[0]));
-            }
-            editor.start();
-        } catch (IOException exc) {
-            System.out.println("Error: " + exc.getMessage());
         }
     }
 
