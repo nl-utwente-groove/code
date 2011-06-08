@@ -18,6 +18,7 @@ package groove.gui.action;
 
 import groove.gui.DisplayKind;
 import groove.gui.GraphTab;
+import groove.gui.LTSDisplay;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -334,7 +335,12 @@ public class ActionStore implements SimulatorListener {
     public ExportAction getExportAction(DisplayKind kind) {
         if (!this.exportActionMap.containsKey(kind)) {
             ExportAction result = null;
-            if (kind.getResource().isGraphBased()) {
+            if (kind == DisplayKind.LTS) {
+                LTSDisplay display =
+                    (LTSDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
+                        kind);
+                result = display.getJGraph().getExportAction();
+            } else if (kind.getResource().isGraphBased()) {
                 TabbedResourceDisplay display =
                     (TabbedResourceDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
                         kind);
