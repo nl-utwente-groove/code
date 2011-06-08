@@ -52,7 +52,7 @@ import org.jgraph.graph.GraphModel;
 public class LTSJGraph extends GraphJGraph {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-        super(simulator.getOptions(), true);
+        super(simulator, true);
         this.simulator = simulator;
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
