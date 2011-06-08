@@ -315,7 +315,7 @@ public class Options implements Cloneable {
      */
     public static String getNewResourceName(ResourceKind resource) {
         String result;
-        if (resource == ResourceKind.TYPE) {
+        if (resource == ResourceKind.CONTROL) {
             result = Groove.DEFAULT_CONTROL_NAME;
         } else if (resource == ResourceKind.HOST) {
             result = Groove.DEFAULT_START_GRAPH_NAME;
