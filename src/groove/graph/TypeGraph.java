@@ -103,6 +103,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 this.imports.add(node);
             }
             this.labelStore.addLabel(node.getType());
+            if (node.getColor() != null) {
+                this.labelStore.setColor(node.getType(), node.getColor());
+            }
         }
         return result;
     }
