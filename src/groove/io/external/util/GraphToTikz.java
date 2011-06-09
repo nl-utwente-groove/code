@@ -1179,7 +1179,6 @@ public final class GraphToTikz {
         GraphJVertex srcVertex = edge.getSourceVertex();
         GraphJVertex tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
-        boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
 
         // Compute the bezier line.
         Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
@@ -1192,39 +1191,82 @@ public final class GraphToTikz {
             return;
         }
 
-        this.appendNode(srcVertex);
+        if (points.size() <= 4) {
+            // If we have 4 or less points in the edge, we need to resort to
+            // some black magic code when making the translation to Tikz.
+            // This is needed to make the Tikz figure look similar to what
+            // is shown in Groove. Otherwise, the bezier curve in Tikz is not
+            // smooth enough.
+            boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
+            this.appendNode(srcVertex);
+            int i = 1; // Index for edge points.
+            int j = 0; // Index for bezier points. Always j = i - 1;
+            while (j < bPoints.length - 1) {
+                this.result.append(BEGIN_CONTROLS);
+                if (isLoop) {
+                    // Drawing a loop edge is a special case, for the first and
+                    // last control entry we need to use a point of the edge
+                    // instead of a bezier point, otherwise Tikz draws the loop
+                    // incorrectly.
+                    if (i == points.size() - 1) {
+                        // This is the LAST control entry.
+                        this.appendPoint(points, i - 1);
+                    } else {
+                        // Not a special case, just use a bezier point.
+                        this.appendPoint(bPoints[j]);
+                    }
+                    this.result.append(AND);
+                    if (i == 1) {
+                        // This is the FIRST control entry.
+                        this.appendPoint(points, i);
+                    } else {
+                        // Not a special case, just use a bezier point.
+                        this.appendPoint(bPoints[j + 1]);
+                    }
+                } else {
+                    // The edge is not a loop, just use the bezier points.
+                    this.appendPoint(bPoints[j]);
+                    this.result.append(AND);
+                    this.appendPoint(bPoints[j + 1]);
+                }
+                this.result.append(END_CONTROLS);
+                // Use the edge intermediate point as the next coordinate.
+                if (points.size() > 3 && i < points.size() - 1) {
+                    this.appendPoint(points, i);
+                }
+                i++;
+                j++;
+            }
+            this.appendNode(tgtVertex);
+        } else {
+            // General case, we have an edge with more than 4 points. We have
+            // enough points to make the curve smooth, so just revert to
+            // normal bezier calculation.
 
-        int i = 1; // Index for edge points.
-        for (int j = 0; j < bPoints.length - 1; j++) {
+            // The first part of the curve is quadratic.
+            this.appendNode(srcVertex);
             this.result.append(BEGIN_CONTROLS);
-            if (isLoop && i == points.size() - 1) {
-                // This is the LAST control entry and we are drawing a loop
-                // edge, we need to use a point of the edge instead of a bezier
-                // point, otherwise the loop is drawn incorrectly.
-                this.appendPoint(points, i - 1);
-            } else {
-                // No special case, just use a bezier point.
-                this.appendPoint(bPoints[j]);
-            }
-            this.result.append(AND);
-            if (i == 1 && isLoop) {
-                // This is the FIRST control entry and we are drawing a loop
-                // edge, we need to use a point of the edge instead of a bezier
-                // point, otherwise the loop is drawn incorrectly.
-                this.appendPoint(points, i);
-            } else {
-                // No special case, just use a bezier point.
-                this.appendPoint(bPoints[j + 1]);
-            }
+            this.appendPoint(bPoints[0]);
             this.result.append(END_CONTROLS);
-            if (i != points.size() - 1 && points.size() > 3) {
-                // Intermediate point
+            this.appendPoint(points, 1);
+
+            // The middle part of the curve is cubic.
+            for (int i = 2; i < points.size() - 1; i++) {
+                this.result.append(BEGIN_CONTROLS);
+                this.appendPoint(bPoints[2 * i - 3]);
+                this.result.append(AND);
+                this.appendPoint(bPoints[2 * i - 2]);
+                this.result.append(END_CONTROLS);
                 this.appendPoint(points, i);
             }
-            i++;
+
+            // The last part of the curve is again quadratic.
+            this.result.append(BEGIN_CONTROLS);
+            this.appendPoint(bPoints[bPoints.length - 1]);
+            this.result.append(END_CONTROLS);
+            this.appendNode(tgtVertex);
         }
 
-        this.appendNode(tgtVertex);
         this.result.append(END_PATH);
         this.appendEdgeLabel(edge, layout, labStyle, points);
         this.result.append(END_EDGE);
