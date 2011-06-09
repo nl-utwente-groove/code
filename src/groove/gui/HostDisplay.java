@@ -41,8 +41,8 @@ final public class HostDisplay extends GraphDisplay implements
      */
     public HostDisplay(Simulator simulator) {
         super(simulator, ResourceKind.HOST);
-        getDisplayPanel().add(getStatePanel(), 0);
-        getDisplayPanel().setTabComponentAt(0, getStatePanel().getTabLabel());
+        getDisplayPanel().add(getStateTab(), 0);
+        getDisplayPanel().setTabComponentAt(0, getStateTab().getTabLabel());
         installListeners();
     }
 
@@ -107,7 +107,7 @@ final public class HostDisplay extends GraphDisplay implements
             if (source.hasHost()) {
                 selectResource(source.getHost().getName());
             } else {
-                getDisplayPanel().setSelectedComponent(getStatePanel());
+                getDisplayPanel().setSelectedComponent(getStateTab());
             }
             refreshToolbars();
         }
@@ -116,11 +116,11 @@ final public class HostDisplay extends GraphDisplay implements
             refreshToolbars();
         }
         if (changes.contains(Change.MATCH)) {
-            getDisplayPanel().setSelectedComponent(getStatePanel());
+            getDisplayPanel().setSelectedComponent(getStateTab());
             refreshToolbars();
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
-            getStatePanel().dispose();
+            getStateTab().dispose();
             this.statePanel = null;
             removeMainTab();
         }
@@ -132,7 +132,7 @@ final public class HostDisplay extends GraphDisplay implements
     }
 
     /** Returns the state subpanel. */
-    public StateTab getStatePanel() {
+    public StateTab getStateTab() {
         if (this.statePanel == null) {
             this.statePanel = new StateTab(getSimulator());
         }

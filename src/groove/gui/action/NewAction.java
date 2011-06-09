@@ -18,48 +18,31 @@ public class NewAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         ResourceKind resource = getResourceKind();
         final String newName =
             askNewName(resource, Options.getNewResourceName(resource), true);
         if (newName != null) {
             try {
-                switch (resource) {
-                case CONTROL:
-                    if (getControlDisplay().cancelEditing(true)) {
-                        getSimulatorModel().doAddText(getResourceKind(),
-                            newName, "");
-                        getControlDisplay().startEditing();
-                    }
-                    break;
-                case HOST:
-                case RULE:
-                case TYPE:
+                if (resource.isGraphBased()) {
                     final AspectGraph newGraph =
                         AspectGraph.emptyGraph(newName, resource.getGraphRole());
                     getSimulatorModel().doAddGraph(resource, newGraph);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            getDisplay().startEditResource(newName);
-                        }
-                    });
-                    break;
-                case PROLOG:
+                } else {
                     getSimulatorModel().doAddText(getResourceKind(), newName,
                         "");
-                    getPrologDisplay().startEditResource(newName);
-                    break;
-                case PROPERTIES:
-                default:
-                    assert false;
                 }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        getDisplay().startEditResource(newName);
+                    }
+                });
             } catch (IOException e) {
                 showErrorDialog(e, "Error creating new %s '%s'",
                     resource.getDescription(), newName);
             }
         }
-        return false;
     }
 
     @Override

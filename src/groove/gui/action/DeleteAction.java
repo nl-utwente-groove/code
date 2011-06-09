@@ -18,8 +18,7 @@ public class DeleteAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         ResourceKind resource = getResourceKind();
         Set<String> names = getSimulatorModel().getAllSelected(resource);
         boolean enabled = false;
@@ -48,32 +47,27 @@ public class DeleteAction extends SimulatorAction {
         if (confirmBehaviour(Options.getDeleteOption(resource), question)) {
             boolean cancelEditing = true;
             switch (resource) {
-            case CONTROL:
-                cancelEditing = getControlDisplay().cancelEditing(false);
-                break;
             case HOST:
                 cancelEditing =
-                    getStateDisplay().cancelEdits(
-                        names.toArray(new String[0]));
+                    getStateDisplay().cancelEdits(names.toArray(new String[0]));
                 break;
+            case CONTROL:
             case PROLOG:
                 cancelEditing =
-                    getPrologDisplay().cancelEditResource(names.iterator().next(),
+                    getDisplay().cancelEditResource(names.iterator().next(),
                         false);
                 break;
             case RULE:
                 cancelEditing =
-                    getRuleDisplay().cancelEdits(
-                        names.toArray(new String[0]));
+                    getRuleDisplay().cancelEdits(names.toArray(new String[0]));
                 break;
             case TYPE:
                 cancelEditing =
-                    getTypeDisplay().cancelEdits(
-                        names.toArray(new String[0]));
+                    getTypeDisplay().cancelEdits(names.toArray(new String[0]));
             }
             if (cancelEditing) {
                 try {
-                    result = getSimulatorModel().doDelete(resource, names);
+                    getSimulatorModel().doDelete(resource, names);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while deleting %s%s", resource.getDescription(),
@@ -81,7 +75,6 @@ public class DeleteAction extends SimulatorAction {
                 }
             }
         }
-        return result;
     }
 
     @Override

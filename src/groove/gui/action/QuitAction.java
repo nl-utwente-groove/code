@@ -18,17 +18,17 @@ public class QuitAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = getDisplaysPanel().disposeAllEditors();
-        if (result) {
+    public void execute() {
+        boolean quit = getDisplaysPanel().disposeAllEditors();
+        if (quit) {
             groove.gui.UserSettings.synchSettings(getFrame());
             // Saves the current user settings.
             if (getSimulatorModel().getGts() != null) {
-                result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
+                quit = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             } else {
-                result = true;
+                quit = true;
             }
-            if (result) {
+            if (quit) {
                 getFrame().dispose();
                 // try to persist the user preferences
                 try {
@@ -38,6 +38,5 @@ public class QuitAction extends SimulatorAction {
                 }
             }
         }
-        return result;
     }
 }

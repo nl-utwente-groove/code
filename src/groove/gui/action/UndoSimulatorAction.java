@@ -21,10 +21,9 @@ public class UndoSimulatorAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         this.undoManager.undo();
         getSimulatorModel().synchronize();
-        return true;
     }
 
     @Override

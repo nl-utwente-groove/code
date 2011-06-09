@@ -27,7 +27,7 @@ public class ExportAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         String fileName = this.jGraph.getModel().getName();
         if (fileName != null) {
             this.exporter.getFileChooser().setSelectedFile(new File(fileName));
@@ -44,7 +44,6 @@ public class ExportAction extends SimulatorAction {
             }
 
         }
-        return false;
     }
 
     /** Refreshes the name of this action. */

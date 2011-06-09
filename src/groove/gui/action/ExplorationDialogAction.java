@@ -5,7 +5,6 @@ import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.view.GrammarModel;
 
-
 /** Action to open the Exploration Dialog. */
 public class ExplorationDialogAction extends SimulatorAction {
     /** Constructs an instance of the action. */
@@ -14,10 +13,8 @@ public class ExplorationDialogAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        new ExplorationDialog(getSimulator(),
-            getFrame());
-        return false;
+    public void execute() {
+        new ExplorationDialog(getSimulator(), getFrame());
     }
 
     @Override

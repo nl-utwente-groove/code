@@ -59,7 +59,7 @@ public class SelectColorAction extends SimulatorAction implements
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         Color initColour =
             getGrammarModel().getLabelStore().getColor(this.label);
         if (initColour != null) {
@@ -74,7 +74,6 @@ public class SelectColorAction extends SimulatorAction implements
                     }
                 }, null);
         dialog.setVisible(true);
-        return false;
     }
 
     private void setColour(Color newColour) {

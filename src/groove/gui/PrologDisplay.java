@@ -72,7 +72,7 @@ import javax.swing.tree.TreePath;
  * 
  * @author Michiel Hendriks
  */
-public class PrologDisplay extends TabbedResourceDisplay implements
+public class PrologDisplay extends ResourceDisplay implements
         SimulatorListener {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;

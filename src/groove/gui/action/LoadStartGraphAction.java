@@ -20,8 +20,7 @@ public class LoadStartGraphAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         // stateFileChooser.setSelectedFile(currentStartStateFile);
         int approve = getStateFileChooser().showOpenDialog(getFrame());
         // now load, if so required
@@ -30,13 +29,12 @@ public class LoadStartGraphAction extends SimulatorAction {
             try {
                 AspectGraph startGraph =
                     AspectGxl.getInstance().unmarshalGraph(file);
-                result = getSimulatorModel().doSetStartGraph(startGraph);
+                getSimulatorModel().doSetStartGraph(startGraph);
             } catch (IOException exc) {
                 showErrorDialog(exc,
                     "Could not load start graph from " + file.getName());
             }
         }
-        return result;
     }
 
     /**

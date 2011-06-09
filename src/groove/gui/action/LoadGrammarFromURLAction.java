@@ -23,25 +23,21 @@ public class LoadGrammarFromURLAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         String input = JOptionPane.showInputDialog("Input Grammar URL:");
         if (input != null) {
             try {
                 URL url = new URL(input);
                 final SystemStore store = SystemStoreFactory.newStore(url);
                 String startGraphName = url.getQuery();
-                result =
-                    getActions().getLoadGrammarAction().load(store,
-                        startGraphName);
+                getActions().getLoadGrammarAction().load(store, startGraphName);
             } catch (MalformedURLException e) {
-                showErrorDialog(
-                    e, String.format("Invalid URL '%s'", e.getMessage()));
+                showErrorDialog(e,
+                    String.format("Invalid URL '%s'", e.getMessage()));
             } catch (IOException exc) {
                 showErrorDialog(exc, exc.getMessage());
             }
         }
-        return result;
     }
 
     @Override

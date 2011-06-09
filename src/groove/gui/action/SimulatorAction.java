@@ -13,10 +13,10 @@ import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
-import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
+import groove.gui.ResourceDisplay;
 import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
@@ -222,10 +222,8 @@ public abstract class SimulatorAction extends AbstractAction implements
     /**
      * Method to execute the action encapsulated by this class.
      * Called from {@link #actionPerformed(ActionEvent)}.
-     * @return {@code true} if the grammar was invalidated as a result of
-     * this action, so that the simulation has to be restarted. 
      */
-    public abstract boolean execute();
+    public abstract void execute();
 
     /**
      * Enters a dialog that results in a name that is not in a set of

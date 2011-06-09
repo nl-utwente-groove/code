@@ -13,9 +13,8 @@ public class ExplorationStatsDialogAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         new ExplorationStatsDialog(getSimulator(), getFrame());
-        return false;
     }
 
     @Override

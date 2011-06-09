@@ -42,8 +42,7 @@ public class ShiftPriorityAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         // collect all rules according to current priority
         NavigableMap<Integer,Set<AspectGraph>> rulesMap =
             new TreeMap<Integer,Set<AspectGraph>>();
@@ -137,12 +136,11 @@ public class ShiftPriorityAction extends SimulatorAction {
         }
         if (!priorityMap.isEmpty() && confirmStopSimulation()) {
             try {
-                result = getSimulatorModel().doSetPriority(priorityMap);
+                getSimulatorModel().doSetPriority(priorityMap);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error during rule priority change");
             }
         }
-        return result;
     }
 
     private int start() {

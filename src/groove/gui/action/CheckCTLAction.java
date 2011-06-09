@@ -30,7 +30,7 @@ public class CheckCTLAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         String property = getCtlFormulaDialog().showDialog(getFrame());
         if (property != null) {
             boolean doCheck = true;
@@ -51,7 +51,6 @@ public class CheckCTLAction extends SimulatorAction {
                 }
             }
         }
-        return false;
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */

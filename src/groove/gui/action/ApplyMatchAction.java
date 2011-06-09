@@ -18,13 +18,12 @@ public class ApplyMatchAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         if (getSimulatorModel().hasMatch()) {
             getSimulatorModel().doApplyMatch();
         } else {
             getSimulatorModel().doExploreState();
         }
-        return false;
     }
 
     @Override

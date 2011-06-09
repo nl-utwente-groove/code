@@ -1,6 +1,7 @@
 package groove.gui;
 
-import groove.gui.TabbedResourceDisplay.MainTab;
+import groove.control.parse.CtrlTokenMaker;
+import groove.gui.ResourceDisplay.MainTab;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
 
@@ -18,6 +19,7 @@ import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.TokenMaker;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
@@ -26,7 +28,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  */
 public class TextEditorTab extends EditorTab implements MainTab {
     /** Creates an initially empty display. */
-    public TextEditorTab(PrologDisplay display) {
+    public TextEditorTab(ResourceDisplay display) {
         this(display, null, null);
     }
 
@@ -34,7 +36,7 @@ public class TextEditorTab extends EditorTab implements MainTab {
      * Constructs a prolog editor with a given name.
      * @param display the display on which this editor is placed.
      */
-    public TextEditorTab(final PrologDisplay display, String name,
+    public TextEditorTab(final ResourceDisplay display, String name,
             String program) {
         super(display);
         this.textArea = new TextArea();
@@ -50,11 +52,10 @@ public class TextEditorTab extends EditorTab implements MainTab {
         // add keyboard binding for Save and Cancel key
         InputMap focusedInputMap =
             getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        String actionName =
-            Options.getSaveActionName(ResourceKind.PROLOG, false);
-        focusedInputMap.put(Options.SAVE_KEY, actionName);
+        String saveActionName = Options.getSaveActionName(getResourceKind(), false);
+        focusedInputMap.put(Options.SAVE_KEY, saveActionName);
         focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(actionName, getSaveAction());
+        getActionMap().put(saveActionName, getSaveAction());
         getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         this.textArea.setProgram(program);
     }
@@ -150,6 +151,12 @@ public class TextEditorTab extends EditorTab implements MainTab {
         getDisplay().getTabPane().remove(this);
     }
 
+    /** Creates a token maker for the text area of this tab. */
+    protected TokenMaker createTokenMaker() {
+        return getResourceKind() == ResourceKind.PROLOG
+                ? new PrologTokenMaker() : new CtrlTokenMaker();
+    }
+
     /** Creates and returns a Cancel button, for use on the tool bar. */
     private JButton createUndoButton() {
         JButton result = Options.createButton(this.textArea.getUndoAction());
@@ -172,8 +179,7 @@ public class TextEditorTab extends EditorTab implements MainTab {
     private class TextArea extends RSyntaxTextArea {
         public TextArea() {
             super(30, 100);
-            ((RSyntaxDocument) getDocument()).setSyntaxStyle(new PrologTokenMaker());
-            setFont(PrologDisplay.EDIT_FONT);
+            ((RSyntaxDocument) getDocument()).setSyntaxStyle(createTokenMaker());
             setTabSize(4);
             discardAllEdits();
             getUndoAction().putValue(Action.SMALL_ICON, Icons.UNDO_ICON);

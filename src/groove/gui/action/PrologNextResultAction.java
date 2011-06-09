@@ -34,9 +34,8 @@ public class PrologNextResultAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         getPrologDisplay().nextResults();
-        return false;
     }
 
     @Override

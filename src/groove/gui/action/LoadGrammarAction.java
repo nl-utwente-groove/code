@@ -26,8 +26,7 @@ public class LoadGrammarAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         JFileChooser fileChooser = getGrammarFileChooser(true);
         int approve = fileChooser.showOpenDialog(getFrame());
         // now load, if so required
@@ -37,13 +36,12 @@ public class LoadGrammarAction extends SimulatorAction {
                 showErrorDialog(null, "No file selected");
             } else {
                 try {
-                    result = load(selectedFile, null);
+                    load(selectedFile, null);
                 } catch (IOException exc) {
                     showErrorDialog(exc, exc.getMessage());
                 }
             }
         }
-        return result;
     }
 
     /**

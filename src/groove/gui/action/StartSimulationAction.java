@@ -33,12 +33,11 @@ public class StartSimulationAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
-        if (confirmStopSimulation() && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-            result = getSimulatorModel().setGts();
+    public void execute() {
+        if (confirmStopSimulation()
+            && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+            getSimulatorModel().setGts();
         }
-        return result;
     }
 
     @Override

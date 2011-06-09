@@ -30,7 +30,7 @@ import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.TabbedResourceDisplay.Tab;
+import groove.gui.ResourceDisplay.Tab;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
@@ -238,7 +238,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         if (changes.contains(GRAMMAR)) {
             setGrammar(source.getGrammar());
         }
-        if (changes.contains(GTS)) {
+        if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
         } else if (changes.contains(STATE)) {
             GraphState newState = source.getState();

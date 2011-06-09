@@ -144,7 +144,7 @@ public class ControlJList extends JList implements SimulatorListener {
                 setEnabled(true);
                 refresh();
             }
-        } else if (changes.contains(Change.CONTROL) || source.hasControl()) {
+        } else if (changes.contains(Change.CONTROL) && source.hasControl()) {
             setSelectedValue(source.getControl().getName(), true);
         }
         activateListeners();
@@ -242,9 +242,7 @@ public class ControlJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            if (ControlJList.this.display.cancelEditing(true)) {
-                getSimulatorModel().setControl((String) getSelectedValue());
-            }
+            getSimulatorModel().setControl((String) getSelectedValue());
         }
     }
 

@@ -24,7 +24,7 @@ import groove.view.aspect.AspectGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class GraphDisplay extends TabbedResourceDisplay implements
+abstract public class GraphDisplay extends ResourceDisplay implements
         SimulatorListener {
     /**
      * Constructs a panel for a given simulator and (graph-based) resource kind.

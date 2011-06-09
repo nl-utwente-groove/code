@@ -42,7 +42,7 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
      * @param parent the component on which this panel is placed
      * @param graph the input graph for the editor
      */
-    public GraphEditorTab(TabbedResourceDisplay parent, final AspectGraph graph) {
+    public GraphEditorTab(ResourceDisplay parent, final AspectGraph graph) {
         super(parent);
         final Simulator simulator = parent.getSimulator();
         this.graph = graph;

@@ -26,21 +26,17 @@ public class PreviewControlAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        if (getControlDisplay().cancelEditing(true)) {
-            try {
-                CtrlAut aut = getCtrlAut();
-                if (aut != null) {
-                    getJGraph().setModel(aut);
-                    getDialog().setVisible(true);
-                }
-            } catch (FormatException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error in control program '%s'",
-                    getSimulatorModel().getControl().getName()));
+    public void execute() {
+        try {
+            CtrlAut aut = getCtrlAut();
+            if (aut != null) {
+                getJGraph().setModel(aut);
+                getDialog().setVisible(true);
             }
+        } catch (FormatException exc) {
+            showErrorDialog(exc, String.format("Error in control program '%s'",
+                getSimulatorModel().getControl().getName()));
         }
-        return false;
     }
 
     @Override
