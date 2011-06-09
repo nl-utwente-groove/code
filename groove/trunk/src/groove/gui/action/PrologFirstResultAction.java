@@ -33,9 +33,8 @@ public class PrologFirstResultAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         getPrologDisplay().executeQuery();
-        return false;
     }
 
     @Override

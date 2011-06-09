@@ -6,7 +6,6 @@ import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.TabbedResourceDisplay;
 import groove.gui.TextEditorTab;
 import groove.gui.dialog.SaveDialog;
 import groove.io.ExtensionFilter;
@@ -37,12 +36,13 @@ public final class SaveAction extends SimulatorAction {
         super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
                 : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
                 : Icons.SAVE_ICON, null, resource);
+        simulator.addAccelerator(this);
         this.saveAs = saveAs;
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
+        boolean saved = false;
         if (confirmBehaviourOption(Options.STOP_SIMULATION_OPTION)) {
             ResourceKind resourceKind = getResourceKind();
             EditorTab editor = getEditor();
@@ -52,14 +52,13 @@ public final class SaveAction extends SimulatorAction {
             if (resourceKind.isGraphBased()) {
                 AspectGraph graph;
                 if (isForState()) {
-                    graph = getStateDisplay().getStatePanel().getGraph();
+                    graph = getStateDisplay().getStateTab().getGraph();
                 } else if (editor == null) {
                     graph = getGrammarStore().getGraphs(resourceKind).get(name);
                 } else {
                     graph = ((GraphEditorTab) editor).getGraph();
                 }
-                result =
-                    this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph);
+                saved = this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph);
             } else {
                 assert resourceKind.isTextBased();
                 String text;
@@ -68,17 +67,19 @@ public final class SaveAction extends SimulatorAction {
                 } else {
                     text = ((TextEditorTab) editor).getProgram();
                 }
-                return this.saveAs ? doSaveTextAs(name, text) : doSaveText(
-                    name, text);
+                saved =
+                    this.saveAs ? doSaveTextAs(name, text) : doSaveText(name,
+                        text);
+            }
+            if (saved) {
+                getEditor().setClean();
             }
         }
-        return result;
     }
 
     /**
      * Stores the graph within the grammar.
-     * @return {@code true} if the simulation was invalidated as a 
-     * consequence of this save action
+     * @return {@code true} if the action succeeded
      */
     public boolean doSaveGraph(AspectGraph graph) {
         boolean result = false;
@@ -90,10 +91,8 @@ public final class SaveAction extends SimulatorAction {
         }
         try {
             if (graph != null) {
-                result = getSimulatorModel().doAddGraph(resource, graph);
-                if (getEditor() != null) {
-                    getEditor().setClean();
-                }
+                getSimulatorModel().doAddGraph(resource, graph);
+                result = true;
             }
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while saving edited graph '%s'",
@@ -102,7 +101,9 @@ public final class SaveAction extends SimulatorAction {
         return result;
     }
 
-    /** Attempts to write the graph to an external file. */
+    /** Attempts to write the graph to an external file. 
+     * @return {@code true} if the graph was saved within the grammar
+     */
     public boolean doSaveGraphAs(AspectGraph graph) {
         boolean result = false;
         File selectedFile = askSaveGraph(graph);
@@ -121,7 +122,6 @@ public final class SaveAction extends SimulatorAction {
                         filter.stripExtension(selectedFile.getName());
                     AspectGxl.getInstance().marshalGraph(graph.rename(newName),
                         selectedFile);
-                    result = true;
                 } else {
                     // save within the grammar
                     result = doSaveGraph(graph.rename(nameInGrammar));
@@ -136,12 +136,13 @@ public final class SaveAction extends SimulatorAction {
 
     /**
      * Saves the text under a given name in the grammar.
+     * @return {@code true} if the action succeeded
      */
     public boolean doSaveText(String name, String text) {
         boolean result = false;
         try {
-            result =
-                getSimulatorModel().doAddText(getResourceKind(), name, text);
+            getSimulatorModel().doAddText(getResourceKind(), name, text);
+            result = true;
         } catch (IOException exc) {
             showErrorDialog(exc, "Error saving %s %s",
                 getResourceKind().getDescription(), name);
@@ -151,6 +152,7 @@ public final class SaveAction extends SimulatorAction {
 
     /**
      * Saves the text under a given name as a file outside the grammar.
+     * @return {@code true} if the text was saved within the grammar
      */
     public boolean doSaveTextAs(String name, String text) {
         boolean result = false;
@@ -168,9 +170,8 @@ public final class SaveAction extends SimulatorAction {
                     ControlModel.store(text, new FileOutputStream(selectedFile));
                 } else {
                     // store in grammar
-                    doSaveText(nameInGrammar, text);
+                    result = doSaveText(nameInGrammar, text);
                 }
-                result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while writing %s to %s",
                     getResourceKind().getDescription(), selectedFile);
@@ -214,11 +215,7 @@ public final class SaveAction extends SimulatorAction {
 
     /** Returns the currently selected editor tab on the appropriate display, if any. */
     private EditorTab getEditor() {
-        if (getResourceKind() == ResourceKind.CONTROL) {
-            return getPrologDisplay().getSelectedEditor();
-        } else {
-            return ((TabbedResourceDisplay) getDisplay()).getSelectedEditor();
-        }
+        return getDisplay().getSelectedEditor();
     }
 
     private boolean isForState() {

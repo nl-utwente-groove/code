@@ -24,7 +24,7 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.TabbedResourceDisplay;
+import groove.gui.ResourceDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -161,16 +161,6 @@ public class ActionStore implements SimulatorListener {
      */
     private CheckCTLAction checkCTLAsIsAction;
 
-    /** 
-     * Returns the copy action appropriate for a given display kind.
-     * @see #getCopyAction(ResourceKind)
-     * @see DisplayKind#getResource() 
-     */
-    public CopyAction getCopyAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getCopyAction(resource);
-    }
-
     /** Returns the copy action appropriate for a given resource kind. */
     public CopyAction getCopyAction(ResourceKind resource) {
         CopyAction result = this.copyActionMap.get(resource);
@@ -184,12 +174,6 @@ public class ActionStore implements SimulatorListener {
     private final Map<ResourceKind,CopyAction> copyActionMap =
         new EnumMap<ResourceKind,CopyAction>(ResourceKind.class);
 
-    /** Returns the copy action appropriate for a given display kind. */
-    public SimulatorAction getDeleteAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getDeleteAction(resource);
-    }
-
     /** Returns the delete action appropriate for a given resource kind. */
     public SimulatorAction getDeleteAction(ResourceKind resource) {
         SimulatorAction result = this.deleteActionMap.get(resource);
@@ -202,12 +186,6 @@ public class ActionStore implements SimulatorListener {
 
     private final Map<ResourceKind,SimulatorAction> deleteActionMap =
         new EnumMap<ResourceKind,SimulatorAction>(ResourceKind.class);
-
-    /** Returns the copy action appropriate for a given simulator tab kind. */
-    public EditAction getEditAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getEditAction(resource);
-    }
 
     /** Returns the delete action appropriate for a given resource kind. */
     public EditAction getEditAction(ResourceKind resource) {
@@ -256,12 +234,6 @@ public class ActionStore implements SimulatorListener {
      * grammar.
      */
     private EditSystemPropertiesAction editSystemPropertiesAction;
-
-    /** Returns the copy action appropriate for a given display kind. */
-    public EnableAction getEnableAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getEnableAction(resource);
-    }
 
     /** Returns the delete action appropriate for a given resource kind. */
     public EnableAction getEnableAction(ResourceKind resource) {
@@ -341,8 +313,8 @@ public class ActionStore implements SimulatorListener {
                         kind);
                 result = display.getJGraph().getExportAction();
             } else if (kind.getResource().isGraphBased()) {
-                TabbedResourceDisplay display =
-                    (TabbedResourceDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
+                ResourceDisplay display =
+                    (ResourceDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
                         kind);
                 result =
                     ((GraphTab) display.getMainTab()).getJGraph().getExportAction();
@@ -450,12 +422,6 @@ public class ActionStore implements SimulatorListener {
 
     /** The start state load action permanently associated with this simulator. */
     private LoadStartGraphAction loadStartGraphAction;
-
-    /** Returns the copy action appropriate for a given simulator tab kind. */
-    public SimulatorAction getNewAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getNewAction(resource);
-    }
 
     /** Returns the delete action appropriate for a given resource kind. */
     public SimulatorAction getNewAction(ResourceKind resource) {
@@ -594,12 +560,6 @@ public class ActionStore implements SimulatorListener {
      * The graph renaming action permanently associated with this simulator.
      */
     private RelabelGrammarAction relabelAction;
-
-    /** Returns the copy action appropriate for a given display kind. */
-    public RenameAction getRenameAction(DisplayKind display) {
-        ResourceKind resource = display.getResource();
-        return resource == null ? null : getRenameAction(resource);
-    }
 
     /** Returns the delete action appropriate for a given resource kind. */
     public RenameAction getRenameAction(ResourceKind resource) {

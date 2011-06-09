@@ -54,6 +54,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
@@ -139,6 +140,7 @@ public class Simulator implements SimulatorListener {
      */
     public void start() {
         getActions().refreshActions();
+        refreshMenuItems();
         getFrame().pack();
         groove.gui.UserSettings.applyUserSettings(this.frame);
         getFrame().setVisible(true);
@@ -308,37 +310,27 @@ public class Simulator implements SimulatorListener {
                                     break;
                                 }
                             }
-                        } else if (error.getControl() != null) {
-                            getModel().setControl(error.getControl().getName());
-                            String LINE_PATTERN = "line ";
-                            String message = error.toString();
-                            int index = message.indexOf(LINE_PATTERN);
-                            if (index >= 0) {
-                                index += LINE_PATTERN.length();
-                                int end = message.indexOf(':', index);
-                                if (end < 0) {
-                                    end = message.length();
-                                }
-                                String line =
-                                    error.toString().substring(index, end);
-                                int lineNr;
-                                try {
-                                    lineNr = Integer.parseInt(line);
-                                    getControlDisplay().selectLine(lineNr);
-                                } catch (NumberFormatException e1) {
-                                    // do nothing
-                                }
+                        } else {
+                            ResourceKind resource = null;
+                            String name = null;
+                            ResourceDisplay display = null;
+                            if (error.getControl() != null) {
+                                resource = ResourceKind.CONTROL;
+                                name = error.getControl().getName();
+                                display = getControlDisplay();
+                            } else {
+                                resource = ResourceKind.PROLOG;
+                                name = error.getProlog().getName();
+                                display = getPrologDisplay();
                             }
-                            getModel().setDisplay(DisplayKind.CONTROL);
-                        } else if (error.getProlog() != null) {
-                            String prologName = error.getProlog().getName();
-                            getPrologDisplay().startEditResource(prologName);
-                            getModel().setProlog(prologName);
-                            if (error.getNumbers().size() > 1) {
-                                int line = error.getNumbers().get(0);
-                                int column = error.getNumbers().get(1);
-                                ((TextEditorTab) getPrologDisplay().getSelectedEditor()).select(
-                                    line, column);
+                            if (resource != null) {
+                                getModel().setSelected(resource, name);
+                                if (error.getNumbers().size() > 1) {
+                                    int line = error.getNumbers().get(0);
+                                    int column = error.getNumbers().get(1);
+                                    ((TextEditorTab) display.getSelectedTab()).select(
+                                        line, column);
+                                }
                             }
                         }
                     }
@@ -385,56 +377,8 @@ public class Simulator implements SimulatorListener {
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
         DisplayKind displayKind = getModel().getDisplay();
-        JMenuItem exportItem = getExportMenuItem();
-        Action exportAction = getActions().getExportAction(displayKind);
-        if (exportAction == null) {
-            exportItem.setEnabled(false);
-        } else {
-            exportItem.setAction(exportAction);
-        }
-        JMenuItem editItem = getEditMenuItem();
-        Action editAction = getActions().getEditAction(displayKind);
-        if (editAction == null) {
-            editItem.setEnabled(false);
-        } else {
-            editItem.setAction(editAction);
-        }
-        JMenuItem copyItem = getCopyMenuItem();
-        Action copyAction = getActions().getCopyAction(displayKind);
-        if (copyAction == null) {
-            copyItem.setEnabled(false);
-        } else {
-            copyItem.setAction(copyAction);
-        }
-        JMenuItem deleteItem = getDeleteMenuItem();
-        Action deleteAction = getActions().getDeleteAction(displayKind);
-        if (deleteAction == null) {
-            deleteItem.setEnabled(false);
-        } else {
-            deleteItem.setAction(deleteAction);
-        }
-        JMenuItem renameItem = getRenameMenuItem();
-        Action renameAction = getActions().getRenameAction(displayKind);
-        if (renameAction == null) {
-            renameItem.setEnabled(false);
-        } else {
-            renameItem.setAction(renameAction);
-        }
-        JMenuItem enableItem = getEnableMenuItem();
-        Action enableAction = getActions().getEnableAction(displayKind);
-        if (enableAction == null) {
-            enableItem.setEnabled(false);
-        } else {
-            enableItem.setAction(enableAction);
-        }
-        JMenuItem saveItem = getSaveMenuItem();
-        Action saveAction =
-            displayKind == DisplayKind.LTS ? getActions().getSaveLTSAsAction()
-                    : getActions().getSaveAsAction(displayKind.getResource());
-        if (saveAction == null) {
-            saveItem.setEnabled(false);
-        } else {
-            saveItem.setAction(saveAction);
+        for (RefreshableMenuItem item : getRefreshableMenuItems()) {
+            item.refresh(displayKind);
         }
     }
 
@@ -492,7 +436,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         result.add(new JMenuItem(this.actions.getSaveGrammarAction()));
-        result.add(getSaveMenuItem());
+        result.add(getSaveAsMenuItem());
 
         result.addSeparator();
 
@@ -560,30 +504,82 @@ public class Simulator implements SimulatorListener {
         return result;
     }
 
+    private List<RefreshableMenuItem> getRefreshableMenuItems() {
+        if (this.menuItems == null) {
+            this.menuItems = new ArrayList<Simulator.RefreshableMenuItem>();
+            this.menuItems.add(getEditMenuItem());
+            this.menuItems.add(getCopyMenuItem());
+            this.menuItems.add(getDeleteMenuItem());
+            this.menuItems.add(getRenameMenuItem());
+            this.menuItems.add(getEnableMenuItem());
+            this.menuItems.add(getSaveAsMenuItem());
+        }
+        return this.menuItems;
+    }
+
     /**
      * Returns the menu item in the edit menu that specifies editing the
      * currently displayed graph or rule.
      */
-    private JMenuItem getEditMenuItem() {
+    private RefreshableMenuItem getEditMenuItem() {
         if (this.editGraphItem == null) {
-            this.editGraphItem = new JMenuItem();
-            // load the graph edit action as default
-            this.editGraphItem.setAction(this.actions.getEditAction(getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.editGraphItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getEditAction(resource));
+                }
+            };
             this.editGraphItem.setAccelerator(Options.EDIT_KEY);
         }
         return this.editGraphItem;
+    }
+
+    /** 
+     * Creates a menu item that can be refreshed with a {@link DisplayKind}-
+     * or {@link ResourceKind}-dependent action.
+     */
+    private abstract static class RefreshableMenuItem extends JMenuItem {
+        /** Refreshes or disables the menu item, based on the
+         * given {@link DisplayKind}.
+         */
+        protected void refresh(DisplayKind display) {
+            ResourceKind resource = display.getResource();
+            if (resource == null) {
+                setEnabled(false);
+            } else {
+                refresh(resource);
+            }
+        }
+
+        /** Refreshes or disables the menu item, based on a
+         * given {@link DisplayKind}.
+         */
+        protected void refresh(ResourceKind resource) {
+            // does noting
+        }
+
+        @Override
+        public void setAction(Action a) {
+            if (a == null) {
+                setEnabled(false);
+            } else {
+                super.setAction(a);
+            }
+        }
     }
 
     /**
      * Returns the menu item in the edit menu that specifies copy the currently
      * displayed graph or rule.
      */
-    private JMenuItem getCopyMenuItem() {
+    private RefreshableMenuItem getCopyMenuItem() {
         if (this.copyGraphItem == null) {
-            this.copyGraphItem = new JMenuItem();
-            // load the graph copy action as default
-            this.copyGraphItem.setAction(getActions().getCopyAction(
-                getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.copyGraphItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getCopyAction(resource));
+                }
+            };
         }
         return this.copyGraphItem;
     }
@@ -592,12 +588,14 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies delete the
      * currently displayed graph or rule.
      */
-    private JMenuItem getDeleteMenuItem() {
+    private RefreshableMenuItem getDeleteMenuItem() {
         if (this.deleteGraphItem == null) {
-            this.deleteGraphItem = new JMenuItem();
-            // load the graph delete action as default
-            this.deleteGraphItem.setAction(getActions().getDeleteAction(
-                getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.deleteGraphItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getDeleteAction(resource));
+                }
+            };
         }
         return this.deleteGraphItem;
     }
@@ -606,11 +604,14 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies delete the
      * currently displayed graph or rule.
      */
-    private JMenuItem getRenameMenuItem() {
+    private RefreshableMenuItem getRenameMenuItem() {
         if (this.renameMenuItem == null) {
-            this.renameMenuItem =
-                new JMenuItem(getActions().getRenameAction(
-                    getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.renameMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getRenameAction(resource));
+                }
+            };
         }
         return this.renameMenuItem;
     }
@@ -619,11 +620,14 @@ public class Simulator implements SimulatorListener {
      * Returns the menu item in the edit menu that specifies deletion of
      * the currently selected resource.
      */
-    private JMenuItem getEnableMenuItem() {
+    private RefreshableMenuItem getEnableMenuItem() {
         if (this.enableMenuItem == null) {
-            this.enableMenuItem =
-                new JMenuItem(getActions().getEnableAction(
-                    getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.enableMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getEnableAction(resource));
+                }
+            };
         }
         return this.enableMenuItem;
     }
@@ -631,12 +635,15 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the menu item that will contain the current export action.
      */
-    private JMenuItem getExportMenuItem() {
+    private RefreshableMenuItem getExportMenuItem() {
         // lazily create the menu item
         if (this.exportMenuItem == null) {
-            this.exportMenuItem =
-                new JMenuItem(getActions().getExportAction(
-                    getSimulatorPanel().getSelectedDisplay().getKind()));
+            this.exportMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(DisplayKind display) {
+                    setAction(getActions().getExportAction(display));
+                }
+            };
         }
         return this.exportMenuItem;
     }
@@ -644,13 +651,16 @@ public class Simulator implements SimulatorListener {
     /**
      * Returns the menu item that will contain the current export action.
      */
-    private JMenuItem getSaveMenuItem() {
+    private RefreshableMenuItem getSaveAsMenuItem() {
         // lazily create the menu item
         if (this.saveMenuItem == null) {
             this.saveMenuItem =
-                new JMenuItem(
-                    getActions().getSaveAsAction(
-                        getSimulatorPanel().getSelectedDisplay().getKind().getResource()));
+                this.exportMenuItem = new RefreshableMenuItem() {
+                    @Override
+                    protected void refresh(ResourceKind resource) {
+                        setAction(getActions().getSaveAsAction(resource));
+                    }
+                };
         }
         return this.saveMenuItem;
     }
@@ -901,10 +911,10 @@ public class Simulator implements SimulatorListener {
     private JMenu externalMenu;
 
     /** The menu item containing the (current) export action. */
-    private JMenuItem exportMenuItem;
+    private RefreshableMenuItem exportMenuItem;
 
     /** The menu item containing the current save-as action. */
-    private JMenuItem saveMenuItem;
+    private RefreshableMenuItem saveMenuItem;
 
     /** Dummy action for the {@link #externalMenu}. */
     private Action dummyExternalAction;
@@ -912,11 +922,13 @@ public class Simulator implements SimulatorListener {
     /**
      * Menu items in the edit menu for one of the graph or rule edit actions.
      */
-    private JMenuItem editGraphItem;
-    private JMenuItem copyGraphItem;
-    private JMenuItem deleteGraphItem;
-    private JMenuItem renameMenuItem;
-    private JMenuItem enableMenuItem;
+    private RefreshableMenuItem editGraphItem;
+    private RefreshableMenuItem copyGraphItem;
+    private RefreshableMenuItem deleteGraphItem;
+    private RefreshableMenuItem renameMenuItem;
+    private RefreshableMenuItem enableMenuItem;
+
+    private List<RefreshableMenuItem> menuItems;
 
     /** Returns the undo manager of this simulator. */
     public final UndoManager getUndoManager() {

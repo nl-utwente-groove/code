@@ -3,8 +3,8 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
-import groove.view.HostModel;
 import groove.view.GrammarModel;
+import groove.view.HostModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,22 +22,20 @@ public class SaveGrammarAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         int approve = getGrammarFileChooser(false).showSaveDialog(getFrame());
         // now save, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
             File selectedFile = getGrammarFileChooser(false).getSelectedFile();
             if (confirmOverwriteGrammar(selectedFile)) {
                 try {
-                    result |= save(selectedFile, true);
+                    save(selectedFile, true);
                 } catch (IOException exc) {
                     showErrorDialog(exc, "Error while saving grammar to "
                         + selectedFile);
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -52,7 +50,8 @@ public class SaveGrammarAction extends SimulatorAction {
             SystemStore newStore =
                 getSimulatorModel().getStore().save(grammarFile, clearDir);
             GrammarModel newGrammar = newStore.toGrammarModel();
-            String startGraphName = getSimulatorModel().getGrammar().getStartGraphName();
+            String startGraphName =
+                getSimulatorModel().getGrammar().getStartGraphName();
             HostModel startGraph =
                 getSimulatorModel().getGrammar().getStartGraphModel();
             if (startGraphName != null) {

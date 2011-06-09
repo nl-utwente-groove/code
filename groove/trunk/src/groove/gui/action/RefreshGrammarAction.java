@@ -18,17 +18,15 @@ public class RefreshGrammarAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         if (confirmStopSimulation()) {
             try {
-                result = getSimulatorModel().doRefreshGrammar();
+                getSimulatorModel().doRefreshGrammar();
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while refreshing grammar from "
                     + getGrammarStore().getLocation());
             }
         }
-        return result;
     }
 
     @Override

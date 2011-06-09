@@ -16,7 +16,7 @@
  */
 package groove.gui;
 
-import groove.gui.TabbedResourceDisplay.Tab;
+import groove.gui.ResourceDisplay.Tab;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.trans.ResourceKind;
@@ -37,7 +37,7 @@ import javax.swing.JToolBar;
  */
 abstract public class EditorTab extends JPanel implements Tab {
     /** Creates a panel for a given display. */
-    public EditorTab(TabbedResourceDisplay display) {
+    public EditorTab(ResourceDisplay display) {
         final Simulator simulator = display.getSimulator();
         this.display = display;
         this.resourceKind = display.getResourceKind();
@@ -156,7 +156,7 @@ abstract public class EditorTab extends JPanel implements Tab {
     public abstract void dispose();
 
     /** Returns the display on which this editor is placed. */
-    protected final TabbedResourceDisplay getDisplay() {
+    protected final ResourceDisplay getDisplay() {
         return this.display;
     }
 
@@ -195,7 +195,7 @@ abstract public class EditorTab extends JPanel implements Tab {
     }
 
     /** Container of this editor. */
-    private final TabbedResourceDisplay display;
+    private final ResourceDisplay display;
     /** The resource kind of this editor tab. */
     private final ResourceKind resourceKind;
     /** The simulator to which the panel reports. */

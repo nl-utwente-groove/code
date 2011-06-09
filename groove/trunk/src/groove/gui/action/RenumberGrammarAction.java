@@ -38,13 +38,11 @@ public class RenumberGrammarAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         try {
-            result = getSimulatorModel().doRenumber();
+            getSimulatorModel().doRenumber();
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while renumbering");
         }
-        return result;
     }
 }

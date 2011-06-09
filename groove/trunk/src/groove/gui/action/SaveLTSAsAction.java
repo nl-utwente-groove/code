@@ -47,53 +47,51 @@ public class SaveLTSAsAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         SaveLTSAsDialog dialog = new SaveLTSAsDialog(getSimulator());
         if (getLastGrammarFile() != null) {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
-
         if (dialog.showDialog(getSimulator())) {
-            ExtensionFilter ltsFilter = FileType.getFilter(GraphRole.LTS);
             File ltsFile = dialog.getFile();
-            if (ltsFile.isDirectory()) {
-                ltsFile = new File(ltsFile, ltsFilter.addExtension("lts"));
-            }
-            int exportStates = dialog.getExportStates();
-            boolean showFinal = dialog.showFinal();
-            boolean showNames = dialog.showNames();
-            boolean showStart = dialog.showStart();
-            boolean showOpen = dialog.showOpen();
-
-            GTS gts = getSimulatorModel().getGts();
-            gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
-            DefaultGraph lts =
-                gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
-
-            Collection<GraphState> export = new HashSet<GraphState>(0);
-
-            if (exportStates == SaveLTSAsDialog.STATES_ALL) {
-                export = gts.getStateSet();
-            } else if (exportStates == SaveLTSAsDialog.STATES_FINAL) {
-                export = gts.getFinalStates();
-            }
-
-            try {
-                DefaultGxl.getInstance().marshalAnyGraph(lts, ltsFile);
-                ExtensionFilter stateFilter = FileType.STATE_FILTER;
-                for (GraphState state : export) {
-                    AspectGraph stateGraph =
-                        state.getGraph().toAspectMap().getAspectGraph();
-                    File file =
-                        new File(ltsFile.getParentFile(),
-                            stateFilter.addExtension(state.toString()));
-                    AspectGxl.getInstance().marshalGraph(stateGraph, file);
-                }
-            } catch (IOException e) {
-                showErrorDialog(e, "Error while saving LTS to %s", ltsFile);
-            }
+            doSave(ltsFile, dialog.getExportStates(), dialog.showFinal(),
+                dialog.showNames(), dialog.showStart(), dialog.showOpen());
         }
-        return false;
+    }
+
+    private void doSave(File ltsFile, int exportStates, boolean showFinal,
+            boolean showNames, boolean showStart, boolean showOpen) {
+        ExtensionFilter ltsFilter = FileType.getFilter(GraphRole.LTS);
+        if (ltsFile.isDirectory()) {
+            ltsFile = new File(ltsFile, ltsFilter.addExtension("lts"));
+        }
+        GTS gts = getSimulatorModel().getGts();
+        gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
+        DefaultGraph lts =
+            gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
+
+        Collection<GraphState> export = new HashSet<GraphState>(0);
+
+        if (exportStates == SaveLTSAsDialog.STATES_ALL) {
+            export = gts.getStateSet();
+        } else if (exportStates == SaveLTSAsDialog.STATES_FINAL) {
+            export = gts.getFinalStates();
+        }
+
+        try {
+            DefaultGxl.getInstance().marshalAnyGraph(lts, ltsFile);
+            ExtensionFilter stateFilter = FileType.STATE_FILTER;
+            for (GraphState state : export) {
+                AspectGraph stateGraph =
+                    state.getGraph().toAspectMap().getAspectGraph();
+                File file =
+                    new File(ltsFile.getParentFile(),
+                        stateFilter.addExtension(state.toString()));
+                AspectGxl.getInstance().marshalGraph(stateGraph, file);
+            }
+        } catch (IOException e) {
+            showErrorDialog(e, "Error while saving LTS to %s", ltsFile);
+        }
     }
 
     @Override

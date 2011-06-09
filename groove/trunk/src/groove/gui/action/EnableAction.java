@@ -20,17 +20,15 @@ public class EnableAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         ResourceKind resource = getResourceKind();
         Set<String> names = getSimulatorModel().getAllSelected(resource);
         try {
-            result |= getSimulatorModel().doEnable(resource, names);
+            getSimulatorModel().doEnable(resource, names);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error during %s enabling",
                 getResourceKind().getDescription());
         }
-        return result;
     }
 
     @Override

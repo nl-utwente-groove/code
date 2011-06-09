@@ -43,8 +43,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         AspectGraph rule = getSimulatorModel().getRule().getSource();
         // Associated rule properties.
         GraphProperties properties =
@@ -64,13 +63,11 @@ public class EditRulePropertiesAction extends SimulatorAction {
             GraphInfo.setProperties(newGraph, editedProperties);
             newGraph.setFixed();
             try {
-                result =
-                    getSimulatorModel().doAddGraph(ResourceKind.RULE, newGraph);
+                getSimulatorModel().doAddGraph(ResourceKind.RULE, newGraph);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while modifying rule '%s'",
                     rule.getName());
             }
         }
-        return result;
     }
 }

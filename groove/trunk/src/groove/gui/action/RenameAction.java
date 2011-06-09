@@ -18,8 +18,7 @@ public class RenameAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         ResourceKind resource = getResourceKind();
         String oldName = getSimulatorModel().getSelected(resource);
         boolean resourceEnabled =
@@ -29,8 +28,7 @@ public class RenameAction extends SimulatorAction {
             String newName = askNewName(resource, oldName, false);
             if (newName != null && !newName.equals(oldName)) {
                 try {
-                    result =
-                        getSimulatorModel().doRename(resource, oldName, newName);
+                    getSimulatorModel().doRename(resource, oldName, newName);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while renaming %s '%s' into '%s'",
@@ -38,7 +36,6 @@ public class RenameAction extends SimulatorAction {
                 }
             }
         }
-        return result;
     }
 
     @Override

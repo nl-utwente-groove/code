@@ -54,12 +54,12 @@ public class CheckLTLAction extends ExploreAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         Serialized strategy;
         // prompt for a formula to model check
         String property = getLtlFormulaDialog().showDialog(getFrame());
         if (property == null) {
-            return false;
+            return;
         }
         // prompt for a boundary, if the LTL strategy is bounded
         if (this.strategyType == StrategyValue.LTL) {
@@ -71,7 +71,7 @@ public class CheckLTLAction extends ExploreAction {
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
-                return false;
+                return;
             }
             strategy =
                 this.strategyType.getTemplate().toSerialized(boundary, property);
@@ -88,7 +88,7 @@ public class CheckLTLAction extends ExploreAction {
             JOptionPane.showMessageDialog(getFrame(), String.format(
                 "A counter-example to %s is highlighted", property));
         }
-        return false;
+        return;
     }
 
     /** Returns a dialog that will ask for a formula to be entered. */

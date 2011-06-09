@@ -17,20 +17,19 @@ public class CopyAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         String oldName = getSimulatorModel().getSelected(getResourceKind());
         if (getDisplay().cancelEditResource(oldName, true)) {
             String newName = askNewName(getResourceKind(), oldName, true);
             if (newName != null) {
-                result = doCopy(oldName, newName);
+                doCopy(oldName, newName);
             }
         }
-        return result;
     }
 
     /**
      * Renames the resource from one name to the other.
+     * @return true if the action succeeded
      */
     private boolean doCopy(String oldName, String newName) {
         boolean result = false;
@@ -45,7 +44,8 @@ public class CopyAction extends SimulatorAction {
                 getGrammarStore().getGraphs(resourceKind).get(oldName);
             AspectGraph newHost = host.rename(newName);
             try {
-                result = getSimulatorModel().doAddGraph(resourceKind, newHost);
+                getSimulatorModel().doAddGraph(resourceKind, newHost);
+                result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while copying %s '%s' to '%s'",

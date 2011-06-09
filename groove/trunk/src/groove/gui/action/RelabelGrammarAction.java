@@ -68,21 +68,18 @@ public class RelabelGrammarAction extends SimulatorAction implements
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
         if (relabelling != null) {
             try {
-                result =
-                    getSimulatorModel().doRelabel(relabelling.one(),
-                        relabelling.two());
+                getSimulatorModel().doRelabel(relabelling.one(),
+                    relabelling.two());
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
                     "Error while renaming '%s' into '%s':", relabelling.one(),
                     relabelling.two()));
             }
         }
-        return result;
     }
 
     /** Sets {@link #oldLabel} based on the {@link GraphJGraph} selection. */

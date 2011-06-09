@@ -16,7 +16,7 @@
  */
 package groove.gui;
 
-import groove.gui.TabbedResourceDisplay.Tab;
+import groove.gui.ResourceDisplay.Tab;
 import groove.gui.jgraph.JAttr;
 
 import java.awt.BasicStroke;

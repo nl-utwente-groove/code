@@ -17,8 +17,7 @@ public class NewGrammarAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         if (confirmStopSimulation()) {
             File grammarFile = getLastGrammarFile();
             File newGrammar;
@@ -42,9 +41,8 @@ public class NewGrammarAction extends SimulatorAction {
                                     selectedFile.getName()));
                         if (response == JOptionPane.OK_OPTION) {
                             try {
-                                result =
-                                    getActions().getLoadGrammarAction().load(
-                                        selectedFile, null);
+                                getActions().getLoadGrammarAction().load(
+                                    selectedFile, null);
                             } catch (IOException exc) {
                                 showErrorDialog(exc, exc.getMessage());
                             }
@@ -52,7 +50,7 @@ public class NewGrammarAction extends SimulatorAction {
                         ok = response != JOptionPane.NO_OPTION;
                     } else if (getDisplaysPanel().disposeAllEditors()) {
                         try {
-                            result = getSimulatorModel().doNewGrammar(selectedFile);
+                            getSimulatorModel().doNewGrammar(selectedFile);
                         } catch (IOException exc) {
                             showErrorDialog(exc, String.format(
                                 "Error while creating grammar at '%s'",
@@ -65,7 +63,6 @@ public class NewGrammarAction extends SimulatorAction {
                 }
             }
         }
-        return result;
     }
 
     @Override

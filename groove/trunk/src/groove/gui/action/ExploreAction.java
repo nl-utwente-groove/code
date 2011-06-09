@@ -38,9 +38,8 @@ public class ExploreAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
+    public void execute() {
         explore(getSimulatorModel().getExploration(), true, true);
-        return false;
     }
 
     /**

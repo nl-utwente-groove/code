@@ -31,19 +31,15 @@ public class ToggleExplorationStateAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         if (getSimulatorModel().isAbstractionMode()) {
             getSimulatorModel().setAbstractionMode(false);
             this.putValue(Action.NAME, Options.TOGGLE_TO_ABS_ACTION_NAME);
-            result = true;
         } else {
             getSimulatorModel().setAbstractionMode(true);
             this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
             Multiplicity.initMultStore();
-            result = true;
         }
-        return result;
     }
 
     @Override

@@ -22,8 +22,7 @@ public class ImportAction extends SimulatorAction {
     }
 
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         Importer importer = Importer.getInstance();
         int approve = importer.showDialog(getFrame(), true);
         // now load, if so required
@@ -45,16 +44,15 @@ public class ImportAction extends SimulatorAction {
                 }
                 if (kind != null) {
                     if (kind.isGraphBased()) {
-                        result = importGraph(kind, graph);
+                        importGraph(kind, graph);
                     } else {
-                        result = importText(kind, text);
+                        importText(kind, text);
                     }
                 }
             } catch (IOException e) {
                 showErrorDialog(e, "Error importing file");
             }
         }
-        return result;
     }
 
     /**

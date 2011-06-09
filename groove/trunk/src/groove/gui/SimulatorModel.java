@@ -1468,7 +1468,7 @@ public class SimulatorModel implements Cloneable {
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean abstractionMode = false;
     /** Display currently showing in the simulator panel. */
-    private DisplayKind display;
+    private DisplayKind display = DisplayKind.HOST;
     /** Array of listeners. */
     private final Map<Change,List<SimulatorListener>> listeners =
         new EnumMap<Change,List<SimulatorListener>>(Change.class);

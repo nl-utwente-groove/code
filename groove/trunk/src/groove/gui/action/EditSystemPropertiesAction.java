@@ -20,8 +20,7 @@ public class EditSystemPropertiesAction extends SimulatorAction {
      * graph.
      */
     @Override
-    public boolean execute() {
-        boolean result = false;
+    public void execute() {
         Properties systemProperties = getGrammarModel().getProperties();
         PropertiesDialog dialog =
             new PropertiesDialog(systemProperties,
@@ -30,12 +29,11 @@ public class EditSystemPropertiesAction extends SimulatorAction {
             SystemProperties newProperties = new SystemProperties();
             newProperties.putAll(dialog.getEditedProperties());
             try {
-                result = getSimulatorModel().doSetProperties(newProperties);
+                getSimulatorModel().doSetProperties(newProperties);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while saving edited properties");
             }
         }
-        return result;
     }
 
     /**

@@ -8,7 +8,7 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.gui.TabbedResourceDisplay.MainTab;
+import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
