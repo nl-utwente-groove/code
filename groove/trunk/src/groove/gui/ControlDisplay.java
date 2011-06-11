@@ -191,12 +191,6 @@ final public class ControlDisplay extends ResourceDisplay {
         if (suspendListening()) {
             String selection = source.getSelected(ResourceKind.CONTROL);
             getDocPane().setBackground(selection == null ? null : Color.WHITE);
-            getEnableButton().setSelected(
-                selection != null
-                    && selection.equals(getGrammar().getActiveControlModel()));
-            if (changes.contains(Change.CONTROL) && selection != null) {
-                selectResource(selection);
-            }
             activateListening();
         }
     }

@@ -22,8 +22,8 @@ public class EditAction extends SimulatorAction {
     @Override
     public void execute() {
         if (isForState()) {
+            // we're editing a state
             AspectGraph graph = getStateDisplay().getStateTab().getGraph();
-            // find out if we're editing a host graph or a state
             final String newGraphName = askNewName(HOST, graph.getName(), true);
             if (newGraphName != null) {
                 final AspectGraph newGraph = graph.rename(newGraphName);
@@ -41,8 +41,10 @@ public class EditAction extends SimulatorAction {
                 }
             }
         } else {
-            String name = getSimulatorModel().getSelected(getResourceKind());
-            getDisplay().startEditResource(name);
+            for (String name : getSimulatorModel().getSelectSet(
+                getResourceKind())) {
+                getDisplay().startEditResource(name);
+            }
         }
     }
 

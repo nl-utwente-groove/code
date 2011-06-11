@@ -415,6 +415,13 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
             updateGrammar(source.getGrammar(),
                 source.getGrammar() != oldModel.getGrammar());
         }
+        ResourceModel<?> resourceModel = source.getResource(getResourceKind());
+        getEnableButton().setSelected(
+            resourceModel != null && resourceModel.isEnabled());
+        if (suspendListening()) {
+            selectResource(source.getSelected(getResourceKind()));
+            activateListening();
+        }
     }
 
     /**
