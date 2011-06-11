@@ -36,8 +36,7 @@ public class ShiftPriorityAction extends SimulatorAction {
     @Override
     public void refresh() {
         boolean ruleSelected = getSimulatorModel().isSelected(RULE);
-        setEnabled(ruleSelected
-            && getSimulatorModel().getStore().isModifiable());
+        setEnabled(ruleSelected && getGrammarStore().isModifiable());
     }
 
     @Override

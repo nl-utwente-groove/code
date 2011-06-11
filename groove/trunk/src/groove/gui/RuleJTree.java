@@ -464,6 +464,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         boolean overRule = node instanceof RuleTreeNode;
         JPopupMenu res = this.display.createListPopupMenu(overRule);
         if (overRule) {
+            res.add(getActions().getSetPriorityAction());
             res.add(getActions().getShiftPriorityAction(true));
             res.add(getActions().getShiftPriorityAction(false));
             res.add(getActions().getEditRulePropertiesAction());
