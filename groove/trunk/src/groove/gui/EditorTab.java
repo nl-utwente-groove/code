@@ -22,6 +22,7 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.Action;
@@ -45,8 +46,21 @@ abstract public class EditorTab extends JPanel implements Tab {
         this.display = display;
         this.resourceKind = display.getResourceKind();
         this.simulator = simulator;
+        setBorder(null);
+        setLayout(new BorderLayout());
         addAccelerator(getSaveAction());
         addAccelerator(getCancelAction());
+    }
+
+    /** 
+     * Starts the editor.
+     * This method should be called directly after the constructor.
+     */
+    protected void start() {
+        JToolBar toolBar = createToolBar();
+        if (toolBar != null) {
+            add(createToolBar(), BorderLayout.NORTH);
+        }
     }
 
     /** Adds a key accelerator for a given action. */

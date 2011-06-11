@@ -69,7 +69,6 @@ import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.Icon;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import org.jgraph.event.GraphSelectionEvent;
@@ -92,7 +91,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * Constructs a new state panel.
      */
     public StateTab(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST), false);
+        super(new AspectJGraph(simulator, GraphRole.HOST, false), false);
         initialise();
         setBorder(null);
         setEnabledBackground(JAttr.STATE_BACKGROUND);
@@ -123,11 +122,6 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     public void dispose() {
         super.dispose();
         suspendListeners();
-    }
-
-    @Override
-    protected JToolBar createToolBar() {
-        return null;
     }
 
     @Override

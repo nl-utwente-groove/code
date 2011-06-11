@@ -24,15 +24,14 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
-import groove.gui.Editor;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.TypeModel;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
+import groove.view.TypeModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -60,13 +59,11 @@ import org.jgraph.graph.GraphConstants;
 final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** 
      * Creates an new model, initially without a graph loaded.
-     * @param editor if non-{@code null}, the model is editable
      */
     AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt,
-            SystemProperties systemProperties, Editor editor) {
+            SystemProperties systemProperties) {
         super(jVertexProt, jEdgeProt);
         this.systemProperties = systemProperties;
-        this.editor = editor;
     }
 
     /** Specialises the type to a list of {@link GraphJCell}s. */
@@ -122,8 +119,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (this.loading) {
             return;
         }
-        GraphRole role =
-            this.editor == null ? getGraph().getRole() : this.editor.getRole();
+        GraphRole role = getGraph().getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap =
             new HashMap<AspectNode,AspectJVertex>();
         Map<AspectEdge,GraphJCell> edgeJCellMap =
@@ -351,7 +347,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * the graph role taken from the editor.
      */
     private AspectNode createAspectNode() {
-        return new AspectNode(createNewNodeNr(), this.editor.getRole());
+        return new AspectNode(createNewNodeNr(), getGraph().getRole());
     }
 
     /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
@@ -394,8 +390,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated system properties. */
     private final SystemProperties systemProperties;
-    /** The associated editor. */
-    private final Editor editor;
     /** 
      * The (possibly {@code null}) type graph, needed to correctly 
      * compute the errors in the graph.

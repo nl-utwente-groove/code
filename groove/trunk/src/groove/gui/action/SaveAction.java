@@ -7,7 +7,7 @@ import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.TextEditorTab;
+import groove.gui.TextTab;
 import groove.gui.dialog.SaveDialog;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -69,7 +69,7 @@ public final class SaveAction extends SimulatorAction {
                 if (editor == null) {
                     text = getGrammarStore().getTexts(resourceKind).get(name);
                 } else {
-                    text = ((TextEditorTab) editor).getProgram();
+                    text = ((TextTab) editor).getProgram();
                 }
                 saved =
                     this.saveAs ? doSaveTextAs(name, text) : doSaveText(name,

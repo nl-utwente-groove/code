@@ -27,7 +27,6 @@ import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.gui.Editor;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
@@ -38,6 +37,7 @@ import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
 import groove.view.GrammarModel;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
@@ -69,31 +69,24 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
 
 /**
- * Extension of {@link GraphJGraph} that provides the proper popup menu.
+ * Extension of {@link GraphJGraph} for {@link AspectGraph}s.
  */
 final public class AspectJGraph extends GraphJGraph {
     /**
-     * Creates a j-graph for a given simulator, with an initially empty j-model.
+     * Creates a new instance, for a given graph role.
+     * A flag determines whether the graph is editable.
+     * @param role the graph role of the {@link AspectJGraph}
+     * @param editing if {@code true}, the graph is editable
      */
-    public AspectJGraph(Simulator simulator, GraphRole role) {
-        super(simulator, role != GraphRole.RULE);
-        this.editor = null;
-        assert role.inGrammar();
+    public AspectJGraph(Simulator simulator, GraphRole role, boolean editing) {
+        super(simulator, !editing && role != GraphRole.RULE);
+        this.editing = editing;
         this.graphRole = role;
-    }
-
-    /**
-     * Creates a j-graph for a given simulator, with an initially empty j-model.
-     */
-    public AspectJGraph(Editor editor) {
-        super(editor.getSimulator(), false);
-        this.editor = editor;
-        this.graphRole = null;
         //        addMouseListener(new MyMouseListener());
-        getGraphLayoutCache().setSelectsLocalInsertedCells(true);
-        setCloneable(true);
-        setConnectable(true);
-        setDisconnectable(true);
+        getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
+        setCloneable(editing);
+        setConnectable(editing);
+        setDisconnectable(editing);
     }
 
     //
@@ -113,12 +106,10 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public AspectJModel newModel() {
-        SystemProperties properties =
-            this.editor == null ? getGrammar().getProperties()
-                    : this.editor.getProperties();
+        SystemProperties properties = getGrammar().getProperties();
         AspectJModel result =
             new AspectJModel(AspectJVertex.getPrototype(this),
-                AspectJEdge.getPrototype(this), properties, this.editor);
+                AspectJEdge.getPrototype(this), properties);
         result.setType(getType());
         return result;
     }
@@ -208,29 +199,12 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** Indicates that the JModel has an editor enabled. */
     public boolean hasActiveEditor() {
-        return this.editor != null && getMode() != PREVIEW_MODE;
+        return this.editing && getMode() != PREVIEW_MODE;
     }
 
     /** Convenience method to retrieve the grammar view from the simulator. */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
-    }
-
-    /** 
-     * Returns the editor with which this JGraph is associated.
-     * May be {@code null} is the simulator is set instead.
-     */
-    public Editor getEditor() {
-        return this.editor;
-    }
-
-    @Override
-    SystemProperties getProperties() {
-        SystemProperties result = super.getProperties();
-        if (result == null && getEditor() != null) {
-            result = getEditor().getProperties();
-        }
-        return result;
     }
 
     /** 
@@ -277,7 +251,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public SetLayoutMenu createSetLayoutMenu() {
-        if (this.editor != null) {
+        if (this.editing) {
             SetLayoutMenu result =
                 new SetLayoutMenu(this, new SpringLayouter());
             result.addLayoutItem(new ForestLayouter());
@@ -527,7 +501,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     protected JGraphMode getDefaultMode() {
-        return getEditor() == null ? super.getDefaultMode() : EDIT_MODE;
+        return this.editing ? EDIT_MODE : super.getDefaultMode();
     }
 
     /** 
@@ -585,7 +559,7 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * The (possibly {@code null}) editor with which this j-graph is associated.
      */
-    private final Editor editor;
+    private final boolean editing;
 
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;

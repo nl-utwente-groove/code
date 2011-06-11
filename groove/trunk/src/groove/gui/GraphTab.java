@@ -29,7 +29,6 @@ import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
-import javax.swing.JToolBar;
 
 import org.jgraph.JGraph;
 
@@ -41,7 +40,8 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
      * resource kind.
      */
     public GraphTab(Simulator simulator, ResourceKind resourceKind) {
-        super(new AspectJGraph(simulator, resourceKind.getGraphRole()), false);
+        super(new AspectJGraph(simulator, resourceKind.getGraphRole(), false),
+            false);
         this.resourceKind = resourceKind;
         this.simulatorModel = simulator.getModel();
         setFocusable(false);
@@ -154,11 +154,6 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
             this.tabLabel = new TabLabel(this, getIcon(), getName());
         }
         return this.tabLabel;
-    }
-
-    @Override
-    protected final JToolBar createToolBar() {
-        return null;
     }
 
     @Override

@@ -38,6 +38,7 @@ import groove.lts.GraphTransition;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 
+import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -63,6 +64,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
         super(new LTSJGraph(simulator), true);
         getJGraph().setToolTipEnabled(true);
         initialise();
+        add(createToolBar(), BorderLayout.NORTH);
     }
 
     @Override
@@ -95,8 +97,7 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
         return null;
     }
 
-    @Override
-    protected JToolBar createToolBar() {
+    private JToolBar createToolBar() {
         JToolBar result = Options.createToolBar();
         result.add(getActions().getSaveLTSAsAction());
         result.addSeparator();
