@@ -20,11 +20,11 @@ import groove.gui.DisplayKind;
 import groove.gui.GraphTab;
 import groove.gui.LTSDisplay;
 import groove.gui.Refreshable;
+import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.ResourceDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -695,6 +695,21 @@ public class ActionStore implements SimulatorListener {
      * The priority lowering action permanently associated with the simulator.
      */
     private ShiftPriorityAction lowerPriorityAction;
+
+    /**
+     * Lazily creates and returns an instance of
+     * {@link StartSimulationAction}.
+     */
+    public SnapToGridAction getSnapToGridAction() {
+        // lazily create the action
+        if (this.snapToGridAction == null) {
+            this.snapToGridAction = new SnapToGridAction(this.simulator);
+        }
+        return this.snapToGridAction;
+    }
+
+    /** The action to start a new simulation. */
+    private SnapToGridAction snapToGridAction;
 
     /**
      * Lazily creates and returns an instance of

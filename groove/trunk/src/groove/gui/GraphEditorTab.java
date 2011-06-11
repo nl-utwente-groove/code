@@ -27,6 +27,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
+import groove.gui.action.SnapToGridAction;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -110,6 +111,26 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         start();
     }
 
+    /** Starts the editor with the graph passed in at construction time. */
+    @Override
+    protected void start() {
+        super.start();
+        setTypeView(getSimulatorModel().getGrammar().getTypeModel());
+        AspectJModel newModel = getJGraph().newModel();
+        newModel.loadGraph(getGraph());
+        getJGraph().setModel(newModel);
+        setDirty(false);
+        getUndoManager().discardAllEdits();
+        updateHistoryButtons();
+        updateStatus();
+        setSnapToGrid();
+        initListeners();
+        this.graph = null;
+        JSplitPane mainPanel = getMainPanel();
+        mainPanel.setBorder(null);
+        add(mainPanel);
+    }
+
     @Override
     protected JToolBar createToolBar() {
         JToolBar result = super.createToolBar();
@@ -153,25 +174,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
                 getJGraph().requestFocus();
             }
         });
-    }
-
-    /** Starts the editor with the graph passed in at construction time. */
-    @Override
-    protected void start() {
-        super.start();
-        setTypeView(getSimulatorModel().getGrammar().getTypeModel());
-        AspectJModel newModel = getJGraph().newModel();
-        newModel.loadGraph(getGraph());
-        getJGraph().setModel(newModel);
-        setDirty(false);
-        getUndoManager().discardAllEdits();
-        updateHistoryButtons();
-        updateStatus();
-        initListeners();
-        this.graph = null;
-        JSplitPane mainPanel = getMainPanel();
-        mainPanel.setBorder(null);
-        add(mainPanel);
     }
 
     /** Returns the role of the graph being edited. */
@@ -331,6 +333,12 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         this.refreshing = false;
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        getSnapToGridAction().removeSnapListener(this);
+    }
+
     /** Initialises the graph selection listener and attributed graph listener. */
     private void initListeners() {
         getJGraph().setToolTipEnabled(true);
@@ -348,6 +356,7 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         getJGraph().addJGraphModeListener(this);
         getModel().addUndoableEditListener(getUndoManager());
         getModel().addGraphModelListener(this);
+        getSnapToGridAction().addSnapListener(this);
     }
 
     /**
@@ -454,6 +463,26 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         getCutAction().setEnabled(!previewing && hasSelection);
         getDeleteAction().setEnabled(!previewing && hasSelection);
         getPasteAction().setEnabled(!previewing && clipboardFilled);
+    }
+
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    private JToggleButton getSnapToGridButton() {
+        if (this.snapToGridButton == null) {
+            this.snapToGridButton = new JToggleButton(getSnapToGridAction());
+            this.snapToGridButton.setFocusable(false);
+            this.snapToGridButton.setText(null);
+        }
+        return this.snapToGridButton;
+    }
+
+    /** Refreshes the snap-to-grid status of this editor tab. */
+    public void setSnapToGrid() {
+        boolean snap = getSnapToGridAction().getSnap();
+        getSnapToGridButton().setSelected(snap);
+        getJGraph().setGridEnabled(snap);
+        getJGraph().setGridVisible(snap);
     }
 
     /**
@@ -646,18 +675,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
     private Set<String> nodeKeys;
     private Set<String> edgeKeys;
 
-    /**
-     * Returns the button for setting selection mode, lazily creating it first.
-     */
-    private JToggleButton getSnapToGridButton() {
-        if (this.snapToGridButton == null) {
-            this.snapToGridButton = new JToggleButton(getSnapToGridAction());
-            this.snapToGridButton.setFocusable(false);
-            this.snapToGridButton.setText(null);
-        }
-        return this.snapToGridButton;
-    }
-
     /** Button for snap to grid. */
     transient JToggleButton snapToGridButton;
 
@@ -849,43 +866,8 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
     }
 
     /** Returns the snap to grid action, lazily creating it first. */
-    private Action getSnapToGridAction() {
-        if (this.snapToGridAction == null) {
-            this.snapToGridAction = new SnapToGridAction(this.jgraph);
-        }
-        return this.snapToGridAction;
-    }
-
-    /** Action to toggle the snap to grid. */
-    private Action snapToGridAction;
-
-    /**
-     * Action to preview the current type graph.
-     */
-    private class SnapToGridAction extends ToolbarAction {
-
-        private GraphJGraph jgraph;
-
-        /** Constructs an instance of the action. */
-        protected SnapToGridAction(GraphJGraph jgraph) {
-            super(Options.SNAP_TO_GRID_NAME, null, Icons.GRID_ICON);
-            this.jgraph = jgraph;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            JToggleButton button = GraphEditorTab.this.snapToGridButton;
-            boolean toggle;
-            if (evt.getSource().equals(button)) {
-                toggle = button.isSelected();
-            } else {
-                toggle = !button.isSelected();
-            }
-            this.jgraph.setGridEnabled(toggle);
-            this.jgraph.setGridVisible(toggle);
-            button.setSelected(toggle);
-        }
+    private SnapToGridAction getSnapToGridAction() {
+        return getSimulator().getActions().getSnapToGridAction();
     }
 
     /**
