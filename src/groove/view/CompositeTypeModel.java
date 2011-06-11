@@ -1,5 +1,6 @@
 package groove.view;
 
+import static groove.trans.ResourceKind.TYPE;
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.trans.ResourceKind;
@@ -21,22 +22,28 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     private List<FormatError> errors;
 
     CompositeTypeModel(GrammarModel grammar) {
-        super(ResourceKind.TYPE, "Composed type for " + grammar.getName());
+        super(grammar, ResourceKind.TYPE, "Composed type for "
+            + grammar.getName());
         this.typeModelMap = new HashMap<String,TypeModel>();
         this.resource = null;
         this.errors = new ArrayList<FormatError>();
-        for (String typeName : grammar.getTypeNames()) {
-            TypeModel typeModel = grammar.getTypeModel(typeName);
+        for (ResourceModel<?> typeModel : grammar.getResourceSet(TYPE)) {
             if (typeModel != null && typeModel.isEnabled()) {
-                this.typeModelMap.put(typeName, typeModel);
+                this.typeModelMap.put(typeModel.getName(),
+                    (TypeModel) typeModel);
                 this.errors.addAll(typeModel.getErrors());
             }
         }
     }
 
     @Override
+    public Object getSource() {
+        return null;
+    }
+
+    @Override
     public boolean isEnabled() {
-        return true;
+        return !this.typeModelMap.isEmpty();
     }
 
     /**

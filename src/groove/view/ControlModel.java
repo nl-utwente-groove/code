@@ -38,13 +38,12 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
      * @param program the control program; non-null
      */
     public ControlModel(GrammarModel grammar, String name, String program) {
-        super(ResourceKind.CONTROL, name, program);
-        this.grammar = grammar;
+        super(grammar, ResourceKind.CONTROL, name, program);
     }
 
     @Override
     public boolean isEnabled() {
-        return getName().equals(this.grammar.getControlName());
+        return getName().equals(getGrammar().getActiveControlName());
     }
 
     @Override
@@ -56,12 +55,12 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
      * Returns the control automaton for a given grammar. 
      */
     public CtrlAut toCtrlAut() throws FormatException {
-        int modCount = this.grammar.getModificationCount();
+        int modCount = getGrammar().getModificationCount();
         // use the stored result if that was for the same grammar
         if (modCount != this.lastCount) {
             this.lastAut =
                 this.parser.runString(getProgram(),
-                    this.grammar.getProperties(), this.grammar.getRules());
+                    getGrammar().getProperties(), getGrammar().getRules());
             this.lastCount = modCount;
         }
         if (!this.lastAut.getInfo().getErrors().isEmpty()) {
@@ -86,7 +85,6 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         return result;
     }
 
-    private final GrammarModel grammar;
     /** The grammar of the most recently computed control automaton. */
     private int lastCount = -1;
     /** The most recently computed control automaton. */

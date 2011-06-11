@@ -22,7 +22,6 @@ import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
-import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
@@ -59,10 +58,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /**
      * Constructs an instance from a given aspect graph.
      */
-    public HostModel(AspectGraph source, SystemProperties properties) {
-        super(source);
+    public HostModel(GrammarModel grammar, AspectGraph source) {
+        super(grammar, source);
         source.testFixed(true);
-        this.algebraFamily = getFamily(properties);
     }
 
     /** 
@@ -95,31 +93,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return this.hostModelMap;
     }
 
-    /**
-     * Changes the system properties under which the resource is to be created.
-     */
-    public void setProperties(SystemProperties properties) {
-        AlgebraFamily newFamily = getFamily(properties);
-        if (!newFamily.equals(this.algebraFamily)) {
-            this.algebraFamily = newFamily;
-            invalidate();
-        }
-    }
-
-    /** Changes the type graph against which the model should be tested. */
-    @Override
-    public void setType(TypeGraph type) {
-        if (this.type != type) {
-            this.type = type;
-            invalidate();
-        }
-    }
-
-    @Override
-    public void setLabelStore(LabelStore labelStore) {
-        // Does nothing
-    }
-
     /** Returns the set of labels used in this graph. */
     @Override
     public Set<TypeLabel> getLabels() {
@@ -128,12 +101,20 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 : this.labelSet;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return getGrammar() == null
+            || getName().equals(getGrammar().getStartGraphName());
+    }
+
     /** 
      * Extracts the algebra family from a (possibly {@code null}) properties
      * object.
      */
-    private AlgebraFamily getFamily(SystemProperties properties) {
+    private AlgebraFamily getFamily() {
         AlgebraFamily result;
+        SystemProperties properties =
+            getGrammar() == null ? null : getGrammar().getProperties();
         if (properties == null) {
             result = AlgebraFamily.getInstance();
         } else {
@@ -145,7 +126,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Constructs the resource and associated data structures from the model. */
     private void initialise() {
         // first test if there is something to be done
-        if (this.errors == null) {
+        boolean init = this.errors == null || isGrammarModified();
+        if (init) {
+            this.algebraFamily = getFamily();
             if (getSource().hasErrors()) {
                 this.errors = getSource().getErrors();
             } else {
@@ -157,17 +140,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 this.errors = GraphInfo.getErrors(this.model);
             }
         }
-    }
-
-    /**
-     * Resets the constructed fields of this model to {@code null}, so that they
-     * will be reconstructed again.
-     */
-    private void invalidate() {
-        this.errors = null;
-        this.model = null;
-        this.hostModelMap = null;
-        this.labelSet = null;
     }
 
     /**
@@ -209,11 +181,12 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             }
         }
         // test against the type graph, if any
-        if (this.type != null) {
+        TypeGraph type = getGrammar().getTypeGraph();
+        if (type != null) {
             Collection<FormatError> typeErrors;
             try {
                 TypeGraph.Typing<HostNode,HostEdge> typing =
-                    this.type.checkTyping(result);
+                    type.checkTyping(result);
                 typeErrors = new TreeSet<FormatError>();
                 for (Element elem : typing.getAbstractElements()) {
                     if (elem instanceof HostNode) {
@@ -337,8 +310,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */
     private AlgebraFamily algebraFamily;
-    /** Optional type graph for this aspect graph. */
-    private TypeGraph type;
 
     /** Mapping from aspect graph to type graph. */
     public static class HostModelMap extends ModelMap<HostNode,HostEdge> {

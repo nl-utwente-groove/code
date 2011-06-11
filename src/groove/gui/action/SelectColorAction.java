@@ -93,9 +93,8 @@ public class SelectColorAction extends SimulatorAction implements
                 assert false;
             }
         }
-        for (String typeName : getGrammarModel().getTypeNames()) {
-            AspectGraph typeGraph =
-                getGrammarModel().getTypeModel(typeName).getSource();
+        for (AspectGraph typeGraph : getGrammarStore().getGraphs(
+            ResourceKind.TYPE).values()) {
             AspectGraph newTypeGraph =
                 typeGraph.colour(this.label, colourAspect);
             if (newTypeGraph != typeGraph) {
@@ -104,7 +103,8 @@ public class SelectColorAction extends SimulatorAction implements
                         newTypeGraph);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
-                        "Error while saving type graph '%s'", typeName));
+                        "Error while saving type graph '%s'",
+                        typeGraph.getName()));
                 }
             }
         }
@@ -158,7 +158,7 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public void refresh() {
         super.setEnabled(this.label != null
-            && getGrammarModel().getTypeModel().isEnabled());
+            && getGrammarModel().getActiveTypeModel().isEnabled());
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

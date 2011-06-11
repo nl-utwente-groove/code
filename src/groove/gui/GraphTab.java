@@ -6,26 +6,23 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.LabelStore;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
-import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
@@ -39,11 +36,10 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
      * Constructs the instance of this tab for a given simulator and
      * resource kind.
      */
-    public GraphTab(Simulator simulator, ResourceKind resourceKind) {
-        super(new AspectJGraph(simulator, resourceKind.getGraphRole(), false),
-            false);
-        this.resourceKind = resourceKind;
-        this.simulatorModel = simulator.getModel();
+    public GraphTab(ResourceDisplay display) {
+        super(new AspectJGraph(display.getSimulator(),
+            display.getResourceKind().getGraphRole(), false), false);
+        this.display = display;
         setFocusable(false);
         setEnabled(false);
         initialise();
@@ -73,16 +69,29 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
                 }
             }
         });
+        getJGraph().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    getDisplay().getEditAction().execute();
+                }
+            }
+        });
     }
 
     @Override
     public Icon getIcon() {
-        return Icons.getMainTabIcon(this.resourceKind);
+        return Icons.getMainTabIcon(getResourceKind());
     }
 
     public String getTitle() {
         // the title of a non-editor tab is the same as the resource name
         return getName();
+    }
+
+    /** Returns the display on which this tab is placed. */
+    public final ResourceDisplay getDisplay() {
+        return this.display;
     }
 
     @Override
@@ -96,7 +105,7 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
         if (jModel == null && name != null) {
             this.jModelMap.put(name, jModel = getJGraph().newModel());
             AspectGraph graph =
-                this.simulatorModel.getStore().getGraphs(this.resourceKind).get(
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
                     name);
             jModel.loadGraph(graph);
         }
@@ -121,28 +130,7 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
      */
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
-        if (grammar == null) {
-            getJGraph().setType(null, null);
-        } else {
-            // set either the type or the label store of the associated JGraph
-            try {
-                TypeGraph type = grammar.getTypeModel().toResource();
-                Map<String,Set<TypeLabel>> labelsMap =
-                    new HashMap<String,Set<TypeLabel>>();
-                for (String typeName : grammar.getTypeNames()) {
-                    TypeModel typeModel = grammar.getTypeModel(typeName);
-                    // the view may be null if type names
-                    // overlap modulo upper/lowercase
-                    if (typeModel != null && typeModel.isEnabled()) {
-                        labelsMap.put(typeName, typeModel.getLabels());
-                    }
-                }
-                getJGraph().setType(type, labelsMap);
-            } catch (FormatException e) {
-                getJGraph().setLabelStore(grammar.getLabelStore());
-            }
-        }
-        refreshStatus();
+        getJGraph().updateGrammar(grammar);
     }
 
     /** 
@@ -161,10 +149,14 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
         return this;
     }
 
+    private ResourceKind getResourceKind() {
+        return getDisplay().getResourceKind();
+    }
+
     /** The tab label used for this tab. */
     private TabLabel tabLabel;
-    private final SimulatorModel simulatorModel;
-    private final ResourceKind resourceKind;
+    /** The display on which this tab is placed. */
+    private final ResourceDisplay display;
     /** Mapping from resource names to aspect models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();

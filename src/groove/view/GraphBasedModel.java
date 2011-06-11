@@ -20,9 +20,7 @@ import groove.graph.Edge;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphProperties;
-import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectEdge;
@@ -40,8 +38,9 @@ import java.util.Set;
  */
 abstract public class GraphBasedModel<R> extends ResourceModel<R> {
     /** Creates a graph-based resource model from a given source. */
-    protected GraphBasedModel(AspectGraph source) {
-        super(ResourceKind.toResource(source.getRole()), source.getName());
+    protected GraphBasedModel(GrammarModel grammar, AspectGraph source) {
+        super(grammar, ResourceKind.toResource(source.getRole()),
+            source.getName());
         this.source = source;
     }
 
@@ -51,22 +50,12 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
     }
 
     /**
-     * Returns the source of this graph-based resource model.
+     * The source of a  graph-based resource is the aspect graph.
      */
+    @Override
     public AspectGraph getSource() {
         return this.source;
     }
-
-    /** 
-     * Sets a type graph for this resource.
-     */
-    abstract public void setType(TypeGraph type);
-
-    /** 
-     * Sets a label store for this resource.
-     * This is mutually exclusive with {@link #setType(TypeGraph)}.
-     */
-    abstract public void setLabelStore(LabelStore labelStore);
 
     /**
      * Returns a mapping from the nodes in the model source to the corresponding 

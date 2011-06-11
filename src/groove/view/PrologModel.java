@@ -33,8 +33,8 @@ public class PrologModel extends TextBasedModel<String> {
      * @param name the name of the prolog program; non-{@code null}
      * @param program the prolog program; non-null
      */
-    public PrologModel(String name, String program) {
-        super(ResourceKind.PROLOG, name, program);
+    public PrologModel(GrammarModel grammar, String name, String program) {
+        super(grammar, ResourceKind.PROLOG, name, program);
         this.errors = Collections.emptyList();
     }
 

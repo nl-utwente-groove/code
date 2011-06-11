@@ -59,9 +59,9 @@ final public class TypeDisplay extends ResourceDisplay {
 
     /** Returns the list of states and host graphs. */
     @Override
-    public TypeJList getList() {
+    public ResourceList getList() {
         if (this.typeJList == null) {
-            this.typeJList = new TypeJList(this);
+            this.typeJList = new ResourceList(this);
         }
         return this.typeJList;
     }
@@ -79,5 +79,5 @@ final public class TypeDisplay extends ResourceDisplay {
     }
 
     /** Production system type list */
-    private TypeJList typeJList;
+    private ResourceList typeJList;
 }

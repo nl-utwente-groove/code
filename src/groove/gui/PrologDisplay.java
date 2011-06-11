@@ -321,9 +321,9 @@ public class PrologDisplay extends ResourceDisplay {
 
     /** Returns the list of control programs. */
     @Override
-    protected PrologJList getList() {
+    protected ResourceList getList() {
         if (this.prologJList == null) {
-            this.prologJList = new PrologJList(this);
+            this.prologJList = new ResourceList(this);
         }
         return this.prologJList;
     }
@@ -585,7 +585,7 @@ public class PrologDisplay extends ResourceDisplay {
      */
     private JTree userTree;
     /** Production system prolog program list. */
-    private PrologJList prologJList;
+    private ResourceList prologJList;
 
     /**
      * Counter used to show the number of found solutions (so far)

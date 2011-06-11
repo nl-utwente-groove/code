@@ -179,14 +179,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
     private Map<Integer,Set<RuleModel>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<RuleModel>> result =
             new TreeMap<Integer,Set<RuleModel>>(Rule.PRIORITY_COMPARATOR);
-        for (String ruleName : grammar.getRuleNames()) {
-            RuleModel ruleView = grammar.getRuleModel(ruleName);
-            int priority = ruleView.getPriority();
+        for (ResourceModel<?> ruleModel : grammar.getResourceSet(ResourceKind.RULE)) {
+            int priority = ((RuleModel) ruleModel).getPriority();
             Set<RuleModel> priorityRules = result.get(priority);
             if (priorityRules == null) {
                 result.put(priority, priorityRules = new TreeSet<RuleModel>());
             }
-            priorityRules.add(ruleView);
+            priorityRules.add((RuleModel) ruleModel);
         }
         return result;
     }
@@ -207,16 +206,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 this.topDirectoryNode.removeAllChildren();
                 this.ruleDirectory.reload();
             } else if (grammar != oldModel.getGrammar()
-                || grammar.getRuleNames().size() != this.ruleNodeMap.size()) {
+                || grammar.getNames(ResourceKind.RULE).size() != this.ruleNodeMap.size()) {
                 loadGrammar(grammar);
-            } else {
-                // compare the individual rule views
-                for (RuleModel ruleView : this.ruleNodeMap.keySet()) {
-                    if (!ruleView.equals(grammar.getRuleModel(ruleView.getName()))) {
-                        loadGrammar(grammar);
-                        break;
-                    }
-                }
+            } else if (!this.ruleNodeMap.keySet().equals(
+                grammar.getResourceSet(ResourceKind.RULE))) {
+                loadGrammar(grammar);
             }
             refresh(source.getState());
         } else {

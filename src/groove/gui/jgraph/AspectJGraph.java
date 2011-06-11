@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import static groove.trans.ResourceKind.RULE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.Edge;
@@ -25,7 +26,6 @@ import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -34,9 +34,10 @@ import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
 import groove.util.Colors;
 import groove.view.GrammarModel;
+import groove.view.ResourceModel;
+import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
@@ -106,63 +107,34 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public AspectJModel newModel() {
-        SystemProperties properties = getGrammar().getProperties();
-        AspectJModel result =
-            new AspectJModel(AspectJVertex.getPrototype(this),
-                AspectJEdge.getPrototype(this), properties);
-        result.setType(getType());
-        return result;
+        return new AspectJModel(AspectJVertex.getPrototype(this),
+            AspectJEdge.getPrototype(this), getGrammar());
     }
 
     /**
-     * Changes the label store of this {@link GraphJGraph}.
-     * @param store the global label stores
+     * Notifies the graph that the grammar has changed.
+     * This may affect the errors in the model.
      */
-    public final void setLabelStore(LabelStore store) {
-        this.type = null;
-        this.labelsMap = null;
-        this.labelStore = store;
-    }
-
-    /**
-     * Returns the set of labels and subtypes in the graph. May be
-     * <code>null</code>.
-     */
-    public final LabelStore getLabelStore() {
-        return this.labelStore;
-    }
-
-    /** Sets a type graph for this JModel.
-     * The type graph is needed to correctly compute the errors in the graph.
-     * @param type the new type graph; may be {@code null}
-     * @param labelsMap map from names to subsets of labels; may be {@code null}
-     * @return {@code true} if the type graph changed as a result of this call.
-     */
-    public boolean setType(TypeGraph type, Map<String,Set<TypeLabel>> labelsMap) {
-        boolean result = this.type != type;
-        if (result) {
-            this.type = type;
-            if (type == null) {
-                this.labelStore = null;
-            } else {
-                this.labelStore = type.getLabelStore();
-            }
-            if (getModel() != null) {
-                getModel().setType(type);
+    public void updateGrammar(GrammarModel grammar) {
+        this.labelStore = grammar.getLabelStore();
+        // retrieves type and label store from the grammar
+        if (grammar.getTypeGraph() != null) {
+            Map<String,Set<TypeLabel>> labelsMap =
+                new HashMap<String,Set<TypeLabel>>();
+            for (ResourceModel<?> typeModel : grammar.getResourceSet(ResourceKind.TYPE)) {
+                // the view may be null if type names
+                // overlap modulo upper/lowercase
+                if (typeModel != null && typeModel.isEnabled()) {
+                    labelsMap.put(typeModel.getName(),
+                        ((TypeModel) typeModel).getLabels());
+                }
             }
             this.labelsMap = labelsMap;
         }
-        return result;
-    }
-
-    /** Returns the type graph set for this JGraph. */
-    public TypeGraph getType() {
-        return this.type;
-    }
-
-    /** Indicates if this JGraph has a non-{@code null} type. */
-    public boolean hasType() {
-        return getType() != null;
+        AspectJModel model = getModel();
+        if (model != null) {
+            model.syncGraph();
+        }
     }
 
     /**
@@ -172,6 +144,14 @@ final public class AspectJGraph extends GraphJGraph {
      */
     public final Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.labelsMap;
+    }
+
+    /**
+     * Returns the set of labels and subtypes in the graph. May be
+     * <code>null</code>.
+     */
+    public final LabelStore getLabelStore() {
+        return this.labelStore;
     }
 
     /**
@@ -289,7 +269,7 @@ final public class AspectJGraph extends GraphJGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (String ruleName : getGrammar().getRuleNames()) {
+                    for (String ruleName : getGrammar().getNames(RULE)) {
                         add(createSetRuleAction(ruleName));
                     }
                 }
@@ -302,7 +282,7 @@ final public class AspectJGraph extends GraphJGraph {
     private Action createSetRuleAction(final String ruleName) {
         return new AbstractAction(ruleName) {
             public void actionPerformed(ActionEvent evt) {
-                getSimulatorModel().doSelect(ResourceKind.RULE, ruleName);
+                getSimulatorModel().doSelect(RULE, ruleName);
             }
         };
     }
@@ -563,14 +543,8 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
-
     /** Set of all labels and subtypes in the graph. */
     private LabelStore labelStore;
-    /** 
-     * The (possibly {@code null}) type graph, needed to correctly 
-     * compute the errors in the graph.
-     */
-    private TypeGraph type;
     /** Mapping from names to sub-label stores. */
     private Map<String,Set<TypeLabel>> labelsMap;
     /** Flag indicating that the graph is in the process of inserting an element. */

@@ -42,7 +42,6 @@ import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
-import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -308,15 +307,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.initialised = true;
     }
 
-    @Override
-    public GrammarModel toGrammarModel() {
-        if (this.model == null) {
-            this.model = new GrammarModel(this);
-            this.observable.addObserver(this.model);
-        }
-        return this.model;
-    }
-
     /**
      * Returns the string representation of the URL or file this store was
      * loaded from.
@@ -548,8 +538,6 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     private final String grammarName;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
-    /** The grammar view associated with this store. */
-    private GrammarModel model;
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable();
     /** Flag whether this store contains a 'system.properties' file. */

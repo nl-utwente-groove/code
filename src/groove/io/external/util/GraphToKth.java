@@ -23,6 +23,7 @@ import groove.graph.algebra.ValueNode;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.view.FormatException;
+import groove.view.HostModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -242,7 +243,7 @@ public final class GraphToKth {
         HashMap<String,String> attrs = new HashMap<String,String>();
         HostGraph model = null;
         try {
-            model = graph.toGraphModel(null).toHost();
+            model = new HostModel(null, graph).toHost();
         } catch (FormatException e) {
             // Should never happen...
             e.printStackTrace();
