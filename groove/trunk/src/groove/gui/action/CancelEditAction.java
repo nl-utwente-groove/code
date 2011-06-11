@@ -13,6 +13,7 @@ public class CancelEditAction extends SimulatorAction {
     public CancelEditAction(Simulator simulator, ResourceKind resource) {
         super(simulator, Options.CANCEL_EDIT_ACTION_NAME, Icons.CANCEL_ICON,
             null, resource);
+        putValue(ACCELERATOR_KEY, Options.CLOSE_KEY);
     }
 
     @Override

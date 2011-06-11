@@ -22,7 +22,7 @@ public class EnableAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        Set<String> names = getSimulatorModel().getAllSelected(resource);
+        Set<String> names = getSimulatorModel().getSelectSet(resource);
         try {
             getSimulatorModel().doEnable(resource, names);
         } catch (IOException exc) {

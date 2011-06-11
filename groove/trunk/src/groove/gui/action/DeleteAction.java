@@ -20,7 +20,7 @@ public class DeleteAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        Set<String> names = getSimulatorModel().getAllSelected(resource);
+        Set<String> names = getSimulatorModel().getSelectSet(resource);
         boolean enabled = false;
         for (String name : names) {
             enabled |=

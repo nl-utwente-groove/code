@@ -7,6 +7,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.view.ControlModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -22,7 +23,7 @@ public class PreviewControlAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public PreviewControlAction(Simulator simulator) {
         super(simulator, Options.PREVIEW_CONTROL_ACTION_NAME,
-            Icons.CONTROL_MODE_ICON);
+            Icons.CONTROL_MODE_ICON, null, ResourceKind.CONTROL);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class PreviewControlAction extends SimulatorAction {
             }
         } catch (FormatException exc) {
             showErrorDialog(exc, String.format("Error in control program '%s'",
-                getSimulatorModel().getControl().getName()));
+                getSimulatorModel().getSelected(ResourceKind.CONTROL)));
         }
     }
 
@@ -84,7 +85,9 @@ public class PreviewControlAction extends SimulatorAction {
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
             GraphGrammar grammar = grammarModel.toGrammar();
-            ControlModel controlModel = getSimulatorModel().getControl();
+            ControlModel controlModel =
+                (ControlModel) getSimulatorModel().getResource(
+                    getResourceKind());
             result =
                 controlModel == null ? grammar.getCtrlAut()
                         : controlModel.toCtrlAut();

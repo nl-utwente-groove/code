@@ -18,8 +18,8 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.JAttr;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
-import groove.view.TypeModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -156,12 +156,12 @@ public class TypeJList extends JList implements SimulatorListener {
         Object[] typeNames = getGrammar().getTypeNames().toArray();
         Arrays.sort(typeNames);
         setListData(typeNames);
-        TypeModel selection = getSimulatorModel().getType();
+        String selection = getSimulatorModel().getSelected(ResourceKind.TYPE);
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
         } else {
-            setSelectedValue(selection.getName(), true);
+            setSelectedValue(selection, true);
         }
     }
 
@@ -234,7 +234,8 @@ public class TypeJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setType((String) getSelectedValue());
+            getSimulatorModel().doSelect(ResourceKind.TYPE,
+                (String) getSelectedValue());
         }
     }
 

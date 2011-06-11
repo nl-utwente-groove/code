@@ -19,7 +19,7 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.SimulatorAction;
 import groove.gui.jgraph.JAttr;
-import groove.view.ControlModel;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 
 import java.awt.Color;
@@ -144,8 +144,14 @@ public class ControlJList extends JList implements SimulatorListener {
                 setEnabled(true);
                 refresh();
             }
-        } else if (changes.contains(Change.CONTROL) && source.hasControl()) {
-            setSelectedValue(source.getControl().getName(), true);
+        }
+        String selection = source.getSelected(ResourceKind.CONTROL);
+        if (changes.contains(Change.CONTROL)) {
+            if (selection == null) {
+                clearSelection();
+            } else {
+                setSelectedValue(selection, true);
+            }
         }
         activateListeners();
     }
@@ -157,12 +163,13 @@ public class ControlJList extends JList implements SimulatorListener {
         Object[] controlNames = getGrammar().getControlNames().toArray();
         Arrays.sort(controlNames);
         setListData(controlNames);
-        ControlModel selection = getSimulatorModel().getControl();
+        String selection =
+            getSimulatorModel().getSelected(ResourceKind.CONTROL);
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
         } else {
-            setSelectedValue(selection.getName(), true);
+            setSelectedValue(selection, true);
         }
     }
 
@@ -242,7 +249,8 @@ public class ControlJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setControl((String) getSelectedValue());
+            getSimulatorModel().doSelect(ResourceKind.CONTROL,
+                (String) getSelectedValue());
         }
     }
 

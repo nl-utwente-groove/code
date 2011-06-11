@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.graph.Element;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.util.ArrayList;
@@ -57,10 +58,16 @@ public class FormatError implements Comparable<FormatError> {
             this.subError.transferTo(null, this);
         } else if (par instanceof AspectGraph) {
             this.graph = (AspectGraph) par;
+            this.resourceName = this.graph.getName();
+            this.resourceKind = ResourceKind.toResource(this.graph.getRole());
         } else if (par instanceof ControlModel) {
             this.control = (ControlModel) par;
+            this.resourceName = this.control.getName();
+            this.resourceKind = ResourceKind.CONTROL;
         } else if (par instanceof PrologModel) {
             this.prolog = (PrologModel) par;
+            this.resourceName = this.prolog.getName();
+            this.resourceKind = ResourceKind.PROLOG;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);
         } else if (par instanceof Integer) {
@@ -161,6 +168,16 @@ public class FormatError implements Comparable<FormatError> {
         return this.numbers;
     }
 
+    /** Returns the resource kind for which this error occurs. */
+    public final ResourceKind getResourceKind() {
+        return this.resourceKind;
+    }
+
+    /** Returns the resource kind for which this error occurs. */
+    public final String getResourceName() {
+        return this.resourceName;
+    }
+
     /** Returns a new format error that extends this one with context information. */
     public FormatError extend(Object par) {
         return new FormatError(this, par);
@@ -212,6 +229,10 @@ public class FormatError implements Comparable<FormatError> {
     private ControlModel control;
     /** The graph in which the error occurs. */
     private AspectGraph graph;
+    /** The resource kind for which the error occurs. May be {@code null}. */
+    private ResourceKind resourceKind;
+    /** The name of the resource on which the error occurs. May be {@code null}. */
+    private String resourceName;
     /** List of erroneous elements. */
     private final List<Element> elements = new ArrayList<Element>();
     /** List of numbers; typically the line and column number in a textual program. */

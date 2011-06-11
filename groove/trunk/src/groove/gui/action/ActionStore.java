@@ -309,12 +309,12 @@ public class ActionStore implements SimulatorListener {
             ExportAction result = null;
             if (kind == DisplayKind.LTS) {
                 LTSDisplay display =
-                    (LTSDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
+                    (LTSDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
                         kind);
                 result = display.getJGraph().getExportAction();
             } else if (kind.getResource().isGraphBased()) {
                 ResourceDisplay display =
-                    (ResourceDisplay) this.simulator.getSimulatorPanel().getDisplayFor(
+                    (ResourceDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
                         kind);
                 result =
                     ((GraphTab) display.getMainTab()).getJGraph().getExportAction();

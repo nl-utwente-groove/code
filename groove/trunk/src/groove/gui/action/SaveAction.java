@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import static groove.graph.GraphRole.RULE;
+import static groove.trans.ResourceKind.HOST;
 import groove.gui.EditorTab;
 import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
@@ -36,6 +37,9 @@ public final class SaveAction extends SimulatorAction {
         super(simulator, saveAs ? Options.SAVE_AS_ACTION_NAME
                 : Options.SAVE_ACTION_NAME, saveAs ? Icons.SAVE_AS_ICON
                 : Icons.SAVE_ICON, null, resource);
+        if (!saveAs) {
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+        }
         simulator.addAccelerator(this);
         this.saveAs = saveAs;
     }
@@ -219,8 +223,8 @@ public final class SaveAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getResourceKind() == ResourceKind.HOST
-            && !getSimulatorModel().hasHost();
+        return getResourceKind() == HOST
+            && !getSimulatorModel().isSelected(HOST);
     }
 
     private final boolean saveAs;

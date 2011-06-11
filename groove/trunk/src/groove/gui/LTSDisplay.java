@@ -35,6 +35,7 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 
 import java.awt.event.MouseAdapter;
@@ -82,6 +83,11 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     @Override
     public DisplayKind getKind() {
         return DisplayKind.LTS;
+    }
+
+    @Override
+    public ResourceKind getResourceKind() {
+        return null;
     }
 
     @Override

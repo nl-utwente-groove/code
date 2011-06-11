@@ -31,9 +31,11 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
+import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.view.GrammarModel;
+import groove.view.ResourceModel;
 import groove.view.RuleModel;
 
 import java.awt.Color;
@@ -138,7 +140,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<RuleModel>> priorityMap = getPriorityMap(grammar);
-        Collection<RuleModel> selectedRules = getSimulatorModel().getRuleSet();
+        Collection<String> selectedRules =
+            getSimulatorModel().getSelectSet(ResourceKind.RULE);
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
             // if the rule system has multiple priorities, we want an extra
@@ -158,7 +161,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 parentNode.add(ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
                 expandPath(rulePath);
-                if (selectedRules.contains(ruleView)) {
+                if (selectedRules.contains(ruleName)) {
                     selectedPaths.add(rulePath);
                 }
                 this.ruleNodeMap.put(ruleView, ruleNode);
@@ -224,7 +227,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 refresh(source.getState());
             }
             if (changes.contains(MATCH) || changes.contains(RULE)) {
-                selectMatch(source.getRule(), source.getMatch());
+                ResourceModel<?> ruleModel =
+                    source.getResource(ResourceKind.RULE);
+                selectMatch((RuleModel) ruleModel, source.getMatch());
             }
         }
         activateListeners();
@@ -567,7 +572,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
      * selected, and <tt>setDerivation</tt> if a match node is selected.
-     * @see SimulatorModel#setRule
      * @see SimulatorModel#setMatch
      */
     private class RuleSelectionListener implements TreeSelectionListener {
@@ -595,7 +599,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     break;
                 }
             }
-            getSimulatorModel().setRuleSet(getSelectedRules());
+            getSimulatorModel().doSelectSet(ResourceKind.RULE,
+                getSelectedRules());
             activateListeners();
         }
     }

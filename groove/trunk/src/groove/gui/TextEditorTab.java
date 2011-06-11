@@ -4,12 +4,12 @@ import groove.control.parse.CtrlTokenMaker;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
+import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -49,14 +49,6 @@ public class TextEditorTab extends EditorTab implements MainTab {
             add(createToolBar(), BorderLayout.NORTH);
         }
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
-        // add keyboard binding for Save and Cancel key
-        InputMap focusedInputMap =
-            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        String saveActionName = Options.getSaveActionName(getResourceKind(), false);
-        focusedInputMap.put(Options.SAVE_KEY, saveActionName);
-        focusedInputMap.put(Options.CANCEL_KEY, Options.CANCEL_EDIT_ACTION_NAME);
-        getActionMap().put(saveActionName, getSaveAction());
-        getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME, getCancelAction());
         this.textArea.setProgram(program);
     }
 
@@ -91,8 +83,7 @@ public class TextEditorTab extends EditorTab implements MainTab {
     @Override
     public void setResource(String name) {
         String program =
-            getSimulatorModel().getStore().getTexts(
-                getDisplay().getResourceKind()).get(name);
+            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
         setName(name);
         this.textArea.setProgram(program);
     }
@@ -104,6 +95,11 @@ public class TextEditorTab extends EditorTab implements MainTab {
             this.textArea.setProgram(null);
         }
         return result;
+    }
+
+    @Override
+    public void updateGrammar(GrammarModel grammar) {
+        // do nothing here
     }
 
     /** Indicates if the editor is currently dirty. */
@@ -143,12 +139,6 @@ public class TextEditorTab extends EditorTab implements MainTab {
     @Override
     protected void saveResource() {
         getSaveAction().doSaveText(getName(), getProgram());
-    }
-
-    /** Removes this editor from the editor pane. */
-    @Override
-    public void dispose() {
-        getDisplay().getTabPane().remove(this);
     }
 
     /** Creates a token maker for the text area of this tab. */

@@ -18,8 +18,8 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.JAttr;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
-import groove.view.PrologModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -145,8 +145,9 @@ public class PrologJList extends JList implements SimulatorListener {
                 refresh();
             }
         }
-        if (changes.contains(Change.PROLOG) && source.hasProlog()) {
-            setSelectedValue(source.getProlog().getName(), true);
+        String selection = source.getSelected(ResourceKind.PROLOG);
+        if (changes.contains(Change.PROLOG) && selection != null) {
+            setSelectedValue(selection, true);
         }
         activateListeners();
     }
@@ -158,12 +159,12 @@ public class PrologJList extends JList implements SimulatorListener {
         Object[] prologNames = getGrammar().getPrologNames().toArray();
         Arrays.sort(prologNames);
         setListData(prologNames);
-        PrologModel selection = getSimulatorModel().getProlog();
+        String selection = getSimulatorModel().getSelected(ResourceKind.PROLOG);
         // turn the selection into a set of names
         if (selection == null) {
             clearSelection();
         } else {
-            setSelectedValue(selection.getName(), true);
+            setSelectedValue(selection, true);
         }
     }
 
@@ -248,7 +249,8 @@ public class PrologJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setProlog((String) getSelectedValue());
+            getSimulatorModel().doSelect(ResourceKind.PROLOG,
+                (String) getSelectedValue());
         }
     }
 

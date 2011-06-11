@@ -35,6 +35,7 @@ import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
@@ -72,8 +73,7 @@ import javax.swing.tree.TreePath;
  * 
  * @author Michiel Hendriks
  */
-public class PrologDisplay extends ResourceDisplay implements
-        SimulatorListener {
+public class PrologDisplay extends ResourceDisplay {
     private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
@@ -88,7 +88,12 @@ public class PrologDisplay extends ResourceDisplay implements
         Environment.setDefaultOutputStream(getUserOutput());
 
         simulator.getModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
-        this.listening = true;
+        activateListening();
+    }
+
+    @Override
+    protected JComponent createDisplayPanel() {
+        return new MyDisplayPanel();
     }
 
     /**
@@ -195,6 +200,7 @@ public class PrologDisplay extends ResourceDisplay implements
     private JTextArea getResultsArea() {
         if (this.results == null) {
             this.results = new JTextArea();
+            this.results.setPreferredSize(new Dimension(0, 200));
             this.results.setFont(EDIT_FONT);
             this.results.setText("");
             this.results.setEditable(false);
@@ -202,14 +208,6 @@ public class PrologDisplay extends ResourceDisplay implements
             this.results.setBackground(Color.WHITE);
         }
         return this.results;
-    }
-
-    @Override
-    public JComponent getDisplayPanel() {
-        if (this.mainPanel == null) {
-            this.mainPanel = new MyDisplayPanel();
-        }
-        return this.mainPanel;
     }
 
     /**
@@ -333,39 +331,22 @@ public class PrologDisplay extends ResourceDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (this.listening) {
-            this.listening = false;
-            if (changes.contains(Change.GRAMMAR)) {
-                this.environment = null;
-                this.engine = null;
-                GrammarModel grammar = source.getGrammar();
-                for (EditorTab editor : getEditors().values()) {
-                    if (grammar == null
-                        || !grammar.getPrologNames().contains(editor.getName())) {
-                        editor.dispose();
-                    }
-                }
-                selectResource(source.getSelected(getResourceKind()));
-                loadSyntaxHelpTree(this.userTree,
-                    getEnvironment().getUserTags());
+        super.update(source, oldModel, changes);
+        if (suspendListening()) {
+            String selection = source.getSelected(ResourceKind.PROLOG);
+            if (changes.contains(Change.PROLOG) && selection != null) {
+                selectResource(selection);
             }
-            if (changes.contains(Change.PROLOG) && source.hasProlog()) {
-                selectResource(source.getProlog().getName());
-            }
-            this.listening = true;
+            activateListening();
         }
     }
 
     @Override
-    protected MainTab createMainTab() {
-        return new TextEditorTab(this);
-    }
-
-    @Override
-    protected EditorTab createEditorTab(String name) {
-        String program =
-            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
-        return new TextEditorTab(this, name, program);
+    protected void updateGrammar(GrammarModel grammar, boolean fresh) {
+        super.updateGrammar(grammar, fresh);
+        this.environment = null;
+        this.engine = null;
+        loadSyntaxHelpTree(this.userTree, getEnvironment().getUserTags());
     }
 
     /**
@@ -579,8 +560,6 @@ public class PrologDisplay extends ResourceDisplay implements
 
     /** The environment, initialised from the grammar view. */
     private GrooveEnvironment environment;
-    /** The main display panel. */
-    private MyDisplayPanel mainPanel;
     /**
      * The current instance of the prolog interpreter. Will be recreated every
      * time "reconsult" action is performed.
@@ -605,8 +584,6 @@ public class PrologDisplay extends ResourceDisplay implements
      * The tree of user-defined predicates
      */
     private JTree userTree;
-
-    private boolean listening;
     /** Production system prolog program list. */
     private PrologJList prologJList;
 
@@ -670,8 +647,9 @@ public class PrologDisplay extends ResourceDisplay implements
 
             JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             splitPane.setOneTouchExpandable(true);
-            splitPane.setTopComponent(getTabPane());
-            splitPane.setBottomComponent(new JScrollPane(getResultsArea()));
+            splitPane.setDividerLocation(.4);
+            splitPane.setBottomComponent(getTabPane());
+            splitPane.setTopComponent(new JScrollPane(getResultsArea()));
 
             JPanel mainPane = new JPanel(new BorderLayout());
             mainPane.add(queryPane, BorderLayout.NORTH);

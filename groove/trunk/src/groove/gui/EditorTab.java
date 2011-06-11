@@ -19,16 +19,19 @@ package groove.gui;
 import groove.gui.ResourceDisplay.Tab;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
+import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 
 import java.awt.Component;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 
 /**
  * Superclass for grammar component editors.
@@ -42,6 +45,17 @@ abstract public class EditorTab extends JPanel implements Tab {
         this.display = display;
         this.resourceKind = display.getResourceKind();
         this.simulator = simulator;
+        addAccelerator(getSaveAction());
+        addAccelerator(getCancelAction());
+    }
+
+    /** Adds a key accelerator for a given action. */
+    private void addAccelerator(SimulatorAction action) {
+        KeyStroke key = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+        String name = (String) action.getValue(Action.NAME);
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, name);
+        getInputMap(WHEN_FOCUSED).put(key, name);
+        getActionMap().put(name, action);
     }
 
     @Override
@@ -153,7 +167,9 @@ abstract public class EditorTab extends JPanel implements Tab {
     abstract protected void saveResource();
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
-    public abstract void dispose();
+    public void dispose() {
+        getDisplay().getTabPane().remove(this);
+    }
 
     /** Returns the display on which this editor is placed. */
     protected final ResourceDisplay getDisplay() {

@@ -34,15 +34,14 @@ import javax.swing.ToolTipManager;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class HostDisplay extends GraphDisplay implements
-        SimulatorListener {
+final public class HostDisplay extends ResourceDisplay {
     /**
      * Constructs a panel for a given simulator.
      */
     public HostDisplay(Simulator simulator) {
         super(simulator, ResourceKind.HOST);
-        getDisplayPanel().add(getStateTab(), 0);
-        getDisplayPanel().setTabComponentAt(0, getStateTab().getTabLabel());
+        getTabPane().add(getStateTab(), 0);
+        getTabPane().setTabComponentAt(0, getStateTab().getTabLabel());
         installListeners();
     }
 
@@ -94,20 +93,21 @@ final public class HostDisplay extends GraphDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        super.update(source, oldModel, changes);
         if (!suspendListening()) {
             return;
         }
+        String newHost = source.getSelected(ResourceKind.HOST);
         if (changes.contains(Change.GRAMMAR)) {
-            getMainTab().updateGrammar(source.getGrammar());
-            if (source.hasHost()) {
-                selectResource(source.getHost().getName());
+            if (newHost != null) {
+                selectResource(newHost);
             }
         }
         if (changes.contains(Change.HOST)) {
-            if (source.hasHost()) {
-                selectResource(source.getHost().getName());
+            if (newHost == null) {
+                getTabPane().setSelectedComponent(getStateTab());
             } else {
-                getDisplayPanel().setSelectedComponent(getStateTab());
+                selectResource(newHost);
             }
             refreshToolbars();
         }
@@ -116,7 +116,7 @@ final public class HostDisplay extends GraphDisplay implements
             refreshToolbars();
         }
         if (changes.contains(Change.MATCH)) {
-            getDisplayPanel().setSelectedComponent(getStateTab());
+            getTabPane().setSelectedComponent(getStateTab());
             refreshToolbars();
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
@@ -125,9 +125,8 @@ final public class HostDisplay extends GraphDisplay implements
             removeMainTab();
         }
         getEnableButton().setSelected(
-            source.hasHost()
-                && source.getHost().equals(
-                    source.getGrammar().getStartGraphModel()));
+            newHost != null
+                && newHost.equals(source.getGrammar().getStartGraphModel()));
         activateListening();
     }
 
@@ -152,10 +151,11 @@ final public class HostDisplay extends GraphDisplay implements
     @Override
     protected JToolBar createListToolBar() {
         JToolBar result;
-        if (getSimulatorModel().hasHost()) {
+        if (getSimulatorModel().isSelected(getResourceKind())) {
             result = super.createListToolBar();
         } else {
             result = Options.createToolBar();
+            result.add(getNewAction());
             result.add(getEditAction());
             result.add(getSaveAction());
             result.addSeparator();
@@ -175,7 +175,10 @@ final public class HostDisplay extends GraphDisplay implements
         while (newBar.getComponentCount() > 0) {
             getListToolBar().add(newBar.getComponentAtIndex(0));
         }
-        getListPanel().repaint();
+        //        getListPanel().revalidate();
+        //        getListPanel().repaint();
+        getListToolBar().revalidate();
+        getListToolBar().repaint();
     }
 
     @Override

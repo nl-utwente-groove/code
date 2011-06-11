@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -49,40 +50,19 @@ import javax.swing.tree.TreePath;
  * @author Tom Staijen
  * @version $0.9$
  */
-final public class ControlDisplay extends ResourceDisplay implements
-        SimulatorListener, Display {
+final public class ControlDisplay extends ResourceDisplay {
     /**
      * @param simulator The Simulator the panel is added to.
      */
     public ControlDisplay(Simulator simulator) {
         super(simulator, ResourceKind.CONTROL);
-    }
-
-    @Override
-    public JComponent getDisplayPanel() {
-        return getTabPane();
-    }
-
-    @Override
-    protected MainTab createMainTab() {
-        return new TextEditorTab(this);
-    }
-
-    @Override
-    protected EditorTab createEditorTab(String name) {
-        String program =
-            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
-        return new TextEditorTab(this, name, program);
-    }
-
-    /**
-     * Initialises the GUI.
-     * Should be called after the constructor, and
-     * before using the object in any way.
-     */
-    public void initialise() {
-        // start listening
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
+        activateListening();
+    }
+
+    @Override
+    protected JComponent createDisplayPanel() {
+        return new ControlPanel();
     }
 
     private JTree getDocPane() {
@@ -207,12 +187,17 @@ final public class ControlDisplay extends ResourceDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        getDocPane().setBackground(source.hasControl() ? Color.WHITE : null);
-        getEnableButton().setSelected(
-            source.hasControl()
-                && source.getControl().equals(getGrammar().getControlModel()));
-        if (changes.contains(Change.CONTROL) && source.hasControl()) {
-            selectResource(source.getControl().getName());
+        super.update(source, oldModel, changes);
+        if (suspendListening()) {
+            String selection = source.getSelected(ResourceKind.CONTROL);
+            getDocPane().setBackground(selection == null ? null : Color.WHITE);
+            getEnableButton().setSelected(
+                selection != null
+                    && selection.equals(getGrammar().getControlModel()));
+            if (changes.contains(Change.CONTROL) && selection != null) {
+                selectResource(selection);
+            }
+            activateListening();
         }
     }
 
@@ -242,4 +227,26 @@ final public class ControlDisplay extends ResourceDisplay implements
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
+
+    /** Panel of this display. */
+    private class ControlPanel extends JPanel implements Panel {
+        /** Constructs an instance of the panel. */
+        public ControlPanel() {
+            // create the layout for this JPanel
+            this.setLayout(new BorderLayout());
+            setFocusable(false);
+            JSplitPane splitPane =
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getTabPane(),
+                    new JScrollPane(getDocPane()));
+            splitPane.setOneTouchExpandable(true);
+            splitPane.setResizeWeight(1.0);
+
+            add(splitPane, BorderLayout.CENTER);
+        }
+
+        @Override
+        public Display getDisplay() {
+            return ControlDisplay.this;
+        }
+    }
 }

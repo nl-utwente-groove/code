@@ -16,12 +16,12 @@
  */
 package groove.gui.action;
 
+import static groove.trans.ResourceKind.RULE;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
-import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -37,14 +37,16 @@ public class EditRulePropertiesAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getRule() != null
+        setEnabled(getSimulatorModel().getStore() != null
             && getSimulatorModel().getStore().isModifiable()
-            && getSimulatorModel().getRuleSet().size() == 1);
+            && getSimulatorModel().getSelectSet(RULE).size() == 1);
     }
 
     @Override
     public void execute() {
-        AspectGraph rule = getSimulatorModel().getRule().getSource();
+        AspectGraph rule =
+            getSimulatorModel().getStore().getGraphs(RULE).get(
+                getSimulatorModel().getSelected(RULE));
         // Associated rule properties.
         GraphProperties properties =
             GraphInfo.getProperties(rule, true).clone();
@@ -63,7 +65,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
             GraphInfo.setProperties(newGraph, editedProperties);
             newGraph.setFixed();
             try {
-                getSimulatorModel().doAddGraph(ResourceKind.RULE, newGraph);
+                getSimulatorModel().doAddGraph(RULE, newGraph);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while modifying rule '%s'",
                     rule.getName());

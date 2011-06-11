@@ -16,6 +16,8 @@
  */
 package groove.gui;
 
+import groove.trans.ResourceKind;
+
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -31,8 +33,13 @@ public interface Display {
     /** List panel corresponding to this tab; may be {@code null}. */
     JPanel getListPanel();
 
-    /** Tab kind of this component. */
+    /** Display kind of this component. */
     DisplayKind getKind();
+
+    /** Returns the kind of resource displayed here,
+     * or {@code null} if this display is not for a resource.
+     */
+    ResourceKind getResourceKind();
 
     /**
      * Returns the name of the item currently showing in this

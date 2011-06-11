@@ -19,14 +19,9 @@ import groove.lts.MatchResult;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
-import groove.view.ControlModel;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.HostModel;
-import groove.view.PrologModel;
 import groove.view.ResourceModel;
-import groove.view.RuleModel;
-import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -53,10 +48,9 @@ public class SimulatorModel implements Cloneable {
      * Deletes a set of named resources from the grammar.
      * @param resource the kind of the resources
      * @param names the names of the resources to be deleted
-     * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed due to an IO error
      */
-    public boolean doDelete(ResourceKind resource, Set<String> names)
+    public void doDelete(ResourceKind resource, Set<String> names)
         throws IOException {
         boolean result = false;
         String name = names.iterator().next();
@@ -66,13 +60,13 @@ public class SimulatorModel implements Cloneable {
             switch (resource) {
             case CONTROL:
                 result = name.equals(grammar.getControlName());
-                grammar.getStore().deleteTexts(ResourceKind.CONTROL, names);
+                getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
                 // test now if this is the start state, before it is deleted from the
                 // grammar
                 result = names.contains(grammar.getStartGraphName());
-                grammar.getStore().deleteGraphs(ResourceKind.HOST, names);
+                getStore().deleteGraphs(ResourceKind.HOST, names);
                 if (result) {
                     // reset the start graph to null
                     grammar.removeStartGraph();
@@ -80,9 +74,6 @@ public class SimulatorModel implements Cloneable {
                 break;
             case PROLOG:
                 getStore().deleteTexts(ResourceKind.PROLOG, names);
-                if (getProlog() == null || name.equals(getProlog().getName())) {
-                    changeProlog(null);
-                }
                 break;
             case RULE:
                 for (AspectGraph oldRule : getStore().deleteGraphs(
@@ -95,7 +86,6 @@ public class SimulatorModel implements Cloneable {
                     ResourceKind.TYPE, names)) {
                     result |= GraphProperties.isEnabled(oldType);
                 }
-                changeGrammar(result);
                 break;
             case PROPERTIES:
             default:
@@ -105,7 +95,6 @@ public class SimulatorModel implements Cloneable {
         } finally {
             finish();
         }
-        return false;
     }
 
     /**
@@ -143,7 +132,7 @@ public class SimulatorModel implements Cloneable {
                 break;
             }
             getStore().rename(resource, oldName, newName);
-            changeResource(resource, newName);
+            changeSelected(resource, newName);
             changeGrammar(result);
             changeDisplay(DisplayKind.toDisplay(resource));
         } finally {
@@ -194,7 +183,6 @@ public class SimulatorModel implements Cloneable {
                     newRules.add(newRule);
                 }
                 getStore().putGraphs(ResourceKind.RULE, newRules);
-                changeRuleSet(names);
                 break;
             case TYPE:
                 List<String> activeTypes =
@@ -237,7 +225,7 @@ public class SimulatorModel implements Cloneable {
                 result |= GraphProperties.isEnabled(oldGraph);
             }
             changeGrammar(result);
-            changeResource(kind, newGraph.getName());
+            changeSelected(kind, newGraph.getName());
             changeDisplay(DisplayKind.toDisplay(kind));
             return result;
         } finally {
@@ -262,7 +250,7 @@ public class SimulatorModel implements Cloneable {
                     || name.equals(grammar.getControlName());
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
-            changeResource(kind, name);
+            changeSelected(kind, name);
             changeDisplay(DisplayKind.toDisplay(kind));
             return result;
         } finally {
@@ -507,9 +495,6 @@ public class SimulatorModel implements Cloneable {
         if (changeGts(gts, false)) {
             changeState(gts == null ? null : gts.startState());
             changeMatch(null);
-            if (gts != null) {
-                changeHostSet(Collections.<String>emptySet());
-            }
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
@@ -595,7 +580,7 @@ public class SimulatorModel implements Cloneable {
         if (changeState(state)) {
             changeMatch(null);
             if (state != null) {
-                changeHostSet(Collections.<String>emptySet());
+                changeSelected(ResourceKind.HOST, (String) null);
             }
         }
         return finish();
@@ -643,7 +628,8 @@ public class SimulatorModel implements Cloneable {
     public final boolean setMatch(MatchResult match) {
         start();
         if (changeMatch(match) && match != null) {
-            changeRule(match.getEvent().getRule().getName());
+            changeSelected(ResourceKind.RULE,
+                match.getEvent().getRule().getName());
             if (match instanceof GraphTransition) {
                 changeState(((GraphTransition) match).source());
             }
@@ -686,6 +672,16 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
+     * Returns the selected resource of a given kind, or {@code null}
+     * if no resource is selected.
+     * Convenience method for {@code getGrammar().getResource(resource,getSelected(name))}. 
+     */
+    public final ResourceModel<?> getResource(ResourceKind resource) {
+        String name = getSelected(resource);
+        return name == null ? null : getGrammar().getResource(resource, name);
+    }
+
+    /** 
      * Checks for changes in the currently loaded grammar view, 
      * and calls an update event if required.
      * Should be called after any change in the grammar view or
@@ -712,28 +708,17 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
         }
-        // restrict the selected host graphs to those that are (still)
+        // restrict the selected resources to those that are (still)
         // in the grammar
-        Set<String> newHostSet = new LinkedHashSet<String>();
-        for (HostModel hostView : this.hostSet) {
-            newHostSet.add(hostView.getName());
+        for (ResourceKind resource : ResourceKind.all(false)) {
+            Set<String> newNames = new LinkedHashSet<String>();
+            newNames.addAll(getSelectSet(resource));
+            newNames.retainAll(grammar.getNames(resource));
+            changeSelectedSet(resource, newNames);
         }
-        newHostSet.retainAll(grammar.getHostNames());
-        changeHostSet(newHostSet);
-        // restrict the selected rules to those that are (still)
-        // in the grammar
-        Collection<String> newRuleSet = new LinkedHashSet<String>();
-        for (RuleModel ruleView : this.ruleSet) {
-            newRuleSet.add(ruleView.getName());
-        }
-        newRuleSet.retainAll(grammar.getRuleNames());
-        changeRuleSet(newRuleSet);
-        changeControl();
-        changeProlog();
-        changeType();
     }
 
-    /** Updates the state according to a given grammar. */
+    /** Updates the model according to a given grammar. */
     public final void setGrammar(GrammarModel grammar) {
         start();
         if (changeGrammar(grammar)) {
@@ -741,12 +726,10 @@ public class SimulatorModel implements Cloneable {
             changeGts(null, false);
             changeState(null);
             changeMatch(null);
-            changeHostSet(Collections.<String>emptySet());
-            changeRuleSet(Collections.<String>emptySet());
+            for (ResourceKind resource : ResourceKind.all(false)) {
+                changeSelected(resource, null);
+            }
         }
-        changeControl();
-        changeProlog();
-        changeType();
         finish();
     }
 
@@ -775,22 +758,8 @@ public class SimulatorModel implements Cloneable {
      * none is selected
      */
     public final String getSelected(ResourceKind kind) {
-        switch (kind) {
-        case CONTROL:
-            return hasControl() ? getControl().getName() : null;
-        case HOST:
-            return hasHost() ? getHost().getName() : null;
-        case PROLOG:
-            return hasProlog() ? getProlog().getName() : null;
-        case RULE:
-            return hasRule() ? getRule().getName() : null;
-        case TYPE:
-            return hasType() ? getType().getName() : null;
-        case PROPERTIES:
-        default:
-            assert false;
-            return null;
-        }
+        Set<String> resourceSet = this.resources.get(kind);
+        return resourceSet.isEmpty() ? null : resourceSet.iterator().next();
     }
 
     /** 
@@ -798,460 +767,74 @@ public class SimulatorModel implements Cloneable {
      * @param kind the resource kind
      * @return the names of the currently selected resource
      */
-    public final Set<String> getAllSelected(ResourceKind kind) {
-        Set<String> result;
-        if (kind == ResourceKind.HOST || kind == ResourceKind.RULE) {
-            result = new LinkedHashSet<String>();
-            Collection<? extends ResourceModel<?>> set =
-                kind == ResourceKind.HOST ? getHostSet() : getRuleSet();
-            for (ResourceModel<?> resource : set) {
-                result.add(resource.getName());
-            }
-        } else {
-            String name = getSelected(kind);
-            result =
-                name == null ? Collections.<String>emptySet()
-                        : Collections.singleton(name);
-        }
-        return result;
-    }
-
-    /** 
-     * Returns the number of currently selected resources of a given kind.
-     * @param kind the resource kind
-     * @return the number of currently selected resources
-     */
-    public final int getCount(ResourceKind kind) {
-        int result;
-        if (kind == ResourceKind.HOST) {
-            result = getHostSet().size();
-        } else if (kind == ResourceKind.RULE) {
-            result = getRuleSet().size();
-        } else if (getSelected(kind) == null) {
-            result = 0;
-        } else {
-            result = 1;
-        }
-        return result;
+    public final Set<String> getSelectSet(ResourceKind kind) {
+        return this.resources.get(kind);
     }
 
     /** Changes the selection of a given resource kind. */
-    public final boolean setSelected(ResourceKind kind, String name) {
-        switch (kind) {
-        case CONTROL:
-            return setControl(name);
-        case HOST:
-            return setHost(name);
-        case PROLOG:
-            return setProlog(name);
-        case RULE:
-            return setRule(name);
-        case TYPE:
-            return setType(name);
-        default:
-            assert false;
-            return false;
+    public final boolean doSelect(ResourceKind kind, String name) {
+        start();
+        changeSelected(kind, name);
+        if (isSelected(kind) || kind == ResourceKind.HOST && hasState()) {
+            changeDisplay(DisplayKind.toDisplay(kind));
         }
+        return finish();
+    }
+
+    /** Changes the selection of a given resource kind. */
+    public final boolean doSelectSet(ResourceKind kind, Collection<String> names) {
+        start();
+        changeSelectedSet(kind, names);
+        return finish();
     }
 
     /** Changes the selected value of a given resource kind. */
-    private void changeResource(ResourceKind kind, String name) {
-        switch (kind) {
-        case CONTROL:
-            changeControl(name);
-            break;
-        case HOST:
-            changeHost(name);
-            break;
-        case PROLOG:
-            changeProlog(name);
-            break;
-        case RULE:
-            changeRule(name);
-            break;
-        case TYPE:
-            changeType(name);
-        }
+    private boolean changeSelected(ResourceKind kind, String name) {
+        return changeSelectedSet(
+            kind,
+            name == null ? Collections.<String>emptySet()
+                    : Collections.singleton(name));
     }
 
     /** 
-     * Returns the first of the currently selected host graphs, or {@code null}
-     * if none is currently selected.
-     */
-    public final HostModel getHost() {
-        HostModel result = hasHost() ? this.hostSet.iterator().next() : null;
-        return result;
-    }
-
-    /** 
-     * Indicates if any host graph has been selected.
-     */
-    public final boolean hasHost() {
-        return !this.hostSet.isEmpty();
-    }
-
-    /** 
-     * Returns the currently selected host graph list.
-     */
-    public final Collection<HostModel> getHostSet() {
-        return this.hostSet;
-    }
-
-    /**
-     * Changes the currently selected host, based on the graph name.
-     * @param name the name of the new host graph; must be either {@code null}
-     * or among the existing host graphs. If {@code null}, the host graph
-     * is reset if there is an active state, or set to either the start graph
-     * or the first graph in the available host graphs.
-     * @return if {@code true}, the host was actually changed.
-     */
-    public final boolean setHost(String name) {
-        return setHostSet(name == null ? Collections.<String>emptySet()
-                : Collections.singleton(name));
-    }
-
-    /** 
-     * Changes the currently selected host graph list.
-     * Changes the simulator tab to the graph view.
-     * @return if {@code true}, actually made the change.
-     * @see #setHost(String)
-     */
-    public final boolean setHostSet(Collection<String> hostNameSet) {
-        start();
-        changeHostSet(hostNameSet);
-        if (!hostNameSet.isEmpty()) {
-            changeMatch(null);
-            changeDisplay(DisplayKind.HOST);
-        }
-        return finish();
-    }
-
-    /** 
-     * Changes the currently selected host graph.
-     * @see #setHost(String)
-     */
-    private boolean changeHost(String hostName) {
-        return changeHostSet(hostName == null ? Collections.<String>emptySet()
-                : Collections.singleton(hostName));
-    }
-
-    /** 
-     * Changes the currently selected host graph list.
-     * May also change the selected host graph.
-     * @see #setHost(String)
-     */
-    private final boolean changeHostSet(Collection<String> hostNames) {
-        boolean result = false;
-        if (hostNames.isEmpty() && getGrammar() != null && !hasState()) {
-            Set<String> allHostNames = getGrammar().getHostNames();
-            if (!allHostNames.isEmpty()) {
-                String startGraphName = getGrammar().getStartGraphName();
-                hostNames =
-                    Collections.singleton(allHostNames.contains(startGraphName)
-                            ? startGraphName : allHostNames.iterator().next());
-            }
-        }
-        Set<HostModel> newHostSet = new LinkedHashSet<HostModel>();
-        hostNames = new HashSet<String>(hostNames);
-        for (HostModel oldHost : this.hostSet) {
-            if (hostNames.remove(oldHost.getName())) {
-                HostModel newHost =
-                    this.grammar.getHostModel(oldHost.getName());
-                assert newHost != null;
-                newHostSet.add(newHost);
-                result |= oldHost != newHost;
-            } else {
-                result = true;
-            }
-        }
-        for (String hostName : hostNames) {
-            HostModel newHost = this.grammar.getHostModel(hostName);
-            newHostSet.add(newHost);
-            result = true;
-        }
-        if (result) {
-            this.hostSet = newHostSet;
-            this.changes.add(Change.HOST);
-        }
-        return result;
-    }
-
-    /** 
-     * Indicates if any rule has been selected.
-     */
-    public final boolean hasRule() {
-        return !this.ruleSet.isEmpty();
-    }
-
-    /** Returns the currently selected rule. */
-    public final RuleModel getRule() {
-        return this.ruleSet.isEmpty() ? null : this.ruleSet.iterator().next();
-    }
-
-    /** 
-     * Returns the currently selected rule set.
-     */
-    public final Collection<RuleModel> getRuleSet() {
-        return this.ruleSet;
-    }
-
-    /**
-     * Changes the currently selected rule, based on the rule name.
-     * Also changes the simulator tab to the rule panel.
-     * @return if {@code true}, the rule was actually changed.
-     */
-    public final boolean setRule(String ruleName) {
-        start();
-        changeRule(ruleName);
-        return finish();
-    }
-
-    /** 
-     * Changes the currently selected rule set.
-     * If the set has size 0 or 1, also changes the selected rule.
-     * @return if {@code true}, actually made the change.
-     * @see #setRule(String)
-     */
-    public final boolean setRuleSet(Collection<String> ruleSet) {
-        start();
-        changeRuleSet(ruleSet);
-        return finish();
-    }
-
-    /** Changes the rule view to a given named rule. */
-    private final boolean changeRule(String ruleName) {
-        return changeRuleSet(ruleName == null ? Collections.<String>emptySet()
-                : Collections.singleton(ruleName));
-    }
-
-    /** 
-     * Changes the currently selected rule set and records the change,
-     * if the new rule set differs from the old.
+     * Changes the currently selected resource set and records the change,
+     * if the new resource set differs from the old.
      * @return {@code true} if a change was actually made
-     * @see #setRule(String)
      */
-    private final boolean changeRuleSet(Collection<String> ruleNames) {
+    private final boolean changeSelectedSet(ResourceKind resource,
+            Collection<String> names) {
         boolean result = false;
-        if (ruleNames.isEmpty() && getGrammar() != null) {
-            Set<String> allRuleNames = getGrammar().getRuleNames();
-            if (!allRuleNames.isEmpty()) {
-                ruleNames =
-                    Collections.singleton(allRuleNames.iterator().next());
-            }
-        }
-        Set<RuleModel> newRuleSet = new LinkedHashSet<RuleModel>();
-        ruleNames = new HashSet<String>(ruleNames);
-        for (RuleModel oldRule : this.ruleSet) {
-            if (ruleNames.remove(oldRule.getName())) {
-                RuleModel newRule =
-                    this.grammar.getRuleModel(oldRule.getName());
-                newRuleSet.add(newRule);
-                result |= oldRule != newRule;
-            } else {
-                result = true;
-            }
-        }
-        for (String ruleName : ruleNames) {
-            newRuleSet.add(this.grammar.getRuleModel(ruleName));
-            result = true;
-        }
-        if (result) {
-            this.ruleSet = newRuleSet;
-            this.changes.add(Change.RULE);
-        }
-        return result;
-    }
-
-    /** 
-     * Indicates if any type has been selected.
-     */
-    public final boolean hasType() {
-        return this.type != null;
-    }
-
-    /** Returns the currently selected type graph. */
-    public final TypeModel getType() {
-        return this.type;
-    }
-
-    /**
-     * Changes the currently selected type graph, based on the type name.
-     * Also switches the simulator panel to the type tab.
-     * @return if {@code true}, the rule was actually changed.
-     */
-    public final boolean setType(String typeName) {
-        start();
-        changeType(typeName);
-        if (typeName != null) {
-            changeDisplay(DisplayKind.TYPE);
-        }
-        return finish();
-    }
-
-    /** 
-     * Sets the selected type graph, by using the current value if
-     * that exists in the current grammar, or choosing the best value from the
-     * type graphs available in the grammar otherwise. Only sets {@code null} 
-     * if the grammar has no type graphs.
-     */
-    private final boolean changeType() {
-        boolean result = false;
-        GrammarModel grammar = this.grammar;
-        TypeModel type = this.type;
-        if (type == null || !type.equals(grammar.getTypeModel(type.getName()))) {
-            String newTypeName = null;
-            for (String typeName : grammar.getTypeNames()) {
-                if (grammar.getTypeModel(typeName).isEnabled()) {
-                    newTypeName = typeName;
-                    break;
+        Set<String> newSelection = new LinkedHashSet<String>(names);
+        // try to select a name
+        if (newSelection.isEmpty() && getGrammar() != null) {
+            String name = null;
+            // find the best choice of name
+            if (resource == ResourceKind.HOST) {
+                // for a host graph, the best choice is the current state
+                // to select that, set the name to a non-existent one;
+                // this will be filtered out later
+                if (hasState()) {
+                    name = "";
+                } else {
+                    // the next best choice is the start graph name
+                    name = getGrammar().getStartGraphName();
                 }
-                if (newTypeName == null) {
-                    newTypeName = typeName;
-                }
+            } else if (resource == ResourceKind.CONTROL) {
+                // for control, the best choice is the active control program
+                name = getGrammar().getControlName();
             }
-            result = changeType(newTypeName);
-        }
-        return result;
-    }
-
-    /**
-     * Changes the currently selected type graph and records the change,
-     * if the new type graph is different from the old.
-     * @return {@code true} if a change was actually made
-     */
-    private final boolean changeType(String typeName) {
-        TypeModel type =
-            typeName == null ? null : getGrammar().getTypeModel(typeName);
-        boolean result = type != this.type;
-        if (result) {
-            this.type = type;
-            this.changes.add(Change.TYPE);
-        }
-        return result;
-    }
-
-    /** 
-     * Indicates if any control program has been selected.
-     */
-    public final boolean hasControl() {
-        return getControl() != null;
-    }
-
-    /** Returns the currently selected control program. */
-    public final ControlModel getControl() {
-        return this.control;
-    }
-
-    /** Changes the currently selected control program, based on the program name.
-     * @return if {@code true}, the program was actually changed.
-     */
-    public final boolean setControl(String controlName) {
-        start();
-        changeControl(controlName);
-        if (controlName != null) {
-            changeDisplay(DisplayKind.CONTROL);
-        }
-        return finish();
-    }
-
-    /** 
-     * Sets the selected control field, by using the current value if
-     * that exists in the current grammar, or choosing the best value from the
-     * control programs available in the grammar otherwise. Only sets {@code null} 
-     * if the grammar has no control programs.
-     */
-    private final boolean changeControl() {
-        boolean result = false;
-        // check the selected control view
-        GrammarModel grammar = this.grammar;
-        ControlModel control = this.control;
-        if (control == null
-            || !control.equals(grammar.getControlModel(control.getName()))) {
-            String newControlName = grammar.getControlName();
-            if (newControlName == null && !grammar.getControlNames().isEmpty()) {
-                newControlName = grammar.getControlNames().iterator().next();
+            if (name == null && !getGrammar().getNames(resource).isEmpty()) {
+                // otherwise, just take the first existing name (if there is one)
+                name = getGrammar().getNames(resource).iterator().next();
             }
-            result = changeControl(newControlName);
-        }
-        return result;
-    }
-
-    /**
-     * Changes the currently selected control program and records the change,
-     * if the new type program is different from the old.
-     * @return {@code true} if a change was actually made
-     */
-    private final boolean changeControl(String controlName) {
-        ControlModel control =
-            controlName == null ? null : getGrammar().getControlModel(
-                controlName);
-        boolean result = control != this.control;
-        if (result) {
-            this.control = control;
-            this.changes.add(Change.CONTROL);
-        }
-        return result;
-    }
-
-    /** 
-     * Indicates if any prolog program has been selected.
-     */
-    public final boolean hasProlog() {
-        return getProlog() != null;
-    }
-
-    /** Returns the currently selected prolog program. */
-    public final PrologModel getProlog() {
-        return this.prolog;
-    }
-
-    /** Changes the currently selected prolog program, based on the program name.
-     * @return if {@code true}, the program was actually changed.
-     */
-    public final boolean setProlog(String prologName) {
-        start();
-        changeProlog(prologName);
-        if (getProlog() != null) {
-            changeDisplay(DisplayKind.PROLOG);
-        }
-        return finish();
-    }
-
-    /** 
-     * Sets the selected prolog field, by using the current value if
-     * that exists in the current grammar, or choosing the best value from the
-     * prolog programs available in the grammar otherwise. Only sets {@code null} 
-     * if the grammar has no prolog programs.
-     */
-    private final boolean changeProlog() {
-        boolean result = false;
-        // check the selected control view
-        GrammarModel grammar = this.grammar;
-        PrologModel prolog = this.prolog;
-        if (prolog == null
-            || !prolog.equals(grammar.getPrologModel(prolog.getName()))) {
-            String newPrologName = null;
-            if (!grammar.getPrologNames().isEmpty()) {
-                newPrologName = grammar.getPrologNames().iterator().next();
+            if (name != null) {
+                newSelection.add(name);
             }
-            result = changeProlog(newPrologName);
         }
-        return result;
-    }
-
-    /**
-     * Changes the currently selected prolog program and records the change,
-     * if the new program is different from the old.
-     * @return {@code true} if a change was actually made
-     */
-    private final boolean changeProlog(String name) {
-        boolean result =
-            this.prolog == null ? name != null : !this.prolog.getName().equals(
-                name);
-        if (result) {
-            this.prolog =
-                name == null ? null : getGrammar().getPrologModel(name);
-            this.changes.add(Change.PROLOG);
+        newSelection.retainAll(getGrammar().getNames(resource));
+        if (!newSelection.equals(getSelectSet(resource))) {
+            this.resources.put(resource, newSelection);
+            this.changes.add(Change.toChange(resource));
         }
         return result;
     }
@@ -1338,8 +921,8 @@ public class SimulatorModel implements Cloneable {
     public String toString() {
         return "GuiState [gts=" + this.gts + ", state=" + this.state
             + ", match=" + this.match + ", grammar=" + this.grammar
-            + ", hostSet=" + this.hostSet + ", ruleSet=" + this.ruleSet
-            + ", changes=" + this.changes + "]";
+            + ", resources=" + this.resources + ", changes=" + this.changes
+            + "]";
     }
 
     /** 
@@ -1408,8 +991,12 @@ public class SimulatorModel implements Cloneable {
         SimulatorModel result = null;
         try {
             result = (SimulatorModel) super.clone();
-            result.hostSet = new LinkedHashSet<HostModel>(this.hostSet);
-            result.ruleSet = new LinkedHashSet<RuleModel>(this.ruleSet);
+            result.resources =
+                new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
+            for (ResourceKind resource : ResourceKind.all(false)) {
+                result.resources.put(resource, new LinkedHashSet<String>(
+                    this.resources.get(resource)));
+            }
         } catch (CloneNotSupportedException e) {
             assert false;
         }
@@ -1442,18 +1029,16 @@ public class SimulatorModel implements Cloneable {
     private GraphState state;
     /** Currently selected match (event or transition). */
     private MatchResult match;
+    /** Mapping from resource kinds to sets of selected resources of that kind. */
+    private Map<ResourceKind,Set<String>> resources =
+        new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
+    {
+        for (ResourceKind resource : ResourceKind.all(false)) {
+            this.resources.put(resource, Collections.<String>emptySet());
+        }
+    }
     /** Currently loaded grammar. */
     private GrammarModel grammar;
-    /** Multiple selection of host graph views. */
-    private Set<HostModel> hostSet = new LinkedHashSet<HostModel>();
-    /** Multiple selection of rule views. */
-    private Set<RuleModel> ruleSet = new LinkedHashSet<RuleModel>();
-    /** Currently selected type view. */
-    private TypeModel type;
-    /** Currently selected control view. */
-    private ControlModel control;
-    /** Currently selected prolog view. */
-    private PrologModel prolog;
 
     /**
      * The default exploration to be performed. This value is either the
@@ -1508,13 +1093,13 @@ public class SimulatorModel implements Cloneable {
     private ExploreStateStrategy exploreStateStrategy;
 
     /** Change type. */
-    public enum Change {
+    public static enum Change {
         /** The abstraction mode has changed. */
         ABSTRACT,
         /**
          * The selected control program has changed.
          */
-        CONTROL,
+        CONTROL(ResourceKind.CONTROL),
         /** 
          * The loaded grammar has changed.
          * @see SimulatorModel#getGrammar()
@@ -1527,10 +1112,8 @@ public class SimulatorModel implements Cloneable {
         GTS,
         /** 
          * The selected set of host graphs has changed.
-         * @see SimulatorModel#getHost()
-         * @see SimulatorModel#getHostSet()
          */
-        HOST,
+        HOST(ResourceKind.HOST),
         /** 
          * The selected match (i.e., a rule event or a transition) has changed.
          * @see SimulatorModel#getMatch()
@@ -1540,13 +1123,11 @@ public class SimulatorModel implements Cloneable {
         /**
          * The selected prolog program has changed.
          */
-        PROLOG,
+        PROLOG(ResourceKind.PROLOG),
         /** 
          * The selected rule set has changed.
-         * @see SimulatorModel#getRule()
-         * @see SimulatorModel#getRuleSet()
          */
-        RULE,
+        RULE(ResourceKind.RULE),
         /** 
          * The selected and/or active state has changed.
          * @see SimulatorModel#getState()
@@ -1557,7 +1138,39 @@ public class SimulatorModel implements Cloneable {
         /**
          * The selected type graph has changed.
          */
-        TYPE,
+        TYPE(ResourceKind.TYPE);
+
+        private Change() {
+            this(null);
+        }
+
+        private Change(ResourceKind resource) {
+            this.resource = resource;
+        }
+
+        /** Returns the (possibly {@code null}) resource kind changed by this change. */
+        public ResourceKind getResourceKind() {
+            return this.resource;
+        }
+
+        private final ResourceKind resource;
+
+        /** Returns the change type for a given resource kind, if any. */
+        public static Change toChange(ResourceKind resource) {
+            return resourceToChangeMap.get(resource);
+        }
+
+        private static Map<ResourceKind,Change> resourceToChangeMap =
+            new EnumMap<ResourceKind,Change>(ResourceKind.class);
+
+        static {
+            for (Change change : EnumSet.allOf(Change.class)) {
+                ResourceKind resource = change.getResourceKind();
+                if (resource != null) {
+                    resourceToChangeMap.put(resource, change);
+                }
+            }
+        }
     }
 
     /**

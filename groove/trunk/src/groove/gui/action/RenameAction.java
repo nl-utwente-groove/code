@@ -40,7 +40,7 @@ public class RenameAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().getAllSelected(getResourceKind()).size() == 1
+        setEnabled(getSimulatorModel().getSelectSet(getResourceKind()).size() == 1
             && getSimulatorModel().getStore().isModifiable());
     }
 }
