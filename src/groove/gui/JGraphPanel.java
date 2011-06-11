@@ -30,17 +30,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.Action;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -91,11 +87,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         // error panel, and an optional status bar.
         setLayout(new BorderLayout());
         add(createMainPane());
-        JToolBar toolBar = createToolBar();
-        if (toolBar != null) {
-            processToolBar(toolBar);
-            add(toolBar, BorderLayout.NORTH);
-        }
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
         }
@@ -119,39 +110,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                     evt.getNewValue() != PAN_MODE);
             }
         });
-    }
-
-    /** Post-processes an already constructed toolbar.
-     */
-    private void processToolBar(JToolBar toolBar) {
-        for (int i = 0; i < toolBar.getComponentCount(); i++) {
-            Component element = toolBar.getComponent(i);
-            if (element instanceof JButton) {
-                JButton button = (JButton) element;
-                Action action = button.getAction();
-                if (action != null) {
-                    getJGraph().addAccelerator(action);
-                }
-            }
-        }
-        // ensure the JGraph gets focus as soon as the graph panel
-        // is clicked anywhere
-        // for reasons not clear to me, mouse listeners do not work on
-        // the level of the JGraphPanel
-        toolBar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                getJGraph().requestFocus();
-            }
-        });
-    }
-
-    /**
-     * Creates and fills a tool bar for this JGraphPanel.
-     * If the method returns {@code null}, no tool bar is used.
-     */
-    protected JToolBar createToolBar() {
-        return null;
     }
 
     /** Component on which the graph and the label tree are displayed. */

@@ -291,7 +291,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         if (kind.isGraphBased()) {
             return new GraphTab(getSimulator(), kind);
         } else {
-            return new TextEditorTab(this);
+            return new TextTab(this);
         }
     }
 
@@ -339,7 +339,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
             String program =
                 getSimulatorModel().getStore().getTexts(getResourceKind()).get(
                     name);
-            return new TextEditorTab(this, name, program);
+            return new TextTab(this, name, program);
         }
     }
 

@@ -295,7 +295,7 @@ public class Simulator implements SimulatorListener {
                                 AspectJGraph jGraph;
                                 if (resourceTab.isEditor()) {
                                     jGraph =
-                                        ((GraphEditorTab) resourceTab).getEditor().getJGraph();
+                                        ((GraphEditorTab) resourceTab).getJGraph();
                                 } else {
                                     jGraph =
                                         ((GraphTab) resourceTab).getJGraph();
@@ -309,7 +309,7 @@ public class Simulator implements SimulatorListener {
                             } else if (error.getNumbers().size() > 1) {
                                 int line = error.getNumbers().get(0);
                                 int column = error.getNumbers().get(1);
-                                ((TextEditorTab) resourceTab).select(line,
+                                ((TextTab) resourceTab).select(line,
                                     column);
                             }
                         }

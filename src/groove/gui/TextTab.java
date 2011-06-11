@@ -24,11 +24,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
  * Display tab showing a text-based resource.
- * @author Michiel Hendriks
+ * The tab also offers the functionality to edit the resource.
+ * @author Arend Rensink
  */
-public class TextEditorTab extends EditorTab implements MainTab {
+final public class TextTab extends EditorTab implements MainTab {
     /** Creates an initially empty display. */
-    public TextEditorTab(ResourceDisplay display) {
+    public TextTab(ResourceDisplay display) {
         this(display, null, null);
     }
 
@@ -36,8 +37,7 @@ public class TextEditorTab extends EditorTab implements MainTab {
      * Constructs a prolog editor with a given name.
      * @param display the display on which this editor is placed.
      */
-    public TextEditorTab(final ResourceDisplay display, String name,
-            String program) {
+    public TextTab(final ResourceDisplay display, String name, String program) {
         super(display);
         this.textArea = new TextArea();
         this.editing = name != null;
@@ -45,11 +45,13 @@ public class TextEditorTab extends EditorTab implements MainTab {
         setName(name);
         setBorder(null);
         setLayout(new BorderLayout());
-        if (this.editing) {
+        JToolBar toolBar = createToolBar();
+        if (toolBar != null) {
             add(createToolBar(), BorderLayout.NORTH);
         }
         add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
         this.textArea.setProgram(program);
+        start();
     }
 
     /**
@@ -57,15 +59,18 @@ public class TextEditorTab extends EditorTab implements MainTab {
      */
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = super.createToolBar();
-        result.addSeparator();
-        result.add(createUndoButton());
-        result.add(this.textArea.getRedoAction());
-        result.addSeparator();
-        result.add(this.textArea.getCopyAction());
-        result.add(this.textArea.getPasteAction());
-        result.add(this.textArea.getCutAction());
-        result.add(this.textArea.getDeleteAction());
+        JToolBar result = null;
+        if (this.editing) {
+            result = super.createToolBar();
+            result.addSeparator();
+            result.add(createUndoButton());
+            result.add(this.textArea.getRedoAction());
+            result.addSeparator();
+            result.add(this.textArea.getCopyAction());
+            result.add(this.textArea.getPasteAction());
+            result.add(this.textArea.getCutAction());
+            result.add(this.textArea.getDeleteAction());
+        }
         return result;
     }
 

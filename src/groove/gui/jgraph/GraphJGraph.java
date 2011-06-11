@@ -105,7 +105,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     public GraphJGraph(Simulator simulator, boolean hasFilters) {
         super((GraphJModel<?,?>) null);
         this.simulator = simulator;
-        this.options = simulator.getOptions();
+        this.options = simulator == null ? null : simulator.getOptions();
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
             this.filteredLabels.addObserver(this.refreshListener);
@@ -194,7 +194,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * The properties of the grammar to which the displayed graph belongs.
      * May return {@code null} if the simulator is not set.
      */
-    SystemProperties getProperties() {
+    private SystemProperties getProperties() {
         return getSimulatorModel() == null ? null
                 : getSimulatorModel().getGrammar().getProperties();
     }

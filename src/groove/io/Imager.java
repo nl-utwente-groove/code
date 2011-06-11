@@ -191,7 +191,7 @@ public class Imager extends CommandLineTool {
                     options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
                         isEditorView());
                     AspectJGraph jGraph =
-                        new AspectJGraph(null, aspectGraph.getRole());
+                        new AspectJGraph(null, aspectGraph.getRole(), false);
                     AspectJModel model = jGraph.newModel();
                     model.loadGraph(aspectGraph);
                     jGraph.setModel(model);
