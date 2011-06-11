@@ -16,13 +16,16 @@
  */
 package groove.gui;
 
+import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
+import groove.view.GrammarModel;
 import groove.view.ResourceModel;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -31,9 +34,9 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -51,7 +54,7 @@ import javax.swing.border.EmptyBorder;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ResourceDisplay implements Display {
+public abstract class ResourceDisplay implements Display, SimulatorListener {
     /**
      * Constructs a display, for a given simulator and resource kind.
      */
@@ -59,6 +62,7 @@ public abstract class ResourceDisplay implements Display {
         this.simulator = simulator;
         this.kind = DisplayKind.toDisplay(resource);
         this.resource = resource;
+        simulator.getModel().addListener(this, Change.GRAMMAR);
         assert this.resource != null;
     }
 
@@ -102,6 +106,25 @@ public abstract class ResourceDisplay implements Display {
         return this.listPanel;
     }
 
+    @Override
+    public final JComponent getDisplayPanel() {
+        if (this.mainPanel == null) {
+            this.mainPanel = createDisplayPanel();
+        }
+        return this.mainPanel;
+    }
+
+    /** 
+     * Callback factory method for the display panel.
+     * This implementation defers to {@link #getTabPane()},
+     * but it is a hook to allow additional components on the display
+     * panel, as in the {@link PrologDisplay}.
+     * @see #getDisplayPanel() 
+     */
+    protected JComponent createDisplayPanel() {
+        return getTabPane();
+    }
+
     /** Resets the list panel to {@code null}, so that the next invocation
      * of {@link #getListPanel()} creates a fresh panel.
      */
@@ -111,14 +134,6 @@ public abstract class ResourceDisplay implements Display {
 
     /** Returns the name list for this display. */
     abstract protected JComponent getList();
-
-    /** Creates and returns the fixed tool bar for the label list. */
-    final protected JToolBar getListToolBar() {
-        if (this.listToolBar == null) {
-            this.listToolBar = createListToolBar();
-        }
-        return this.listToolBar;
-    }
 
     /** 
      * Creates a popup menu for the label list.
@@ -141,6 +156,14 @@ public abstract class ResourceDisplay implements Display {
             }
         }
         return res;
+    }
+
+    /** Creates and returns the fixed tool bar for the label list. */
+    final protected JToolBar getListToolBar() {
+        if (this.listToolBar == null) {
+            this.listToolBar = createListToolBar();
+        }
+        return this.listToolBar;
     }
 
     /** 
@@ -239,7 +262,7 @@ public abstract class ResourceDisplay implements Display {
     }
 
     /** Returns the resource kind shown on this display. */
-    final protected ResourceKind getResourceKind() {
+    final public ResourceKind getResourceKind() {
         return this.resource;
     }
 
@@ -263,7 +286,14 @@ public abstract class ResourceDisplay implements Display {
     }
 
     /** Callback factory method for the main tab. */
-    abstract protected MainTab createMainTab();
+    protected MainTab createMainTab() {
+        ResourceKind kind = getResourceKind();
+        if (kind.isGraphBased()) {
+            return new GraphTab(getSimulator(), kind);
+        } else {
+            return new TextEditorTab(this);
+        }
+    }
 
     /** 
      * Adds an editor panel for the given resource, or selects the 
@@ -295,7 +325,23 @@ public abstract class ResourceDisplay implements Display {
     }
 
     /** Callback method to create an editor tab for a given named resource. */
-    abstract protected EditorTab createEditorTab(String name);
+    protected EditorTab createEditorTab(String name) {
+        ResourceKind kind = getResourceKind();
+        if (kind.isGraphBased()) {
+            AspectGraph graph =
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
+                    name);
+            final GraphEditorTab result = new GraphEditorTab(this, graph);
+            // start the editor only after it has been added
+            result.start();
+            return result;
+        } else {
+            String program =
+                getSimulatorModel().getStore().getTexts(getResourceKind()).get(
+                    name);
+            return new TextEditorTab(this, name, program);
+        }
+    }
 
     /** Attempts to cancel an edit action for a given named resource.
      * @param name the name of the editor to be cancelled
@@ -362,6 +408,35 @@ public abstract class ResourceDisplay implements Display {
         return (Tab) getTabPane().getSelectedComponent();
     }
 
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            updateGrammar(source.getGrammar(),
+                source.getGrammar() != oldModel.getGrammar());
+        }
+    }
+
+    /**
+     * Callback method informing the display of a change in the loaded grammar.
+     * This should only be called from the {@link SimulatorListener#update}
+     * method of the display.
+     * @param grammar the loaded grammar
+     * @param fresh if {@code true}, the grammar has changed altogether;
+     * otherwise, it has merely been refreshed (meaning that the properties
+     * or type graph could have changed)
+     */
+    protected void updateGrammar(GrammarModel grammar, boolean fresh) {
+        for (int i = getTabPane().getTabCount() - 1; i >= 0; i--) {
+            Tab tab = (Tab) getTabPane().getComponentAt(i);
+            if (fresh && tab.isEditor()) {
+                ((EditorTab) tab).dispose();
+            } else {
+                tab.updateGrammar(grammar);
+            }
+        }
+    }
+
     /**
      * Initialises all listening activity on the display, and 
      * calls {@link #activateListening()}.
@@ -408,7 +483,7 @@ public abstract class ResourceDisplay implements Display {
         if (suspendListening()) {
             Component selection = getTabPane().getSelectedComponent();
             String name = selection == null ? null : selection.getName();
-            getSimulatorModel().setSelected(getResourceKind(), name);
+            getSimulatorModel().doSelect(getResourceKind(), name);
             activateListening();
         }
     }
@@ -529,6 +604,8 @@ public abstract class ResourceDisplay implements Display {
     private final Simulator simulator;
     private final ResourceKind resource;
     private final DisplayKind kind;
+    /** The main display panel. */
+    private JComponent mainPanel;
     /** Panel with the label list. */
     private JPanel listPanel;
     /** Toolbar for the {@link #listPanel}. */
@@ -550,17 +627,6 @@ public abstract class ResourceDisplay implements Display {
             super(BOTTOM);
             setFocusable(false);
             setBorder(new EmptyBorder(0, 0, -4, 0));
-            // add keyboard binding for Save and Cancel key
-            InputMap focusedInputMap =
-                getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            String saveActionName =
-                Options.getSaveActionName(getResourceKind(), false);
-            focusedInputMap.put(Options.SAVE_KEY, saveActionName);
-            focusedInputMap.put(Options.CANCEL_KEY,
-                Options.CANCEL_EDIT_ACTION_NAME);
-            getActionMap().put(saveActionName, getSaveAction());
-            getActionMap().put(Options.CANCEL_EDIT_ACTION_NAME,
-                getCancelEditAction());
         }
 
         @Override
@@ -601,6 +667,7 @@ public abstract class ResourceDisplay implements Display {
                 if (label != null) {
                     label.setEnabled(enabled);
                 }
+                getComponentAt(index).requestFocus();
             }
         }
 
@@ -648,6 +715,9 @@ public abstract class ResourceDisplay implements Display {
 
         /** Method to repaint the tab. */
         public void repaint();
+
+        /** Callback method to notify the tab of a change in grammar. */
+        public void updateGrammar(GrammarModel grammar);
     }
 
     /** Interface for the main tab on this display. */

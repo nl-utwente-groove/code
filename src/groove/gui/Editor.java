@@ -608,6 +608,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Creates and returns the menu bar. Requires the actions to have been
      * initialised first.
      */
+    @Deprecated
     JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         // file menu, only if the component is not auxiliary
@@ -625,6 +626,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Creates and returns a file menu for the menu bar.
      */
+    @Deprecated
     JMenu createFileMenu() {
         JMenu result = new JMenu(Options.FILE_MENU_NAME);
         result.setMnemonic(Options.FILE_MENU_MNEMONIC);
@@ -723,6 +725,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
      * Adds file buttons to a given toolbar.
      * @param toolbar the toolbar to be extended
      */
+    @Deprecated
     void addFileButtons(JToolBar toolbar) {
         toolbar.add(getNewAction());
         toolbar.add(getOpenGraphAction());
@@ -1518,11 +1521,13 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     }
 
     /** Action to save the current graph. */
+    @Deprecated
     private Action saveAction;
 
     /**
      * Lazily creates and returns the action to save the current graph.
      */
+    @Deprecated
     private Action getSaveGraphAction() {
         if (this.saveAction == null) {
             this.saveAction = new SaveGraphAction();
@@ -1533,6 +1538,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener {
     /**
      * Action to save the current state of the editor into a file.
      */
+    @Deprecated
     private class SaveGraphAction extends ToolbarAction {
         /** Constructs an instance of the action. */
         protected SaveGraphAction() {

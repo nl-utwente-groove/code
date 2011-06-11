@@ -33,6 +33,7 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
+import groove.gui.ResourceDisplay.Tab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
@@ -44,7 +45,6 @@ import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.HostModel;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -232,12 +232,12 @@ public class Simulator implements SimulatorListener {
 
             JSplitPane leftPanel =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getSimulatorPanel().getRuleListPanel(),
-                    getSimulatorPanel().getListsPanel());
+                    getDisplaysPanel().getRuleListPanel(),
+                    getDisplaysPanel().getListsPanel());
             // make sure tool tips get displayed
             ToolTipManager.sharedInstance().registerComponent(leftPanel);
 
-            JComponent rightPanel = getSimulatorPanel();
+            JComponent rightPanel = getDisplaysPanel();
 
             // Set up the content pane of the frame as a split pane,
             // with the rule directory to the left and a desktop pane to the
@@ -268,7 +268,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Lazily creates and returns the panel with the state, rule and LTS views.
      */
-    public DisplaysPanel getSimulatorPanel() {
+    public DisplaysPanel getDisplaysPanel() {
         if (this.simulatorPanel == null) {
             this.simulatorPanel = new DisplaysPanel(this);
         }
@@ -285,52 +285,32 @@ public class Simulator implements SimulatorListener {
                 public void update(Observable observable, Object arg) {
                     if (arg != null) {
                         FormatError error = (FormatError) arg;
-                        AspectGraph errorGraph = error.getGraph();
-                        if (errorGraph != null) {
-                            String name = errorGraph.getName();
-                            switch (errorGraph.getRole()) {
-                            case RULE:
-                                getModel().setRule(name);
-                                break;
-                            case HOST:
-                                getModel().setHost(name);
-                                break;
-                            case TYPE:
-                                getModel().setType(name);
-                                break;
-                            default:
-                                assert false;
-                            }
-                            JGraphPanel<?> panel =
-                                getSimulatorPanel().getPanelFor(
-                                    errorGraph.getRole());
-                            // select the error cell and switch to the panel
-                            for (Element errorObject : error.getElements()) {
-                                if (panel.selectJCell(errorObject)) {
-                                    break;
+                        ResourceKind resource = error.getResourceKind();
+                        String name = error.getResourceName();
+                        if (resource != null) {
+                            getModel().doSelect(resource, name);
+                            Tab resourceTab =
+                                getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
+                            if (resource.isGraphBased()) {
+                                AspectJGraph jGraph;
+                                if (resourceTab.isEditor()) {
+                                    jGraph =
+                                        ((GraphEditorTab) resourceTab).getEditor().getJGraph();
+                                } else {
+                                    jGraph =
+                                        ((GraphTab) resourceTab).getJGraph();
                                 }
-                            }
-                        } else {
-                            ResourceKind resource = null;
-                            String name = null;
-                            ResourceDisplay display = null;
-                            if (error.getControl() != null) {
-                                resource = ResourceKind.CONTROL;
-                                name = error.getControl().getName();
-                                display = getControlDisplay();
-                            } else {
-                                resource = ResourceKind.PROLOG;
-                                name = error.getProlog().getName();
-                                display = getPrologDisplay();
-                            }
-                            if (resource != null) {
-                                getModel().setSelected(resource, name);
-                                if (error.getNumbers().size() > 1) {
-                                    int line = error.getNumbers().get(0);
-                                    int column = error.getNumbers().get(1);
-                                    ((TextEditorTab) display.getSelectedTab()).select(
-                                        line, column);
+                                // select the error cell and switch to the panel
+                                for (Element errorObject : error.getElements()) {
+                                    if (jGraph.selectJCell(errorObject)) {
+                                        break;
+                                    }
                                 }
+                            } else if (error.getNumbers().size() > 1) {
+                                int line = error.getNumbers().get(0);
+                                int column = error.getNumbers().get(1);
+                                ((TextEditorTab) resourceTab).select(line,
+                                    column);
                             }
                         }
                     }
@@ -347,7 +327,6 @@ public class Simulator implements SimulatorListener {
     public ControlDisplay getControlDisplay() {
         if (this.controlDisplay == null) {
             this.controlDisplay = new ControlDisplay(this);
-            this.controlDisplay.initialise();
         }
         return this.controlDisplay;
     }
@@ -677,7 +656,7 @@ public class Simulator implements SimulatorListener {
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
                 GraphJGraph jGraph;
-                JGraphPanel<?> panel = getSimulatorPanel().getGraphPanel();
+                JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
                 if (panel != null) {
                     jGraph = panel.getJGraph();
                     if (jGraph instanceof AspectJGraph) {

@@ -19,7 +19,6 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
-import groove.view.TypeModel;
 
 import java.util.Set;
 
@@ -28,8 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class TypeDisplay extends GraphDisplay implements
-        SimulatorListener {
+final public class TypeDisplay extends ResourceDisplay {
     /**
      * Constructs a panel for a given simulator.
      */
@@ -47,17 +45,15 @@ final public class TypeDisplay extends GraphDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        super.update(source, oldModel, changes);
         if (!suspendListening()) {
             return;
         }
-        if (changes.contains(Change.GRAMMAR)) {
-            getMainTab().updateGrammar(source.getGrammar());
-        }
-        if (changes.contains(Change.GRAMMAR) || changes.contains(Change.TYPE)) {
-            TypeModel type = source.getType();
-            selectResource(type == null ? null : type.getName());
-            getEnableButton().setSelected(type != null && type.isEnabled());
-        }
+        String type = source.getSelected(ResourceKind.TYPE);
+        selectResource(type);
+        getEnableButton().setSelected(
+            type != null
+                && source.getGrammar().getResource(ResourceKind.TYPE, type).isEnabled());
         activateListening();
     }
 

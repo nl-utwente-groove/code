@@ -19,9 +19,8 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.lts.GTS;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
-import groove.view.HostModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -34,11 +33,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -163,21 +160,29 @@ public class HostJList extends JList implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
+        Set<String> newHosts = source.getSelectSet(ResourceKind.HOST);
         if (changes.contains(Change.GRAMMAR)) {
             this.listModel.clear();
             if (source.getGrammar() == null) {
                 setEnabled(false);
             } else {
                 setEnabled(true);
-                setList(source.getHostSet());
+                setList(newHosts);
             }
         }
         if (changes.contains(Change.STATE) || changes.contains(Change.HOST)) {
-            refreshCurrentState();
-            if (source.hasHost()) {
-                setSelectedValue(source.getHost().getName(), true);
-            } else {
+            if (newHosts.isEmpty()) {
                 setSelectedIndex(0);
+            } else {
+                int[] indices = new int[newHosts.size()];
+                int count = 0;
+                for (int i = 1; i < this.listModel.getSize(); i++) {
+                    if (newHosts.contains(this.listModel.elementAt(i))) {
+                        indices[count] = i;
+                        count++;
+                    }
+                }
+                setSelectedIndices(indices);
             }
         }
         activateListeners();
@@ -187,14 +192,10 @@ public class HostJList extends JList implements SimulatorListener {
      * Sets the list of names to a given set.
      * @param selection the set of names to be selected
      */
-    private void setList(Collection<HostModel> selection) {
+    private void setList(Collection<String> selection) {
         Object[] hostNames = getGrammar().getHostNames().toArray();
         Arrays.sort(hostNames);
         // turn the selection into a set of names
-        Set<String> selectionNames = new HashSet<String>();
-        for (HostModel hostView : selection) {
-            selectionNames.add(hostView.getName());
-        }
         int[] selectedIndices = new int[selection.size()];
         int selectedCount = 0;
         this.listModel.clear();
@@ -204,12 +205,11 @@ public class HostJList extends JList implements SimulatorListener {
         for (int i = 0; i < hostNames.length; i++) {
             Object name = hostNames[i];
             this.listModel.addElement(name);
-            if (selectionNames.contains(name)) {
+            if (selection.contains(name)) {
                 selectedIndices[selectedCount] = i + 1;
                 selectedCount++;
             }
         }
-        refreshCurrentState();
         if (selectedCount == 0) {
             setSelectedIndex(0);
         } else {
@@ -217,62 +217,11 @@ public class HostJList extends JList implements SimulatorListener {
         }
     }
 
-    /** Returns the list of selected graph names. */
-    private List<String> getSelectedGraphs() {
-        List<String> result = new ArrayList<String>();
-        int[] selection = getSelectedIndices();
-        for (int i = 0; i < selection.length; i++) {
-            int index = selection[i];
-            if (index > 0) {
-                result.add((String) this.listModel.elementAt(index));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Refreshes the value of the current state item of the state list.
-     */
-    private void refreshCurrentState() {
-        String text;
-        if (getSimulatorModel().getState() == null) {
-            String startKey =
-                getActions().getStartSimulationAction().getValue(
-                    Action.ACCELERATOR_KEY).toString();
-            text =
-                String.format("Press %s to start simulation",
-                    startKey.substring(startKey.indexOf(" ") + 1));
-        } else {
-            text =
-                String.format("Simulation state: %s",
-                    getSimulatorModel().getState());
-        }
-        this.listModel.setElementAt(text, 0);
-        repaint();
-    }
-
-    // --------------
-    // Private fields
-    // --------------
-
     /**
      * Returns the current grammar view from the simulator.
      */
     private GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
-    }
-
-    /**
-     * Returns the current value of the start graph name. Convenience method for
-     * <code>getGrammarView().getStartGraphName()</code>.
-     */
-    private final String getStartGraphName() {
-        return getGrammar() == null ? null : getGrammar().getStartGraphName();
-    }
-
-    /** Convenience method to retrieve the current GTS from the simulator. */
-    private GTS getCurrentGTS() {
-        return getSimulatorModel().getGts();
     }
 
     /** Returns the simulator to which the state list belongs. */
@@ -288,6 +237,11 @@ public class HostJList extends JList implements SimulatorListener {
     /** Returns the simulator to which the state list belongs. */
     private ActionStore getActions() {
         return getSimulator().getActions();
+    }
+
+    /** Returns the simulator to which the state list belongs. */
+    private ResourceKind getResourceKind() {
+        return this.display.getResourceKind();
     }
 
     /** The display from which this list is derived. */
@@ -340,7 +294,7 @@ public class HostJList extends JList implements SimulatorListener {
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (HostJList.this.isEnabled() && cellSelected) {
+                if (HostJList.this.isEnabled() && cellSelected && index > 0) {
                     HostJList.this.display.getEditAction().execute();
                 }
             }
@@ -355,7 +309,19 @@ public class HostJList extends JList implements SimulatorListener {
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().setHostSet(getSelectedGraphs());
+            getSimulatorModel().doSelectSet(getResourceKind(),
+                getSelectedGraphs());
+        }
+
+        /** Returns the list of selected graph names. */
+        private List<String> getSelectedGraphs() {
+            List<String> result = new ArrayList<String>();
+            for (int i = 1; i <= getMaxSelectionIndex(); i++) {
+                if (isSelectedIndex(i)) {
+                    result.add(getModel().getElementAt(i).toString());
+                }
+            }
+            return result;
         }
     }
 
@@ -389,8 +355,15 @@ public class HostJList extends JList implements SimulatorListener {
                 }
                 setToolTipText("Currently selected state of the simulation");
                 setIcon(Icons.STATE_MODE_ICON);
+                if (getSimulatorModel().hasState()) {
+                    setText("Simulation state: "
+                        + getSimulatorModel().getState());
+                } else {
+                    setText(this.START_SIM_TEXT);
+                }
+
             } else {
-                if (value.toString().equals(getStartGraphName())) {
+                if (value.toString().equals(getGrammar().getStartGraphName())) {
                     setToolTipText("Current start graph");
                 } else {
                     setToolTipText("Potential start graph");
@@ -407,6 +380,13 @@ public class HostJList extends JList implements SimulatorListener {
         }
 
         private final Border emptyBorder = new EmptyBorder(1, 3, 1, 0);
+
+        private final String FULL_NAME =
+            Options.START_SIMULATION_KEY.toString();
+        private final String START_KEY_NAME =
+            this.FULL_NAME.substring(this.FULL_NAME.indexOf(" ") + 1);
+        private final String START_SIM_TEXT = "Press " + this.START_KEY_NAME
+            + "to start simulation";
     }
 
     /** Variation on the selection model that makes sure the first item
@@ -415,7 +395,7 @@ public class HostJList extends JList implements SimulatorListener {
     private class MySelectionModel extends DefaultListSelectionModel {
         @Override
         public void setSelectionInterval(int index0, int index1) {
-            if (index0 == 0 && getCurrentGTS() == null) {
+            if (index0 == 0) {
                 index0 = 1;
             }
             if (index0 <= index1) {
@@ -425,7 +405,7 @@ public class HostJList extends JList implements SimulatorListener {
 
         @Override
         public void setLeadSelectionIndex(int leadIndex) {
-            if (leadIndex != 0 || getCurrentGTS() != null) {
+            if (leadIndex != 0) {
                 super.setLeadSelectionIndex(leadIndex);
             }
         }

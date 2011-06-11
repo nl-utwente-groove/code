@@ -19,14 +19,11 @@ package groove.gui;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.gui.SimulatorModel.Change;
-import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
-import java.util.Set;
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -36,7 +33,7 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphEditorTab extends EditorTab implements SimulatorListener {
+public class GraphEditorTab extends EditorTab {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param parent the component on which this panel is placed
@@ -78,7 +75,6 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
             };
         setFocusCycleRoot(true);
         setName(graph.getName());
-        simulator.getModel().addListener(this, Change.GRAMMAR);
     }
 
     /** Starts the editor with the graph passed in at construction time. */
@@ -103,32 +99,23 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
     }
 
     @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        assert changes.contains(Change.GRAMMAR);
-        GrammarModel grammar = source.getGrammar();
-        if (grammar == oldModel.getGrammar()) {
-            // test if the graph being edited is still in the grammar;
-            // if not, silently dispose it - it's too late to do anything else!
-            AspectGraph graph = getGraph();
-            GraphBasedModel<?> resource =
-                (GraphBasedModel<?>) grammar.getResource(
-                    ResourceKind.toResource(graph.getRole()), graph.getName());
-            if (resource != null) {
-                this.editor.setTypeView(grammar.getTypeModel());
-                // check if the properties have changed
-                GraphProperties properties =
-                    GraphInfo.getProperties(resource.getSource(), false);
-                if (properties != null
-                    && !properties.equals(GraphInfo.getProperties(getGraph(),
-                        false))) {
-                    AspectGraph newGraph = getGraph().clone();
-                    GraphInfo.setProperties(newGraph, properties);
-                    newGraph.setFixed();
-                    change(newGraph);
-                }
-            } else {
-                dispose();
+    public void updateGrammar(GrammarModel grammar) {
+        // test if the graph being edited is still in the grammar;
+        // if not, silently dispose it - it's too late to do anything else!
+        GraphBasedModel<?> resource =
+            (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
+                getName());
+        if (resource != null) {
+            this.editor.setTypeView(grammar.getTypeModel());
+            // check if the properties have changed
+            GraphProperties properties =
+                GraphInfo.getProperties(resource.getSource(), false);
+            if (properties != null
+                && !properties.equals(GraphInfo.getProperties(getGraph(), false))) {
+                AspectGraph newGraph = getGraph().clone();
+                GraphInfo.setProperties(newGraph, properties);
+                newGraph.setFixed();
+                change(newGraph);
             }
         } else {
             dispose();
@@ -175,13 +162,6 @@ public class GraphEditorTab extends EditorTab implements SimulatorListener {
     @Override
     protected void saveResource() {
         getSaveAction().doSaveGraph(getGraph());
-    }
-
-    /** Disposes the editor, by removing it as a listener and simulator panel component. */
-    @Override
-    public void dispose() {
-        getDisplay().getDisplayPanel().remove(this);
-        getSimulatorModel().removeListener(this);
     }
 
     /** Graph being edited.

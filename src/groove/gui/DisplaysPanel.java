@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
-import groove.graph.GraphRole;
 import groove.gui.SimulatorModel.Change;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 
 import java.awt.Component;
@@ -182,25 +182,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             // switch tabs if the selection on the currently displayed tab
             // was set to null
             String changedTo = null;
-            switch (getSelectedDisplay().getKind()) {
-            case HOST:
-                if (changes.contains(Change.HOST)
-                    && getSimulatorModel().hasHost()) {
-                    changedTo = getSimulatorModel().getHost().getName();
-                }
-                break;
-            case RULE:
-                if (changes.contains(Change.RULE)
-                    && getSimulatorModel().hasRule()) {
-                    changedTo = getSimulatorModel().getRule().getName();
-                }
-                break;
-            case TYPE:
-                if (changes.contains(Change.TYPE)
-                    && getSimulatorModel().hasType()) {
-                    changedTo = getSimulatorModel().getType().getName();
-                }
-                break;
+            ResourceKind resource = getSelectedDisplay().getResourceKind();
+            if (changes.contains(Change.toChange(resource))
+                && source.isSelected(resource)) {
+                changedTo = source.getResource(resource).getName();
             }
             if (changedTo == null) {
                 Display panel = this.displaysMap.get(source.getDisplay());
@@ -225,9 +210,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public JGraphPanel<?> getGraphPanel() {
         JGraphPanel<?> result = null;
         Display display = getSelectedDisplay();
-        if (display instanceof GraphDisplay) {
+        if (display instanceof ResourceDisplay) {
             Component selectedComponent =
-                ((GraphDisplay) display).getDisplayPanel().getSelectedComponent();
+                ((ResourceDisplay) display).getTabPane().getSelectedComponent();
             if (selectedComponent instanceof GraphEditorTab) {
                 result =
                     ((GraphEditorTab) selectedComponent).getEditor().getGraphPanel();
@@ -240,28 +225,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
-    public Display getDisplayFor(DisplayKind tabKind) {
-        return this.displaysMap.get(tabKind);
+    public Display getDisplayFor(DisplayKind display) {
+        return this.displaysMap.get(display);
     }
 
-    /** Returns the panel corresponding to a certain graph role. */
-    public JGraphPanel<?> getPanelFor(GraphRole role) {
-        DisplayKind tabKind = null;
-        switch (role) {
-        case HOST:
-            tabKind = DisplayKind.HOST;
-            break;
-        case RULE:
-            tabKind = DisplayKind.RULE;
-            break;
-        case TYPE:
-            tabKind = DisplayKind.TYPE;
-            break;
-        default:
-            assert false;
-        }
-        GraphDisplay display = (GraphDisplay) getDisplayFor(tabKind);
-        return display.getMainTab();
+    /** Returns the panel corresponding to a certain tab kind. */
+    public ResourceDisplay getDisplayFor(ResourceKind resource) {
+        return (ResourceDisplay) getDisplayFor(DisplayKind.toDisplay(resource));
     }
 
     /** Reattaches a component at its proper place. */

@@ -20,8 +20,11 @@ import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
+import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
+import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.gui.Editor;
@@ -325,7 +328,7 @@ final public class AspectJGraph extends GraphJGraph {
     private Action createSetRuleAction(final String ruleName) {
         return new AbstractAction(ruleName) {
             public void actionPerformed(ActionEvent evt) {
-                getSimulatorModel().setRule(ruleName);
+                getSimulatorModel().doSelect(ResourceKind.RULE, ruleName);
             }
         };
     }
@@ -545,6 +548,28 @@ final public class AspectJGraph extends GraphJGraph {
             this.inserting = inserting;
         }
         return result;
+    }
+
+    /**
+     * If the underlying model is a {@link GraphJModel},
+     * selects the element corresponding to a given graph element.
+     * @return {@code true} if {@code elem} occurs in the {@link GraphJModel}.
+     */
+    public boolean selectJCell(Element elem) {
+        GraphJCell cell = null;
+        if (elem instanceof Node) {
+            cell = getModel().getJCellForNode((Node) elem);
+        } else if (elem instanceof Edge) {
+            cell = getModel().getJCellForEdge((Edge<?>) elem);
+        }
+        if (cell != null) {
+            if (cell instanceof AspectJEdge
+                && ((AspectJEdge) cell).isSourceLabel()) {
+                cell = ((AspectJEdge) cell).getSourceVertex();
+            }
+            setSelectionCell(cell);
+        }
+        return cell != null;
     }
 
     /**

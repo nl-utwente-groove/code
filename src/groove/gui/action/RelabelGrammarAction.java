@@ -18,10 +18,12 @@ package groove.gui.action;
 
 import groove.graph.Label;
 import groove.graph.TypeLabel;
+import groove.gui.GraphTab;
 import groove.gui.Icons;
 import groove.gui.JGraphPanel;
 import groove.gui.LabelTree;
 import groove.gui.Options;
+import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
@@ -46,18 +48,19 @@ public class RelabelGrammarAction extends SimulatorAction implements
     /** Constructs an instance of the action, for a given simulator. */
     public RelabelGrammarAction(Simulator simulator) {
         super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
-        addAsListener(getStateDisplay().getMainTab());
-        addAsListener(getRuleDisplay().getMainTab());
-        addAsListener(getTypeDisplay().getMainTab());
+        addAsListener(getStateDisplay());
+        addAsListener(getRuleDisplay());
+        addAsListener(getTypeDisplay());
     }
 
     /**
      * Adds this action as a listener to the {@link JGraph} and {@link LabelTree}
      * of a given {@link JGraphPanel}.
      */
-    private void addAsListener(JGraphPanel<?> panel) {
-        panel.getJGraph().addGraphSelectionListener(this);
-        panel.getLabelTree().addTreeSelectionListener(this);
+    private void addAsListener(ResourceDisplay display) {
+        GraphTab graphTab = (GraphTab) display.getMainTab();
+        graphTab.getJGraph().addGraphSelectionListener(this);
+        graphTab.getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override

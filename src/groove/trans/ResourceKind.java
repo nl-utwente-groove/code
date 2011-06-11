@@ -23,6 +23,7 @@ import groove.io.FileType;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Abstract type of the resources that make up a grammar.
@@ -122,6 +123,24 @@ public enum ResourceKind {
         return roleKindMap.get(graphRole);
     }
 
+    /** 
+     * Returns the set of all resource kinds, possibly excluding {@link #PROPERTIES}.
+     * @param withProperties if {@code true}, {@link #PROPERTIES} is included
+     * in the result.  
+     */
+    public static Set<ResourceKind> all(boolean withProperties) {
+        return withProperties ? allResources : allNonProperties;
+    }
+
+    /** Set of all resource kinds. */
+    private static final Set<ResourceKind> allResources =
+        EnumSet.allOf(ResourceKind.class);
+    /** Set of resource kinds that do not equal {@link #PROPERTIES}. */
+    private static final Set<ResourceKind> allNonProperties =
+        EnumSet.allOf(ResourceKind.class);
+    static {
+        allNonProperties.remove(PROPERTIES);
+    }
     private static Map<GraphRole,ResourceKind> roleKindMap =
         new EnumMap<GraphRole,ResourceKind>(GraphRole.class);
     static {

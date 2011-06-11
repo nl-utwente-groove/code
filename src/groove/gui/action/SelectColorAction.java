@@ -2,9 +2,10 @@ package groove.gui.action;
 
 import groove.graph.Label;
 import groove.graph.TypeLabel;
-import groove.gui.JGraphPanel;
+import groove.gui.GraphTab;
 import groove.gui.LabelTree;
 import groove.gui.Options;
+import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
@@ -37,9 +38,9 @@ public class SelectColorAction extends SimulatorAction implements
     public SelectColorAction(Simulator simulator) {
         super(simulator, Options.SELECT_COLOR_ACTION_NAME, null);
         putValue(SHORT_DESCRIPTION, Options.SELECT_COLOR_ACTION_NAME);
-        addAsListener(getStateDisplay().getMainTab());
-        addAsListener(getRuleDisplay().getMainTab());
-        addAsListener(getTypeDisplay().getMainTab());
+        addAsListener(getStateDisplay());
+        addAsListener(getRuleDisplay());
+        addAsListener(getTypeDisplay());
         refresh();
         this.chooser = new JColorChooser();
     }
@@ -47,14 +48,16 @@ public class SelectColorAction extends SimulatorAction implements
     /** Adds this action as a listener to the JGraph and label tree of a 
      * given JGraphPanel.
      */
-    private void addAsListener(JGraphPanel<?> jPanel) {
-        jPanel.getJGraph().addGraphSelectionListener(this);
+    private void addAsListener(ResourceDisplay display) {
+        assert display.getResourceKind().isGraphBased();
+        GraphTab mainTab = (GraphTab) display.getMainTab();
+        mainTab.getJGraph().addGraphSelectionListener(this);
         if (this.label == null) {
-            checkJGraph(jPanel.getJGraph());
+            checkJGraph(mainTab.getJGraph());
         }
-        jPanel.getLabelTree().addTreeSelectionListener(this);
+        mainTab.getLabelTree().addTreeSelectionListener(this);
         if (this.label == null) {
-            checkLabelTree(jPanel.getLabelTree());
+            checkLabelTree(mainTab.getLabelTree());
         }
     }
 
@@ -155,7 +158,7 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public void refresh() {
         super.setEnabled(this.label != null
-            && getSimulatorModel().getType() != null);
+            && getGrammarModel().getTypeModel().isEnabled());
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

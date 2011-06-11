@@ -134,7 +134,7 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Convenience method to retrieve the main simulator panel. */
     protected final DisplaysPanel getDisplaysPanel() {
-        return getSimulator().getSimulatorPanel();
+        return getSimulator().getDisplaysPanel();
     }
 
     /** 

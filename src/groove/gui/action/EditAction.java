@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import static groove.trans.ResourceKind.HOST;
 import groove.gui.EditType;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -23,12 +24,11 @@ public class EditAction extends SimulatorAction {
         if (isForState()) {
             AspectGraph graph = getStateDisplay().getStateTab().getGraph();
             // find out if we're editing a host graph or a state
-            final String newGraphName =
-                askNewName(ResourceKind.HOST, graph.getName(), true);
+            final String newGraphName = askNewName(HOST, graph.getName(), true);
             if (newGraphName != null) {
                 final AspectGraph newGraph = graph.rename(newGraphName);
                 try {
-                    getSimulatorModel().doAddGraph(ResourceKind.HOST, newGraph);
+                    getSimulatorModel().doAddGraph(HOST, newGraph);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -51,7 +51,7 @@ public class EditAction extends SimulatorAction {
         boolean enabled =
             getSimulatorModel().isSelected(getResourceKind()) || isForState();
         setEnabled(enabled);
-        if (getResourceKind() == ResourceKind.HOST) {
+        if (getResourceKind() == HOST) {
             String name =
                 isForState() ? Options.EDIT_STATE_ACTION_NAME
                         : getEditActionName();
@@ -61,7 +61,7 @@ public class EditAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getResourceKind() == ResourceKind.HOST
-            && getSimulatorModel().hasState() && !getSimulatorModel().hasHost();
+        return getResourceKind() == HOST && getSimulatorModel().hasState()
+            && !getSimulatorModel().isSelected(HOST);
     }
 }

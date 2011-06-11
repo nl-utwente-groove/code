@@ -17,13 +17,8 @@
 package groove.gui;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Node;
 import groove.gui.action.ActionStore;
-import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
@@ -305,29 +300,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /** Sets the background colour for an enabled panel. */
     protected void setEnabledBackground(Color enabledBackground) {
         this.enabledBackground = enabledBackground;
-    }
-
-    /**
-     * If the underlying model is a {@link GraphJModel},
-     * selects the element corresponding to a given graph element.
-     * @return {@code true} if {@code elem} occurs in the {@link GraphJModel}.
-     */
-    public boolean selectJCell(Element elem) {
-        GraphJCell cell = null;
-        if (elem instanceof Node) {
-            cell = getJModel().getJCellForNode((Node) elem);
-        } else if (elem instanceof Edge) {
-            cell = getJModel().getJCellForEdge((Edge<?>) elem);
-        }
-        if (cell != null) {
-            if (cell instanceof AspectJEdge
-                && ((AspectJEdge) cell).isSourceLabel()) {
-                cell = ((AspectJEdge) cell).getSourceVertex();
-            }
-            //            getJModel().setEmphasised(Collections.singleton(cell));
-            getJGraph().setSelectionCell(cell);
-        }
-        return cell != null;
     }
 
     /**

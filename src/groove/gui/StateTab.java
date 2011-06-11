@@ -22,15 +22,13 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
-import groove.graph.TypeLabel;
-import groove.gui.SimulatorModel.Change;
 import groove.gui.ResourceDisplay.Tab;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
@@ -51,9 +49,7 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.SystemProperties;
-import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.TypeModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -201,8 +197,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         if (this.listening) {
             throw new IllegalStateException();
         }
-        getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
-            STATE, MATCH);
+        getSimulatorModel().addListener(this.simulatorListener, GTS, STATE,
+            MATCH);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(this.graphSelectionListener);
@@ -235,9 +231,6 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
-        if (changes.contains(GRAMMAR)) {
-            setGrammar(source.getGrammar());
-        }
         if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
         } else if (changes.contains(STATE)) {
@@ -274,33 +267,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * Sets the underlying model of this state frame to the initial graph of the
      * new grammar.
      */
-    private void setGrammar(GrammarModel grammar) {
-        getJGraph().getFilteredLabels().clear();
-        if (grammar == null || grammar.getStartGraphModel() == null) {
-            getJGraph().setType(null, null);
-        } else {
-            // set the type or the label store for the JGraph
-            Map<String,Set<TypeLabel>> labelsMap =
-                new HashMap<String,Set<TypeLabel>>();
-            try {
-                for (String typeName : grammar.getTypeNames()) {
-                    TypeModel view = grammar.getTypeModel(typeName);
-                    // the view may be null if type names
-                    // overlap modulo upper/lowercase
-                    if (view != null && view.isEnabled()) {
-                        labelsMap.put(typeName, view.getLabels());
-                    }
-                }
-                getJGraph().setType(grammar.getTypeModel().toResource(),
-                    labelsMap);
-            } catch (FormatException e) {
-                getJGraph().setLabelStore(grammar.getLabelStore());
-            }
-            if (labelsMap.isEmpty()) {
-                getJGraph().setLabelStore(grammar.getLabelStore());
-            }
-        }
-        refreshStatus();
+    public void updateGrammar(GrammarModel grammar) {
+        // does nothing
     }
 
     private void startSimulation(GTS gts) {

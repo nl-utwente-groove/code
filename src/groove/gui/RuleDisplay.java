@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
-import groove.view.RuleModel;
+import groove.view.ResourceModel;
 
 import java.util.Set;
 
@@ -29,8 +29,7 @@ import javax.swing.JToolBar;
  * @author Arend Rensink
  * @version $Revision $
  */
-final public class RuleDisplay extends GraphDisplay implements
-        SimulatorListener {
+final public class RuleDisplay extends ResourceDisplay {
     /**
      * Constructs a panel for a given simulator.
      */
@@ -69,16 +68,14 @@ final public class RuleDisplay extends GraphDisplay implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        super.update(source, oldModel, changes);
         if (!suspendListening()) {
             return;
         }
-        if (changes.contains(Change.GRAMMAR)) {
-            getMainTab().updateGrammar(source.getGrammar());
-        }
         if (changes.contains(Change.GRAMMAR) || changes.contains(Change.RULE)) {
-            RuleModel rule = source.getRule();
-            selectResource(rule == null ? null : rule.getName());
-            getEnableButton().setSelected(rule != null && rule.isEnabled());
+            ResourceModel<?> ruleModel = source.getResource(getResourceKind());
+            selectResource(ruleModel == null ? null : ruleModel.getName());
+            getEnableButton().setSelected(ruleModel.isEnabled());
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
             getList().dispose();

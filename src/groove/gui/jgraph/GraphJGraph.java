@@ -1024,8 +1024,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             im.put(actionKey, actionName);
             im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             im.put(actionKey, actionName);
-            im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            im.put(actionKey, actionName);
+            //            im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            //            im.put(actionKey, actionName);
         }
     }
 

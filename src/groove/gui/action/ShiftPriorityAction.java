@@ -1,11 +1,10 @@
 package groove.gui.action;
 
+import static groove.trans.ResourceKind.RULE;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.trans.ResourceKind;
-import groove.view.RuleModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class ShiftPriorityAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean ruleSelected = getSimulatorModel().getRule() != null;
+        boolean ruleSelected = getSimulatorModel().isSelected(RULE);
         setEnabled(ruleSelected
             && getSimulatorModel().getStore().isModifiable());
     }
@@ -44,59 +43,53 @@ public class ShiftPriorityAction extends SimulatorAction {
     @Override
     public void execute() {
         // collect all rules according to current priority
-        NavigableMap<Integer,Set<AspectGraph>> rulesMap =
-            new TreeMap<Integer,Set<AspectGraph>>();
-        for (AspectGraph ruleGraph : getGrammarStore().getGraphs(
-            ResourceKind.RULE).values()) {
+        NavigableMap<Integer,Set<String>> rulesMap =
+            new TreeMap<Integer,Set<String>>();
+        for (AspectGraph ruleGraph : getGrammarStore().getGraphs(RULE).values()) {
             int priority = GraphProperties.getPriority(ruleGraph);
-            Set<AspectGraph> cell = rulesMap.get(priority);
+            Set<String> cell = rulesMap.get(priority);
             if (cell == null) {
-                rulesMap.put(priority, cell = new HashSet<AspectGraph>());
+                rulesMap.put(priority, cell = new HashSet<String>());
             }
-            cell.add(ruleGraph);
+            cell.add(ruleGraph.getName());
         }
         if (!this.up) {
             rulesMap = rulesMap.descendingMap();
         }
         // collect the selected rules
-        Set<AspectGraph> selectedRules = new HashSet<AspectGraph>();
-        for (RuleModel ruleView : getSimulatorModel().getRuleSet()) {
-            selectedRules.add(ruleView.getSource());
-        }
+        Set<String> selectedRules = getSimulatorModel().getSelectSet(RULE);
         // now shift rules to higher or lower priority classes
         List<Integer> priorities = new ArrayList<Integer>();
-        List<Set<AspectGraph>> remainingRules =
-            new ArrayList<Set<AspectGraph>>();
-        List<Set<AspectGraph>> shiftedRules = new ArrayList<Set<AspectGraph>>();
-        Set<AspectGraph> oldShifted = Collections.<AspectGraph>emptySet();
-        for (Map.Entry<Integer,Set<AspectGraph>> cell : rulesMap.entrySet()) {
+        List<Set<String>> remainingRules = new ArrayList<Set<String>>();
+        List<Set<String>> shiftedRules = new ArrayList<Set<String>>();
+        Set<String> oldShifted = Collections.<String>emptySet();
+        for (Map.Entry<Integer,Set<String>> cell : rulesMap.entrySet()) {
             priorities.add(cell.getKey());
-            Set<AspectGraph> remaining =
-                new HashSet<AspectGraph>(cell.getValue());
-            Set<AspectGraph> shifted = new HashSet<AspectGraph>(selectedRules);
+            Set<String> remaining = new HashSet<String>(cell.getValue());
+            Set<String> shifted = new HashSet<String>(selectedRules);
             shifted.retainAll(remaining);
             remaining.removeAll(shifted);
             boolean allShifted = remaining.isEmpty();
             remaining.addAll(oldShifted);
             remainingRules.add(remaining);
             if (allShifted && priorities.size() < rulesMap.size()) {
-                shiftedRules.add(Collections.<AspectGraph>emptySet());
+                shiftedRules.add(Collections.<String>emptySet());
                 oldShifted = shifted;
             } else {
                 shiftedRules.add(shifted);
-                oldShifted = Collections.<AspectGraph>emptySet();
+                oldShifted = Collections.<String>emptySet();
             }
         }
         // reassign priorities based on remaining and shifted rules
         List<Integer> newPriorities = new ArrayList<Integer>();
-        List<Set<AspectGraph>> newCells = new ArrayList<Set<AspectGraph>>();
+        List<Set<String>> newCells = new ArrayList<Set<String>>();
         int last = start();
         for (int i = 0; i < priorities.size(); i++) {
             int priority = priorities.get(i);
             if (!exceeds(priority, last)) {
                 priority = inc(last);
             }
-            Set<AspectGraph> cell = remainingRules.get(i);
+            Set<String> cell = remainingRules.get(i);
             if (!cell.isEmpty()) {
                 newPriorities.add(priority);
                 newCells.add(cell);
@@ -128,9 +121,11 @@ public class ShiftPriorityAction extends SimulatorAction {
         Map<String,Integer> priorityMap = new HashMap<String,Integer>();
         for (int i = 0; i < newPriorities.size(); i++) {
             int priority = newPriorities.get(i);
-            for (AspectGraph rule : newCells.get(i)) {
-                if (GraphProperties.getPriority(rule) != priority) {
-                    priorityMap.put(rule.getName(), priority);
+            for (String ruleName : newCells.get(i)) {
+                AspectGraph ruleGraph =
+                    getGrammarStore().getGraphs(RULE).get(ruleName);
+                if (GraphProperties.getPriority(ruleGraph) != priority) {
+                    priorityMap.put(ruleName, priority);
                 }
             }
         }
