@@ -615,22 +615,8 @@ public class Options implements Cloneable {
      * Scroll to action name
      */
     static public final String SCROLL_TO_ACTION_NAME = "Scroll to current";
-
-    /**
-     * Graph mode action name
-     */
-    public static final String SET_GRAPH_ROLE_ACTION_NAME =
-        "Set to graph editing";
-    /**
-     * Rule mode action name
-     */
-    public static final String SET_RULE_ROLE_ACTION_NAME =
-        "Set to rule editing";
-    /**
-     * Type mode action name
-     */
-    public static final String SET_TYPE_ROLE_ACTION_NAME =
-        "Set to type editing";
+    /** Name of the "Set Priority" action. */
+    public static final String SET_PRIORITY_ACTION_NAME = "Set Priority";
     /**
      * Show all labels action name
      */

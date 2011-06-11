@@ -655,7 +655,7 @@ public class ActionStore implements SimulatorListener {
     private SaveLTSAsAction saveLtsAsAction;
 
     /**
-     * Returns the undo action permanently associated with this simulator.
+     * Returns the colour selection action permanently associated with this simulator.
      */
     public Action getSelectColorAction() {
         if (this.selectColorAction == null) {
@@ -665,9 +665,25 @@ public class ActionStore implements SimulatorListener {
     }
 
     /**
-     * The undo action permanently associated with this simulator.
+     * The colour selection action permanently associated with this simulator.
      */
     private SelectColorAction selectColorAction;
+
+    /**
+     * Returns the priority setting action permanently associated with this simulator.
+     */
+    public SetPriorityAction getSetPriorityAction() {
+        if (this.setPriorityAction == null) {
+            this.setPriorityAction = new SetPriorityAction(this.simulator);
+            this.setPriorityAction.refresh();
+        }
+        return this.setPriorityAction;
+    }
+
+    /**
+     * The priority setting action permanently associated with this simulator.
+     */
+    private SetPriorityAction setPriorityAction;
 
     /**
      * Returns the priority up- or down-shifting action permanently associated with the simulator.
