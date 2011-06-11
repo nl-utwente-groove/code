@@ -97,37 +97,26 @@ final public class HostDisplay extends ResourceDisplay {
         if (!suspendListening()) {
             return;
         }
-        String newHost = source.getSelected(ResourceKind.HOST);
-        if (changes.contains(Change.GRAMMAR)) {
-            if (newHost != null) {
-                selectResource(newHost);
-            }
-        }
-        if (changes.contains(Change.HOST)) {
-            if (newHost == null) {
-                getTabPane().setSelectedComponent(getStateTab());
-            } else {
-                selectResource(newHost);
-            }
-            refreshToolbars();
-        }
-        // if a match is selected, we only switch if the LTS tab isn't selected
-        if (changes.contains(Change.STATE)) {
-            refreshToolbars();
-        }
         if (changes.contains(Change.MATCH)) {
             getTabPane().setSelectedComponent(getStateTab());
-            refreshToolbars();
         }
         if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
             getStateTab().dispose();
             this.statePanel = null;
             removeMainTab();
         }
-        getEnableButton().setSelected(
-            newHost != null
-                && newHost.equals(source.getGrammar().getStartGraphModel()));
+        refreshToolbars();
         activateListening();
+    }
+
+    @Override
+    public Tab selectResource(String name) {
+        if (name == null) {
+            getTabPane().setSelectedComponent(getStateTab());
+            return getStateTab();
+        } else {
+            return super.selectResource(name);
+        }
     }
 
     /** Returns the state subpanel. */

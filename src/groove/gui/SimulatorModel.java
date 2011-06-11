@@ -53,13 +53,12 @@ public class SimulatorModel implements Cloneable {
     public void doDelete(ResourceKind resource, Set<String> names)
         throws IOException {
         boolean result = false;
-        String name = names.iterator().next();
         start();
         try {
             GrammarModel grammar = getGrammar();
             switch (resource) {
             case CONTROL:
-                result = name.equals(grammar.getActiveControlName());
+                result = names.contains(grammar.getActiveControlName());
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
@@ -158,7 +157,8 @@ public class SimulatorModel implements Cloneable {
             SystemProperties newProperties = oldProperties.clone();
             switch (resource) {
             case CONTROL:
-                boolean enable = !name.equals(getGrammar().getActiveControlName());
+                boolean enable =
+                    !name.equals(getGrammar().getActiveControlName());
                 newProperties.setUseControl(enable);
                 if (enable) {
                     newProperties.setControlName(name);

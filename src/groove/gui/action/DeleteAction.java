@@ -45,26 +45,8 @@ public class DeleteAction extends SimulatorAction {
                     resource.getDescription(), addendum);
         }
         if (confirmBehaviour(Options.getDeleteOption(resource), question)) {
-            boolean cancelEditing = true;
-            switch (resource) {
-            case HOST:
-                cancelEditing =
-                    getStateDisplay().cancelEdits(names.toArray(new String[0]));
-                break;
-            case CONTROL:
-            case PROLOG:
-                cancelEditing =
-                    getDisplay().cancelEditResource(names.iterator().next(),
-                        false);
-                break;
-            case RULE:
-                cancelEditing =
-                    getRuleDisplay().cancelEdits(names.toArray(new String[0]));
-                break;
-            case TYPE:
-                cancelEditing =
-                    getTypeDisplay().cancelEdits(names.toArray(new String[0]));
-            }
+            boolean cancelEditing =
+                getDisplay().cancelEdits(names.toArray(new String[0]));
             if (cancelEditing) {
                 try {
                     getSimulatorModel().doDelete(resource, names);

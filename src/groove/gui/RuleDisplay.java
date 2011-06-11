@@ -18,7 +18,6 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
-import groove.view.ResourceModel;
 
 import java.util.Set;
 
@@ -69,20 +68,18 @@ final public class RuleDisplay extends ResourceDisplay {
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         super.update(source, oldModel, changes);
-        if (!suspendListening()) {
-            return;
+        if (suspendListening()) {
+            //            if (changes.contains(Change.GRAMMAR)
+            //                || changes.contains(Change.RULE)) {
+            //                selectResource(source.getSelected(getResourceKind()));
+            //            }
+            if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
+                getList().dispose();
+                this.ruleJTree = null;
+                resetListPanel();
+            }
+            activateListening();
         }
-        if (changes.contains(Change.GRAMMAR) || changes.contains(Change.RULE)) {
-            ResourceModel<?> ruleModel = source.getResource(getResourceKind());
-            selectResource(ruleModel == null ? null : ruleModel.getName());
-            getEnableButton().setSelected(ruleModel.isEnabled());
-        }
-        if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
-            getList().dispose();
-            this.ruleJTree = null;
-            resetListPanel();
-        }
-        activateListening();
     }
 
     @Override

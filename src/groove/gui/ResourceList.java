@@ -37,6 +37,7 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -54,6 +55,7 @@ public class ResourceList extends JList implements SimulatorListener {
     protected ResourceList(ResourceDisplay display) {
         this.display = display;
         this.setEnabled(false);
+        this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new ResourceCellRenderer());
         installListeners();
     }
@@ -264,7 +266,7 @@ public class ResourceList extends JList implements SimulatorListener {
         /** Returns the list of selected names. */
         private List<String> getSelectedNames() {
             List<String> result = new ArrayList<String>();
-            for (int i = 1; i <= getMaxSelectionIndex(); i++) {
+            for (int i = 0; i <= getMaxSelectionIndex(); i++) {
                 if (isSelectedIndex(i)) {
                     result.add(getModel().getElementAt(i).toString());
                 }

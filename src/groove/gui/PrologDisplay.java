@@ -328,18 +328,19 @@ public class PrologDisplay extends ResourceDisplay {
         return this.prologJList;
     }
 
-    @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        super.update(source, oldModel, changes);
-        if (suspendListening()) {
-            String selection = source.getSelected(ResourceKind.PROLOG);
-            if (changes.contains(Change.PROLOG) && selection != null) {
-                selectResource(selection);
-            }
-            activateListening();
-        }
-    }
+    //
+    //    @Override
+    //    public void update(SimulatorModel source, SimulatorModel oldModel,
+    //            Set<Change> changes) {
+    //        super.update(source, oldModel, changes);
+    //        if (suspendListening()) {
+    //            String selection = source.getSelected(ResourceKind.PROLOG);
+    //            if (changes.contains(Change.PROLOG) && selection != null) {
+    //                selectResource(selection);
+    //            }
+    //            activateListening();
+    //        }
+    //    }
 
     @Override
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {

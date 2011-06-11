@@ -42,7 +42,6 @@ public class HostJList extends ResourceList {
         super(display);
         this.listModel = new DefaultListModel();
         setModel(this.listModel);
-        this.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.setCellRenderer(new MyCellRenderer());
     }
 

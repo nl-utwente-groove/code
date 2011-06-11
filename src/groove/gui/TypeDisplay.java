@@ -20,8 +20,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
-import java.util.Set;
-
 /**
  * Panel that holds the type display and type graph editors.
  * @author Arend Rensink
@@ -42,20 +40,17 @@ final public class TypeDisplay extends ResourceDisplay {
         super.installListeners();
     }
 
-    @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        super.update(source, oldModel, changes);
-        if (!suspendListening()) {
-            return;
-        }
-        String type = source.getSelected(ResourceKind.TYPE);
-        selectResource(type);
-        getEnableButton().setSelected(
-            type != null
-                && source.getGrammar().getResource(ResourceKind.TYPE, type).isEnabled());
-        activateListening();
-    }
+    //
+    //    @Override
+    //    public void update(SimulatorModel source, SimulatorModel oldModel,
+    //            Set<Change> changes) {
+    //        super.update(source, oldModel, changes);
+    //        if (suspendListening()) {
+    //            String type = source.getSelected(ResourceKind.TYPE);
+    //            selectResource(type);
+    //            activateListening();
+    //        }
+    //    }
 
     /** Returns the list of states and host graphs. */
     @Override
