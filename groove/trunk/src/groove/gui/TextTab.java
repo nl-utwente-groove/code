@@ -7,6 +7,8 @@ import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -183,6 +185,14 @@ final public class TextTab extends EditorTab implements MainTab {
             getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
             getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON);
             getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON);
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        getDisplay().getEditAction().execute();
+                    }
+                }
+            });
         }
 
         /** 

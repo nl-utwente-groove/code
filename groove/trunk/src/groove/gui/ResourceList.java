@@ -29,7 +29,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
@@ -41,64 +43,75 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * List of available type graphs, showing their enabledness status.
+ * List of available resources, showing their enabledness status.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeJList extends JList implements SimulatorListener {
+public class ResourceList extends JList implements SimulatorListener {
     /**
      * Creates a new state list viewer.
      */
-    protected TypeJList(TypeDisplay display) {
+    protected ResourceList(ResourceDisplay display) {
         this.display = display;
         this.setEnabled(false);
-        this.setCellRenderer(new MyCellRenderer());
+        this.setCellRenderer(new ResourceCellRenderer());
         installListeners();
     }
 
-    private void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
+    /** Installs all listeners, and sets the listening status to {@code true}. */
+    protected void installListeners() {
+        getSimulatorModel().addListener(this, Change.GRAMMAR,
+            Change.toChange(getResourceKind()));
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                TypeJList.this.repaint();
+                ResourceList.this.repaint();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                TypeJList.this.repaint();
+                ResourceList.this.repaint();
             }
         });
         addMouseListener(new MyMouseListener());
-        this.listListeners =
-            new ListSelectionListener[] {new MySelectionListener()};
-        activateListeners();
-    }
-
-    private void activateListeners() {
-        if (this.listening) {
-            throw new IllegalStateException();
-        }
-        for (ListSelectionListener listener : this.listListeners) {
-            addListSelectionListener(listener);
-        }
-        this.listListeners = null;
-        this.listening = true;
+        addListSelectionListener(new MySelectionListener());
+        activateListening();
     }
 
     /**
-     * Removes all list selection listeners. The listeners should be added back
-     * later using {@link #activateListeners()}
+     * Sets the listening status to {@code false}, if it was not already {@code false}.
+     * @return {@code true} if listening was suspended as a result of this call;
+     * {@code false} if it was already suspended.
      */
-    private void suspendListeners() {
-        if (!this.listening) {
+    protected final boolean suspendListening() {
+        boolean result = this.listening;
+        if (result) {
+            this.listening = false;
+        }
+        return result;
+    }
+
+    /** Sets the listening flag to {@code true}. */
+    protected final void activateListening() {
+        if (this.listening) {
             throw new IllegalStateException();
         }
-        this.listListeners = getListSelectionListeners();
-        for (ListSelectionListener listener : this.listListeners) {
-            removeListSelectionListener(listener);
-        }
-        this.listening = false;
+        this.listening = true;
+    }
+
+    /** Returns the listening status. */
+    protected final boolean isListening() {
+        return this.listening;
+    }
+
+    /** Returns the resource display to which this list belongs. */
+    protected final ResourceDisplay getDisplay() {
+        return this.display;
+    }
+
+    /** Returns the resource kind of this list. */
+    protected final ResourceKind getResourceKind() {
+        return getDisplay().getResourceKind();
     }
 
     /**
@@ -122,70 +135,77 @@ public class TypeJList extends JList implements SimulatorListener {
     /**
      * Creates a popup menu.
      */
-    private JPopupMenu createPopupMenu(Point atPoint) {
+    protected JPopupMenu createPopupMenu(Point atPoint) {
         int index = locationToIndex(atPoint);
         boolean overItem =
             index != -1 && getCellBounds(index, index).contains(atPoint);
-        JPopupMenu result = this.display.createListPopupMenu(overItem);
+        JPopupMenu result = getDisplay().createListPopupMenu(overItem);
         return result;
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
-        if (changes.contains(Change.GRAMMAR)) {
-            if (source.getGrammar() == null
-                || source.getGrammar().getTypeNames().isEmpty()) {
-                setListData(new String[0]);
-                setEnabled(false);
-            } else {
-                setEnabled(true);
-                refresh();
+        if (suspendListening()) {
+            if (changes.contains(Change.GRAMMAR)) {
+                if (!source.hasGrammar()) {
+                    setListData(new String[0]);
+                    setEnabled(false);
+                } else {
+                    setEnabled(true);
+                    refreshList(getGrammar().getNames(getResourceKind()));
+                }
             }
-        } else if (changes.contains(Change.TYPE)) {
-            refresh();
+            refreshSelection(source.getSelectSet(getResourceKind()));
+            activateListening();
         }
-        activateListeners();
     }
 
     /**
-     * Refreshes the list from the grammar.
+     * Refreshes the list model from a given set of names.
+     * @param names the names to put into the list model
      */
-    private void refresh() {
-        Object[] typeNames = getGrammar().getTypeNames().toArray();
-        Arrays.sort(typeNames);
-        setListData(typeNames);
-        String selection = getSimulatorModel().getSelected(ResourceKind.TYPE);
-        // turn the selection into a set of names
-        if (selection == null) {
+    protected void refreshList(Set<String> names) {
+        Object[] nameArray = names.toArray();
+        Arrays.sort(nameArray);
+        setListData(nameArray);
+    }
+
+    /**
+     * Refreshes the list selection from a set of selected names.
+     */
+    protected void refreshSelection(Set<String> selection) {
+        if (selection.isEmpty()) {
             clearSelection();
         } else {
-            setSelectedValue(selection, true);
+            int[] indices = new int[selection.size()];
+            int count = 0;
+            for (int i = 1; i < getModel().getSize(); i++) {
+                if (selection.contains(getModel().getElementAt(i))) {
+                    indices[count] = i;
+                    count++;
+                }
+            }
+            setSelectedIndices(indices);
         }
     }
 
     /**
      * Returns the current grammar view from the simulator.
      */
-    private GrammarModel getGrammar() {
+    final protected GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
     }
 
     /** Returns the simulator to which the state list belongs. */
-    private SimulatorModel getSimulatorModel() {
-        return this.display.getSimulatorModel();
+    final protected SimulatorModel getSimulatorModel() {
+        return getDisplay().getSimulatorModel();
     }
 
     /** The display from which this list is derived. */
-    private final TypeDisplay display;
+    private final ResourceDisplay display;
+    /** Flag indicating if listeners should be active. */
     private boolean listening;
-    /**
-     * Temporary store of suspended list selection listeners.
-     * @see #suspendListeners()
-     * @see #activateListeners()
-     */
-    private ListSelectionListener[] listListeners;
     /**
      * The background colour of this component when it is enabled.
      */
@@ -214,36 +234,50 @@ public class TypeJList extends JList implements SimulatorListener {
                             setSelectedIndex(index);
                         }
                     }
-                    TypeJList.this.requestFocus();
+                    ResourceList.this.requestFocus();
                     createPopupMenu(evt.getPoint()).show(evt.getComponent(),
                         evt.getX(), evt.getY());
                 }
             } else if (evt.getClickCount() == 2) { // Left double click
-                if (TypeJList.this.isEnabled() && cellSelected) {
-                    TypeJList.this.display.getEditAction().execute();
+                if (isEnabled() && cellSelected) {
+                    getDisplay().getEditAction().execute();
                 }
             }
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            getSimulatorModel().setDisplay(DisplayKind.TYPE);
+            getSimulatorModel().setDisplay(getDisplay().getKind());
         }
     }
 
     private class MySelectionListener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            getSimulatorModel().doSelect(ResourceKind.TYPE,
-                (String) getSelectedValue());
+            if (suspendListening()) {
+                getSimulatorModel().doSelectSet(getResourceKind(),
+                    (getSelectedNames()));
+                activateListening();
+            }
+        }
+
+        /** Returns the list of selected names. */
+        private List<String> getSelectedNames() {
+            List<String> result = new ArrayList<String>();
+            for (int i = 1; i <= getMaxSelectionIndex(); i++) {
+                if (isSelectedIndex(i)) {
+                    result.add(getModel().getElementAt(i).toString());
+                }
+            }
+            return result;
         }
     }
 
     /**
-     * Cell renderer that distinguishes the name corresponding to the current
-     * start graph and to the simulation state indicator.
+     * Cell renderer that distinguishes the name, editing status, distry status
+     * and error status.
      */
-    private class MyCellRenderer extends DefaultListCellRenderer {
+    protected class ResourceCellRenderer extends DefaultListCellRenderer {
         // This is the only method defined by ListCellRenderer.
         // We just reconfigure the JLabel each time we're called.
         @Override
@@ -257,17 +291,14 @@ public class TypeJList extends JList implements SimulatorListener {
                     isSelected, false);
             // ensure some space to the left of the label
             setBorder(this.emptyBorder);
-            boolean error = TypeJList.this.display.hasError(value.toString());
+            String selection = value.toString();
+            boolean error = getDisplay().hasError(selection);
             setForeground(JAttr.getForeground(isSelected, cellHasFocus, error));
             setBackground(JAttr.getBackground(isSelected, cellHasFocus, error));
             // set tool tips and special formats
-            if (getGrammar().getTypeModel(value.toString()).isEnabled()) {
-                setToolTipText("Enabled type graph; doubleclick to edit");
-            } else {
-                setToolTipText("Disabled type graph; doubleclick to edit");
-            }
-            setIcon(TypeJList.this.display.getListIcon(value.toString()));
-            setText(TypeJList.this.display.getLabelText(value.toString()));
+            setToolTipText(getDisplay().getToolTip(selection));
+            setIcon(getDisplay().getListIcon(selection));
+            setText(getDisplay().getLabelText(selection));
             return result;
         }
 

@@ -177,9 +177,9 @@ final public class ControlDisplay extends ResourceDisplay {
 
     /** Returns the list of control programs. */
     @Override
-    final protected ControlJList getList() {
+    final protected ResourceList getList() {
         if (this.controlJList == null) {
-            this.controlJList = new ControlJList(this);
+            this.controlJList = new ResourceList(this);
         }
         return this.controlJList;
     }
@@ -193,7 +193,7 @@ final public class ControlDisplay extends ResourceDisplay {
             getDocPane().setBackground(selection == null ? null : Color.WHITE);
             getEnableButton().setSelected(
                 selection != null
-                    && selection.equals(getGrammar().getControlModel()));
+                    && selection.equals(getGrammar().getActiveControlModel()));
             if (changes.contains(Change.CONTROL) && selection != null) {
                 selectResource(selection);
             }
@@ -210,14 +210,14 @@ final public class ControlDisplay extends ResourceDisplay {
 
     @Override
     protected void decorateLabelText(String name, StringBuilder text) {
-        if (name.equals(getGrammar().getControlName())) {
+        if (name.equals(getGrammar().getActiveControlName())) {
             HTMLConverter.STRONG_TAG.on(text);
             HTMLConverter.HTML_TAG.on(text);
         }
     }
 
     /** Production system control program list. */
-    private ControlJList controlJList;
+    private ResourceList controlJList;
 
     /** Documentation tree. */
     private JTree docPane;

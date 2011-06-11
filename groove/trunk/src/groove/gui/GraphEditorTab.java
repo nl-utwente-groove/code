@@ -26,7 +26,6 @@ import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.graph.TypeGraph;
 import groove.gui.action.SnapToGridAction;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
@@ -37,9 +36,7 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.rel.RegExpr;
 import groove.util.Pair;
-import groove.view.CompositeTypeModel;
 import groove.view.FormatError;
-import groove.view.FormatException;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
@@ -115,7 +112,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
     @Override
     protected void start() {
         super.start();
-        setTypeView(getSimulatorModel().getGrammar().getTypeModel());
         AspectJModel newModel = getJGraph().newModel();
         newModel.loadGraph(getGraph());
         getJGraph().setModel(newModel);
@@ -194,7 +190,7 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
             (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
                 getName());
         if (graphModel != null) {
-            setTypeView(grammar.getTypeModel());
+            getJGraph().updateGrammar(grammar);
             // check if the properties have changed
             GraphProperties properties =
                 GraphInfo.getProperties(graphModel.getSource(), false);
@@ -205,6 +201,7 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
                 newGraph.setFixed();
                 change(newGraph);
             }
+            updateStatus();
         } else {
             dispose();
         }
@@ -267,21 +264,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
     @Override
     protected void saveResource() {
         getSaveAction().doSaveGraph(getGraph());
-    }
-
-    /** Sets the type graph for this editor. */
-    private void setTypeView(CompositeTypeModel typeView) {
-        this.type = null;
-        if (typeView != null) {
-            try {
-                this.type = typeView.toResource();
-            } catch (FormatException e) {
-                // do nothing
-            }
-        }
-        if (getJGraph().setType(this.type, null)) {
-            refresh();
-        }
     }
 
     /** Returns the jgraph component of this editor. */
@@ -677,9 +659,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
 
     /** Button for snap to grid. */
     transient JToggleButton snapToGridButton;
-
-    /** The (optional) type graph against which he edited model is checked. */
-    private TypeGraph type;
 
     /** The jgraph instance used in this editor. */
     private final AspectJGraph jgraph;

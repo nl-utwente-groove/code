@@ -16,7 +16,9 @@
  */
 package groove.view;
 
+import static groove.trans.ResourceKind.CONTROL;
 import static groove.trans.ResourceKind.HOST;
+import static groove.trans.ResourceKind.PROLOG;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.control.CtrlFactory;
@@ -40,10 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,21 +64,11 @@ public class GrammarModel implements Observer {
      * @see Groove#DEFAULT_START_GRAPH_NAME
      */
     public GrammarModel(SystemStore store) {
-        this(store, null);
-    }
-
-    /**
-     * Constructs a grammar model from a rule system store and a start graph
-     * name.
-     * @param startGraphName the name of the graph to be used as start state; if
-     *        <code>null</code>, the default start graph name is used.
-     */
-    public GrammarModel(SystemStore store, String startGraphName) {
         this.store = store;
-        loadControlMap();
-        loadPrologMap();
-        setStartGraph(startGraphName == null ? Groove.DEFAULT_START_GRAPH_NAME
-                : startGraphName);
+        setStartGraph(Groove.DEFAULT_START_GRAPH_NAME);
+        for (ResourceKind resource : ResourceKind.all(false)) {
+            syncResource(resource);
+        }
     }
 
     /** Returns the name of the rule system. */
@@ -120,29 +111,19 @@ public class GrammarModel implements Observer {
         }
     }
 
-    /** Returns a named resource model of a given kind. */
-    public ResourceModel<?> getResource(ResourceKind kind, String name) {
-        switch (kind) {
-        case CONTROL:
-            return getControlModel(name);
-        case HOST:
-            return getHostModel(name);
-        case PROLOG:
-            return getPrologModel(name);
-        case RULE:
-            return getRuleModel(name);
-        case TYPE:
-            return getTypeModel(name);
-        case PROPERTIES:
-        default:
-            assert false;
-            return null;
-        }
+    /** Returns the map from resource names to resource models of a given kind. */
+    public Map<String,ResourceModel<?>> getResourceMap(ResourceKind kind) {
+        return this.resourceMap.get(kind);
     }
 
-    /** Returns a list of all available control program names. */
-    public Set<String> getControlNames() {
-        return getNames(ResourceKind.CONTROL);
+    /** Returns the collection of resource models of a given kind. */
+    public Collection<ResourceModel<?>> getResourceSet(ResourceKind kind) {
+        return this.resourceMap.get(kind).values();
+    }
+
+    /** Returns a named resource model of a given kind. */
+    public ResourceModel<?> getResource(ResourceKind kind, String name) {
+        return getResourceMap(kind).get(name);
     }
 
     /**
@@ -152,7 +133,7 @@ public class GrammarModel implements Observer {
      *         no program by that name exists
      */
     public ControlModel getControlModel(String name) {
-        return name == null ? null : this.controlMap.get(name);
+        return (ControlModel) getResource(CONTROL, name);
     }
 
     /**
@@ -160,7 +141,7 @@ public class GrammarModel implements Observer {
      * enabled, or {@code null} otherwise. This is taken
      * from the system properties.
      */
-    public String getControlName() {
+    public String getActiveControlName() {
         return getProperties().isUseControl()
                 ? getProperties().getControlName() : null;
     }
@@ -170,13 +151,8 @@ public class GrammarModel implements Observer {
      * @return the control model for the grammar, or <code>null</code> if there
      *         is no control program loaded.
      */
-    public ControlModel getControlModel() {
-        return isUseControl() ? getControlModel(getControlName()) : null;
-    }
-
-    /** Returns an unmodifiable view on the set of graph names in this grammar. */
-    public Set<String> getHostNames() {
-        return getNames(ResourceKind.HOST);
+    public ControlModel getActiveControlModel() {
+        return isUseControl() ? getControlModel(getActiveControlName()) : null;
     }
 
     /**
@@ -185,25 +161,7 @@ public class GrammarModel implements Observer {
      *         if there is no such graph.
      */
     public HostModel getHostModel(String name) {
-        HostModel result = null;
-        AspectGraph stateGraph =
-            name == null ? null : getStore().getGraphs(HOST).get(name);
-        if (stateGraph != null) {
-            result = stateGraph.toGraphModel(getProperties());
-            TypeGraph type = null;
-            try {
-                type = getTypeModel().toResource();
-            } catch (FormatException e) {
-                // don't set the type graph
-            }
-            result.setType(type);
-        }
-        return result;
-    }
-
-    /** Returns a list of all available control program names. */
-    public Set<String> getPrologNames() {
-        return Collections.unmodifiableSet(this.prologMap.keySet());
+        return (HostModel) getResourceMap(HOST).get(name);
     }
 
     /**
@@ -213,12 +171,7 @@ public class GrammarModel implements Observer {
      *         no program by that name exists
      */
     public PrologModel getPrologModel(String name) {
-        return name == null ? null : this.prologMap.get(name);
-    }
-
-    /** Returns an unmodifiable view on the set of rule names in this grammar. */
-    public Set<String> getRuleNames() {
-        return getNames(ResourceKind.RULE);
+        return (PrologModel) getResourceMap(PROLOG).get(name);
     }
 
     /**
@@ -227,34 +180,7 @@ public class GrammarModel implements Observer {
      *         there is no such rule.
      */
     public RuleModel getRuleModel(String name) {
-        RuleModel result = null;
-        AspectGraph ruleGraph =
-            name == null ? null : getStore().getGraphs(RULE).get(name);
-        if (ruleGraph != null) {
-            result = ruleGraph.toRuleModel(getProperties());
-            boolean typed = false;
-            try {
-                TypeGraph type = getTypeModel().toResource();
-                if (type != null) {
-                    result.setType(type);
-                    typed = true;
-                }
-            } catch (FormatException e) {
-                // do nothing
-            }
-            if (!typed) {
-                result.setLabelStore(getLabelStore());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns an unmodifiable view on the set of type graph names in this
-     * grammar.
-     */
-    public Set<String> getTypeNames() {
-        return getNames(TYPE);
+        return (RuleModel) getResourceMap(RULE).get(name);
     }
 
     /**
@@ -263,21 +189,34 @@ public class GrammarModel implements Observer {
      *         <code>null</code> if there is no such graph.
      */
     public TypeModel getTypeModel(String name) {
-        AspectGraph typeGraph =
-            name == null ? null : getStore().getGraphs(TYPE).get(name);
-        return typeGraph == null ? null
-                : typeGraph.toTypeModel(getProperties());
+        return (TypeModel) getResourceMap(TYPE).get(name);
     }
 
     /**
-     * Lazily creates a list of selected type models.
-     * @return a list of type models that yield a composite type graph.
+     * Lazily creates the composite type model for this grammar.
      */
-    public CompositeTypeModel getTypeModel() {
+    public CompositeTypeModel getActiveTypeModel() {
         if (this.typeModel == null) {
             this.typeModel = new CompositeTypeModel(this);
         }
         return this.typeModel;
+    }
+
+    /**
+     * Lazily creates the type graph for this grammar.
+     * Returns {@code null} there is no type selected, or the type model has errors.
+     */
+    public TypeGraph getTypeGraph() {
+        TypeGraph result = null;
+        CompositeTypeModel model = getActiveTypeModel();
+        if (model.isEnabled()) {
+            try {
+                result = model.toResource();
+            } catch (FormatException e) {
+                // the type graph is null
+            }
+        }
+        return result;
     }
 
     /**
@@ -320,7 +259,7 @@ public class GrammarModel implements Observer {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
-        this.startGraph = startGraph.toGraphModel(getProperties());
+        this.startGraph = new HostModel(this, startGraph);
         this.startGraphName = null;
         invalidate();
     }
@@ -380,19 +319,12 @@ public class GrammarModel implements Observer {
 
     private LabelStore computeLabelStore() {
         LabelStore result = null;
-        try {
-            TypeGraph type = getTypeModel().toResource();
-            if (type != null) {
-                result = type.getLabelStore();
-            }
-        } catch (FormatException e) {
-            // do nothing
-        }
-        if (result == null) {
+        TypeGraph type = getTypeGraph();
+        if (type == null) {
             result = new LabelStore();
             for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
-                for (AspectGraph graph : getStore().getGraphs(kind).values()) {
-                    result.addLabels(graph.toModel(getProperties()).getLabels());
+                for (ResourceModel<?> model : getResourceSet(kind)) {
+                    result.addLabels(((GraphBasedModel<?>) model).getLabels());
                 }
             }
             if (getStartGraphModel() != null) {
@@ -405,6 +337,8 @@ public class GrammarModel implements Observer {
                 // do nothing
             }
             result.setFixed();
+        } else {
+            result = type.getLabelStore();
         }
         return result;
     }
@@ -449,7 +383,7 @@ public class GrammarModel implements Observer {
      * Indicates if control is explicitly enabled.
      */
     public boolean isUseControl() {
-        return getControlName() != null;
+        return getActiveControlName() != null;
     }
 
     /** 
@@ -461,9 +395,9 @@ public class GrammarModel implements Observer {
     // second default name: grammar name
     private String getDefaultControlName() {
         String result = null;
-        if (this.controlMap.containsKey(Groove.DEFAULT_CONTROL_NAME)) {
+        if (getResourceMap(CONTROL).containsKey(Groove.DEFAULT_CONTROL_NAME)) {
             result = Groove.DEFAULT_CONTROL_NAME;
-        } else if (this.controlMap.containsKey(getName())) {
+        } else if (getResourceMap(CONTROL).containsKey(getName())) {
             result = getName();
         }
         return result;
@@ -478,7 +412,7 @@ public class GrammarModel implements Observer {
             this.errors.addAll(exc.getErrors());
         }
         getPrologEnvironment();
-        for (PrologModel prologModel : this.prologMap.values()) {
+        for (ResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
                 this.errors.add(new FormatError(
                     "Error in prolog program '%s': %s", prologModel.getName(),
@@ -491,12 +425,11 @@ public class GrammarModel implements Observer {
     public Set<Rule> getRules() {
         Set<Rule> result = new HashSet<Rule>();
         // set rules
-        for (String ruleName : getRuleNames()) {
-            RuleModel ruleModel = getRuleModel(ruleName);
+        for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {
             try {
                 // only add the enabled rules
                 if (ruleModel.isEnabled()) {
-                    result.add(ruleModel.toRule());
+                    result.add(((RuleModel) ruleModel).toRule());
                 }
             } catch (FormatException exc) {
                 // do not add this rule
@@ -514,8 +447,8 @@ public class GrammarModel implements Observer {
         List<FormatError> errors = new ArrayList<FormatError>();
         // Construct the composite type graph
         try {
-            result.setType(getTypeModel().toResource(),
-                getTypeModel().getTypeGraphMap());
+            result.setType(getActiveTypeModel().toResource(),
+                getActiveTypeModel().getTypeGraphMap());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -525,12 +458,11 @@ public class GrammarModel implements Observer {
             errors.addAll(getLabelStore().getErrors());
         }
         // set rules
-        for (String ruleName : getRuleNames()) {
-            RuleModel ruleModel = getRuleModel(ruleName);
+        for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {
             try {
                 // only add the enabled rules
                 if (ruleModel.isEnabled()) {
-                    result.add(ruleModel.toRule());
+                    result.add(((RuleModel) ruleModel).toRule());
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
@@ -541,10 +473,11 @@ public class GrammarModel implements Observer {
         }
         // set control
         if (isUseControl()) {
-            ControlModel controlModel = getControlModel(getControlName());
+            ControlModel controlModel = getControlModel(getActiveControlName());
             if (controlModel == null) {
                 errors.add(new FormatError(
-                    "Control program '%s' cannot be found", getControlName()));
+                    "Control program '%s' cannot be found",
+                    getActiveControlName()));
             } else if (result.hasMultiplePriorities()) {
                 errors.add(new FormatError(
                     "Rule priorities and control programs are incompatible, please disable either."));
@@ -555,7 +488,7 @@ public class GrammarModel implements Observer {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
                             "Error in control program '%s': %s",
-                            getControlName(), error, controlModel));
+                            getActiveControlName(), error, controlModel));
                     }
                 }
             }
@@ -606,7 +539,8 @@ public class GrammarModel implements Observer {
     public GrooveEnvironment getPrologEnvironment() {
         if (this.prologEnvironment == null) {
             this.prologEnvironment = new GrooveEnvironment(null, null);
-            for (PrologModel prologModel : this.prologMap.values()) {
+            for (ResourceModel<?> model : getResourceSet(PROLOG)) {
+                PrologModel prologModel = (PrologModel) model;
                 try {
                     this.prologEnvironment.loadProgram(prologModel.getProgram());
                     prologModel.clearErrors();
@@ -634,41 +568,93 @@ public class GrammarModel implements Observer {
         }
     }
 
-    /**
-     * Reloads the control map from the backing {@link SystemStore}.
-     */
-    private void loadControlMap() {
-        this.controlMap.clear();
-        for (Map.Entry<String,String> controlEntry : this.store.getTexts(
-            ResourceKind.CONTROL).entrySet()) {
-            this.controlMap.put(controlEntry.getKey(), new ControlModel(this,
-                controlEntry.getKey(), controlEntry.getValue()));
-        }
-    }
-
-    /**
-     * Reloads the prolog map from the backing {@link SystemStore}.
-     */
-    private void loadPrologMap() {
-        this.prologMap.clear();
-        for (Map.Entry<String,String> storedRuleEntry : this.store.getTexts(
-            ResourceKind.PROLOG).entrySet()) {
-            this.prologMap.put(storedRuleEntry.getKey(), new PrologModel(
-                storedRuleEntry.getKey(), storedRuleEntry.getValue()));
-        }
-    }
-
     @Override
     public void update(Observable source, Object edit) {
         Set<ResourceKind> change = ((SystemStore.Edit) edit).getChange();
-        if (change.contains(ResourceKind.CONTROL)) {
-            loadControlMap();
-        }
-        if (change.contains(ResourceKind.PROLOG)) {
-            loadPrologMap();
-            this.prologEnvironment = null;
+        for (ResourceKind resource : change) {
+            syncResource(resource);
         }
         invalidate();
+    }
+
+    /**
+     * Synchronises the resources in the grammar model with the underlying store.
+     * @param resource the kind of resources to be synchronised
+     */
+    private void syncResource(ResourceKind resource) {
+        switch (resource) {
+        case PROLOG:
+            this.prologEnvironment = null;
+            break;
+        case PROPERTIES:
+            return;
+        }
+        // update the set of resource models
+        Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(resource);
+        Map<String,? extends Object> sourceMap;
+        if (resource.isGraphBased()) {
+            sourceMap = getStore().getGraphs(resource);
+        } else {
+            sourceMap = getStore().getTexts(resource);
+        }
+        // restrict the resources to those whose names are in the store
+        modelMap.keySet().retainAll(sourceMap.keySet());
+        // now synchronise the models with the sources in the store
+        for (Map.Entry<String,? extends Object> sourceEntry : sourceMap.entrySet()) {
+            String name = sourceEntry.getKey();
+            ResourceModel<?> model = modelMap.get(name);
+            if (model == null || model.getSource() != sourceEntry.getValue()) {
+                modelMap.put(name, createModel(resource, name));
+            }
+        }
+    }
+
+    /** Callback method to create a model for a named resource. */
+    private ResourceModel<?> createModel(ResourceKind kind, String name) {
+        ResourceModel<?> result = null;
+        if (kind.isGraphBased()) {
+            AspectGraph graph = getStore().getGraphs(kind).get(name);
+            if (graph != null) {
+                result = createGraphModel(graph);
+            }
+        } else {
+            assert kind.isTextBased();
+            String text = getStore().getTexts(kind).get(name);
+            if (text != null) {
+                switch (kind) {
+                case CONTROL:
+                    result = new ControlModel(this, name, text);
+                    break;
+                case PROLOG:
+                    result = new PrologModel(this, name, text);
+                    break;
+                default:
+                    assert false;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a graph-based resource model for a given graph.
+     */
+    public GraphBasedModel<?> createGraphModel(AspectGraph graph) {
+        GraphBasedModel<?> result = null;
+        switch (graph.getRole()) {
+        case HOST:
+            result = new HostModel(this, graph);
+            break;
+        case RULE:
+            result = new RuleModel(this, graph);
+            break;
+        case TYPE:
+            result = new TypeModel(this, graph);
+            break;
+        default:
+            assert false;
+        }
+        return result;
     }
 
     /** Mapping from resource kinds and names to resource models. */
@@ -680,14 +666,6 @@ public class GrammarModel implements Observer {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
         }
     }
-
-    /** Mapping from control names to models on the corresponding automata. */
-    private final Map<String,ControlModel> controlMap =
-        new HashMap<String,ControlModel>();
-
-    /** Mapping from prolog names to models on the corresponding programs. */
-    private final Map<String,PrologModel> prologMap =
-        new HashMap<String,PrologModel>();
 
     /** The store backing this model. */
     private final SystemStore store;
@@ -746,7 +724,7 @@ public class GrammarModel implements Observer {
         store.reload();
         GrammarModel result = store.toGrammarModel();
         if (startGraphName != null) {
-            if (result.getHostNames().contains(startGraphName)) {
+            if (result.getNames(HOST).contains(startGraphName)) {
                 result.setStartGraph(startGraphName);
             } else {
                 DefaultGraph plainGraph = Groove.loadGraph(startGraphName);

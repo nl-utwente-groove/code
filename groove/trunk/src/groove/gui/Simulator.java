@@ -816,7 +816,7 @@ public class Simulator implements SimulatorListener {
             }
             if (grammar.isUseControl()) {
                 title.append(" | ");
-                title.append(grammar.getControlName());
+                title.append(grammar.getActiveControlName());
 
             }
             if (!grammar.getStore().isModifiable()) {

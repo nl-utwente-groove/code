@@ -59,7 +59,7 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             switch (resource) {
             case CONTROL:
-                result = name.equals(grammar.getControlName());
+                result = name.equals(grammar.getActiveControlName());
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
@@ -112,7 +112,7 @@ public class SimulatorModel implements Cloneable {
         try {
             switch (resource) {
             case CONTROL:
-                result = oldName.equals(getGrammar().getControlName());
+                result = oldName.equals(getGrammar().getActiveControlName());
                 break;
             case HOST:
                 GrammarModel grammar = getGrammar();
@@ -158,7 +158,7 @@ public class SimulatorModel implements Cloneable {
             SystemProperties newProperties = oldProperties.clone();
             switch (resource) {
             case CONTROL:
-                boolean enable = !name.equals(getGrammar().getControlName());
+                boolean enable = !name.equals(getGrammar().getActiveControlName());
                 newProperties.setUseControl(enable);
                 if (enable) {
                     newProperties.setControlName(name);
@@ -196,6 +196,7 @@ public class SimulatorModel implements Cloneable {
                 getStore().putProperties(newProperties);
                 break;
             case PROLOG:
+                break;
             case PROPERTIES:
             default:
                 assert false;
@@ -247,7 +248,7 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             boolean result =
                 kind != ResourceKind.CONTROL
-                    || name.equals(grammar.getControlName());
+                    || name.equals(grammar.getActiveControlName());
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
             changeSelected(kind, name);
@@ -805,6 +806,7 @@ public class SimulatorModel implements Cloneable {
             Collection<String> names) {
         boolean result = false;
         Set<String> newSelection = new LinkedHashSet<String>(names);
+        Set<String> allNames = getGrammar().getNames(resource);
         // try to select a name
         if (newSelection.isEmpty() && getGrammar() != null) {
             String name = null;
@@ -821,17 +823,17 @@ public class SimulatorModel implements Cloneable {
                 }
             } else if (resource == ResourceKind.CONTROL) {
                 // for control, the best choice is the active control program
-                name = getGrammar().getControlName();
+                name = getGrammar().getActiveControlName();
             }
-            if (name == null && !getGrammar().getNames(resource).isEmpty()) {
+            if (name == null && !allNames.isEmpty()) {
                 // otherwise, just take the first existing name (if there is one)
-                name = getGrammar().getNames(resource).iterator().next();
+                name = allNames.iterator().next();
             }
             if (name != null) {
                 newSelection.add(name);
             }
         }
-        newSelection.retainAll(getGrammar().getNames(resource));
+        newSelection.retainAll(allNames);
         if (!newSelection.equals(getSelectSet(resource))) {
             this.resources.put(resource, newSelection);
             this.changes.add(Change.toChange(resource));

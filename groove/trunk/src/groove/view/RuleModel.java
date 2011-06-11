@@ -33,7 +33,6 @@ import groove.graph.AbstractGraph;
 import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
@@ -99,13 +98,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * Constructs a rule model from an aspect graph. The rule properties are
      * explicitly given.
      * @param graph the graph to be converted (non-null)
-     * @param properties object specifying rule properties, such as injectivity
-     *        etc (nullable)
      */
-    public RuleModel(AspectGraph graph, SystemProperties properties) {
-        super(graph);
+    public RuleModel(GrammarModel grammar, AspectGraph graph) {
+        super(grammar, graph);
         graph.testFixed(true);
-        this.systemProperties = properties;
     }
 
     /**
@@ -184,51 +180,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 : this.levelTree.getRuleModelMap();
     }
 
-    /**
-     * Sets the properties of this model. This means that the previously
-     * constructed model (if any) becomes invalid.
-     */
-    public final void setSystemProperties(SystemProperties properties) {
-        if (properties == null ? this.systemProperties != null
-                : !properties.equals(this.systemProperties)) {
-            this.systemProperties = properties;
-            invalidate();
-        }
-    }
-
-    /** Changes the type graph under against which the model should be tested. */
-    @Override
-    public void setType(TypeGraph type) {
-        if (this.type != type) {
-            this.type = type;
-            this.labelStore = type.getLabelStore();
-            invalidate();
-        }
-    }
-
     /** Returns the (possibly {@code null}) type graph of this rule. */
-    TypeGraph getType() {
-        return this.type;
+    final TypeGraph getType() {
+        return getGrammar().getTypeGraph();
     }
 
     /** Indicates if this rule is typed. */
     boolean isTyped() {
-        return this.type != null;
-    }
-
-    @Override
-    public void setLabelStore(LabelStore labelStore) {
-        // reset the type graph
-        if (isTyped()) {
-            this.type = null;
-            invalidate();
-        }
-        this.labelStore = labelStore;
-        // the label store is not really used in the construction of the rule
-        // so we don't have to invalidate but can set the store directly 
-        if (this.rule != null) {
-            this.rule.getCondition().setLabelStore(labelStore);
-        }
+        return getType() != null;
     }
 
     @Override
@@ -245,7 +204,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * @return Returns the properties.
      */
     final SystemProperties getSystemProperties() {
-        return this.systemProperties;
+        return getGrammar().getProperties();
     }
 
     /**
@@ -269,21 +228,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             && getSystemProperties().isCheckCreatorEdges();
     }
 
-    /**
-     * Invalidates any previous construction of the underlying rule. This means
-     * the rule will be reconstructed when there is a call for it, using
-     * {@link #initialise()}.
-     */
-    private void invalidate() {
-        this.rule = null;
-        this.ruleErrors = null;
-        this.levelTree = null;
-    }
-
     /** Initialises the derived data structures. */
     private void initialise() {
+        boolean init = this.ruleErrors == null || isGrammarModified();
         // only do something if there is something to be done
-        if (this.ruleErrors == null) {
+        if (init) {
             this.ruleErrors = new ArrayList<FormatError>();
             this.ruleErrors.addAll(getSource().getErrors());
             // trying to initialise with model errors, e.g. an
@@ -447,19 +396,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return new RuleGraph(name);
     }
 
-    /** The type graph for this model, if any. */
-    private TypeGraph type;
-    /** The label store for this model, if any. */
-    private LabelStore labelStore;
     /** The level tree for this rule model. */
     private LevelMap levelTree;
     /** Errors found while converting the model to a rule. */
     private List<FormatError> ruleErrors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
-    /** Rule properties set for this rule. */
-    private SystemProperties systemProperties;
-
     static private final RuleFactory ruleFactory = RuleFactory.instance();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
@@ -1854,9 +1796,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             Condition result =
                 new Condition(this.index.getName(), this.index.getOperator(),
                     pattern, root, getSystemProperties());
-            if (RuleModel.this.labelStore != null) {
-                result.setLabelStore(RuleModel.this.labelStore);
-            }
+            result.setLabelStore(getGrammar().getLabelStore());
             if (this.index.isPositive()) {
                 result.setPositive();
             }

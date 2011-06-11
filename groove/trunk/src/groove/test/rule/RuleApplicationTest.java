@@ -16,6 +16,8 @@
  */
 package groove.test.rule;
 
+import static groove.trans.ResourceKind.HOST;
+import static groove.trans.ResourceKind.RULE;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
 import groove.match.TreeMatch;
@@ -101,7 +103,7 @@ public class RuleApplicationTest {
         try {
             GrammarModel view =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (String ruleName : view.getRuleNames()) {
+            for (String ruleName : view.getNames(RULE)) {
                 test(view, ruleName);
             }
         } catch (IOException e) {
@@ -122,7 +124,7 @@ public class RuleApplicationTest {
         int i;
         for (i = 0; cont; i++) {
             String startName = ruleName + "-" + i;
-            cont = view.getHostNames().contains(startName);
+            cont = view.getNames(HOST).contains(startName);
             if (cont) {
                 test(view, ruleName, startName);
             }
@@ -148,7 +150,7 @@ public class RuleApplicationTest {
             boolean cont = true;
             for (int j = 0; cont; j++) {
                 String resultName = startName + "-" + j;
-                cont = view.getHostNames().contains(resultName);
+                cont = view.getNames(HOST).contains(resultName);
                 if (cont) {
                     results.add(view.getHostModel(resultName).toResource());
                 }

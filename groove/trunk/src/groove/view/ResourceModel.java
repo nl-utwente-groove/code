@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.trans.ResourceKind;
+import groove.view.aspect.AspectGraph;
 
 import java.util.List;
 
@@ -29,10 +30,34 @@ import java.util.List;
  */
 abstract public class ResourceModel<R> {
     /** Creates a named resource model of a given kind. */
-    public ResourceModel(ResourceKind kind, String name) {
+    public ResourceModel(GrammarModel grammar, ResourceKind kind, String name) {
+        this.grammar = grammar;
         this.kind = kind;
         this.name = name;
+        if (grammar != null) {
+            this.lastModCount = grammar.getModificationCount();
+        }
+    }
 
+    /** Returns the grammar model to which this resource belongs. */
+    public final GrammarModel getGrammar() {
+        return this.grammar;
+    }
+
+    /**
+     * Tests if the grammar has been modified since the constructor
+     * invocation or the last call of this method.
+     */
+    public final boolean isGrammarModified() {
+        boolean result = false;
+        if (getGrammar() != null) {
+            int modCount = getGrammar().getModificationCount();
+            result = (modCount != this.lastModCount);
+            if (result) {
+                this.lastModCount = modCount;
+            }
+        }
+        return result;
     }
 
     /** Returns the kind of this resource model. */
@@ -46,6 +71,13 @@ abstract public class ResourceModel<R> {
     public final String getName() {
         return this.name;
     }
+
+    /** 
+     * Returns the source object for this resource.
+     * This is the {@link String} or {@link AspectGraph} in the store
+     * from which this model is derived.
+     */
+    abstract public Object getSource();
 
     /** 
      * Indicates if this resource is currently enabled for use in the grammar.
@@ -77,8 +109,12 @@ abstract public class ResourceModel<R> {
         return !getErrors().isEmpty();
     }
 
+    /** The grammar model to which this resource belongs. */
+    private final GrammarModel grammar;
     /** The kind of this resource. */
     private final ResourceKind kind;
     /** The name of this resource. */
     private final String name;
+    /** Grammar modification count at the last invocation of #isGrammarModified(). */
+    private int lastModCount;
 }

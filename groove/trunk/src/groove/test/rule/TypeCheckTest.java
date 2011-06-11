@@ -16,6 +16,7 @@
  */
 package groove.test.rule;
 
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -58,7 +59,7 @@ public class TypeCheckTest {
         try {
             GrammarModel grammarView =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (String ruleName : grammarView.getRuleNames()) {
+            for (String ruleName : grammarView.getNames(ResourceKind.RULE)) {
                 if (this.correct.contains(ruleName)) {
                     testCorrect(grammarView, ruleName);
                 } else if (this.erroneous.contains(ruleName)) {

@@ -18,12 +18,13 @@ package groove.explore.encode;
 
 import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.ResourceModel;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -45,14 +46,12 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
         // Get the grammar from the simulator.
         GrammarModel grammar = simulator.getModel().getGrammar();
 
-        // Get all the rule names from the grammar.
-        Set<String> ruleNames = grammar.getRuleNames();
-
         // Filter the rules that are enabled, and add them one by one to a
         // a sorted map.
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();
-        for (String ruleName : ruleNames) {
-            if (grammar.getRuleModel(ruleName).isEnabled()) {
+        for (ResourceModel<?> ruleModel : grammar.getResourceSet(ResourceKind.RULE)) {
+            if (ruleModel.isEnabled()) {
+                String ruleName = ruleModel.getName();
                 enabledRules.put(ruleName, ruleName);
             }
         }

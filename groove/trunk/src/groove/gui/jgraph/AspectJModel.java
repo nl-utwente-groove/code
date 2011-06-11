@@ -23,15 +23,13 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
-import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatError;
+import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
-import groove.view.TypeModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -61,9 +59,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Creates an new model, initially without a graph loaded.
      */
     AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt,
-            SystemProperties systemProperties) {
+            GrammarModel grammar) {
         super(jVertexProt, jEdgeProt);
-        this.systemProperties = systemProperties;
+        this.grammar = grammar;
     }
 
     /** Specialises the type to a list of {@link GraphJCell}s. */
@@ -172,17 +170,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
     }
 
-    /** Sets a type graph for this JModel.
-     * The type graph is needed to correctly compute the errors in the graph.
-     * @param type the new type graph; may be {@code null}
-     */
-    public void setType(TypeGraph type) {
-        this.type = type;
-        if (getGraph() != null) {
-            syncGraph();
-        }
-    }
-
     /** 
      * Sets the extra-error flags of all the cells, based
      * on the errors in the view.
@@ -192,10 +179,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             jCell.setExtraError(false);
         }
         this.errorMap.clear();
-        GraphBasedModel<?> resource = getGraph().toModel(this.systemProperties);
-        if (this.type != null && !(resource instanceof TypeModel)) {
-            resource.setType(this.type);
-        }
+        GraphBasedModel<?> resource = this.grammar.createGraphModel(getGraph());
         for (FormatError error : resource.getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
@@ -389,12 +373,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /** The associated system properties. */
-    private final SystemProperties systemProperties;
-    /** 
-     * The (possibly {@code null}) type graph, needed to correctly 
-     * compute the errors in the graph.
-     */
-    private TypeGraph type;
+    private final GrammarModel grammar;
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     private Map<FormatError,AspectJCell> errorMap =
