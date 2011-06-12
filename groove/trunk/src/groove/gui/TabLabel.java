@@ -91,7 +91,7 @@ public class TabLabel extends JPanel {
         //tab button
         if (panel.isEditor()) {
             add(new CancelButton());
-            this.panel = (EditorTab) panel;
+            this.panel = (ResourceTab) panel;
         } else {
             this.panel = null;
         }
@@ -119,7 +119,7 @@ public class TabLabel extends JPanel {
     }
 
     /** The editor panel in this tab. */
-    private final EditorTab panel;
+    private final ResourceTab panel;
     /** The label that the icon is displayed on. */
     private final JLabel iconLabel;
 

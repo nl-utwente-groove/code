@@ -21,15 +21,22 @@ import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
+import groove.view.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.Observer;
 
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -39,9 +46,9 @@ import javax.swing.KeyStroke;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class EditorTab extends JPanel implements Tab {
+abstract public class ResourceTab extends JPanel implements Tab {
     /** Creates a panel for a given display. */
-    public EditorTab(ResourceDisplay display) {
+    public ResourceTab(ResourceDisplay display) {
         final Simulator simulator = display.getSimulator();
         this.display = display;
         this.resourceKind = display.getResourceKind();
@@ -57,10 +64,10 @@ abstract public class EditorTab extends JPanel implements Tab {
      * This method should be called directly after the constructor.
      */
     protected void start() {
-        JToolBar toolBar = createToolBar();
-        if (toolBar != null) {
+        if (isEditor()) {
             add(createToolBar(), BorderLayout.NORTH);
         }
+        add(getMainPanel());
     }
 
     /** Adds a key accelerator for a given action. */
@@ -70,6 +77,56 @@ abstract public class EditorTab extends JPanel implements Tab {
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, name);
         getInputMap(WHEN_FOCUSED).put(key, name);
         getActionMap().put(name, action);
+    }
+
+    /** Creates a panel consisting of the error panel and the status bar. */
+    private JSplitPane getMainPanel() {
+        if (this.mainPanel == null) {
+            this.mainPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getEditArea(),
+                    getErrorPanel());
+            this.mainPanel.setDividerSize(1);
+            this.mainPanel.setContinuousLayout(true);
+            this.mainPanel.setResizeWeight(0.9);
+            this.mainPanel.resetToPreferredSizes();
+            this.mainPanel.setBorder(null);
+        }
+        return this.mainPanel;
+    }
+
+    /** Lazily creates and returns the error panel. */
+    final protected ErrorListPanel getErrorPanel() {
+        if (this.errorPanel == null) {
+            this.errorPanel =
+                new ErrorListPanel(String.format("Format errors in %s",
+                    getResourceKind().getDescription()));
+            this.errorPanel.addSelectionListener(createErrorListener());
+        }
+        return this.errorPanel;
+    }
+
+    /** Callback method to construct the area where the actual editing goes on. */
+    abstract protected JComponent getEditArea();
+
+    /**
+     * Creates an observer for the error panel that will select the
+     * erroneous part of the resource upon selection of an error.
+     */
+    abstract protected Observer createErrorListener();
+
+    /**
+     * Displays a list of errors, or hides the error panel if the list is empty.
+     */
+    final protected void updateErrors() {
+        getErrorPanel().setErrors(getErrors());
+        if (getErrorPanel().isVisible()) {
+            getMainPanel().setBottomComponent(getErrorPanel());
+            getMainPanel().setDividerSize(1);
+            getMainPanel().resetToPreferredSizes();
+        } else {
+            getMainPanel().remove(getErrorPanel());
+            getMainPanel().setDividerSize(0);
+        }
     }
 
     @Override
@@ -190,8 +247,13 @@ abstract public class EditorTab extends JPanel implements Tab {
         return this.display;
     }
 
+    /** Returns the errors of the edited resource. */
+    abstract protected Collection<FormatError> getErrors();
+
     /** Indicates if the edited resource is currently in an error state. */
-    abstract protected boolean hasErrors();
+    final protected boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
     private JButton createCancelButton() {
@@ -230,6 +292,20 @@ abstract public class EditorTab extends JPanel implements Tab {
     private final ResourceKind resourceKind;
     /** The simulator to which the panel reports. */
     private final Simulator simulator;
+    /** Panel containing the edit area and error panel. */
+    private JSplitPane mainPanel;
+    /** Panel displaying format error messages. */
+    private ErrorListPanel errorPanel;
     /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */
     private TabLabel tabLabel;
+
+    /** Mouse listener that ensures doubleclicking starts an editor for this tab. */
+    protected final class EditMouseListener extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                getDisplay().getEditAction().execute();
+            }
+        }
+    }
 }

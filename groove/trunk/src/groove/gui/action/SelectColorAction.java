@@ -55,9 +55,10 @@ public class SelectColorAction extends SimulatorAction implements
         if (this.label == null) {
             checkJGraph(mainTab.getJGraph());
         }
-        mainTab.getLabelTree().addTreeSelectionListener(this);
+        LabelTree labelTree = mainTab.getEditArea().getLabelTree();
+        labelTree.addTreeSelectionListener(this);
         if (this.label == null) {
-            checkLabelTree(mainTab.getLabelTree());
+            checkLabelTree(labelTree);
         }
     }
 

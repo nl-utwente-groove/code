@@ -4,15 +4,19 @@ import groove.control.parse.CtrlTokenMaker;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
+import groove.view.FormatError;
 import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
@@ -29,7 +33,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * The tab also offers the functionality to edit the resource.
  * @author Arend Rensink
  */
-final public class TextTab extends EditorTab implements MainTab {
+final public class TextTab extends ResourceTab implements MainTab {
     /** Creates an initially empty display. */
     public TextTab(ResourceDisplay display) {
         this(display, null, null);
@@ -47,13 +51,31 @@ final public class TextTab extends EditorTab implements MainTab {
         setName(name);
         setBorder(null);
         setLayout(new BorderLayout());
-        JToolBar toolBar = createToolBar();
-        if (toolBar != null) {
-            add(createToolBar(), BorderLayout.NORTH);
-        }
-        add(new RTextScrollPane(this.textArea, true), BorderLayout.CENTER);
         this.textArea.setProgram(program);
+        updateErrors();
         start();
+    }
+
+    @Override
+    protected JComponent getEditArea() {
+        return new RTextScrollPane(this.textArea, true);
+    }
+
+    @Override
+    protected Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable observable, Object arg) {
+                if (arg != null) {
+                    FormatError error = (FormatError) arg;
+                    if (error.getNumbers().size() > 1) {
+                        int line = error.getNumbers().get(0);
+                        int column = error.getNumbers().get(1);
+                        select(line, column);
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -61,18 +83,15 @@ final public class TextTab extends EditorTab implements MainTab {
      */
     @Override
     protected JToolBar createToolBar() {
-        JToolBar result = null;
-        if (this.editing) {
-            result = super.createToolBar();
-            result.addSeparator();
-            result.add(createUndoButton());
-            result.add(this.textArea.getRedoAction());
-            result.addSeparator();
-            result.add(this.textArea.getCopyAction());
-            result.add(this.textArea.getPasteAction());
-            result.add(this.textArea.getCutAction());
-            result.add(this.textArea.getDeleteAction());
-        }
+        JToolBar result = super.createToolBar();
+        result.addSeparator();
+        result.add(createUndoButton());
+        result.add(this.textArea.getRedoAction());
+        result.addSeparator();
+        result.add(this.textArea.getCopyAction());
+        result.add(this.textArea.getPasteAction());
+        result.add(this.textArea.getCutAction());
+        result.add(this.textArea.getDeleteAction());
         return result;
     }
 
@@ -93,6 +112,7 @@ final public class TextTab extends EditorTab implements MainTab {
             getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
         setName(name);
         this.textArea.setProgram(program);
+        updateErrors();
     }
 
     @Override
@@ -100,6 +120,7 @@ final public class TextTab extends EditorTab implements MainTab {
         boolean result = name.equals(getName());
         if (result) {
             this.textArea.setProgram(null);
+            updateErrors();
         }
         return result;
     }
@@ -119,6 +140,7 @@ final public class TextTab extends EditorTab implements MainTab {
     public void setClean() {
         this.textArea.discardAllEdits();
         updateDirty();
+        updateErrors();
     }
 
     /** Returns the current program. */
@@ -127,9 +149,13 @@ final public class TextTab extends EditorTab implements MainTab {
     }
 
     @Override
-    protected boolean hasErrors() {
-        return getSimulatorModel().getGrammar().getResource(
-            getDisplay().getResourceKind(), getName()).hasErrors();
+    protected Collection<FormatError> getErrors() {
+        String name = getName();
+        if (name == null) {
+            return Collections.emptySet();
+        } else {
+            return getDisplay().getResource(name).getErrors();
+        }
     }
 
     /** Selects a given line in the text area. */
@@ -185,14 +211,7 @@ final public class TextTab extends EditorTab implements MainTab {
             getPasteAction().putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
             getCutAction().putValue(Action.SMALL_ICON, Icons.CUT_ICON);
             getDeleteAction().putValue(Action.SMALL_ICON, Icons.DELETE_ICON);
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() == 2) {
-                        getDisplay().getEditAction().execute();
-                    }
-                }
-            });
+            addMouseListener(new EditMouseListener());
         }
 
         /** 

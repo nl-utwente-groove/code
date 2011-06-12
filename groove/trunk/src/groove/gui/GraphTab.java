@@ -10,49 +10,43 @@ import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.trans.ResourceKind;
+import groove.gui.jgraph.GraphJCell;
 import groove.trans.SystemProperties;
+import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.Icon;
-import javax.swing.JTabbedPane;
 
 import org.jgraph.JGraph;
 
 /** Display tab component showing a graph-based resource. */
-final public class GraphTab extends JGraphPanel<AspectJGraph> implements
-        MainTab {
+final public class GraphTab extends ResourceTab implements MainTab {
     /**
      * Constructs the instance of this tab for a given simulator and
      * resource kind.
      */
     public GraphTab(ResourceDisplay display) {
-        super(new AspectJGraph(display.getSimulator(),
-            display.getResourceKind().getGraphRole(), false), false);
-        this.display = display;
+        super(display);
+        this.jGraph =
+            new AspectJGraph(getSimulator(), getResourceKind().getGraphRole(),
+                true);
         setFocusable(false);
         setEnabled(false);
-        initialise();
+        start();
     }
 
     @Override
-    protected void installListeners() {
-        super.installListeners();
-        addRefreshListener(SHOW_ANCHORS_OPTION);
-        addRefreshListener(SHOW_ASPECTS_OPTION);
-        addRefreshListener(SHOW_NODE_IDS_OPTION);
-        addRefreshListener(SHOW_REMARKS_OPTION);
-        addRefreshListener(SHOW_VALUE_NODES_OPTION);
+    protected void start() {
+        super.start();
         getJGraph().setToolTipEnabled(true);
         getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
             @Override
@@ -64,34 +58,65 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
                 try {
                     getSimulatorModel().doSetProperties(newProperties);
                 } catch (IOException exc) {
-                    new ErrorDialog(getComponent(),
+                    new ErrorDialog(getDisplay().createDisplayPanel(),
                         "Error while modifying type hierarchy", exc).setVisible(true);
                 }
             }
         });
-        getJGraph().addMouseListener(new MouseAdapter() {
+        getJGraph().addMouseListener(new EditMouseListener());
+    }
+
+    @Override
+    protected Observer createErrorListener() {
+        return new Observer() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    getDisplay().getEditAction().execute();
+            public void update(Observable o, Object arg) {
+                if (arg != null) {
+                    GraphJCell errorCell = getJModel().getErrorMap().get(arg);
+                    if (errorCell != null) {
+                        getJGraph().setSelectionCell(errorCell);
+                    }
                 }
             }
-        });
+        };
+    }
+
+    @Override
+    public JGraphPanel<AspectJGraph> getEditArea() {
+        if (this.graphPanel == null) {
+            this.graphPanel = new GraphPanel(getJGraph());
+        }
+        return this.graphPanel;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
+
+    @Override
+    public void setClean() {
+        // do nothing
+    }
+
+    @Override
+    protected void saveResource() {
+        // do nothing
+    }
+
+    @Override
+    protected Collection<FormatError> getErrors() {
+        AspectJModel jModel = getJModel();
+        if (jModel == null) {
+            return Collections.emptySet();
+        } else {
+            return jModel.getErrorMap().keySet();
+        }
     }
 
     @Override
     public Icon getIcon() {
         return Icons.getMainTabIcon(getResourceKind());
-    }
-
-    public String getTitle() {
-        // the title of a non-editor tab is the same as the resource name
-        return getName();
-    }
-
-    /** Returns the display on which this tab is placed. */
-    public final ResourceDisplay getDisplay() {
-        return this.display;
     }
 
     @Override
@@ -103,15 +128,17 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
     public void setResource(String name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
-            this.jModelMap.put(name, jModel = getJGraph().newModel());
+            this.jModelMap.put(name, jModel =
+                getEditArea().getJGraph().newModel());
             AspectGraph graph =
                 getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
                     name);
             jModel.loadGraph(graph);
         }
-        setJModel(jModel);
+        getEditArea().setJModel(jModel);
         setName(name);
         getTabLabel().setTitle(name);
+        updateErrors();
     }
 
     public boolean removeResource(String name) {
@@ -131,33 +158,47 @@ final public class GraphTab extends JGraphPanel<AspectJGraph> implements
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
         getJGraph().updateGrammar(grammar);
+        updateErrors();
     }
 
-    /** 
-     * Returns the component to be used to fill the tab in a 
-     * {@link JTabbedPane}, when this panel is displayed.
-     */
-    public final TabLabel getTabLabel() {
-        if (this.tabLabel == null) {
-            this.tabLabel = new TabLabel(this, getIcon(), getName());
-        }
-        return this.tabLabel;
+    /** Returns the underlying JGraph of this tab. */
+    public final AspectJGraph getJGraph() {
+        return this.jGraph;
     }
 
-    @Override
-    public Component getComponent() {
-        return this;
+    /** Returns the underlying JGraph of this tab. */
+    public final AspectJModel getJModel() {
+        return getJGraph().getModel();
     }
 
-    private ResourceKind getResourceKind() {
-        return getDisplay().getResourceKind();
-    }
-
-    /** The tab label used for this tab. */
-    private TabLabel tabLabel;
-    /** The display on which this tab is placed. */
-    private final ResourceDisplay display;
+    /** Graph panel of this tab. */
+    private GraphPanel graphPanel;
+    /** The jgraph instance used in this tab. */
+    private final AspectJGraph jGraph;
     /** Mapping from resource names to aspect models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();
+
+    private class GraphPanel extends JGraphPanel<AspectJGraph> {
+        /**
+         * Constructs the instance of this tab for a given simulator and
+         * resource kind.
+         */
+        public GraphPanel(AspectJGraph jGraph) {
+            super(jGraph, false);
+            setFocusable(false);
+            setEnabled(false);
+            initialise();
+        }
+
+        @Override
+        protected void installListeners() {
+            super.installListeners();
+            addRefreshListener(SHOW_ANCHORS_OPTION);
+            addRefreshListener(SHOW_ASPECTS_OPTION);
+            addRefreshListener(SHOW_NODE_IDS_OPTION);
+            addRefreshListener(SHOW_REMARKS_OPTION);
+            addRefreshListener(SHOW_VALUE_NODES_OPTION);
+        }
+    }
 }

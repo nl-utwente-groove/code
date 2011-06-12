@@ -197,10 +197,21 @@ public class PrologDisplay extends ResourceDisplay {
         tree.expandPath(new TreePath(rootNode.getPath()));
     }
 
+    /** Creates and results the panel for the results area and status. */
+    private JPanel getResultsPanel() {
+        if (this.resultsPanel == null) {
+            this.resultsPanel = new JPanel(new BorderLayout());
+            this.resultsPanel.setBorder(null);
+            this.results.setPreferredSize(new Dimension(0, 200));
+            this.resultsPanel.add(new JScrollPane(getResultsArea()));
+            this.resultsPanel.add(this.resultsStatus, BorderLayout.SOUTH);
+        }
+        return this.resultsPanel;
+    }
+
     private JTextArea getResultsArea() {
         if (this.results == null) {
             this.results = new JTextArea();
-            this.results.setPreferredSize(new Dimension(0, 200));
             this.results.setFont(EDIT_FONT);
             this.results.setText("");
             this.results.setEditable(false);
@@ -374,7 +385,7 @@ public class PrologDisplay extends ResourceDisplay {
      * results.
      */
     private PrologEngine getEngine() {
-        this.statusBar.setText(" ");
+        this.resultsStatus.setText(" ");
         if (this.engine == null) {
             try {
                 this.engine = new PrologEngine(getEnvironment());
@@ -548,7 +559,7 @@ public class PrologDisplay extends ResourceDisplay {
                 results.append(String.format("Unexpected return value: %s",
                     getEngine().lastReturnValue().toString()));
             }
-            this.statusBar.setText(String.format(
+            this.resultsStatus.setText(String.format(
                 "%d solution(s); Executed in %fms", this.solutionCount,
                 queryResult.getExecutionTime() / 1000000.0));
         }
@@ -568,8 +579,12 @@ public class PrologDisplay extends ResourceDisplay {
     private PrologEngine engine;
     private JComboBox queryField;
     private JTextComponent queryEdit;
+    /** Panel for the results area and status bar. */
+    private JPanel resultsPanel;
+    /** Text area for the results. */
     private JTextArea results;
-    private final JLabel statusBar = new JLabel(" ");
+    /** Status bar for the results area. */
+    private final JLabel resultsStatus = new JLabel(" ");
     private OutputStream userOutput;
 
     private JTabbedPane syntaxHelp;
@@ -650,7 +665,7 @@ public class PrologDisplay extends ResourceDisplay {
             splitPane.setOneTouchExpandable(true);
             splitPane.setDividerLocation(.4);
             splitPane.setBottomComponent(getTabPane());
-            splitPane.setTopComponent(new JScrollPane(getResultsArea()));
+            splitPane.setTopComponent(getResultsPanel());
 
             JPanel mainPane = new JPanel(new BorderLayout());
             mainPane.add(queryPane, BorderLayout.NORTH);
@@ -665,7 +680,6 @@ public class PrologDisplay extends ResourceDisplay {
 
             setLayout(new BorderLayout());
             add(sp2, BorderLayout.CENTER);
-            add(PrologDisplay.this.statusBar, BorderLayout.SOUTH);
 
         }
 
