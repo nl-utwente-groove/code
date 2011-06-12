@@ -45,16 +45,15 @@ public class DeleteAction extends SimulatorAction {
                     resource.getDescription(), addendum);
         }
         if (confirmBehaviour(Options.getDeleteOption(resource), question)) {
-            boolean cancelEditing =
-                getDisplay().cancelEdits(names.toArray(new String[0]));
-            if (cancelEditing) {
-                try {
-                    getSimulatorModel().doDelete(resource, names);
-                } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while deleting %s%s", resource.getDescription(),
-                        names.size() == 1 ? "" : "s"));
-                }
+            // we do not ask for editor cancellation,
+            // as deleting the resources makes saving edits superfluous anyway
+            try {
+                getSimulatorModel().doDelete(resource, names);
+            } catch (IOException exc) {
+                showErrorDialog(
+                    exc,
+                    String.format("Error while deleting %s%s",
+                        resource.getDescription(), names.size() == 1 ? "" : "s"));
             }
         }
     }

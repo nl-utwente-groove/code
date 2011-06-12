@@ -280,44 +280,50 @@ public class Simulator implements SimulatorListener {
             final ErrorListPanel result =
                 this.errorPanel =
                     new ErrorListPanel("Format errors in grammar");
-            result.addSelectionListener(new Observer() {
-                @Override
-                public void update(Observable observable, Object arg) {
-                    if (arg != null) {
-                        FormatError error = (FormatError) arg;
-                        ResourceKind resource = error.getResourceKind();
-                        String name = error.getResourceName();
-                        if (resource != null) {
-                            getModel().doSelect(resource, name);
-                            Tab resourceTab =
-                                getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
-                            if (resource.isGraphBased()) {
-                                AspectJGraph jGraph;
-                                if (resourceTab.isEditor()) {
-                                    jGraph =
-                                        ((GraphEditorTab) resourceTab).getJGraph();
-                                } else {
-                                    jGraph =
-                                        ((GraphTab) resourceTab).getJGraph();
-                                }
-                                // select the error cell and switch to the panel
-                                for (Element errorObject : error.getElements()) {
-                                    if (jGraph.selectJCell(errorObject)) {
-                                        break;
-                                    }
-                                }
-                            } else if (error.getNumbers().size() > 1) {
-                                int line = error.getNumbers().get(0);
-                                int column = error.getNumbers().get(1);
-                                ((TextTab) resourceTab).select(line,
-                                    column);
+            result.addSelectionListener(createErrorListener());
+        }
+        return this.errorPanel;
+    }
+
+    /**
+     * Creates an observer for the error panel that will select the
+     * erroneous part of the resource upon selection of an error.
+     */
+    private Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable observable, Object arg) {
+                if (arg != null) {
+                    FormatError error = (FormatError) arg;
+                    ResourceKind resource = error.getResourceKind();
+                    String name = error.getResourceName();
+                    if (resource != null) {
+                        getModel().doSelect(resource, name);
+                        Tab resourceTab =
+                            getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
+                        if (resource.isGraphBased()) {
+                            AspectJGraph jGraph;
+                            if (resourceTab.isEditor()) {
+                                jGraph =
+                                    ((GraphEditorTab) resourceTab).getJGraph();
+                            } else {
+                                jGraph = ((GraphTab) resourceTab).getJGraph();
                             }
+                            // select the error cell and switch to the panel
+                            for (Element errorObject : error.getElements()) {
+                                if (jGraph.selectJCell(errorObject)) {
+                                    break;
+                                }
+                            }
+                        } else if (error.getNumbers().size() > 1) {
+                            int line = error.getNumbers().get(0);
+                            int column = error.getNumbers().get(1);
+                            ((TextTab) resourceTab).select(line, column);
                         }
                     }
                 }
-            });
-        }
-        return this.errorPanel;
+            }
+        };
     }
 
     /** Error display. */

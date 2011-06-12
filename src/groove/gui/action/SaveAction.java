@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import static groove.graph.GraphRole.RULE;
 import static groove.trans.ResourceKind.HOST;
-import groove.gui.EditorTab;
+import groove.gui.ResourceTab;
 import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -49,7 +49,7 @@ public final class SaveAction extends SimulatorAction {
         boolean saved = false;
         if (confirmBehaviourOption(Options.STOP_SIMULATION_OPTION)) {
             ResourceKind resourceKind = getResourceKind();
-            EditorTab editor = getEditor();
+            ResourceTab editor = getEditor();
             String name =
                 editor == null ? getSimulatorModel().getSelected(resourceKind)
                         : editor.getName();
@@ -218,7 +218,7 @@ public final class SaveAction extends SimulatorAction {
     }
 
     /** Returns the currently selected editor tab on the appropriate display, if any. */
-    private EditorTab getEditor() {
+    private ResourceTab getEditor() {
         return getDisplay().getSelectedEditor();
     }
 

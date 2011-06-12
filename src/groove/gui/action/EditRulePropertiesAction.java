@@ -56,7 +56,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
                 true);
 
         if (dialog.showDialog(getFrame()) && confirmStopSimulation()
-            && getRuleDisplay().cancelEdits(rule.getName())) {
+            && getRuleDisplay().cancelEditResource(rule.getName(), true)) {
 
             // We go through the results of the dialog.
             GraphProperties editedProperties =

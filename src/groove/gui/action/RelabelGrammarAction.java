@@ -60,7 +60,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
     private void addAsListener(ResourceDisplay display) {
         GraphTab graphTab = (GraphTab) display.getMainTab();
         graphTab.getJGraph().addGraphSelectionListener(this);
-        graphTab.getLabelTree().addTreeSelectionListener(this);
+        graphTab.getEditArea().getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override

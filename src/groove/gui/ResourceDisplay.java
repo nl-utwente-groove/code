@@ -300,7 +300,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      * one that already exists.
      */
     public void startEditResource(String name) {
-        EditorTab result = getEditors().get(name);
+        ResourceTab result = getEditors().get(name);
         if (result == null) {
             result = createEditorTab(name);
             addEditorTab(result);
@@ -317,7 +317,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
     }
 
     /** Creates and adds an editor panel for the given graph. */
-    private void addEditorTab(EditorTab result) {
+    private void addEditorTab(ResourceTab result) {
         getTabPane().addTab("", result);
         int index = getTabPane().indexOfComponent(result);
         getTabPane().setTabComponentAt(index, result.getTabLabel());
@@ -325,7 +325,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
     }
 
     /** Callback method to create an editor tab for a given named resource. */
-    protected EditorTab createEditorTab(String name) {
+    protected ResourceTab createEditorTab(String name) {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
             AspectGraph graph =
@@ -350,7 +350,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      */
     public boolean cancelEditResource(String name, boolean confirm) {
         boolean result = true;
-        EditorTab editor = getEditors().get(name);
+        ResourceTab editor = getEditors().get(name);
         if (editor != null) {
             result = editor.cancelEditing(true);
         }
@@ -358,7 +358,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
     }
 
     /** Returns a list of all editor panels currently displayed. */
-    protected final Map<String,EditorTab> getEditors() {
+    protected final Map<String,ResourceTab> getEditors() {
         return this.editorMap;
     }
 
@@ -370,7 +370,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      */
     public boolean cancelAllEdits() {
         boolean result = true;
-        for (EditorTab editor : new ArrayList<EditorTab>(getEditors().values())) {
+        for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
             result = editor.cancelEditing(true);
             if (!result) {
                 break;
@@ -379,28 +379,10 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         return result;
     }
 
-    /** 
-     * Attempts to disposes the editor for certain aspect graphs, if any.
-     * This is done in response to a change in the graph outside the editor.
-     * @param names the graphs that are about to be changed and whose editor 
-     * therefore needs to be disposed
-     * @return {@code true} if the operation was not cancelled
-     */
-    public boolean cancelEdits(String... names) {
-        boolean result = true;
-        for (String name : names) {
-            result = cancelEditResource(name, true);
-            if (!result) {
-                break;
-            }
-        }
-        return result;
-    }
-
     /** Returns the currently selected editor tab, or {@code null} if no editor is selected. */
-    public EditorTab getSelectedEditor() {
+    public ResourceTab getSelectedEditor() {
         Tab result = getSelectedTab();
-        return result != null && result.isEditor() ? (EditorTab) result : null;
+        return result != null && result.isEditor() ? (ResourceTab) result : null;
     }
 
     /** Returns the currently selected tab, or {@code null} if no editor is selected. */
@@ -437,7 +419,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         for (int i = getTabPane().getTabCount() - 1; i >= 0; i--) {
             Tab tab = (Tab) getTabPane().getComponentAt(i);
             if (fresh && tab.isEditor()) {
-                ((EditorTab) tab).dispose();
+                ((ResourceTab) tab).dispose();
             } else {
                 tab.updateGrammar(grammar);
             }
@@ -506,7 +488,7 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
             removeMainTab();
             result = null;
         } else {
-            EditorTab editor = getEditors().get(name);
+            ResourceTab editor = getEditors().get(name);
             if (editor == null) {
                 selectMainTab(name);
                 getMainTab().repaint();
@@ -646,8 +628,8 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
     private JToggleButton enableButton;
 
     /** Mapping from graph names to editors for those graphs. */
-    private final Map<String,EditorTab> editorMap =
-        new HashMap<String,EditorTab>();
+    private final Map<String,ResourceTab> editorMap =
+        new HashMap<String,ResourceTab>();
     private TabbedDisplayPanel displayPanel;
 
     /** Flag indicating that the listeners are currently active. */

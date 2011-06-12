@@ -91,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphEditorTab extends EditorTab implements GraphModelListener,
+public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         PropertyChangeListener {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
@@ -122,9 +122,21 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         setSnapToGrid();
         initListeners();
         this.graph = null;
-        JSplitPane mainPanel = getMainPanel();
-        mainPanel.setBorder(null);
-        add(mainPanel);
+    }
+
+    @Override
+    protected Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg != null) {
+                    GraphJCell errorCell = getModel().getErrorMap().get(arg);
+                    if (errorCell != null) {
+                        getJGraph().setSelectionCell(errorCell);
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -208,8 +220,8 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
     }
 
     @Override
-    protected boolean hasErrors() {
-        return !getModel().getErrorMap().isEmpty();
+    protected Collection<FormatError> getErrors() {
+        return getModel().getErrorMap().keySet();
     }
 
     @Override
@@ -311,7 +323,7 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         getModel().syncGraph();
         updateStatus();
         this.refreshing = true;
-        getGraphPanel().refresh();
+        getEditArea().refresh();
         this.refreshing = false;
     }
 
@@ -374,7 +386,8 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
         return this.undoManager;
     }
 
-    JGraphPanel<?> getGraphPanel() {
+    @Override
+    protected JGraphPanel<?> getEditArea() {
         if (this.jGraphPanel == null) {
             JGraphPanel<?> result = this.jGraphPanel = new MyGraphPanel(this);
             result.initialise();
@@ -384,41 +397,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
             result.setEnabled(true);
         }
         return this.jGraphPanel;
-    }
-
-    /** Creates a panel consisting of the error panel and the status bar. */
-    private JSplitPane getMainPanel() {
-        if (this.mainPanel == null) {
-            this.mainPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getGraphPanel(),
-                    getErrorPanel());
-            this.mainPanel.setDividerSize(1);
-            this.mainPanel.setContinuousLayout(true);
-            this.mainPanel.setResizeWeight(0.9);
-            this.mainPanel.resetToPreferredSizes();
-        }
-        return this.mainPanel;
-    }
-
-    /** Lazily creates and returns the error panel. */
-    private ErrorListPanel getErrorPanel() {
-        if (this.errorPanel == null) {
-            final ErrorListPanel result =
-                this.errorPanel = new ErrorListPanel("Format errors in graph");
-            result.addSelectionListener(new Observer() {
-                @Override
-                public void update(Observable o, Object arg) {
-                    if (arg != null) {
-                        GraphJCell errorCell =
-                            getModel().getErrorMap().get(arg);
-                        if (errorCell != null) {
-                            getJGraph().setSelectionCell(errorCell);
-                        }
-                    }
-                }
-            });
-        }
-        return this.errorPanel;
     }
 
     /** Lazily creates and returns the error panel. */
@@ -482,29 +460,14 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
                     getStatusBar().setText(
                         String.format("%s nodes, %s edges", nodeCount,
                             edgeCount));
-                    setErrors(getModel().getErrorMap().keySet());
+                    if (!getJGraph().isInserting()) {
+                        updateErrors();
+                    }
                 }
             });
         }
         updateDirty();
-        getTabLabel().setError(!getModel().getErrorMap().isEmpty());
-    }
-
-    /**
-     * Displays a list of errors, or hides the error panel if the list is empty.
-     */
-    private void setErrors(Collection<FormatError> errors) {
-        getErrorPanel().setErrors(errors);
-        if (!getJGraph().isInserting()) {
-            if (getErrorPanel().isVisible()) {
-                getMainPanel().setBottomComponent(getErrorPanel());
-                getMainPanel().setDividerSize(1);
-                getMainPanel().resetToPreferredSizes();
-            } else {
-                getMainPanel().remove(getErrorPanel());
-                getMainPanel().setDividerSize(0);
-            }
-        }
+        getTabLabel().setError(hasErrors());
     }
 
     /** Undoes the last registered change to the Model or the View. */
@@ -668,11 +631,6 @@ public class GraphEditorTab extends EditorTab implements GraphModelListener,
 
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
-
-    /** Panel containing the graph panel and status panel. */
-    private JSplitPane mainPanel;
-    /** Panel displaying format error messages. */
-    private ErrorListPanel errorPanel;
 
     /** 
      * The number of edit steps the editor state is removed
