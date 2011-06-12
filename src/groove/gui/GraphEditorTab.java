@@ -221,6 +221,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
 
     @Override
     protected Collection<FormatError> getErrors() {
+        //        getModel().loadViewErrors();
         return getModel().getErrorMap().keySet();
     }
 

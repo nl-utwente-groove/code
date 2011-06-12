@@ -103,6 +103,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         loadViewErrors();
         this.properties = GraphInfo.getProperties(graph, false);
+        increaseModificationCount();
         this.loading = false;
     }
 
@@ -164,6 +165,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         graph.setFixed();
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
         loadViewErrors();
+        increaseModificationCount();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);
@@ -174,9 +176,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Sets the extra-error flags of all the cells, based
      * on the errors in the view.
      */
-    private void loadViewErrors() {
+    public void loadViewErrors() {
         for (AspectJCell jCell : getRoots()) {
-            jCell.setExtraError(false);
+            jCell.clearExtraErrors();
         }
         this.errorMap.clear();
         GraphBasedModel<?> resource = this.grammar.createGraphModel(getGraph());
@@ -188,7 +190,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);
-                    errorCell.setExtraError(true);
+                    errorCell.addExtraError(error);
                     break;
                 }
             }
@@ -217,13 +219,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             this.properties = new GraphProperties();
         }
         return this.properties;
-    }
-
-    /**
-     * Sets the properties of this j-model to a given properties map.
-     */
-    public final void setProperties(GraphProperties properties) {
-        this.properties = properties;
     }
 
     /**
@@ -262,6 +257,21 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         resetNodeNrs();
         return result;
+    }
+
+    /** 
+     * Returns a counter that is increased upon every modification
+     * to the model. This allows listeners to determine when cached
+     * values should be refreshed.
+     */
+    final int getModificationCount() {
+        return this.modificationCount;
+    }
+
+    private void increaseModificationCount() {
+        this.modificationCount++;
+        System.out.printf("Modification count of %s: %s%n",
+            getGraph().getName(), this.modificationCount);
     }
 
     /** 
@@ -374,8 +384,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated system properties. */
     private final GrammarModel grammar;
+    /** Counter of the number of times this model has been updated. */
+    private int modificationCount;
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
+    /** Mapping from errors to affected cells. */
     private Map<FormatError,AspectJCell> errorMap =
         new HashMap<FormatError,AspectJCell>();
     /** The set of used node numbers. */

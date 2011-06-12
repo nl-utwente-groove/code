@@ -84,7 +84,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     void reset() {
         super.reset();
         this.errors.clear();
-        this.extraError = false;
+        clearExtraErrors();
         this.aspect = NONE;
     }
 
@@ -158,17 +158,27 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     StringBuilder getEdgeDescription() {
         getEdge().testFixed(true);
         StringBuilder result = new StringBuilder();
-        AspectKind attrKind = getEdge().getAttrKind();
-        if (attrKind == ARGUMENT) {
-            result.append(new StringBuilder("Argument edge"));
-        } else if (attrKind.isTypedData()) {
-            result.append(new StringBuilder("Operation edge"));
+        if (hasError()) {
+            for (FormatError error : this.extraErrors) {
+                if (result.length() > 0) {
+                    result.append("<br>");
+                }
+                result.append(error.toString());
+            }
+            HTMLConverter.red.on(result);
         } else {
-            result.append(super.getEdgeDescription());
-        }
-        if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
-            result.append("<br>"
-                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            AspectKind attrKind = getEdge().getAttrKind();
+            if (attrKind == ARGUMENT) {
+                result.append(new StringBuilder("Argument edge"));
+            } else if (attrKind.isTypedData()) {
+                result.append(new StringBuilder("Operation edge"));
+            } else {
+                result.append(super.getEdgeDescription());
+            }
+            if (AspectJModel.ROLE_DESCRIPTIONS.containsKey(this.aspect)) {
+                result.append("<br>"
+                    + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            }
         }
         return result;
     }
@@ -186,6 +196,39 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public List<StringBuilder> getLines() {
+        updateCachedValues();
+        return this.lines;
+    }
+
+    @Override
+    public Collection<? extends Label> getListLabels() {
+        updateCachedValues();
+        return this.listLabels;
+    }
+
+    /** 
+     * Updates the cached values of {@link #lines} and {@link #listLabels},
+     * if the model has been modified in the meantime.
+     */
+    private void updateCachedValues() {
+        if (isModelModified() || this.lines == null) {
+            this.lines = computeLines();
+            this.listLabels = computeListLabels();
+        }
+    }
+
+    /** Reports if the model has been modified since the last call to this method. */
+    private boolean isModelModified() {
+        int modelModCount = getJGraph().getModel().getModificationCount();
+        boolean result = (modelModCount != this.lastModelModCount);
+        if (result) {
+            this.lastModelModCount = modelModCount;
+        }
+        return result;
+    }
+
+    /** Recomputes the set of node lines for this aspect node. */
+    private List<StringBuilder> computeLines() {
         if (isSourceLabel() || this.aspect == REMARK
             && !getJGraph().isShowRemarks()) {
             return Collections.emptyList();
@@ -214,8 +257,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return result;
     }
 
-    @Override
-    public Collection<? extends Label> getListLabels() {
+    /** Recomputes the set of list labels for this aspect node. */
+    private Collection<? extends Label> computeListLabels() {
         if (hasError()) {
             return getUserObject().toLabels();
         } else if (this.aspect.isMeta()) {
@@ -262,15 +305,18 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public final boolean hasError() {
-        return this.extraError || !this.errors.isEmpty();
+        return !this.extraErrors.isEmpty() || !this.errors.isEmpty();
     }
 
     @Override
-    public void setExtraError(boolean error) {
-        if (this.extraError != error) {
-            this.extraError = error;
-            refreshAttributes();
-        }
+    public void clearExtraErrors() {
+        this.extraErrors.clear();
+    }
+
+    @Override
+    public void addExtraError(FormatError error) {
+        this.extraErrors.add(error);
+        refreshAttributes();
     }
 
     /** Returns the (possibly empty) set of errors in this JEdge. */
@@ -378,11 +424,17 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
+    /** Cached lines. */
+    private List<StringBuilder> lines;
+    /** Cached list labels. */
+    private Collection<? extends Label> listLabels;
+    /** Model modification count at the last time the lines were computed. */
+    private int lastModelModCount;
     private AspectKind aspect;
 
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
 
-    private boolean extraError;
+    private List<FormatError> extraErrors = new ArrayList<FormatError>();
 
     /** Returns a prototype {@link AspectJEdge} for a given {@link AspectJGraph}. */
     public static AspectJEdge getPrototype(AspectJGraph jGraph) {
