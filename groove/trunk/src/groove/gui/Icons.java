@@ -228,6 +228,8 @@ public final class Icons {
     public static final ImageIcon GO_NEXT_ICON = createIcon("go-next.gif");
     /** Icon for normal forward movement. */
     public static final ImageIcon GO_START_ICON = createIcon("go-start.gif");
+    /** Icon for stopping movement. */
+    public static final ImageIcon GO_STOP_ICON = createIcon("go-stop.gif");
     /** Icon for fast-backward movement. */
     public static final ImageIcon GO_REWIND_ICON = createIcon("go-rewind.gif");
     /** Icon for GPS folders. */
@@ -286,6 +288,8 @@ public final class Icons {
     public static final ImageIcon OPEN_ICON = createIcon("open.gif");
     /** Paste action icon. */
     public static final ImageIcon PASTE_ICON = createIcon("paste.gif");
+    /** Pin icon. */
+    public static final ImageIcon PIN_ICON = createIcon("pin.gif");
     /** Preview action icon. */
     public static final ImageIcon PREVIEW_ICON = createIcon("preview.gif");
     /** Icon for Prolog Panel. */

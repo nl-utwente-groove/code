@@ -32,7 +32,6 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -249,8 +248,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
         }
         insertTab(null, null, display.getDisplayPanel(), myKind.getTip(), index);
-        JLabel tabComponent = new JLabel(myKind.getTabIcon());
-        tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
+        DetachTabLabel tabComponent =
+            new DetachTabLabel(this, display, myKind.getTabIcon(), null);
+        //        tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
         // now add the corresponding list panel
@@ -346,11 +346,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     private void setTabEnabled(int index, boolean enabled) {
-        JLabel label = (JLabel) getTabComponentAt(index);
+        DetachTabLabel label = (DetachTabLabel) getTabComponentAt(index);
         if (label != null) {
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);
-            label.setText(enabled ? getDisplayAt(index).getKind().getTitle()
+            label.setTitle(enabled ? getDisplayAt(index).getKind().getTitle()
                     : null);
         }
     }
