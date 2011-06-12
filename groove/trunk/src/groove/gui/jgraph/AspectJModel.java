@@ -270,8 +270,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     private void increaseModificationCount() {
         this.modificationCount++;
-        System.out.printf("Modification count of %s: %s%n",
-            getGraph().getName(), this.modificationCount);
     }
 
     /** 
