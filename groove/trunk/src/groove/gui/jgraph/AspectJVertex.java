@@ -67,7 +67,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     void reset(Node node) {
         super.reset(node);
         this.errors.clear();
-        this.extraError = false;
+        clearExtraErrors();
         this.aspect = AspectKind.NONE;
     }
 
@@ -161,30 +161,73 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
-        if (getNode().getAttrKind().isData()) {
-            if (getNode().getAttrAspect().hasContent()) {
-                result.append("Constant node");
-            } else {
-                result.append("Variable node");
+        if (hasError()) {
+            for (FormatError error : this.extraErrors) {
+                if (result.length() > 0) {
+                    result.append("<br>");
+                }
+                result.append(error.toString());
             }
-        } else if (getNode().hasAttrAspect()) {
-            result.append("Product node");
+            HTMLConverter.red.on(result);
         } else {
-            result.append(super.getNodeDescription());
-        }
-        if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
-            HTMLConverter.toUppercase(result, false);
-            result.insert(0, " ");
-            result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
-            result.append("<br>"
-                + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            if (getNode().getAttrKind().isData()) {
+                if (getNode().getAttrAspect().hasContent()) {
+                    result.append("Constant node");
+                } else {
+                    result.append("Variable node");
+                }
+            } else if (getNode().hasAttrAspect()) {
+                result.append("Product node");
+            } else {
+                result.append(super.getNodeDescription());
+            }
+            if (AspectJModel.ROLE_NAMES.containsKey(this.aspect)) {
+                HTMLConverter.toUppercase(result, false);
+                result.insert(0, " ");
+                result.insert(0, AspectJModel.ROLE_NAMES.get(this.aspect));
+                result.append("<br>"
+                    + AspectJModel.ROLE_DESCRIPTIONS.get(this.aspect));
+            }
         }
         return result;
     }
 
     /** Adds a quantifier, if the nesting aspect justifies this. */
     @Override
-    public List<StringBuilder> getLines() {
+    final public List<StringBuilder> getLines() {
+        updateCachedValues();
+        return this.lines;
+    }
+
+    @Override
+    public Collection<? extends Label> getListLabels() {
+        updateCachedValues();
+        return this.listLabels;
+    }
+
+    /** 
+     * Updates the cached values of {@link #lines} and {@link #listLabels},
+     * if the model has been modified in the meantime.
+     */
+    private void updateCachedValues() {
+        if (isModelModified() || this.lines == null) {
+            this.lines = computeLines();
+            this.listLabels = computeListLabels();
+        }
+    }
+
+    /** Reports if the model has been modified since the last call to this method. */
+    private boolean isModelModified() {
+        int modelModCount = getJGraph().getModel().getModificationCount();
+        boolean result = (modelModCount != this.lastModelModCount);
+        if (result) {
+            this.lastModelModCount = modelModCount;
+        }
+        return result;
+    }
+
+    /** Recomputes the set of node lines for this aspect node. */
+    private List<StringBuilder> computeLines() {
         getNode().testFixed(true);
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         // show the node identity
@@ -354,8 +397,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         }
     }
 
-    @Override
-    public Collection<? extends Label> getListLabels() {
+    /** Recomputes the set of list labels for this aspect node. */
+    private Collection<? extends Label> computeListLabels() {
         getNode().testFixed(true);
         Collection<Label> result;
         if (hasError()) {
@@ -430,15 +473,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     public final boolean hasError() {
-        return this.extraError || !this.errors.isEmpty();
+        return !this.extraErrors.isEmpty() || !this.errors.isEmpty();
     }
 
     @Override
-    public void setExtraError(boolean error) {
-        if (this.extraError != error) {
-            this.extraError = error;
-            refreshAttributes();
-        }
+    public void clearExtraErrors() {
+        this.extraErrors.clear();
+    }
+
+    @Override
+    public void addExtraError(FormatError error) {
+        this.extraErrors.add(error);
+        refreshAttributes();
     }
 
     /** Returns the (possibly empty) set of errors in this JVertex. */
@@ -551,10 +597,16 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
+    /** Cached lines. */
+    private List<StringBuilder> lines;
+    /** Cached list labels. */
+    private Collection<? extends Label> listLabels;
+    /** Model modification count at the last time the lines were computed. */
+    private int lastModelModCount;
     /** The role of the underlying rule node. */
     private AspectKind aspect;
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
-    private boolean extraError;
+    private List<FormatError> extraErrors = new ArrayList<FormatError>();
 
     /** Returns a prototype {@link AspectJVertex} for a given {@link AspectJGraph}. */
     public static AspectJVertex getPrototype(AspectJGraph jGraph) {

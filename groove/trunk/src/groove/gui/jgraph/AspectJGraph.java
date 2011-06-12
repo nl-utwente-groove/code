@@ -134,6 +134,8 @@ final public class AspectJGraph extends GraphJGraph {
         AspectJModel model = getModel();
         if (model != null) {
             model.syncGraph();
+            getGraphLayoutCache().reload();
+            refresh();
         }
     }
 

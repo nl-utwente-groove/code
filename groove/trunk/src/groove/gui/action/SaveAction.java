@@ -2,10 +2,10 @@ package groove.gui.action;
 
 import static groove.graph.GraphRole.RULE;
 import static groove.trans.ResourceKind.HOST;
-import groove.gui.ResourceTab;
 import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
+import groove.gui.ResourceTab;
 import groove.gui.Simulator;
 import groove.gui.TextTab;
 import groove.gui.dialog.SaveDialog;
@@ -40,7 +40,6 @@ public final class SaveAction extends SimulatorAction {
         if (!saveAs) {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
-        simulator.addAccelerator(this);
         this.saveAs = saveAs;
     }
 
@@ -75,8 +74,8 @@ public final class SaveAction extends SimulatorAction {
                     this.saveAs ? doSaveTextAs(name, text) : doSaveText(name,
                         text);
             }
-            if (saved) {
-                getEditor().setClean();
+            if (editor != null && saved) {
+                editor.setClean();
             }
         }
     }
