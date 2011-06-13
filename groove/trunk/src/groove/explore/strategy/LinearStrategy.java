@@ -51,17 +51,17 @@ public class LinearStrategy extends AbstractStrategy {
 
     @Override
     public boolean next() {
-        if (getAtState() == null) {
+        if (getState() == null) {
             return false;
         }
         MatchResult match = getMatch();
         if (match != null) {
-            getMatchApplier().apply(getAtState(), match);
+            getMatchApplier().apply(getState(), match);
             if (closeExit()) {
-                setClosed(getAtState(), false);
+                setClosed(getState(), false);
             }
         } else {
-            setClosed(getAtState(), true);
+            setClosed(getState(), true);
         }
         return updateAtState();
     }

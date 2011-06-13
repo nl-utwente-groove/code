@@ -62,6 +62,9 @@ public interface Strategy {
      */
     public boolean next();
 
+    /** Returns the next state to be explored by the strategy. */
+    public GraphState getState();
+
     /**
      * Adds an acceptor to the strategy.
      */

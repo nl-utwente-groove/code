@@ -44,13 +44,13 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     public boolean next() {
-        if (getAtState() == null) {
+        if (getState() == null) {
             return false;
         }
         for (MatchResult next : createMatchCollector().getMatchSet()) {
-            getMatchApplier().apply(getAtState(), next);
+            getMatchApplier().apply(getState(), next);
         }
-        setClosed(getAtState(), true);
+        setClosed(getState(), true);
         return updateAtState();
     }
 
@@ -66,7 +66,7 @@ public abstract class AbstractStrategy implements Strategy {
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore. Is updated by {@link #updateAtState()}.
      */
-    protected GraphState getAtState() {
+    public GraphState getState() {
         return this.atState;
     }
 
@@ -94,7 +94,7 @@ public abstract class AbstractStrategy implements Strategy {
      * state and related information.
      */
     protected MatchSetCollector createMatchCollector() {
-        return new MatchSetCollector(getAtState(), getRecord(),
+        return new MatchSetCollector(getState(), getRecord(),
             getGTS().checkDiamonds());
     }
 

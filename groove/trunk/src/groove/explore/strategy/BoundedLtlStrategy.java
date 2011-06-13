@@ -103,7 +103,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
         // else we have to do it now...
         else {
             Set<? extends GraphTransition> outTransitions =
-                getGTS().outEdgeSet(getAtState());
+                getGTS().outEdgeSet(getState());
             Set<String> applicableRules = filterRuleNames(outTransitions);
 
             for (BuchiTransition nextPropertyTransition : getAtBuchiLocation().outTransitions()) {

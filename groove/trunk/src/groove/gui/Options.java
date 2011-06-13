@@ -416,6 +416,9 @@ public class Options implements Cloneable {
     public static final String ABOUT_ACTION_NAME = "About";
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
+    /** Animation action name */
+    public static final String ANIMATE_ACTION_NAME =
+        "Animate State Exploration";
     /** Apply transition action name */
     public static final String APPLY_MATCH_ACTION_NAME = "Apply selected match";
     /** Back action name */
@@ -454,8 +457,7 @@ public class Options implements Cloneable {
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Default exploration action name */
-    public static final String DEFAULT_EXPLORATION_ACTION_NAME =
-        "Explore State Space";
+    public static final String EXPLORE_ACTION_NAME = "Explore State Space";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
     /** Edge mode action name */

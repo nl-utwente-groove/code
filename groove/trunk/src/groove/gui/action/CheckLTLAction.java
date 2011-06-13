@@ -44,7 +44,7 @@ public class CheckLTLAction extends ExploreAction {
      */
     public CheckLTLAction(Simulator simulator, StrategyValue strategyType,
             String name) {
-        super(simulator);
+        super(simulator, false);
         assert StrategyValue.LTL_STRATEGIES.contains(strategyType);
         putValue(Action.NAME, name);
         putValue(Action.SHORT_DESCRIPTION, strategyType.getDescription());

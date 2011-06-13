@@ -231,7 +231,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             GraphState newState = source.getState();
             if (newState == null) {
                 clearSelectedMatch(true);
-                setStateModel(null);
+                displayState(null);
             } else {
                 GraphTransition transition = oldModel.getTransition();
                 GraphState target =
@@ -242,7 +242,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                         getAspectMap(newState), morphism);
                 }
                 // set the graph model to the new state
-                setStateModel(newState);
+                displayState(newState);
             }
         }
         if (changes.contains(MATCH)) {
@@ -271,7 +271,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         this.stateToAspectMap.clear();
         // only change the displayed model if we are currently displaying a
         // state
-        setStateModel(getSimulatorModel().getState());
+        displayState(getSimulatorModel().getState());
         refreshStatus();
     }
 
@@ -281,7 +281,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      */
     private void selectMatch(Proof match) {
         assert match != null : "Match update should not be called with empty match";
-        setStateModel(getSimulatorModel().getState());
+        displayState(getSimulatorModel().getState());
         AspectJModel jModel = getJModel();
         HostToAspectMap aspectMap =
             getAspectMap(getSimulatorModel().getState());
@@ -305,7 +305,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     }
 
     /** Changes the display to a given state. */
-    private void setStateModel(GraphState state) {
+    public void displayState(GraphState state) {
         clearSelectedMatch(true);
         setJModel(state == null ? null : getAspectJModel(state));
         getTabLabel().setTitle(getTitle());

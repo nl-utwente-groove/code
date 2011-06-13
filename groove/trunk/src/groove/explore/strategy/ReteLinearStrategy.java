@@ -68,12 +68,12 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
         MatchResult event = getMatch();
         if (event != null) {
-            getMatchApplier().apply(getAtState(), event);
+            getMatchApplier().apply(getState(), event);
             if (closeExit()) {
-                setClosed(getAtState(), false);
+                setClosed(getState(), false);
             }
         } else {
-            setClosed(getAtState(), true);
+            setClosed(getState(), true);
         }
         updateAtState();
         return true;

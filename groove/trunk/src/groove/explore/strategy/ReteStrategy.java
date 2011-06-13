@@ -41,7 +41,7 @@ public class ReteStrategy extends AbstractStrategy {
     @Override
     public boolean next() {
         ReteStrategyNextReporter.start();
-        if (getAtState() == null) {
+        if (getState() == null) {
             unprepare();
             getGTS().removeLTSListener(this.exploreListener);
             ReteStrategyNextReporter.stop();
@@ -55,12 +55,12 @@ public class ReteStrategy extends AbstractStrategy {
 
         for (MatchResult nextMatch : ruleMatches) {
             GraphTransition trans =
-                getMatchApplier().apply(getAtState(), nextMatch);
+                getMatchApplier().apply(getState(), nextMatch);
             outTransitions.add(trans.target());
         }
 
         addToPool(outTransitions);
-        setClosed(getAtState(), true);
+        setClosed(getState(), true);
         this.deltaAccumulator = new DeltaStore();
         updateAtState();
         ReteStrategyNextReporter.stop();

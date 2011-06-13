@@ -45,6 +45,8 @@ public class Exploration {
 
     private Result lastResult;
 
+    private GraphState lastState;
+
     private boolean interrupted;
 
     /**
@@ -142,6 +144,13 @@ public class Exploration {
     }
 
     /**
+     * Getter for the state in which the last exploration ended. 
+     */
+    public GraphState getLastState() {
+        return this.lastState;
+    }
+
+    /**
      * Getter for the isInterrupted flag. 
      */
     public Boolean isInterrupted() {
@@ -215,6 +224,7 @@ public class Exploration {
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
+        this.lastState = parsedStrategy.getState();
     }
 
     /**
