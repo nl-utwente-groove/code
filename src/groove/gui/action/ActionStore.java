@@ -18,6 +18,7 @@ package groove.gui.action;
 
 import groove.gui.DisplayKind;
 import groove.gui.GraphTab;
+import groove.gui.HostDisplay;
 import groove.gui.LTSDisplay;
 import groove.gui.Refreshable;
 import groove.gui.ResourceDisplay;
@@ -187,7 +188,7 @@ public class ActionStore implements SimulatorListener {
     private final Map<ResourceKind,SimulatorAction> deleteActionMap =
         new EnumMap<ResourceKind,SimulatorAction>(ResourceKind.class);
 
-    /** Returns the delete action appropriate for a given resource kind. */
+    /** Returns the edit action appropriate for a given resource kind. */
     public EditAction getEditAction(ResourceKind resource) {
         EditAction result = this.editActionMap.get(resource);
         if (result == null) {
@@ -199,6 +200,16 @@ public class ActionStore implements SimulatorListener {
 
     private final Map<ResourceKind,EditAction> editActionMap =
         new EnumMap<ResourceKind,EditAction>(ResourceKind.class);
+
+    /** Returns the state edit action. */
+    public EditStateAction getEditStateAction() {
+        if (this.editStateAction == null) {
+            this.editStateAction = new EditStateAction(this.simulator);
+        }
+        return this.editStateAction;
+    }
+
+    private EditStateAction editStateAction;
 
     /**
      * Returns the properties edit action permanently associated with this
@@ -326,8 +337,22 @@ public class ActionStore implements SimulatorListener {
         return this.exportActionMap.get(kind);
     }
 
-    private Map<DisplayKind,ExportAction> exportActionMap =
+    private final Map<DisplayKind,ExportAction> exportActionMap =
         new EnumMap<DisplayKind,ExportAction>(DisplayKind.class);
+
+    /** Returns the export action appropriate for a given simulator tab kind. */
+    public ExportAction getExportStateAction() {
+        if (this.exportStateAction == null) {
+            HostDisplay display =
+                (HostDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
+                    DisplayKind.HOST);
+            this.exportStateAction =
+                display.getStateTab().getJGraph().getExportAction();
+        }
+        return this.exportStateAction;
+    }
+
+    private ExportAction exportStateAction;
 
     /**
      * Returns the forward (= repeat) simulation action permanently associated
@@ -639,6 +664,26 @@ public class ActionStore implements SimulatorListener {
      */
     private Map<ResourceKind,SaveAction> saveAsActionMap =
         new EnumMap<ResourceKind,SaveAction>(ResourceKind.class);
+
+    /** Returns the state save action. */
+    public SaveStateAction getSaveStateAction() {
+        if (this.saveStateAction == null) {
+            this.saveStateAction = new SaveStateAction(this.simulator, false);
+        }
+        return this.saveStateAction;
+    }
+
+    private SaveStateAction saveStateAction;
+
+    /** Returns the state save as action. */
+    public SaveStateAction getSaveStateAsAction() {
+        if (this.saveStateAsAction == null) {
+            this.saveStateAsAction = new SaveStateAction(this.simulator, true);
+        }
+        return this.saveStateAsAction;
+    }
+
+    private SaveStateAction saveStateAsAction;
 
     /**
      * Returns the Save LTS As action permanently associated with this simulator.

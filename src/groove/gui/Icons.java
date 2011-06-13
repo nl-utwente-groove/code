@@ -214,6 +214,8 @@ public final class Icons {
     public static final ImageIcon EDIT_TYPE_ICON = createIcon("edit-T.gif");
     /** Prolog edit action icon. */
     public static final ImageIcon EDIT_PROLOG_ICON = createIcon("edit-P.gif");
+    /** State edit action icon. */
+    public static final ImageIcon EDIT_STATE_ICON = createIcon("edit-S.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
     /** Export action icon. */
@@ -320,9 +322,24 @@ public final class Icons {
     public static final ImageIcon SAVE_AS_ICON = createIcon("saveas.gif");
     /** Select action icon. */
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
+    /** Closed state icon. */
+    public static final ImageIcon STATE_CLOSED_ICON =
+        createIcon("state-closed.gif");
+    /** Closed state icon. */
+    public static final ImageIcon STATE_FINAL_ICON =
+        createIcon("state-final.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON =
         createIcon("state-mode.gif");
+    /** Open state icon. */
+    public static final ImageIcon STATE_OPEN_ICON =
+        createIcon("state-open.gif");
+    /** Closed state icon. */
+    public static final ImageIcon STATE_RESULT_ICON =
+        createIcon("state-result.gif");
+    /** Start state icon. */
+    public static final ImageIcon STATE_START_ICON =
+        createIcon("state-start.gif");
     /** Icon for type (GTY) files. */
     public static final ImageIcon TYPE_FILE_ICON = createIcon("type-file.gif");
     /** Icon for Type Panel. */

@@ -48,7 +48,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public DisplaysPanel(final Simulator simulator) {
         super(TOP);
         this.simulator = simulator;
-        addTab(getStateDisplay());
+        addTab(getHostDisplay());
         addTab(getRuleDisplay());
         addTab(simulator.getLtsDisplay());
         addTab(simulator.getControlDisplay());
@@ -66,11 +66,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
         this.displaysMap.put(kind, component);
-        if (kind != DisplayKind.RULE) {
-            JPanel listPanel = component.getListPanel();
-            this.listKindMap.put(listPanel, kind);
-            this.listsMap.put(kind, listPanel);
-        }
+        this.listKindMap.put(component.getListPanel(), kind);
         attach(component);
     }
 
@@ -113,7 +109,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the state and graph display shown on this panel. */
-    public HostDisplay getStateDisplay() {
+    public HostDisplay getHostDisplay() {
         if (this.stateDisplay == null) {
             this.stateDisplay = new HostDisplay(this.simulator);
         }
@@ -136,25 +132,35 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.typeDisplay;
     }
 
-    /** Tabbed pane holding the rule list.
+    /** Upper tabbed pane holding the list panels of the various components on the 
+     * {@link DisplaysPanel}.
      * @see Display#getListPanel()
      */
-    public JTabbedPane getRuleListPanel() {
-        if (this.rulePanel == null) {
-            this.rulePanel = new JTabbedPane();
+    public JTabbedPane getUpperListPanel() {
+        if (this.upperListsPanel == null) {
+            this.upperListsPanel = new JTabbedPane();
         }
-        return this.rulePanel;
+        return this.upperListsPanel;
     }
 
-    /** Tabbed pane holding the list panels of the various components on the 
-     * {@link DisplaysPanel}, except for the rule list.
+    /** Lower tabbed pane holding the list panels of the various components on the 
+     * {@link DisplaysPanel}.
      * @see Display#getListPanel()
      */
-    public JTabbedPane getListsPanel() {
-        if (this.listsPanel == null) {
-            this.listsPanel = new JTabbedPane();
+    public JTabbedPane getLowerListsPanel() {
+        if (this.lowerListsPanel == null) {
+            this.lowerListsPanel = new JTabbedPane();
         }
-        return this.listsPanel;
+        return this.lowerListsPanel;
+    }
+
+    /** Indicates is a list panel should go onto the upper or the lower pane. */
+    private JTabbedPane getListsPanel(DisplayKind kind) {
+        if (kind == DisplayKind.LTS || kind == DisplayKind.RULE) {
+            return getUpperListPanel();
+        } else {
+            return getLowerListsPanel();
+        }
     }
 
     @Override
@@ -172,10 +178,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                     window.toFront();
                 }
             }
-            JPanel listPanel = this.listsMap.get(source.getDisplay());
-            if (listPanel != null
-                && getListsPanel().indexOfComponent(listPanel) >= 0) {
-                getListsPanel().setSelectedComponent(listPanel);
+            JPanel listPanel =
+                getDisplayFor(source.getDisplay()).getListPanel();
+            JTabbedPane listsPabel = getListsPanel(source.getDisplay());
+            if (listsPabel.indexOfComponent(listPanel) >= 0) {
+                listsPabel.setSelectedComponent(listPanel);
             }
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
@@ -255,26 +262,19 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         setTabComponentAt(index, tabComponent);
         // now add the corresponding list panel
         JPanel listPanel = display.getListPanel();
-        JTabbedPane tabbedPane = null;
-        if (display.getKind() == DisplayKind.RULE) {
-            tabbedPane = getRuleListPanel();
-            index = 0;
-        } else if (listPanel != null
-            && getListsPanel().indexOfComponent(listPanel) < 0) {
-            tabbedPane = getListsPanel();
-            for (index = 0; index < getListsPanel().getTabCount(); index++) {
+        JTabbedPane tabbedPane = getListsPanel(display.getKind());
+        if (tabbedPane.indexOfComponent(listPanel) < 0) {
+            for (index = 0; index < tabbedPane.getTabCount(); index++) {
                 DisplayKind otherKind =
-                    this.listKindMap.get(getListsPanel().getComponentAt(index));
+                    this.listKindMap.get(tabbedPane.getComponentAt(index));
                 if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                     // insert here
                     break;
                 }
             }
         }
-        if (tabbedPane != null) {
-            tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
-                myKind.getTip(), index);
-        }
+        tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
+            myKind.getTip(), index);
         setSelectedComponent(display.getDisplayPanel());
     }
 
@@ -404,10 +404,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping from display kinds to the corresponding panels. */
     private final Map<DisplayKind,Display> displaysMap =
         new HashMap<DisplayKind,Display>();
-    /** Mapping from display kinds to the corresponding (possibly {@code null})
-     * label lists. */
-    private final Map<DisplayKind,JPanel> listsMap =
-        new HashMap<DisplayKind,JPanel>();
     /** Mapping of currently detached displays. */
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
@@ -417,10 +413,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private RuleDisplay ruleDisplay;
     /** The type tab shown on this panel. */
     private TypeDisplay typeDisplay;
-    /** Panel with the rule list. */
-    private JTabbedPane rulePanel;
-    /** Panel with the graphs and types lists. */
-    private JTabbedPane listsPanel;
+    /** Panel with the rules and states lists. */
+    private JTabbedPane upperListsPanel;
+    /** Panel with the other resource lists. */
+    private JTabbedPane lowerListsPanel;
     /** Listener to tab changes. */
     private ChangeListener tabListener;
     /** Flag indicating that the {@link #tabListener} has caused a 

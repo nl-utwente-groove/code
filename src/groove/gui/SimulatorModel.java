@@ -500,6 +500,9 @@ public class SimulatorModel implements Cloneable {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
         }
+        if (gts != null && getState() == null) {
+            changeState(gts.startState());
+        }
         if (switchTab) {
             changeDisplay(DisplayKind.LTS);
         }

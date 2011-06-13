@@ -1,7 +1,6 @@
 package groove.gui.action;
 
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
-import groove.graph.Graph;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
@@ -13,10 +12,10 @@ import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.PrologDisplay;
 import groove.gui.Refreshable;
+import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.ResourceDisplay;
 import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
@@ -165,7 +164,7 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Convenience method to retrieve the state panel of the simulator. */
     protected final HostDisplay getStateDisplay() {
-        return getDisplaysPanel().getStateDisplay();
+        return getDisplaysPanel().getHostDisplay();
     }
 
     /** Convenience method to retrieve the rule panel of the simulator */
@@ -228,15 +227,14 @@ public abstract class SimulatorAction extends AbstractAction implements
     /**
      * Enters a dialog that results in a name that is not in a set of
      * current names, or <code>null</code> if the dialog was cancelled.
-     * @param kind kind of resource for which we want a name
      * @param name an initially proposed name
      * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
      *        to be distinct from the existing names
      * @return a type graph not occurring in the current grammar, or
      *         <code>null</code>
      */
-    final protected String askNewName(ResourceKind kind, String name,
-            boolean mustBeFresh) {
+    final protected String askNewName(String name, boolean mustBeFresh) {
+        ResourceKind kind = getResourceKind();
         String title =
             String.format("Select %s%s name", mustBeFresh ? "new " : "",
                 kind.getDescription());
@@ -257,9 +255,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Invokes a file chooser of the right type to save a given aspect graph,
      * and returns the chosen (possibly {@code null}) file.
      */
-    final protected File askSaveGraph(Graph<?,?> graph) {
-        ExtensionFilter filter = FileType.getFilter(graph.getRole());
-        String name = graph.getName();
+    final protected File askSaveResource(String name) {
+        ExtensionFilter filter = getResourceKind().getFilter();
         GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
         chooser.setSelectedFile(new File(name));
         return SaveDialog.show(chooser, getFrame(), null);
@@ -423,16 +420,18 @@ public abstract class SimulatorAction extends AbstractAction implements
         return result;
     }
 
-    /** Constructs a grammar element name from a file, if it is within the grammar location.
+    /**
+     * Constructs a grammar element name from a file, if it is within the grammar location.
      * The element name is relative to the grammar location.
-     * A flag controls if the name should be treated as a rule name, i.e.,
-     * divided into fragments standing for subdirectories.
-     * @param selectedPath the canonical file name of the grammar element, without extension
-     * @param structured if the file name is to be interpreted as a structured name
+     * @param selectedFile file for the grammar element, possibly with extension
      * @throws IOException if the name is not well-formed
      */
-    final protected String getNameInGrammar(String selectedPath,
-            boolean structured) throws IOException {
+    final protected String getNameInGrammar(File selectedFile)
+        throws IOException {
+        ExtensionFilter filter = getResourceKind().getFilter();
+        // find out if this is within the grammar directory
+        String selectedPath =
+            filter.stripExtension(selectedFile.getCanonicalPath());
         String name = null;
         Object location = getSimulatorModel().getStore().getLocation();
         if (location instanceof File) {
@@ -447,7 +446,7 @@ public abstract class SimulatorAction extends AbstractAction implements
                 }
                 assert !pathFragments.isEmpty();
                 int i = pathFragments.size() - 1;
-                if (structured) {
+                if (getResourceKind() == ResourceKind.RULE) {
                     RuleName ruleName = new RuleName(pathFragments.get(i));
                     for (i--; i >= 0; i--) {
                         try {

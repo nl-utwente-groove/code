@@ -20,8 +20,6 @@ import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.trans.ResourceKind;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,14 +89,4 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     private CtrlAut lastAut;
     /** The control parser. */
     private final CtrlLoader parser = CtrlLoader.getInstance();
-
-    /**
-     * Saves the program to the given OutputStream.
-     * @param out the output stream to write the control program to.
-     */
-    public static void store(String controlProgram, OutputStream out) {
-        PrintWriter pw = new PrintWriter(out);
-        pw.write(controlProgram);
-        pw.close();
-    }
 }

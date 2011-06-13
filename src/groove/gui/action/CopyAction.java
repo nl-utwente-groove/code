@@ -20,7 +20,7 @@ public class CopyAction extends SimulatorAction {
     public void execute() {
         String oldName = getSimulatorModel().getSelected(getResourceKind());
         if (getDisplay().cancelEditResource(oldName, true)) {
-            String newName = askNewName(getResourceKind(), oldName, true);
+            String newName = askNewName(oldName, true);
             if (newName != null) {
                 doCopy(oldName, newName);
             }

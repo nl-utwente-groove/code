@@ -47,6 +47,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
@@ -69,7 +70,13 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
 
     @Override
     public JPanel getListPanel() {
-        return null;
+        if (this.listPanel == null) {
+            this.listPanel = new JPanel(new BorderLayout());
+            this.listPanel.setBorder(null);
+            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
+            this.listPanel.add(new JScrollPane(new StateList(getSimulator())));
+        }
+        return this.listPanel;
     }
 
     @Override
@@ -95,6 +102,23 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
     @Override
     public String getTitle() {
         return null;
+    }
+
+    private JToolBar createListToolBar() {
+        JToolBar result = Options.createToolBar();
+        result.add(getActions().getEditStateAction());
+        result.add(getActions().getSaveStateAction());
+        result.addSeparator();
+        result.add(getActions().getStartSimulationAction());
+        result.add(getActions().getApplyTransitionAction());
+        result.add(getActions().getExploreAction());
+        result.addSeparator();
+        result.add(getActions().getBackAction());
+        result.add(getActions().getForwardAction());
+        result.addSeparator();
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        return result;
     }
 
     private JToolBar createToolBar() {
@@ -260,6 +284,8 @@ public class LTSDisplay extends JGraphPanel<LTSJGraph> implements
      * The graph listener permanently associated with this exploration strategy.
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
+
+    private JPanel listPanel;
 
     /**
      * Listener that makes sure the panel status gets updated when the LYS is

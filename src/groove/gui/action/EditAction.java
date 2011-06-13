@@ -5,41 +5,20 @@ import groove.gui.EditType;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
-import java.io.IOException;
-
-import javax.swing.SwingUtilities;
-
-/** Action to start editing the currently displayed control program. */
+/** Action to start editing the currently displayed resource. */
 public class EditAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public EditAction(Simulator simulator, ResourceKind resource) {
         super(simulator, EditType.MODIFY, resource);
         putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
+        this.editStateAction = simulator.getActions().getEditStateAction();
     }
 
     @Override
     public void execute() {
         if (isForState()) {
-            // we're editing a state
-            AspectGraph graph = getStateDisplay().getStateTab().getGraph();
-            final String newGraphName = askNewName(HOST, graph.getName(), true);
-            if (newGraphName != null) {
-                final AspectGraph newGraph = graph.rename(newGraphName);
-                try {
-                    getSimulatorModel().doAddGraph(HOST, newGraph);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            getDisplaysPanel().getStateDisplay().startEditResource(
-                                newGraphName);
-                        }
-                    });
-                } catch (IOException e) {
-                    showErrorDialog(e, "Can't edit state '%s'", graph.getName());
-                }
-            }
+            this.editStateAction.execute();
         } else {
             for (String name : getSimulatorModel().getSelectSet(
                 getResourceKind())) {
@@ -55,7 +34,7 @@ public class EditAction extends SimulatorAction {
         setEnabled(enabled);
         if (getResourceKind() == HOST) {
             String name =
-                isForState() ? Options.EDIT_STATE_ACTION_NAME
+                isForState() ? (String) this.editStateAction.getValue(NAME)
                         : getEditActionName();
             putValue(NAME, name);
             putValue(SHORT_DESCRIPTION, name);
@@ -66,4 +45,6 @@ public class EditAction extends SimulatorAction {
         return getResourceKind() == HOST && getSimulatorModel().hasState()
             && !getSimulatorModel().isSelected(HOST);
     }
+
+    private final EditStateAction editStateAction;
 }
