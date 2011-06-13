@@ -84,6 +84,24 @@ public class ActionStore implements SimulatorListener {
     private final List<Refreshable> refreshables = new ArrayList<Refreshable>();
 
     /**
+     * Returns the 'default exploration' action that is associated with the
+     * simulator.
+     */
+    public ExploreAction getAnimateAction() {
+        // lazily create the action
+        if (this.animateAction == null) {
+            this.animateAction = new ExploreAction(this.simulator, true);
+        }
+
+        return this.animateAction;
+    }
+
+    /**
+     * The animated exploration action.
+     */
+    private ExploreAction animateAction;
+
+    /**
      * Returns the transition application action permanently associated with
      * this simulator.
      */
@@ -266,7 +284,7 @@ public class ActionStore implements SimulatorListener {
     public ExploreAction getExploreAction() {
         // lazily create the action
         if (this.exploreAction == null) {
-            this.exploreAction = new ExploreAction(this.simulator);
+            this.exploreAction = new ExploreAction(this.simulator, false);
         }
 
         return this.exploreAction;

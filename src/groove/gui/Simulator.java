@@ -715,30 +715,24 @@ public class Simulator implements SimulatorListener {
      */
     private JMenu createExploreMenu() {
         JMenu result = new JMenu();
-
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
         result.setText(Options.EXPLORE_MENU_NAME);
-        result.add(new JMenuItem(this.actions.getBackAction()));
-        result.add(new JMenuItem(this.actions.getForwardAction()));
-
+        result.add(getActions().getBackAction());
+        result.add(getActions().getForwardAction());
         result.addSeparator();
-
-        result.add(new JMenuItem(this.actions.getStartSimulationAction()));
+        result.add(getActions().getGotoStartStateAction());
+        result.addSeparator();
         // EDUARDO: Uncomment to enable abstraction.
-        // result.add(new JMenuItem(this.getToggleExplorationStateAction()));
-        result.add(new JMenuItem(this.actions.getApplyTransitionAction()));
-        result.add(new JMenuItem(this.actions.getGotoStartStateAction()));
-
+        // result.add(this.getToggleExplorationStateAction());
+        result.add(getActions().getStartSimulationAction());
+        result.add(getActions().getApplyTransitionAction());
+        result.add(getActions().getAnimateAction());
+        result.add(getActions().getExploreAction());
         result.addSeparator();
-
-        result.add(this.actions.getExploreAction());
-        result.add(this.actions.getExplorationDialogAction());
-
+        result.add(getActions().getExplorationDialogAction());
+        result.add(getActions().getExplorationStatsDialogAction());
         result.addSeparator();
-
-        result.add(this.actions.getExplorationStatsDialogAction());
-        result.add(new JMenuItem(this.actions.getSaveLTSAsAction()));
-
+        result.add(getActions().getSaveLTSAsAction());
         return result;
     }
 

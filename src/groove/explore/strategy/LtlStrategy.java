@@ -92,7 +92,7 @@ public class LtlStrategy extends AbstractStrategy {
         // current state with the current Buchi location and add
         // the resulting combined transition to the product GTS
 
-        Set<GraphTransition> outTransitions = getAtState().getTransitionSet();
+        Set<GraphTransition> outTransitions = getState().getTransitionSet();
         Set<String> applicableRules = filterRuleNames(outTransitions);
 
         for (BuchiTransition buchiTrans : getAtBuchiLocation().outTransitions()) {
