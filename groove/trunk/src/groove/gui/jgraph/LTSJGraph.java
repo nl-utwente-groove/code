@@ -32,10 +32,10 @@ import groove.util.Colors;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -202,7 +202,8 @@ public class LTSJGraph extends GraphJGraph {
      * @param trans the new active transition
      */
     public void setActive(GraphState state, GraphTransition trans) {
-        Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
+        List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
+        List<GraphJCell> changedCells = new ArrayList<GraphJCell>();
         GraphTransition previousTrans = this.activeTransition;
         this.activeTransition = trans;
         if (previousTrans != null) {
@@ -219,6 +220,7 @@ public class LTSJGraph extends GraphJGraph {
             if (jCell.setActive(true)) {
                 changedCells.add(jCell);
             }
+            activeCells.add(jCell);
         }
         GraphState previousState = this.activeState;
         this.activeState = state;
@@ -234,8 +236,10 @@ public class LTSJGraph extends GraphJGraph {
             if (jCell.setActive(true)) {
                 changedCells.add(jCell);
             }
+            activeCells.add(jCell);
         }
         if (!changedCells.isEmpty()) {
+            setSelectionCells(activeCells.toArray());
             refreshCells(changedCells);
         }
         Element elem = state == null ? trans : state;

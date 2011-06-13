@@ -107,11 +107,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
         setModel(this.ruleDirectory);
         // set key bindings
         ActionMap am = getActionMap();
-        am.put(Options.UNDO_ACTION_NAME, getActions().getBackAction());
-        am.put(Options.REDO_ACTION_NAME, getActions().getForwardAction());
+        am.put(Options.BACK_ACTION_NAME, getActions().getBackAction());
+        am.put(Options.FORWARD_ACTION_NAME, getActions().getForwardAction());
         InputMap im = getInputMap();
-        im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
-        im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
+        im.put(Options.BACK_KEY, Options.BACK_ACTION_NAME);
+        im.put(Options.FORWARD_KEY, Options.FORWARD_ACTION_NAME);
         // add tool tips
         installListeners();
         ToolTipManager.sharedInstance().registerComponent(this);
@@ -605,32 +605,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * rule panel on double-clicks.
      */
     private class MyMouseListener extends MouseAdapter {
-        /**
-         * Empty constructor with the correct visibility.
-         */
-        public MyMouseListener() {
-            // empty
-        }
-
         @Override
         public void mousePressed(MouseEvent evt) {
             TreePath path = getPathForLocation(evt.getX(), evt.getY());
-            if (evt.getButton() == MouseEvent.BUTTON3) {
-                if (path != null) {
-                    TreePath[] paths = getSelectionPaths();
-                    boolean pathIsSelected = false;
-                    for (int i = 0; paths != null && i < paths.length; i++) {
-                        if (path.equals(paths[i])) {
-                            pathIsSelected = true;
-                        }
-                    }
-                    if (pathIsSelected == false) {
-                        setSelectionPath(path);
-                    }
-                }
-            }
             if (path != null) {
-                DisplayKind toDisplay = null;
+                if (evt.getButton() == MouseEvent.BUTTON3
+                    && !isRowSelected(getRowForPath(path))) {
+                    setSelectionPath(path);
+                }
+                DisplayKind toDisplay;
                 if (path.getLastPathComponent() instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
                 } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
@@ -639,9 +622,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     toDisplay = DisplayKind.LTS;
                 }
                 if (evt.getClickCount() == 1) {
-                    if (toDisplay != null) {
-                        getSimulatorModel().setDisplay(toDisplay);
-                    }
+                    getSimulatorModel().setDisplay(toDisplay);
                 } else if (evt.getClickCount() == 2
                     && toDisplay == DisplayKind.RULE) { // Left double click
                     RuleJTree.this.display.getEditAction().execute();

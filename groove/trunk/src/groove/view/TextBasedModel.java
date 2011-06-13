@@ -19,6 +19,9 @@ package groove.view;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 /**
  * General interface for resource models constructed from an
  * {@link AspectGraph}.
@@ -55,4 +58,14 @@ public abstract class TextBasedModel<M> extends ResourceModel<M> {
 
     /** The text of the resource. */
     private final String text;
+
+    /**
+     * Saves the program to the given OutputStream.
+     * @param out the output stream to write the control program to.
+     */
+    public static void store(String controlProgram, OutputStream out) {
+        PrintWriter pw = new PrintWriter(out);
+        pw.write(controlProgram);
+        pw.close();
+    }
 }

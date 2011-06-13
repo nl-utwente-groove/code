@@ -21,7 +21,7 @@ public class NewAction extends SimulatorAction {
     public void execute() {
         ResourceKind resource = getResourceKind();
         final String newName =
-            askNewName(resource, Options.getNewResourceName(resource), true);
+            askNewName(Options.getNewResourceName(resource), true);
         if (newName != null) {
             try {
                 if (resource.isGraphBased()) {

@@ -18,8 +18,6 @@ package groove.view;
 
 import groove.trans.ResourceKind;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -70,14 +68,4 @@ public class PrologModel extends TextBasedModel<String> {
 
     /** List of Prolog formatting errors in this program. */
     private List<FormatError> errors;
-
-    /**
-     * Saves the program to the given OutputStream.
-     * @param out the output stream to write the prolog program to.
-     */
-    public static void store(String program, OutputStream out) {
-        PrintWriter pw = new PrintWriter(out);
-        pw.write(program);
-        pw.close();
-    }
 }

@@ -1,6 +1,5 @@
 package groove.gui.action;
 
-import static groove.graph.GraphRole.RULE;
 import static groove.trans.ResourceKind.HOST;
 import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
@@ -8,12 +7,10 @@ import groove.gui.Options;
 import groove.gui.ResourceTab;
 import groove.gui.Simulator;
 import groove.gui.TextTab;
-import groove.gui.dialog.SaveDialog;
 import groove.io.ExtensionFilter;
-import groove.io.GrooveFileChooser;
 import groove.io.xml.AspectGxl;
 import groove.trans.ResourceKind;
-import groove.view.ControlModel;
+import groove.view.TextBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -41,12 +38,17 @@ public final class SaveAction extends SimulatorAction {
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
         this.saveAs = saveAs;
+        this.saveStateAction =
+            saveAs ? getActions().getSaveStateAsAction()
+                    : getActions().getSaveStateAction();
     }
 
     @Override
     public void execute() {
-        boolean saved = false;
-        if (confirmBehaviourOption(Options.STOP_SIMULATION_OPTION)) {
+        if (isForState()) {
+            this.saveStateAction.execute();
+        } else if (confirmBehaviourOption(Options.STOP_SIMULATION_OPTION)) {
+            boolean saved = false;
             ResourceKind resourceKind = getResourceKind();
             ResourceTab editor = getEditor();
             String name =
@@ -54,9 +56,7 @@ public final class SaveAction extends SimulatorAction {
                         : editor.getName();
             if (resourceKind.isGraphBased()) {
                 AspectGraph graph;
-                if (isForState()) {
-                    graph = getStateDisplay().getStateTab().getGraph();
-                } else if (editor == null) {
+                if (editor == null) {
                     graph = getGrammarStore().getGraphs(resourceKind).get(name);
                 } else {
                     graph = ((GraphEditorTab) editor).getGraph();
@@ -87,19 +87,12 @@ public final class SaveAction extends SimulatorAction {
     public boolean doSaveGraph(AspectGraph graph) {
         boolean result = false;
         ResourceKind resource = ResourceKind.toResource(graph.getRole());
-        if (isForState()) {
-            // we're saving a state
-            String newName = askNewName(resource, graph.getName(), true);
-            graph = newName == null ? null : graph.rename(newName);
-        }
         try {
-            if (graph != null) {
-                getSimulatorModel().doAddGraph(resource, graph);
-                result = true;
-            }
+            getSimulatorModel().doAddGraph(resource, graph);
+            result = true;
         } catch (IOException exc) {
-            showErrorDialog(exc, "Error while saving edited graph '%s'",
-                graph.getName());
+            showErrorDialog(exc, "Error while saving %s '%s'",
+                getResourceKind().getDescription(), graph.getName());
         }
         return result;
     }
@@ -109,17 +102,13 @@ public final class SaveAction extends SimulatorAction {
      */
     public boolean doSaveGraphAs(AspectGraph graph) {
         boolean result = false;
-        File selectedFile = askSaveGraph(graph);
+        File selectedFile = askSaveResource(graph.getName());
         // now save, if so required
         if (selectedFile != null) {
             try {
-                ExtensionFilter filter = getResourceKind().getFilter();
-                // find out if this is within the grammar directory
-                String selectedPath =
-                    filter.stripExtension(selectedFile.getCanonicalPath());
-                String nameInGrammar =
-                    getNameInGrammar(selectedPath, graph.getRole() == RULE);
+                String nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
+                    ExtensionFilter filter = getResourceKind().getFilter();
                     // save in external file
                     String newName =
                         filter.stripExtension(selectedFile.getName());
@@ -130,8 +119,8 @@ public final class SaveAction extends SimulatorAction {
                     result = doSaveGraph(graph.rename(nameInGrammar));
                 }
             } catch (IOException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error while writing graph to '%s'", selectedFile));
+                showErrorDialog(exc, "Error while writing %s to '%s'",
+                    getResourceKind().getDescription(), selectedFile);
             }
         }
         return result;
@@ -147,7 +136,7 @@ public final class SaveAction extends SimulatorAction {
             getSimulatorModel().doAddText(getResourceKind(), name, text);
             result = true;
         } catch (IOException exc) {
-            showErrorDialog(exc, "Error saving %s %s",
+            showErrorDialog(exc, "Error saving %s '%s'",
                 getResourceKind().getDescription(), name);
         }
         return result;
@@ -159,24 +148,21 @@ public final class SaveAction extends SimulatorAction {
      */
     public boolean doSaveTextAs(String name, String text) {
         boolean result = false;
-        File selectedFile = askSave(name);
+        File selectedFile = askSaveResource(name);
         // now save, if so required
         if (selectedFile != null) {
-            ExtensionFilter filter = getResourceKind().getFilter();
             try {
-                String nameInGrammar =
-                    getNameInGrammar(
-                        filter.stripExtension(selectedFile.getCanonicalPath()),
-                        false);
+                String nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
                     // store as external file
-                    ControlModel.store(text, new FileOutputStream(selectedFile));
+                    TextBasedModel.store(text, new FileOutputStream(
+                        selectedFile));
                 } else {
                     // store in grammar
                     result = doSaveText(nameInGrammar, text);
                 }
             } catch (IOException exc) {
-                showErrorDialog(exc, "Error while writing %s to %s",
+                showErrorDialog(exc, "Error while writing %s to '%s'",
                     getResourceKind().getDescription(), selectedFile);
             }
         }
@@ -204,18 +190,6 @@ public final class SaveAction extends SimulatorAction {
         putValue(SHORT_DESCRIPTION, name);
     }
 
-    /**
-     * Invokes a file chooser of the right type to save the resource kind
-     * of this action,
-     * and returns the chosen (possibly {@code null}) file.
-     */
-    private File askSave(String name) {
-        ExtensionFilter filter = getResourceKind().getFilter();
-        GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
-        chooser.setSelectedFile(new File(name));
-        return SaveDialog.show(chooser, getFrame(), null);
-    }
-
     /** Returns the currently selected editor tab on the appropriate display, if any. */
     private ResourceTab getEditor() {
         return getDisplay().getSelectedEditor();
@@ -227,4 +201,5 @@ public final class SaveAction extends SimulatorAction {
     }
 
     private final boolean saveAs;
+    private final SaveStateAction saveStateAction;
 }
