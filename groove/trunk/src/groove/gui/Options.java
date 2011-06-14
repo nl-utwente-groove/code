@@ -458,6 +458,8 @@ public class Options implements Cloneable {
     public static final String CUT_ACTION_NAME = "Cut";
     /** Default exploration action name */
     public static final String EXPLORE_ACTION_NAME = "Explore State Space";
+    /** Detach action name */
+    public static final String DETACH_ACTION_NAME = "Detach";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
     /** Edge mode action name */
