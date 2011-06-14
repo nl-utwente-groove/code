@@ -24,7 +24,7 @@ import static groove.gui.jgraph.JGraphUI.DragMode.MOVE;
 import static groove.gui.jgraph.JGraphUI.DragMode.PAN;
 import static groove.gui.jgraph.JGraphUI.DragMode.SELECT;
 import static java.awt.event.MouseEvent.BUTTON1;
-import groove.gui.Options;
+import static java.awt.event.MouseEvent.BUTTON3;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -146,6 +146,8 @@ public class JGraphUI extends BasicGraphUI {
         return new MouseHandler();
     }
 
+    private static final boolean ADD_EDGE_BY_CLICK = true;
+
     /**
      * This is a complete reimplementation.
      */
@@ -164,35 +166,61 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
-            if (getJGraphMode() == EDIT_MODE && Options.isEdgeEditEvent(e)) {
-                // add or remove an edge point
-                GraphJCell jEdge = getJEdgeAt(e.getPoint());
-                Object selectedCell = getJGraph().getSelectionCell();
-                if (selectedCell instanceof GraphJEdge) {
-                    GraphJEdge selectedEdge = (GraphJEdge) selectedCell;
-                    if (selectedCell == jEdge) {
-                        ((AspectJGraph) getJGraph()).removePoint(selectedEdge,
-                            e.getPoint());
-                    } else {
-                        ((AspectJGraph) getJGraph()).addPoint(selectedEdge,
-                            e.getPoint());
+            boolean addEdge = false;
+            if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
+                // this is an editing-related event
+                if (isEdgeAdding()) {
+                    // finish edge adding
+                    finishEdgeAdding(e);
+                } else if (e.isAltDown()) {
+                    // add or remove an edge point
+                    GraphJCell jEdge = getJEdgeAt(e.getPoint());
+                    Object selectedCell = getJGraph().getSelectionCell();
+                    if (selectedCell instanceof GraphJEdge) {
+                        GraphJEdge selectedEdge = (GraphJEdge) selectedCell;
+                        if (selectedCell == jEdge) {
+                            ((AspectJGraph) getJGraph()).removePoint(
+                                selectedEdge, e.getPoint());
+                        } else {
+                            ((AspectJGraph) getJGraph()).addPoint(selectedEdge,
+                                e.getPoint());
+                        }
+                    }
+                } else if (getJCellAt(e.getPoint()) != null) {
+                    // select and possibly start adding edge, or edit vertex
+                    GraphJCell jCell = getJCellAt(e.getPoint());
+                    switch (e.getClickCount()) {
+                    case 1:
+                        selectCellsForEvent(Collections.singleton(jCell), e);
+                        addEdge =
+                            jCell instanceof GraphJVertex && !e.isControlDown()
+                                && !e.isShiftDown();
+                        break;
+                    case 2:
+                        getJGraph().startEditingAtCell(jCell);
+                    }
+                } else {
+                    switch (e.getClickCount()) {
+                    case 1:
+                        getJGraph().clearSelection();
+                        break;
+                    case 2:
+                        ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
                     }
                 }
-            } else if (getJCellAt(e.getPoint()) != null) {
+            } else if (e.getButton() != BUTTON3) {
+                // this is not an editing-related event
                 GraphJCell jCell = getJCellAt(e.getPoint());
-                // select (on first click) or edit (on further clicks)
-                if (getJGraph().getSelectionModel().isCellSelected(jCell)) {
-                    getJGraph().startEditingAtCell(jCell);
+                if (jCell == null) {
+                    getJGraph().clearSelection();
                 } else {
                     selectCellsForEvent(Collections.singleton(jCell), e);
                 }
-            } else if (e.getButton() == BUTTON1 && getJGraphMode() == EDIT_MODE
-                && e.getClickCount() == 2
-                && getJGraph().getSelectionCell() == null) {
-                // add vertex
-                ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
-            } else {
-                getJGraph().clearSelection();
+            }
+            if (isEdgeAdding()) {
+                cancelEdgeAdding(e);
+            } else if (ADD_EDGE_BY_CLICK && addEdge) {
+                startEdgeAdding(e);
             }
         }
 
@@ -204,23 +232,31 @@ public class JGraphUI extends BasicGraphUI {
             getJGraph().requestFocus();
             stopEditing(getJGraph());
             // determine the drag mode (although dragging does not yet start)
+            DragMode newDragMode = SELECT;
+            GraphJCell jVertex = getJVertexAt(e.getPoint());
+            GraphJCell jEdge = getJEdgeAt(e.getPoint());
             if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
-                this.dragMode = PAN;
-            } else if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
-                && getJEdgeAt(e.getPoint()) == null
-                && getJVertexAt(e.getPoint()) != null) {
-                if (getJGraph().getSelectionModel().isCellSelected(
-                    getJVertexAt(e.getPoint()))
-                    && !Options.isEdgeEditEvent(e)) {
-                    this.dragMode = MOVE;
+                newDragMode = PAN;
+            } else if (jVertex != null || jEdge != null) {
+                // either start adding an edge, or move 
+                if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
+                    && !ADD_EDGE_BY_CLICK) {
+                    if (jEdge != null) {
+                        newDragMode = MOVE;
+                    } else if (getJGraph().isCellSelected(jVertex)) {
+                        newDragMode = EDGE;
+                    } else if (e.isAltDown()) {
+                        newDragMode = EDGE;
+                    } else {
+                        newDragMode = MOVE;
+                    }
                 } else {
-                    this.dragMode = EDGE;
+                    newDragMode = MOVE;
                 }
-            } else if (getJCellAt(e.getPoint()) != null) {
-                this.dragMode = MOVE;
             } else {
-                this.dragMode = SELECT;
+                newDragMode = SELECT;
             }
+            this.dragMode = newDragMode;
             this.dragStart = e;
         }
 
@@ -283,8 +319,7 @@ public class JGraphUI extends BasicGraphUI {
             if (this.dragStart == null && this.dragMode != null) {
                 switch (this.dragMode) {
                 case EDGE:
-                    completeEdge(e.getPoint());
-                    this.edgeHandler.mouseReleased(e);
+                    finishEdgeAdding(e);
                     break;
                 case MOVE:
                     JGraphUI.this.handle.mouseReleased(e);
@@ -306,6 +341,13 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
+            if (isEdgeAdding()) {
+                if (e.isControlDown() || e.isShiftDown()) {
+                    cancelEdgeAdding(e);
+                } else {
+                    continueEdgeAdding(e);
+                }
+            }
             getJGraph().setCursor(getJGraphMode().getCursor());
         }
 
@@ -325,7 +367,7 @@ public class JGraphUI extends BasicGraphUI {
         void draw(Graphics g) {
             if (this.dragMode == SELECT) {
                 this.selectHandler.draw(g);
-            } else if (this.dragMode == EDGE) {
+            } else if (isEdgeAdding()) {
                 this.edgeHandler.draw(g);
             }
         }
@@ -355,18 +397,6 @@ public class JGraphUI extends BasicGraphUI {
                     }
                 }
                 selectCellsForEvent(list, evt);
-            }
-        }
-
-        /** Completes the edge drag action. */
-        private void completeEdge(Point point) {
-            if (this.edgeHandler.edgeStart() != null
-                && this.edgeHandler.edgeStart() != this.edgeHandler.edgeEnd()) {
-                Rectangle2D start =
-                    this.edgeHandler.getScreenBounds(this.edgeHandler.edgeStart());
-                ((AspectJGraph) getJGraph()).addEdge(
-                    new Point((int) start.getCenterX(),
-                        (int) start.getCenterY()), point);
             }
         }
 
@@ -446,6 +476,47 @@ public class JGraphUI extends BasicGraphUI {
             return getJGraph().getMode() == PAN_MODE && getViewPort() != null;
         }
 
+        private boolean isEdgeAdding() {
+            return this.edgeAdding;
+        }
+
+        private void startEdgeAdding(MouseEvent e) {
+            // possibly start adding edge
+            this.edgeAdding = true;
+            this.edgeAddStart = e;
+        }
+
+        private void continueEdgeAdding(MouseEvent e) {
+            if (this.edgeAddStart != null) {
+                this.edgeHandler.mousePressed(e);
+                this.edgeAddStart = null;
+            }
+            this.edgeHandler.mouseDragged(e);
+        }
+
+        private void cancelEdgeAdding(MouseEvent e) {
+            if (this.edgeAdding) {
+                this.edgeAdding = false;
+                if (this.edgeAddStart == null) {
+                    this.edgeHandler.mouseReleased(e);
+                }
+            }
+        }
+
+        /** Completes the edge drag action. */
+        private void finishEdgeAdding(MouseEvent e) {
+            if (this.edgeHandler.edgeStart() != null
+                && this.edgeHandler.edgeStart() != this.edgeHandler.edgeEnd()) {
+                Rectangle2D start =
+                    this.edgeHandler.getScreenBounds(this.edgeHandler.edgeStart());
+                Point point = e.getPoint();
+                ((AspectJGraph) getJGraph()).addEdge(
+                    new Point((int) start.getCenterX(),
+                        (int) start.getCenterY()), point);
+            }
+            this.edgeHandler.mouseReleased(e);
+        }
+
         /** The JGraph's ancestor viewport, if any. */
         private JViewport getViewPort() {
             return getJGraph().getViewPort();
@@ -458,6 +529,10 @@ public class JGraphUI extends BasicGraphUI {
         private DragMode dragMode;
         /** Mouse pressed event that (with hindsight) started the dragging. */
         private MouseEvent dragStart;
+        /** Flag indicating that we are adding an edge. */
+        private boolean edgeAdding;
+        /** Mouse pressed event that (with hindsight) started adding an edge */
+        private MouseEvent edgeAddStart;
         /** X-coordinate of a point where dragging started. */
         private int dragOrigX = -1;
         /** Y-coordinate of a point where dragging started. */
