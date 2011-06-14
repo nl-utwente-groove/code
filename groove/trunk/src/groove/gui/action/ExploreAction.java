@@ -14,7 +14,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -68,10 +67,10 @@ public class ExploreAction extends SimulatorAction {
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
         getSimulatorModel().setExploration(exploration);
-        LTSJModel ltsJModel = getLtsDisplay().getJModel();
+        LTSJModel ltsJModel = getLtsDisplay().getLtsModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
-                ltsJModel = getLtsDisplay().getJModel();
+                ltsJModel = getLtsDisplay().getLtsModel();
             } else {
                 return;
             }
@@ -80,8 +79,8 @@ public class ExploreAction extends SimulatorAction {
         // unhook the lts' jmodel from the lts, for efficiency's sake
         gts.removeLTSListener(ltsJModel);
         if (isAnimated()) {
-            getSimulatorModel().doSelect(ResourceKind.HOST, null);
-            getSimulatorModel().setDisplay(DisplayKind.HOST);
+            getSimulatorModel().setDisplay(DisplayKind.LTS);
+            getLtsDisplay().selectStateTab();
         }
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread();
@@ -102,7 +101,7 @@ public class ExploreAction extends SimulatorAction {
                 true);
         }
         getSimulatorModel().setGts(gts, true);
-        if (isAnimated()) {
+        if (isAnimated() && exploration.getLastState() != null) {
             getSimulatorModel().setState(exploration.getLastState());
         }
     }
@@ -125,14 +124,22 @@ public class ExploreAction extends SimulatorAction {
         return this.animated;
     }
 
-    /** Returns the pause between animation steps, in milliseconds. */
+    /** 
+     * Returns the pause between animation steps, in milliseconds.
+     * The pause equals {@code 4000/(speed+1)}.
+     */
     final int getPause() {
-        return this.pause;
+        return 4000 / (getSpeed() + 1);
     }
 
-    /** Sets the pause between animation steps to a certain value. */
-    final void setPause(int pause) {
-        this.pause = Math.min(1000, Math.max(pause, 100));
+    /** Returns the animation speed. */
+    final int getSpeed() {
+        return this.speed;
+    }
+
+    /** Sets the animation speed to a certain value. */
+    final void setSpeed(int speed) {
+        this.speed = Math.min(10, Math.max(speed, 1));
     }
 
     /**
@@ -165,15 +172,14 @@ public class ExploreAction extends SimulatorAction {
     final JPanel getAnimationPanel() {
         // lazily create the label
         if (this.animationPanel == null) {
-            JLabel label = new JLabel("Frames per Second");
+            JLabel label = new JLabel("Animation Speed");
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
-            final JSlider slider =
-                new JSlider(JSlider.HORIZONTAL, 1, 10, 1000 / getPause()) {
-                    @Override
-                    public void updateUI() {
-                        setUI(BasicSliderUI.createUI(this));
-                    }
-                };
+            final JSlider slider = new JSlider(JSlider.HORIZONTAL, 1, 10, 2) {
+                @Override
+                public void updateUI() {
+                    setUI(BasicSliderUI.createUI(this));
+                }
+            };
             slider.setMajorTickSpacing(9);
             slider.setMinorTickSpacing(1);
             slider.setSnapToTicks(true);
@@ -183,8 +189,8 @@ public class ExploreAction extends SimulatorAction {
             slider.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    int framesPerSecond = slider.getValue();
-                    setPause(1000 / framesPerSecond);
+                    int speed = slider.getValue();
+                    setSpeed(speed);
                 }
             });
             slider.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -214,12 +220,11 @@ public class ExploreAction extends SimulatorAction {
     private JLabel stateCountLabel;
     /** Flag indicating that the exploration is animated. */
     private final boolean animated;
-    /** Pause between animation frames. */
-    private int pause = 1000;
+    /** Animation speed (between 1 and 10). */
+    private int speed = 2;
 
     private final class AnimateListener extends GTSAdapter {
-        private final StateTab stateDisplay =
-            getSimulator().getDisplaysPanel().getHostDisplay().getStateTab();
+        private final StateTab stateTab = getLtsDisplay().getStateTab();
 
         @Override
         public void addUpdate(GTS gts, final GraphState state) {
@@ -243,7 +248,7 @@ public class ExploreAction extends SimulatorAction {
         }
 
         final StateTab getStateDisplay() {
-            return this.stateDisplay;
+            return this.stateTab;
         }
     }
 
@@ -360,8 +365,7 @@ public class ExploreAction extends SimulatorAction {
                             getTransitionCountLabel()},
                     JOptionPane.PLAIN_MESSAGE);
             message.setOptions(new Object[] {getCancelButton()});
-            result =
-                message.createDialog(getLtsDisplay(), "Exploring state space");
+            result = message.createDialog(getFrame(), "Exploring state space");
             result.pack();
             result.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             result.addWindowListener(new WindowAdapter() {

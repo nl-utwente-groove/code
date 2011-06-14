@@ -24,7 +24,6 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
-import groove.gui.SimulatorModel.Change;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
@@ -86,8 +85,6 @@ public class PrologDisplay extends ResourceDisplay {
     public PrologDisplay(Simulator simulator) {
         super(simulator, ResourceKind.PROLOG);
         Environment.setDefaultOutputStream(getUserOutput());
-
-        simulator.getModel().addListener(this, Change.GRAMMAR, Change.PROLOG);
         activateListening();
     }
 
@@ -329,29 +326,6 @@ public class PrologDisplay extends ResourceDisplay {
         });
         return result;
     }
-
-    /** Returns the list of control programs. */
-    @Override
-    protected ResourceList getList() {
-        if (this.prologJList == null) {
-            this.prologJList = new ResourceList(this);
-        }
-        return this.prologJList;
-    }
-
-    //
-    //    @Override
-    //    public void update(SimulatorModel source, SimulatorModel oldModel,
-    //            Set<Change> changes) {
-    //        super.update(source, oldModel, changes);
-    //        if (suspendListening()) {
-    //            String selection = source.getSelected(ResourceKind.PROLOG);
-    //            if (changes.contains(Change.PROLOG) && selection != null) {
-    //                selectResource(selection);
-    //            }
-    //            activateListening();
-    //        }
-    //    }
 
     @Override
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {
@@ -600,9 +574,6 @@ public class PrologDisplay extends ResourceDisplay {
      * The tree of user-defined predicates
      */
     private JTree userTree;
-    /** Production system prolog program list. */
-    private ResourceList prologJList;
-
     /**
      * Counter used to show the number of found solutions (so far)
      */

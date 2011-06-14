@@ -17,7 +17,6 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
 import groove.gui.action.SaveAction;
@@ -27,7 +26,6 @@ import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -38,13 +36,10 @@ import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -54,64 +49,13 @@ import javax.swing.border.EmptyBorder;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ResourceDisplay implements Display, SimulatorListener {
+public abstract class ResourceDisplay extends Display implements
+        SimulatorListener {
     /**
      * Constructs a display, for a given simulator and resource kind.
      */
     public ResourceDisplay(Simulator simulator, ResourceKind resource) {
-        this.simulator = simulator;
-        this.kind = DisplayKind.toDisplay(resource);
-        this.resource = resource;
-        simulator.getModel().addListener(this, Change.GRAMMAR);
-        assert this.resource != null;
-    }
-
-    @Override
-    public DisplayKind getKind() {
-        return this.kind;
-    }
-
-    @Override
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    @Override
-    public String getTitle() {
-        if (getSimulatorModel().isSelected(getResourceKind())) {
-            return getSimulatorModel().getSelected(getResourceKind());
-        } else {
-            return null;
-        }
-    }
-
-    /** Returns the GUI component showing the list of control program names. */
-    public JPanel getListPanel() {
-        if (this.listPanel == null) {
-            JScrollPane controlPane = new JScrollPane(getList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(getListToolBar(), BorderLayout.NORTH);
-            this.listPanel.add(controlPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
-        }
-        return this.listPanel;
-    }
-
-    @Override
-    public final JComponent getDisplayPanel() {
-        if (this.mainPanel == null) {
-            this.mainPanel = createDisplayPanel();
-        }
-        return this.mainPanel;
+        super(simulator, DisplayKind.toDisplay(resource));
     }
 
     /** 
@@ -121,19 +65,16 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      * panel, as in the {@link PrologDisplay}.
      * @see #getDisplayPanel() 
      */
+    @Override
     protected JComponent createDisplayPanel() {
         return getTabPane();
     }
 
-    /** Resets the list panel to {@code null}, so that the next invocation
-     * of {@link #getListPanel()} creates a fresh panel.
-     */
-    protected void resetListPanel() {
-        this.listPanel = null;
+    /** Callback method to create the resource list. */
+    @Override
+    protected JComponent createList() {
+        return new ResourceList(this);
     }
-
-    /** Returns the name list for this display. */
-    abstract protected JComponent getList();
 
     /** 
      * Creates a popup menu for the label list.
@@ -158,17 +99,10 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         return res;
     }
 
-    /** Creates and returns the fixed tool bar for the label list. */
-    final protected JToolBar getListToolBar() {
-        if (this.listToolBar == null) {
-            this.listToolBar = createListToolBar();
-        }
-        return this.listToolBar;
-    }
-
     /** 
      * Callback method to creates a tool bar for the list panel.
      */
+    @Override
     protected JToolBar createListToolBar() {
         return createListToolBar(-1);
     }
@@ -251,30 +185,13 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         return this.enableButton;
     }
 
-    /** Convenience method to retrieve the simulator model. */
-    final protected SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** Convenience method to retrieve the action store. */
-    final protected ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
-    /** Returns the resource kind shown on this display. */
-    final public ResourceKind getResourceKind() {
-        return this.resource;
-    }
-
     /**
      * Returns the panel holding all display tabs.
      * This may or may not be the same as #getDisplayPanel().
      */
-    final protected TabbedDisplayPanel getTabPane() {
-        if (this.displayPanel == null) {
-            this.displayPanel = new TabbedDisplayPanel();
-        }
-        return this.displayPanel;
+    @Override
+    final protected TabbedDisplayPanel createTabPane() {
+        return new TabbedDisplayPanel();
     }
 
     /** Callback to obtain the main tab of this display. */
@@ -370,7 +287,8 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      */
     public boolean cancelAllEdits() {
         boolean result = true;
-        for (ResourceTab editor : new ArrayList<ResourceTab>(getEditors().values())) {
+        for (ResourceTab editor : new ArrayList<ResourceTab>(
+            getEditors().values())) {
             result = editor.cancelEditing(true);
             if (!result) {
                 break;
@@ -382,7 +300,8 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
     /** Returns the currently selected editor tab, or {@code null} if no editor is selected. */
     public ResourceTab getSelectedEditor() {
         Tab result = getSelectedTab();
-        return result != null && result.isEditor() ? (ResourceTab) result : null;
+        return result != null && result.isEditor() ? (ResourceTab) result
+                : null;
     }
 
     /** Returns the currently selected tab, or {@code null} if no editor is selected. */
@@ -431,6 +350,8 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
      * calls {@link #activateListening()}.
      */
     protected void installListeners() {
+        getSimulatorModel().addListener(this, Change.GRAMMAR,
+            Change.toChange(getResourceKind()));
         activateListening();
     }
 
@@ -616,21 +537,11 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
             name);
     }
 
-    private final Simulator simulator;
-    private final ResourceKind resource;
-    private final DisplayKind kind;
-    /** The main display panel. */
-    private JComponent mainPanel;
-    /** Panel with the label list. */
-    private JPanel listPanel;
-    /** Toolbar for the {@link #listPanel}. */
-    private JToolBar listToolBar;
     private JToggleButton enableButton;
 
     /** Mapping from graph names to editors for those graphs. */
     private final Map<String,ResourceTab> editorMap =
         new HashMap<String,ResourceTab>();
-    private TabbedDisplayPanel displayPanel;
 
     /** Flag indicating that the listeners are currently active. */
     private boolean listening;
@@ -695,49 +606,6 @@ public abstract class ResourceDisplay implements Display, SimulatorListener {
         public Display getDisplay() {
             return ResourceDisplay.this;
         }
-    }
-
-    /** Interface for tabs on this display. */
-    protected static interface Tab {
-        /** 
-         * Returns the name of the 
-         * resource currently displayed on this tab.
-         */
-        public String getName();
-
-        /** 
-         * Returns the icon for this tab.
-         */
-        public Icon getIcon();
-
-        /** 
-         * Returns the title of this tab.
-         * This consists of the resource name plus an optional indication of the
-         * dirty status of the tab.
-         */
-        public String getTitle();
-
-        /** Returns the tab label component to be used for this tab. */
-        public TabLabel getTabLabel();
-
-        /** 
-         * Indicates if this tab is an editor tab.
-         * @return {@code true} if this is an editor tab, {@code false} if
-         * it is a main tab.
-         */
-        public boolean isEditor();
-
-        /**
-         * Returns the actual component of this tab.
-         * This is typically {@code this}.
-         */
-        public Component getComponent();
-
-        /** Method to repaint the tab. */
-        public void repaint();
-
-        /** Callback method to notify the tab of a change in grammar. */
-        public void updateGrammar(GrammarModel grammar);
     }
 
     /** Interface for the main tab on this display. */

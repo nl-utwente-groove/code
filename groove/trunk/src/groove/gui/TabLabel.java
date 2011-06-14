@@ -16,7 +16,7 @@
  */
 package groove.gui;
 
-import groove.gui.ResourceDisplay.Tab;
+import groove.gui.Display.Tab;
 import groove.gui.jgraph.JAttr;
 
 import java.awt.BasicStroke;
@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -76,30 +77,62 @@ import javax.swing.plaf.basic.BasicButtonUI;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class TabLabel extends JPanel {
-    /** 
-     * Creates a new component, for a given pane. 
+    /**
+     * Creates a new tab label.
+     * @param tabKind the kind of tab label
+     * @param icon icon for the tab label
+     * @param title text for the tab label
      */
-    public TabLabel(Tab panel, Icon icon, String title) {
-        //unset default FlowLayout' gaps
+    private TabLabel(Kind tabKind, Icon icon, String title, boolean button) {
         super(new FlowLayout(FlowLayout.LEFT, 1, 0));
         setOpaque(false);
         setBorder(null);
-        this.iconLabel = new JLabel(title, icon, 0);
+        this.kind = tabKind;
+        this.iconLabel = new JLabel(title, icon, JLabel.LEFT);
         this.iconLabel.setBackground(JAttr.ERROR_COLOR);
-        this.iconLabel.setBorder(null);
+        this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0,
+            tabKind.getHGap()));
+        this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(Font.BOLD));
         add(this.iconLabel);
-        //tab button
-        if (panel.isEditor()) {
-            add(new CancelButton());
-            this.panel = (ResourceTab) panel;
-        } else {
-            this.panel = null;
+        if (button) {
+            add(getButton());
         }
+    }
+
+    /** 
+     * Creates a new component, for a given resource tab. 
+     */
+    public TabLabel(ResourceTab tab, Icon icon, String title) {
+        this(Kind.RESOURCE, icon, title, tab.isEditor());
+        this.tab = tab;
+    }
+
+    /** 
+     * Creates a new component, for a given resource tab. 
+     */
+    public TabLabel(DisplaysPanel parent, Display display, Icon icon,
+            String title) {
+        this(Kind.DISPLAY, icon, title, true);
+        this.display = display;
+        this.parent = parent;
+    }
+
+    /** 
+     * Creates a new component, for a given resource tab. 
+     */
+    public TabLabel(Display display, Tab tab, Icon icon, String title) {
+        this(Kind.STATE, icon, title, tab instanceof StateTab);
+        this.display = display;
     }
 
     /** Changes the title of the tab. */
     public void setTitle(String title) {
         this.iconLabel.setText(title);
+        if (title == null) {
+            remove(getButton());
+        } else {
+            add(getButton());
+        }
     }
 
     /** Visually displays the error property. */
@@ -118,17 +151,46 @@ public class TabLabel extends JPanel {
         return this.iconLabel;
     }
 
-    /** The editor panel in this tab. */
-    private final ResourceTab panel;
+    /** Callback factory method for the button on the tab label. */
+    protected JButton getButton() {
+        if (this.button == null) {
+            this.button = new TabButton();
+        }
+        return this.button;
+    }
+
+    /** Performs the action for the button on the tab label. */
+    protected void doButtonAction() {
+        switch (this.kind) {
+        case RESOURCE:
+            ((ResourceTab) this.tab).cancelEditing(true);
+            break;
+        case DISPLAY:
+            this.parent.detach(this.display);
+            break;
+        case STATE:
+            ((LTSDisplay) this.display).detachStateTab();
+        }
+    }
+
     /** The label that the icon is displayed on. */
     private final JLabel iconLabel;
+    /** The kind of tab label. */
+    private final Kind kind;
+    private TabButton button;
+    /** The editor panel in this tab. */
+    private Tab tab;
+    /** The panel on which the display is shown. */
+    private DisplaysPanel parent;
+    /** The editor panel in this tab. */
+    private Display display;
 
     /** Cancel button. */
-    private class CancelButton extends JButton implements ActionListener {
-        public CancelButton() {
+    private class TabButton extends JButton implements ActionListener {
+        public TabButton() {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
-            setToolTipText("Cancel editing");
+            setToolTipText(TabLabel.this.kind.getName());
             //Make the button looks the same for all Laf's
             setUI(new BasicButtonUI());
             //Make it transparent
@@ -143,10 +205,13 @@ public class TabLabel extends JPanel {
             setRolloverEnabled(true);
             //Close the proper tab by clicking the button
             addActionListener(this);
+            if (TabLabel.this.kind != Kind.RESOURCE) {
+                setIcon(Icons.PIN_ICON);
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
-            TabLabel.this.panel.cancelEditing(true);
+            doButtonAction();
         }
 
         //we don't want to update UI for this button
@@ -159,26 +224,52 @@ public class TabLabel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            //shift the image for pressed buttons
-            if (getModel().isPressed()) {
-                g2.translate(1, 1);
+            if (TabLabel.this.kind == Kind.RESOURCE) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                //shift the image for pressed buttons
+                if (getModel().isPressed()) {
+                    g2.translate(1, 1);
+                }
+                g2.setStroke(new BasicStroke(2));
+                g2.setColor(Color.BLACK);
+                if (getModel().isRollover()) {
+                    g2.setColor(Color.MAGENTA);
+                }
+                int delta = 6;
+                g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight()
+                    - delta - 1);
+                g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight()
+                    - delta - 1);
+                g2.dispose();
             }
-            g2.setStroke(new BasicStroke(2));
-            g2.setColor(Color.BLACK);
-            if (getModel().isRollover()) {
-                g2.setColor(Color.MAGENTA);
-            }
-            int delta = 6;
-            g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight()
-                - delta - 1);
-            g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight()
-                - delta - 1);
-            g2.dispose();
         }
     }
 
-    /** Listener that arms any {@link CancelButton} that the mouse comes over. */
+    private static enum Kind {
+        RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME), DISPLAY(3,
+                Options.DETACH_ACTION_NAME), STATE(5,
+                Options.DETACH_ACTION_NAME);
+
+        private Kind(int hGap, String name) {
+            this.hGap = hGap;
+            this.name = name;
+        }
+
+        /** Returns the horizontal gap between label and tab button. */
+        public int getHGap() {
+            return this.hGap;
+        }
+
+        /** Returns the horizontal gap between label and tab button. */
+        public String getName() {
+            return this.name;
+        }
+
+        private final int hGap;
+        private final String name;
+    }
+
+    /** Listener that arms any {@link TabButton} that the mouse comes over. */
     private final static MouseListener buttonMouseListener =
         new MouseAdapter() {
             @Override

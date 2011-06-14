@@ -33,7 +33,7 @@ public final class SaveStateAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        AspectGraph graph = getStateDisplay().getStateTab().getGraph();
+        AspectGraph graph = getLtsDisplay().getStateTab().getGraph();
         if (this.saveAs) {
             doSaveAs(graph);
         } else {

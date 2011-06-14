@@ -16,7 +16,7 @@
  */
 package groove.gui;
 
-import groove.gui.ResourceDisplay.Tab;
+import groove.gui.Display.Tab;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
@@ -243,7 +243,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
     }
 
     /** Returns the display on which this editor is placed. */
-    protected final ResourceDisplay getDisplay() {
+    public final ResourceDisplay getDisplay() {
         return this.display;
     }
 

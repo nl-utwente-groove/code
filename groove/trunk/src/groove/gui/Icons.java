@@ -274,6 +274,8 @@ public final class Icons {
     public static final ImageIcon LAYOUT_ICON = createIcon("layout.gif");
     /** Icon for the LTS panel of the simulator. */
     public static final ImageIcon LTS_FRAME_ICON = createIcon("lts-frame.gif");
+    /** LTS tab icon. */
+    public static final ImageIcon LTS_MODE_ICON = createIcon("lts-mode.gif");
     /** Icon for a New action. */
     public static final ImageIcon NEW_ICON = createIcon("new.gif");
     /** Icon for a New Graph action. */
