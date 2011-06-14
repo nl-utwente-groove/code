@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.SimulatorModel.Change;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
@@ -35,33 +34,6 @@ final public class TypeDisplay extends ResourceDisplay {
     }
 
     @Override
-    protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.TYPE);
-        super.installListeners();
-    }
-
-    //
-    //    @Override
-    //    public void update(SimulatorModel source, SimulatorModel oldModel,
-    //            Set<Change> changes) {
-    //        super.update(source, oldModel, changes);
-    //        if (suspendListening()) {
-    //            String type = source.getSelected(ResourceKind.TYPE);
-    //            selectResource(type);
-    //            activateListening();
-    //        }
-    //    }
-
-    /** Returns the list of states and host graphs. */
-    @Override
-    public ResourceList getList() {
-        if (this.typeJList == null) {
-            this.typeJList = new ResourceList(this);
-        }
-        return this.typeJList;
-    }
-
-    @Override
     protected void decorateLabelText(String name, StringBuilder text) {
         super.decorateLabelText(name, text);
         if (getResource(name).isEnabled()) {
@@ -72,7 +44,4 @@ final public class TypeDisplay extends ResourceDisplay {
             text.append(")");
         }
     }
-
-    /** Production system type list */
-    private ResourceList typeJList;
 }

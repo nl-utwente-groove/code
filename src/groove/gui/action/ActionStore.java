@@ -18,7 +18,6 @@ package groove.gui.action;
 
 import groove.gui.DisplayKind;
 import groove.gui.GraphTab;
-import groove.gui.HostDisplay;
 import groove.gui.LTSDisplay;
 import groove.gui.Refreshable;
 import groove.gui.ResourceDisplay;
@@ -340,7 +339,7 @@ public class ActionStore implements SimulatorListener {
                 LTSDisplay display =
                     (LTSDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
                         kind);
-                result = display.getJGraph().getExportAction();
+                result = display.getLtsJGraph().getExportAction();
             } else if (kind.getResource().isGraphBased()) {
                 ResourceDisplay display =
                     (ResourceDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
@@ -361,9 +360,7 @@ public class ActionStore implements SimulatorListener {
     /** Returns the export action appropriate for a given simulator tab kind. */
     public ExportAction getExportStateAction() {
         if (this.exportStateAction == null) {
-            HostDisplay display =
-                (HostDisplay) this.simulator.getDisplaysPanel().getDisplayFor(
-                    DisplayKind.HOST);
+            LTSDisplay display = this.simulator.getLtsDisplay();
             this.exportStateAction =
                 display.getStateTab().getJGraph().getExportAction();
         }

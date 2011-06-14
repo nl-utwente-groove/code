@@ -24,7 +24,6 @@ import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -146,42 +145,11 @@ final public class ControlDisplay extends ResourceDisplay {
         return result;
     }
 
-    /** Returns the GUI component showing the list of control program names. */
-    @Override
-    public JPanel getListPanel() {
-        if (this.listPanel == null) {
-            JScrollPane controlPane = new JScrollPane(getList()) {
-                @Override
-                public Dimension getPreferredSize() {
-                    Dimension superSize = super.getPreferredSize();
-                    return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
-                }
-            };
-
-            this.listPanel = new JPanel(new BorderLayout(), false);
-            this.listPanel.add(createListToolBar(), BorderLayout.NORTH);
-            this.listPanel.add(controlPane, BorderLayout.CENTER);
-            // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
-        }
-        return this.listPanel;
-    }
-
     @Override
     protected JToolBar createListToolBar(int separation) {
         JToolBar result = super.createListToolBar(separation);
         result.add(getActions().getPreviewControlAction());
         return result;
-    }
-
-    /** Returns the list of control programs. */
-    @Override
-    final protected ResourceList getList() {
-        if (this.controlJList == null) {
-            this.controlJList = new ResourceList(this);
-        }
-        return this.controlJList;
     }
 
     @Override
@@ -210,14 +178,8 @@ final public class ControlDisplay extends ResourceDisplay {
         }
     }
 
-    /** Production system control program list. */
-    private ResourceList controlJList;
-
     /** Documentation tree. */
     private JTree docPane;
-
-    /** Panel with the {@link #controlJList}. */
-    private JPanel listPanel;
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;

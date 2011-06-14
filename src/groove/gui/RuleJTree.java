@@ -616,8 +616,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 DisplayKind toDisplay;
                 if (path.getLastPathComponent() instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
-                } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
-                    toDisplay = DisplayKind.HOST;
                 } else {
                     toDisplay = DisplayKind.LTS;
                 }

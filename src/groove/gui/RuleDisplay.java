@@ -21,6 +21,7 @@ import groove.trans.ResourceKind;
 
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JToolBar;
 
 /**
@@ -39,8 +40,7 @@ final public class RuleDisplay extends ResourceDisplay {
 
     @Override
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.RULE,
-            Change.ABSTRACT);
+        getSimulatorModel().addListener(this, Change.ABSTRACT);
         super.installListeners();
     }
 
@@ -57,11 +57,14 @@ final public class RuleDisplay extends ResourceDisplay {
      * Returns the tree of rules and matches displayed in the simulator.
      */
     @Override
-    public RuleJTree getList() {
-        if (this.ruleJTree == null) {
-            this.ruleJTree = new RuleJTree(this);
-        }
-        return this.ruleJTree;
+    public JComponent createList() {
+        return new RuleJTree(this);
+    }
+
+    @Override
+    protected void resetList() {
+        ((RuleJTree) getList()).dispose();
+        super.resetList();
     }
 
     @Override
@@ -69,14 +72,8 @@ final public class RuleDisplay extends ResourceDisplay {
             Set<Change> changes) {
         super.update(source, oldModel, changes);
         if (suspendListening()) {
-            //            if (changes.contains(Change.GRAMMAR)
-            //                || changes.contains(Change.RULE)) {
-            //                selectResource(source.getSelected(getResourceKind()));
-            //            }
             if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
-                getList().dispose();
-                this.ruleJTree = null;
-                resetListPanel();
+                resetList();
             }
             activateListening();
         }
@@ -89,7 +86,4 @@ final public class RuleDisplay extends ResourceDisplay {
             text.append(")");
         }
     }
-
-    /** Production rule directory. */
-    private RuleJTree ruleJTree;
 }

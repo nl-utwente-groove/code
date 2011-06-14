@@ -33,7 +33,7 @@ import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
-import groove.gui.ResourceDisplay.Tab;
+import groove.gui.Display.Tab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
@@ -47,7 +47,6 @@ import groove.view.GrammarModel;
 import groove.view.HostModel;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -344,7 +343,6 @@ public class Simulator implements SimulatorListener {
     public LTSDisplay getLtsDisplay() {
         if (this.ltsDisplay == null) {
             this.ltsDisplay = new LTSDisplay(this);
-            this.ltsDisplay.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return this.ltsDisplay;
     }
@@ -981,21 +979,4 @@ public class Simulator implements SimulatorListener {
      * Minimum height of the rule tree component.
      */
     static final int START_LIST_MINIMUM_HEIGHT = 130;
-
-    /**
-     * Preferred width of the graph view.
-     */
-    static private final int GRAPH_VIEW_PREFERRED_WIDTH = 500;
-
-    /**
-     * Preferred height of the graph view.
-     */
-    static private final int GRAPH_VIEW_PREFERRED_HEIGHT = 400;
-
-    /**
-     * Preferred dimension of the graph view.
-     */
-    static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(
-        GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
-
 }

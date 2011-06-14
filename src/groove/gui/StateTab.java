@@ -27,7 +27,7 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.graph.GraphRole;
 import groove.graph.LabelStore;
-import groove.gui.ResourceDisplay.Tab;
+import groove.gui.Display.Tab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
@@ -55,7 +55,6 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -77,8 +76,7 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Window that displays and controls the current state graph. Auxiliary class
- * for Simulator.
+ * Window that displays and controls the current state graph.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -90,12 +88,19 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     /**
      * Constructs a new state panel.
      */
-    public StateTab(final Simulator simulator) {
-        super(new AspectJGraph(simulator, GraphRole.HOST, false), false);
+    public StateTab(LTSDisplay display) {
+        super(new AspectJGraph(display.getSimulator(), GraphRole.HOST, false),
+            false);
+        this.display = display;
         initialise();
         setBorder(null);
         setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().setToolTipEnabled(true);
+    }
+
+    @Override
+    public LTSDisplay getDisplay() {
+        return this.display;
     }
 
     @Override
@@ -110,7 +115,15 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
 
     @Override
     public String getTitle() {
-        return getJModel() == null ? NO_STATE_TEXT : getJModel().getName();
+        if (getJModel() == null) {
+            return NO_STATE_TEXT;
+        } else {
+            StringBuilder result = new StringBuilder(getJModel().getName());
+            HTMLConverter.ITALIC_TAG.on(result);
+            result.insert(0, "State ");
+            HTMLConverter.HTML_TAG.on(result);
+            return result.toString();
+        }
     }
 
     @Override
@@ -127,8 +140,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     @Override
     public TabLabel getTabLabel() {
         if (this.tabLabel == null) {
-            TabLabel result = new TabLabel(this, Icons.STATE_MODE_ICON, null);
-            result.getLabel().setFont(result.getFont().deriveFont(Font.ITALIC));
+            TabLabel result =
+                new TabLabel(this.display, this, getIcon(), "Current state");
             this.tabLabel = result;
         }
         return this.tabLabel;
@@ -536,6 +549,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         return result;
     }
 
+    private final LTSDisplay display;
     /**
      * Mapping from graphs to the corresponding graph models.
      */

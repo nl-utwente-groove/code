@@ -255,8 +255,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
         }
         insertTab(null, null, display.getDisplayPanel(), myKind.getTip(), index);
-        DetachTabLabel tabComponent =
-            new DetachTabLabel(this, display, myKind.getTabIcon(), null);
+        TabLabel tabComponent =
+            new TabLabel(this, display, myKind.getTabIcon(), null);
         //        tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
@@ -322,7 +322,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private JPopupMenu createDetachMenu(final Display component) {
         assert indexOfComponent(component.getDisplayPanel()) >= 0;
         JPopupMenu result = new JPopupMenu();
-        result.add(new AbstractAction("Detach") {
+        result.add(new AbstractAction(Options.DETACH_ACTION_NAME) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 detach(component);
@@ -346,7 +346,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     private void setTabEnabled(int index, boolean enabled) {
-        DetachTabLabel label = (DetachTabLabel) getTabComponentAt(index);
+        TabLabel label = (TabLabel) getTabComponentAt(index);
         if (label != null) {
             label.setFont(label.getFont().deriveFont(Font.BOLD));
             label.setEnabled(enabled);

@@ -17,7 +17,7 @@ public enum DisplayKind {
     /** Rule panel. */
     RULE(ResourceKind.RULE, Icons.RULE_FRAME_ICON, "Rules", "Selected rule"),
     /** LTS panel. */
-    LTS(null, Icons.LTS_FRAME_ICON, "State space", "Labelled transition system"),
+    LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
     /** Type panel. */
     TYPE(ResourceKind.TYPE, Icons.TYPE_FRAME_ICON, "Types", "Type graphs"),
     /** Control panel. */
