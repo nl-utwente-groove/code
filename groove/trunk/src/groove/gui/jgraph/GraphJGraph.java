@@ -526,6 +526,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     }, MAX_LAYOUT_DURATION);
                 }
                 model.addGraphModelListener(getCancelEditListener());
+                // create the popup menu to create and activate the actions therein
+                createPopupMenu(null);
             }
             setEnabled(model != null);
         }
