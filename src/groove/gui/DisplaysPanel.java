@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.gui.Display.ListPanel;
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
 
@@ -25,6 +26,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -177,9 +179,17 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             JPanel listPanel =
                 getDisplayFor(source.getDisplay()).getListPanel();
-            JTabbedPane listsPabel = getListsPanel(source.getDisplay());
-            if (listsPabel.indexOfComponent(listPanel) >= 0) {
-                listsPabel.setSelectedComponent(listPanel);
+            JTabbedPane listsTabPane = getListsPanel(source.getDisplay());
+            // do not automatically switch lists panel between LTS and rule mode
+            ListPanel oldListPanel =
+                (ListPanel) listsTabPane.getSelectedComponent();
+            boolean stopChange =
+                oldListPanel != null
+                    && EnumSet.of(DisplayKind.LTS, DisplayKind.RULE).equals(
+                        EnumSet.of(source.getDisplay(),
+                            oldListPanel.getDisplayKind()));
+            if (!stopChange && listsTabPane.indexOfComponent(listPanel) >= 0) {
+                listsTabPane.setSelectedComponent(listPanel);
             }
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
