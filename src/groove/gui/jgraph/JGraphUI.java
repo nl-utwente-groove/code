@@ -210,7 +210,9 @@ public class JGraphUI extends BasicGraphUI {
                         getJGraph().clearSelection();
                         break;
                     case 2:
-                        ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
+                        if (getJGraph().isEditable()) {
+                            ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
+                        }
                     }
                 }
             } else if (e.getButton() != BUTTON3) {
@@ -224,7 +226,7 @@ public class JGraphUI extends BasicGraphUI {
             }
             if (isEdgeAdding()) {
                 cancelEdgeAdding(e);
-            } else if (ADD_EDGE_BY_CLICK && addEdge) {
+            } else if (ADD_EDGE_BY_CLICK && addEdge && getJGraph().isEditable()) {
                 startEdgeAdding(e);
             }
         }
