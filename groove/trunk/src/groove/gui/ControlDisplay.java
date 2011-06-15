@@ -56,7 +56,7 @@ final public class ControlDisplay extends ResourceDisplay {
     public ControlDisplay(Simulator simulator) {
         super(simulator, ResourceKind.CONTROL);
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
-        activateListening();
+        installListeners();
     }
 
     @Override
