@@ -52,7 +52,8 @@ public class ExportAction extends SimulatorAction {
     public void refresh() {
         boolean enabled = this.jGraph.isEnabled();
         setEnabled(enabled);
-        if (enabled) {
+        if (enabled && this.jGraph.getModel() != null
+            && this.jGraph.getModel().getGraph() != null) {
             // there is certainly a graph, so now we can set the real action name
             GraphRole role = this.jGraph.getModel().getGraph().getRole();
             putValue(NAME, getActionName(role));
