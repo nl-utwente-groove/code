@@ -18,7 +18,6 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
-import groove.util.Groove;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -53,9 +52,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         addTab(simulator.getLtsDisplay());
         addTab(simulator.getControlDisplay());
         addTab(getTypeDisplay());
-        if (Groove.INCLUDE_PROLOG) {
-            addTab(simulator.getPrologDisplay());
-        }
+        addTab(simulator.getPrologDisplay());
         setSelectedIndex(0);
         installListeners();
         simulator.getModel().addListener(this, Change.DISPLAY, Change.HOST,

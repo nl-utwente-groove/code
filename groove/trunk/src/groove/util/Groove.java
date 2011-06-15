@@ -48,10 +48,6 @@ import javax.swing.KeyStroke;
  * @version Arend Rensink
  */
 public class Groove {
-    /** Toggle this flag to shift between native Look'n'Feel and old one. */
-    public static final boolean USE_NATIVE_LNF = false;
-    /** Toggle this flag to include the Prolog tab in the Simulator. */
-    public static final boolean INCLUDE_PROLOG = true;
 
     /** The working directory of the application. */
     public static final String WORKING_DIR = System.getProperty("user.dir");
@@ -153,8 +149,7 @@ public class Groove {
      * @throws IOException if <code>dirname</code> does not exist or is wrongly
      *         formatted
      */
-    static public GrammarModel loadGrammar(String dirname)
-        throws IOException {
+    static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
         return GrammarModel.newInstance(dir, false);
     }
@@ -182,8 +177,8 @@ public class Groove {
      * @throws IOException if <code>dirname</code> or <code>startfilename</code>
      *         do not exist or are wrongly formatted
      */
-    static public GrammarModel loadGrammar(String dirname,
-            String startfilename) throws IOException {
+    static public GrammarModel loadGrammar(String dirname, String startfilename)
+        throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
         return GrammarModel.newInstance(dir, startfilename, false);
     }
