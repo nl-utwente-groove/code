@@ -637,7 +637,7 @@ final public class AspectJGraph extends GraphJGraph {
             this.allCells = true;
             this.vertexOnly = true;
             this.jCells = new ArrayList<GraphJCell>();
-            this.setEnabled(false);
+            refresh();
             addGraphSelectionListener(this);
         }
 
@@ -652,7 +652,7 @@ final public class AspectJGraph extends GraphJGraph {
             this.allCells = false;
             this.vertexOnly = vertexOnly;
             this.jCells = new ArrayList<GraphJCell>();
-            this.setEnabled(false);
+            refresh();
             addGraphSelectionListener(this);
         }
 
@@ -661,6 +661,10 @@ final public class AspectJGraph extends GraphJGraph {
          * the type of the cell disagrees with the expected type.
          */
         public void valueChanged(GraphSelectionEvent e) {
+            refresh();
+        }
+
+        private void refresh() {
             this.jCell = null;
             this.jCells.clear();
             for (Object cell : AspectJGraph.this.getSelectionCells()) {
