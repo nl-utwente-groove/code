@@ -125,6 +125,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         setInvokesStopCellEditing(true);
         addMouseListener(new MyMouseListener());
         addKeyListener(getCancelEditListener());
+        setEditable(false);
         setConnectable(false);
         setDisconnectable(false);
     }
