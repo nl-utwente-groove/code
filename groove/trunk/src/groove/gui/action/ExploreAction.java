@@ -48,7 +48,9 @@ public class ExploreAction extends SimulatorAction {
         super(simulator, animated ? Options.ANIMATE_ACTION_NAME
                 : Options.EXPLORE_ACTION_NAME, animated ? Icons.GO_START_ICON
                 : Icons.GO_FORWARD_ICON);
-        putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
+        if (!animated) {
+            putValue(ACCELERATOR_KEY, Options.DEFAULT_EXPLORATION_KEY);
+        }
         this.animated = animated;
     }
 
