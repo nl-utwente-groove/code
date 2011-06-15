@@ -84,6 +84,7 @@ final public class AspectJGraph extends GraphJGraph {
         this.editing = editing;
         this.graphRole = role;
         //        addMouseListener(new MyMouseListener());
+        setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
         setCloneable(editing);
         setConnectable(editing);
