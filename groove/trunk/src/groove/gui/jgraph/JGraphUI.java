@@ -146,6 +146,11 @@ public class JGraphUI extends BasicGraphUI {
         return new MouseHandler();
     }
 
+    /** Cancel the edge adding mode that the mouse handler might be engaged in. */
+    public void cancelEdgeAdding() {
+        ((MouseHandler) this.mouseListener).cancelEdgeAdding(null);
+    }
+
     private static final boolean ADD_EDGE_BY_CLICK = true;
 
     /**
@@ -169,7 +174,7 @@ public class JGraphUI extends BasicGraphUI {
             boolean addEdge = false;
             if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
                 // this is an editing-related event
-                if (isEdgeAdding()) {
+                if (isEdgeAdding() && e.getClickCount() == 1) {
                     // finish edge adding
                     finishEdgeAdding(e);
                 } else if (e.isAltDown()) {
@@ -707,7 +712,6 @@ public class JGraphUI extends BasicGraphUI {
          */
         private void update(MouseEvent e) {
             if (this.dragOrigVertex != null) {
-                Point point = e.getPoint();
                 Rectangle dirty =
                     getScreenBounds(this.dragOrigVertex).getBounds();
                 if (this.dragCurrPoint != null) {
@@ -716,9 +720,12 @@ public class JGraphUI extends BasicGraphUI {
                 if (this.dragCurrVertex != null) {
                     dirty.add(this.dragCurrVertex.getBounds());
                 }
-                this.dragCurrPoint = point;
-                this.dragCurrVertex = vertexAt(point);
-                dirty.add(point);
+                if (e != null) {
+                    Point point = e.getPoint();
+                    this.dragCurrPoint = point;
+                    this.dragCurrVertex = vertexAt(point);
+                    dirty.add(point);
+                }
                 if (this.dragCurrVertex != null) {
                     dirty.add(getScreenBounds(this.dragCurrVertex));
                 }
