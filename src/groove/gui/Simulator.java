@@ -496,6 +496,7 @@ public class Simulator implements SimulatorListener {
             this.menuItems.add(getRenameMenuItem());
             this.menuItems.add(getEnableMenuItem());
             this.menuItems.add(getSaveAsMenuItem());
+            this.menuItems.add(getExportMenuItem());
         }
         return this.menuItems;
     }
@@ -637,13 +638,12 @@ public class Simulator implements SimulatorListener {
     private RefreshableMenuItem getSaveAsMenuItem() {
         // lazily create the menu item
         if (this.saveMenuItem == null) {
-            this.saveMenuItem =
-                this.exportMenuItem = new RefreshableMenuItem() {
-                    @Override
-                    protected void refresh(ResourceKind resource) {
-                        setAction(getActions().getSaveAsAction(resource));
-                    }
-                };
+            this.saveMenuItem = new RefreshableMenuItem() {
+                @Override
+                protected void refresh(ResourceKind resource) {
+                    setAction(getActions().getSaveAsAction(resource));
+                }
+            };
         }
         return this.saveMenuItem;
     }
