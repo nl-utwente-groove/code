@@ -114,9 +114,8 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
-                LTSJModel newLtsModel = getJGraph().newModel();
                 getJGraph().getFilteredLabels().clear();
-                setJModel(newLtsModel);
+                setJModel(null);
                 setEnabled(false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -131,13 +130,14 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
                     ltsModel = getJGraph().newModel();
+                    ltsModel.loadGraph(gts);
                     setJModel(ltsModel);
                 } else {
                     ltsModel = getJModel();
-                }
-                // (re)load the GTS if it is not the same size as the model
-                if (ltsModel.size() != gts.size()) {
-                    ltsModel.loadGraph(gts);
+                    // (re)load the GTS if it is not the same size as the model
+                    if (ltsModel.size() != gts.size()) {
+                        ltsModel.loadGraph(gts);
+                    }
                 }
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
