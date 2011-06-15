@@ -235,7 +235,25 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
                 synchroniseLayout(graphJCell);
             }
         }
-        super.fireGraphChanged(source, edit);
+        if (!vetoFireGraphChanged()) {
+            super.fireGraphChanged(source, edit);
+        }
+    }
+
+    /**
+     * Callback method that may prevent {@link #fireGraphChanged(Object, GraphModelChange)}
+     * from propagating its event. This can be done in preparation to layouting,
+     * to avoid flickers.
+     */
+    protected boolean vetoFireGraphChanged() {
+        return this.vetoFireGraphChanged;
+    }
+
+    /** Sets or retracts the veto for the {@link #fireGraphChanged(Object, GraphModelChange)}
+     * event.
+     */
+    protected void setVetoFireGraphChanged(boolean veto) {
+        this.vetoFireGraphChanged = veto;
     }
 
     /**
@@ -460,6 +478,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      */
     private ConnectionSet connections;
 
+    /** See {@link #setVetoFireGraphChanged(boolean)}. */
+    private boolean vetoFireGraphChanged;
     /**
      * Counter to provide the x-coordinate of fresh nodes with fresh values
      */

@@ -93,7 +93,14 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     public void loadGraph(Graph<GraphState,GraphTransition> gts) {
         // temporarily remove the model as a graph listener
         this.listening = false;
+        GTS oldGTS = getGraph();
+        if (oldGTS != null && gts != oldGTS) {
+            oldGTS.removeLTSListener(this);
+        }
         super.loadGraph(gts);
+        if (gts != null && gts != oldGTS) {
+            ((GTS) gts).addLTSListener(this);
+        }
         this.listening = true;
     }
 

@@ -77,12 +77,11 @@ public class ExploreAction extends SimulatorAction {
             }
         }
         GTS gts = getSimulatorModel().getGts();
-        // unhook the lts' jmodel from the lts, for efficiency's sake
-        gts.removeLTSListener(ltsJModel);
         if (isAnimated()) {
             getSimulatorModel().setDisplay(DisplayKind.LTS);
-            getLtsDisplay().selectStateTab();
         }
+        // unhook the lts' jmodel from the lts, for efficiency's sake
+        gts.removeLTSListener(ltsJModel);
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread();
         // go!
@@ -226,7 +225,7 @@ public class ExploreAction extends SimulatorAction {
 
     private final class AnimateListener extends GTSAdapter {
         @Override
-        public void addUpdate(GTS gts, final GraphState state) {
+        public void addUpdate(final GTS gts, final GraphState state) {
             displayProgress(gts);
             try {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -242,7 +241,7 @@ public class ExploreAction extends SimulatorAction {
         }
 
         @Override
-        public void addUpdate(GTS gts, GraphTransition transition) {
+        public void addUpdate(final GTS gts, final GraphTransition transition) {
             displayProgress(gts);
         }
     }
