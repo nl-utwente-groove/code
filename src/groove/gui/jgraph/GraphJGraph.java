@@ -44,6 +44,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -79,6 +81,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
+import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
@@ -120,6 +124,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         // Save edits to a cell whenever something else happens
         setInvokesStopCellEditing(true);
         addMouseListener(new MyMouseListener());
+        addKeyListener(getCancelEditListener());
         setConnectable(false);
         setDisconnectable(false);
     }
@@ -494,6 +499,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
                 clearSelection();
+                getModel().removeGraphModelListener(getCancelEditListener());
             }
             super.setModel(jModel);
             if (jModel != null) {
@@ -518,6 +524,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                         }
                     }, MAX_LAYOUT_DURATION);
                 }
+                model.addGraphModelListener(getCancelEditListener());
             }
             setEnabled(model != null);
         }
@@ -594,6 +601,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected BasicGraphUI createGraphUI() {
         return new JGraphUI();
+    }
+
+    @Override
+    public JGraphUI getUI() {
+        return (JGraphUI) super.getUI();
     }
 
     /** 
@@ -865,6 +877,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
         if (isPopupMenuEvent(evt)) {
+            getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
             createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x,
                 atPoint.y);
@@ -1086,7 +1099,15 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public void startEditingAtCell(Object cell) {
         firePropertyChange(CELL_EDIT_PROPERTY, null, cell);
+        getUI().cancelEdgeAdding();
         super.startEditingAtCell(cell);
+    }
+
+    private CancelEditListener getCancelEditListener() {
+        if (this.cancelListener == null) {
+            this.cancelListener = new CancelEditListener();
+        }
+        return this.cancelListener;
     }
 
     private Map<JGraphMode,Action> modeActionMap;
@@ -1103,6 +1124,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private JGraphMode mode;
     /** The fixed refresh listener of this {@link GraphJModel}. */
     private final RefreshListener refreshListener = new RefreshListener();
+    private CancelEditListener cancelListener;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
     /**
@@ -1203,6 +1225,22 @@ public class GraphJGraph extends org.jgraph.JGraph {
         JAttr defaultValues = new JAttr();
         DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
         DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
+    }
+
+    /** Listener class that cancels the edge adding mode on various occasions. */
+    private final class CancelEditListener extends KeyAdapter implements
+            GraphModelListener {
+        @Override
+        public void graphChanged(GraphModelEvent e) {
+            getUI().cancelEdgeAdding();
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == Options.CANCEL_KEY.getKeyCode()) {
+                getUI().cancelEdgeAdding();
+            }
+        }
     }
 
     /** Action to turn filtering on for a set of selected cells. */

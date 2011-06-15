@@ -90,16 +90,6 @@ final public class AspectJGraph extends GraphJGraph {
         setDisconnectable(editing);
     }
 
-    //
-    //    @Override
-    //    public void requestFocus() {
-    //        // only pass on the request if it is not due to
-    //        // an explicitly requested tab switch in the simulator
-    //        if (getSimulator() != null && !getSimulator().isSwitchingTabs()) {
-    //            super.requestFocus();
-    //        }
-    //    }
-
     @Override
     public AspectJModel getModel() {
         return (AspectJModel) super.getModel();
