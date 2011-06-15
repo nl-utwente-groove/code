@@ -88,11 +88,15 @@ public class TabLabel extends JPanel {
         setOpaque(false);
         setBorder(null);
         this.kind = tabKind;
+        this.hasButton = button;
         this.iconLabel = new JLabel(title, icon, JLabel.LEFT);
         this.iconLabel.setBackground(JAttr.ERROR_COLOR);
         this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0,
             tabKind.getHGap()));
-        this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(Font.BOLD));
+        if (tabKind != Kind.RESOURCE) {
+            this.iconLabel.setFont(this.iconLabel.getFont().deriveFont(
+                Font.BOLD));
+        }
         add(this.iconLabel);
         if (button) {
             add(getButton());
@@ -108,7 +112,7 @@ public class TabLabel extends JPanel {
     }
 
     /** 
-     * Creates a new component, for a given resource tab. 
+     * Creates a new component, for a given display. 
      */
     public TabLabel(DisplaysPanel parent, Display display, Icon icon,
             String title) {
@@ -118,7 +122,7 @@ public class TabLabel extends JPanel {
     }
 
     /** 
-     * Creates a new component, for a given resource tab. 
+     * Creates new component for the state tab. 
      */
     public TabLabel(Display display, Tab tab, Icon icon, String title) {
         this(Kind.STATE, icon, title, tab instanceof StateTab);
@@ -130,7 +134,7 @@ public class TabLabel extends JPanel {
         this.iconLabel.setText(title);
         if (title == null) {
             remove(getButton());
-        } else {
+        } else if (this.hasButton) {
             add(getButton());
         }
     }
@@ -177,6 +181,8 @@ public class TabLabel extends JPanel {
     private final JLabel iconLabel;
     /** The kind of tab label. */
     private final Kind kind;
+    /** Flag indicating that this tab label should have a button. */
+    private final boolean hasButton;
     private TabButton button;
     /** The editor panel in this tab. */
     private Tab tab;
