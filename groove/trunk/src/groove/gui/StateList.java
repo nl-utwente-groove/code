@@ -598,8 +598,6 @@ public class StateList extends JTree implements SimulatorListener {
                 DisplayKind toDisplay;
                 if (node instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
-                } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
-                    toDisplay = DisplayKind.HOST;
                 } else {
                     toDisplay = DisplayKind.LTS;
                 }

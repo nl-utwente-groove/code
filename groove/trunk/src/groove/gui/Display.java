@@ -80,28 +80,12 @@ abstract public class Display {
     abstract protected JTabbedPane createTabPane();
 
     /** List panel corresponding to this tab; may be {@code null}. */
-    public JPanel getListPanel() {
+    public ListPanel getListPanel() {
         if (this.listPanel == null) {
-            this.listPanel = createListPanel();
+            this.listPanel = new ListPanel();
             ToolTipManager.sharedInstance().registerComponent(this.listPanel);
         }
         return this.listPanel;
-    }
-
-    /** Callback method to create the list panel. */
-    final protected JPanel createListPanel() {
-        JScrollPane controlPane = new JScrollPane(getList()) {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension superSize = super.getPreferredSize();
-                return new Dimension((int) superSize.getWidth(),
-                    Simulator.START_LIST_MINIMUM_HEIGHT);
-            }
-        };
-        JPanel result = new JPanel(new BorderLayout(), false);
-        result.add(getListToolBar(), BorderLayout.NORTH);
-        result.add(controlPane, BorderLayout.CENTER);
-        return result;
     }
 
     /** Creates and returns the fixed tool bar for the label list. */
@@ -182,7 +166,7 @@ abstract public class Display {
     private JTabbedPane tabPane;
 
     /** Panel with the label list. */
-    private JPanel listPanel;
+    private ListPanel listPanel;
     /** Production system control program list. */
     private JComponent resourceList;
     /** Toolbar for the {@link #listPanel}. */
@@ -240,5 +224,28 @@ abstract public class Display {
     interface Panel {
         /** Returns the display to which this panel belongs. */
         Display getDisplay();
+    }
+
+    /** Panel that contains list for this display. */
+    public class ListPanel extends JPanel {
+        /** Creates a new instance. */
+        public ListPanel() {
+            super(new BorderLayout(), false);
+            JScrollPane controlPane = new JScrollPane(getList()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) superSize.getWidth(),
+                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                }
+            };
+            add(getListToolBar(), BorderLayout.NORTH);
+            add(controlPane, BorderLayout.CENTER);
+        }
+
+        /** Returns the display kind of this panel. */
+        public DisplayKind getDisplayKind() {
+            return getKind();
+        }
     }
 }
