@@ -143,7 +143,6 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 }
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
-                getJGraph().setActive(source.getState(), source.getTransition());
                 setEnabled(true);
             }
             if (gts != oldModel.getGts()) {
@@ -155,7 +154,8 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 }
             }
             refreshStatus();
-        } else if (changes.contains(STATE) || changes.contains(MATCH)) {
+        }
+        if (changes.contains(STATE) || changes.contains(MATCH)) {
             GraphState state = source.getState();
             GraphTransition transition = source.getTransition();
             getJGraph().setActive(state, transition);
