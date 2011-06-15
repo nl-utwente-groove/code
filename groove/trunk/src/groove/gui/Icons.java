@@ -177,6 +177,8 @@ public final class Icons {
         createIcon("arrow-simple-up.gif");
     /** Cancel action icon. */
     public static final ImageIcon CANCEL_ICON = createIcon("cancel.gif");
+    /** Compass icon. */
+    public static final ImageIcon COMPASS_ICON = createIcon("compass.gif");
     /** Control automaton preview icon. */
     public static final ImageIcon CONTROL_MODE_ICON =
         createIcon("control-mode.gif");

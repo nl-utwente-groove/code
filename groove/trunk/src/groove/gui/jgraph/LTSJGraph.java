@@ -132,9 +132,10 @@ public class LTSJGraph extends GraphJGraph {
     /** Creates a state exploration sub-menu. */
     public JMenu createExploreMenu() {
         JMenu result = new JMenu("Explore");
+        result.add(getActions().getExplorationDialogAction());
         result.add(getActions().getApplyTransitionAction());
         result.add(getActions().getExploreAction());
-        result.add(getActions().getExplorationDialogAction());
+        result.addSeparator();
         result.add(createCheckerMenu());
         return result;
     }

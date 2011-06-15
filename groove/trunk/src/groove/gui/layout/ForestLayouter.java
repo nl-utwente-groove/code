@@ -25,6 +25,7 @@ import groove.util.TransformIterator;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.jgraph.graph.EdgeView;
 
@@ -131,6 +133,8 @@ public class ForestLayouter extends AbstractLayouter {
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
+                Set<GraphJEdge> outEdges =
+                    new TreeSet<GraphJEdge>(edgeComparator);
                 Iterator<?> edgeIter = ((GraphJVertex) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     GraphJEdge edge = (GraphJEdge) edgeIter.next();
@@ -145,31 +149,36 @@ public class ForestLayouter extends AbstractLayouter {
                         GraphJVertex sourceVertex = edge.getSourceVertex();
                         // the edge target may be a point only
                         if (sourceVertex.equals(key)) {
-                            // add all the points on the edge to the branches of
-                            // the
-                            // source node
-                            // as well as its end node (if any)
-                            List<?> points = edgeView.getPoints();
-                            GraphJVertex targetVertex = edge.getTargetVertex();
-                            Iterator<?> pointsIter = points.iterator();
-                            // the first point is the (port of the) source node
-                            // itself; skip it
-                            pointsIter.next();
-                            while (pointsIter.hasNext()) {
-                                Object nextPoint = pointsIter.next();
-                                if (!pointsIter.hasNext()
-                                    && targetVertex != null) {
-                                    // this (last) point is the target node
-                                    branchSet.add(this.toLayoutableMap.get(targetVertex));
-                                } else {
-                                    branchSet.add(this.toLayoutableMap.get(nextPoint));
-                                }
-                            }
+                            outEdges.add(edge);
                         } else {
                             // the key vertex is the target and not the source,
                             // so this must be an incoming (non-self) edge of
                             // the key
                             inEdgeCount++;
+                        }
+                    }
+                }
+                for (GraphJEdge edge : outEdges) {
+                    EdgeView edgeView =
+                        (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
+                            edge, false);
+                    // add all the points on the edge to the branches of
+                    // the
+                    // source node
+                    // as well as its end node (if any)
+                    List<?> points = edgeView.getPoints();
+                    GraphJVertex targetVertex = edge.getTargetVertex();
+                    Iterator<?> pointsIter = points.iterator();
+                    // the first point is the (port of the) source node
+                    // itself; skip it
+                    pointsIter.next();
+                    while (pointsIter.hasNext()) {
+                        Object nextPoint = pointsIter.next();
+                        if (!pointsIter.hasNext() && targetVertex != null) {
+                            // this (last) point is the target node
+                            branchSet.add(this.toLayoutableMap.get(targetVertex));
+                        } else {
+                            branchSet.add(this.toLayoutableMap.get(nextPoint));
                         }
                     }
                 }
@@ -490,4 +499,16 @@ public class ForestLayouter extends AbstractLayouter {
         new LinkedHashMap<Layoutable,Set<Layoutable>>();
     /** The roots of the forest. */
     private final Collection<Layoutable> roots = new LinkedList<Layoutable>();
+
+    private final static Comparator<GraphJEdge> edgeComparator =
+        new Comparator<GraphJEdge>() {
+            @Override
+            public int compare(GraphJEdge o1, GraphJEdge o2) {
+                int result = o1.getTargetNode().compareTo(o2.getTargetNode());
+                if (result == 0) {
+                    result = o1.getEdge().compareTo(o2.getEdge());
+                }
+                return result;
+            }
+        };
 }

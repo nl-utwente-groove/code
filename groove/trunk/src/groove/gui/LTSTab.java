@@ -26,6 +26,7 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
@@ -56,6 +57,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         super(new LTSJGraph(display.getSimulator()), true);
         this.display = display;
         getJGraph().setToolTipEnabled(true);
+        setEnabledBackground(JAttr.STATE_BACKGROUND);
         initialise();
     }
 

@@ -91,7 +91,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      */
     public StateTab(LTSDisplay display) {
         super(new AspectJGraph(display.getSimulator(), GraphRole.HOST, false),
-            false);
+            true);
         this.display = display;
         initialise();
         setBorder(null);
@@ -135,7 +135,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     @Override
     public void dispose() {
         super.dispose();
-        suspendListeners();
+        suspendListening();
     }
 
     @Override
@@ -195,18 +195,18 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                 });
             }
         });
-        activateListeners();
+        getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
+            STATE, MATCH);
+        activateListening();
     }
 
     /**
      * Activates all listeners.
      */
-    private void activateListeners() {
+    private void activateListening() {
         if (this.listening) {
             throw new IllegalStateException();
         }
-        getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
-            STATE, MATCH);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(this.graphSelectionListener);
@@ -216,15 +216,14 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     /**
      * Suspend all listening activity to avoid dependent updates.
      */
-    private void suspendListeners() {
-        if (!this.listening) {
-            throw new IllegalStateException();
+    private boolean suspendListening() {
+        boolean result = this.listening;
+        if (result) {
+            getJGraph().removeGraphSelectionListener(
+                this.graphSelectionListener);
+            this.listening = false;
         }
-        getSimulatorModel().removeListener(this.simulatorListener);
-        // make sure that removals from the selection model
-        // also deselect the match
-        getJGraph().removeGraphSelectionListener(this.graphSelectionListener);
-        this.listening = false;
+        return result;
     }
 
     /**
@@ -238,7 +237,9 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        suspendListeners();
+        if (!suspendListening()) {
+            return;
+        }
         if (changes.contains(Change.GRAMMAR)) {
             updateGrammar(source.getGrammar());
         }
@@ -271,7 +272,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             }
             refreshStatus();
         }
-        activateListeners();
+        activateListening();
     }
 
     /**

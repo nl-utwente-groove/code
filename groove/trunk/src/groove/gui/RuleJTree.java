@@ -30,6 +30,7 @@ import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -49,7 +50,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -420,13 +420,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         // recollect the match results so that they are ordered according to the
         // rule events
         SortedSet<MatchResult> orderedEvents =
-            new TreeSet<MatchResult>(new Comparator<MatchResult>() {
-                @Override
-                public int compare(MatchResult o1, MatchResult o2) {
-                    return o1.getEvent().compareTo(o2.getEvent());
-                }
-
-            });
+            new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         orderedEvents.addAll(matches);
         // insert new matches
         for (MatchResult match : orderedEvents) {
@@ -812,10 +806,23 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         @Override
         public String toString() {
-            return getSimulator().getOptions().isSelected(
-                Options.SHOW_ANCHORS_OPTION)
-                    ? getResult().getEvent().getAnchorImageString() : "Match "
-                        + this.nr;
+            String result;
+            if (getSimulator().getOptions().isSelected(
+                Options.SHOW_ANCHORS_OPTION)) {
+                result = getResult().getEvent().getAnchorImageString();
+            } else {
+                MatchResult match = getResult();
+                if (match instanceof GraphTransition) {
+                    String state =
+                        ((GraphTransition) match).target().toString();
+                    result =
+                        HTMLConverter.HTML_TAG.on("To "
+                            + HTMLConverter.ITALIC_TAG.on(state));
+                } else {
+                    result = "Match " + this.nr;
+                }
+            }
+            return result;
         }
 
         /** The number of this match, used in <tt>toString()</tt> */
