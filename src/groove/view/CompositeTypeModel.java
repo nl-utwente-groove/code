@@ -102,7 +102,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             }
         }
         // first test if there is something to be done
-        if (this.errors.isEmpty()) {
+        if (this.errors.isEmpty() && !this.typeModelMap.isEmpty()) {
             // There are no errors in each of the models, try to compose the
             // type graph.
             this.typeGraph = new TypeGraph("combined type");
@@ -147,9 +147,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     /** Computes the label store or retrieves it from the type graph. */
     public LabelStore getLabelStore() {
-        LabelStore result = null;
         maybeInitialise();
         if (this.labelStore == null) {
+            LabelStore result;
             if (this.typeGraph == null) {
                 result = new LabelStore();
                 for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
@@ -169,8 +169,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 }
                 result.setFixed();
             } else {
-                this.labelStore = this.typeGraph.getLabelStore();
+                result = this.typeGraph.getLabelStore();
             }
+            this.labelStore = result;
         }
         return this.labelStore;
     }
