@@ -38,7 +38,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -173,12 +172,7 @@ public class StateList extends JTree implements SimulatorListener {
     @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
-            if (!enabled) {
-                this.enabledBackground = getBackground();
-                setBackground(null);
-            } else if (this.enabledBackground != null) {
-                setBackground(this.enabledBackground);
-            }
+            setBackground(enabled ? JAttr.STATE_BACKGROUND : null);
         }
         super.setEnabled(enabled);
     }
@@ -303,15 +297,18 @@ public class StateList extends JTree implements SimulatorListener {
             Set<MatchResult> events = matchMap.get(rule);
             if (events == null) {
                 matchMap.put(rule, events =
-                    new TreeSet<MatchResult>(TRANSITION_COMPARATOR));
+                    new TreeSet<MatchResult>(MatchResult.COMPARATOR));
             }
             events.add(match);
         }
         for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {
             RuleTreeNode ruleNode = new RuleTreeNode(matchEntry.getKey());
             result.add(ruleNode);
+            int count = 0;
             for (MatchResult trans : matchEntry.getValue()) {
-                MatchTreeNode transNode = new MatchTreeNode(state, trans);
+                count++;
+                MatchTreeNode transNode =
+                    new MatchTreeNode(state, trans, count);
                 ruleNode.add(transNode);
             }
         }
@@ -421,52 +418,15 @@ public class StateList extends JTree implements SimulatorListener {
     private Queue<GraphState> expanded = new LinkedList<GraphState>();
     /** Flag indicating if listeners should be active. */
     private boolean listening;
-    /**
-     * The background colour of this component when it is enabled.
-     */
-    private Color enabledBackground;
-
-    /** Singleton instance of the {@link TransitionComparator}. */
-    private static final TransitionComparator TRANSITION_COMPARATOR =
-        new TransitionComparator();
     /** Number of nodes folded under a {@link RangeTreeNode}. */
     private static final int RANGE_SIZE = 100;
     /** Size of the queue of previously expanded nodes. */
-    private static final int MAX_EXPANDED = 3;
-
-    /**
-     * Compares two graph transitions for their target states, and if
-     * those coincide, for their rule events.
-     */
-    private static final class TransitionComparator implements
-            Comparator<MatchResult> {
-        @Override
-        public int compare(MatchResult o1, MatchResult o2) {
-            int result = 0;
-            if (o1 instanceof GraphTransition) {
-                if (o2 instanceof GraphTransition) {
-                    result =
-                        ((GraphTransition) o1).target().compareTo(
-                            ((GraphTransition) o2).target());
-                } else {
-                    // graph transitions are ordered before other match results
-                    result = -1;
-                }
-            } else if (o2 instanceof GraphTransition) {
-                // graph transitions are ordered before other match results
-                result = 1;
-            }
-            if (result == 0) {
-                result = o1.getEvent().compareTo(o2.getEvent());
-            }
-            return result;
-        }
-    }
+    private static final int MAX_EXPANDED = 2;
 
     /**
      * Tree node wrapping a range of {@link StateTreeNode}s.
      */
-    private static class RangeTreeNode extends DefaultMutableTreeNode {
+    private class RangeTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new range node based on a given lower bound. The node can have
          * children.
@@ -480,6 +440,14 @@ public class StateList extends JTree implements SimulatorListener {
          */
         public int getLower() {
             return (Integer) getUserObject();
+        }
+
+        @Override
+        public String toString() {
+            int lower = getLower();
+            int upper =
+                Math.min(lower + RANGE_SIZE, StateList.this.states.length) - 1;
+            return "[" + lower + ".." + upper + "]";
         }
     }
 
@@ -508,6 +476,12 @@ public class StateList extends JTree implements SimulatorListener {
             return this.expanded;
         }
 
+        @Override
+        public String toString() {
+            return HTMLConverter.HTML_TAG.on("State "
+                + HTMLConverter.ITALIC_TAG.on(getState().toString()));
+        }
+
         private final boolean expanded;
     }
 
@@ -529,6 +503,11 @@ public class StateList extends JTree implements SimulatorListener {
         public Rule getRule() {
             return (Rule) getUserObject();
         }
+
+        @Override
+        public String toString() {
+            return getRule().getName();
+        }
     }
 
     /**
@@ -539,9 +518,10 @@ public class StateList extends JTree implements SimulatorListener {
          * Creates a new tree node based on a given graph transition. The node cannot have
          * children.
          */
-        public MatchTreeNode(GraphState source, MatchResult event) {
+        public MatchTreeNode(GraphState source, MatchResult event, int nr) {
             super(event, false);
             this.source = source;
+            this.nr = nr;
         }
 
         /**
@@ -558,7 +538,23 @@ public class StateList extends JTree implements SimulatorListener {
             return this.source;
         }
 
+        @Override
+        public String toString() {
+            String result;
+            MatchResult match = getMatch();
+            if (match instanceof GraphTransition) {
+                String state = ((GraphTransition) match).target().toString();
+                result =
+                    HTMLConverter.HTML_TAG.on("To "
+                        + HTMLConverter.ITALIC_TAG.on(state));
+            } else {
+                result = "Match " + this.nr;
+            }
+            return result;
+        }
+
         private final GraphState source;
+        private final int nr;
     }
 
     /**
@@ -690,7 +686,7 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Cell renderer for the state list.
      */
-    protected class StateCellRenderer extends DefaultTreeCellRenderer {
+    private class StateCellRenderer extends DefaultTreeCellRenderer {
         // This is the only method defined by ListCellRenderer.
         // We just reconfigure the JLabel each time we're called.
         @Override
@@ -703,37 +699,21 @@ public class StateList extends JTree implements SimulatorListener {
                 super.getTreeCellRendererComponent(tree, value, cellSelected,
                     expanded, leaf, row, false);
             Icon icon = null;
-            String text = "";
-            if (value instanceof RangeTreeNode) {
-                int lower = ((RangeTreeNode) value).getLower();
-                int upper =
-                    Math.min(lower + RANGE_SIZE, StateList.this.states.length) - 1;
-                text = "[" + lower + ".." + upper + "]";
-            } else if (value instanceof StateTreeNode) {
-                GraphState state = ((StateTreeNode) value).getState();
-                text =
-                    HTMLConverter.HTML_TAG.on("State "
-                        + HTMLConverter.ITALIC_TAG.on(state.toString()));
-                icon = getIcon(state);
+            if (value instanceof StateTreeNode) {
+                icon = getIcon(((StateTreeNode) value).getState());
             } else if (value instanceof RuleTreeNode) {
                 icon = Icons.RULE_LIST_ICON;
-                text = ((RuleTreeNode) value).getRule().getName();
             } else if (value instanceof MatchTreeNode) {
-                MatchResult match = ((MatchTreeNode) value).getMatch();
                 icon = Icons.GRAPH_MATCH_ICON;
-                String state =
-                    match instanceof GraphTransition
-                            ? ((GraphTransition) match).target().toString()
-                            : "s??";
-                text =
-                    HTMLConverter.HTML_TAG.on("To "
-                        + HTMLConverter.ITALIC_TAG.on(state));
             }
             setIcon(icon);
-            setText(text);
+            setText(value.toString());
             setForeground(JAttr.getForeground(cellSelected, cellFocused, false));
             Color background =
                 JAttr.getBackground(cellSelected, cellFocused, false);
+            if (background == Color.WHITE) {
+                background = JAttr.STATE_BACKGROUND;
+            }
             if (cellSelected) {
                 setBackgroundSelectionColor(background);
             } else {

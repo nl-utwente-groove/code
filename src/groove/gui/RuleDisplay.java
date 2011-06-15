@@ -17,11 +17,14 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
+import groove.lts.GraphState;
 import groove.trans.ResourceKind;
 
+import java.awt.BorderLayout;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
 /**
@@ -40,7 +43,7 @@ final public class RuleDisplay extends ResourceDisplay {
 
     @Override
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.ABSTRACT);
+        getSimulatorModel().addListener(this, Change.ABSTRACT, Change.STATE);
         super.installListeners();
     }
 
@@ -62,6 +65,13 @@ final public class RuleDisplay extends ResourceDisplay {
     }
 
     @Override
+    public ListPanel getListPanel() {
+        ListPanel result = super.getListPanel();
+        result.add(this.statusLine, BorderLayout.SOUTH);
+        return result;
+    }
+
+    @Override
     protected void resetList() {
         ((RuleJTree) getList()).dispose();
         super.resetList();
@@ -75,6 +85,16 @@ final public class RuleDisplay extends ResourceDisplay {
             if (changes.contains(Change.ABSTRACT) && source.isAbstractionMode()) {
                 resetList();
             }
+            if (changes.contains(Change.STATE)) {
+                String statusText;
+                GraphState state = source.getState();
+                if (state == null) {
+                    statusText = "No state selected";
+                } else {
+                    statusText = "Matches for state " + state;
+                }
+                this.statusLine.setText(statusText);
+            }
             activateListening();
         }
     }
@@ -86,4 +106,6 @@ final public class RuleDisplay extends ResourceDisplay {
             text.append(")");
         }
     }
+
+    private final JLabel statusLine = new JLabel(" ");
 }

@@ -18,6 +18,8 @@ package groove.lts;
 
 import groove.trans.RuleEvent;
 
+import java.util.Comparator;
+
 /** 
  * Class encoding the result of a matching phase.
  * Apart from the rule event, this may contain other information
@@ -26,4 +28,15 @@ import groove.trans.RuleEvent;
 public interface MatchResult {
     /** Returns the rule event wrapped by this result. */
     public RuleEvent getEvent();
+
+    /** Fixed comparator for match results, which compares results for their 
+     * rule events. 
+     */
+    public static final Comparator<MatchResult> COMPARATOR =
+        new Comparator<MatchResult>() {
+            @Override
+            public int compare(MatchResult o1, MatchResult o2) {
+                return o1.getEvent().compareTo(o2.getEvent());
+            }
+        };
 }

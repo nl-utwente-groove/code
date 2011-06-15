@@ -32,6 +32,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -58,6 +60,12 @@ public class LTSDisplay extends Display {
         result.setTabComponentAt(0, getStateTab().getTabLabel());
         result.add(getLTSTab());
         result.setTabComponentAt(1, getLTSTab().getTabLabel());
+        result.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refreshToolBar();
+            }
+        });
         return result;
     }
 
@@ -77,9 +85,16 @@ public class LTSDisplay extends Display {
         return result;
     }
 
-    private JToolBar createToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(getActions().getSaveLTSAsAction());
+    private void refreshToolBar() {
+        JToolBar toolBar = ((LTSDisplayPanel) getDisplayPanel()).getToolBar();
+        fillToolBar(toolBar);
+        getDisplayPanel().revalidate();
+        getDisplayPanel().repaint();
+    }
+
+    private void fillToolBar(JToolBar result) {
+        result.removeAll();
+        result.add(getActions().getExplorationDialogAction());
         result.addSeparator();
         result.add(getActions().getStartSimulationAction());
         result.add(getActions().getApplyTransitionAction());
@@ -88,10 +103,11 @@ public class LTSDisplay extends Display {
         result.addSeparator();
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
-        result.addSeparator();
-        result.add(getLtsJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
-        return result;
+        if (getTabPane().getSelectedComponent() == getLTSTab()) {
+            result.addSeparator();
+            result.add(getLtsJGraph().getModeButton(JGraphMode.SELECT_MODE));
+            result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
+        }
     }
 
     /**
@@ -174,18 +190,28 @@ public class LTSDisplay extends Display {
 
     private LTSTab ltsTab;
     private StateTab stateTab;
+    /** Window for the state tab when it is detached. */
     private DisplayWindow stateWindow;
 
     private class LTSDisplayPanel extends JPanel implements Panel {
         public LTSDisplayPanel() {
             super(new BorderLayout());
-            add(createToolBar(), BorderLayout.NORTH);
+            this.toolBar = Options.createToolBar();
+            fillToolBar(this.toolBar);
+            add(this.toolBar, BorderLayout.NORTH);
             add(getTabPane());
+        }
+
+        /** Returns the tool bar of this display panel. */
+        public JToolBar getToolBar() {
+            return this.toolBar;
         }
 
         @Override
         public Display getDisplay() {
             return LTSDisplay.this;
         }
+
+        private final JToolBar toolBar;
     }
 }

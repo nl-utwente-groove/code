@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
@@ -9,7 +10,8 @@ import groove.view.GrammarModel;
 public class ExplorationDialogAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public ExplorationDialogAction(Simulator simulator) {
-        super(simulator, Options.EXPLORATION_DIALOG_ACTION_NAME, null);
+        super(simulator, Options.EXPLORATION_DIALOG_ACTION_NAME,
+            Icons.COMPASS_ICON);
     }
 
     @Override
@@ -21,6 +23,6 @@ public class ExplorationDialogAction extends SimulatorAction {
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         setEnabled(grammar != null && grammar.getStartGraphModel() != null
-            && grammar.getErrors().isEmpty());
+            && !grammar.hasErrors());
     }
 }

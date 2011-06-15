@@ -408,6 +408,7 @@ public class SimulatorModel implements Cloneable {
         GraphTransition outTrans = getOutTransition(getState());
         if (outTrans != null) {
             changeMatch(outTrans);
+            changeDisplay(DisplayKind.LTS);
         }
         finish();
     }
@@ -587,7 +588,7 @@ public class SimulatorModel implements Cloneable {
         if (changeState(state)) {
             changeMatch(null);
             if (state != null) {
-                changeSelected(ResourceKind.HOST, (String) null);
+                changeDisplay(DisplayKind.LTS);
             }
         }
         return finish();
@@ -640,6 +641,7 @@ public class SimulatorModel implements Cloneable {
             if (match instanceof GraphTransition) {
                 changeState(((GraphTransition) match).source());
             }
+            changeDisplay(DisplayKind.LTS);
         }
         return finish();
     }
