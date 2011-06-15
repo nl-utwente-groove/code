@@ -60,11 +60,13 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * additions.
      */
     public synchronized void addUpdate(GTS gts, GraphState state) {
-        prepareInsert();
-        // add a corresponding GraphCell to the GraphModel
-        addNode(state);
-        // insert(cells.toArray(), connections, null, attributes);
-        doInsert(false, false);
+        if (this.listening) {
+            prepareInsert();
+            // add a corresponding GraphCell to the GraphModel
+            addNode(state);
+            // insert(cells.toArray(), connections, null, attributes);
+            doInsert(false, false);
+        }
     }
 
     /**
@@ -73,11 +75,13 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
      * additions.
      */
     public synchronized void addUpdate(GTS gts, GraphTransition transition) {
-        prepareInsert();
-        // note that (as per GraphListener contract)
-        // source and target Nodes (if any) have already been added
-        addEdge(transition);
-        doInsert(false, true);
+        if (this.listening) {
+            prepareInsert();
+            // note that (as per GraphListener contract)
+            // source and target Nodes (if any) have already been added
+            addEdge(transition);
+            doInsert(false, true);
+        }
     }
 
     @Override
@@ -88,13 +92,12 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     @Override
     public void loadGraph(Graph<GraphState,GraphTransition> gts) {
         // temporarily remove the model as a graph listener
-        if (getGraph() != null) {
-            getGraph().removeLTSListener(this);
-        }
+        this.listening = false;
         super.loadGraph(gts);
-        // add the model as a graph listener
-        getGraph().addLTSListener(this);
+        this.listening = true;
     }
+
+    private boolean listening = true;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

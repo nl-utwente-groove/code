@@ -6,7 +6,6 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.StateTab;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
@@ -224,8 +223,6 @@ public class ExploreAction extends SimulatorAction {
     private int speed = 2;
 
     private final class AnimateListener extends GTSAdapter {
-        private final StateTab stateTab = getLtsDisplay().getStateTab();
-
         @Override
         public void addUpdate(GTS gts, final GraphState state) {
             displayProgress(gts);
@@ -233,7 +230,7 @@ public class ExploreAction extends SimulatorAction {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getStateDisplay().displayState(state);
+                        getSimulatorModel().setState(state);
                     }
                 });
                 Thread.sleep(getPause());
@@ -245,10 +242,6 @@ public class ExploreAction extends SimulatorAction {
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
             displayProgress(gts);
-        }
-
-        final StateTab getStateDisplay() {
-            return this.stateTab;
         }
     }
 
