@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -52,10 +53,10 @@ public class ExportAction extends SimulatorAction {
     public void refresh() {
         boolean enabled = this.jGraph.isEnabled();
         setEnabled(enabled);
-        if (enabled && this.jGraph.getModel() != null
-            && this.jGraph.getModel().getGraph() != null) {
+        if (enabled) {
             // there is certainly a graph, so now we can set the real action name
-            GraphRole role = this.jGraph.getModel().getGraph().getRole();
+            Graph<?,?> graph = this.jGraph.getModel().getGraph();
+            GraphRole role = graph.getRole();
             putValue(NAME, getActionName(role));
             putValue(SHORT_DESCRIPTION, getActionName(role));
         }
