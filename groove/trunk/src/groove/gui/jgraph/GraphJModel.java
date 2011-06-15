@@ -28,6 +28,7 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -225,6 +226,24 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
             currentLayout.putNode((N) ((GraphJVertex) jCell).getNode(),
                 jCell.getAttributes());
         }
+    }
+
+    /** Retrieves a mapping from graph nodes to foreground colours
+     * as stored in the corresponding {@link GraphJVertex} attributes.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<N,Color> getColorMap() {
+        Map<N,Color> result = new HashMap<N,Color>();
+        for (GraphJCell jCell : getRoots()) {
+            if (jCell instanceof GraphJVertex) {
+                Color foreground =
+                    GraphConstants.getForeground(jCell.getAttributes());
+                if (foreground != null) {
+                    result.put((N) ((GraphJVertex) jCell).getNode(), foreground);
+                }
+            }
+        }
+        return result;
     }
 
     @Override

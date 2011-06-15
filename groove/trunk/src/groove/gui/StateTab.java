@@ -55,6 +55,7 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -388,61 +389,68 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             this.graphToJModel.put(aspectGraph, result);
             // try to find layout information for the model
             if (state instanceof GraphNextState) {
-                GraphState oldState = ((GraphNextState) state).source();
-                HostGraphMorphism morphism =
-                    ((GraphNextState) state).getMorphism();
-                // walk back along the derivation chain to find one for
-                // which we have a state model (and hence layout information)
-                while (!this.stateToAspectMap.containsKey(oldState)
-                    && oldState instanceof GraphNextState) {
-                    morphism =
-                        ((GraphNextState) oldState).getMorphism().then(morphism);
-                    oldState = ((GraphNextState) oldState).source();
-                }
-                // the following call will make sure the start state
-                // is actually loaded
-                getAspectJModel(oldState);
-                HostToAspectMap oldStateMap = getAspectMap(oldState);
-                copyLayout(oldStateMap, aspectMap, morphism);
+                copyNextStateLayout((GraphNextState) state);
             } else {
                 assert state instanceof StartGraphState;
                 // this is the start state
-                AspectGraph startGraph =
-                    getGrammar().getStartGraphModel().getSource();
-                AspectJModel startModel = getAspectJModel(startGraph);
-                for (AspectNode node : startGraph.nodeSet()) {
-                    AspectJVertex stateVertex = result.getJCellForNode(node);
-                    // meta nodes are not in the state;
-                    // data nodes may have been merged
-                    if (stateVertex == null) {
-                        continue;
-                    }
-                    AspectJVertex graphVertex =
-                        startModel.getJCellForNode(node);
-                    stateVertex.refreshAttributes();
-                    stateVertex.getAttributes().applyMap(
-                        graphVertex.getAttributes());
-                    stateVertex.setGrayedOut(graphVertex.isGrayedOut());
-                    result.synchroniseLayout(stateVertex);
-                    stateVertex.setLayoutable(false);
-                }
-                for (AspectEdge edge : startGraph.edgeSet()) {
-                    AspectJCell stateEdge = result.getJCellForEdge(edge);
-                    // meta edges and merged data edges are not in the state
-                    if (stateEdge == null) {
-                        continue;
-                    }
-                    AspectJCell graphEdge = startModel.getJCellForEdge(edge);
-                    stateEdge.refreshAttributes();
-                    stateEdge.getAttributes().applyMap(
-                        graphEdge.getAttributes());
-                    stateEdge.setGrayedOut(graphEdge.isGrayedOut());
-                    result.synchroniseLayout(stateEdge);
-                    stateEdge.setLayoutable(false);
-                }
+                setStartGraphLayout(result);
             }
         }
         return result;
+    }
+
+    /** Copies layout from a parent state. */
+    private void copyNextStateLayout(GraphNextState state) {
+        HostToAspectMap aspectMap = getAspectMap(state);
+        GraphState oldState = state.source();
+        HostGraphMorphism morphism = state.getMorphism();
+        // mapping from host nodes to colours
+        // Map<HostNode,Color> colorMap = new HashMap<HostNode,Color>();
+        // walk back along the derivation chain to find one for
+        // which we have a state model (and hence layout information)
+        while (!this.stateToAspectMap.containsKey(oldState)
+            && oldState instanceof GraphNextState) {
+            morphism = ((GraphNextState) oldState).getMorphism().then(morphism);
+            oldState = ((GraphNextState) oldState).source();
+        }
+        // the following call will make sure the start state
+        // is actually loaded
+        getAspectJModel(oldState);
+        HostToAspectMap oldStateMap = getAspectMap(oldState);
+        copyLayout(oldStateMap, aspectMap, morphism);
+    }
+
+    /** Copies layout from the host model of the start graph. */
+    private void setStartGraphLayout(AspectJModel result) {
+        AspectGraph startGraph = getGrammar().getStartGraphModel().getSource();
+        AspectJModel startModel = getAspectJModel(startGraph);
+        for (AspectNode node : startGraph.nodeSet()) {
+            AspectJVertex stateVertex = result.getJCellForNode(node);
+            // meta nodes are not in the state;
+            // data nodes may have been merged
+            if (stateVertex == null) {
+                continue;
+            }
+            AspectJVertex graphVertex = startModel.getJCellForNode(node);
+            stateVertex.refreshAttributes();
+            stateVertex.getAttributes().applyMap(graphVertex.getAttributes());
+            stateVertex.setGrayedOut(graphVertex.isGrayedOut());
+            result.synchroniseLayout(stateVertex);
+            stateVertex.setLayoutable(false);
+        }
+        for (AspectEdge edge : startGraph.edgeSet()) {
+            AspectJCell stateEdge = result.getJCellForEdge(edge);
+            // meta edges and merged data edges are not in the state
+            if (stateEdge == null) {
+                continue;
+            }
+            AspectJCell graphEdge = startModel.getJCellForEdge(edge);
+            stateEdge.refreshAttributes();
+            stateEdge.getAttributes().applyMap(graphEdge.getAttributes());
+            stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+            result.synchroniseLayout(stateEdge);
+            stateEdge.setLayoutable(false);
+        }
     }
 
     /**
@@ -499,6 +507,12 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             Rectangle2D sourceBounds =
                 GraphConstants.getBounds(sourceCell.getAttributes());
             GraphConstants.setBounds(targetCell.getAttributes(), sourceBounds);
+            Color sourceColor =
+                GraphConstants.getForeground(sourceCell.getAttributes());
+            if (sourceColor != null) {
+                GraphConstants.setForeground(targetCell.getAttributes(),
+                    sourceColor);
+            }
             targetCell.setLayoutable(false);
             targetCell.setGrayedOut(sourceCell.isGrayedOut());
             newStateJModel.synchroniseLayout(targetCell);
