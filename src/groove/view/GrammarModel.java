@@ -301,10 +301,7 @@ public class GrammarModel implements Observer {
 
     /** Returns the labels occurring in this grammar model. */
     public final LabelStore getLabelStore() {
-        if (this.labelStore == null) {
-            this.labelStore = computeLabelStore();
-        }
-        return this.labelStore;
+        return getActiveTypeModel().getLabelStore();
     }
 
     /** 
@@ -315,37 +312,6 @@ public class GrammarModel implements Observer {
      */
     public int getModificationCount() {
         return this.modificationCount;
-    }
-
-    private LabelStore computeLabelStore() {
-        LabelStore result = null;
-        TypeGraph type = getTypeGraph();
-        if (type == null) {
-            result = new LabelStore();
-            for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
-                for (ResourceModel<?> model : getResourceSet(kind)) {
-                    result.addLabels(((GraphBasedModel<?>) model).getLabels());
-                }
-            }
-            if (getStartGraphModel() != null) {
-                HostModel hostModel = getStartGraphModel();
-                result.addLabels(hostModel.getLabels());
-            }
-            try {
-                result.addDirectSubtypes(getProperties().getSubtypes());
-            } catch (FormatException exc) {
-                // do nothing
-            }
-            result.setFixed();
-        } else {
-            result = type.getLabelStore();
-        }
-        return result;
-    }
-
-    /** Delegates to {@link #toGrammar()}. */
-    public GraphGrammar toModel() throws FormatException {
-        return toGrammar();
     }
 
     /**
@@ -554,15 +520,13 @@ public class GrammarModel implements Observer {
 
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
-     * they are regenerated at a next call of {@link #toModel()}.
+     * they are regenerated at a next call of {@link #toGrammar()}.
      */
     private void invalidate() {
         this.modificationCount++;
         this.grammar = null;
         this.errors = null;
-        this.labelStore = null;
         this.controlPropertyAdjusted = false;
-        this.typeModel = null;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -689,8 +653,6 @@ public class GrammarModel implements Observer {
     private List<FormatError> errors;
     /** The graph grammar derived from the rule models. */
     private GraphGrammar grammar;
-    /** The labels occurring in this model. */
-    private LabelStore labelStore;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
     /** The type model composed from the individual elements. */

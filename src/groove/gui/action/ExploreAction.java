@@ -296,7 +296,7 @@ public class ExploreAction extends SimulatorAction {
          */
         @Override
         final public void run() {
-            SimulatorModel simulatorModel = getSimulatorModel();
+            final SimulatorModel simulatorModel = getSimulatorModel();
             GTS gts = simulatorModel.getGts();
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
@@ -327,7 +327,17 @@ public class ExploreAction extends SimulatorAction {
             }
             gts.removeLTSListener(this.progressListener);
             disposeCancelDialog();
-            simulatorModel.setState(exploration.getLastState());
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    GraphState lastState =
+                        getSimulatorModel().getExploration().getLastState();
+                    if (lastState != null) {
+                        simulatorModel.setState(lastState);
+                    }
+                }
+            });
         }
 
         private void disposeCancelDialog() {

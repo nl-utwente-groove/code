@@ -335,14 +335,15 @@ public abstract class ResourceDisplay extends Display implements
      * or type graph could have changed)
      */
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {
-        for (int i = getTabPane().getTabCount() - 1; i >= 0; i--) {
+        for (int i = getTabPane().getTabCount() - 1; i > 0; i--) {
             Tab tab = (Tab) getTabPane().getComponentAt(i);
-            if (fresh && tab.isEditor()) {
+            if (fresh) {
                 ((ResourceTab) tab).dispose();
             } else {
                 tab.updateGrammar(grammar);
             }
         }
+        getMainTab().updateGrammar(grammar);
     }
 
     /**

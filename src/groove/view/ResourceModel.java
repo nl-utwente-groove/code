@@ -34,9 +34,7 @@ abstract public class ResourceModel<R> {
         this.grammar = grammar;
         this.kind = kind;
         this.name = name;
-        if (grammar != null) {
-            this.lastModCount = grammar.getModificationCount();
-        }
+        this.lastModCount = -1;
     }
 
     /** Returns the grammar model to which this resource belongs. */
@@ -45,8 +43,8 @@ abstract public class ResourceModel<R> {
     }
 
     /**
-     * Tests if the grammar has been modified since the constructor
-     * invocation or the last call of this method.
+     * Tests if the grammar has been modified since last call of this method.
+     * The method returns {@code true} on its first invocation.
      */
     public final boolean isGrammarModified() {
         boolean result = false;

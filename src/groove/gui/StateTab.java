@@ -22,6 +22,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
@@ -204,8 +205,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         if (this.listening) {
             throw new IllegalStateException();
         }
-        getSimulatorModel().addListener(this.simulatorListener, GTS, STATE,
-            MATCH);
+        getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
+            STATE, MATCH);
         // make sure that removals from the selection model
         // also deselect the match
         getJGraph().addGraphSelectionListener(this.graphSelectionListener);
@@ -238,6 +239,9 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
+        if (changes.contains(Change.GRAMMAR)) {
+            updateGrammar(source.getGrammar());
+        }
         if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
         } else if (changes.contains(STATE)) {
@@ -275,7 +279,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * new grammar.
      */
     public void updateGrammar(GrammarModel grammar) {
-        // does nothing
+        getJGraph().updateGrammar(grammar);
     }
 
     private void startSimulation(GTS gts) {
