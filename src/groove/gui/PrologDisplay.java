@@ -85,7 +85,7 @@ public class PrologDisplay extends ResourceDisplay {
     public PrologDisplay(Simulator simulator) {
         super(simulator, ResourceKind.PROLOG);
         Environment.setDefaultOutputStream(getUserOutput());
-        activateListening();
+        installListeners();
     }
 
     @Override
