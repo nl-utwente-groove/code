@@ -4,6 +4,7 @@ import groove.gui.EditType;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.trans.ResourceKind;
+import groove.view.ResourceModel;
 
 import java.io.IOException;
 import java.util.Set;
@@ -33,16 +34,17 @@ public class EnableAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        String name = getSimulatorModel().getSelected(getResourceKind());
-        boolean isEnabling =
-            name == null || !name.equals(getGrammarModel().getStartGraphName());
-        boolean enabled;
-        if (getResourceKind() == ResourceKind.HOST) {
-            enabled = name != null && isEnabling;
+        ResourceKind resourceKind = getResourceKind();
+        String name = getSimulatorModel().getSelected(resourceKind);
+        ResourceModel<?> resource =
+            getSimulatorModel().getResource(resourceKind);
+        boolean isEnabling = resource == null || !resource.isEnabled();
+        boolean enabled = name != null && getGrammarStore().isModifiable();
+        if (resourceKind == ResourceKind.HOST) {
+            enabled &= isEnabling;
         } else {
-            enabled = name != null && getGrammarStore().isModifiable();
             String description =
-                Options.getEnableName(getResourceKind(), isEnabling);
+                Options.getEnableName(resourceKind, isEnabling);
             putValue(NAME, description);
             putValue(SHORT_DESCRIPTION, description);
         }
