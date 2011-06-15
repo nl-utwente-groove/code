@@ -132,6 +132,7 @@ public class PrologDisplay extends ResourceDisplay {
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                         executeQuery();
+                        giveFocusToNextResultButton();
                     }
                 }
             });
@@ -199,7 +200,7 @@ public class PrologDisplay extends ResourceDisplay {
         if (this.resultsPanel == null) {
             this.resultsPanel = new JPanel(new BorderLayout());
             this.resultsPanel.setBorder(null);
-            this.results.setPreferredSize(new Dimension(0, 200));
+            this.resultsPanel.setPreferredSize(new Dimension(0, 200));
             this.resultsPanel.add(new JScrollPane(getResultsArea()));
             this.resultsPanel.add(this.resultsStatus, BorderLayout.SOUTH);
         }
@@ -229,7 +230,12 @@ public class PrologDisplay extends ResourceDisplay {
      * Creates the next-result button.
      */
     private JButton getNextResultButton() {
-        return Options.createButton(getActions().getPrologNextResultAction());
+        if (this.nextResultButton == null) {
+            this.nextResultButton =
+                Options.createButton(getActions().getPrologNextResultAction());
+            this.nextResultButton.setFocusable(true);
+        }
+        return this.nextResultButton;
     }
 
     /** Convenience method to retrieve the next-result action. */
@@ -488,6 +494,12 @@ public class PrologDisplay extends ResourceDisplay {
         return getEngine() != null && getEngine().hasNext();
     }
 
+    /** Puts the focus on the next result button. */
+    public void giveFocusToNextResultButton() {
+        assert this.nextResultButton != null;
+        this.nextResultButton.requestFocusInWindow();
+    }
+
     /**
      * Pretty print the results of the query in the output panel
      */
@@ -574,6 +586,10 @@ public class PrologDisplay extends ResourceDisplay {
      * The tree of user-defined predicates
      */
     private JTree userTree;
+    /**
+     * The button associated with the next solution action.    
+     */
+    private JButton nextResultButton;
     /**
      * Counter used to show the number of found solutions (so far)
      */
