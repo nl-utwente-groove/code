@@ -35,6 +35,7 @@ public class PrologFirstResultAction extends SimulatorAction {
     @Override
     public void execute() {
         getPrologDisplay().executeQuery();
+        getPrologDisplay().giveFocusToNextResultButton();
     }
 
     @Override
