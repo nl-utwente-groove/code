@@ -151,7 +151,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() throws FormatException {
-        initialise();
+        initialiseRule();
         if (this.ruleErrors.isEmpty()) {
             return this.rule;
         } else {
@@ -161,23 +161,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     public List<FormatError> getErrors() {
-        initialise();
+        initialiseRule();
         return this.ruleErrors;
     }
 
     /** Returns the set of labels occurring in this rule. */
     @Override
     public Set<TypeLabel> getLabels() {
-        initialise();
-        return this.levelTree == null ? Collections.<TypeLabel>emptySet()
-                : this.levelTree.getLabelSet();
+        return getLevelTree().getLabelSet();
     }
 
     @Override
     public RuleModelMap getMap() {
-        initialise();
-        return this.levelTree == null ? new RuleModelMap()
-                : this.levelTree.getRuleModelMap();
+        return getLevelTree().getRuleModelMap();
     }
 
     /** Returns the (possibly {@code null}) type graph of this rule. */
@@ -195,8 +191,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return String.format("Rule model on '%s'", getName());
     }
 
-    /** Returns the internal tree of rule levels. */
+    /** 
+     * Constructs and returns the internal tree of rule levels.
+     * Any errors detected during construction are stored in the rule errors.
+     */
     final LevelMap getLevelTree() {
+        initialiseTree();
         return this.levelTree;
     }
 
@@ -228,27 +228,38 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             && getSystemProperties().isCheckCreatorEdges();
     }
 
-    /** Initialises the derived data structures. */
-    private void initialise() {
-        boolean init = this.ruleErrors == null || isGrammarModified();
-        // only do something if there is something to be done
-        if (init) {
-            this.ruleErrors = new ArrayList<FormatError>();
+    /** 
+     * Initialises the level tree.
+     * This is the first phase of initialisation.
+     */
+    private void initialiseTree() {
+        if (isGrammarModified()) {
+            this.ruleErrors.clear();
             this.ruleErrors.addAll(getSource().getErrors());
+            this.rule = null;
             // trying to initialise with model errors, e.g. an
             // at-edge from a forall:-node, may throw exceptions
-            if (this.ruleErrors.isEmpty()) {
-                this.levelTree = new LevelMap();
-                try {
-                    this.levelTree.initialise();
-                    this.rule = computeRule();
-                } catch (FormatException exc) {
-                    Map<RuleElement,AspectElement> inverseMap =
-                        this.levelTree.getInverseModelMap();
-                    for (FormatError error : exc.getErrors()) {
-                        this.ruleErrors.add(error.transfer(inverseMap));
-                    }
+            this.levelTree = new LevelMap();
+            try {
+                this.levelTree.initialise();
+            } catch (FormatException exc) {
+                Map<RuleElement,AspectElement> inverseMap =
+                    this.levelTree.getInverseModelMap();
+                for (FormatError error : exc.getErrors()) {
+                    this.ruleErrors.add(error.transfer(inverseMap));
                 }
+            }
+        }
+    }
+
+    /** Initialises the derived data structures. */
+    private void initialiseRule() {
+        initialiseTree();
+        if (this.rule == null && this.ruleErrors.isEmpty()) {
+            try {
+                this.rule = computeRule();
+            } catch (FormatException exc) {
+                this.ruleErrors.addAll(exc.getErrors());
             }
         }
     }
@@ -268,7 +279,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         Map<Level,Condition> ruleTree = new TreeMap<Level,Condition>();
         // construct the rule tree and add parent rules
         try {
-            for (Level level : this.levelTree.getLevels(true)) {
+            for (Level level : getLevelTree().getLevels(true)) {
                 Op operator = level.getIndex().getOperator();
                 Condition condition;
                 if (operator.isQuantifier()) {
@@ -292,7 +303,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             // now add subconditions and fix the conditions
             // this needs to be done bottom-up
-            for (Level level : this.levelTree.getLevels(false)) {
+            for (Level level : getLevelTree().getLevels(false)) {
                 Condition condition = ruleTree.get(level);
                 assert condition != null;
                 LevelIndex index = level.getIndex();
@@ -310,7 +321,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         if (ruleTree.isEmpty()) {
             rule = null;
         } else {
-            rule = ruleTree.get(this.levelTree.getTopLevel()).getRule();
+            rule = ruleTree.get(getLevelTree().getTopLevel()).getRule();
             if (rule != null) {
                 rule.setPriority(getPriority());
                 rule.setConfluent(isConfluent());
@@ -399,7 +410,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** The level tree for this rule model. */
     private LevelMap levelTree;
     /** Errors found while converting the model to a rule. */
-    private List<FormatError> ruleErrors;
+    private final List<FormatError> ruleErrors = new ArrayList<FormatError>();
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     static private final RuleFactory ruleFactory = RuleFactory.instance();

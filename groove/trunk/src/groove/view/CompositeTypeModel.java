@@ -1,6 +1,9 @@
 package groove.view;
 
+import static groove.trans.ResourceKind.HOST;
+import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
+import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.trans.ResourceKind;
@@ -8,6 +11,7 @@ import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,25 +19,9 @@ import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
-
-    private Map<String,TypeModel> typeModelMap;
-    private Map<String,TypeGraph> typeGraphMap;
-    private TypeGraph resource;
-    private List<FormatError> errors;
-
     CompositeTypeModel(GrammarModel grammar) {
         super(grammar, ResourceKind.TYPE, "Composed type for "
             + grammar.getName());
-        this.typeModelMap = new HashMap<String,TypeModel>();
-        this.resource = null;
-        this.errors = new ArrayList<FormatError>();
-        for (ResourceModel<?> typeModel : grammar.getResourceSet(TYPE)) {
-            if (typeModel != null && typeModel.isEnabled()) {
-                this.typeModelMap.put(typeModel.getName(),
-                    (TypeModel) typeModel);
-                this.errors.addAll(typeModel.getErrors());
-            }
-        }
     }
 
     @Override
@@ -43,6 +31,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     @Override
     public boolean isEnabled() {
+        if (isGrammarModified()) {
+            this.initialise();
+        }
         return !this.typeModelMap.isEmpty();
     }
 
@@ -56,14 +47,14 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     @Override
     public TypeGraph toResource() throws FormatException,
         IllegalArgumentException {
-        this.initialise();
-        if (this.resource == null) {
-            throw new FormatException(this.getErrors());
+        maybeInitialise();
+        if (hasErrors()) {
+            throw new FormatException(getErrors());
         } else {
             if (this.typeModelMap.isEmpty()) {
                 return null;
             } else {
-                return this.resource;
+                return this.typeGraph;
             }
         }
     }
@@ -73,26 +64,48 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     @Override
     public List<FormatError> getErrors() {
-        this.initialise();
+        maybeInitialise();
         return this.errors;
     }
 
     /** Returns a mapping from names to type graphs,
      * which together make up the combined type model. */
     public Map<String,TypeGraph> getTypeGraphMap() {
-        this.initialise();
-        return this.resource == null ? null
+        maybeInitialise();
+        return this.typeGraph == null ? null
                 : Collections.unmodifiableMap(this.typeGraphMap);
+    }
+
+    /**
+     * Initialises the model if the grammar has been modified.
+     * @see #isGrammarModified()
+     * @see #initialise()
+     */
+    private void maybeInitialise() {
+        if (isGrammarModified()) {
+            this.initialise();
+        }
     }
 
     /** Constructs the model and associated data structures from the model. */
     private void initialise() {
+        this.typeModelMap.clear();
+        this.typeGraphMap.clear();
+        this.errors.clear();
+        this.typeGraph = null;
+        this.labelStore = null;
+        for (ResourceModel<?> typeModel : getGrammar().getResourceSet(TYPE)) {
+            if (typeModel.isEnabled()) {
+                this.typeModelMap.put(typeModel.getName(),
+                    (TypeModel) typeModel);
+                this.errors.addAll(typeModel.getErrors());
+            }
+        }
         // first test if there is something to be done
-        if (this.errors.isEmpty() && this.resource == null) {
+        if (this.errors.isEmpty()) {
             // There are no errors in each of the models, try to compose the
             // type graph.
-            this.resource = new TypeGraph("combined type");
-            this.typeGraphMap = new TreeMap<String,TypeGraph>();
+            this.typeGraph = new TypeGraph("combined type");
             Map<TypeNode,TypeNode> importNodes =
                 new HashMap<TypeNode,TypeNode>();
             Map<TypeNode,TypeModel> importModels =
@@ -101,7 +114,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 try {
                     TypeGraph graph = model.toResource();
                     this.typeGraphMap.put(model.getName(), graph);
-                    Map<TypeNode,TypeNode> map = this.resource.add(graph);
+                    Map<TypeNode,TypeNode> map = this.typeGraph.add(graph);
                     for (TypeNode node : graph.getImports()) {
                         importNodes.put(node, map.get(node));
                         importModels.put(node, model);
@@ -125,11 +138,41 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 }
             }
             if (this.errors.isEmpty()) {
-                this.resource.setFixed();
+                this.typeGraph.setFixed();
             } else {
-                this.resource = null;
+                this.typeGraph = null;
             }
         }
+    }
+
+    /** Computes the label store or retrieves it from the type graph. */
+    public LabelStore getLabelStore() {
+        LabelStore result = null;
+        maybeInitialise();
+        if (this.labelStore == null) {
+            if (this.typeGraph == null) {
+                result = new LabelStore();
+                for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
+                    for (ResourceModel<?> model : getGrammar().getResourceSet(
+                        kind)) {
+                        result.addLabels(((GraphBasedModel<?>) model).getLabels());
+                    }
+                }
+                HostModel host = getGrammar().getStartGraphModel();
+                if (host != null) {
+                    result.addLabels(host.getLabels());
+                }
+                try {
+                    result.addDirectSubtypes(getGrammar().getProperties().getSubtypes());
+                } catch (FormatException exc) {
+                    // do nothing
+                }
+                result.setFixed();
+            } else {
+                this.labelStore = this.typeGraph.getLabelStore();
+            }
+        }
+        return this.labelStore;
     }
 
     private AspectNode getInverse(Map<AspectNode,?> map, TypeNode image) {
@@ -141,4 +184,19 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         }
         return result;
     }
+
+    /** Mapping from active type names to corresponding type models. */
+    private final Map<String,TypeModel> typeModelMap =
+        new HashMap<String,TypeModel>();
+    private final Map<String,TypeGraph> typeGraphMap =
+        new TreeMap<String,TypeGraph>();
+    /** The composed type graph; may be {@code null}. */
+    private TypeGraph typeGraph;
+    /**
+     * The label store, either from the type graph
+     * or independently computed.
+     */
+    private LabelStore labelStore;
+    /** The list of errors in the composite type. */
+    private final List<FormatError> errors = new ArrayList<FormatError>();
 }
