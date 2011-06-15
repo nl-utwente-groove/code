@@ -119,10 +119,15 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * footprint.
      */
     public HostGraphMorphism getMorphism() {
-        RuleApplication appl =
-            new RuleApplication(getEvent(), source().getGraph(), getGraph(),
-                getAddedNodes());
-        return appl.getMorphism();
+        return createRuleApplication().getMorphism();
+    }
+
+    /** Callback method to construct a rule application from this
+     * state, considered as a graph transition.
+     */
+    public RuleApplication createRuleApplication() {
+        return new RuleApplication(getEvent(), source().getGraph(), getGraph(),
+            getAddedNodes());
     }
 
     /**
