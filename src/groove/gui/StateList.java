@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.explore.util.MatchSetCollector;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
@@ -23,6 +24,8 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
+import groove.lts.MatchResultSet;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -34,11 +37,13 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -96,7 +101,8 @@ public class StateList extends JTree implements SimulatorListener {
 
     /** Installs all listeners, and sets the listening status to {@code true}. */
     protected void installListeners() {
-        getSimulatorModel().addListener(this, Change.GTS, Change.STATE);
+        getSimulatorModel().addListener(this, Change.GTS, Change.STATE,
+            Change.MATCH);
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -187,7 +193,7 @@ public class StateList extends JTree implements SimulatorListener {
             result.add(getActions().getEditStateAction());
             result.add(getActions().getSaveStateAction());
             result.add(getActions().getExportStateAction());
-        } else if (node instanceof TransitionTreeNode) {
+        } else if (node instanceof MatchTreeNode) {
             result.add(getActions().getApplyTransitionAction());
         }
         return result;
@@ -199,9 +205,9 @@ public class StateList extends JTree implements SimulatorListener {
         if (suspendListening()) {
             if (changes.contains(Change.GTS)) {
                 setEnabled(source.hasGts());
-                refreshList(source.getGts());
+                refreshList(source.getGts(), oldModel.getState());
             }
-            refreshSelection(source.getState());
+            refreshSelection(source.getState(), source.getMatch());
             activateListening();
         }
     }
@@ -209,12 +215,21 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Refreshes the tree model from the GTS.
      */
-    private void refreshList(GTS gts) {
-        getTopNode().removeAllChildren();
+    private void refreshList(GTS gts, GraphState previous) {
         if (gts == null) {
-            this.states = new GraphState[0];
+            getTopNode().removeAllChildren();
             getModel().reload();
+            this.states = new GraphState[0];
         } else {
+            // check expansion of current states
+            if (previous != null
+                && isExpanded(createPath(getStateNode(previous)))) {
+                this.expanded.add(previous);
+                if (this.expanded.size() > MAX_EXPANDED) {
+                    this.expanded.poll();
+                }
+            }
+            getTopNode().removeAllChildren();
             this.states = new GraphState[gts.nodeCount()];
             for (GraphState state : gts.nodeSet()) {
                 this.states[state.getNumber()] = state;
@@ -270,32 +285,33 @@ public class StateList extends JTree implements SimulatorListener {
         for (int i = 0; i < stateNode.getChildCount(); i++) {
             expandPath(createPath((RuleTreeNode) stateNode.getChildAt(i)));
         }
-        collapsePath(createPath((stateNode)));
+        if (!stateNode.isExpanded()) {
+            collapsePath(createPath((stateNode)));
+        }
     }
 
     /**
      * Creates a state node, with children, for a given graph state.
      */
     private StateTreeNode createStateNode(GraphState state) {
-        StateTreeNode result = new StateTreeNode(state);
-        Map<Rule,Set<GraphTransition>> matchMap =
-            new TreeMap<Rule,Set<GraphTransition>>();
-        Iterator<GraphTransition> transIter = state.getTransitionIter();
-        while (transIter.hasNext()) {
-            GraphTransition trans = transIter.next();
-            Rule rule = trans.getEvent().getRule();
-            Set<GraphTransition> events = matchMap.get(rule);
+        boolean isExpanded = this.expanded.contains(state);
+        StateTreeNode result = new StateTreeNode(state, isExpanded);
+        Map<Rule,Set<MatchResult>> matchMap =
+            new TreeMap<Rule,Set<MatchResult>>();
+        for (MatchResult match : getMatches(state)) {
+            Rule rule = match.getEvent().getRule();
+            Set<MatchResult> events = matchMap.get(rule);
             if (events == null) {
                 matchMap.put(rule, events =
-                    new TreeSet<GraphTransition>(TRANSITION_COMPARATOR));
+                    new TreeSet<MatchResult>(TRANSITION_COMPARATOR));
             }
-            events.add(trans);
+            events.add(match);
         }
-        for (Map.Entry<Rule,Set<GraphTransition>> matchEntry : matchMap.entrySet()) {
+        for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {
             RuleTreeNode ruleNode = new RuleTreeNode(matchEntry.getKey());
             result.add(ruleNode);
-            for (GraphTransition trans : matchEntry.getValue()) {
-                TransitionTreeNode transNode = new TransitionTreeNode(trans);
+            for (MatchResult trans : matchEntry.getValue()) {
+                MatchTreeNode transNode = new MatchTreeNode(state, trans);
                 ruleNode.add(transNode);
             }
         }
@@ -303,19 +319,54 @@ public class StateList extends JTree implements SimulatorListener {
     }
 
     /**
-     * Refreshes the tree model from the GTS.
+     * Refreshes the selection in the tree, based on the current state of the
+     * Simulator.
      */
-    private void refreshSelection(GraphState state) {
+    private Collection<? extends MatchResult> getMatches(GraphState state) {
+        MatchResultSet result = new MatchResultSet();
+        result.addAll(state.getTransitionSet());
+        if (!state.isClosed()) {
+            GTS gts = state.getGTS();
+            result.addAll(new MatchSetCollector(state, gts.getRecord(),
+                gts.checkDiamonds()).getMatchSet());
+        }
+        return result;
+    }
+
+    /**
+     * Changes the selection to a given state.
+     */
+    private void refreshSelection(GraphState state, MatchResult match) {
         if (state != null) {
             StateTreeNode stateNode = getStateNode(state);
             TreePath statePath = createPath(stateNode);
-            setSelectionPath(statePath);
             expandPath(statePath);
+            TreePath selectPath = statePath;
+            if (match != null) {
+                // find the match among the grandchildren of the state node
+                for (int i = 0; i < stateNode.getChildCount(); i++) {
+                    RuleTreeNode ruleNode =
+                        (RuleTreeNode) stateNode.getChildAt(i);
+                    if (ruleNode.getRule().equals(match.getEvent().getRule())) {
+                        for (int m = 0; m < ruleNode.getChildCount(); m++) {
+                            MatchTreeNode matchNode =
+                                (MatchTreeNode) ruleNode.getChildAt(m);
+                            if (matchNode.getMatch().getEvent().equals(
+                                match.getEvent())) {
+                                selectPath = createPath(matchNode);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            setSelectionPath(selectPath);
             // show as much as possible of the expanded state
             if (stateNode.getChildCount() > 0) {
                 RuleTreeNode ruleNode = (RuleTreeNode) stateNode.getLastChild();
-                TransitionTreeNode transNode =
-                    (TransitionTreeNode) ruleNode.getLastChild();
+                MatchTreeNode transNode =
+                    (MatchTreeNode) ruleNode.getLastChild();
                 scrollPathToVisible(createPath(transNode));
             }
             scrollPathToVisible(statePath);
@@ -365,7 +416,9 @@ public class StateList extends JTree implements SimulatorListener {
     private final DefaultTreeModel treeModel = new DefaultTreeModel(
         this.topNode);
     /** List of states in the most recently loaded GTS. */
-    private GraphState[] states;
+    private GraphState[] states = new GraphState[0];
+    /** State that should be expanded. */
+    private Queue<GraphState> expanded = new LinkedList<GraphState>();
     /** Flag indicating if listeners should be active. */
     private boolean listening;
     /**
@@ -378,16 +431,31 @@ public class StateList extends JTree implements SimulatorListener {
         new TransitionComparator();
     /** Number of nodes folded under a {@link RangeTreeNode}. */
     private static final int RANGE_SIZE = 100;
+    /** Size of the queue of previously expanded nodes. */
+    private static final int MAX_EXPANDED = 3;
 
     /**
      * Compares two graph transitions for their target states, and if
      * those coincide, for their rule events.
      */
     private static final class TransitionComparator implements
-            Comparator<GraphTransition> {
+            Comparator<MatchResult> {
         @Override
-        public int compare(GraphTransition o1, GraphTransition o2) {
-            int result = o1.target().compareTo(o2.target());
+        public int compare(MatchResult o1, MatchResult o2) {
+            int result = 0;
+            if (o1 instanceof GraphTransition) {
+                if (o2 instanceof GraphTransition) {
+                    result =
+                        ((GraphTransition) o1).target().compareTo(
+                            ((GraphTransition) o2).target());
+                } else {
+                    // graph transitions are ordered before other match results
+                    result = -1;
+                }
+            } else if (o2 instanceof GraphTransition) {
+                // graph transitions are ordered before other match results
+                result = 1;
+            }
             if (result == 0) {
                 result = o1.getEvent().compareTo(o2.getEvent());
             }
@@ -423,8 +491,9 @@ public class StateList extends JTree implements SimulatorListener {
          * Creates a new rule node based on a given state. The node can have
          * children.
          */
-        public StateTreeNode(GraphState state) {
+        public StateTreeNode(GraphState state, boolean expanded) {
             super(state, true);
+            this.expanded = expanded;
         }
 
         /**
@@ -433,6 +502,13 @@ public class StateList extends JTree implements SimulatorListener {
         public GraphState getState() {
             return (GraphState) getUserObject();
         }
+
+        /** Indicates if this tree node should be initially expanded. */
+        public boolean isExpanded() {
+            return this.expanded;
+        }
+
+        private final boolean expanded;
     }
 
     /**
@@ -458,21 +534,31 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Tree node wrapping a graph transition.
      */
-    private static class TransitionTreeNode extends DefaultMutableTreeNode {
+    private static class MatchTreeNode extends DefaultMutableTreeNode {
         /**
          * Creates a new tree node based on a given graph transition. The node cannot have
          * children.
          */
-        public TransitionTreeNode(GraphTransition event) {
+        public MatchTreeNode(GraphState source, MatchResult event) {
             super(event, false);
+            this.source = source;
         }
 
         /**
          * Convenience method to retrieve the user object as a graph transition.
          */
-        public GraphTransition getTransition() {
-            return (GraphTransition) getUserObject();
+        public MatchResult getMatch() {
+            return (MatchResult) getUserObject();
         }
+
+        /**
+         * Returns the graph state for which this is a match.
+         */
+        public GraphState getSource() {
+            return this.source;
+        }
+
+        private final GraphState source;
     }
 
     /**
@@ -487,26 +573,6 @@ public class StateList extends JTree implements SimulatorListener {
                 if (evt.getButton() == MouseEvent.BUTTON3
                     && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
-                }
-                Object node = path.getLastPathComponent();
-                switch (evt.getClickCount()) {
-                case 1:
-                    DisplayKind toDisplay;
-                    if (node instanceof RuleTreeNode) {
-                        toDisplay = DisplayKind.RULE;
-                    } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
-                        toDisplay = DisplayKind.HOST;
-                    } else {
-                        toDisplay = DisplayKind.LTS;
-                    }
-                    getSimulatorModel().setDisplay(toDisplay);
-                    break;
-                case 2:
-                    if (node instanceof TransitionTreeNode) {
-                        getSimulatorModel().doApplyMatch();
-                    } else if (node instanceof StateTreeNode) {
-                        getSimulatorModel().doExploreState();
-                    }
                 }
             }
             maybeShowPopup(evt);
@@ -526,10 +592,24 @@ public class StateList extends JTree implements SimulatorListener {
             if (path == null) {
                 return;
             }
-            Object selectedNode = path.getLastPathComponent();
-            if (selectedNode instanceof TransitionTreeNode) {
-                if (evt.getClickCount() == 2) {
+            Object node = path.getLastPathComponent();
+            switch (evt.getClickCount()) {
+            case 1:
+                DisplayKind toDisplay;
+                if (node instanceof RuleTreeNode) {
+                    toDisplay = DisplayKind.RULE;
+                } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
+                    toDisplay = DisplayKind.HOST;
+                } else {
+                    toDisplay = DisplayKind.LTS;
+                }
+                getSimulatorModel().setDisplay(toDisplay);
+                break;
+            case 2:
+                if (node instanceof MatchTreeNode) {
                     getSimulatorModel().doApplyMatch();
+                } else if (node instanceof StateTreeNode) {
+                    getSimulatorModel().doExploreState();
                 }
             }
         }
@@ -561,21 +641,30 @@ public class StateList extends JTree implements SimulatorListener {
         public void valueChanged(TreeSelectionEvent evt) {
             if (suspendListening()) {
                 TreePath[] paths = getSelectionPaths();
-                GraphTransition selectedMatch = null;
-                for (int i = 0; paths != null && i < paths.length; i++) {
-                    Object selectedNode = paths[i].getLastPathComponent();
-                    if (selectedNode instanceof TransitionTreeNode) {
+                if (paths != null && paths.length == 1) {
+                    GraphState selectedState = null;
+                    MatchResult selectedMatch = null;
+                    Object selectedNode = paths[0].getLastPathComponent();
+                    if (selectedNode instanceof MatchTreeNode) {
                         // selected tree node is a match (level 2 node)
                         selectedMatch =
-                            ((TransitionTreeNode) selectedNode).getTransition();
-                        break;
+                            ((MatchTreeNode) selectedNode).getMatch();
+                        selectedState =
+                            ((MatchTreeNode) selectedNode).getSource();
                     } else if (selectedNode instanceof StateTreeNode) {
-                        GraphState result =
+                        selectedState =
                             ((StateTreeNode) selectedNode).getState();
-                        getSimulatorModel().setState(result);
+                    } else if (selectedNode instanceof RuleTreeNode) {
+                        Object parentNode =
+                            paths[0].getPathComponent(paths[0].getPathCount() - 2);
+                        selectedState = ((StateTreeNode) parentNode).getState();
+                    }
+                    if (selectedState != null) {
+                        expandPath(createPath(getStateNode(selectedState)));
+                        getSimulatorModel().setState(selectedState);
+                        getSimulatorModel().setMatch(selectedMatch);
                     }
                 }
-                getSimulatorModel().setMatch(selectedMatch);
                 getSimulatorModel().doSelectSet(ResourceKind.RULE,
                     getSelectedRules());
                 activateListening();
@@ -631,10 +720,13 @@ public class StateList extends JTree implements SimulatorListener {
             } else if (value instanceof RuleTreeNode) {
                 icon = Icons.RULE_LIST_ICON;
                 text = ((RuleTreeNode) value).getRule().getName();
-            } else if (value instanceof TransitionTreeNode) {
+            } else if (value instanceof MatchTreeNode) {
+                MatchResult match = ((MatchTreeNode) value).getMatch();
                 icon = Icons.GRAPH_MATCH_ICON;
                 String state =
-                    ((TransitionTreeNode) value).getTransition().target().toString();
+                    match instanceof GraphTransition
+                            ? ((GraphTransition) match).target().toString()
+                            : "s??";
                 text =
                     HTMLConverter.HTML_TAG.on("To "
                         + HTMLConverter.ITALIC_TAG.on(state));

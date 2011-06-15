@@ -426,7 +426,7 @@ public class SimulatorModel implements Cloneable {
             if (trans.target().isClosed()) {
                 outTrans = getOutTransition(trans.target());
             }
-            if (outTrans == null) {
+            if (outTrans == null || outTrans.target().isClosed()) {
                 setState(trans.target());
             } else {
                 setMatch(outTrans);
@@ -434,14 +434,17 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** Returns the first outgoing transition that is not a self-loop.
+    /** Returns the first outgoing transition that is not a self-loop,
+     * preferably one that also leads to an open state.
      * Returns {@code null} if there is no such outgoing transition. */
     private GraphTransition getOutTransition(GraphState state) {
         GraphTransition result = null;
         for (GraphTransition outTrans : getState().getTransitionSet()) {
             if (outTrans.target() != getState()) {
                 result = outTrans;
-                break;
+                if (!outTrans.target().isClosed()) {
+                    break;
+                }
             }
         }
         return result;
