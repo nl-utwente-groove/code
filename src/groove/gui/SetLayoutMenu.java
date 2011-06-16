@@ -86,7 +86,7 @@ public class SetLayoutMenu extends JMenu {
      */
     public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
         this.jgraph.setLayouter(prototypeLayout);
-        LayoutAction result = new LayoutAction(this.jgraph.getLayouter());
+        LayoutAction result = this.jgraph.getLayoutAction();
         this.layoutItem.setAction(result);
         for (int i = 0; i < getMenuComponentCount(); i++) {
             Component item = getMenuComponent(i);

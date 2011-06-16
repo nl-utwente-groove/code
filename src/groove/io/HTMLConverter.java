@@ -301,7 +301,8 @@ public class HTMLConverter {
             this.tagEnd = String.format("</%s>", tag);
         }
 
-        HTMLTag(String tag, String attrName, String attrValue) {
+        /** Constructs a tag with a given name and attribute name/value. */
+        public HTMLTag(String tag, String attrName, String attrValue) {
             this.tagBegin =
                 String.format("<%s %s=\"%s\">", tag, attrName,
                     toHtml(attrValue));

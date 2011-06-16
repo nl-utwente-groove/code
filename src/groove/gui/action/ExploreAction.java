@@ -67,7 +67,12 @@ public class ExploreAction extends SimulatorAction {
      */
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
-        getSimulatorModel().setExploration(exploration);
+        try {
+            getSimulatorModel().setExploration(exploration);
+        } catch (FormatException e) {
+            // fail silently
+            return;
+        }
         LTSJModel ltsJModel = getLtsDisplay().getLtsModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
@@ -302,43 +307,27 @@ public class ExploreAction extends SimulatorAction {
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
             GraphState state = simulatorModel.getState();
-            Exploration exploration = simulatorModel.getExploration();
+            final Exploration exploration = simulatorModel.getExploration();
             try {
                 exploration.play(gts, state);
+                gts.removeLTSListener(this.progressListener);
+                disposeCancelDialog();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GraphState lastState = exploration.getLastState();
+                        if (lastState != null) {
+                            simulatorModel.setState(lastState);
+                        }
+                    }
+                });
             } catch (FormatException exc) {
-                String[] options = {"Yes", "No"};
-                String message =
-                    "The last exploration is no longer valid in the "
-                        + "current grammar. \n" + "Cannot apply '"
-                        + exploration.getIdentifier() + "'.\n\n"
-                        + "Use Breadth-First Exploration instead?\n";
-                int response =
-                    JOptionPane.showOptionDialog(getFrame(), message,
-                        "Invalid Exploration", JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-                if (response == JOptionPane.OK_OPTION) {
-                    exploration = new Exploration();
-                    simulatorModel.setExploration(exploration);
-                    try {
-                        exploration.play(gts, state);
-                    } catch (FormatException e) {
-                        showErrorDialog(e, "Error: cannot parse exploration.");
-                    }
-                }
+                // this should not occur, as the exploration and the
+                // grammar in the simulator model should always be compatible
+                showErrorDialog(exc,
+                    "Exploration strategy %s incompatible with grammar",
+                    exploration.getIdentifier());
             }
-            gts.removeLTSListener(this.progressListener);
-            disposeCancelDialog();
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    GraphState lastState =
-                        getSimulatorModel().getExploration().getLastState();
-                    if (lastState != null) {
-                        simulatorModel.setState(lastState);
-                    }
-                }
-            });
         }
 
         private void disposeCancelDialog() {

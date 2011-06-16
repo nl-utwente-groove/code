@@ -45,4 +45,7 @@ public interface ParsableValue {
 
     /** Converts this value to a {@link Serialized} object. */
     public Serialized toSerialized();
+
+    /** Indicates if this is the default value of its kind. */
+    public boolean isDefault();
 }

@@ -39,9 +39,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
-        boolean result = (this.atState = getFromPool()) != null;
-        if (!result) {
+    protected GraphState getNextState() {
+        GraphState result = getFromPool();
+        if (result == null) {
             getGTS().removeLTSListener(this.exploreListener);
         }
         return result;

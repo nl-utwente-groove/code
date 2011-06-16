@@ -72,10 +72,10 @@ public class LinearStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
-        boolean result = (this.atState = this.collector.getNewState()) != null;
+    protected GraphState getNextState() {
+        GraphState result = this.collector.getNewState();
         this.collector.reset();
-        if (!result) {
+        if (result == null) {
             getGTS().removeLTSListener(this.collector);
         }
         return result;

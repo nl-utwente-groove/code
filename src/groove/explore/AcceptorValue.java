@@ -98,6 +98,11 @@ public enum AcceptorValue implements ParsableValue {
         return false;
     }
 
+    @Override
+    public boolean isDefault() {
+        return this == FINAL;
+    }
+
     /** Creates the appropriate template for this acceptor. */
     public Template<Acceptor> getTemplate() {
         switch (this) {

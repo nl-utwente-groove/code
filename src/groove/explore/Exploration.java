@@ -224,7 +224,7 @@ public class Exploration {
 
         // store result
         this.lastResult = parsedAcceptor.getResult();
-        this.lastState = parsedStrategy.getState();
+        this.lastState = parsedStrategy.getLastState();
     }
 
     /**

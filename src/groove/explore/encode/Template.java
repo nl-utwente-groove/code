@@ -16,12 +16,15 @@
  */
 package groove.explore.encode;
 
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
 import groove.explore.prettyparse.SerializedParser;
 import groove.explore.prettyparse.StringConsumer;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
@@ -186,6 +189,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         return desc.toString();
     }
 
+    private static final HTMLTag INFO_FONT = new HTMLTag("FONT", "color",
+        ExplorationDialog.INFO_COLOR);
+
     /**
      * <!--------------------------------------------------------------------->
      * A TemplateEditor<A> is the type-specific editor that is associated
@@ -222,14 +228,21 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addExplanation() {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + ">" + getValue().getDescription() + "</FONT></HTML>"));
+            StringBuilder text = new StringBuilder();
+            text.append(getValue().getDescription());
+            INFO_FONT.on(text);
+            HTML_TAG.on(text);
+            add(new JLabel(text.toString()));
         }
 
         private void addKeyword() {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + ">" + "Keyword for commandline: <B>" + getKeyword()
-                + "</B>.</FONT></HTML>"));
+            StringBuilder text = new StringBuilder();
+            text.append("Keyword for commandline: ");
+            text.append(STRONG_TAG.on(getKeyword()));
+            text.append('.');
+            INFO_FONT.on(text);
+            HTML_TAG.on(text);
+            add(new JLabel(text.toString()));
         }
 
         private void addNrArguments() {

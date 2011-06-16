@@ -88,35 +88,28 @@ public class ReteStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
-        GraphState next = topOfPool();
-        boolean result = next != null;
+    protected GraphState getNextState() {
+        GraphState result = topOfPool();
         GraphState triedState = null;
-        if (!result) {
-            this.atState = null;
+        if (result == null) {
             return result;
         }
-        if (this.atState != next) {
-            this.atState = next;
-        } else {
+        if (getState() == result) {
             do {
-                ((DefaultGraphNextState) this.atState).getDelta().applyDelta(
+                ((DefaultGraphNextState) result).getDelta().applyDelta(
                     this.deltaAccumulator);
-                triedState = this.atState;
+                triedState = result;
                 popPool();
-                next = topOfPool();
-                if (next == null) {
-                    this.atState = null;
-                    return false;
+                result = topOfPool();
+                if (result == null) {
+                    return result;
                 }
-                this.atState = next;
-            } while (((DefaultGraphNextState) this.atState).source() != ((DefaultGraphNextState) triedState).source());
+            } while (((DefaultGraphNextState) result).source() != ((DefaultGraphNextState) triedState).source());
         }
         this.deltaAccumulator = this.deltaAccumulator.invert();
-        ((DefaultGraphNextState) this.atState).getDelta().applyDelta(
+        ((DefaultGraphNextState) result).getDelta().applyDelta(
             this.deltaAccumulator);
-        this.rete.transitionOccurred(this.atState.getGraph(),
-            this.deltaAccumulator);
+        this.rete.transitionOccurred(result.getGraph(), this.deltaAccumulator);
         return result;
     }
 

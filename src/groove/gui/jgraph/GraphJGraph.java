@@ -33,6 +33,7 @@ import groove.gui.SimulatorModel;
 import groove.gui.ZoomMenu;
 import groove.gui.action.ActionStore;
 import groove.gui.action.ExportAction;
+import groove.gui.action.LayoutAction;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.SystemProperties;
@@ -585,6 +586,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 button.setEnabled(enabled);
             }
             getModeButton(getDefaultMode()).setSelected(true);
+            // retrieve the layout action to get its key accelerator working
+            getLayoutAction();
             super.setEnabled(enabled);
         }
     }
@@ -835,6 +838,15 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.exportAction;
     }
 
+    /** Returns the action to layout this JGraph. */
+    public LayoutAction getLayoutAction() {
+        if (this.layoutAction == null) {
+            this.layoutAction = new LayoutAction(this);
+            addAccelerator(this.layoutAction);
+        }
+        return this.layoutAction;
+    }
+
     @Override
     public GraphLayoutCache getGraphLayoutCache() {
         GraphLayoutCache result = super.getGraphLayoutCache();
@@ -1042,8 +1054,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
             im.put(actionKey, actionName);
             im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             im.put(actionKey, actionName);
-            //            im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            //            im.put(actionKey, actionName);
         }
     }
 
@@ -1151,6 +1161,10 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * The permanent ExportAction associated with this j-graph.
      */
     private ExportAction exportAction;
+    /**
+     * The permanent layout action associated with this jGraph.
+     */
+    private LayoutAction layoutAction;
     /**
      * The background color of this component when it is enabled.
      */

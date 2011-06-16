@@ -69,6 +69,7 @@ import javax.swing.ToolTipManager;
 public class ExplorationDialog extends JDialog implements ActionListener,
         TemplateListListener {
 
+    private static final String START_COMMAND = "Start";
     private static final String EXPLORE_COMMAND = "Run";
     private static final String CANCEL_COMMAND = "Cancel";
 
@@ -79,6 +80,9 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         + "strategy.<BR> "
         + "The interruption condition is determined by the indicated "
         + "number of times that the acceptor succeeds." + "</HTML>";
+    private static final String START_TOOLTIP = "<HTML>"
+        + "Restart with the customized exploration, and set it as the default."
+        + "</HTML>";
     private static final String EXPLORE_TOOLTIP = "<HTML>"
         + "Run the customized exploration, and set it as the default."
         + "</HTML>";
@@ -99,14 +103,6 @@ public class ExplorationDialog extends JDialog implements ActionListener,
      * Color to be used for the background boxes on the info panel.
      */
     public static final Color INFO_BOX_BG_COLOR = new Color(210, 210, 255);
-
-    private final EncodedTypeEditor<Strategy,Serialized> strategyEditor;
-    private final EncodedTypeEditor<Acceptor,Serialized> acceptorEditor;
-    private ResultPanel resultPanel;
-    private JButton exploreButton;
-
-    private final Simulator simulator;
-    private final int oldDismissDelay;
 
     /**
      * Create the dialog.
@@ -147,10 +143,6 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         dialogContent.registerKeyboardAction(createEnterListener(), enter,
             JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        // Create the explore button (reference is needed when setting the
-        // initial value of the (strategy/acceptor) editors.
-        this.exploreButton = new JButton(EXPLORE_COMMAND);
-
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
             StrategyEnumerator.getInstance();
@@ -188,7 +180,7 @@ public class ExplorationDialog extends JDialog implements ActionListener,
         dialogContent.add(new JLabel(" "));
         dialogContent.add(createResultPanel());
         dialogContent.add(new JLabel(" "));
-        dialogContent.add(createButtonPanel(this.exploreButton));
+        dialogContent.add(createButtonPanel());
         SpringUtilities.makeCompactGrid(dialogContent, 5, 1, 0, 0, 0, 0);
 
         // Add the dialogContent to the dialog.
@@ -205,6 +197,16 @@ public class ExplorationDialog extends JDialog implements ActionListener,
     private void closeDialog() {
         this.dispose();
         ToolTipManager.sharedInstance().setDismissDelay(this.oldDismissDelay);
+    }
+
+    /**
+     * The start action. Gets the current selection (strategy, acceptor and
+     * result), constructs an exploration out of its, and then starts a 
+     * new exploration for it.
+     */
+    private void startExploration() {
+        this.simulator.getModel().setGts();
+        doExploration();
     }
 
     /**
@@ -253,6 +255,11 @@ public class ExplorationDialog extends JDialog implements ActionListener,
      * The action listener of the dialog. Responds to button presses only.
      */
     public void actionPerformed(ActionEvent event) {
+        if (event.getActionCommand().equals(START_COMMAND)) {
+            startExploration();
+            return;
+        }
+
         if (event.getActionCommand().equals(EXPLORE_COMMAND)) {
             doExploration();
             return;
@@ -277,18 +284,11 @@ public class ExplorationDialog extends JDialog implements ActionListener,
     /*
      * Create the button panel.
      */
-    private JPanel createButtonPanel(JButton exploreButton) {
+    private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel();
-        exploreButton.addActionListener(this);
-        exploreButton.setToolTipText(EXPLORE_TOOLTIP);
-        buttonPanel.add(exploreButton);
-        GrammarModel grammar = this.simulator.getModel().getGrammar();
-        if (grammar == null || grammar.getStartGraphModel() == null) {
-            exploreButton.setEnabled(false);
-        }
-        JButton cancelButton = new JButton(CANCEL_COMMAND);
-        cancelButton.addActionListener(this);
-        buttonPanel.add(cancelButton);
+        buttonPanel.add(getStartButton());
+        buttonPanel.add(getExploreButton());
+        buttonPanel.add(getCancelButton());
         return buttonPanel;
     }
 
@@ -414,6 +414,54 @@ public class ExplorationDialog extends JDialog implements ActionListener,
     public void selectionChanged() {
         Serialized strategy = this.strategyEditor.getCurrentValue();
         Serialized acceptor = this.acceptorEditor.getCurrentValue();
-        this.exploreButton.setEnabled(strategy != null && acceptor != null);
+        getExploreButton().setEnabled(strategy != null && acceptor != null);
     }
+
+    /** Initialises and returns the start button. */
+    private JButton getStartButton() {
+        if (this.startButton == null) {
+            // Create the explore button (reference is needed when setting the
+            // initial value of the (strategy/acceptor) editors.
+            this.startButton = new JButton(START_COMMAND);
+            this.startButton.setToolTipText(START_TOOLTIP);
+            this.startButton.addActionListener(this);
+        }
+        return this.startButton;
+    }
+
+    /** Initialises and returns the explore button. */
+    private JButton getExploreButton() {
+        if (this.exploreButton == null) {
+            // Create the explore button (reference is needed when setting the
+            // initial value of the (strategy/acceptor) editors.
+            this.exploreButton = new JButton(EXPLORE_COMMAND);
+            this.exploreButton.setToolTipText(EXPLORE_TOOLTIP);
+            this.exploreButton.addActionListener(this);
+            GrammarModel grammar = this.simulator.getModel().getGrammar();
+            if (grammar == null || grammar.getStartGraphModel() == null) {
+                this.exploreButton.setEnabled(false);
+            }
+        }
+        return this.exploreButton;
+    }
+
+    /** Initialises and returns the cancel button. */
+    private JButton getCancelButton() {
+        if (this.cancelButton == null) {
+            // Create the explore button (reference is needed when setting the
+            // initial value of the (strategy/acceptor) editors.
+            this.cancelButton = new JButton(CANCEL_COMMAND);
+            this.cancelButton.addActionListener(this);
+        }
+        return this.cancelButton;
+    }
+
+    private final EncodedTypeEditor<Strategy,Serialized> strategyEditor;
+    private final EncodedTypeEditor<Acceptor,Serialized> acceptorEditor;
+    private ResultPanel resultPanel;
+    private JButton startButton;
+    private JButton exploreButton;
+    private JButton cancelButton;
+    private final Simulator simulator;
+    private final int oldDismissDelay;
 }

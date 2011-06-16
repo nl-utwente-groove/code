@@ -80,12 +80,11 @@ public class LtlStrategy extends AbstractStrategy {
 
         // put current state on the stack
         searchStack().push(getAtBuchiState());
-        this.atState = getAtBuchiState().getGraphState();
         // colour state cyan as being on the search stack
         getAtBuchiState().setColour(ModelChecking.cyan());
 
         // fully explore the current state
-        exploreState(this.atState);
+        exploreState(getAtBuchiState().getGraphState());
         this.collector.reset();
 
         // now look in the GTS for the outgoing transitions of the
@@ -128,7 +127,7 @@ public class LtlStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
+    protected GraphState getNextState() {
         boolean result;
         if (this.collector.pickRandomNewState() != null) {
             ProductState newState = this.collector.pickRandomNewState();
@@ -174,7 +173,8 @@ public class LtlStrategy extends AbstractStrategy {
         if (!result) {
             getProductGTS().removeListener(this.collector);
         }
-        return result;
+        return this.atBuchiState == null ? null
+                : this.atBuchiState.getGraphState();
     }
 
     /**

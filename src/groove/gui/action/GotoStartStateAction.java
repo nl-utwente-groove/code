@@ -16,6 +16,7 @@ public class GotoStartStateAction extends SimulatorAction {
     public GotoStartStateAction(Simulator simulator) {
         super(simulator, Options.GOTO_START_STATE_ACTION_NAME, null);
         putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
+        getSimulator().addAccelerator(this);
     }
 
     @Override
