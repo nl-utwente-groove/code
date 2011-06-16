@@ -17,6 +17,8 @@
 package groove.gui.action;
 
 import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.Layouter;
 
 import java.awt.event.ActionEvent;
@@ -31,13 +33,14 @@ import javax.swing.AbstractAction;
  */
 public class LayoutAction extends AbstractAction {
     /** Constructs a layout action for a given layouter. */
-    public LayoutAction(Layouter layouter) {
-        super(layouter.getName(), Icons.LAYOUT_ICON);
-        this.layouter = layouter;
+    public LayoutAction(GraphJGraph jGraph) {
+        super(jGraph.getLayouter().getName(), Icons.LAYOUT_ICON);
+        putValue(ACCELERATOR_KEY, Options.LAYOUT_KEY);
+        this.jGraph = jGraph;
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (this.layouter.isEnabled()) {
+        if (getLayouter().isEnabled()) {
             doLayout();
         }
     }
@@ -46,7 +49,7 @@ public class LayoutAction extends AbstractAction {
      * Starts the actual layouter.
      */
     public void doLayout() {
-        this.layouter.start(true);
+        getLayouter().start(true);
     }
 
     /**
@@ -56,12 +59,16 @@ public class LayoutAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (key.equals(NAME)) {
-            return this.layouter.getText();
+            return getLayouter().getText();
         } else {
             return super.getValue(key);
         }
     }
 
-    /** The layouter of this action. */
-    private final Layouter layouter;
+    private Layouter getLayouter() {
+        return this.jGraph.getLayouter();
+    }
+
+    /** The JGraph on which this action works. */
+    private final GraphJGraph jGraph;
 }

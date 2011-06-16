@@ -144,6 +144,7 @@ public class LTSJGraph extends GraphJGraph {
     public JMenu createGotoMenu() {
         JMenu result = new JMenu("Go To");
         result.add(getActions().getGotoStartStateAction());
+        result.add(getActions().getGotoFinalStateAction());
         result.add(getScrollToCurrentAction());
         return result;
     }

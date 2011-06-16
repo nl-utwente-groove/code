@@ -222,7 +222,11 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
                 if (Version.isDevelopmentVersion()
                     || !template.getValue().isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
-                    this.templateNames.add(template.getName());
+                    String templateName = template.getName();
+                    if (template.getValue().isDefault()) {
+                        templateName += " (default)";
+                    }
+                    this.templateNames.add(templateName);
                     this.editors.put(template.getKeyword(),
                         template.createEditor(simulator));
                 }

@@ -387,6 +387,24 @@ public class ActionStore implements SimulatorListener {
     private Action forwardAction;
 
     /**
+     * Returns the action to perform random linear exploration and show the final state.
+     */
+    public GotoFinalStateAction getGotoFinalStateAction() {
+        // lazily create the action
+        if (this.gotoFinalStateAction == null) {
+            this.gotoFinalStateAction =
+                new GotoFinalStateAction(this.simulator, false);
+        }
+
+        return this.gotoFinalStateAction;
+    }
+
+    /**
+     * Action to perform random linear exploration and show the final state.
+     */
+    private GotoFinalStateAction gotoFinalStateAction;
+
+    /**
      * Returns the go-to start state action permanently associated with this
      * simulator.
      */

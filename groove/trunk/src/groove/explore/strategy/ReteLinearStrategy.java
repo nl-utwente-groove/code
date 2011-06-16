@@ -60,7 +60,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
     @Override
     public boolean next() {
-        if (this.atState == null) {
+        if (getState() == null) {
             getGTS().removeLTSListener(this.collector);
             unprepare();
             return false;
@@ -85,13 +85,13 @@ public class ReteLinearStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
-        boolean result = (this.atState = this.collector.getNewState()) != null;
+    protected GraphState getNextState() {
+        GraphState result = this.collector.getNewState();
         this.collector.reset();
         DeltaStore d = new DeltaStore();
-        if (result) {
-            ((DefaultGraphNextState) this.atState).getDelta().applyDelta(d);
-            this.rete.transitionOccurred(this.atState.getGraph(), d);
+        if (result != null) {
+            ((DefaultGraphNextState) result).getDelta().applyDelta(d);
+            this.rete.transitionOccurred(result.getGraph(), d);
 
         } else {
             getGTS().removeLTSListener(this.collector);

@@ -65,6 +65,9 @@ public interface Strategy {
     /** Returns the next state to be explored by the strategy. */
     public GraphState getState();
 
+    /** Returns the last state to be explored by the strategy. */
+    public GraphState getLastState();
+
     /**
      * Adds an acceptor to the strategy.
      */

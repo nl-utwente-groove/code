@@ -28,14 +28,13 @@ import java.util.Iterator;
  */
 public class NextOpenStrategy extends AbstractStrategy {
     @Override
-    protected boolean updateAtState() {
-        boolean result;
+    protected GraphState getNextState() {
+        GraphState result;
         Iterator<GraphState> stateIter = getGTS().getOpenStateIter();
-        result = stateIter.hasNext();
-        if (result) {
-            this.atState = stateIter.next();
+        if (stateIter.hasNext()) {
+            result = stateIter.next();
         } else {
-            this.atState = null;
+            result = null;
         }
         return result;
     }

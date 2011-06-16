@@ -19,6 +19,7 @@ package groove.explore.strategy;
 
 import groove.explore.util.RandomChooserInSequence;
 import groove.graph.EdgeRole;
+import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
@@ -79,12 +80,11 @@ public class BoundedLtlStrategy extends LtlStrategy {
         if (getLastTransition() != null) {
             pushTransition(getLastTransition());
         }
-        this.atState = getAtBuchiState().getGraphState();
         // colour state cyan as being on the search stack
         getAtBuchiState().setColour(ModelChecking.cyan());
 
         // fully explore the current state
-        exploreState(this.atState);
+        exploreState(getAtBuchiState().getGraphState());
         this.collector.reset();
 
         // now look in the GTS for the outgoing transitions of the
@@ -170,7 +170,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
+    protected GraphState getNextState() {
         Iterator<ProductTransition> outTransitionIter =
             getAtBuchiState().outTransitions().iterator();
         if (outTransitionIter.hasNext()) {
@@ -190,7 +190,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
                             setAtBuchiState(newState);
                             setLastTransition(outTransition);
-                            return true;
+                            return newState.getGraphState();
                         } else {
                             processBoundaryCrossingTransition(outTransition);
                         }
@@ -216,7 +216,8 @@ public class BoundedLtlStrategy extends LtlStrategy {
 
         // backtracking
         backtrack();
-        return getAtBuchiState() != null;
+        return getAtBuchiState() == null ? null
+                : getAtBuchiState().getGraphState();
     }
 
     /**

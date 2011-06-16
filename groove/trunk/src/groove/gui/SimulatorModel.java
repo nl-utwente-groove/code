@@ -738,6 +738,17 @@ public class SimulatorModel implements Cloneable {
             for (ResourceKind resource : ResourceKind.all(false)) {
                 changeSelected(resource, null);
             }
+            if (getExploration() != null && grammar != null
+                && !grammar.hasErrors()) {
+                try {
+                    getExploration().test(grammar.toGrammar());
+                } catch (FormatException e) {
+                    // the exploration strategy is not compatible with the 
+                    // grammar;
+                    // reset to default exploration
+                    changeExploration(new Exploration());
+                }
+            }
         }
         finish();
     }
@@ -887,8 +898,21 @@ public class SimulatorModel implements Cloneable {
     /**
      * Sets the internally stored default exploration.
      * @param exploration may not be null
+     * @throws FormatException if the new exploration is not
+     * compatible with the existing grammar
      */
-    public void setExploration(Exploration exploration) {
+    public void setExploration(Exploration exploration) throws FormatException {
+        if (hasGrammar() && !getGrammar().hasErrors()) {
+            exploration.test(getGrammar().toGrammar());
+        }
+        changeExploration(exploration);
+    }
+
+    /**
+     * Sets the internally stored default exploration.
+     * @param exploration may not be null
+     */
+    public void changeExploration(Exploration exploration) {
         this.exploration = exploration;
     }
 

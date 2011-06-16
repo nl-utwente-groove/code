@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.GraphState;
 
 /**
  * Explores all outgoing transitions of a given state.
@@ -33,7 +34,7 @@ public class ExploreStateStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected boolean updateAtState() {
-        return false;
+    protected GraphState getNextState() {
+        return null;
     }
 }

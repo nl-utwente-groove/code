@@ -718,14 +718,15 @@ public class Simulator implements SimulatorListener {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getActions().getGotoStartStateAction());
-        result.addSeparator();
         // EDUARDO: Uncomment to enable abstraction.
         // result.add(this.getToggleExplorationStateAction());
         result.add(getActions().getStartSimulationAction());
         result.add(getActions().getApplyTransitionAction());
         result.add(getActions().getAnimateAction());
         result.add(getActions().getExploreAction());
+        result.addSeparator();
+        result.add(getActions().getGotoStartStateAction());
+        result.add(getActions().getGotoFinalStateAction());
         result.addSeparator();
         result.add(getActions().getExplorationDialogAction());
         result.add(getActions().getExplorationStatsDialogAction());

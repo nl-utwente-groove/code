@@ -49,21 +49,6 @@ import java.util.Set;
 
 /** Symbolic values for the implemented strategies. */
 public enum StrategyValue implements ParsableValue {
-    /** Depth-first RETE strategy. */
-    RETE("rete", "Rete Strategy (DFS based)",
-            "This strategy finds all possible transitions from the Rete "
-                + "network, and continues in a depth-first fashion using "
-                + "virtual events when possible. Rete updates are applied "
-                + "accumulatively"),
-    /** Linear RETE strategy. */
-    RETE_LINEAR("retelinear", "Rete Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition of choice will be the same within one "
-                + "incarnation of Groove."),
-    /** Random linear RETE strategy. */
-    RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
-            "This strategy chooses one transition from each open state. "
-                + "The transition is chosen randomly."),
     /** Standard breadth-first strategy. */
     BFS("bfs", "Breadth-First Exploration",
             "This strategy first generates all possible transitions from each "
@@ -79,6 +64,21 @@ public enum StrategyValue implements ParsableValue {
                 + "incarnation of Groove."),
     /** Random linear strategy. */
     RANDOM("random", "Random Linear Exploration",
+            "This strategy chooses one transition from each open state. "
+                + "The transition is chosen randomly."),
+    /** Depth-first RETE strategy. */
+    RETE("rete", "Rete Strategy (DFS based)",
+            "This strategy finds all possible transitions from the Rete "
+                + "network, and continues in a depth-first fashion using "
+                + "virtual events when possible. Rete updates are applied "
+                + "accumulatively"),
+    /** Linear RETE strategy. */
+    RETE_LINEAR("retelinear", "Rete Linear Exploration",
+            "This strategy chooses one transition from each open state. "
+                + "The transition of choice will be the same within one "
+                + "incarnation of Groove."),
+    /** Random linear RETE strategy. */
+    RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition is chosen randomly."),
     /** Confluent strategy. */
@@ -153,6 +153,11 @@ public enum StrategyValue implements ParsableValue {
     @Override
     public boolean isDevelopment() {
         return DEVELOPMENT_ONLY_STRATEGIES.contains(this);
+    }
+
+    @Override
+    public boolean isDefault() {
+        return this == BFS;
     }
 
     /** Creates the appropriate template for this strategy. */

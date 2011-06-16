@@ -64,10 +64,31 @@ public abstract class AbstractStrategy implements Strategy {
 
     /**
      * Returns the state that will be explored next. If <code>null</code>,
-     * there is nothing left to explore. Is updated by {@link #updateAtState()}.
+     * there is nothing left to explore. Is updated by {@link #getNextState()}.
      */
     public GraphState getState() {
         return this.atState;
+    }
+
+    @Override
+    public GraphState getLastState() {
+        return this.lastState;
+    }
+
+    /**
+     * Sets atState to the next state to be explored, as
+     * returned by {@link #getNextState()}, or <code>null</code> if
+     * there are no more states to be explored. This is the place where
+     * satisfaction of the condition is to be tested. This method should be the
+     * only one who updates atState.
+     * @return {@code true} if there are more states to be explored, {@code false}
+     * otherwise.
+     * @see #getNextState()
+     */
+    final protected boolean updateAtState() {
+        this.lastState = getState();
+        this.atState = getNextState();
+        return this.atState != null;
     }
 
     /**
@@ -78,7 +99,7 @@ public abstract class AbstractStrategy implements Strategy {
      * @return {@code true} if there are more states to be explored, {@code false}
      * otherwise.
      */
-    protected abstract boolean updateAtState();
+    protected abstract GraphState getNextState();
 
     /** 
      * Closes a given state. 
@@ -136,10 +157,7 @@ public abstract class AbstractStrategy implements Strategy {
     /** The graph transition system explored by the strategy. */
     private GTS gts;
     /** The state that will be explored by the next call of {@link #next()}. */
-    protected GraphState atState;
-    /**
-     * Indicates whether the strategy should use aliasing or not. Default value
-     * is true.
-     */
-    protected boolean aliasing = true;
+    private GraphState atState;
+    /** The state that will be explored by the next call of {@link #next()}. */
+    private GraphState lastState;
 }

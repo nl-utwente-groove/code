@@ -500,6 +500,9 @@ public class Options implements Cloneable {
     public static final String FILTER_TYPE_ACTION_NAME = "Filter type graph";
     /** Back action name */
     public static final String FORWARD_ACTION_NAME = "Step Forward";
+    /** Find a final state action name */
+    public static final String GOTO_FINAL_STATE_ACTION_NAME =
+        "Go to Final State";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
@@ -713,15 +716,18 @@ public class Options implements Cloneable {
     /** Back keystroke */
     public static final KeyStroke FORWARD_KEY =
         KeyStroke.getKeyStroke("alt RIGHT");
+    /** Find and go to final state keystroke */
+    public static final KeyStroke GOTO_FINAL_STATE_KEY =
+        KeyStroke.getKeyStroke("control END");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
-        KeyStroke.getKeyStroke("control G");
+        KeyStroke.getKeyStroke("control HOME");
     /**
      * Insert keystroke
      */
     public static final KeyStroke INSERT_KEY = KeyStroke.getKeyStroke("INSERT");
     /** Last exploration keystroke */
-    public static final KeyStroke LAST_EXPLORE_KEY =
+    public static final KeyStroke LAYOUT_KEY =
         KeyStroke.getKeyStroke("control L");
     /** New keystroke */
     public static final KeyStroke NEW_KEY = KeyStroke.getKeyStroke("control N");
@@ -739,6 +745,9 @@ public class Options implements Cloneable {
     /** Open graph keystroke */
     public static final KeyStroke OPEN_GRAPH_KEY =
         KeyStroke.getKeyStroke("control shift O");
+    /** Pan-and-zoom mode keystroke */
+    public static final KeyStroke PAN_MODE_KEY =
+        KeyStroke.getKeyStroke("alt Z");
     /**
      * Paste keystroke
      */
