@@ -235,18 +235,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private void initialiseTree() {
         if (isGrammarModified()) {
             this.ruleErrors.clear();
-            this.ruleErrors.addAll(getSource().getErrors());
             this.rule = null;
-            // trying to initialise with model errors, e.g. an
-            // at-edge from a forall:-node, may throw exceptions
             this.levelTree = new LevelMap();
-            try {
-                this.levelTree.initialise();
-            } catch (FormatException exc) {
-                Map<RuleElement,AspectElement> inverseMap =
-                    this.levelTree.getInverseModelMap();
-                for (FormatError error : exc.getErrors()) {
-                    this.ruleErrors.add(error.transfer(inverseMap));
+            if (getSource().hasErrors()) {
+                this.ruleErrors.addAll(getSource().getErrors());
+            } else {
+                // trying to initialise with model errors, e.g. an
+                // at-edge from a forall:-node, may throw exceptions
+                try {
+                    this.levelTree.initialise();
+                } catch (FormatException exc) {
+                    Map<RuleElement,AspectElement> inverseMap =
+                        this.levelTree.getInverseModelMap();
+                    for (FormatError error : exc.getErrors()) {
+                        this.ruleErrors.add(error.transfer(inverseMap));
+                    }
                 }
             }
         }
