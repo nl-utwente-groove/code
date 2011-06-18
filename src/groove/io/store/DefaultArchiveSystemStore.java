@@ -254,10 +254,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
             ZipEntry entry = entries.nextElement();
             String entryName = entry.getName();
-            if (entryName.startsWith(this.entryName)) {
+            int entryPrefixLength = this.entryName.length() + 1;
+            if (entryName.startsWith(this.entryName)
+                && entryName.length() > entryPrefixLength) {
                 // strip off prefix + 1 to take case of file separator
-                String restName =
-                    entryName.substring(this.entryName.length() + 1);
+                String restName = entryName.substring(entryPrefixLength);
                 // find out the resource kind by testing the extension
                 ResourceKind kind = null;
                 for (ResourceKind tryKind : EnumSet.allOf(ResourceKind.class)) {
@@ -293,12 +294,12 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             }
         }
         // now process the entries
+        // first load the properties, as they are necessary for loading types
+        loadProperties(zipFile, properties);
         for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
-            if (kind == PROPERTIES) {
-                loadProperties(zipFile, properties);
-            } else if (kind.isTextBased()) {
+            if (kind.isTextBased()) {
                 loadTexts(kind, zipFile, zipEntryMap.get(kind));
-            } else {
+            } else if (kind.isGraphBased()) {
                 loadGraphs(kind, zipFile, zipEntryMap.get(kind));
             }
         }
@@ -390,7 +391,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                         : entry.getKey();
             graphMap.put(name, entry.getValue());
         }
-        if (kind == TYPE) {
+        if (kind == TYPE && this.properties != null) {
             // enable the active types listed in the system properties
             Set<String> enabledTypes = this.properties.getTypeNames();
             for (String enabledType : enabledTypes) {
