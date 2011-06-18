@@ -268,7 +268,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         return this.modificationCount;
     }
 
-    private void increaseModificationCount() {
+    /**
+     * Increases the number of times the model has been modified.
+     * @see #getModificationCount()
+     */
+    final void increaseModificationCount() {
         this.modificationCount++;
     }
 
