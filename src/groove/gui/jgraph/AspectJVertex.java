@@ -12,7 +12,9 @@ import groove.graph.algebra.ProductNode;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
+import groove.io.HTMLConverter.HTMLTag;
 import groove.trans.RuleLabel;
+import groove.util.Colors;
 import groove.view.FormatError;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
@@ -239,6 +241,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                     result.add(getLine(edge));
                 }
             }
+            if (getNode().getGraphRole() == GraphRole.RULE
+                && getNode().getColor() != null) {
+                result.add(new StringBuilder(getNode().getColor().toString()));
+            }
         } else {
             // show the main aspect correctly
             result.addAll(getAspectLines());
@@ -254,6 +260,14 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 if (!isFiltered(edge)) {
                     result.add(getLine(edge));
                 }
+            }
+            if (getNode().getGraphRole() == GraphRole.RULE
+                && getNode().getColor() != null) {
+                StringBuilder line = new StringBuilder("& ");
+                line.append(AspectKind.COLOR.getName());
+                HTMLTag colorTag =
+                    HTMLConverter.createColorTag(Colors.findColor(getNode().getColor().getContentString()));
+                result.add(colorTag.on(line));
             }
         }
         return result;
@@ -518,24 +532,19 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }
-        if (getNode().getGraphRole() != GraphRole.RULE) {
-            Color nodeColor = getNodeColor();
-            if (nodeColor != null) {
-                GraphConstants.setForeground(result, nodeColor);
-                GraphConstants.setLineColor(result, nodeColor);
-                GraphConstants.setBackground(result, JAttr.whitewash(nodeColor));
-            }
-        }
         return result;
     }
 
     /** Retrieves a node color from the model's label store, if any. */
-    public Color getNodeColor() {
-        Color result = null;
-        if (getNode() != null && getNode().getColor() != null) {
-            result = (Color) getNode().getColor().getContent();
-        } else if (getJGraph().getLabelStore() != null) {
-            result = getJGraph().getLabelStore().getColor(getNodeType());
+    @Override
+    public Color getColor() {
+        Color result = super.getColor();
+        if (result == null && getNode().getGraphRole() != GraphRole.RULE) {
+            if (getNode() != null && getNode().getColor() != null) {
+                result = (Color) getNode().getColor().getContent();
+            } else if (getJGraph().getLabelStore() != null) {
+                result = getJGraph().getLabelStore().getColor(getNodeType());
+            }
         }
         return result;
     }

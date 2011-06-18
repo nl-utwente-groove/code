@@ -524,7 +524,7 @@ public final class GraphToTikz {
             for (Node node : this.graph.nodeSet()) {
                 AspectJVertex vertex =
                     (AspectJVertex) this.model.getJCellForNode(node);
-                Color color = vertex.getNodeColor();
+                Color color = vertex.getColor();
                 if (color != null) {
                     result.put(vertex, color);
                 }

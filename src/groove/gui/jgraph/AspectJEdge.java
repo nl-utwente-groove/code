@@ -363,11 +363,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         }
         if (getSourceVertex() != null && getEdge() != null
             && getEdge().getGraphRole() != GraphRole.RULE) {
-            Color typeColor =
-                ((AspectJVertex) getSourceVertex()).getNodeColor();
-            if (typeColor != null) {
-                GraphConstants.setForeground(result, typeColor);
-                GraphConstants.setLineColor(result, typeColor);
+            Color color = ((AspectJVertex) getSourceVertex()).getColor();
+            if (color != null) {
+                GraphConstants.setForeground(result, color);
+                GraphConstants.setLineColor(result, color);
             }
         }
         return result;

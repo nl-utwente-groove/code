@@ -47,7 +47,8 @@ public class MinimalAnchorFactory implements AnchorFactory<Rule> {
      */
     public RuleGraph newAnchor(Rule rule) {
         RuleGraph result = rule.lhs().newGraph(rule.getName() + "-anchor");
-        Set<RuleNode> colorNodes = rule.getColorMap().keySet();
+        Set<RuleNode> colorNodes =
+            new HashSet<RuleNode>(rule.getColorMap().keySet());
         colorNodes.retainAll(rule.lhs().nodeSet());
         result.addNodeSet(colorNodes);
         result.addNodeSet(Arrays.asList(rule.getEraserNodes()));

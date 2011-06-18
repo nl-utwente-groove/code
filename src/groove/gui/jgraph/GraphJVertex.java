@@ -324,9 +324,11 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         if (isGrayedOut()) {
             result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
         }
-        if (getColor() != null) {
-            GraphConstants.setForeground(result, getColor());
-            GraphConstants.setLineColor(result, getColor());
+        Color color = getColor();
+        if (color != null) {
+            GraphConstants.setForeground(result, color);
+            GraphConstants.setLineColor(result, color);
+            GraphConstants.setBackground(result, JAttr.whitewash(color));
         }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
@@ -379,7 +381,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     /** Returns the explicit foreground colour for this vertex. */
-    final public Color getColor() {
+    public Color getColor() {
         return this.color;
     }
 
