@@ -1507,7 +1507,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (this.isRule) {
                 Rule rule =
                     createRule(result, this.rhs, this.ruleMorph, getCoRootMap());
-                rule.setColorMap(this.colorMap);
+                rule.addColorMap(this.colorMap);
                 result.setRule(rule);
             }
             // add the nacs to the rule

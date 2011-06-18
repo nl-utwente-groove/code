@@ -643,24 +643,17 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.morphism;
     }
 
-    /** Sets the colour map for this rule. */
-    public void setColorMap(Map<RuleNode,Color> colorMap) {
+    /**
+     * Adds entries to the colour map for this rule.
+     * The changes are eventually pushed to the top rule in the hierarchy.
+     */
+    public void addColorMap(Map<RuleNode,Color> colorMap) {
         this.colorMap.putAll(colorMap);
     }
 
     /** Returns a mapping from RHS nodes to colours for those nodes. */
     public Map<RuleNode,Color> getColorMap() {
         return this.colorMap;
-        // TODO this implementation is temporary and serves testing purposes only
-        // eventually the colours should be set from color: aspects in the rule
-        //        Map<RuleNode,Color> result = new HashMap<RuleNode,Color>();
-        //        for (RuleEdge edge : this.rhs.edgeSet()) {
-        //            Color color = Colors.findColor(edge.label().text());
-        //            if (color != null) {
-        //                result.put(edge.source(), color);
-        //            }
-        //        }
-        //        return result;
     }
 
     /** Returns the anchor nodes. */
@@ -723,6 +716,12 @@ public class Rule implements Fixable, Comparable<Rule> {
             getCondition().setFixed();
             if (PRINT && isTop()) {
                 System.out.println(toString());
+            }
+            // push the colour map to the top rule
+            Rule parent = this.parent;
+            while (parent != null && parent != this) {
+                parent.getColorMap().putAll(getColorMap());
+                parent = parent == parent.parent ? null : parent.parent;
             }
             this.fixing = false;
         }

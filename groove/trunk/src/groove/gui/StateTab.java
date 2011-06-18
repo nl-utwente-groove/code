@@ -464,6 +464,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             stateVertex.setGrayedOut(graphVertex.isGrayedOut());
             result.synchroniseLayout(stateVertex);
             stateVertex.setLayoutable(false);
+            stateVertex.setColor(graphVertex.getColor());
         }
         for (AspectEdge edge : startGraph.edgeSet()) {
             AspectJCell stateEdge = result.getJCellForEdge(edge);
