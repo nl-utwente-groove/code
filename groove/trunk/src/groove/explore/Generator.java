@@ -269,62 +269,71 @@ public class Generator extends CommandLineTool {
     }
 
     /**
+     * Creates and returns a grammar model for the (supposedly initialised)
+     * grammar location and start graph name.
+     */
+    public GrammarModel getGrammarModel() {
+        if (this.grammarModel == null) {
+            Observer loadObserver = new Observer() {
+                public void update(Observable o, Object arg) {
+                    if (getVerbosity() > LOW_VERBOSITY) {
+                        if (arg instanceof String) {
+                            System.out.printf("%s .", arg);
+                        } else if (arg == null) {
+                            System.out.println(" done");
+                        } else {
+                            System.out.print(".");
+                        }
+                    }
+                }
+            };
+
+            URL url;
+
+            File f =
+                new File(GRAMMAR_FILTER.addExtension(this.grammarLocation));
+            try {
+                if (f.exists()) {
+                    url = Groove.toURL(f);
+                } else {
+                    url = new URL(this.grammarLocation);
+                }
+                if (this.startStateName != null) {
+                    url =
+                        new URL(url.toExternalForm() + "?"
+                            + this.startStateName);
+                }
+            } catch (MalformedURLException e) {
+                printError("Can't load grammar: " + e.getMessage(), false);
+                return null;
+            }
+            // now we are guaranteed to have a URL
+
+            try {
+                this.grammarModel = GrammarModel.newInstance(url);
+                this.grammarModel.getStore().addObserver(loadObserver);
+            } catch (IOException exc) {
+                printError("Can't load grammar: " + exc.getMessage(), false);
+            }
+        }
+        return this.grammarModel;
+    }
+
+    /**
      * Returns the grammar used for generating the state space. The grammar is
      * lazily loaded in. The method throws an error and returns
      * <code>null</code> if the grammar could not be loaded.
      */
     public GraphGrammar getGrammar() {
         if (this.grammar == null) {
-            computeGrammar();
+            try {
+                this.grammar = getGrammarModel().toGrammar();
+                this.grammar.setFixed();
+            } catch (FormatException exc) {
+                printError("Grammar format error: " + exc.getMessage(), false);
+            }
         }
         return this.grammar;
-    }
-
-    /** Loads in and returns a grammar. */
-    private void computeGrammar() {
-        Observer loadObserver = new Observer() {
-            public void update(Observable o, Object arg) {
-                if (getVerbosity() > LOW_VERBOSITY) {
-                    if (arg instanceof String) {
-                        System.out.printf("%s .", arg);
-                    } else if (arg == null) {
-                        System.out.println(" done");
-                    } else {
-                        System.out.print(".");
-                    }
-                }
-            }
-        };
-
-        URL url;
-
-        File f = new File(GRAMMAR_FILTER.addExtension(this.grammarLocation));
-        try {
-            if (f.exists()) {
-                url = Groove.toURL(f);
-            } else {
-                url = new URL(this.grammarLocation);
-            }
-            if (this.startStateName != null) {
-                url = new URL(url.toExternalForm() + "?" + this.startStateName);
-            }
-        } catch (MalformedURLException e) {
-            printError("Can't load grammar: " + e.getMessage(), false);
-            return;
-        }
-        // now we are guaranteed to have a URL
-
-        try {
-            GrammarModel grammarModel = GrammarModel.newInstance(url);
-            grammarModel.getStore().addObserver(loadObserver);
-            this.grammar = grammarModel.toGrammar();
-            this.grammar.setFixed();
-        } catch (IOException exc) {
-            printError("Can't load grammar: " + exc.getMessage(), false);
-        } catch (FormatException exc) {
-            printError("Grammar format error: " + exc.getMessage(), false);
-        }
-
     }
 
     /**
@@ -365,27 +374,30 @@ public class Generator extends CommandLineTool {
      * Uses the default exploration for components that were not specified.
      */
     protected Exploration computeExploration() {
-
-        Serialized strategy, acceptor;
-        int nrResults;
-        Exploration defaultExploration = new Exploration();
+        Exploration result = getGrammarModel().getDefaultExploration();
+        if (result == null) {
+            result = new Exploration();
+        }
 
         if (isOptionActive(this.scenarioOption)) {
             return this.scenarioOption.getValue();
         }
 
+        Serialized strategy;
         if (isOptionActive(this.strategyOption)) {
             strategy = this.strategyOption.getValue();
         } else {
-            strategy = defaultExploration.getStrategy();
+            strategy = result.getStrategy();
         }
 
+        Serialized acceptor;
         if (isOptionActive(this.acceptorOption)) {
             acceptor = this.acceptorOption.getValue();
         } else {
-            acceptor = defaultExploration.getAcceptor();
+            acceptor = result.getAcceptor();
         }
 
+        int nrResults;
         if (isOptionActive(this.resultOption)) {
             nrResults = this.resultOption.getValue();
         } else {
@@ -644,6 +656,9 @@ public class Generator extends CommandLineTool {
     private String grammarLocation;
     /** String describing the start graph within the grammar. */
     private String startStateName;
+    /** The model of the graph grammar used for the generation. */
+    private GrammarModel grammarModel;
+
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
 
