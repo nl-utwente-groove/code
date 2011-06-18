@@ -49,6 +49,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -168,6 +169,14 @@ final public class AspectJGraph extends GraphJGraph {
     public final boolean isShowValueNodes() {
         return hasActiveEditor()
             || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+    }
+
+    @Override
+    public void refreshCells(Collection<? extends GraphJCell> jCellSet) {
+        // tell the model it has been modified,
+        // so refreshing actually changes the cell outlook
+        getModel().increaseModificationCount();
+        super.refreshCells(jCellSet);
     }
 
     /** Indicates that the JModel has an editor enabled. */
