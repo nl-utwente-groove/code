@@ -79,13 +79,11 @@ public class ErrorDialog extends JDialog {
             new JOptionPane(message, JOptionPane.ERROR_MESSAGE,
                 JOptionPane.DEFAULT_OPTION, null, new Object[] {messagePane});
         optionPane.add(messagePane, BorderLayout.SOUTH);
-        Dimension size = optionPane.getPreferredSize();
-        optionPane.setPreferredSize(new Dimension(Math.min(size.width, 500),
-            size.height));
-
         // setup content pane
         Container contentPane = getContentPane();
         contentPane.add(optionPane);
+        // constrain size to maximum
+        setPreferredSize();
 
         // setup text area
         this.detailsArea = new JTextArea();
@@ -134,6 +132,7 @@ public class ErrorDialog extends JDialog {
             this.detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
         }
         this.detailsButton.setText(DETAILS_LEVEL_TEXT[detailsLevel]);
+        setPreferredSize();
         pack();
     }
 
@@ -163,6 +162,15 @@ public class ErrorDialog extends JDialog {
         } else {
             return getParentFrame(component.getParent());
         }
+    }
+
+    /** Resets the content pane's preferred size with a maximum width of 500. */
+    private void setPreferredSize() {
+        Container contentPane = getContentPane();
+        contentPane.setPreferredSize(null);
+        Dimension size = contentPane.getPreferredSize();
+        size.width = Math.min(size.width, 500);
+        contentPane.setPreferredSize(size);
     }
 
     /** Dialog title. */
