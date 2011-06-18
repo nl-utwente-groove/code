@@ -49,6 +49,8 @@ import groove.trans.HostGraph.HostToAspectMap;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
+import groove.trans.RuleApplication;
+import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectEdge;
@@ -258,7 +260,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                 if (target == newState) {
                     HostGraphMorphism morphism = transition.getMorphism();
                     copyLayout(getAspectMap(transition.source()),
-                        getAspectMap(newState), morphism);
+                        getAspectMap(newState), morphism,
+                        extractColors(transition));
                 }
                 // set the graph model to the new state
                 displayState(newState);
@@ -405,19 +408,43 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         GraphState oldState = state.source();
         HostGraphMorphism morphism = state.getMorphism();
         // mapping from host nodes to colours
-        // Map<HostNode,Color> colorMap = new HashMap<HostNode,Color>();
+        Map<HostNode,Color> colorMap = extractColors(state);
         // walk back along the derivation chain to find one for
         // which we have a state model (and hence layout information)
         while (!this.stateToAspectMap.containsKey(oldState)
             && oldState instanceof GraphNextState) {
-            morphism = ((GraphNextState) oldState).getMorphism().then(morphism);
-            oldState = ((GraphNextState) oldState).source();
+            GraphNextState oldNextState = (GraphNextState) oldState;
+            Map<HostNode,Color> oldColorMap = extractColors(oldNextState);
+            // only retain colours for nodes that are preserved by the morphism
+            oldColorMap.keySet().retainAll(morphism.nodeMap().keySet());
+            // let new colour overwrite old ones
+            oldColorMap.putAll(colorMap);
+            colorMap = oldColorMap;
+            colorMap.putAll(oldColorMap);
+            morphism = oldNextState.getMorphism().then(morphism);
+            oldState = oldNextState.source();
         }
         // the following call will make sure the start state
         // is actually loaded
         getAspectJModel(oldState);
         HostToAspectMap oldStateMap = getAspectMap(oldState);
-        copyLayout(oldStateMap, aspectMap, morphism);
+        copyLayout(oldStateMap, aspectMap, morphism, colorMap);
+    }
+
+    /**
+     * Extracts the colours that were added to the target state of a given
+     * graph transition.
+     */
+    private Map<HostNode,Color> extractColors(GraphTransition transition) {
+        Map<HostNode,Color> result = new HashMap<HostNode,Color>();
+        RuleApplication application = transition.createRuleApplication();
+        Map<RuleNode,Set<HostNode>> comatch = application.getComatch();
+        for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap().entrySet()) {
+            for (HostNode hostNode : comatch.get(colorEntry.getKey())) {
+                result.put(hostNode, colorEntry.getValue());
+            }
+        }
+        return result;
     }
 
     /** Copies layout from the host model of the start graph. */
@@ -484,7 +511,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      *        new host graph
      */
     private void copyLayout(HostToAspectMap oldState, HostToAspectMap newState,
-            HostGraphMorphism morphism) {
+            HostGraphMorphism morphism, Map<HostNode,Color> colorMap) {
         AspectJModel oldStateJModel =
             getAspectJModel(oldState.getAspectGraph());
         AspectJModel newStateJModel =
@@ -496,11 +523,11 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode oldStateNode = oldState.getNode(entry.getKey());
             AspectNode newStateNode = newState.getNode(entry.getValue());
-            AspectJCell sourceCell =
+            AspectJVertex sourceCell =
                 oldStateJModel.getJCellForNode(oldStateNode);
             assert sourceCell != null : "Source element " + oldStateNode
                 + " unknown";
-            AspectJCell targetCell =
+            AspectJVertex targetCell =
                 newStateJModel.getJCellForNode(newStateNode);
             assert targetCell != null : "Target element " + newStateNode
                 + " unknown";
@@ -515,6 +542,14 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             }
             targetCell.setLayoutable(false);
             targetCell.setGrayedOut(sourceCell.isGrayedOut());
+            targetCell.setColor(sourceCell.getColor());
+            newStateJModel.synchroniseLayout(targetCell);
+        }
+        for (Map.Entry<HostNode,Color> colorEntry : colorMap.entrySet()) {
+            AspectNode newStateNode = newState.getNode(colorEntry.getKey());
+            AspectJVertex targetCell =
+                newStateJModel.getJCellForNode(newStateNode);
+            targetCell.setColor(colorEntry.getValue());
             newStateJModel.synchroniseLayout(targetCell);
         }
         Set<AspectEdge> newEdges =

@@ -17,11 +17,11 @@
 package groove.explore.encode;
 
 import groove.explore.result.Predicate;
-import groove.gui.Simulator;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 /**
  * An <code>EncodedRuleFormula</code> describes a predicate over graph states
@@ -43,9 +43,9 @@ public class EncodedRuleFormula implements
 
     @Override
     public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(
-            Simulator simulator) {
+            GrammarModel grammar) {
         return new StringEditor<Predicate<GraphState>>(
-            "ruleName; !P; P||Q; P&&Q; P->Q", "", 30);
+            grammar, "ruleName; !P; P||Q; P&&Q; P->Q", "", 30);
     }
 
     @Override

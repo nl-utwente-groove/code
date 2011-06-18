@@ -917,7 +917,7 @@ public enum AspectKind {
             switch (role) {
             case HOST:
                 allowedNodeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING));
+                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, COLOR));
                 allowedEdgeKinds.put(role,
                     EnumSet.of(NONE, REMARK, LITERAL, PRED));
                 break;
@@ -925,7 +925,7 @@ public enum AspectKind {
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
                     PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS, EXISTS_OPT, ID));
+                    EXISTS, EXISTS_OPT, ID, COLOR));
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL, STRING,
                     ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,

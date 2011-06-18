@@ -1,6 +1,7 @@
 package groove.trans;
 
 import groove.algebra.AlgebraFamily;
+import groove.explore.Exploration;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.io.FileType;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,13 +77,13 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * program. Default value: <code>true</code>
      */
     public boolean isUseControl() {
-        String control = getProperty(SystemProperties.CONTROL_KEY);
+        String control = getProperty(Key.CONTROL_ENABLED);
         return control == null || Boolean.valueOf(control);
     }
 
-    /** Sets the {@link #CONTROL_KEY} property to the given value * */
+    /** Sets the {@link Key#CONTROL_ENABLED} property to the given value * */
     public void setUseControl(boolean useControl) {
-        setProperty(CONTROL_KEY, "" + useControl);
+        setProperty(Key.CONTROL_ENABLED, "" + useControl);
     }
 
     /**
@@ -89,7 +91,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Default value: <code>true</code>.
      */
     public boolean isShowLoopsAsLabels() {
-        String property = getProperty(SystemProperties.LOOPS_AS_LABELS_KEY);
+        String property = getProperty(Key.LOOPS_AS_LABELS);
         return property == null || Boolean.valueOf(property);
     }
 
@@ -98,7 +100,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Default value: <code>true</code>.
      */
     public void setShowLoopsAsLabels(boolean show) {
-        setProperty(LOOPS_AS_LABELS_KEY, "" + show);
+        setProperty(Key.LOOPS_AS_LABELS, "" + show);
     }
 
     /**
@@ -106,9 +108,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Default value: <code>false</code>.
      */
     public boolean isShowTransitionBrackets() {
-        String property = getProperty(SystemProperties.TRANSITION_BRACKETS_KEY);
+        String property = getProperty(Key.TRANSITION_BRACKETS);
         return property != null
-            && (Boolean.valueOf(property) || property.equals(SystemProperties.TRANSITION_BRACKETS_YES));
+            && (Boolean.valueOf(property) || property.equals(NUMERIC_YES));
     }
 
     /**
@@ -116,47 +118,47 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * value: <code>false</code>.
      */
     public boolean isUseParameters() {
-        String params = getProperty(SystemProperties.PARAMETERS_KEY);
+        String params = getProperty(Key.TRANSITION_PARAMETERS);
         return params != null
-            && (Boolean.valueOf(params) || params.equals(SystemProperties.PARAMETERS_YES));
+            && (Boolean.valueOf(params) || params.equals(NUMERIC_YES));
     }
 
-    /** Sets the {@link #PARAMETERS_KEY} property to the given value * */
+    /** Sets the {@link Key#TRANSITION_PARAMETERS} property to the given value * */
     public void setUseParameters(boolean useParameters) {
-        setProperty(PARAMETERS_KEY, "" + useParameters);
+        setProperty(Key.TRANSITION_PARAMETERS, "" + useParameters);
     }
 
-    /** Sets the {@link #GROOVE_VERSION_KEY} property to the given value */
+    /** Sets the {@link Key#GROOVE_VERSION} property to the given value */
     public void setGrooveVersion(String version) {
-        setProperty(GROOVE_VERSION_KEY, version);
+        setProperty(Key.GROOVE_VERSION, version);
     }
 
     /**
      * @return the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
-        return getProperty(GROOVE_VERSION_KEY);
+        return getProperty(Key.GROOVE_VERSION);
     }
 
-    /** Sets the {@link #GRAMMAR_VERSION_KEY} property to the given value */
+    /** Sets the {@link Key#GRAMMAR_VERSION} property to the given value */
     public void setGrammarVersion(String version) {
-        setProperty(GRAMMAR_VERSION_KEY, version);
+        setProperty(Key.GRAMMAR_VERSION, version);
     }
 
     /**
      * @return the version of the grammar.
      */
     public String getGrammarVersion() {
-        return getProperty(GRAMMAR_VERSION_KEY);
+        return getProperty(Key.GRAMMAR_VERSION);
     }
 
     /**
      * Returns a list of control labels, according to the
-     * {@link #CONTROL_LABELS_KEY} property of the rule system.
-     * @see #CONTROL_LABELS_KEY
+     * {@link Key#CONTROL_LABELS} property of the rule system.
+     * @see Key#CONTROL_LABELS
      */
     public List<String> getControlLabels() {
-        String controlLabels = getProperty(SystemProperties.CONTROL_LABELS_KEY);
+        String controlLabels = getProperty(Key.CONTROL_LABELS);
         if (controlLabels == null) {
             return Collections.emptyList();
         } else {
@@ -166,20 +168,20 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Sets the control labels property.
-     * @see #CONTROL_LABELS_KEY
+     * @see Key#CONTROL_LABELS
      */
     public void setControlLabels(List<String> controlLabels) {
-        setProperty(CONTROL_LABELS_KEY,
+        setProperty(Key.CONTROL_LABELS,
             Groove.toString(controlLabels.toArray(), "", "", " "));
     }
 
     /**
      * Returns a list of common labels, according to the
-     * {@link #COMMON_LABELS_KEY} property of the rule system.
-     * @see #COMMON_LABELS_KEY
+     * {@link Key#COMMON_LABELS} property of the rule system.
+     * @see Key#COMMON_LABELS
      */
     public List<String> getCommonLabels() {
-        String commonLabels = getProperty(SystemProperties.COMMON_LABELS_KEY);
+        String commonLabels = getProperty(Key.COMMON_LABELS);
         if (commonLabels == null) {
             return Collections.emptyList();
         } else {
@@ -189,29 +191,29 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Sets the common labels property.
-     * @see #COMMON_LABELS_KEY
+     * @see Key#COMMON_LABELS
      */
     public void setCommonLabels(List<String> commonLabels) {
-        setProperty(COMMON_LABELS_KEY,
+        setProperty(Key.COMMON_LABELS,
             Groove.toString(commonLabels.toArray(), "", "", " "));
     }
 
     /**
      * Returns the string description of the subtype relation, or the empty
      * string if the property is not set.
-     * @see #SUBTYPE_KEY
+     * @see Key#SUBTYPE
      */
     public String getSubtypes() {
-        String result = getProperty(SystemProperties.SUBTYPE_KEY);
+        String result = getProperty(Key.SUBTYPE);
         return result == null ? "" : result;
     }
 
     /**
      * Sets the subtype property.
-     * @see #SUBTYPE_KEY
+     * @see Key#SUBTYPE
      */
     public void setSubtypes(String subtypes) {
-        setProperty(SUBTYPE_KEY, subtypes);
+        setProperty(Key.SUBTYPE, subtypes);
     }
 
     /**
@@ -220,7 +222,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *        disallowed
      */
     public void setInjective(boolean injective) {
-        setProperty(INJECTIVE_KEY, "" + injective);
+        setProperty(Key.INJECTIVE, "" + injective);
     }
 
     /**
@@ -228,7 +230,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, non-injective matches are disallowed
      */
     public boolean isInjective() {
-        String result = getProperty(INJECTIVE_KEY);
+        String result = getProperty(Key.INJECTIVE);
         return result != null && Boolean.valueOf(result);
     }
 
@@ -238,7 +240,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *        disallowed
      */
     public void setCheckDangling(boolean dangling) {
-        setProperty(DANGLING_KEY, "" + dangling);
+        setProperty(Key.DANGLING, "" + dangling);
     }
 
     /**
@@ -246,7 +248,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        String result = getProperty(DANGLING_KEY);
+        String result = getProperty(Key.DANGLING);
         return result != null && Boolean.valueOf(result);
     }
 
@@ -255,7 +257,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @param program the new control program name
      */
     public void setControlName(String program) {
-        setProperty(CONTROL_NAME_KEY, program);
+        setProperty(Key.CONTROL_NAMES, program);
     }
 
     /**
@@ -264,7 +266,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public String getControlName() {
         // for compatibility, strip the extension from the stored control name
-        String result = getProperty(CONTROL_NAME_KEY);
+        String result = getProperty(Key.CONTROL_NAMES);
         if (result != null) {
             result = FileType.CONTROL_FILTER.stripExtension(result);
         }
@@ -272,11 +274,49 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
+     * Sets the exploration strategy to a certain value.
+     * @param strategy the new exploration strategy
+     */
+    public void setExploration(String strategy) {
+        setProperty(Key.EXPLORATION, strategy);
+    }
+
+    /**
+     * Returns the exploration strategy, or <code>null</code> if there
+     * is no strategy set.
+     */
+    public String getExploration() {
+        String result = getProperty(Key.EXPLORATION);
+        return stringOrNull(result);
+    }
+
+    /**
+     * Sets the type graph names property.
+     * @param types the list of type graphs that are in use.
+     */
+    public void setPrologNames(Collection<String> types) {
+        setProperty(Key.PROLOG_NAMES,
+            Groove.toString(types.toArray(), "", "", " "));
+    }
+
+    /**
+     * Returns a list of type graph names that are in use.
+     */
+    public Set<String> getPrologNames() {
+        String programs = getProperty(Key.PROLOG_NAMES);
+        if (programs == null || "".equals(programs)) {
+            return Collections.emptySet();
+        } else {
+            return new TreeSet<String>(Arrays.asList(programs.split("\\s")));
+        }
+    }
+
+    /**
      * Sets the type graph names property.
      * @param types the list of type graphs that are in use.
      */
     public void setTypeNames(Collection<String> types) {
-        setProperty(TYPE_NAME_KEY,
+        setProperty(Key.TYPE_NAMES,
             Groove.toString(types.toArray(), "", "", " "));
     }
 
@@ -284,7 +324,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Returns a list of type graph names that are in use.
      */
     public Set<String> getTypeNames() {
-        String types = getProperty(SystemProperties.TYPE_NAME_KEY);
+        String types = getProperty(Key.TYPE_NAMES);
         if (types == null || "".equals(types)) {
             return Collections.emptySet();
         } else {
@@ -296,7 +336,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Sets the algebra family to a given value.
      */
     public void setAlgebra(String family) {
-        setProperty(ALGEBRA_KEY, family);
+        setProperty(Key.ALGEBRA, family);
     }
 
     /** 
@@ -305,7 +345,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * if none is selected. 
      */
     public String getAlgebraFamily() {
-        String result = getProperty(ALGEBRA_KEY);
+        String result = getProperty(Key.ALGEBRA);
         return result == null ? AlgebraFamily.DEFAULT_ALGEBRAS : result;
     }
 
@@ -315,7 +355,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *        application conditions
      */
     public void setCheckCreatorEdges(boolean check) {
-        setProperty(CREATOR_EDGE_KEY, "" + check);
+        setProperty(Key.CREATOR_EDGE, "" + check);
     }
 
     /**
@@ -324,7 +364,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *         application conditions
      */
     public boolean isCheckCreatorEdges() {
-        String result = getProperty(CREATOR_EDGE_KEY);
+        String result = getProperty(Key.CREATOR_EDGE);
         return result != null && Boolean.valueOf(result);
     }
 
@@ -334,7 +374,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *        isomorphism
      */
     public void setCheckIsomorphism(boolean check) {
-        setProperty(ISOMORPHISM_KEY, "" + check);
+        setProperty(Key.ISOMORPHISM, "" + check);
     }
 
     /**
@@ -342,7 +382,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
-        String result = getProperty(ISOMORPHISM_KEY);
+        String result = getProperty(Key.ISOMORPHISM);
         return result == null || Boolean.valueOf(result);
     }
 
@@ -353,7 +393,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *         being applied twice in a row
      */
     public boolean isRhsAsNac() {
-        String result = getProperty(RHS_AS_NAC_KEY);
+        String result = getProperty(Key.RHS_AS_NAC);
         return result != null && Boolean.valueOf(result);
     }
 
@@ -364,16 +404,15 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      *        being applied twice in a row
      */
     public void setRhsAsNac(boolean value) {
-        setProperty(RHS_AS_NAC_KEY, "" + value);
+        setProperty(Key.RHS_AS_NAC, "" + value);
     }
 
     /**
      * Returns a list of node labels that are to be used in the abstraction.
-     * @see #ABSTRACTION_LABELS_KEY
+     * @see Key#ABSTRACTION_LABELS
      */
     public List<String> getAbstractionLabels() {
-        String abstractionLabels =
-            getProperty(SystemProperties.ABSTRACTION_LABELS_KEY);
+        String abstractionLabels = getProperty(Key.ABSTRACTION_LABELS);
         if (abstractionLabels == null) {
             return Collections.emptyList();
         } else {
@@ -383,10 +422,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /**
      * Sets the abstraction labels property.
-     * @see #ABSTRACTION_LABELS_KEY
+     * @see Key#ABSTRACTION_LABELS
      */
     public void setAbstractionLabels(List<String> abstractionLabels) {
-        setProperty(ABSTRACTION_LABELS_KEY,
+        setProperty(Key.ABSTRACTION_LABELS,
             Groove.toString(abstractionLabels.toArray(), "", "", " "));
     }
 
@@ -559,6 +598,16 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         }
     }
 
+    /** Retrieves a property by key. */
+    private String getProperty(Key key) {
+        return getProperty(key.getText());
+    }
+
+    /** Changes a property by key. */
+    private void setProperty(Key key, String value) {
+        setProperty(key.getText(), value);
+    }
+
     /**
      * Flag to indicate that the properties have been frozen.
      */
@@ -588,141 +637,11 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         return input == null || input.length() == 0 ? null : input;
     }
 
-    /** Default "yes" value for binary properties. */
-    static public final String YES = "true";
-    /** Default "no" value for binary properties. */
-    static public final String NO = "true";
-    /**
-     * Name of the file containing the used type graph.
-     */
-    static public final String TYPE_NAME_KEY = "typeGraph";
+    /** Alternate key value for true. */
+    static public final String NUMERIC_YES = "1";
 
-    /**
-     * Name of the file containing the used control program. Will only be loaded
-     * when the file exists in the grammar directory.
-     */
-    static public final String CONTROL_NAME_KEY = "controlProgram";
-
-    /**
-     * Property name of the list of control labels of a graph grammar. The
-     * control labels are those labels which should be matched first for optimal
-     * performance, presumably because they occur infrequently or indicate a
-     * place where rules are likely to be applicable.
-     */
-    static public final String CONTROL_LABELS_KEY = "controlLabels";
-
-    /**
-     * Property name of the list of common labels of a graph grammar. The
-     * control labels are those labels which should be matched last for optimal
-     * performance, presumably because they occur frequently.
-     */
-    static public final String COMMON_LABELS_KEY = "commonLabels";
-
-    /**
-     * Property name of the list of abstraction node labels of a graph grammar.
-     * These labels are used to define the level zero neighbourhood relation
-     * between nodes.
-     */
-    static public final String ABSTRACTION_LABELS_KEY = "abstractionLabels";
-
-    /**
-     * Property name of the list subtypes of a graph grammar. The property must
-     * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
-     */
-    static public final String SUBTYPE_KEY = "subtypes";
-
-    /**
-     * (User) Property that holds the grammar history (max 10 separated by ',')
-     * *
-     */
-    static public final String HISTORY_KEY = "open_history";
-
-    /**
-     * Property that determines if transition parameters are included in the LTS
-     * transition labels
-     */
-    static public final String PARAMETERS_KEY = "transitionParameters";
-
-    /** Value of {@link #PARAMETERS_KEY} that means parameters are used * */
-    static public final String PARAMETERS_YES = "1";
-
-    /** Value of {@link #PARAMETERS_KEY} that means parameters are not used * */
-    static public final String PARAMETERS_NO = "0";
-
-    /**
-     * Property that determines if control is used
-     */
-    static public final String CONTROL_KEY = "enableControl";
-
-    /**
-     * Property that determines if (binary) loops can be shown as vertex labels.
-     */
-    static public final String LOOPS_AS_LABELS_KEY = "loopsAsLabels";
-
-    /**
-     * Property that determines if transition parameters are included in the LTS
-     * transition labels
-     */
-    static public final String TRANSITION_BRACKETS_KEY = "transitionBrackets";
-
-    /**
-     * Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets
-     * are included *
-     */
-    static public final String TRANSITION_BRACKETS_YES = "1";
-
-    /**
-     * Value of {@link #TRANSITION_BRACKETS_KEY} that means transition brackets
-     * are not included *
-     */
-    static public final String TRANSITION_BRACKETS_NO = "0";
-
-    /**
-     * Property name of the injectivity of the rule system. If <code>true</code>
-     * , all rules should be matched injectively. Default is <code>false</code>.
-     */
-    static public final String INJECTIVE_KEY = "matchInjective";
-    /**
-     * Property name of the dangling edge check. If <code>true</code>, all
-     * matches that leave dangling edges are invalid. Default is
-     * <code>false</code>.
-     */
-    static public final String DANGLING_KEY = "checkDangling";
-    /**
-     * Property name of the creator edge check. If <code>true</code>, creator
-     * edges are implicitly treated as (individual) NACs. Default is
-     * <code>false</code>.
-     */
-    static public final String CREATOR_EDGE_KEY = "checkCreatorEdges";
-    /**
-     * Property name of the isomorphism check. If <code>true</code>, state
-     * graphs are compared up to isomorphism; otherwise, they are compared up to
-     * equality. Default is <code>true</code>.
-     */
-    static public final String ISOMORPHISM_KEY = "checkIsomorphism";
-    /**
-     * Property name of the RHS-as-NAC property. If <code>true</code>, each RHS
-     * is implicitly treated as a NAC. Default is <code>false</code>.
-     */
-    static public final String RHS_AS_NAC_KEY = "rhsIsNAC";
-    /**
-     * Property name for one-line comments on the graph production system.
-     */
-    static public final String REMARK_KEY = "remark";
-    /**
-     * Property name for the algebra to be used during simulation.
-     */
-    static public final String ALGEBRA_KEY = "algebraFamily";
-
-    /**
-     * Property name for the GROOVE version.
-     */
-    static public final String GROOVE_VERSION_KEY = "grooveVersion";
-
-    /**
-     * Property name for the Grammar version.
-     */
-    static public final String GRAMMAR_VERSION_KEY = "grammarVersion";
+    /** Alternate key value for false. */
+    static public final String NUMERIC_NO = "0";
 
     /**
      * List of system-defined keys, in the order in which they are to appear in
@@ -733,76 +652,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     static {
         Map<String,Property<String>> defaultKeys =
             new LinkedHashMap<String,Property<String>>();
-        defaultKeys.put(GROOVE_VERSION_KEY, new Property.Unmodifiable<String>(
-            "The Groove version that created this grammar"));
-        defaultKeys.put(GRAMMAR_VERSION_KEY, new Property.Unmodifiable<String>(
-            "The version of this grammar"));
-        defaultKeys.put(REMARK_KEY, new Property.True<String>(
-            "A one-line description of the graph production system"));
-        defaultKeys.put(SUBTYPE_KEY, new IsSubtypeString());
-        defaultKeys.put(
-            ALGEBRA_KEY,
-            new Property.Choice<String>(
-                "Algebra family that should be used in simulation (empty for default)",
-                AlgebraFamily.DEFAULT_ALGEBRAS, AlgebraFamily.POINT_ALGEBRAS,
-                AlgebraFamily.BIG_ALGEBRAS));
-        defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean(
-            "Flag controlling if matches should be injective", true));
-        defaultKeys.put(
-            DANGLING_KEY,
-            new Property.IsBoolean(
-                "Flag controlling if dangling edges should be forbidden rather than deleted",
-                true));
-        defaultKeys.put(
-            CREATOR_EDGE_KEY,
-            new Property.IsBoolean(
-                "Flag controlling if creator edges should be treated as implicit NACs",
-                true));
-        defaultKeys.put(RHS_AS_NAC_KEY,
-            new Property.IsBoolean(
-                "Flag controlling if RHSs should be treated as implicit NACs",
-                true));
-        defaultKeys.put(ISOMORPHISM_KEY,
-            new Property.IsBoolean(
-                "Flag controlling state graphs are checked up to isomorphism",
-                true));
-        defaultKeys.put(CONTROL_KEY, new IsExtendedBoolean(
-            "Flag determining if control is enabled"));
-        defaultKeys.put(
-            CONTROL_NAME_KEY,
-            new Property.True<String>(String.format(
-                "Name of the control program (default: '%s')",
-                Groove.DEFAULT_CONTROL_NAME)));
-        defaultKeys.put(
-            TYPE_NAME_KEY,
-            new Property.True<String>(String.format(
-                "Name of the type graph (default: '%s')",
-                Groove.DEFAULT_TYPE_NAME)));
-        defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>(
-            "A list of rare labels, used to optimise rule matching"));
-        defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>(
-            "A list of frequent labels, used to optimise rule matching"));
-        defaultKeys.put(TRANSITION_BRACKETS_KEY, new IsExtendedBoolean(
-            "Flag controlling if transition labels should be bracketed"));
-        defaultKeys.put(
-            PARAMETERS_KEY,
-            new IsExtendedBoolean(
-                "Flag controlling if transition labels should include rule parameters"));
-        defaultKeys.put(
-            LOOPS_AS_LABELS_KEY,
-            new Property.IsBoolean(
-                "Flag controlling if binary self-edges may be shown as vertex labels",
-                true));
-        defaultKeys.put(ABSTRACTION_LABELS_KEY, new Property.True<String>(
-            "A list of node labels, used by neighbourhood abstraction"));
+        for (Key key : EnumSet.allOf(Key.class)) {
+            defaultKeys.put(key.getText(), key.getProperty());
+        }
         DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
     }
 
-    /**
-     * One-line regular expression describing the system properties, with a
-     * parameter position for the name of the rule system.
-     */
-    static public final String DESCRIPTION = "Rule system properties for %s";
     /** Map storing default property instances. */
     static private SystemProperties instance = new SystemProperties();
 
@@ -838,7 +693,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Property testing if the value of {@link #SUBTYPE_KEY} is correctly
+     * Property testing if the value of {@link Key#SUBTYPE} is correctly
      * formatted.
      */
     static private class IsSubtypeString extends Property<String> {
@@ -862,6 +717,232 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             }
             return result;
         }
+    }
 
+    /**
+     * Property testing if the value of {@link Key#EXPLORATION} is correctly
+     * formatted.
+     */
+    static private class IsExplorationString extends Property<String> {
+        /**
+         * Returns an instance of this property, with appropriate description
+         * and comment.
+         */
+        public IsExplorationString() {
+            super(Exploration.SYNTAX_MESSAGE);
+        }
+
+        @Override
+        public boolean isSatisfied(String value) {
+            boolean result = true;
+            try {
+                Exploration.parse(value);
+            } catch (FormatException exc) {
+                result = false;
+            }
+            return result;
+        }
+    }
+
+    /** Type of property keys. */
+    public static enum Key {
+        /**
+         * Property name for the GROOVE version.
+         */
+        GROOVE_VERSION("grooveVersion", PropertyKind.UNMODIFIABLE,
+                "The Groove version that created this grammar"),
+        /**
+         * Property name for the Grammar version.
+         */
+        GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE,
+                "The version of this grammar"),
+        /**
+         * One-line documentation comment on the graph production system.
+         */
+        REMARK("remark",
+                "A one-line description of the graph production system"),
+        /**
+         * List of subtypes of a graph grammar. The property must
+         * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
+         */
+        SUBTYPE("subtypes", PropertyKind.ALGEBRA,
+                "Algebra family that should be used in simulation (empty for default)"),
+        /**
+         * Property name for the algebra to be used during simulation.
+         */
+        ALGEBRA("algebraFamily", PropertyKind.BOOLEAN,
+                "Flag controlling if matches should be injective"),
+        /**
+         * Flag determining the injectivity of the rule system. If <code>true</code>
+         * , all rules should be matched injectively. Default is <code>false</code>.
+         */
+        INJECTIVE("matchInjective", PropertyKind.BOOLEAN,
+                "Flag controlling if matches should be injective"),
+        /**
+         * Dangling edge check. If <code>true</code>, all
+         * matches that leave dangling edges are invalid. Default is
+         * <code>false</code>.
+         */
+        DANGLING("checkDangling", PropertyKind.BOOLEAN,
+                "Flag controlling if dangling edges should be forbidden rather than deleted"),
+        /**
+         * Creator edge check. If <code>true</code>, creator
+         * edges are implicitly treated as (individual) NACs. Default is
+         * <code>false</code>.
+         */
+        CREATOR_EDGE("checkCreatorEdges", PropertyKind.BOOLEAN,
+                "Flag controlling if creator edges should be treated as implicit NACs"),
+        /**
+         * HS-as-NAC property. If <code>true</code>, each RHS
+         * is implicitly treated as a NAC. Default is <code>false</code>.
+         */
+        RHS_AS_NAC("rhsIsNAC", PropertyKind.BOOLEAN,
+                "Flag controlling if RHSs should be treated as implicit NACs"),
+        /**
+         * Isomorphism check. If <code>true</code>, state
+         * graphs are compared up to isomorphism; otherwise, they are compared up to
+         * equality. Default is <code>true</code>.
+         */
+        ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
+                "Flag controlling state graphs are checked up to isomorphism"),
+        /**
+         * Flag that determines if control is used
+         */
+        CONTROL_ENABLED("enableControl", PropertyKind.EXTENDED_BOOLEAN,
+                "Flag determining if control is enabled"),
+        /**
+         * Name of the active control program.
+         */
+        CONTROL_NAMES("controlProgram",
+                "Name of the control program (default: '%s')"),
+        /**
+         * Space-separated list of active type graph names.
+         */
+        TYPE_NAMES("typeGraph",
+                "Space-separated list of active type graph names"),
+        /**
+         * Space-separated list of active prolog program names.
+         */
+        PROLOG_NAMES("prolog",
+                "Space-separated list of active prolog program names"),
+        /**
+         * Space-separated list of control labels of a graph grammar. The
+         * control labels are those labels which should be matched first for optimal
+         * performance, presumably because they occur infrequently or indicate a
+         * place where rules are likely to be applicable.
+         */
+        CONTROL_LABELS("controlLabels",
+                "A list of rare labels, used to optimise rule matching"),
+        /**
+         * Space-separated list of common labels of a graph grammar. The
+         * control labels are those labels which should be matched last for optimal
+         * performance, presumably because they occur frequently.
+         */
+        COMMON_LABELS("commonLabels",
+                "A list of frequent labels, used to optimise rule matching"),
+        /**
+         * Space-separated list of abstraction node labels of a graph grammar.
+         * These labels are used to define the level zero neighbourhood relation
+         * between nodes.
+         */
+        ABSTRACTION_LABELS("abstractionLabels",
+                "A list of node labels, used by neighbourhood abstraction"),
+        /**
+         * Exploration strategy description.
+         */
+        EXPLORATION("explorationStrategy", PropertyKind.EXPLORATION,
+                "Default exploration strtategy for this grammar"),
+        /**
+         * Flag that determines if transition parameters are included in the LTS
+         * transition labels
+         */
+        TRANSITION_BRACKETS("transitionBrackets",
+                PropertyKind.EXTENDED_BOOLEAN,
+                "Flag controlling if transition labels should be bracketed"),
+        /**
+         * Flag that determines if transition parameters are included in the LTS
+         * transition labels
+         */
+        TRANSITION_PARAMETERS("transitionParameters",
+                PropertyKind.EXTENDED_BOOLEAN,
+                "Flag controlling if transition labels should include rule parameters"),
+        /**
+         * Flag that determines if (binary) loops can be shown as vertex labels.
+         */
+        LOOPS_AS_LABELS("loopsAsLabels", PropertyKind.BOOLEAN,
+                "Flag controlling if binary self-edges may be shown as vertex labels");
+
+        private Key(String text, String comment) {
+            this(text, PropertyKind.TRUE, comment);
+        }
+
+        private Key(String text, PropertyKind property, String comment) {
+            this.text = text;
+            this.property = property.newInstance(comment);
+        }
+
+        /** Returns the text of this key. */
+        public String getText() {
+            return this.text;
+        }
+
+        /** Returns the syntax check property. */
+        public Property<String> getProperty() {
+            return this.property;
+        }
+
+        private final String text;
+        private final Property<String> property;
+
+        /** Syntactic property checked on the values entered for a property key. */
+        private enum PropertyKind {
+            TRUE {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new Property.True<String>(comment);
+                }
+            },
+            BOOLEAN {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new Property.IsBoolean(comment, true);
+                }
+            },
+            EXTENDED_BOOLEAN {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new IsExtendedBoolean(comment);
+                }
+            },
+            ALGEBRA {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new Property.Choice<String>(comment,
+                        AlgebraFamily.DEFAULT_ALGEBRAS,
+                        AlgebraFamily.POINT_ALGEBRAS,
+                        AlgebraFamily.BIG_ALGEBRAS);
+                }
+            },
+            SUBTYPE {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new IsSubtypeString();
+                }
+            },
+            EXPLORATION {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new IsExplorationString();
+                }
+            },
+            UNMODIFIABLE {
+                @Override
+                public Property<String> newInstance(String comment) {
+                    return new Property.Unmodifiable<String>(comment);
+                }
+            };
+
+            abstract public Property<String> newInstance(String comment);
+        }
     }
 }

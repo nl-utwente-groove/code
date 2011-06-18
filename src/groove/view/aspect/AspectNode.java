@@ -239,18 +239,18 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             } else {
                 setParam(value);
             }
-        } else if (hasAspect()) {
-            throw new FormatException("Conflicting node aspects %s and %s",
-                getAspect(), value, this);
-        } else if (kind.isRole() && value.getContent() != null) {
-            throw new FormatException(
-                "Node aspect %s should not have quantifier name", value, this);
         } else if (kind == ID) {
             setId(value);
         } else if (kind == COLOR) {
             setColor(value);
         } else if (kind == IMPORT) {
             setImport(value);
+        } else if (hasAspect()) {
+            throw new FormatException("Conflicting node aspects %s and %s",
+                getAspect(), value, this);
+        } else if (kind.isRole() && value.getContent() != null) {
+            throw new FormatException(
+                "Node aspect %s should not have quantifier name", value, this);
         } else {
             setAspect(value);
         }

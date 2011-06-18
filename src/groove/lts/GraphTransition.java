@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
+import groove.trans.RuleApplication;
 import groove.view.FormatException;
 
 /**
@@ -38,6 +39,11 @@ public interface GraphTransition extends GraphTransitionStub, Edge<GraphState>,
 
     /** Overrides the method to specialise the result type. */
     DerivationLabel label();
+
+    /** Callback method to construct a rule application from this
+     * graph transition.
+     */
+    public RuleApplication createRuleApplication();
 
     /** 
      * Returns a string to be sent to the standard output

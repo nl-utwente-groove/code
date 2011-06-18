@@ -42,6 +42,7 @@ import groove.explore.strategy.ReteStrategy;
 import groove.explore.strategy.Strategy;
 import groove.graph.TypeLabel;
 import groove.trans.Rule;
+import groove.view.GrammarModel;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -156,8 +157,10 @@ public enum StrategyValue implements ParsableValue {
     }
 
     @Override
-    public boolean isDefault() {
-        return this == BFS;
+    public boolean isDefault(GrammarModel grammar) {
+        Exploration exploration = grammar.getDefaultExploration();
+        return exploration == null ? this == BFS
+                : exploration.getStrategy().getKeyword().equals(getKeyword());
     }
 
     /** Creates the appropriate template for this strategy. */

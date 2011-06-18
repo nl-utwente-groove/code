@@ -18,6 +18,7 @@ package groove.explore.encode;
 
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
+import groove.view.GrammarModel;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -33,34 +34,45 @@ import javax.swing.SpringLayout;
 public class StringEditor<A> extends EncodedTypeEditor<A,String> {
 
     private final JTextField editor;
+    private final String syntax;
     private final int nr_components;
 
     /**
      * Build the editor using a comment prefix, an initial value and a display
      * size (number of columns).
      */
-    public StringEditor(String syntax, String initValue, int nrColumns) {
-        super(new SpringLayout());
-        setBackground(ExplorationDialog.INFO_BG_COLOR);
+    public StringEditor(GrammarModel grammar, String syntax, String initValue,
+            int nrColumns) {
+        super(grammar, new SpringLayout());
         if (!syntax.equals("")) {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
-                + "><B>Syntax:</B> " + syntax + "</FONT></HTML>"));
             this.nr_components = 2;
         } else {
             this.nr_components = 1;
         }
         this.editor = new JTextField(initValue, nrColumns);
         this.editor.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
-        add(this.editor);
-        SpringUtilities.makeCompactGrid(this, this.nr_components, 1, 0, 0, 0, 0);
+        this.syntax = syntax;
+        setBackground(ExplorationDialog.INFO_BG_COLOR);
+        refresh();
     }
 
     /**
      * Build the editor without a comment prefix, but with an initial value and
      * a display size (number of columns).
      */
-    public StringEditor(String initialValue, int nrColumns) {
-        this("", initialValue, nrColumns);
+    public StringEditor(GrammarModel grammar, String initialValue, int nrColumns) {
+        this(grammar, "", initialValue, nrColumns);
+    }
+
+    @Override
+    public void refresh() {
+        removeAll();
+        if (!this.syntax.equals("")) {
+            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR
+                + "><B>Syntax:</B> " + this.syntax + "</FONT></HTML>"));
+        }
+        add(this.editor);
+        SpringUtilities.makeCompactGrid(this, this.nr_components, 1, 0, 0, 0, 0);
     }
 
     @Override

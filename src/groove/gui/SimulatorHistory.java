@@ -4,7 +4,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.LoadGrammarFromHistoryAction;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
-import groove.trans.SystemProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,8 +18,7 @@ class SimulatorHistory implements SimulatorListener {
         this.simulator = simulator;
         simulator.getModel().addListener(this);
         String[] savedLocations =
-            Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(
-                ",");
+            Options.userPrefs.get(HISTORY_KEY, "").split(",");
         for (String location : savedLocations) {
             try {
                 this.history.add(createLoadAction(location, null));
@@ -50,8 +48,7 @@ class SimulatorHistory implements SimulatorListener {
         if (changes.contains(Change.GRAMMAR)) {
             try {
                 Object location = source.getStore().getLocation();
-                String startGraphName =
-                    source.getGrammar().getStartGraphName();
+                String startGraphName = source.getGrammar().getStartGraphName();
                 LoadGrammarFromHistoryAction newAction =
                     createLoadAction(location.toString(), startGraphName);
                 this.history.remove(newAction);
@@ -82,7 +79,7 @@ class SimulatorHistory implements SimulatorListener {
 
     private void synchPrefs() {
         String newStr = makeHistoryString();
-        Options.userPrefs.put(SystemProperties.HISTORY_KEY, newStr);
+        Options.userPrefs.put(HISTORY_KEY, newStr);
     }
 
     private void synchMenu() {
@@ -109,4 +106,10 @@ class SimulatorHistory implements SimulatorListener {
     /** List of load actions corresponding to the history items. */
     private final ArrayList<LoadGrammarFromHistoryAction> history =
         new ArrayList<LoadGrammarFromHistoryAction>();
+    /**
+     * (User) Property that holds the grammar history (max 10 separated by ',')
+     * *
+     */
+    static public final String HISTORY_KEY = "open_history";
+
 }

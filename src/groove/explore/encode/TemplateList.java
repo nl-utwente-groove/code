@@ -16,19 +16,22 @@
  */
 package groove.explore.encode;
 
+import static groove.io.HTMLConverter.HTML_TAG;
+import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
-import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
 import groove.trans.GraphGrammar;
 import groove.util.Version;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -125,8 +128,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * Create the type-specific editor (see class TemplateListEditor below).
      */
     @Override
-    public EncodedTypeEditor<A,Serialized> createEditor(Simulator simulator) {
-        return new TemplateListEditor<A>(simulator);
+    public EncodedTypeEditor<A,Serialized> createEditor(GrammarModel grammar) {
+        return new TemplateListEditor<A>(grammar);
     }
 
     /**
@@ -201,34 +204,56 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
             new TreeMap<String,EncodedTypeEditor<A,Serialized>>();
         private ArrayList<String> templateKeywords;
-        private ArrayList<String> templateNames;
         private JList nameSelector;
         private JPanel infoPanel;
 
-        public TemplateListEditor(Simulator simulator) {
-            super(new SpringLayout());
-            extractFromTemplates(simulator);
+        public TemplateListEditor(GrammarModel grammar) {
+            super(grammar, new SpringLayout());
+            extractFromTemplates();
             addHeaderText();
             addListPanel();
             addInfoPanel();
             SpringUtilities.makeCompactGrid(this, 3, 1, 0, 0, 0, 3);
+            refresh();
         }
 
-        private void extractFromTemplates(Simulator simulator) {
+        @Override
+        public void refresh() {
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.refresh();
+            }
+            int nrTemplates = TemplateList.this.templates.size();
+            List<String> templateNames = new ArrayList<String>(nrTemplates);
+            for (Template<A> template : TemplateList.this.templates) {
+                if (Version.isDevelopmentVersion()
+                    || !template.getValue().isDevelopment()) {
+                    String templateName = template.getName();
+                    if (template.getValue().isDefault(getGrammar())) {
+                        templateName =
+                            HTML_TAG.on(STRONG_TAG.on(templateName
+                                + " (default)"));
+                    }
+                    templateNames.add(templateName);
+                }
+            }
+            int selected = this.nameSelector.getSelectedIndex();
+            this.nameSelector.removeListSelectionListener(this);
+            this.nameSelector.setListData(templateNames.toArray());
+            if (selected >= 0) {
+                this.nameSelector.setSelectedIndex(selected);
+            }
+            this.nameSelector.addListSelectionListener(this);
+        }
+
+        private void extractFromTemplates() {
             int nrTemplates = TemplateList.this.templates.size();
             this.templateKeywords = new ArrayList<String>(nrTemplates);
-            this.templateNames = new ArrayList<String>(nrTemplates);
             for (Template<A> template : TemplateList.this.templates) {
                 if (Version.isDevelopmentVersion()
                     || !template.getValue().isDevelopment()) {
                     this.templateKeywords.add(template.getKeyword());
-                    String templateName = template.getName();
-                    if (template.getValue().isDefault()) {
-                        templateName += " (default)";
-                    }
-                    this.templateNames.add(templateName);
                     this.editors.put(template.getKeyword(),
-                        template.createEditor(simulator));
+                        template.createEditor(getGrammar()));
                 }
             }
         }
@@ -243,10 +268,9 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void addListPanel() {
-            this.nameSelector = new JList(this.templateNames.toArray());
+            this.nameSelector = new JList();
             this.nameSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.nameSelector.setSelectedIndex(0);
-            this.nameSelector.addListSelectionListener(this);
             JScrollPane listScroller = new JScrollPane(this.nameSelector);
             listScroller.setPreferredSize(new Dimension(350, 200));
             add(listScroller);

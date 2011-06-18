@@ -23,6 +23,7 @@ import groove.explore.result.Predicate;
 import groove.explore.result.PredicateAcceptor;
 import groove.lts.GraphState;
 import groove.trans.Rule;
+import groove.view.GrammarModel;
 
 /** Symbolic values for the implemented acceptors. */
 public enum AcceptorValue implements ParsableValue {
@@ -99,8 +100,10 @@ public enum AcceptorValue implements ParsableValue {
     }
 
     @Override
-    public boolean isDefault() {
-        return this == FINAL;
+    public boolean isDefault(GrammarModel grammar) {
+        Exploration exploration = grammar.getDefaultExploration();
+        return exploration == null ? this == FINAL
+                : exploration.getAcceptor().getKeyword().equals(getKeyword());
     }
 
     /** Creates the appropriate template for this acceptor. */

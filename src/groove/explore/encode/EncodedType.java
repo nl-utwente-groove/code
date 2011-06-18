@@ -16,9 +16,9 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 /**
  * <!=========================================================================>
@@ -35,9 +35,9 @@ public interface EncodedType<A,B> {
      * The created panel must be suitable to be placed in the info panel of
      * the ExplorationDialog.
      * 
-     * @param simulator - global environment
+     * @param grammar - global environment
      */
-    public EncodedTypeEditor<A,B> createEditor(Simulator simulator);
+    public EncodedTypeEditor<A,B> createEditor(GrammarModel grammar);
 
     /**
      * Create a value of type A out of a value of type B.

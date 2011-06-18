@@ -324,6 +324,10 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         if (isGrayedOut()) {
             result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
         }
+        if (getColor() != null) {
+            GraphConstants.setForeground(result, getColor());
+            GraphConstants.setLineColor(result, getColor());
+        }
         if (getAttributes() != null) {
             getAttributes().applyMap(result);
         } else {
@@ -369,6 +373,16 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return result;
     }
 
+    /** Sets an explicit foreground colour for this vertex. */
+    final public void setColor(Color color) {
+        this.color = color;
+    }
+
+    /** Returns the explicit foreground colour for this vertex. */
+    final public Color getColor() {
+        return this.color;
+    }
+
     public boolean hasError() {
         return false;
     }
@@ -385,6 +399,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     private final GraphJGraph jGraph;
     private boolean layoutable;
     private boolean grayedOut;
+    /** Explicitly set foreground colour. */
+    private Color color;
     /** The graph node modelled by this jgraph node. */
     private Node node;
     /** Set of graph edges mapped to this JEdge. */

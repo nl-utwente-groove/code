@@ -16,6 +16,8 @@
  */
 package groove.explore.encode;
 
+import groove.view.GrammarModel;
+
 import java.awt.LayoutManager;
 
 import javax.swing.JPanel;
@@ -31,19 +33,12 @@ import javax.swing.JPanel;
  * @author Maarten de Mol
  */
 public abstract class EncodedTypeEditor<A,B> extends JPanel {
-
-    /**
-     * Constructor for the case without layout manager.
-     */
-    public EncodedTypeEditor() {
-        super();
-    }
-
     /**
      * Constructor for the case with layout manager.
      */
-    public EncodedTypeEditor(LayoutManager layout) {
+    public EncodedTypeEditor(GrammarModel grammar, LayoutManager layout) {
         super(layout);
+        this.grammar = grammar;
     }
 
     /**
@@ -57,4 +52,14 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
      * encoding of an A.
      */
     public abstract void setCurrentValue(B value);
+
+    /** Reloads the content of the editor. */
+    public abstract void refresh();
+
+    /** Returns the grammar on which this editor is based. */
+    protected GrammarModel getGrammar() {
+        return this.grammar;
+    }
+
+    private final GrammarModel grammar;
 }

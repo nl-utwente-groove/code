@@ -39,6 +39,7 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.Predicate;
 
+import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -219,6 +220,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         // transfer graph info such as layout from model to resource
         GraphInfo.transfer(source, result, elementMap);
+        if (!this.colorMap.isEmpty()) {
+            GraphInfo.setColorMap(result, this.colorMap);
+        }
         GraphInfo.setErrors(result, errors);
         result.setFixed();
         return new Pair<DefaultHostGraph,HostModelMap>(result, elementMap);
@@ -248,6 +252,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 nodeImage = result.addNode(modelNode.getNumber());
             }
             elementMap.putNode(modelNode, nodeImage);
+            if (modelNode.hasColor()) {
+                Color color = (Color) modelNode.getColor().getContent();
+                this.colorMap.put(nodeImage, color);
+            }
         }
     }
 
@@ -304,6 +312,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * List of errors in the model that prevent the resource from being constructed.
      */
     private List<FormatError> errors;
+    /** Mapping from host nodes to colours. */
+    private final Map<HostNode,Color> colorMap = new HashMap<HostNode,Color>();
     /** Map from model to resource nodes. */
     private HostModelMap hostModelMap;
     /** Set of labels occurring in this graph. */

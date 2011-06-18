@@ -61,6 +61,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -235,6 +236,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private void initialiseTree() {
         if (isGrammarModified()) {
             this.ruleErrors.clear();
+            this.ruleReset = true;
             this.rule = null;
             this.levelTree = new LevelMap();
             if (getSource().hasErrors()) {
@@ -258,9 +260,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** Initialises the derived data structures. */
     private void initialiseRule() {
         initialiseTree();
-        if (this.rule == null && this.ruleErrors.isEmpty()) {
+        if (this.ruleReset && this.ruleErrors.isEmpty()) {
             try {
                 this.rule = computeRule();
+                this.ruleReset = false;
             } catch (FormatException exc) {
                 this.ruleErrors.addAll(exc.getErrors());
             }
@@ -414,6 +417,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private LevelMap levelTree;
     /** Errors found while converting the model to a rule. */
     private final List<FormatError> ruleErrors = new ArrayList<FormatError>();
+    /** Flag indicating that the rule has been reset and is up for recomputation. */
+    private boolean ruleReset;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     static private final RuleFactory ruleFactory = RuleFactory.instance();
@@ -1004,6 +1009,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (isForThisLevel(modelNode)) {
                 // put the node on this level
                 this.modelMap.putNode(modelNode, ruleNode);
+                if (modelNode.hasColor()) {
+                    this.colorMap.put(ruleNode,
+                        (Color) modelNode.getColor().getContent());
+                }
             }
             // put the node on the sublevels, if it is supposed to be there
             if (isForNextLevel(modelNode)) {
@@ -1498,6 +1507,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (this.isRule) {
                 Rule rule =
                     createRule(result, this.rhs, this.ruleMorph, getCoRootMap());
+                rule.setColorMap(this.colorMap);
                 result.setRule(rule);
             }
             // add the nacs to the rule
@@ -1889,6 +1899,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private final List<Level> children = new ArrayList<Level>();
         /** Map of all model nodes on this level. */
         private final RuleModelMap modelMap = new RuleModelMap();
+        /** Map from rule nodes to declared colours. */
+        private final Map<RuleNode,Color> colorMap =
+            new HashMap<RuleNode,Color>();
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap =
             new HashMap<AspectEdge,Set<RuleNode>>();
