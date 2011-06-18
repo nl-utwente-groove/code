@@ -79,6 +79,9 @@ public class ErrorDialog extends JDialog {
             new JOptionPane(message, JOptionPane.ERROR_MESSAGE,
                 JOptionPane.DEFAULT_OPTION, null, new Object[] {messagePane});
         optionPane.add(messagePane, BorderLayout.SOUTH);
+        Dimension size = optionPane.getPreferredSize();
+        optionPane.setPreferredSize(new Dimension(Math.min(size.width, 500),
+            size.height));
 
         // setup content pane
         Container contentPane = getContentPane();
@@ -179,9 +182,8 @@ public class ErrorDialog extends JDialog {
     /** Details status: full details. */
     public static final int FULL_DETAILS = 2;
     /** Details text array. */
-    private static final String[] DETAILS_LEVEL_TEXT =
-        {NO_DETAILS_BUTTON_TEXT, SOME_DETAILS_BUTTON_TEXT,
-            ALL_DETAILS_BUTTON_TEXT};
+    private static final String[] DETAILS_LEVEL_TEXT = {NO_DETAILS_BUTTON_TEXT,
+        SOME_DETAILS_BUTTON_TEXT, ALL_DETAILS_BUTTON_TEXT};
 
     /** Action listener that takes care of the dialog buttons. */
     protected class ButtonListener implements ActionListener {
