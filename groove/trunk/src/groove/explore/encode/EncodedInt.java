@@ -16,9 +16,9 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 /**
  * An <code>EncodedInt</code> describes an encoding of a number (in a given
@@ -46,8 +46,8 @@ public class EncodedInt implements EncodedType<Integer,String> {
     }
 
     @Override
-    public EncodedTypeEditor<Integer,String> createEditor(Simulator simulator) {
-        return new StringEditor<Integer>(Integer.toString(this.lowerBound), 4);
+    public EncodedTypeEditor<Integer,String> createEditor(GrammarModel grammar) {
+        return new StringEditor<Integer>(grammar, Integer.toString(this.lowerBound), 4);
     }
 
     @Override

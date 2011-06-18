@@ -16,8 +16,8 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
+import groove.view.GrammarModel;
 
 import java.awt.FlowLayout;
 import java.util.Map;
@@ -40,8 +40,8 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
      * Creates the type-specific editor (see class EnumeratedEditor below).
      */
     @Override
-    public EncodedTypeEditor<A,String> createEditor(Simulator simulator) {
-        return new EnumeratedEditor<A>(generateOptions(simulator));
+    public EncodedTypeEditor<A,String> createEditor(GrammarModel grammar) {
+        return new EnumeratedEditor<A>(grammar, generateOptions(grammar));
     }
 
     /**
@@ -49,7 +49,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
      * available for selection.
      * This method must be overridden by the subclass.
      */
-    public abstract Map<String,String> generateOptions(Simulator simulator);
+    public abstract Map<String,String> generateOptions(GrammarModel grammar);
 
     /**
      * <!--------------------------------------------------------------------->
@@ -64,8 +64,8 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
         private String[] keys;
         private int nrKeys;
 
-        public EnumeratedEditor(Map<String,String> options) {
-            super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        public EnumeratedEditor(GrammarModel grammar, Map<String,String> options) {
+            super(grammar, new FlowLayout(FlowLayout.LEFT, 0, 0));
             setBackground(ExplorationDialog.INFO_BG_COLOR);
             this.selector = new JComboBox();
             // MdM - line below causes selector not to appear at all
@@ -73,19 +73,30 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
             this.keys = new String[options.size()];
             this.nrKeys = 0;
-            for (Map.Entry<String,String> optionEntry : options.entrySet()) {
-                this.selector.addItem("<HTML><FONT color="
-                    + ExplorationDialog.INFO_COLOR + ">"
-                    + options.get(optionEntry.getKey()) + "</FONT></HTML>");
-                this.keys[this.nrKeys] = optionEntry.getKey();
-                this.nrKeys++;
-            }
             if (this.nrKeys == 0) {
                 this.selector.addItem("<HTML><FONT color=red>"
                     + "Error! No valid options available." + "</FONT></HTML>");
             }
-            this.selector.setSelectedIndex(0);
+            refresh();
             add(this.selector);
+        }
+
+        @Override
+        public void refresh() {
+            this.nrKeys = 0;
+            int selected = this.selector.getSelectedIndex();
+            this.selector.removeAllItems();
+            for (Map.Entry<String,String> optionEntry : generateOptions(
+                getGrammar()).entrySet()) {
+                this.selector.addItem("<HTML><FONT color="
+                    + ExplorationDialog.INFO_COLOR + ">"
+                    + optionEntry.getValue() + "</FONT></HTML>");
+                this.keys[this.nrKeys] = optionEntry.getKey();
+                this.nrKeys++;
+            }
+            this.selector.setSelectedIndex(selected < 0 ? 0 : selected);
+            //            revalidate();
+            //            repaint();
         }
 
         @Override

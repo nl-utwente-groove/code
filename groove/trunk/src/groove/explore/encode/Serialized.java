@@ -76,6 +76,26 @@ public class Serialized {
         setArgument(name, getArgument(name) + value);
     }
 
+    /** 
+     * Returns a string that, when used as input for {@link Template#parseCommandline(String)},
+     * will return an object equal to this one.
+     */
+    public String toParsableString() {
+        StringBuffer result = new StringBuffer(getKeyword());
+        if (!this.arguments.keySet().isEmpty()) {
+            boolean isFirst = true;
+            result.append(":");
+            for (Map.Entry<String,String> entry : this.arguments.entrySet()) {
+                if (!isFirst) {
+                    result.append(",");
+                }
+                result.append(entry.getValue());
+                isFirst = false;
+            }
+        }
+        return result.toString();
+    }
+
     /**
      * Compress the serialized into a String representation of the form
      * keyword(arg=value, ..., arg=value). The order of the arguments is
@@ -83,10 +103,8 @@ public class Serialized {
      */
     @Override
     public String toString() {
-        if (this.arguments.keySet().isEmpty()) {
-            return getKeyword();
-        } else {
-            StringBuffer result = new StringBuffer(getKeyword());
+        StringBuffer result = new StringBuffer(getKeyword());
+        if (!this.arguments.keySet().isEmpty()) {
             Boolean isFirst = true;
             result.append("(");
             for (Map.Entry<String,String> entry : this.arguments.entrySet()) {
@@ -99,7 +117,7 @@ public class Serialized {
                 isFirst = false;
             }
             result.append(")");
-            return result.toString();
         }
+        return result.toString();
     }
 }

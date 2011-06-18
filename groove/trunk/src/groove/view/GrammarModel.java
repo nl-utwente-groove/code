@@ -22,6 +22,7 @@ import static groove.trans.ResourceKind.PROLOG;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.control.CtrlFactory;
+import groove.explore.Exploration;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -35,6 +36,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
+import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
@@ -619,6 +621,22 @@ public class GrammarModel implements Observer {
             assert false;
         }
         return result;
+    }
+
+    /**
+     * Returns the default exploration, based on the {@link Key#EXPLORATION}
+     * value in the system properties.
+     */
+    public Exploration getDefaultExploration() {
+        if (getProperties().getExploration() == null) {
+            return null;
+        } else {
+            try {
+                return Exploration.parse(getProperties().getExploration());
+            } catch (FormatException e) {
+                return null;
+            }
+        }
     }
 
     /** Mapping from resource kinds and names to resource models. */

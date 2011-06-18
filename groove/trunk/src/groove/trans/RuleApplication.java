@@ -229,8 +229,7 @@ public class RuleApplication implements DeltaApplier {
      * from a given match and for a given host graph. The image consists of
      * fresh images for the creator nodes of the rule.
      */
-    // protected to allow subclassing by AliasSPOApplication
-    protected HostNode[] computeCreatedNodes() {
+    private HostNode[] computeCreatedNodes() {
         HostNode[] result;
         Set<HostNode> createdNodes =
             getEvent().getCreatedNodes(this.source.nodeSet());
@@ -642,14 +641,65 @@ public class RuleApplication implements DeltaApplier {
         return this.renamedEdges;
     }
 
+    /** Returns the relation between rule nodes and target graph nodes. */
+    public Map<RuleNode,Set<HostNode>> getComatch() {
+        if (this.comatch == null) {
+            this.comatch = computeComatch();
+        }
+        return this.comatch;
+    }
+
+    /** Computes the relation between rule nodes and target graph nodes. */
+    private Map<RuleNode,Set<HostNode>> computeComatch() {
+        Map<RuleNode,Set<HostNode>> result =
+            new HashMap<RuleNode,Set<HostNode>>();
+        RuleEvent event = getEvent();
+        if (event instanceof BasicEvent) {
+            collectComatch(result, (BasicEvent) event);
+        } else {
+            for (BasicEvent subEvent : ((CompositeEvent) event).getEventSet()) {
+                collectComatch(result, subEvent);
+            }
+        }
+        return result;
+    }
+
+    private void collectComatch(Map<RuleNode,Set<HostNode>> result,
+            BasicEvent event) {
+        Rule rule = event.getRule();
+        RuleNode[] anchors = rule.getAnchorNodes();
+        for (int i = 0; i < anchors.length; i++) {
+            HostNode image =
+                getMorphism().getNode((HostNode) event.getAnchorImage(i));
+            if (image != null) {
+                addToComatch(result, anchors[i], image);
+            }
+        }
+        RuleNode[] creators = rule.getCreatorNodes();
+        for (int i = 0; i < creators.length; i++) {
+            addToComatch(result, creators[i], this.coanchorImage[i]);
+        }
+    }
+
+    /** Adds a key/value pair to a relational map. */
+    private void addToComatch(Map<RuleNode,Set<HostNode>> result,
+            RuleNode ruleNode, HostNode hostNode) {
+        assert hostNode != null;
+        Set<HostNode> image = result.get(ruleNode);
+        if (image == null) {
+            result.put(ruleNode, image = new HashSet<HostNode>());
+        }
+        image.add(hostNode);
+    }
+
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    protected final Rule rule;
+    private final Rule rule;
     /**
      * The source graph of this derivation. May not be <tt>null</tt>.
      */
-    protected final HostGraph source;
+    private final HostGraph source;
     /**
      * Matching from the rule's lhs to the source graph.
      */
@@ -657,31 +707,31 @@ public class RuleApplication implements DeltaApplier {
     /**
      * The event from which we get the rule and anchor image.
      */
-    protected final RuleEvent event;
+    private final RuleEvent event;
     /**
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
-    protected RuleToHostMap coAnchorMap;
+    private Map<RuleNode,Set<HostNode>> comatch;
     /**
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.
      */
-    protected HostGraph target;
+    private HostGraph target;
     /**
      * Matching from the rule's LHS to the source. Created lazily in
      * {@link #getMatch()}.
      */
-    protected Proof match;
+    private Proof match;
     /**
      * Underlying morphism from the source to the target.
      */
-    protected HostGraphMorphism morphism;
+    private HostGraphMorphism morphism;
     /**
      * The images of the creator nodes. This is part of the information needed
      * to (re)construct the derivation target.
      */
-    protected HostNode[] coanchorImage;
+    private HostNode[] coanchorImage;
     /**
      * A mapping from target value nodes of erased edges to their remaining
      * incident edges, used to judge spurious value nodes.

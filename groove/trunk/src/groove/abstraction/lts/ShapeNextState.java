@@ -26,8 +26,9 @@ import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 import groove.trans.Proof;
+import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 import groove.view.FormatException;
 
 /**
@@ -143,6 +144,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public HostGraphMorphism getMorphism() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RuleApplication createRuleApplication() {
         throw new UnsupportedOperationException();
     }
 

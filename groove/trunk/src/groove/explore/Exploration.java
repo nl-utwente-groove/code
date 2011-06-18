@@ -227,6 +227,60 @@ public class Exploration {
         this.lastState = parsedStrategy.getLastState();
     }
 
+    /** 
+     * Returns a string that, when used as input for {@link #parse(String)},
+     * will return an exploration equal to this one.
+     */
+    public String toParsableString() {
+        String result =
+            this.strategy.toParsableString() + " "
+                + this.acceptor.toParsableString() + " " + this.nrResults;
+        return result;
+    }
+
+    /** 
+     * Parses an exploration description into an exploration instance.
+     * The description must be a list of two or three space-separated substrings:
+     * <li> The first value is the name of the strategy
+     * <li> The second value is the name of the acceptor
+     * <li> the (optional) third value is the number of expected results; 
+     * if omitted, the number is infinite
+     * @param description the exploration description to be parsed
+     * @return the parsed exploration (non-{@code null})
+     * @throws FormatException if the description could not be parsed
+     */
+    static public Exploration parse(String description) throws FormatException {
+        String[] parts = description.split("\\s");
+        if (parts.length < 2 || parts.length > 3) {
+            throw new FormatException(SYNTAX_MESSAGE);
+        }
+        Serialized strategy =
+            StrategyEnumerator.getInstance().parseCommandline(parts[0]);
+        if (strategy == null) {
+            throw new FormatException("Unknown strategy '%s'", parts[0]);
+        }
+        Serialized acceptor =
+            AcceptorEnumerator.getInstance().parseCommandline(parts[1]);
+        if (acceptor == null) {
+            throw new FormatException("Unknown acceptor '%s'", parts[1]);
+        }
+        int resultCount = 0;
+        if (parts.length == 3) {
+            String countMessage =
+                String.format(
+                    "Result count '%s' must be a non-negative number", parts[2]);
+            try {
+                resultCount = Integer.parseInt(parts[2]);
+            } catch (NumberFormatException e) {
+                throw new FormatException(countMessage);
+            }
+            if (resultCount < 0) {
+                throw new FormatException(countMessage);
+            }
+        }
+        return new Exploration(strategy, acceptor, resultCount);
+    }
+
     /**
      * Returns the total running time of the exploration.
      * This information can be used for profiling.
@@ -236,6 +290,9 @@ public class Exploration {
         return playReporter.getTotalTime();
     }
 
+    /** Message describing the syntax of a parsable exploration strategy. */
+    static public final String SYNTAX_MESSAGE =
+        "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(Exploration.class);

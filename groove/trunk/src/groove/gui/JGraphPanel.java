@@ -194,7 +194,12 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * and disables it otherwise.  
      */
     public void setJModel(GraphJModel<?,?> jModel) {
-        getJGraph().setModel(jModel);
+        if (jModel == getJModel()) {
+            getJGraph().getGraphLayoutCache().reload();
+            getJGraph().repaint();
+        } else {
+            getJGraph().setModel(jModel);
+        }
         boolean enabled = jModel != null;
         setEnabled(enabled);
         refreshStatus();

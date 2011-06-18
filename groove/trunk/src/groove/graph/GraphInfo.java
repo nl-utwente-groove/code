@@ -20,6 +20,7 @@ import groove.gui.layout.LayoutMap;
 import groove.util.Version;
 import groove.view.FormatError;
 
+import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,6 +134,34 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     public void setLayoutMap(
             LayoutMap<? extends Node,? extends Edge<N>> layoutMap) {
         this.data.put(LAYOUT_KEY, layoutMap);
+    }
+
+    /**
+     * Tests if this info object contains a colour map (with key
+     * {@link #COLOR_KEY}).
+     * @see #getColorMap()
+     */
+    public boolean hasColorMap() {
+        return this.data.containsKey(COLOR_KEY);
+    }
+
+    /**
+     * Returns the colour map (with key {@link #COLOR_KEY}) in this info
+     * object, if any.
+     * @see #setColorMap
+     */
+    @SuppressWarnings("unchecked")
+    public Map<N,Color> getColorMap() {
+        return (Map<N,Color>) this.data.get(COLOR_KEY);
+    }
+
+    /**
+     * Sets the colour map (key {@link #COLOR_KEY}) in this info object to a
+     * certain value.
+     * @see #getColorMap()
+     */
+    public void setColorMap(Map<N,Color> colorMap) {
+        this.data.put(COLOR_KEY, colorMap);
     }
 
     /** Tests if this info object has a value for the {@link #PROPERTIES_KEY}. */
@@ -338,6 +367,38 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     }
 
     /**
+     * Convenience method to test if a graph contains colour information.
+     */
+    public static <N extends Node,E extends Edge<N>> boolean hasColorMap(
+            Graph<N,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
+        return graphInfo != null && graphInfo.hasColorMap();
+    }
+
+    /**
+     * Convenience method to retrieve the colour map from a graph.
+     */
+    public static <N extends Node,E extends Edge<N>> Map<N,Color> getColorMap(
+            Graph<N,E> graph) {
+        GraphInfo<N,E> graphInfo = graph.getInfo();
+        if (graphInfo == null) {
+            return null;
+        } else {
+            return graphInfo.getColorMap();
+        }
+    }
+
+    /**
+     * Convenience method to set the colour map of a graph.
+     */
+    public static <N extends Node,E extends Edge<N>> void setColorMap(
+            Graph<N,E> graph, Map<N,Color> colorMap) {
+        if (colorMap != null) {
+            getInfo(graph, true).setColorMap(colorMap);
+        }
+    }
+
+    /**
      * Convenience method to retrieve the properties map from a graph, creating
      * it is necessary if any.
      * @param graph the graph to retrieve the properties from
@@ -451,4 +512,8 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Key for layout-info.
      */
     public static final String LAYOUT_KEY = "layout";
+    /**
+     * Key for node colours.
+     */
+    public static final String COLOR_KEY = "color";
 }

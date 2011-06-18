@@ -16,7 +16,6 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -41,11 +40,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
      * <ruleName, ruleName>.
      */
     @Override
-    public Map<String,String> generateOptions(Simulator simulator) {
-
-        // Get the grammar from the simulator.
-        GrammarModel grammar = simulator.getModel().getGrammar();
-
+    public Map<String,String> generateOptions(GrammarModel grammar) {
         // Filter the rules that are enabled, and add them one by one to a
         // a sorted map.
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();

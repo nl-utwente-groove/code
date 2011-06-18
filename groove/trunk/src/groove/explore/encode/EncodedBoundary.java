@@ -19,10 +19,10 @@ package groove.explore.encode;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class EncodedBoundary implements EncodedType<Boundary,String> {
     }
 
     @Override
-    public EncodedTypeEditor<Boundary,String> createEditor(Simulator simulator) {
+    public EncodedTypeEditor<Boundary,String> createEditor(GrammarModel grammar) {
         return null;
     }
 

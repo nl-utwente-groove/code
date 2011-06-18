@@ -290,10 +290,24 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
+     * Changes the default exploration in the system properties.
+     * @param exploration the new default exploration
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the action failed
+     */
+    public boolean doSetDefaultExploration(Exploration exploration)
+        throws IOException {
+        SystemProperties properties = getGrammar().getProperties();
+        SystemProperties newProperties = properties.clone();
+        newProperties.setExploration(exploration.toParsableString());
+        return doSetProperties(newProperties);
+    }
+
+    /**
      * Changes the system properties.
      * @param newProperties the properties to be saved
      * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the save action failed
+     * @throws IOException if the action failed
      */
     public boolean doSetProperties(SystemProperties newProperties)
         throws IOException {
@@ -418,21 +432,27 @@ public class SimulatorModel implements Cloneable {
      * derivation's target, and the current derivation to null.
      */
     public void doApplyMatch() {
+        start();
         GraphTransition trans = getTransition();
         if (trans == null) {
             trans = getEventApplier().apply(getState(), getMatch().getEvent());
         }
         if (trans != null) {
+            changeGts();
+            // fake it by pretending the old match was the
+            // transition that has just been applied
+            this.old.match = trans;
+            GraphState state = this.state = trans.target();
+            this.changes.add(Change.STATE);
             GraphTransition outTrans = null;
-            if (trans.target().isClosed()) {
-                outTrans = getOutTransition(trans.target());
+            // set the match to an outgoing transition
+            if (state.isClosed()) {
+                outTrans = getOutTransition(state);
             }
-            if (outTrans == null || outTrans.target().isClosed()) {
-                setState(trans.target());
-            } else {
-                setMatch(outTrans);
-            }
+            changeMatch(outTrans);
+            changeDisplay(DisplayKind.LTS);
         }
+        finish();
     }
 
     /** Returns the first outgoing transition that is not a self-loop,
@@ -600,7 +620,8 @@ public class SimulatorModel implements Cloneable {
      */
     private final boolean changeState(GraphState state) {
         // never reset the active state as long as there is a GTS
-        boolean result = state != this.state;
+        boolean result =
+            state != this.state || this.changes.contains(Change.GTS);
         if (result) {
             this.state = state;
             this.changes.add(Change.STATE);
@@ -673,6 +694,69 @@ public class SimulatorModel implements Cloneable {
         return this.grammar;
     }
 
+    /** Updates the model according to a given grammar. */
+    public final void setGrammar(GrammarModel grammar) {
+        start();
+        if (changeGrammar(grammar)) {
+            // reset the GTS in any case
+            changeGts(null, false);
+            changeState(null);
+            changeMatch(null);
+            changeExploration();
+            for (ResourceKind resource : ResourceKind.all(false)) {
+                changeSelected(resource, null);
+            }
+            if (getExploration() != null && grammar != null
+                && !grammar.hasErrors()) {
+                try {
+                    getExploration().test(grammar.toGrammar());
+                } catch (FormatException e) {
+                    // the exploration strategy is not compatible with the 
+                    // grammar;
+                    // reset to default exploration
+                    changeExploration(new Exploration());
+                }
+            }
+        }
+        finish();
+    }
+
+    /** 
+     * Checks for changes in the currently loaded grammar view, 
+     * but does not yet fire an update.
+     * Should be called after any change in the grammar view or
+     * underlying store.
+     */
+    private final void changeGrammar(boolean reset) {
+        this.changes.add(Change.GRAMMAR);
+        GrammarModel grammar = this.grammar;
+        changeGrammar(grammar);
+        if (reset) {
+            changeGts(null, false);
+            changeState(null);
+            changeMatch(null);
+            changeExploration();
+        }
+        // restrict the selected resources to those that are (still)
+        // in the grammar
+        for (ResourceKind resource : ResourceKind.all(false)) {
+            Set<String> newNames = new LinkedHashSet<String>();
+            newNames.addAll(getSelectSet(resource));
+            newNames.retainAll(grammar.getNames(resource));
+            changeSelectedSet(resource, newNames);
+        }
+    }
+
+    /** Updates the state according to a given grammar. */
+    private final boolean changeGrammar(GrammarModel grammar) {
+        boolean result = (grammar != this.grammar);
+        // if the grammar view is a different object,
+        // do not attempt to keep the host graph and rule selections
+        this.grammar = grammar;
+        this.changes.add(Change.GRAMMAR);
+        return result;
+    }
+
     /** Convenience method to return the store of the currently loaded 
      * grammar view, if any.
      */
@@ -700,67 +784,6 @@ public class SimulatorModel implements Cloneable {
         start();
         changeGrammar(true);
         finish();
-    }
-
-    /** 
-     * Checks for changes in the currently loaded grammar view, 
-     * but does not yet fire an update.
-     * Should be called after any change in the grammar view or
-     * underlying store.
-     */
-    private final void changeGrammar(boolean reset) {
-        this.changes.add(Change.GRAMMAR);
-        GrammarModel grammar = this.grammar;
-        changeGrammar(grammar);
-        if (reset) {
-            changeGts(null, false);
-            changeState(null);
-            changeMatch(null);
-        }
-        // restrict the selected resources to those that are (still)
-        // in the grammar
-        for (ResourceKind resource : ResourceKind.all(false)) {
-            Set<String> newNames = new LinkedHashSet<String>();
-            newNames.addAll(getSelectSet(resource));
-            newNames.retainAll(grammar.getNames(resource));
-            changeSelectedSet(resource, newNames);
-        }
-    }
-
-    /** Updates the model according to a given grammar. */
-    public final void setGrammar(GrammarModel grammar) {
-        start();
-        if (changeGrammar(grammar)) {
-            // reset the GTS in any case
-            changeGts(null, false);
-            changeState(null);
-            changeMatch(null);
-            for (ResourceKind resource : ResourceKind.all(false)) {
-                changeSelected(resource, null);
-            }
-            if (getExploration() != null && grammar != null
-                && !grammar.hasErrors()) {
-                try {
-                    getExploration().test(grammar.toGrammar());
-                } catch (FormatException e) {
-                    // the exploration strategy is not compatible with the 
-                    // grammar;
-                    // reset to default exploration
-                    changeExploration(new Exploration());
-                }
-            }
-        }
-        finish();
-    }
-
-    /** Updates the state according to a given grammar. */
-    private final boolean changeGrammar(GrammarModel grammar) {
-        boolean result = (grammar != this.grammar);
-        // if the grammar view is a different object,
-        // do not attempt to keep the host graph and rule selections
-        this.grammar = grammar;
-        this.changes.add(Change.GRAMMAR);
-        return result;
     }
 
     /** 
@@ -906,6 +929,17 @@ public class SimulatorModel implements Cloneable {
             exploration.test(getGrammar().toGrammar());
         }
         changeExploration(exploration);
+    }
+
+    /**
+     * If the grammar has a default exploration,
+     * sets the exploration to that exploration.
+     */
+    public void changeExploration() {
+        Exploration exploration = getGrammar().getDefaultExploration();
+        if (exploration != null) {
+            changeExploration(exploration);
+        }
     }
 
     /**

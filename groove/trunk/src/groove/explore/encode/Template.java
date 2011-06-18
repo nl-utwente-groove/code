@@ -21,12 +21,12 @@ import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
 import groove.explore.prettyparse.SerializedParser;
 import groove.explore.prettyparse.StringConsumer;
-import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -134,8 +134,8 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * Creates the type-specific editor (see class TemplateEditor below).
      */
     @Override
-    public EncodedTypeEditor<A,Serialized> createEditor(Simulator simulator) {
-        return new TemplateEditor<A>(simulator);
+    public EncodedTypeEditor<A,Serialized> createEditor(GrammarModel grammar) {
+        return new TemplateEditor<A>(grammar);
     }
 
     /**
@@ -200,12 +200,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
      * <!--------------------------------------------------------------------->
      */
     private class TemplateEditor<X> extends EncodedTypeEditor<X,Serialized> {
-
         private final Map<String,EncodedTypeEditor<?,String>> editors =
             new TreeMap<String,EncodedTypeEditor<?,String>>();
 
-        public TemplateEditor(Simulator simulator) {
-            super(new SpringLayout());
+        public TemplateEditor(GrammarModel grammar) {
+            super(grammar, new SpringLayout());
             setBackground(ExplorationDialog.INFO_BG_COLOR);
             addName();
             addExplanation();
@@ -214,11 +213,19 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             addNrArguments();
             add(Box.createRigidArea(new Dimension(0, 6)));
             for (String argName : Template.this.argumentNames) {
-                addArgument(argName, simulator);
+                addArgument(argName);
             }
             add(Box.createRigidArea(new Dimension(0, 400)));
             SpringUtilities.makeCompactGrid(this,
                 7 + Template.this.argumentNames.length, 1, 2, 2, 0, 0);
+            refresh();
+        }
+
+        @Override
+        public void refresh() {
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.refresh();
+            }
         }
 
         private void addName() {
@@ -255,9 +262,10 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                         : " (select values below).") + "</FONT></HTML>"));
         }
 
-        private void addArgument(String argName, Simulator simulator) {
+        private void addArgument(String argName) {
             EncodedTypeEditor<?,String> editor =
-                Template.this.argumentTypes.get(argName).createEditor(simulator);
+                Template.this.argumentTypes.get(argName).createEditor(
+                    getGrammar());
             JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             line.setBackground(ExplorationDialog.INFO_BG_COLOR);
             if (editor != null) {

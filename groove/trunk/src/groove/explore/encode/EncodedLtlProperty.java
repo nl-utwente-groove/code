@@ -16,11 +16,11 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 /**
  * Encoding of an LTL property.
@@ -39,8 +39,8 @@ public class EncodedLtlProperty implements EncodedType<String,String> {
     }
 
     @Override
-    public EncodedTypeEditor<String,String> createEditor(Simulator simulator) {
-        return new StringEditor<String>("", 20);
+    public EncodedTypeEditor<String,String> createEditor(GrammarModel grammar) {
+        return new StringEditor<String>(grammar, "", 20);
     }
 
     @Override

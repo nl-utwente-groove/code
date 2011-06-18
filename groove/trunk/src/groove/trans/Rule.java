@@ -33,6 +33,7 @@ import groove.util.Groove;
 import groove.util.Visitor;
 import groove.view.FormatException;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -642,6 +643,26 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.morphism;
     }
 
+    /** Sets the colour map for this rule. */
+    public void setColorMap(Map<RuleNode,Color> colorMap) {
+        this.colorMap.putAll(colorMap);
+    }
+
+    /** Returns a mapping from RHS nodes to colours for those nodes. */
+    public Map<RuleNode,Color> getColorMap() {
+        return this.colorMap;
+        // TODO this implementation is temporary and serves testing purposes only
+        // eventually the colours should be set from color: aspects in the rule
+        //        Map<RuleNode,Color> result = new HashMap<RuleNode,Color>();
+        //        for (RuleEdge edge : this.rhs.edgeSet()) {
+        //            Color color = Colors.findColor(edge.label().text());
+        //            if (color != null) {
+        //                result.put(edge.source(), color);
+        //            }
+        //        }
+        //        return result;
+    }
+
     /** Returns the anchor nodes. */
     public RuleNode[] getAnchorNodes() {
         if (this.anchorNodes == null) {
@@ -800,7 +821,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     private boolean computeIsModifying() {
         boolean result =
             getEraserEdges().length > 0 || getEraserNodes().length > 0
-                || hasMergers() || hasCreators();
+                || hasMergers() || hasCreators() || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -1329,6 +1350,9 @@ public class Rule implements Fixable, Comparable<Rule> {
      * merged and which nodes are deleted.
      */
     private Map<RuleNode,RuleNode> mergeMap;
+
+    /** Mapping from rule nodes to explicitly declared colours. */
+    private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();
 
     private final GraphProperties ruleProperties;
 

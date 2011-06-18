@@ -18,6 +18,7 @@ package groove.explore;
 
 import groove.explore.encode.Serialized;
 import groove.util.Version;
+import groove.view.GrammarModel;
 
 /**
  * Type for parsable (enumerated) values.
@@ -46,6 +47,6 @@ public interface ParsableValue {
     /** Converts this value to a {@link Serialized} object. */
     public Serialized toSerialized();
 
-    /** Indicates if this is the default value of its kind. */
-    public boolean isDefault();
+    /** Indicates if this is the default value of its kind for a given grammar. */
+    public boolean isDefault(GrammarModel grammar);
 }

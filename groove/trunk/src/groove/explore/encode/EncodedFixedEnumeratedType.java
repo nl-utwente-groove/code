@@ -16,9 +16,9 @@
  */
 package groove.explore.encode;
 
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.util.Map;
 
@@ -54,7 +54,7 @@ public abstract class EncodedFixedEnumeratedType<A> extends
      * fixed generation.
      */
     @Override
-    public Map<String,String> generateOptions(Simulator simulator) {
+    public Map<String,String> generateOptions(GrammarModel grammar) {
         return fixedOptions();
     }
 

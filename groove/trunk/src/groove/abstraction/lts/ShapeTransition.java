@@ -20,6 +20,7 @@ import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
+import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
 
@@ -68,6 +69,11 @@ public final class ShapeTransition extends DefaultGraphTransition {
 
     @Override
     public HostGraphMorphism getMorphism() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RuleApplication createRuleApplication() {
         throw new UnsupportedOperationException();
     }
 

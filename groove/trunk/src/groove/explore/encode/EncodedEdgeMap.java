@@ -18,9 +18,9 @@ package groove.explore.encode;
 
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.gui.Simulator;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,9 +42,9 @@ public class EncodedEdgeMap implements
      */
     @Override
     public EncodedTypeEditor<Map<TypeLabel,Integer>,String> createEditor(
-            Simulator simulator) {
+            GrammarModel grammar) {
         return new StringEditor<Map<TypeLabel,Integer>>(
-            "label>num,[label>num]*", "", 30);
+            grammar, "label>num,[label>num]*", "", 30);
     }
 
     /**
