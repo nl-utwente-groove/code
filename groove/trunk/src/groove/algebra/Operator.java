@@ -82,7 +82,7 @@ public class Operator {
 
     /** Returns the name of the operator, preceded with its type prefix. */
     public String getTypedName() {
-        return this.returnType + ":" + this.name;
+        return this.signature + ":" + this.name;
     }
 
     @Override

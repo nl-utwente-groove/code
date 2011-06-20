@@ -45,8 +45,7 @@ public class Expression {
 
     /** Constructor for an operator expression. */
     public Expression(Operator operator) {
-        this(Kind.CALL, operator.getResultType(), operator, null, null,
-            null);
+        this(Kind.CALL, operator.getResultType(), operator, null, null, null);
     }
 
     /** Constructor for a constant expression. */
@@ -137,7 +136,7 @@ public class Expression {
             break;
         case CALL:
             assert getArguments().size() == getOperator().getArity();
-            result.append(getType());
+            result.append(getOperator().getSignature());
             result.append(AspectParser.SEPARATOR);
             result.append(getOperator().getName());
             result.append('(');
@@ -274,10 +273,6 @@ public class Expression {
         String outer = splitText.one();
         // find the signature
         int pos = outer.indexOf(AspectParser.SEPARATOR);
-        //        if (pos < 0 && type == null) {
-        //            throw new FormatException(
-        //                "Cannot determine type of '%s'", text);
-        //        }
         String signature = type;
         if (pos >= 0) {
             signature = outer.substring(0, pos);
