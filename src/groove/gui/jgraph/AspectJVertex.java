@@ -251,9 +251,24 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             // show data constants and variables correctly
             result.addAll(getDataLines());
             // show the visible self-edges
+            String id =
+                getNode().hasId()
+                        ? ITALIC_TAG.on(getNode().getId().getContent()) : null;
             for (AspectEdge edge : getJVertexLabels()) {
                 if (!isFiltered(edge)) {
-                    result.add(getLine(edge));
+                    StringBuilder line = getLine(edge);
+                    if (id != null) {
+                        if (edge.getDisplayLabel().isNodeType()) {
+                            line.insert(0, " : ");
+                            line.insert(0, id);
+                        } else {
+                            // we're not going to have any node types:
+                            // add the node id on a separate line
+                            result.add(new StringBuilder(id));
+                        }
+                        id = null;
+                    }
+                    result.add(line);
                 }
             }
             for (AspectEdge edge : getExtraSelfEdges()) {
@@ -275,18 +290,19 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected List<StringBuilder> getNodeIdLines() {
-        if (getNode().hasId()) {
-            List<StringBuilder> result = new ArrayList<StringBuilder>();
-            result.add(ITALIC_TAG.on(new StringBuilder(
-                getNode().getId().getContentString())));
-            return result;
-        } else {
-            List<StringBuilder> result = super.getNodeIdLines();
+        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        // if the node has an ID, that will be displayed part of the type
+        if (!getNode().hasId()) {
+            //            result.add(ITALIC_TAG.on(new StringBuilder(
+            //                getNode().getId().getContentString())));
+            //            return result;
+            //        } else {
+            result.addAll(super.getNodeIdLines());
             if (getNode().hasImport()) {
                 result.add(new StringBuilder(ITALIC_TAG.on(IMPORT_TEXT)));
             }
-            return result;
         }
+        return result;
     }
 
     /** Returns lines describing any data content of the JVertex. */

@@ -245,8 +245,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         }
         if (changes.contains(Change.GRAMMAR)) {
             updateGrammar(source.getGrammar());
-        }
-        if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
+        } else if (changes.contains(GTS)
+            && source.getGts() != oldModel.getGts()) {
             startSimulation(source.getGts());
         } else if (changes.contains(STATE)) {
             GraphState newState = source.getState();
@@ -284,6 +284,11 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * new grammar.
      */
     public void updateGrammar(GrammarModel grammar) {
+        if (grammar.hasErrors()) {
+            displayState(null);
+        } else {
+            startSimulation(getSimulatorModel().getGts());
+        }
         getJGraph().updateGrammar(grammar);
     }
 

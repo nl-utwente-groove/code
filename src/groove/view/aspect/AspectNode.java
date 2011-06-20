@@ -144,6 +144,15 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     @Override
+    public AspectNode clone() {
+        AspectNode result = new AspectNode(getNumber(), getGraphRole());
+        for (AspectLabel label : this.nodeLabels) {
+            result.setAspects(label);
+        }
+        return result;
+    }
+
+    @Override
     public boolean hasErrors() {
         return !this.errors.isEmpty();
     }
@@ -225,12 +234,11 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             "Inappropriate node aspect %s", value, this);
         AspectKind kind = value.getKind();
         if (kind.isAttrKind()) {
-            if (hasAttrAspect()) {
+            if (hasAttrAspect() && !isAttrConsistent(getAttrAspect(), value)) {
                 throw new FormatException("Conflicting node aspects %s and %s",
                     getAttrKind(), value, this);
-            } else {
-                setAttrAspect(value);
             }
+            setAttrAspect(value);
         } else if (kind.isParam()) {
             if (hasParam()) {
                 throw new FormatException(
@@ -254,6 +262,25 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         } else {
             setAspect(value);
         }
+    }
+
+    /** 
+     * Tests if two attribute aspects are consistent.
+     * This is only the case if they are equal,
+     * or one specifies a data value whereas the other specifies its type.
+     */
+    private boolean isAttrConsistent(Aspect one, Aspect two) {
+        assert one.getKind().isAttrKind() && two.getKind().isAttrKind();
+        if (one.equals(two)) {
+            return true;
+        }
+        if (!one.getKind().isTypedData() || !two.getKind().isTypedData()) {
+            return false;
+        }
+        if (!one.getKind().equals(two.getKind())) {
+            return false;
+        }
+        return one.getContent() == null || two.getContent() == null;
     }
 
     /** 
@@ -323,12 +350,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                     "Source node of %s-edge should be quantifier", edgeLabel,
                     this);
             }
-            //            // nesting should alternate between existential and universal
-            //            if ((getKind() == AspectKind.EXISTS) == (edge.target().getKind() == AspectKind.EXISTS)) {
-            //                throw new FormatException(
-            //                    "Quantifier levels should alternate between existential and universal",
-            //                    this);
-            //            }
             // collect collective nesting grandparents to test for circularity
             Set<AspectNode> grandparents = new HashSet<AspectNode>();
             AspectNode parent = edge.target();
@@ -443,12 +464,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             this.attr = newAttr;
         } else if (getAttrKind() != attrKind) {
             throw new FormatException("Conflicting (inferred) types %s and %s",
-                getAspect(), attrKind, this);
+                getAttrKind(), attrKind, this);
         } else if (!getAttrAspect().hasContent() && newAttr.hasContent()) {
             this.attr = newAttr;
         } else if (getAttrAspect().hasContent() && newAttr.hasContent()) {
             throw new FormatException("Conflicting (inferred) types %s and %s",
-                getAspect(), attrKind, this);
+                getAttrKind(), attrKind, this);
         }
     }
 
@@ -638,7 +659,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     private final GraphRole graphRole;
     /** The list of aspect labels defining node aspects. */
-    private List<AspectLabel> nodeLabels = new ArrayList<AspectLabel>();
+    private final List<AspectLabel> nodeLabels = new ArrayList<AspectLabel>();
     /** Indicates that the entire node is fixed. */
     private boolean allFixed;
     /** The type of the aspect node. */

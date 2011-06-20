@@ -239,13 +239,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.ruleReset = true;
             this.rule = null;
             this.levelTree = new LevelMap();
+            AspectGraph normalSource;
             if (getSource().hasErrors()) {
                 this.ruleErrors.addAll(getSource().getErrors());
+            } else if ((normalSource = getSource().normalise()).hasErrors()) {
+                this.ruleErrors.addAll(normalSource.getErrors());
             } else {
                 // trying to initialise with model errors, e.g. an
                 // at-edge from a forall:-node, may throw exceptions
                 try {
-                    this.levelTree.initialise();
+                    this.levelTree.initialise(normalSource);
                 } catch (FormatException exc) {
                     Map<RuleElement,AspectElement> inverseMap =
                         this.levelTree.getInverseModelMap();
@@ -585,7 +588,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     /** Tree of quantification levels occurring in this rule model. */
     private class LevelMap extends DefaultFixable {
-        public void initialise() throws FormatException {
+        public void initialise(AspectGraph source) throws FormatException {
+            this.source = source;
             buildTree();
             initData();
         }
@@ -604,7 +608,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             indexTree.put(this.topLevelIndex, new ArrayList<LevelIndex>());
             // make an ordered collection of quantifier nodes
             SortedSet<AspectNode> quantNodes = new TreeSet<AspectNode>();
-            for (AspectNode node : getSource().nodeSet()) {
+            for (AspectNode node : this.source.nodeSet()) {
                 if (node.getKind().isQuantifier()) {
                     quantNodes.add(node);
                 }
@@ -726,7 +730,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     (VariableNode) getNodeImage(matchCount));
             }
             // add nodes to nesting data structures
-            for (AspectNode node : getSource().nodeSet()) {
+            for (AspectNode node : this.source.nodeSet()) {
                 if (!node.getKind().isMeta()) {
                     try {
                         Level level = getLevel(node);
@@ -737,7 +741,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
             }
             // add edges to nesting data structures
-            for (AspectEdge edge : getSource().edgeSet()) {
+            for (AspectEdge edge : this.source.edgeSet()) {
                 if (edge.getKind() == CONNECT) {
                     Level level = getLevel(edge);
                     RuleNode sourceImage = getNodeImage(edge.source());
@@ -936,6 +940,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return "LevelMap: " + this.indexLevelMap;
         }
 
+        /** The normalised source of the rule model. */
+        private AspectGraph source;
         /** Set of all labels occurring in the rule. */
         private final Set<TypeLabel> labelSet = new HashSet<TypeLabel>();
         /** The top level of the rule tree. */

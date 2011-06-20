@@ -337,6 +337,8 @@ public abstract class ResourceDisplay extends Display implements
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {
         for (int i = getTabPane().getTabCount() - 1; i > 0; i--) {
             Tab tab = (Tab) getTabPane().getComponentAt(i);
+            // we stop at index 0, so the main tab is not among these 
+            assert tab.isEditor();
             if (fresh) {
                 ((ResourceTab) tab).dispose();
             } else {
@@ -344,6 +346,9 @@ public abstract class ResourceDisplay extends Display implements
             }
         }
         getMainTab().updateGrammar(grammar);
+        if (getMainTab().getName() == null) {
+            removeMainTab();
+        }
     }
 
     /**
@@ -434,19 +439,21 @@ public abstract class ResourceDisplay extends Display implements
      * Sets the main panel  to a given (named) graph.
      */
     protected void selectMainTab(String name) {
-        getMainTab().setResource(name);
-        TabLabel tabLabel = getMainTab().getTabLabel();
-        int index = getTabPane().indexOfComponent(getMainTab().getComponent());
-        if (index < 0) {
-            index = getMainTabIndex();
-            getTabPane().add(getMainTab().getComponent(), index);
-            getTabPane().setTitleAt(index, null);
-            getTabPane().setTabComponentAt(index, tabLabel);
+        if (getMainTab().setResource(name)) {
+            TabLabel tabLabel = getMainTab().getTabLabel();
+            int index =
+                getTabPane().indexOfComponent(getMainTab().getComponent());
+            if (index < 0) {
+                index = getMainTabIndex();
+                getTabPane().add(getMainTab().getComponent(), index);
+                getTabPane().setTitleAt(index, null);
+                getTabPane().setTabComponentAt(index, tabLabel);
+            }
+            tabLabel.setEnabled(true);
+            tabLabel.setTitle(getLabelText(name));
+            tabLabel.setError(hasError(name));
+            getTabPane().setSelectedIndex(index);
         }
-        tabLabel.setEnabled(true);
-        tabLabel.setTitle(getLabelText(name));
-        tabLabel.setError(hasError(name));
-        getTabPane().setSelectedIndex(index);
     }
 
     /**
@@ -611,8 +618,14 @@ public abstract class ResourceDisplay extends Display implements
 
     /** Interface for the main tab on this display. */
     protected static interface MainTab extends Tab {
-        /** Changes this tab so as to display a given, named resource. */
-        public void setResource(String name);
+        /** 
+         * Changes this tab so as to display a given, named resource, if it exists.
+         * @param name the name of the resource; if {@code null}, the display
+         * should be emptied
+         * @return if {@code false}, no resource with the given name
+         * exists (and so the main tab was not changed)
+         */
+        public boolean setResource(String name);
 
         /** 
          * Removes a resource that is currently being edited from the

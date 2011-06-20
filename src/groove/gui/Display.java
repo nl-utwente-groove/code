@@ -216,7 +216,9 @@ abstract public class Display {
         /** Method to repaint the tab. */
         public void repaint();
 
-        /** Callback method to notify the tab of a change in grammar. */
+        /** 
+         * Callback method to notify the tab of a change in grammar. 
+         */
         public void updateGrammar(GrammarModel grammar);
     }
 

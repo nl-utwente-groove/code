@@ -37,7 +37,6 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
-import groove.view.aspect.Predicate;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -147,25 +146,27 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * from the aspect graph's node to the (fresh) graph nodes.
      */
     private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
-        Set<FormatError> errors = new TreeSet<FormatError>(source.getErrors());
-        DefaultHostGraph result = createGraph(source.getName());
+        AspectGraph normalSource = source.normalise();
+        Set<FormatError> errors =
+            new TreeSet<FormatError>(normalSource.getErrors());
+        DefaultHostGraph result = createGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());
         // copy the nodes from model to resource
         // first the non-value nodes because their numbers are fixed
-        for (AspectNode modelNode : source.nodeSet()) {
+        for (AspectNode modelNode : normalSource.nodeSet()) {
             if (!modelNode.getAttrKind().isData()) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
         // then the value nodes because their numbers are generated
-        for (AspectNode modelNode : source.nodeSet()) {
+        for (AspectNode modelNode : normalSource.nodeSet()) {
             if (modelNode.getAttrKind().isData()) {
                 processModelNode(result, elementMap, modelNode);
             }
         }
         // copy the edges from model to resource
-        for (AspectEdge modelEdge : source.edgeSet()) {
+        for (AspectEdge modelEdge : normalSource.edgeSet()) {
             try {
                 processModelEdge(result, elementMap, modelEdge);
             } catch (FormatException exc) {
@@ -218,7 +219,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             }
         }
         // transfer graph info such as layout from model to resource
-        GraphInfo.transfer(source, result, elementMap);
+        GraphInfo.transfer(normalSource, result, elementMap);
         GraphInfo.setErrors(result, errors);
         result.setFixed();
         return new Pair<DefaultHostGraph,HostModelMap>(result, elementMap);
@@ -271,21 +272,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             elementMap);
         TypeLabel hostLabel = modelEdge.getTypeLabel();
         assert hostLabel == null || !hostLabel.isDataType();
-
-        if (modelEdge.isPredicate()) {
-            Predicate pred = modelEdge.getPredicate();
-            // Create the value node.
-            Algebra<?> nodeAlgebra =
-                this.algebraFamily.getAlgebra(pred.getSignature());
-            hostNode =
-                result.getFactory().createNodeFromString(nodeAlgebra,
-                    pred.getValue().getSymbol());
-            result.addNode(hostNode);
-
-            // Update the label for the edge.
-            hostLabel = result.getFactory().createLabel(pred.getName());
-        }
-
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
         this.labelSet.add(hostLabel);
         elementMap.putEdge(modelEdge, hostEdge);

@@ -19,6 +19,9 @@ package groove.view.aspect;
 import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
+import groove.algebra.Algebras;
+import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
@@ -35,13 +38,16 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -61,6 +67,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         super(name);
         assert graphRole.inGrammar();
         this.role = graphRole;
+        this.normal = true;
     }
 
     /**
@@ -138,7 +145,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             PlainToAspectMap elementMap) {
         GraphRole role = graph.getRole();
         AspectGraph result = new AspectGraph(graph.getName(), role);
-        AspectParser labelParser = AspectParser.getInstance();
         List<FormatError> errors = new ArrayList<FormatError>();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
@@ -152,7 +158,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         Map<DefaultEdge,AspectLabel> edgeDataMap =
             new HashMap<DefaultEdge,AspectLabel>();
         for (DefaultEdge edge : graph.edgeSet()) {
-            AspectLabel label = labelParser.parse(edge.label().text(), role);
+            AspectLabel label = parser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
                 sourceImage.setAspects(label);
@@ -221,6 +227,219 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         DefaultGraph result = new DefaultGraph(getName());
         result.setRole(getRole());
         return result;
+    }
+
+    /** 
+     * Returns the normalised aspect graph.
+     * An aspect graph is normalised if all {@link AspectKind#LET} and
+     * {@link AspectKind#TEST} edges have been substituted by explicit
+     * attribute elements.
+     */
+    public AspectGraph normalise() {
+        AspectGraph result;
+        if (this.normal) {
+            result = this;
+        } else {
+            result = clone();
+            result.doNormalise();
+            result.setFixed();
+        }
+        return result;
+    }
+
+    /** Normalises this (non-fixed) aspect graph. */
+    private void doNormalise() {
+        assert !isFixed();
+        Set<AspectEdge> letEdges = new HashSet<AspectEdge>();
+        Set<AspectEdge> predEdges = new HashSet<AspectEdge>();
+        for (AspectEdge edge : edgeSet()) {
+            edge.setFixed();
+            if (edge.isPredicate()) {
+                predEdges.add(edge);
+            } else if (edge.isAssign()) {
+                letEdges.add(edge);
+            }
+        }
+        removeEdgeSet(letEdges);
+        removeEdgeSet(predEdges);
+        List<FormatError> errors = new ArrayList<FormatError>();
+        for (AspectEdge edge : letEdges) {
+            try {
+                addAssignment(edge.source(), edge.getAssign());
+            } catch (FormatException e) {
+                errors.addAll(e.getErrors());
+            }
+        }
+        for (AspectEdge edge : predEdges) {
+            try {
+                AspectNode outcome =
+                    addExpression(edge.source(), edge.getPredicate());
+                // specify whether the outcome should be true or false
+                Constant value =
+                    Algebras.getConstant(edge.getKind().inNAC() ? "false"
+                            : "true");
+                outcome.setAspects(parser.parse(value.toString(), getRole()));
+            } catch (FormatException e) {
+                errors.addAll(e.getErrors());
+            }
+        }
+        getErrors().addAll(errors);
+    }
+
+    /**
+     * Adds the structure corresponding to an assignment.
+     */
+    private void addAssignment(AspectNode source, Assignment assign)
+        throws FormatException {
+        // add the expression structure
+        AspectNode target = addExpression(source, assign.getRhs());
+        // add a creator edge (for a rule) or normal edge to the assignment target
+        String assignLabelText =
+            getRole() == RULE ? AspectKind.CREATOR.getPrefix()
+                + assign.getLhs() : assign.getLhs();
+        AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
+        addEdge(source, assignLabel, target);
+        if (getRole() == RULE && !source.getKind().isCreator()) {
+            // add an eraser edge for the old value 
+            AspectNode oldTarget = addNode();
+            // use the type of the new target for the new target node
+            oldTarget.setAspects(createLabel(target.getAttrKind()));
+            assignLabel =
+                AspectParser.getInstance().parse(
+                    AspectKind.ERASER.getPrefix() + assign.getLhs(), getRole());
+            addEdge(source, assignLabel, oldTarget);
+        }
+    }
+
+    /**
+     * Adds the structure corresponding to an expression.
+     * @param source node on which the expression edge occurs
+     * @param expr the parsed expression
+     * @return the node holding the value of the expression
+     */
+    private AspectNode addExpression(AspectNode source, Expression expr)
+        throws FormatException {
+        switch (expr.getKind()) {
+        case CONSTANT:
+            return addConstant(expr.getConstant());
+        case FIELD:
+            return addField(source, expr);
+        case CALL:
+            return addCall(source, expr);
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /**
+     * Adds the structure corresponding to a constant.
+     * @param constant the constant for which we add a node
+     * @return the node representing the constant
+     */
+    private AspectNode addConstant(Constant constant) {
+        AspectNode result = addNode();
+        result.setAspects(parser.parse(constant.toString(), getRole()));
+        return result;
+    }
+
+    /**
+     * Creates the target of a field expression.
+     * @param source the node which currently has the field
+     * @param field the field expression
+     * @return the target node of the identifier
+     */
+    private AspectNode addField(AspectNode source, Expression field)
+        throws FormatException {
+        if (getRole() != RULE) {
+            throw new FormatException(
+                "Field expression '%s' only allowed in rules",
+                field.toString(false), source);
+        }
+        // look up the field owner
+        AspectNode owner;
+        String ownerName = field.getOwner();
+        if (ownerName == null) {
+            owner = source;
+        } else {
+            owner = null;
+            for (AspectNode node : nodeSet()) {
+                if (node.hasId() && ownerName.equals(node.getId().getContent())) {
+                    owner = node;
+                    break;
+                }
+            }
+            if (owner == null) {
+                throw new FormatException("Unknown node identifier '%s'",
+                    ownerName, source);
+            }
+        }
+        // look up the field
+        AspectEdge fieldEdge = null;
+        for (AspectEdge edge : outEdgeSet(owner)) {
+            if (edge.getDisplayLabel().equals(field.getField())) {
+                // make sure we have an LHS edge
+                if (getRole() != RULE || edge.getKind().inLHS()) {
+                    fieldEdge = edge;
+                    break;
+                }
+            }
+        }
+        AspectKind sigKind = AspectKind.getSignatureKind(field.getType());
+        AspectNode result;
+        if (fieldEdge == null) {
+            result = addNode();
+            result.setAspects(createLabel(sigKind));
+        } else {
+            result = fieldEdge.target();
+            if (result.getAttrKind() != sigKind) {
+                throw new FormatException(
+                    "Declared type %s differs from actual field type %s",
+                    sigKind.getName(), result.getAttrKind().getName(), source);
+            }
+        }
+        assert sigKind != null;
+        AspectLabel idLabel = parser.parse(field.getField(), getRole());
+        addEdge(source, idLabel, result);
+        return result;
+    }
+
+    /**
+     * Adds the structure for a call expression
+     * @param source nod on which the expression occurs
+     * @param call the call expression
+     * @return the node representing the value of the expression
+     */
+    private AspectNode addCall(AspectNode source, Expression call)
+        throws FormatException {
+        Operator operator = call.getOperator();
+        if (getRole() != RULE) {
+            throw new FormatException(
+                "Operator expression '%s' only allowed in rules",
+                operator.getTypedName(), source);
+        }
+        AspectNode result = addNode();
+        result.setAspects(createLabel(AspectKind.getSignatureKind(call.getType())));
+        AspectNode product = addNode();
+        product.setAspects(createLabel(AspectKind.PRODUCT));
+        // add the operator edge
+        AspectLabel operatorLabel =
+            parser.parse(operator.getTypedName(), getRole());
+        addEdge(product, operatorLabel, result);
+        // add the arguments
+        List<Expression> args = call.getArguments();
+        for (int i = 0; i < args.size(); i++) {
+            AspectNode argResult = addExpression(source, args.get(i));
+            AspectLabel argLabel =
+                parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
+            addEdge(product, argLabel, argResult);
+        }
+        return result;
+    }
+
+    /** Callback method to create an aspect label out of an aspect kind. */
+    private AspectLabel createLabel(AspectKind kind) {
+        return parser.parse(kind.getPrefix(), getRole());
     }
 
     /** 
@@ -375,6 +594,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
     }
 
+    @Override
+    public boolean addEdge(AspectEdge edge) {
+        this.normal &= !edge.isAssign() && edge.isPredicate();
+        return super.addEdge(edge);
+    }
+
     /**
      * Returns the role of this default graph.
      * The role is set at construction time.
@@ -414,8 +639,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     @Override
     public AspectGraph clone() {
         AspectGraph result = newGraph(getName());
-        result.addNodeSet(nodeSet());
-        result.addEdgeSetWithoutCheck(edgeSet());
+        AspectGraphMorphism map = new AspectGraphMorphism(getRole());
+        for (AspectNode node : nodeSet()) {
+            AspectNode clone = node.clone();
+            map.putNode(node, clone);
+            result.addNode(clone);
+        }
+        for (AspectEdge edge : edgeSet()) {
+            result.addEdge(map.mapEdge(edge));
+        }
         GraphInfo.transfer(this, result, null);
         result.addErrors(getErrors());
         return result;
@@ -441,6 +673,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /** The graph role of the aspect graph. */
     private final GraphRole role;
+    /** Flag indicating whether the graph is normal. */
+    private boolean normal;
 
     /**
      * Creates an aspect graph from a given (plain) graph. Convenience method
@@ -484,6 +718,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * The static instance serving as a factory.
      */
     private static final AspectGraph factory = emptyGraph(HOST);
+    /** The singleton aspect parser instance. */
+    private static final AspectParser parser = AspectParser.getInstance();
 
     /** Factory for AspectGraph elements. */
     public static class AspectFactory implements
