@@ -442,7 +442,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
         TreePath[] selectedValues = getSelectionPaths();
-        ActionStore actions = getJGraph().getSimulator().getActions();
+        ActionStore actions = getJGraph().getActions();
         if (selectedValues != null && selectedValues.length == 1
             && actions != null) {
             result.add(actions.getRelabelAction());

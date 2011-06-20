@@ -26,12 +26,12 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.algebra.ValueNode;
-import groove.view.FormatException;
-import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
@@ -149,30 +149,26 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         AspectGraph targetGraph = new AspectGraph(getName(), HOST);
         HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : nodeSet()) {
-            AspectNode nodeImage = targetGraph.addNode(node.getNumber());
-            result.putNode(node, nodeImage);
-            if (node instanceof ValueNode) {
-                // add the appropriate value aspect to the node
-                ValueNode valueNode = (ValueNode) node;
-                AspectLabel label = new AspectLabel(HOST);
-                try {
-                    label.addAspect(Aspect.getAspect(valueNode.getSignature()).newInstance(
-                        valueNode.getSymbol()));
-                    label.setInnerText("");
-                    assert !label.hasErrors();
-                    nodeImage.setAspects(label);
-                } catch (FormatException e) {
-                    // this is sure not to raise an exception
-                    assert false : String.format(
-                        "Unexpected format exception: %s", e.getMessage());
-                }
+            if (!(node instanceof ValueNode)) {
+                AspectNode nodeImage = targetGraph.addNode(node.getNumber());
+                result.putNode(node, nodeImage);
             }
         }
         // add edge images
         for (HostEdge edge : edgeSet()) {
-            AspectEdge edgeImage = result.mapEdge(edge);
-            edgeImage.setFixed();
-            targetGraph.addEdge(edgeImage);
+            if (edge.target() instanceof ValueNode) {
+                AspectNode sourceImage = result.getNode(edge.source());
+                String constant = ((ValueNode) edge.target()).getSymbol();
+                String let =
+                    AspectKind.LET.getPrefix() + edge.label().text() + "="
+                        + constant;
+                AspectLabel label = AspectParser.getInstance().parse(let, HOST);
+                targetGraph.addEdge(sourceImage, label, sourceImage);
+            } else {
+                AspectEdge edgeImage = result.mapEdge(edge);
+                edgeImage.setFixed();
+                targetGraph.addEdge(edgeImage);
+            }
         }
         GraphInfo.transfer(this, targetGraph, result);
         targetGraph.setFixed();

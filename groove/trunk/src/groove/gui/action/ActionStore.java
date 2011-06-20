@@ -49,6 +49,11 @@ public class ActionStore implements SimulatorListener {
         simulator.getModel().addListener(this);
     }
 
+    /** Returns the simulator permanently associated with this action store. */
+    public final Simulator getSimulator() {
+        return this.simulator;
+    }
+
     private final Simulator simulator;
 
     @Override

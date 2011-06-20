@@ -4,7 +4,6 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
 import groove.gui.jgraph.GraphJGraph;
@@ -21,9 +20,10 @@ import java.io.IOException;
  */
 public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action. */
-    public ExportAction(Simulator simulator, GraphJGraph jGraph) {
+    public ExportAction(GraphJGraph jGraph) {
         // fill in a generic name, as the JGraph may not yet hold a graph.
-        super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+        super(jGraph.getActions().getSimulator(), Options.EXPORT_ACTION_NAME,
+            Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.jGraph = jGraph;
     }

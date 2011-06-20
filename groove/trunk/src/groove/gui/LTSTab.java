@@ -25,6 +25,7 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.action.ActionStore;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.LTSJEdge;
@@ -215,6 +216,11 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
             text.append(" transitions");
         }
         return text.toString();
+    }
+
+    /** Returns the action store permanently associated with the simulator. */
+    private ActionStore getActions() {
+        return getDisplay().getActions();
     }
 
     /** The tab label for this tab. */

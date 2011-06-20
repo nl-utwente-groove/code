@@ -177,6 +177,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * on the errors in the view.
      */
     public void loadViewErrors() {
+        if (this.grammar == null) {
+            return;
+        }
         for (AspectJCell jCell : getRoots()) {
             jCell.clearExtraErrors();
         }

@@ -173,11 +173,6 @@ public class LTSJGraph extends GraphJGraph {
         return new LabelTree(this, false);
     }
 
-    @Override
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
     /**
      * Returns the active transition of the LTS, if any. The active transition
      * is the one currently selected in the simulator. Returns <tt>null</tt> if

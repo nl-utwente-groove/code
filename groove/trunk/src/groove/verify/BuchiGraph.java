@@ -22,21 +22,16 @@ import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphRole;
-import groove.gui.JGraphPanel;
-import groove.gui.jgraph.GraphJGraph.AttributeFactory;
+import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 
-import java.awt.Color;
 import java.util.AbstractSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Harmen Kastenberg
@@ -162,25 +157,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
      * Shows a dialog displaying this Büchi graph.
      */
     public void display() {
-        JGraphPanel.displayGraph(this, new AttributeFactory() {
-            @Override
-            public AttributeMap getAttributes(groove.graph.Edge<?> edge) {
-                return null;
-            }
-
-            @Override
-            public AttributeMap getAttributes(groove.graph.Node node) {
-                BuchiLocation location = (BuchiLocation) node;
-                AttributeMap result = new AttributeMap();
-                if (location.isAccepting()) {
-                    GraphConstants.setBackground(result, Color.orange);
-                }
-                if (location.equals(getInitial())) {
-                    GraphConstants.setLineWidth(result, 3);
-                }
-                return result;
-            }
-        });
+        GraphPreviewDialog.showGraph(this);
     }
 
     private BuchiLocation getLocation(

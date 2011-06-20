@@ -188,8 +188,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                     @Override
                     public void run() {
                         try {
-                            getSimulator().getModel().doSetProperties(
-                                newProperties);
+                            getSimulatorModel().doSetProperties(newProperties);
                         } catch (IOException exc) {
                             new ErrorDialog(StateTab.this,
                                 "Error while modifying type hierarchy", exc).setVisible(true);
@@ -528,6 +527,9 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         }
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode oldStateNode = oldState.getNode(entry.getKey());
+            if (oldStateNode == null) {
+                continue;
+            }
             AspectNode newStateNode = newState.getNode(entry.getValue());
             AspectJVertex sourceCell =
                 oldStateJModel.getJCellForNode(oldStateNode);
@@ -562,6 +564,9 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             new HashSet<AspectEdge>(newStateJModel.getGraph().edgeSet());
         for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
             AspectEdge oldStateEdge = oldState.getEdge(entry.getKey());
+            if (oldStateEdge == null) {
+                continue;
+            }
             AspectEdge newStateEdge = newState.getEdge(entry.getValue());
             AspectJCell sourceCell =
                 oldStateJModel.getJCellForEdge(oldStateEdge);

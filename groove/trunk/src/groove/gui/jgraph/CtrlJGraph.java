@@ -44,7 +44,6 @@ public class CtrlJGraph extends GraphJGraph {
      */
     public CtrlJGraph(Simulator simulator) {
         super(simulator, true);
-        this.simulator = simulator;
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getSetLayoutMenu().selectLayoutAction(
             createInitialLayouter().newInstance((this)));
@@ -102,13 +101,6 @@ public class CtrlJGraph extends GraphJGraph {
         result.addLayoutItem(createInitialLayouter());
         return result;
     }
-
-    @Override
-    public Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    private final Simulator simulator;
 
     /** The default node attributes of the control automaton */
     static public final JAttr.AttributeMap CONTROL_NODE_ATTR;
