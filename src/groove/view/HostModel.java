@@ -275,7 +275,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             "Target of '%s' is not in element map %s", modelEdge.target(),
             elementMap);
         TypeLabel hostLabel = modelEdge.getTypeLabel();
-        assert hostLabel == null || !hostLabel.isDataType();
+        assert hostLabel != null && !hostLabel.isDataType() : String.format(
+            "Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
         this.labelSet.add(hostLabel);
         elementMap.putEdge(modelEdge, hostEdge);

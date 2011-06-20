@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import groove.annotation.Infix;
+
 import java.math.BigDecimal;
 
 /**
@@ -29,6 +31,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     public abstract Real add(Real arg0, Real arg1);
 
     /** Subtraction of two real numbers. */
+    @Infix("-")
     public abstract Real sub(Real arg0, Real arg1);
 
     /** Multiplication of two real numbers. */

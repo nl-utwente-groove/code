@@ -298,7 +298,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             getRole() == RULE ? AspectKind.CREATOR.getPrefix()
                 + assign.getLhs() : assign.getLhs();
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
-        addEdge(source, assignLabel, target).setFixed();
+        addEdge(source, assignLabel, target);
         if (getRole() == RULE && !source.getKind().isCreator()) {
             // add an eraser edge for the old value 
             AspectNode oldTarget =
@@ -311,7 +311,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             assignLabel =
                 AspectParser.getInstance().parse(
                     AspectKind.ERASER.getPrefix() + assign.getLhs(), getRole());
-            addEdge(source, assignLabel, oldTarget).setFixed();
+            addEdge(source, assignLabel, oldTarget);
         }
     }
 
@@ -436,14 +436,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // add the operator edge
         AspectLabel operatorLabel =
             parser.parse(operator.getTypedName(), getRole());
-        addEdge(product, operatorLabel, result).setFixed();
+        addEdge(product, operatorLabel, result);
         // add the arguments
         List<Expression> args = call.getArguments();
         for (int i = 0; i < args.size(); i++) {
             AspectNode argResult = addExpression(source, args.get(i));
             AspectLabel argLabel =
                 parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
-            addEdge(product, argLabel, argResult).setFixed();
+            addEdge(product, argLabel, argResult);
         }
         return result;
     }
@@ -607,7 +607,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     @Override
     public boolean addEdge(AspectEdge edge) {
-        this.normal &= !edge.isAssign() && edge.isPredicate();
+        edge.setFixed();
+        this.normal &= !edge.isAssign() && !edge.isPredicate();
         return super.addEdge(edge);
     }
 
@@ -657,7 +658,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             result.addNode(clone);
         }
         for (AspectEdge edge : edgeSet()) {
-            result.addEdge(map.mapEdge(edge));
+            AspectEdge edgeImage = map.mapEdge(edge);
+            result.addEdge(edgeImage);
         }
         GraphInfo.transfer(this, result, null);
         result.addErrors(getErrors());
