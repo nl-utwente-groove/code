@@ -103,14 +103,15 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  */
 public class GraphJGraph extends org.jgraph.JGraph {
     /**
-     * Constructs a JGraph.
+     * Constructs a JGraph for a given simulator.
      * @param simulator simulator to which the JGraph belongs.
      * @param hasFilters indicates if this JGraph is to use label filtering.
      */
     public GraphJGraph(Simulator simulator, boolean hasFilters) {
         super((GraphJModel<?,?>) null);
         this.simulator = simulator;
-        this.options = simulator == null ? null : simulator.getOptions();
+        this.options =
+            simulator == null ? new Options() : simulator.getOptions();
         if (hasFilters) {
             this.filteredLabels = new ObservableSet<Label>();
             this.filteredLabels.addObserver(this.refreshListener);
@@ -206,19 +207,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 : getSimulatorModel().getGrammar().getProperties();
     }
 
-    /** Returns the simulator associated with this {@link GraphJGraph}, if any. */
-    public Simulator getSimulator() {
-        return this.simulator;
+    /** Convenience method to retrieve the state of the simulator, if any. */
+    final public SimulatorModel getSimulatorModel() {
+        return this.simulator == null ? null : this.simulator.getModel();
     }
 
     /** Convenience method to retrieve the state of the simulator, if any. */
-    final protected SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
-    }
-
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    final protected ActionStore getActions() {
-        return getSimulator().getActions();
+    final public ActionStore getActions() {
+        return this.simulator == null ? null : this.simulator.getActions();
     }
 
     /**
@@ -529,7 +525,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 model.addGraphModelListener(getCancelEditListener());
             }
             setEnabled(model != null);
-            if (model != null) {
+            if (model != null && getActions() != null) {
                 // create the popup menu to create and activate the actions therein
                 createPopupMenu(null);
             }
@@ -832,7 +828,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Returns the action to export this JGraph in various formats. */
     public ExportAction getExportAction() {
         if (this.exportAction == null) {
-            this.exportAction = new ExportAction(getSimulator(), this);
+            this.exportAction = new ExportAction(this);
         }
         this.exportAction.refresh();
         return this.exportAction;
@@ -893,7 +889,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
-        if (isPopupMenuEvent(evt)) {
+        if (isPopupMenuEvent(evt) && getActions() != null) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
             createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x,
@@ -978,7 +974,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         JMenu result = new JMenu("Display");
         Object[] cells = getSelectionCells();
         boolean itemAdded = false;
-        if (cells != null && cells.length > 0 && getSimulator() != null) {
+        if (cells != null && cells.length > 0 && getActions() != null) {
             result.add(getActions().getRelabelAction());
             if (getActions().getSelectColorAction().isEnabled()) {
                 result.add(getActions().getSelectColorAction());

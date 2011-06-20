@@ -17,8 +17,6 @@
 package groove.gui;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import groove.graph.Graph;
-import groove.gui.action.ActionStore;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
@@ -38,7 +36,6 @@ import java.util.List;
 import javax.accessibility.AccessibleState;
 import javax.swing.Box;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -68,7 +65,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public JGraphPanel(JG jGraph, boolean withStatusBar) {
         super(false);
-        this.simulator = jGraph.getSimulator();
+        this.simulatorModel = jGraph.getSimulatorModel();
         setFocusable(false);
         setFocusCycleRoot(true);
         // right now we always want label panels; keep this option
@@ -367,22 +364,12 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         return options == null ? null : options.getItem(option);
     }
 
-    /** Returns the simulator of which this panel is part. */
-    public final Simulator getSimulator() {
-        return this.simulator;
-    }
-
     /** Convenience method to retrieve the simulator model. */
     protected final SimulatorModel getSimulatorModel() {
-        return getSimulator().getModel();
+        return this.simulatorModel;
     }
 
-    /** Convenience method to retrieve the simulator model. */
-    protected final ActionStore getActions() {
-        return getSimulator().getActions();
-    }
-
-    private final Simulator simulator;
+    private final SimulatorModel simulatorModel;
     /**
      * The {@link GraphJGraph}on which this panel provides a view.
      */
@@ -404,31 +391,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * The scroll pane in which the JGraph is displayed.
      */
     private JScrollPane scrollPane;
-
-    /** Shows a dialog displaying an arbitrary JGraph. */
-    public static void displayGraph(GraphJGraph jGraph) {
-        jGraph.doGraphLayout();
-        JGraphPanel<?> panel = new JGraphPanel<GraphJGraph>(jGraph, false);
-        panel.initialise();
-        panel.setEnabled(true);
-        JDialog dialog =
-            new JDialog((JDialog) null, "Graph " + jGraph.getName(), false);
-        dialog.add(panel);
-        dialog.pack();
-        dialog.setVisible(true);
-    }
-
-    /** Shows a dialog displaying an arbitrary GROOVE graph. */
-    public static void displayGraph(Graph<?,?> graph) {
-        displayGraph(GraphJGraph.createJGraph(graph));
-    }
-
-    /** Shows a dialog displaying an arbitrary GROOVE graph, with
-     * some control over the display attributes of the graph elements. */
-    public static void displayGraph(Graph<?,?> graph,
-            GraphJGraph.AttributeFactory factory) {
-        displayGraph(GraphJGraph.createJGraph(graph, factory));
-    }
 
     /**
      * The minimum width of the label pane. If the label list is empty, the

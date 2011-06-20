@@ -8,6 +8,7 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.LabelStore;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
@@ -132,6 +133,9 @@ final public class GraphTab extends ResourceTab implements MainTab {
                 getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
                     name);
             if (graph != null) {
+                if (DEBUG) {
+                    GraphPreviewDialog.showGraph(graph.normalise());
+                }
                 this.jModelMap.put(name, jModel =
                     getEditArea().getJGraph().newModel());
                 jModel.loadGraph(graph);
@@ -183,6 +187,8 @@ final public class GraphTab extends ResourceTab implements MainTab {
     /** Mapping from resource names to aspect models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();
+
+    private final static boolean DEBUG = false;
 
     private class GraphPanel extends JGraphPanel<AspectJGraph> {
         /**

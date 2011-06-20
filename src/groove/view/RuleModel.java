@@ -1244,16 +1244,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             throws FormatException {
             AspectKind edgeKind = modelEdge.getKind();
             this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
-            if (edgeKind.inLHS() || edgeKind.inNAC()) {
+            boolean existsInLhs = false;
+            if (edgeKind.inLHS()) {
                 this.lhsMap.putEdge(modelEdge, lhsEdge);
-                if (edgeKind.inLHS()) {
-                    this.typableEdges.add(lhsEdge);
-                    this.lhs.addEdge(lhsEdge);
-                } else {
-                    this.nacEdgeSet.add(lhsEdge);
-                }
+                this.typableEdges.add(lhsEdge);
+                existsInLhs = !this.lhs.addEdge(lhsEdge);
+            } else if (edgeKind.inNAC()) {
+                this.lhsMap.putEdge(modelEdge, lhsEdge);
+                this.nacEdgeSet.add(lhsEdge);
             }
-            if (edgeKind.inRHS() && !this.mergerMap.containsKey(modelEdge)) {
+            boolean addToRhs =
+                edgeKind.inRHS() && !this.mergerMap.containsKey(modelEdge)
+                    && !existsInLhs;
+            if (addToRhs) {
                 this.typableEdges.add(lhsEdge);
                 RuleEdge rhsEdge =
                     computeEdgeImage(modelEdge, this.rhsMap.nodeMap());
@@ -1270,6 +1273,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     && modelEdge.source().getKind().inLHS()
                     && modelEdge.target().getKind().inLHS()) {
                     this.nacEdgeSet.add(lhsEdge);
+                }
+            } else if (!edgeKind.inRHS()) {
+                // remove the edge from the RHS, if it was there
+                // (which is the case if it also exists as reader edge)
+                RuleEdge rhsEdge = this.ruleMorph.removeEdge(lhsEdge);
+                if (rhsEdge != null) {
+                    this.rhs.removeEdge(rhsEdge);
+                    Iterator<RuleEdge> edgeIter =
+                        this.rhsMap.edgeMap().values().iterator();
+                    while (edgeIter.hasNext()) {
+                        if (edgeIter.next().equals(rhsEdge)) {
+                            edgeIter.remove();
+                        }
+                    }
                 }
             }
         }

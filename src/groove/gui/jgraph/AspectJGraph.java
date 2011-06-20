@@ -186,7 +186,8 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** Convenience method to retrieve the grammar view from the simulator. */
     private GrammarModel getGrammar() {
-        return getSimulatorModel().getGrammar();
+        return getSimulatorModel() == null ? null
+                : getSimulatorModel().getGrammar();
     }
 
     /** 
@@ -223,7 +224,7 @@ final public class AspectJGraph extends GraphJGraph {
     public JMenu createExportMenu() {
         // add a save graph action as the first action
         JMenu result = new JMenu();
-        if (getSimulator() != null) {
+        if (getActions() != null) {
             result.add(getActions().getSaveAsAction(
                 ResourceKind.toResource(getGraphRole())));
         }

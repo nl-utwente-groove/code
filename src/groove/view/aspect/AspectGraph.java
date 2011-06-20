@@ -298,16 +298,20 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             getRole() == RULE ? AspectKind.CREATOR.getPrefix()
                 + assign.getLhs() : assign.getLhs();
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
-        addEdge(source, assignLabel, target);
+        addEdge(source, assignLabel, target).setFixed();
         if (getRole() == RULE && !source.getKind().isCreator()) {
             // add an eraser edge for the old value 
-            AspectNode oldTarget = addNode();
-            // use the type of the new target for the new target node
-            oldTarget.setAspects(createLabel(target.getAttrKind()));
+            AspectNode oldTarget =
+                findTarget(source, assign.getLhs(), target.getAttrKind());
+            if (oldTarget == null) {
+                oldTarget = addNode();
+                // use the type of the new target for the new target node
+                oldTarget.setAspects(createLabel(target.getAttrKind()));
+            }
             assignLabel =
                 AspectParser.getInstance().parse(
                     AspectKind.ERASER.getPrefix() + assign.getLhs(), getRole());
-            addEdge(source, assignLabel, oldTarget);
+            addEdge(source, assignLabel, oldTarget).setFixed();
         }
     }
 
@@ -375,23 +379,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
         }
         // look up the field
-        AspectEdge fieldEdge = null;
-        for (AspectEdge edge : outEdgeSet(owner)) {
-            if (edge.getDisplayLabel().equals(field.getField())) {
-                // make sure we have an LHS edge
-                if (getRole() != RULE || edge.getKind().inLHS()) {
-                    fieldEdge = edge;
-                    break;
-                }
-            }
-        }
         AspectKind sigKind = AspectKind.getSignatureKind(field.getType());
-        AspectNode result;
-        if (fieldEdge == null) {
+        AspectNode result = findTarget(owner, field.getField(), sigKind);
+        if (result == null) {
             result = addNode();
             result.setAspects(createLabel(sigKind));
         } else {
-            result = fieldEdge.target();
             if (result.getAttrKind() != sigKind) {
                 throw new FormatException(
                     "Declared type %s differs from actual field type %s",
@@ -400,7 +393,25 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         assert sigKind != null;
         AspectLabel idLabel = parser.parse(field.getField(), getRole());
-        addEdge(source, idLabel, result);
+        addEdge(owner, idLabel, result).setFixed();
+        return result;
+    }
+
+    /** Looks for an outgoing edge suitable for a given field expression. */
+    private AspectNode findTarget(AspectNode owner, String fieldName,
+            AspectKind fieldKind) {
+        AspectNode result = null;
+        for (AspectEdge edge : outEdgeSet(owner)) {
+            if (edge.getDisplayLabel().text().equals(fieldName)) {
+                AspectNode target = edge.target();
+                // make sure we have an LHS edge
+                if (target.getAttrKind() == fieldKind
+                    && (getRole() != RULE || edge.getKind().inLHS())) {
+                    result = edge.target();
+                    break;
+                }
+            }
+        }
         return result;
     }
 
@@ -425,14 +436,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // add the operator edge
         AspectLabel operatorLabel =
             parser.parse(operator.getTypedName(), getRole());
-        addEdge(product, operatorLabel, result);
+        addEdge(product, operatorLabel, result).setFixed();
         // add the arguments
         List<Expression> args = call.getArguments();
         for (int i = 0; i < args.size(); i++) {
             AspectNode argResult = addExpression(source, args.get(i));
             AspectLabel argLabel =
                 parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
-            addEdge(product, argLabel, argResult);
+            addEdge(product, argLabel, argResult).setFixed();
         }
         return result;
     }

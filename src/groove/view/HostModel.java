@@ -25,6 +25,7 @@ import groove.graph.GraphInfo;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.gui.dialog.GraphPreviewDialog;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
@@ -125,7 +126,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Constructs the resource and associated data structures from the model. */
     private void initialise() {
         // first test if there is something to be done
-        boolean init = this.errors == null || isGrammarModified();
+        boolean init = isGrammarModified() || this.errors == null;
         if (init) {
             this.algebraFamily = getFamily();
             if (getSource().hasErrors()) {
@@ -147,6 +148,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      */
     private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
         AspectGraph normalSource = source.normalise();
+        if (debug) {
+            GraphPreviewDialog.showGraph(normalSource);
+        }
         Set<FormatError> errors =
             new TreeSet<FormatError>(normalSource.getErrors());
         DefaultHostGraph result = createGraph(normalSource.getName());
@@ -296,6 +300,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */
     private AlgebraFamily algebraFamily;
+
+    /** Sets the debug mode, causing the normalised graphs to be shown in a dialog. */
+    public static void setDebug(boolean debug) {
+        HostModel.debug = debug;
+    }
+
+    private static boolean debug;
 
     /** Mapping from aspect graph to type graph. */
     public static class HostModelMap extends ModelMap<HostNode,HostEdge> {
