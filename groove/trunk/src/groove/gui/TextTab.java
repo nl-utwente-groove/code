@@ -107,12 +107,19 @@ final public class TextTab extends ResourceTab implements MainTab {
     }
 
     @Override
-    public void setResource(String name) {
-        String program =
-            getSimulatorModel().getStore().getTexts(getResourceKind()).get(name);
-        setName(name);
-        this.textArea.setProgram(program);
-        updateErrors();
+    public boolean setResource(String name) {
+        String program = null;
+        if (name != null) {
+            program =
+                getSimulatorModel().getStore().getTexts(getResourceKind()).get(
+                    name);
+        }
+        if (program != null) {
+            setName(name);
+            this.textArea.setProgram(program);
+            updateErrors();
+        }
+        return program != null;
     }
 
     @Override
@@ -127,7 +134,7 @@ final public class TextTab extends ResourceTab implements MainTab {
 
     @Override
     public void updateGrammar(GrammarModel grammar) {
-        // do nothing here
+        setResource(getName());
     }
 
     /** Indicates if the editor is currently dirty. */

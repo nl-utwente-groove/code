@@ -27,6 +27,7 @@ import groove.graph.Multiplicity;
 import groove.util.Colors;
 import groove.util.Pair;
 import groove.view.FormatException;
+import groove.view.aspect.Expression.Kind;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public enum AspectKind {
     /** Indicates a product node. */
     PRODUCT("prod"),
     /** Indicates an attribute value. */
-    PRED("pred", ContentKind.PRED_VAL),
+    TEST("test", ContentKind.TEST_EXPR),
     /** Indicates an attribute operation. */
     LET("let", ContentKind.LET_EXPR),
 
@@ -361,6 +362,11 @@ public enum AspectKind {
             edgeDocMapMap.put(role, result = computeEdgeDocMap(role));
         }
         return result;
+    }
+
+    /** Returns the aspect kinds corresponding to a given signature. */
+    public static AspectKind getSignatureKind(String signature) {
+        return sigKindMap.get(signature);
     }
 
     private static Map<String,String> computeNodeDocMap(GraphRole role) {
@@ -638,7 +644,7 @@ public enum AspectKind {
         case LET:
             s = "%s.COLON.name.EQUALS.expr";
             h = "Assignment";
-            b.add("Assigns the value of %2$s to the attribute %1$s.");
+            b.add("Sets the value of %2$s to the attribute %1$s.");
             break;
 
         case LITERAL:
@@ -719,7 +725,7 @@ public enum AspectKind {
             p.add("regular expression; for the syntax, consult the appropriate tab.");
             break;
 
-        case PRED:
+        case TEST:
             s = "%s.COLON.constraint";
             h = "Predicate expression";
             b.add("Specifies an attribute constraint.");
@@ -840,10 +846,10 @@ public enum AspectKind {
 
     /** For every relevant graph role the node syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> nodeDocMapMap =
-        new HashMap<GraphRole,Map<String,String>>();
+        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** For every relevant graph role the edge syntax help entries. */
     private static final Map<GraphRole,Map<String,String>> edgeDocMapMap =
-        new HashMap<GraphRole,Map<String,String>>();
+        new EnumMap<GraphRole,Map<String,String>>(GraphRole.class);
     /** Static mapping from all aspect names to aspects. */
     private static final Map<String,AspectKind> kindMap =
         new HashMap<String,AspectKind>();
@@ -853,6 +859,9 @@ public enum AspectKind {
     /** Mapping from kind value names to symbols. */
     private static final Map<String,String> tokenMap =
         new HashMap<String,String>();
+    /** Mapping from signature names to aspect kinds. */
+    private static final Map<String,AspectKind> sigKindMap =
+        new HashMap<String,AspectKind>();
 
     static {
         // initialise the aspect kind map
@@ -860,6 +869,9 @@ public enum AspectKind {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
+            if (Algebras.isSigName(kind.getName())) {
+                sigKindMap.put(kind.getName(), kind);
+            }
         }
         // initialise the nested value map
         for (NestedValue value : EnumSet.allOf(NestedValue.class)) {
@@ -903,7 +915,7 @@ public enum AspectKind {
         FORALL_POS);
     /** Set of attribute-related aspects. */
     public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, PRED);
+        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, TEST, LET);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -919,7 +931,7 @@ public enum AspectKind {
                 allowedNodeKinds.put(role,
                     EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, COLOR));
                 allowedEdgeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, LITERAL, PRED));
+                    EnumSet.of(NONE, REMARK, LITERAL, LET));
                 break;
             case RULE:
                 allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
@@ -929,7 +941,7 @@ public enum AspectKind {
                 allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
                     CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL, STRING,
                     ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                    EXISTS_OPT, NESTED));
+                    EXISTS_OPT, NESTED, LET, TEST));
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
@@ -1233,7 +1245,7 @@ public enum AspectKind {
             }
         },
         /** Predicate (attribute) value. */
-        PRED_VAL {
+        TEST_EXPR {
             @Override
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
@@ -1245,44 +1257,24 @@ public enum AspectKind {
             }
 
             @Override
-            Predicate parseContent(String text) throws FormatException {
-                String excPrefix =
-                    "Invalid attribute predicate '" + text + "', ";
-                String parts[] = text.split(ASSIGN + "");
-                if (parts.length != 2) {
-                    throw new FormatException(excPrefix
-                        + "char '%c' not present", ASSIGN);
+            Expression parseContent(String text) throws FormatException {
+                Expression result = Expression.parse(text, null);
+                if (result.getKind() == Kind.FIELD) {
+                    throw new FormatException(
+                        "Identifier not allowed as predicate expression", text);
                 }
-                String attrName = parts[0].trim();
-                String typedVal = parts[1].trim();
-                Constant constant;
-                parts = typedVal.split(SEPARATOR + "");
-                if (parts.length != 2) {
-                    throw new FormatException(excPrefix
-                        + "char '%c' not present", SEPARATOR);
-                } else {
-                    String signature = parts[0].trim();
-                    String value = parts[1].trim();
-                    if (signature.equals(BOOL_LITERAL.signature)) {
-                        constant = (Constant) BOOL_LITERAL.parseContent(value);
-                    } else if (signature.equals(INT_LITERAL.signature)) {
-                        constant = (Constant) INT_LITERAL.parseContent(value);
-                    } else if (signature.equals(REAL_LITERAL.signature)) {
-                        constant = (Constant) REAL_LITERAL.parseContent(value);
-                    } else if (signature.equals(STRING_LITERAL.signature)) {
-                        constant =
-                            (Constant) STRING_LITERAL.parseContent(value);
-                    } else {
-                        throw new FormatException(excPrefix
-                            + "unknown data signature '%s'", signature);
-                    }
+                String type = result.getType();
+                if (!type.equals(BOOL_LITERAL.signature)) {
+                    throw new FormatException(
+                        "Non-boolean expression '%s' not allowed as predicate expression",
+                        text);
                 }
-                return new Predicate(attrName, constant);
+                return result;
             }
 
             @Override
             String toString(Object content) {
-                return ((Predicate) content).toString();
+                return ((Expression) content).toString();
             }
         },
         /** Let expression content. */
@@ -1298,9 +1290,8 @@ public enum AspectKind {
             }
 
             @Override
-            String parseContent(String text) throws FormatException {
-                // EDUARDO: Implement this.
-                return text;
+            Assignment parseContent(String text) throws FormatException {
+                return Assignment.parse(text);
             }
         };
 

@@ -80,9 +80,14 @@ public class Operator {
         return this.returnType;
     }
 
+    /** Returns the name of the operator, preceded with its type prefix. */
+    public String getTypedName() {
+        return this.returnType + ":" + this.name;
+    }
+
     @Override
     public String toString() {
-        return this.returnType + ":" + this.name
+        return getTypedName()
             + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
     }
 

@@ -20,12 +20,15 @@ import static groove.graph.GraphRole.RULE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.CONNECT;
+import static groove.view.aspect.AspectKind.CREATOR;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ERASER;
+import static groove.view.aspect.AspectKind.LET;
 import static groove.view.aspect.AspectKind.LITERAL;
 import static groove.view.aspect.AspectKind.NESTED;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PATH;
+import static groove.view.aspect.AspectKind.TEST;
 import static groove.view.aspect.AspectKind.READER;
 import static groove.view.aspect.AspectKind.REMARK;
 import static groove.view.aspect.AspectKind.SUBTYPE;
@@ -165,6 +168,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             } else if (!hasAspect()) {
                 setAspect(AspectKind.READER.getAspect());
             }
+            if (isAssign() && getKind() != READER && getKind() != CREATOR) {
+                throw new FormatException("Conflicting aspects %s and %s",
+                    getAttrAspect(), getAspect());
+            }
             if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
                 throw new FormatException("Conflicting aspects %s and %s",
                     getAttrAspect(), getAspect());
@@ -192,7 +199,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         // this is called after the rule label has been computed
         RuleLabel ruleLabel = this.ruleLabel;
         boolean simple =
-            ruleLabel.isAtom() || ruleLabel.isSharp() || ruleLabel.isWildcard();
+            ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
+                || ruleLabel.isWildcard();
         if (!simple && ruleLabel.isMatchable()) {
             AspectKind kind = getKind();
             assert kind.isRole();
@@ -345,7 +353,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
-                text = getPredicate().getContentString();
+                text = getPredicate().getDisplayString();
+            } else if (isAssign()) {
+                text = getAssign().getDisplayString();
             } else if (getKind() == CONNECT) {
                 text = "+";
             } else {
@@ -369,7 +379,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     private RuleLabel createRuleLabel() throws FormatException {
         RuleLabel result;
-        if (getKind().isMeta()) {
+        if (getKind().isMeta() || isAssign() || isPredicate()) {
             result = null;
         } else if (getAttrKind() == ARGUMENT) {
             result = new RuleLabel(getArgument());
@@ -399,7 +409,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
-        if (getKind() == REMARK || isPredicate()) {
+        if (getKind() == REMARK || isAssign() || isPredicate()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -564,15 +574,26 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         return this.argumentNr >= 0;
     }
 
-    /** Indicates if this is an attribute predicate edge. */
-    public boolean isPredicate() {
-        return this.hasAttrAspect() && this.getAttrKind() == AspectKind.PRED;
+    /** Indicates if this is a let-edge. */
+    public boolean isAssign() {
+        return this.hasAttrAspect() && this.getAttrKind() == LET;
     }
 
-    /** Convenience method. */
-    public Predicate getPredicate() {
-        assert this.isPredicate();
-        return (Predicate) this.getAttrAspect().getContent();
+    /** Convenience method to retrieve the attribute aspect content as an assignment. */
+    public Assignment getAssign() {
+        assert isAssign();
+        return (Assignment) getAttrAspect().getContent();
+    }
+
+    /** Indicates if this is an attribute predicate edge. */
+    public boolean isPredicate() {
+        return this.hasAttrAspect() && this.getAttrKind() == TEST;
+    }
+
+    /** Convenience method to retrieve the attribute aspect content as a predicate. */
+    public Expression getPredicate() {
+        assert isPredicate();
+        return (Expression) getAttrAspect().getContent();
     }
 
     /**

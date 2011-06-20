@@ -292,9 +292,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 // find minimum type among the parent types
                 for (TypeLabel parentType : parentTypes) {
                     if (!isNodeType(parentType)) {
-                        errors.add(new FormatError(
-                            "Unknown node type %s for node '%s'", parentType,
-                            untypedNode));
+                        errors.add(new FormatError("Unknown node type %s",
+                            parentType.text(), untypedNode));
                     } else if (type == null || isSubtype(parentType, type)) {
                         type = parentType;
                     }
@@ -340,8 +339,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         targetType));
                     if (commonSubtypes.isEmpty()) {
                         errors.add(new FormatError(
-                            "Compared nodes %s-node '%s' and %s-node '%s' have no common subtypes",
-                            sourceType, source, targetType, target));
+                            "Node types %s and %s have no common subtypes",
+                            sourceType.text(), targetType.text(), source,
+                            target));
                     }
                 } else {
                     Set<HostNode> startNodes =
@@ -354,22 +354,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         getSaturation(), startNodes, endNodes).isEmpty()) {
                         errors.add(new FormatError(
                             "Regular expression '%s' not matched by path in type graph",
-                            edgeType, edge));
+                            edgeType, source, edge));
                     }
                 }
             } else if (edgeType.isFlag()) {
                 typeEdge = getTypeEdge(sourceType, getActualType(edgeType));
                 if (typeEdge == null) {
-                    errors.add(new FormatError(
-                        "%s-node '%s' has unknown flag '%s'", sourceType,
-                        source, edgeType));
+                    errors.add(new FormatError("%s-node has unknown flag '%s'",
+                        sourceType.text(), edgeType, source));
                 }
             } else if (edgeType.isBinary()) {
                 typeEdge = getTypeEdge(sourceType, getActualType(edgeType));
                 if (typeEdge == null) {
-                    errors.add(new FormatError(
-                        "%s-node '%s' has unknown edge '%s'", sourceType,
-                        source, edgeType, edge));
+                    errors.add(new FormatError("%s-node has unknown edge '%s'",
+                        sourceType.text(), edgeType, source, edge));
                 } else {
                     TypeLabel declaredTargetType =
                         (typeEdge.target()).getType();
@@ -377,15 +375,17 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         || targetType.isDataType()) {
                         if (!targetType.equals(declaredTargetType)) {
                             errors.add(new FormatError(
-                                "%s-node '%s' is '%s.%s'-target and hence should be of type %s",
-                                targetType, target, sourceType, edgeType,
-                                declaredTargetType));
+                                "%s.%s-target should have type %s rather than %s",
+                                sourceType.text(), edgeType,
+                                declaredTargetType.text(), targetType.text(),
+                                source, edge, target));
                         }
                     } else if (!isSubtype(targetType, declaredTargetType)) {
                         errors.add(new FormatError(
-                            "%s-node '%s' is '%s.%s'-target and hence should have %s-subtype",
-                            targetType, target, getActualType(sourceType),
-                            edgeType, declaredTargetType));
+                            "%s.%s-target should have %s-subtype rather than %s",
+                            getActualType(sourceType).text(), edgeType,
+                            declaredTargetType.text(), targetType.text(),
+                            source, edge, target));
                     }
                 }
             }

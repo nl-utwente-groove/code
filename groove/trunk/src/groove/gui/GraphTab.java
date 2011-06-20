@@ -125,20 +125,25 @@ final public class GraphTab extends ResourceTab implements MainTab {
     }
 
     @Override
-    public void setResource(String name) {
+    public boolean setResource(String name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
-            this.jModelMap.put(name, jModel =
-                getEditArea().getJGraph().newModel());
             AspectGraph graph =
                 getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
                     name);
-            jModel.loadGraph(graph);
+            if (graph != null) {
+                this.jModelMap.put(name, jModel =
+                    getEditArea().getJGraph().newModel());
+                jModel.loadGraph(graph);
+            }
         }
-        getEditArea().setJModel(jModel);
-        setName(name);
-        getTabLabel().setTitle(name);
-        updateErrors();
+        if (jModel != null) {
+            getEditArea().setJModel(jModel);
+            setName(name);
+            getTabLabel().setTitle(name);
+            updateErrors();
+        }
+        return jModel != null;
     }
 
     public boolean removeResource(String name) {
@@ -158,7 +163,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
         getJGraph().updateGrammar(grammar);
-        updateErrors();
+        setResource(getName());
     }
 
     /** Returns the underlying JGraph of this tab. */
