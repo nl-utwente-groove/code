@@ -172,7 +172,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 throw new FormatException("Conflicting aspects %s and %s",
                     getAttrAspect(), getAspect());
             }
-            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
+            if (hasAttrAspect() && !isAssign() && getKind() != READER
+                && getKind() != EMBARGO) {
                 throw new FormatException("Conflicting aspects %s and %s",
                     getAttrAspect(), getAspect());
             }
