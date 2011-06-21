@@ -915,7 +915,7 @@ public enum AspectKind {
         FORALL_POS);
     /** Set of attribute-related aspects. */
     public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, TEST, LET);
+        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =

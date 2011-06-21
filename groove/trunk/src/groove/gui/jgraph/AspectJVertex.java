@@ -392,7 +392,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         }
         // use special node label prefixes to indicate edge role
         Aspect edgeAspect = aspectEdge.getAspect();
-        if (!edgeAspect.equals(aspectEdge.source().getAspect())) {
+        if (getNode().getGraphRole() == GraphRole.RULE
+            && !edgeAspect.equals(aspectEdge.source().getAspect())
+            && (getNode().getKind() != AspectKind.CREATOR)) {
             addRoleIndicator(result, edgeAspect.getKind());
         }
         return result;
@@ -412,6 +414,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             text.insert(0, "+! ");
             HTMLConverter.green.on(text);
             break;
+        case LET:
         case CREATOR:
             text.insert(0, "+ ");
             HTMLConverter.green.on(text);

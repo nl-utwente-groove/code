@@ -20,7 +20,6 @@ import static groove.graph.GraphRole.RULE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.CONNECT;
-import static groove.view.aspect.AspectKind.CREATOR;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ERASER;
 import static groove.view.aspect.AspectKind.LET;
@@ -168,12 +167,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             } else if (!hasAspect()) {
                 setAspect(AspectKind.READER.getAspect());
             }
-            if (isAssign() && getKind() != READER && getKind() != CREATOR) {
-                throw new FormatException("Conflicting aspects %s and %s",
-                    getAttrAspect(), getAspect());
-            }
-            if (hasAttrAspect() && !isAssign() && getKind() != READER
-                && getKind() != EMBARGO) {
+            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
                 throw new FormatException("Conflicting aspects %s and %s",
                     getAttrAspect(), getAspect());
             }
@@ -256,7 +250,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                 setAspect(NESTED.getAspect().newInstance(getInnerText()));
             }
         } else if (getKind() != REMARK && getKind() != SUBTYPE
-            && getKind() != CONNECT) {
+            && getKind() != CONNECT && getKind() != LET) {
             AspectKind sourceRole = null;
             AspectKind targetRole = null;
             if (sourceKind.isRole() && sourceKind != READER) {
@@ -388,7 +382,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         } else if (getAttrKind().isData()) {
             result = new RuleLabel(getOperator());
         } else {
-            assert getKind().isRole();
+            assert isAssign() || getKind().isRole();
             if (getLabelKind() == LITERAL) {
                 result = new RuleLabel(getInnerText());
             } else {
@@ -578,13 +572,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     /** Indicates if this is a let-edge. */
     public boolean isAssign() {
-        return this.hasAttrAspect() && this.getAttrKind() == LET;
+        return this.hasAspect() && this.getKind() == LET;
     }
 
     /** Convenience method to retrieve the attribute aspect content as an assignment. */
     public Assignment getAssign() {
         assert isAssign();
-        return (Assignment) getAttrAspect().getContent();
+        return (Assignment) getAspect().getContent();
     }
 
     /** Indicates if this is an attribute predicate edge. */
