@@ -381,7 +381,7 @@ public class JGraphUI extends BasicGraphUI {
 
         /** Indicates is a given mouse event should be processed. */
         private boolean isMyEvent(MouseEvent evt) {
-            return !evt.isConsumed() && getJGraph().isEnabled()
+            return evt != null && !evt.isConsumed() && getJGraph().isEnabled()
                 && !getJGraph().isPopupMenuEvent(evt);
         }
 
