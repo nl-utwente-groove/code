@@ -304,7 +304,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             AspectNode oldTarget =
                 findTarget(source, assign.getLhs(), target.getAttrKind());
             if (oldTarget == null) {
-                oldTarget = addNode();
+                oldTarget = addNestedNode(source);
                 // use the type of the new target for the new target node
                 oldTarget.setAspects(createLabel(target.getAttrKind()));
             }
@@ -378,11 +378,16 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     ownerName, source);
             }
         }
+        if (owner.getKind().isQuantifier()
+            && !field.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
+            throw new FormatException("Quantifier node does not have %s edge",
+                field.getField(), owner, source);
+        }
         // look up the field
         AspectKind sigKind = AspectKind.getSignatureKind(field.getType());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
-            result = addNode();
+            result = addNestedNode(source);
             result.setAspects(createLabel(sigKind));
         } else {
             if (result.getAttrKind() != sigKind) {
@@ -429,9 +434,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 "Operator expression '%s' only allowed in rules",
                 operator.getTypedName(), source);
         }
-        AspectNode result = addNode();
+        AspectNode result = addNestedNode(source);
         result.setAspects(createLabel(AspectKind.getSignatureKind(call.getType())));
-        AspectNode product = addNode();
+        AspectNode product = addNestedNode(source);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge
         AspectLabel operatorLabel =
@@ -444,6 +449,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             AspectLabel argLabel =
                 parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
             addEdge(product, argLabel, argResult);
+        }
+        return result;
+    }
+
+    /** Adds a node with the same nesting level as a given source node. */
+    private AspectNode addNestedNode(AspectNode source) {
+        AspectNode result = addNode();
+        AspectNode nesting =
+            source.getKind().isQuantifier() ? source.getNestingParent()
+                    : source.getNestingLevel();
+        if (nesting != null) {
+            addEdge(result, AspectKind.NestedValue.AT.toString(), nesting);
         }
         return result;
     }
@@ -750,13 +767,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
         @Override
         public AspectLabel createLabel(String text) {
-            throw new UnsupportedOperationException();
+            return AspectParser.getInstance().parse(text, this.graphRole);
         }
 
         @Override
         public AspectEdge createEdge(AspectNode source, String text,
                 AspectNode target) {
-            throw new UnsupportedOperationException();
+            return new AspectEdge(source, createLabel(text), target);
         }
 
         @Override

@@ -1176,7 +1176,8 @@ public enum AspectKind {
             Pair<Object,String> parse(String text, int pos)
                 throws FormatException {
                 if (text.charAt(pos) != SEPARATOR) {
-                    throw new FormatException("Can't parse quantifier nesting");
+                    throw new FormatException("Can't parse quantifier nesting",
+                        text);
                 }
                 return new Pair<Object,String>(
                     parseContent(text.substring(pos + 1)), "");

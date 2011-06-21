@@ -28,10 +28,10 @@ import static groove.view.aspect.AspectKind.LITERAL;
 import static groove.view.aspect.AspectKind.NESTED;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PATH;
-import static groove.view.aspect.AspectKind.TEST;
 import static groove.view.aspect.AspectKind.READER;
 import static groove.view.aspect.AspectKind.REMARK;
 import static groove.view.aspect.AspectKind.SUBTYPE;
+import static groove.view.aspect.AspectKind.TEST;
 import groove.algebra.Operator;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
@@ -250,7 +250,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         if (sourceKind == REMARK || targetKind == REMARK) {
             setAspect(REMARK.getAspect());
         } else if (sourceKind.isQuantifier() || targetKind.isQuantifier()) {
-            if (getKind() != NESTED && getKind() != REMARK) {
+            if (getKind() != NESTED && getKind() != REMARK
+                && getAttrKind() != TEST) {
                 setAspect(NESTED.getAspect().newInstance(getInnerText()));
             }
         } else if (getKind() != REMARK && getKind() != SUBTYPE
