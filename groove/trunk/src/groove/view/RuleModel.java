@@ -1467,6 +1467,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         public Condition computeFlatRule() throws FormatException {
             Condition result;
             Set<FormatError> errors = new TreeSet<FormatError>();
+            // check if product nodes have all their arguments (on this level)
+            for (RuleNode prodNode : this.lhs.nodeSet()) {
+                if (prodNode instanceof ProductNode
+                    && !this.lhs.nodeSet().containsAll(
+                        ((ProductNode) prodNode).getArguments())) {
+                    // collect all affected nodes
+                    Set<RuleNode> nodes =
+                        new HashSet<RuleNode>(
+                            ((ProductNode) prodNode).getArguments());
+                    nodes.removeAll(this.lhs.nodeSet());
+                    nodes.add(prodNode);
+                    errors.add(new FormatError(
+                        "Arguments must be bound on the level of the product node",
+                        nodes.toArray()));
+
+                }
+            }
             // check if label variables are bound
             Set<LabelVar> boundVars =
                 VarSupport.getSimpleVarBinders(this.lhs).keySet();
