@@ -371,7 +371,14 @@ public enum AspectKind {
 
     private static Map<String,String> computeNodeDocMap(GraphRole role) {
         Map<String,String> result = new TreeMap<String,String>();
-        for (AspectKind kind : allowedNodeKinds.get(role)) {
+        Set<AspectKind> nodeKinds = EnumSet.copyOf(allowedNodeKinds.get(role));
+        if (role == GraphRole.HOST || role == GraphRole.RULE) {
+            nodeKinds.add(LET);
+        }
+        if (role == GraphRole.RULE) {
+            nodeKinds.add(TEST);
+        }
+        for (AspectKind kind : nodeKinds) {
             Help help = computeHelp(kind, role, true, true);
             if (help != null) {
                 result.put(help.getItem(), help.getTip());
@@ -386,6 +393,9 @@ public enum AspectKind {
 
     private static Map<String,String> computeEdgeDocMap(GraphRole role) {
         Map<String,String> result = new TreeMap<String,String>();
+        Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedEdgeKinds.get(role));
+        edgeKinds.remove(LET);
+        edgeKinds.remove(TEST);
         for (AspectKind kind : allowedEdgeKinds.get(role)) {
             Help help = computeHelp(kind, role, false, true);
             if (help != null) {
@@ -606,7 +616,7 @@ public enum AspectKind {
             break;
 
         case ID:
-            s = "%s.EQUALS.name.COLON";
+            s = "%s.COLON.name";
             h = "Node identifier";
             b.add("Assigns an internal node identifier %s.");
             p.add("the declared name for this node");
@@ -644,7 +654,7 @@ public enum AspectKind {
         case LET:
             s = "%s.COLON.name.EQUALS.expr";
             h = "Assignment";
-            b.add("Sets the value of %2$s to the attribute %1$s.");
+            b.add("Assigns the value of %2$s to the attribute field %1$s.");
             break;
 
         case LITERAL:
@@ -725,13 +735,6 @@ public enum AspectKind {
             p.add("regular expression; for the syntax, consult the appropriate tab.");
             break;
 
-        case TEST:
-            s = "%s.COLON.constraint";
-            h = "Predicate expression";
-            b.add("Specifies an attribute constraint.");
-            b.add(Help.it("(This is in development, and will eventually replace the explicit value nodes"));
-            break;
-
         case PRODUCT:
             s = "%s.COLON";
             h = "Product node";
@@ -809,6 +812,12 @@ public enum AspectKind {
             s = "%s.COLON";
             h = "Subtype declaration";
             b.add("Declares the source type node to be a subtype of the target type node");
+            break;
+
+        case TEST:
+            s = "%s.COLON.constraint";
+            h = "Predicate expression";
+            b.add("Tests if the boolean expression %s holds in the graph.");
             break;
 
         case UNTYPED:
