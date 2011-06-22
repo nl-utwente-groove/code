@@ -123,15 +123,15 @@ public class IntPointAlgebra extends IntSignature<Object,Object,Object>
      * redefined literally to avoid class loading dependencies.
      * @see StringPointAlgebra#singleString
      */
-    public static final String singleString = "S";
+    public static final String singleString = StringPointAlgebra.singleString;
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
      * @see BoolPointAlgebra#singleBool
      */
-    public static final String singleBool = "B";
+    public static final String singleBool = BoolPointAlgebra.singleBool;
     /** Point value of the int algebra. */
-    public static final String singleInt = "I";
+    public static final String singleInt = "1";
     /** Singleton instance of this algebra. */
     public static final IntPointAlgebra instance = new IntPointAlgebra();
 }

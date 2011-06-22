@@ -84,7 +84,7 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
      * redefined literally to avoid class loading dependencies.
      * @see BoolPointAlgebra#singleBool
      */
-    public static final String singleBool = "B";
+    public static final String singleBool = BoolPointAlgebra.singleBool;
     /** Point value of the string algebra. */
     public static final String singleString = "S";
     /** Singleton instance of this algebra. */

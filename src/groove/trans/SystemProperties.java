@@ -765,12 +765,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          * List of subtypes of a graph grammar. The property must
          * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
          */
-        SUBTYPE("subtypes", PropertyKind.ALGEBRA,
+        SUBTYPE("subtypes", PropertyKind.BOOLEAN,
                 "Algebra family that should be used in simulation (empty for default)"),
         /**
          * Property name for the algebra to be used during simulation.
          */
-        ALGEBRA("algebraFamily", PropertyKind.BOOLEAN,
+        ALGEBRA("algebraFamily", PropertyKind.ALGEBRA,
                 "Flag controlling if matches should be injective"),
         /**
          * Flag determining the injectivity of the rule system. If <code>true</code>
