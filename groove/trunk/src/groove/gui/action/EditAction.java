@@ -42,8 +42,7 @@ public class EditAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getResourceKind() == HOST && getSimulatorModel().hasState()
-            && !getSimulatorModel().isSelected(HOST);
+        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay();
     }
 
     private final EditStateAction editStateAction;

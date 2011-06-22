@@ -26,7 +26,6 @@ import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
-import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.gui.Display.Tab;
 import groove.gui.SimulatorModel.Change;
@@ -93,7 +92,8 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * Constructs a new state panel.
      */
     public StateTab(LTSDisplay display) {
-        super(new AspectJGraph(display.getSimulator(), GraphRole.HOST, false),
+        super(
+            new AspectJGraph(display.getSimulator(), display.getKind(), false),
             true);
         this.display = display;
         initialise();

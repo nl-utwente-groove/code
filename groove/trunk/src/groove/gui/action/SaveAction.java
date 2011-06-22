@@ -1,6 +1,5 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.HOST;
 import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -196,8 +195,7 @@ public final class SaveAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getResourceKind() == HOST
-            && !getSimulatorModel().isSelected(HOST);
+        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay();
     }
 
     private final boolean saveAs;
