@@ -49,7 +49,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -363,15 +362,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Simulator.
      */
     private void refresh(GraphState state) {
-        Collection<? extends MatchResult> matches;
-        if (state == null) {
-            matches = Collections.<MatchResult>emptySet();
-        } else if (state.isClosed()) {
-            matches = state.getTransitionSet();
-        } else {
-            matches =
-                new MatchSetCollector(state, getGTS().getRecord(),
-                    getGTS().checkDiamonds()).getMatchSet();
+        SortedSet<MatchResult> matches =
+            new TreeSet<MatchResult>(MatchResult.COMPARATOR);
+        if (state != null) {
+            matches.addAll(state.getTransitionSet());
+            if (!state.isClosed()) {
+                GTS gts = state.getGTS();
+                matches.addAll(new MatchSetCollector(state, gts.getRecord(),
+                    gts.checkDiamonds()).getMatchSet());
+            }
         }
         refreshMatches(matches);
         setEnabled(getGrammar() != null);
@@ -419,11 +418,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
         }
         // recollect the match results so that they are ordered according to the
         // rule events
-        SortedSet<MatchResult> orderedEvents =
-            new TreeSet<MatchResult>(MatchResult.COMPARATOR);
-        orderedEvents.addAll(matches);
         // insert new matches
-        for (MatchResult match : orderedEvents) {
+        for (MatchResult match : matches) {
             String ruleName = match.getEvent().getRule().getName();
             RuleModel ruleView = getGrammar().getRuleModel(ruleName);
             assert ruleView != null : String.format(
@@ -487,11 +483,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Convenience method to retrieve the current grammar view. */
     private final GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
-    }
-
-    /** Convenience method to retrieve the current GTS from the simulator. */
-    private final GTS getGTS() {
-        return getSimulatorModel().getGts();
     }
 
     /** Returns the associated simulator. */
