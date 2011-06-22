@@ -31,31 +31,10 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Expression {
+abstract public class Expression {
     /** General constructor setting all fields. */
-    private Expression(Kind kind, String type, Operator operator,
-            Constant constant, String owner, String field) {
+    protected Expression(Kind kind) {
         this.kind = kind;
-        this.type = type;
-        this.operator = operator;
-        this.constant = constant;
-        this.owner = owner;
-        this.field = field;
-    }
-
-    /** Constructor for an operator expression. */
-    public Expression(Operator operator) {
-        this(Kind.CALL, operator.getResultType(), operator, null, null, null);
-    }
-
-    /** Constructor for a constant expression. */
-    public Expression(Constant constant) {
-        this(Kind.CONSTANT, constant.getSignature(), null, constant, null, null);
-    }
-
-    /** Constructor for an identifier expression. */
-    public Expression(String signature, String owner, String field) {
-        this(Kind.FIELD, signature, null, null, owner, field);
     }
 
     /** Returns the kind of this expression. */
@@ -63,47 +42,8 @@ public class Expression {
         return this.kind;
     }
 
-    /** Returns the operator, if this is an operator expression. */
-    public Operator getOperator() {
-        return this.operator;
-    }
-
-    /**
-     * Adds an argument to this expression.
-     * This expression should be of kind {@link Kind#CALL}.
-     */
-    public void addArgument(Expression arg) {
-        assert getKind() == Kind.CALL;
-        this.arguments.add(arg);
-    }
-
-    /** Returns the arguments, if this is an operator expression. */
-    public List<Expression> getArguments() {
-        return this.arguments;
-    }
-
-    /** Returns the constant, if this is an operator expression. */
-    public Constant getConstant() {
-        return this.constant;
-    }
-
-    /** Returns the identifier, if this is an identifier expression. */
-    public String getOwner() {
-        return this.owner;
-    }
-
-    /** Returns the identifier, if this is an identifier expression. */
-    public String getField() {
-        return this.field;
-    }
-
-    /** 
-     * Returns the signature of this expression.
-     * The signature is {@code null} if the expression is an identifier.
-     */
-    public String getType() {
-        return this.type;
-    }
+    /** Returns the type of this expression (as a signature name). */
+    abstract public String getType();
 
     @Override
     public String toString() {
@@ -117,74 +57,21 @@ public class Expression {
      * will preceded by a type prefix if it is not a constant
      * @return the string representation of this expression
      */
-    String toString(boolean withType) {
-        StringBuilder result = new StringBuilder();
-        switch (getKind()) {
-        case CONSTANT:
-            result.append(getConstant().getSymbol());
-            break;
-        case FIELD:
-            if (withType) {
-                result.append(getType());
-                result.append(AspectParser.SEPARATOR);
-            }
-            if (this.owner != null) {
-                result.append(this.owner);
-                result.append('.');
-            }
-            result.append(this.field);
-            break;
-        case CALL:
-            assert getArguments().size() == getOperator().getArity();
-            result.append(getOperator().getSignature());
-            result.append(AspectParser.SEPARATOR);
-            result.append(getOperator().getName());
-            result.append('(');
-            for (int i = 0; i < getArguments().size(); i++) {
-                if (i > 0) {
-                    result.append(',');
-                }
-                result.append(getArguments().get(i).toString(false));
-            }
-            result.append(')');
-            break;
-        default:
-            assert false;
-        }
-        return result.toString();
-    }
+    abstract String toString(boolean withType);
 
     /** Returns the string to be used by the GUI. */
-    public String getDisplayString() {
-        StringBuilder result = new StringBuilder();
-        switch (getKind()) {
-        case CONSTANT:
-            result.append(getConstant().getSymbol());
-            break;
-        case FIELD:
-            if (this.owner != null) {
-                result.append(this.owner);
-                result.append('.');
-            }
-            result.append(this.field);
-            break;
-        case CALL:
-            assert getArguments().size() == getOperator().getArity();
-            result.append(getOperator().getName());
-            result.append('(');
-            for (int i = 0; i < getArguments().size(); i++) {
-                if (i > 0) {
-                    result.append(',');
-                }
-                result.append(getArguments().get(i).getDisplayString());
-            }
-            result.append(')');
-            break;
-        default:
-            assert false;
-            return null;
+    abstract public String toDisplayString();
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return result.toString();
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Expression other = (Expression) obj;
+        return this.kind == other.kind;
     }
 
     @Override
@@ -192,59 +79,11 @@ public class Expression {
         final int prime = 31;
         int result = 1;
         result =
-            prime * result
-                + ((this.arguments == null) ? 0 : this.arguments.hashCode());
-        result =
-            prime * result
-                + ((this.constant == null) ? 0 : this.constant.hashCode());
-        result =
-            prime * result + ((this.owner == null) ? 0 : this.owner.hashCode());
-        result =
-            prime * result + ((this.field == null) ? 0 : this.field.hashCode());
-        result =
             prime * result + ((this.kind == null) ? 0 : this.kind.hashCode());
-        result =
-            prime * result
-                + ((this.operator == null) ? 0 : this.operator.hashCode());
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Expression)) {
-            return false;
-        }
-        Expression other = (Expression) obj;
-        if (this.kind != other.kind) {
-            return false;
-        }
-        switch (this.kind) {
-        case CONSTANT:
-            return this.constant.equals(other.constant);
-        case FIELD:
-            boolean result =
-                this.owner == null ? other.owner == null
-                        : this.owner.equals(other.owner);
-            return result && this.field.equals(other.field);
-        case CALL:
-            return this.operator.equals(other.operator)
-                && this.arguments.equals(other.arguments);
-        default:
-            assert false;
-            return false;
-        }
-    }
-
     private final Kind kind;
-    private final String type;
-    private final Operator operator;
-    private final List<Expression> arguments = new ArrayList<Expression>();
-    private final Constant constant;
-    private final String owner;
-    private final String field;
 
     /**
      * Attempts to parse a given string as an expression.
@@ -298,7 +137,7 @@ public class Expression {
                     "Declared type %s differs from constant type %s",
                     signature, constant.getSignature());
             } else {
-                return new Expression(constant);
+                return new Const(constant);
             }
         case 1:
             if (rest.charAt(rest.length() - 1) != ExprParser.PLACEHOLDER) {
@@ -325,7 +164,7 @@ public class Expression {
                 throw new FormatException(
                     "Field name '%s' is not a valid identifier", field);
             }
-            return new Expression(type, null, field);
+            return new Field(type, null, field);
         } else {
             String owner = field.substring(0, pos);
             if (!isIdentifier(owner)) {
@@ -337,7 +176,7 @@ public class Expression {
                 throw new FormatException(
                     "Field name '%s' is not a valid identifier", name);
             }
-            return new Expression(type, owner, name);
+            return new Field(type, owner, name);
         }
     }
 
@@ -366,7 +205,7 @@ public class Expression {
             throw new FormatException("No operator '%s' in signature '%s'",
                 operatorName, signature);
         }
-        Expression result = new Expression(operator);
+        Call result = new Call(operator);
         int arity = result.getOperator().getArity();
         String[] argsArray =
             parser.split(argsText.substring(1, argsText.length() - 1), ",");
@@ -395,6 +234,245 @@ public class Expression {
 
     private static final ExprParser parser = new ExprParser(
         ExprParser.PLACEHOLDER, new char[] {}, new char[] {'(', ')'});
+
+    /** Field expression. */
+    public static class Field extends Expression {
+        /** Constructs a call expression for a given operator. */
+        public Field(String type, String owner, String field) {
+            super(Kind.FIELD);
+            this.type = type;
+            this.owner = owner;
+            this.field = field;
+        }
+
+        /** Returns the identifier, if this is an identifier expression. */
+        public String getOwner() {
+            return this.owner;
+        }
+
+        /** Returns the identifier, if this is an identifier expression. */
+        public String getField() {
+            return this.field;
+        }
+
+        /** 
+         * Returns the signature of this expression.
+         * The signature is {@code null} if the expression is an identifier.
+         */
+        @Override
+        public String getType() {
+            return this.type;
+        }
+
+        /** Returns the string to be used by the GUI. */
+        @Override
+        public String toDisplayString() {
+            StringBuilder result = new StringBuilder();
+            if (this.owner != null) {
+                result.append(this.owner);
+                result.append('.');
+            }
+            result.append(this.field);
+            return result.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            Field other = (Field) obj;
+            if (!this.type.equals(other.type)) {
+                return false;
+            }
+            boolean result =
+                this.owner == null ? other.owner == null
+                        : this.owner.equals(other.owner);
+            return result && this.field.equals(other.field);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + this.field.hashCode();
+            result = prime * result + this.owner.hashCode();
+            result = prime * result + this.type.hashCode();
+            return result;
+        }
+
+        @Override
+        String toString(boolean withType) {
+            StringBuilder result = new StringBuilder();
+            if (withType) {
+                result.append(getType());
+                result.append(AspectParser.SEPARATOR);
+            }
+            if (this.owner != null) {
+                result.append(this.owner);
+                result.append('.');
+            }
+            result.append(this.field);
+            return result.toString();
+        }
+
+        private final String owner;
+        private final String field;
+        private final String type;
+
+    }
+
+    /** Constant expression. */
+    public static class Const extends Expression {
+        /** Creates a constant expression for a given constant. */
+        public Const(Constant constant) {
+            super(Kind.CONSTANT);
+            this.constant = constant;
+        }
+
+        /** Returns the constant, if this is an operator expression. */
+        public Constant getConstant() {
+            return this.constant;
+        }
+
+        @Override
+        public String getType() {
+            return getConstant().getSignature();
+        }
+
+        @Override
+        public String toDisplayString() {
+            StringBuilder result = new StringBuilder();
+            result.append(getConstant().getSymbol());
+            return result.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            Const other = (Const) obj;
+            return this.constant.equals(other.constant);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + this.constant.hashCode();
+            return result;
+        }
+
+        @Override
+        String toString(boolean withType) {
+            StringBuilder result = new StringBuilder();
+            result.append(getConstant().getSymbol());
+            return result.toString();
+        }
+
+        private final Constant constant;
+
+    }
+
+    /** Operator call expression. */
+    public static class Call extends Expression {
+        /** Constructs a call expression for a given operator. */
+        public Call(Operator operator) {
+            super(Kind.CALL);
+            this.operator = operator;
+        }
+
+        /** Returns the operator, if this is an operator expression. */
+        public Operator getOperator() {
+            return this.operator;
+        }
+
+        /**
+         * Adds an argument to this expression.
+         * This expression should be of kind {@link Kind#CALL}.
+         */
+        public void addArgument(Expression arg) {
+            assert getKind() == Kind.CALL;
+            this.arguments.add(arg);
+        }
+
+        /** Returns the arguments, if this is an operator expression. */
+        public List<Expression> getArguments() {
+            return this.arguments;
+        }
+
+        @Override
+        public String getType() {
+            return getOperator().getResultType();
+        }
+
+        @Override
+        public String toDisplayString() {
+            StringBuilder result = new StringBuilder();
+            assert getArguments().size() == getOperator().getArity();
+            result.append(getOperator().getName());
+            result.append('(');
+            for (int i = 0; i < getArguments().size(); i++) {
+                if (i > 0) {
+                    result.append(',');
+                }
+                result.append(getArguments().get(i).toDisplayString());
+            }
+            result.append(')');
+            return result.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            Call other = (Call) obj;
+            return this.operator.equals(other.operator)
+                && this.arguments.equals(other.arguments);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + this.arguments.hashCode();
+            result = prime * result + this.operator.hashCode();
+            return result;
+        }
+
+        @Override
+        String toString(boolean withType) {
+            StringBuilder result = new StringBuilder();
+            assert getArguments().size() == getOperator().getArity();
+            result.append(getOperator().getSignature());
+            result.append(AspectParser.SEPARATOR);
+            result.append(getOperator().getName());
+            result.append('(');
+            for (int i = 0; i < getArguments().size(); i++) {
+                if (i > 0) {
+                    result.append(',');
+                }
+                result.append(getArguments().get(i).toString(false));
+            }
+            result.append(')');
+            return result.toString();
+        }
+
+        private final Operator operator;
+        private final List<Expression> arguments = new ArrayList<Expression>();
+
+    }
 
     /** Expression kind. */
     public static enum Kind {

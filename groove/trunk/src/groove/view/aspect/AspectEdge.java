@@ -349,9 +349,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
-                text = getPredicate().getDisplayString();
+                text = getPredicate().toDisplayString();
             } else if (isAssign()) {
-                text = getAssign().getDisplayString();
+                text = getAssign().toDisplayString(getGraphRole() == RULE);
             } else if (getKind() == CONNECT) {
                 text = "+";
             } else {

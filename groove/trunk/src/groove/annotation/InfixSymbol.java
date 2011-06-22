@@ -16,8 +16,19 @@
  */
 package groove.annotation;
 
+import groove.algebra.Precedence;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /** Annotation for operators with an infix notation. */
-public @interface Infix {
-    /** The infix notation. */
-    String value();
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InfixSymbol {
+    /** The infix symbol. */
+    public String symbol();
+
+    /** 
+     * The operator priority.
+     */
+    public Precedence precedence();
 }

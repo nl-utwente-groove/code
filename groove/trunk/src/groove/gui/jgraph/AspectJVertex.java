@@ -414,6 +414,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             HTMLConverter.green.on(text);
             break;
         case LET:
+            HTMLConverter.green.on(text);
+            break;
         case CREATOR:
             text.insert(0, "+ ");
             HTMLConverter.green.on(text);

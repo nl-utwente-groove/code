@@ -39,6 +39,9 @@ import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
 import groove.view.FormatException;
+import groove.view.aspect.Expression.Call;
+import groove.view.aspect.Expression.Const;
+import groove.view.aspect.Expression.Field;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -325,11 +328,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         throws FormatException {
         switch (expr.getKind()) {
         case CONSTANT:
-            return addConstant(expr.getConstant());
+            return addConstant(((Const) expr).getConstant());
         case FIELD:
-            return addField(source, expr);
+            return addField(source, (Field) expr);
         case CALL:
-            return addCall(source, expr);
+            return addCall(source, (Call) expr);
         default:
             assert false;
             return null;
@@ -353,7 +356,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param field the field expression
      * @return the target node of the identifier
      */
-    private AspectNode addField(AspectNode source, Expression field)
+    private AspectNode addField(AspectNode source, Field field)
         throws FormatException {
         if (getRole() != RULE) {
             throw new FormatException(
@@ -426,7 +429,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param call the call expression
      * @return the node representing the value of the expression
      */
-    private AspectNode addCall(AspectNode source, Expression call)
+    private AspectNode addCall(AspectNode source, Call call)
         throws FormatException {
         Operator operator = call.getOperator();
         if (getRole() != RULE) {

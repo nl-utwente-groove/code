@@ -16,6 +16,12 @@
  */
 package groove.algebra;
 
+import static groove.algebra.Precedence.AND;
+import static groove.algebra.Precedence.EQUAL;
+import static groove.algebra.Precedence.OR;
+import groove.annotation.InfixSymbol;
+import groove.annotation.PrefixSymbol;
+
 /**
  * Interface for boolean algebras.
  * @author Arend Rensink
@@ -23,15 +29,19 @@ package groove.algebra;
  */
 public abstract class BoolSignature<Bool> implements Signature {
     /** Negation. */
+    @PrefixSymbol(symbol = "!")
     public abstract Bool not(Bool arg);
 
     /** Conjunction. */
+    @InfixSymbol(symbol = "&", precedence = AND)
     public abstract Bool and(Bool arg0, Bool arg1);
 
     /** Disjunction. */
+    @InfixSymbol(symbol = "|", precedence = OR)
     public abstract Bool or(Bool arg0, Bool arg1);
 
     /** Equality test. */
+    @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Bool arg0, Bool arg1);
 
     /** Only <code>true</code> and <code>false</code> are legal values. */
