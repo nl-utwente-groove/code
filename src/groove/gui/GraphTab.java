@@ -38,8 +38,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
     public GraphTab(ResourceDisplay display) {
         super(display);
         this.jGraph =
-            new AspectJGraph(getSimulator(), getResourceKind().getGraphRole(),
-                false);
+            new AspectJGraph(getSimulator(), display.getKind(), false);
         setFocusable(false);
         setEnabled(false);
         start();

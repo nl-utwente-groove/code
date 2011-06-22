@@ -6,9 +6,9 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.external.Exporter;
-import groove.trans.ResourceKind;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,8 +65,8 @@ public class ExportAction extends SimulatorAction {
     /** Returns the export action name for a given JGraph being saved. */
     private String getActionName(GraphRole role) {
         boolean isState =
-            getSimulator() != null && role == GraphRole.HOST
-                && !getSimulatorModel().isSelected(ResourceKind.HOST);
+            this.jGraph instanceof AspectJGraph
+                && ((AspectJGraph) this.jGraph).isForState();
         String type = isState ? "State" : role.getDescription();
         return "Export " + type + " ...";
     }

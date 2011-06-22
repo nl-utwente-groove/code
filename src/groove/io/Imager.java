@@ -21,12 +21,14 @@ import static groove.io.FileType.GXL_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
 import groove.graph.DefaultGraph;
+import groove.gui.DisplayKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.io.external.Exporter;
 import groove.io.xml.LayedOutXml;
+import groove.trans.ResourceKind;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -190,8 +192,9 @@ public class Imager extends CommandLineTool {
                         isEditorView());
                     options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
                         isEditorView());
-                    AspectJGraph jGraph =
-                        new AspectJGraph(null, aspectGraph.getRole(), false);
+                    DisplayKind kind =
+                        DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
+                    AspectJGraph jGraph = new AspectJGraph(null, kind, false);
                     AspectJModel model = jGraph.newModel();
                     model.loadGraph(aspectGraph);
                     jGraph.setModel(model);

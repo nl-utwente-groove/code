@@ -1,6 +1,7 @@
 package groove.gui.dialog;
 
 import groove.graph.Graph;
+import groove.gui.DisplayKind;
 import groove.gui.JGraphPanel;
 import groove.gui.Simulator;
 import groove.gui.jgraph.AspectJGraph;
@@ -9,6 +10,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJGraph.AttributeFactory;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.LTSJGraph;
+import groove.trans.ResourceKind;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 
@@ -81,8 +83,9 @@ public class GraphPreviewDialog extends JDialog {
         case TYPE:
         case RULE:
         case HOST:
-            jGraph =
-                new AspectJGraph(this.simulator, this.graph.getRole(), false);
+            DisplayKind kind =
+                DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+            jGraph = new AspectJGraph(this.simulator, kind, false);
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);

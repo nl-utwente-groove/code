@@ -27,6 +27,7 @@ import groove.graph.GraphRole;
 import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
+import groove.gui.DisplayKind;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
@@ -77,14 +78,14 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.
-     * @param role the graph role of the {@link AspectJGraph}
+     * @param kind TODO
      * @param editing if {@code true}, the graph is editable
      */
-    public AspectJGraph(Simulator simulator, GraphRole role, boolean editing) {
-        super(simulator, !editing && role != GraphRole.RULE);
+    public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
+        super(simulator, !editing && kind.getGraphRole() != GraphRole.RULE);
         this.editing = editing;
-        this.graphRole = role;
-        //        addMouseListener(new MyMouseListener());
+        this.forState = kind == DisplayKind.LTS;
+        this.graphRole = this.forState ? GraphRole.HOST : kind.getGraphRole();
         setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
         setCloneable(editing);
@@ -191,8 +192,14 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /** 
-     * Returns the role of either the simulator or the editor,
-     * whichever is set.
+     * Indicates if the graph being displayed is a graph state.
+     */
+    public boolean isForState() {
+        return this.forState;
+    }
+
+    /** 
+     * Returns the role of the graph being displayed.
      */
     public GraphRole getGraphRole() {
         return this.graphRole;
@@ -225,8 +232,15 @@ final public class AspectJGraph extends GraphJGraph {
         // add a save graph action as the first action
         JMenu result = new JMenu();
         if (getActions() != null) {
-            result.add(getActions().getSaveAsAction(
-                ResourceKind.toResource(getGraphRole())));
+            Action saveAsAction;
+            if (isForState()) {
+                saveAsAction = getActions().getSaveStateAction();
+            } else {
+                saveAsAction =
+                    getActions().getSaveAsAction(
+                        ResourceKind.toResource(getGraphRole()));
+            }
+            result.add(saveAsAction);
         }
         addMenuItems(result, super.createExportMenu());
         return result;
@@ -544,6 +558,8 @@ final public class AspectJGraph extends GraphJGraph {
      */
     private final boolean editing;
 
+    /** The kind of graphs being displayed. */
+    private final boolean forState;
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
     /** Set of all labels and subtypes in the graph. */
