@@ -45,10 +45,17 @@ public class Assignment {
         return getLhs() + " = " + getRhs().toString();
     }
 
-    /** Returns the string to be used by the GUI. */
-    public String toDisplayString(boolean forRule) {
-        String assignment = forRule ? " := " : " = ";
-        return getLhs() + assignment + getRhs().toDisplayString();
+    /** 
+     * Returns the string to be used by the GUI.
+     * @param assignSymbol the assignment symbol to be used
+     */
+    public String toDisplayString(String assignSymbol) {
+        StringBuilder result = new StringBuilder(getLhs());
+        result.append(' ');
+        result.append(assignSymbol == null ? "=" : assignSymbol);
+        result.append(' ');
+        result.append(getRhs().toDisplayString());
+        return result.toString();
     }
 
     @Override

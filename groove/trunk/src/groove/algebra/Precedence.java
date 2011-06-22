@@ -5,6 +5,8 @@ package groove.algebra;
  * This is copied directly from the Java operator precedence.
  */
 public enum Precedence {
+    /** Dummy value used for context of an expression. */
+    NONE,
     /** Conjunction. */
     AND,
     /** Disjunction. */
