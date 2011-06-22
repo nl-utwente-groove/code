@@ -60,7 +60,8 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                 family.getValue(edge.getOperator().getResultType(),
                     this.target.getSymbol());
         } else {
-            this.boundNodes = Collections.<RuleNode>singleton(this.target);
+            this.boundNodes =
+                Arrays.<RuleNode>asList(this.target, edge.source());
             this.value = null;
         }
     }

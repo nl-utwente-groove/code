@@ -1771,8 +1771,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 // map
                 if (isInjective()) {
                     for (RuleNode node : lhs.nodeSet()) {
-                        nacTarget.addNode(node);
-                        nacRoot.addNode(node);
+                        if (!(node instanceof VariableNode)
+                            && !(node instanceof ProductNode)) {
+                            nacTarget.addNode(node);
+                            nacRoot.addNode(node);
+                        }
                     }
                 }
                 // add edges and embargoes to nacTarget
