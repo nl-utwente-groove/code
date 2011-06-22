@@ -349,9 +349,15 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
-                text = getPredicate().toDisplayString();
+                if (getPredicate() instanceof Assignment) {
+                    text = ((Assignment) getPredicate()).toDisplayString("?=");
+                } else {
+                    text = ((Expression) getPredicate()).toDisplayString();
+                }
             } else if (isAssign()) {
-                text = getAssign().toDisplayString(getGraphRole() == RULE);
+                text =
+                    getAssign().toDisplayString(
+                        getGraphRole() == RULE ? ":=" : "=");
             } else if (getKind() == CONNECT) {
                 text = "+";
             } else {
@@ -587,9 +593,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
-    public Expression getPredicate() {
+    public Object getPredicate() {
         assert isPredicate();
-        return (Expression) getAttrAspect().getContent();
+        return getAttrAspect().getContent();
     }
 
     /**

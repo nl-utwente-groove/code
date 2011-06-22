@@ -815,9 +815,15 @@ public enum AspectKind {
             break;
 
         case TEST:
-            s = "%s.COLON.constraint";
-            h = "Predicate expression";
-            b.add("Tests if the boolean expression %s holds in the graph.");
+            if (withLabel) {
+                s = "%s.COLON.constraint";
+                h = "Predicate expression";
+                b.add("Tests if the boolean expression %s holds in the graph.");
+            } else {
+                s = "%s.COLON.name.EQUALS.expr";
+                h = "Attribute value test";
+                b.add("Tests if the attribute field %1$s equals the value of %2$s.");
+            }
             break;
 
         case UNTYPED:
@@ -1267,24 +1273,28 @@ public enum AspectKind {
             }
 
             @Override
-            Expression parseContent(String text) throws FormatException {
-                Expression result = Expression.parse(text, null);
-                if (result.getKind() == Kind.FIELD) {
-                    throw new FormatException(
-                        "Identifier not allowed as predicate expression", text);
-                }
-                String type = result.getType();
-                if (!type.equals(BOOL_LITERAL.signature)) {
-                    throw new FormatException(
-                        "Non-boolean expression '%s' not allowed as predicate expression",
-                        text);
+            Object parseContent(String text) throws FormatException {
+                Object result = Expression.parse(text);
+                if (result instanceof Expression) {
+                    Expression expr = (Expression) result;
+                    if (expr.getKind() == Kind.FIELD) {
+                        throw new FormatException(
+                            "Identifier '%s' not allowed as predicate expression",
+                            text);
+                    }
+                    String type = expr.getType();
+                    if (!type.equals(BOOL_LITERAL.signature)) {
+                        throw new FormatException(
+                            "Non-boolean expression '%s' not allowed as predicate expression",
+                            text);
+                    }
                 }
                 return result;
             }
 
             @Override
             String toString(Object content) {
-                return ((Expression) content).toString();
+                return content.toString();
             }
         },
         /** Let expression content. */

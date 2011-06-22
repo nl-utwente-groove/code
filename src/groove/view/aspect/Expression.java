@@ -16,9 +16,11 @@
  */
 package groove.view.aspect;
 
+import static groove.algebra.Precedence.NONE;
 import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.Precedence;
 import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -46,7 +48,7 @@ abstract public class Expression {
     abstract public String getType();
 
     @Override
-    public String toString() {
+    public final String toString() {
         return toString(true);
     }
 
@@ -60,7 +62,15 @@ abstract public class Expression {
     abstract String toString(boolean withType);
 
     /** Returns the string to be used by the GUI. */
-    abstract public String toDisplayString();
+    public final String toDisplayString() {
+        return toDisplayString(Precedence.NONE);
+    }
+
+    /** Returns a string representation for this expression,
+     * if it is placed in a context where the next higher operator
+     * has a given precedence.
+     */
+    abstract String toDisplayString(Precedence context);
 
     @Override
     public boolean equals(Object obj) {
@@ -86,13 +96,19 @@ abstract public class Expression {
     private final Kind kind;
 
     /**
-     * Attempts to parse a given string as an expression.
+     * Attempts to parse a given string as an expression or assignment.
      * @param text the string that is to be parsed as expression
      * @return the resulting expression
      * @throws FormatException if the input string contains syntax errors
      */
-    public static Expression parse(String text) throws FormatException {
-        return parse(text, null);
+    public static Object parse(String text) throws FormatException {
+        Object result;
+        try {
+            result = Assignment.parse(text);
+        } catch (FormatException e) {
+            result = parse(text, null);
+        }
+        return result;
     }
 
     /**
@@ -266,7 +282,7 @@ abstract public class Expression {
 
         /** Returns the string to be used by the GUI. */
         @Override
-        public String toDisplayString() {
+        public String toDisplayString(Precedence precedence) {
             StringBuilder result = new StringBuilder();
             if (this.owner != null) {
                 result.append(this.owner);
@@ -299,7 +315,9 @@ abstract public class Expression {
             final int prime = 31;
             int result = super.hashCode();
             result = prime * result + this.field.hashCode();
-            result = prime * result + this.owner.hashCode();
+            result =
+                prime * result
+                    + (this.owner == null ? 0 : this.owner.hashCode());
             result = prime * result + this.type.hashCode();
             return result;
         }
@@ -344,7 +362,7 @@ abstract public class Expression {
         }
 
         @Override
-        public String toDisplayString() {
+        public String toDisplayString(Precedence precedence) {
             StringBuilder result = new StringBuilder();
             result.append(getConstant().getSymbol());
             return result.toString();
@@ -414,18 +432,41 @@ abstract public class Expression {
         }
 
         @Override
-        public String toDisplayString() {
+        String toDisplayString(Precedence context) {
             StringBuilder result = new StringBuilder();
-            assert getArguments().size() == getOperator().getArity();
-            result.append(getOperator().getName());
-            result.append('(');
-            for (int i = 0; i < getArguments().size(); i++) {
-                if (i > 0) {
-                    result.append(',');
+            Precedence precedence = getOperator().getPrecedence();
+            if (precedence == null) {
+                assert getArguments().size() == getOperator().getArity();
+                result.append(getOperator().getName());
+                result.append('(');
+                for (int i = 0; i < getArguments().size(); i++) {
+                    if (i > 0) {
+                        result.append(',');
+                    }
+                    result.append(getArguments().get(i).toDisplayString(NONE));
                 }
-                result.append(getArguments().get(i).toDisplayString());
+                result.append(')');
+            } else {
+                if (precedence == Precedence.UNARY) {
+                    assert getArguments().size() == 1;
+                    result.append(getOperator().getSymbol());
+                    result.append(getArguments().get(0).toDisplayString(
+                        precedence));
+                } else {
+                    assert getArguments().size() == 2;
+                    result.append(getArguments().get(0).toDisplayString(
+                        precedence));
+                    result.append(' ');
+                    result.append(getOperator().getSymbol());
+                    result.append(' ');
+                    result.append(getArguments().get(1).toDisplayString(
+                        precedence));
+                }
+                if (context.compareTo(precedence) > 0) {
+                    result.insert(0, '(');
+                    result.append(')');
+                }
             }
-            result.append(')');
             return result.toString();
         }
 
