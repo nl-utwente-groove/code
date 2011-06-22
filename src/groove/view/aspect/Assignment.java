@@ -46,8 +46,9 @@ public class Assignment {
     }
 
     /** Returns the string to be used by the GUI. */
-    public String getDisplayString() {
-        return getLhs() + " = " + getRhs().getDisplayString();
+    public String toDisplayString(boolean forRule) {
+        String assignment = forRule ? " := " : " = ";
+        return getLhs() + assignment + getRhs().toDisplayString();
     }
 
     @Override

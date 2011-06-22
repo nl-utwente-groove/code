@@ -16,7 +16,12 @@
  */
 package groove.algebra;
 
-import groove.annotation.Infix;
+import static groove.algebra.Precedence.ADD;
+import static groove.algebra.Precedence.COMPARE;
+import static groove.algebra.Precedence.EQUAL;
+import static groove.algebra.Precedence.MULT;
+import groove.annotation.InfixSymbol;
+import groove.annotation.PrefixSymbol;
 
 import java.math.BigDecimal;
 
@@ -28,16 +33,19 @@ import java.math.BigDecimal;
 @SuppressWarnings("hiding")
 public abstract class RealSignature<Real,Bool,String> implements Signature {
     /** Addition of two real numbers. */
+    @InfixSymbol(symbol = "+", precedence = ADD)
     public abstract Real add(Real arg0, Real arg1);
 
     /** Subtraction of two real numbers. */
-    @Infix("-")
+    @InfixSymbol(symbol = "-", precedence = ADD)
     public abstract Real sub(Real arg0, Real arg1);
 
     /** Multiplication of two real numbers. */
+    @InfixSymbol(symbol = "*", precedence = MULT)
     public abstract Real mul(Real arg0, Real arg1);
 
     /** Division of two real numbers. */
+    @InfixSymbol(symbol = "/", precedence = MULT)
     public abstract Real div(Real arg0, Real arg1);
 
     /** Minimum of two real numbers. */
@@ -47,21 +55,27 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     public abstract Real max(Real arg0, Real arg1);
 
     /** Lesser-than comparison. */
+    @InfixSymbol(symbol = "<", precedence = COMPARE)
     public abstract Bool lt(Real arg0, Real arg1);
 
     /** Lesser-or-equal comparison. */
+    @InfixSymbol(symbol = "<=", precedence = COMPARE)
     public abstract Bool le(Real arg0, Real arg1);
 
     /** Greater-than comparison. */
+    @InfixSymbol(symbol = ">", precedence = COMPARE)
     public abstract Bool gt(Real arg0, Real arg1);
 
     /** Greater-or-equal comparison. */
+    @InfixSymbol(symbol = ">=", precedence = COMPARE)
     public abstract Bool ge(Real arg0, Real arg1);
 
     /** Equality test. */
+    @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Real arg0, Real arg1);
 
     /** Inversion. */
+    @PrefixSymbol(symbol = "-")
     public abstract Real neg(Real arg);
 
     /** String representation. */

@@ -16,6 +16,13 @@
  */
 package groove.algebra;
 
+import static groove.algebra.Precedence.ADD;
+import static groove.algebra.Precedence.COMPARE;
+import static groove.algebra.Precedence.EQUAL;
+import static groove.algebra.Precedence.MULT;
+import groove.annotation.InfixSymbol;
+import groove.annotation.PrefixSymbol;
+
 import java.math.BigInteger;
 
 /**
@@ -26,18 +33,23 @@ import java.math.BigInteger;
 @SuppressWarnings("hiding")
 public abstract class IntSignature<Int,Bool,String> implements Signature {
     /** Addition of two integers. */
+    @InfixSymbol(symbol = "+", precedence = ADD)
     public abstract Int add(Int arg0, Int arg1);
 
     /** Subtraction of two integers. */
+    @InfixSymbol(symbol = "-", precedence = ADD)
     public abstract Int sub(Int arg0, Int arg1);
 
     /** Multiplication of two integers. */
+    @InfixSymbol(symbol = "*", precedence = MULT)
     public abstract Int mul(Int arg0, Int arg1);
 
     /** Division of two integers. */
+    @InfixSymbol(symbol = "/", precedence = MULT)
     public abstract Int div(Int arg0, Int arg1);
 
     /** Modulo of two integers. */
+    @InfixSymbol(symbol = "%", precedence = MULT)
     public abstract Int mod(Int arg0, Int arg1);
 
     /** Minimum of two integers. */
@@ -47,21 +59,27 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     public abstract Int max(Int arg0, Int arg1);
 
     /** Lesser-than comparison. */
+    @InfixSymbol(symbol = "<", precedence = COMPARE)
     public abstract Bool lt(Int arg0, Int arg1);
 
     /** Lesser-or-equal comparison. */
+    @InfixSymbol(symbol = "<=", precedence = COMPARE)
     public abstract Bool le(Int arg0, Int arg1);
 
     /** Greater-than comparison. */
+    @InfixSymbol(symbol = ">", precedence = COMPARE)
     public abstract Bool gt(Int arg0, Int arg1);
 
     /** Greater-or-equal comparison. */
+    @InfixSymbol(symbol = ">=", precedence = COMPARE)
     public abstract Bool ge(Int arg0, Int arg1);
 
     /** Equality test. */
+    @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Int arg0, Int arg1);
 
     /** Inversion. */
+    @PrefixSymbol(symbol = "-")
     public abstract Int neg(Int arg);
 
     /** String representation. */

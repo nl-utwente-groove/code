@@ -16,6 +16,10 @@
  */
 package groove.algebra;
 
+import static groove.algebra.Precedence.ADD;
+import static groove.algebra.Precedence.COMPARE;
+import static groove.algebra.Precedence.EQUAL;
+import groove.annotation.InfixSymbol;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -27,21 +31,27 @@ import groove.view.FormatException;
 @SuppressWarnings("hiding")
 public abstract class StringSignature<String,Bool> implements Signature {
     /** String concatenation. */
+    @InfixSymbol(symbol = "+", precedence = ADD)
     public abstract String concat(String arg0, String arg1);
 
     /** Lesser-than comparison. */
+    @InfixSymbol(symbol = "<", precedence = COMPARE)
     public abstract Bool lt(String arg0, String arg1);
 
     /** Lesser-or-equal comparison. */
+    @InfixSymbol(symbol = "<=", precedence = COMPARE)
     public abstract Bool le(String arg0, String arg1);
 
     /** Greater-than comparison. */
+    @InfixSymbol(symbol = ">", precedence = COMPARE)
     public abstract Bool gt(String arg0, String arg1);
 
     /** Greater-or-equal comparison. */
+    @InfixSymbol(symbol = ">=", precedence = COMPARE)
     public abstract Bool ge(String arg0, String arg1);
 
     /** Equality test. */
+    @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(String arg0, String arg1);
 
     /**

@@ -1,5 +1,7 @@
 package groove.algebra;
 
+import groove.annotation.InfixSymbol;
+import groove.annotation.PrefixSymbol;
 import groove.util.Groove;
 
 import java.lang.reflect.Method;
@@ -47,6 +49,14 @@ public class Operator {
         }
         String typeName = ((TypeVariable<?>) returnType).getName();
         this.returnType = typeName.toLowerCase();
+        InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
+        PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
+        this.symbol =
+            infix == null ? (prefix == null ? null : prefix.symbol())
+                    : infix.symbol();
+        this.precedence =
+            infix == null ? (prefix == null ? null : Precedence.UNARY)
+                    : infix.precedence();
     }
 
     /** Returns the signature to which this operator belongs. */
@@ -85,6 +95,16 @@ public class Operator {
         return this.signature + ":" + this.name;
     }
 
+    /** Returns the infix symbol of this operator, or {@code null} if it has none. */
+    public String getSymbol() {
+        return this.symbol;
+    }
+
+    /** Returns the priority of this operator. */
+    public Precedence getPrecedence() {
+        return this.precedence;
+    }
+
     @Override
     public String toString() {
         return getTypedName()
@@ -96,4 +116,6 @@ public class Operator {
     private final List<String> parameterTypes;
     private final String returnType;
     private final String name;
+    private final String symbol;
+    private final Precedence precedence;
 }
