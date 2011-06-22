@@ -68,7 +68,7 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements
     /** Name of this algebra. */
     public static final String NAME = "pbool";
     /** Singleton object of this algebra. */
-    public static final Object singleBool = "B";
+    public static final String singleBool = "true";
     /** Singleton instance of this algebra. */
     public static final BoolPointAlgebra instance = new BoolPointAlgebra();
 }

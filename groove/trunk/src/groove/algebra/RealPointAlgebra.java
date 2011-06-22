@@ -118,15 +118,15 @@ public class RealPointAlgebra extends RealSignature<Object,Object,Object>
      * redefined literally to avoid class loading dependencies.
      * @see StringPointAlgebra#singleString
      */
-    public static final String singleString = "S";
+    public static final String singleString = StringPointAlgebra.singleString;
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
      * @see BoolPointAlgebra#singleBool
      */
-    public static final String singleBool = "B";
+    public static final String singleBool = BoolPointAlgebra.singleBool;
     /** Point value of the real algebra. */
-    public static final String singleReal = "R";
+    public static final String singleReal = "1.0";
     /** Singleton instance of this algebra. */
     public static final RealPointAlgebra instance = new RealPointAlgebra();
 }
