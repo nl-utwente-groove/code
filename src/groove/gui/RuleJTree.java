@@ -847,7 +847,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             if (value instanceof DirectoryTreeNode) {
                 icon = Icons.GPS_FOLDER_ICON;
             } else if (value instanceof RuleTreeNode) {
-                String ruleName = ((RuleTreeNode) value).getRule().getName();
+                String ruleName = value.toString();
                 icon = RuleJTree.this.display.getListIcon(ruleName);
                 error = RuleJTree.this.display.hasError(ruleName);
                 setToolTipText(((RuleTreeNode) value).getToolTipText());
@@ -856,6 +856,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 setToolTipText(null);
             }
             setIcon(icon);
+            setText(value.toString());
             setForeground(JAttr.getForeground(cellSelected, cellFocused, error));
             Color background =
                 JAttr.getBackground(cellSelected, cellFocused, error);
