@@ -20,6 +20,10 @@ import static groove.algebra.Precedence.ADD;
 import static groove.algebra.Precedence.COMPARE;
 import static groove.algebra.Precedence.EQUAL;
 import groove.annotation.InfixSymbol;
+import groove.annotation.Syntax;
+import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipHeader;
+import groove.annotation.ToolTipPars;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -31,26 +35,45 @@ import groove.view.FormatException;
 @SuppressWarnings("hiding")
 public abstract class StringSignature<String,Bool> implements Signature {
     /** String concatenation. */
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipHeader("String concatenation")
+    @ToolTipBody("Returns a string consisting of %s followed by %s")
+    @ToolTipPars({"First string parameter", "Second string parameter"})
     @InfixSymbol(symbol = "+", precedence = ADD)
     public abstract String concat(String arg0, String arg1);
 
     /** Lesser-than comparison. */
+    @ToolTipHeader("String lesser-than test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %s is a proper prefix of string %s")
     @InfixSymbol(symbol = "<", precedence = COMPARE)
     public abstract Bool lt(String arg0, String arg1);
 
     /** Lesser-or-equal comparison. */
+    @ToolTipHeader("String lesser-or-equal test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %s is a prefix of string %s")
     @InfixSymbol(symbol = "<=", precedence = COMPARE)
     public abstract Bool le(String arg0, String arg1);
 
     /** Greater-than comparison. */
+    @ToolTipHeader("String greater-than test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
     @InfixSymbol(symbol = ">", precedence = COMPARE)
     public abstract Bool gt(String arg0, String arg1);
 
     /** Greater-or-equal comparison. */
+    @ToolTipHeader("String greater-or-equals test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %2$s is a prefix of string %1$s")
     @InfixSymbol(symbol = ">=", precedence = COMPARE)
     public abstract Bool ge(String arg0, String arg1);
 
     /** Equality test. */
+    @ToolTipHeader("String equality test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %s equals string %s")
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(String arg0, String arg1);
 

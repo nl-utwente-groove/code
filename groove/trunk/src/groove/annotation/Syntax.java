@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
  * Syntax description of a documentation entry.
  * The value is a string typically consisting of keywords, parameters and
  * BNF symbols.
+ * Entries %1$s and %2$s may be used to stand for the (unqualified) name of the 
+ * annotated object and, where applicable, the (unqualified) name of its context (e.g., defining class). 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})

@@ -837,27 +837,27 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     static private final List<String> operators;
     /**
-     * Mapping from regular expression class names to operators.
+     * Mapping from keywords in syntax descriptions to corresponding text.
      */
-    static private final Map<String,String> opMap;
+    static private final Map<String,String> tokenMap;
 
     static {
         operators = new LinkedList<String>();
-        opMap = new HashMap<String,String>();
+        tokenMap = new HashMap<String,String>();
         for (RegExpr prototype : prototypes) {
             if (!(prototype instanceof Atom)) {
                 operators.add(prototype.getOperator());
-                opMap.put(prototype.getClass().getSimpleName(),
+                tokenMap.put(prototype.getClass().getSimpleName(),
                     Help.bf(prototype.getOperator()));
             }
         }
-        opMap.put("LSQUARE", "[");
-        opMap.put("RSQUARE", "]");
-        opMap.put("COMMA", ",");
-        opMap.put("COLON", ":");
-        opMap.put("HAT", "^");
-        opMap.put("FLAG", "flag");
-        opMap.put("TYPE", "type");
+        tokenMap.put("LSQUARE", "[");
+        tokenMap.put("RSQUARE", "]");
+        tokenMap.put("COMMA", ",");
+        tokenMap.put("COLON", ":");
+        tokenMap.put("HAT", "^");
+        tokenMap.put("FLAG", "flag");
+        tokenMap.put("TYPE", "type");
     }
 
     /** Constant hash code characterising the class. */
@@ -878,7 +878,7 @@ abstract public class RegExpr { // implements VarSetSupport {
     private static Map<String,String> computeDocMap() {
         Map<String,String> result = new TreeMap<String,String>();
         for (Class<?> subClass : RegExpr.class.getClasses()) {
-            Help help = Help.createHelp(subClass, opMap);
+            Help help = Help.createHelp(subClass, tokenMap);
             if (help != null) {
                 result.put(help.getItem(), help.getTip());
             }

@@ -21,6 +21,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import groove.algebra.Algebras;
 import groove.annotation.Help;
 import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
@@ -502,12 +503,18 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         result.add(new JLabel("Allowed labels:"), BorderLayout.NORTH);
         final JTabbedPane tabbedPane = new JTabbedPane();
         final int nodeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Nodes", createSyntaxList(this.nodeKeys));
+        tabbedPane.addTab("Nodes", null, createSyntaxList(this.nodeKeys),
+            "Label prefixes that are allowed on nodes");
         final int edgeTabIndex = tabbedPane.getTabCount();
-        tabbedPane.addTab("Edges", createSyntaxList(this.edgeKeys));
+        tabbedPane.addTab("Edges", null, createSyntaxList(this.edgeKeys),
+            "Label prefixes that are allowed on edges");
         if (this.role == GraphRole.RULE) {
-            tabbedPane.addTab("RegExpr",
-                createSyntaxList(RegExpr.getDocMap().keySet()));
+            tabbedPane.addTab("RegExpr", null,
+                createSyntaxList(RegExpr.getDocMap().keySet()),
+                "Syntax for regular expressions over labels");
+            tabbedPane.addTab("Expr", null,
+                createSyntaxList(Algebras.getDocMap().keySet()),
+                "Available attribute operators");
         }
         result.add(tabbedPane, BorderLayout.CENTER);
         // add a listener that switches the syntax help between nodes and edges
@@ -611,6 +618,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         this.docMap.putAll(AspectKind.getEdgeDocMap(this.role));
         this.docMap.putAll(EdgeRole.getDocMap());
         this.docMap.putAll(RegExpr.getDocMap());
+        this.docMap.putAll(Algebras.getDocMap());
         if (extra != null) {
             this.docMap.put(extra.getItem(), extra.getTip());
         }

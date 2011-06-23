@@ -16,6 +16,7 @@
  */
 package groove.algebra;
 
+import groove.annotation.Help;
 import groove.view.FormatException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -348,6 +350,52 @@ public class Algebras {
         addSignature(StringSignature.class);
         checkSignatureConsistency();
         operatorsMap = createOperatorsMap();
+    }
+
+    /**
+     * Returns a syntax helper mapping from syntax items
+     * to (possibly {@code null}) tool tips.
+     */
+    public static Map<String,String> getDocMap() {
+        if (docMap == null) {
+            docMap = computeDocMap();
+        }
+        return docMap;
+    }
+
+    private static Map<String,String> computeDocMap() {
+        Map<String,String> result = new TreeMap<String,String>();
+        for (Map.Entry<String,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
+            Map<String,String> sigMap = new HashMap<String,String>(tokenMap);
+            sigMap.put(sigEntry.getValue().getSimpleName(),
+                Help.bf(sigEntry.getKey()));
+            for (Method method : sigEntry.getValue().getMethods()) {
+                sigMap.put("Q" + method.getName(), sigEntry.getKey() + ":"
+                    + method.getName());
+                Help help = Help.createHelp(method, sigMap);
+                if (help != null) {
+                    result.put(help.getItem(), help.getTip());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Syntax helper map, from syntax items to associated tool tips. */
+    private static Map<String,String> docMap;
+    /**
+     * Mapping from keywords in syntax descriptions to corresponding text.
+     */
+    static private final Map<String,String> tokenMap;
+
+    static {
+        tokenMap = new HashMap<String,String>();
+        tokenMap.put("LPAR", "(");
+        tokenMap.put("RPAR", ")");
+        tokenMap.put("COMMA", ",");
+        tokenMap.put("COLON", ":");
+        tokenMap.put("TRUE", "true");
+        tokenMap.put("FALSE", "false");
     }
 
     /** Required last part of the interface name of signatures. */
