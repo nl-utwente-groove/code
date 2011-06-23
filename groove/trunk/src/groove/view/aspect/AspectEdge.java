@@ -167,7 +167,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             } else if (!hasAspect()) {
                 setAspect(AspectKind.READER.getAspect());
             }
-            if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
+            if (hasAttrAspect() && getAttrKind() != TEST && getKind() != READER
+                && getKind() != EMBARGO) {
                 throw new FormatException("Conflicting aspects %s and %s",
                     getAttrAspect(), getAspect());
             }
