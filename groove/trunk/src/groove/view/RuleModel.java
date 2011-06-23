@@ -268,7 +268,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 this.rule = computeRule();
                 this.ruleReset = false;
             } catch (FormatException exc) {
-                this.ruleErrors.addAll(exc.getErrors());
+                Map<RuleElement,AspectElement> inverseMap =
+                    this.levelTree.getInverseModelMap();
+                for (FormatError error : exc.getErrors()) {
+                    this.ruleErrors.add(error.transfer(inverseMap));
+                }
             }
         }
     }
