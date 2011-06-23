@@ -444,8 +444,13 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         RuleApplication application = transition.createRuleApplication();
         Map<RuleNode,Set<HostNode>> comatch = application.getComatch();
         for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap().entrySet()) {
-            for (HostNode hostNode : comatch.get(colorEntry.getKey())) {
-                result.put(hostNode, colorEntry.getValue());
+            Set<HostNode> matches = comatch.get(colorEntry.getKey());
+            // possibly this node has no matches, for instance if it is universally
+            // quantified
+            if (matches != null) {
+                for (HostNode hostNode : matches) {
+                    result.put(hostNode, colorEntry.getValue());
+                }
             }
         }
         return result;
