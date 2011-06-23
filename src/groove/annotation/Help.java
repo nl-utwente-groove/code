@@ -220,10 +220,9 @@ public class Help {
         Help result = null;
         if (syntax != null) {
             result = new Help(tokenMap);
-            String name = getReflectionName(source);
             String syntaxText =
-                name == null ? syntax.value() : String.format(syntax.value(),
-                    name);
+                String.format(syntax.value(), getReflectionName(source),
+                    getContextName(source));
             result.setSyntax(syntaxText);
             if (header != null) {
                 result.setHeader(header.value());
@@ -247,6 +246,17 @@ public class Help {
             result = ((Field) object).getName();
         } else if (object instanceof Method) {
             result = ((Method) object).getName();
+        }
+        return result;
+    }
+
+    /** Returns the name of the defining context of a given reflection object, if the object is recognised. */
+    private static String getContextName(Object object) {
+        String result = null;
+        if (object instanceof Field) {
+            result = ((Field) object).getDeclaringClass().getSimpleName();
+        } else if (object instanceof Method) {
+            result = ((Method) object).getDeclaringClass().getSimpleName();
         }
         return result;
     }

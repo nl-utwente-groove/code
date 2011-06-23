@@ -21,6 +21,9 @@ import static groove.algebra.Precedence.EQUAL;
 import static groove.algebra.Precedence.OR;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
+import groove.annotation.Syntax;
+import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipHeader;
 
 /**
  * Interface for boolean algebras.
@@ -29,18 +32,30 @@ import groove.annotation.PrefixSymbol;
  */
 public abstract class BoolSignature<Bool> implements Signature {
     /** Negation. */
+    @ToolTipHeader("Inversion")
+    @Syntax("Q%s.LPAR.b1.RPAR")
+    @ToolTipBody("Yields TRUE if boolean %s is FALSE")
     @PrefixSymbol(symbol = "!")
     public abstract Bool not(Bool arg);
 
     /** Conjunction. */
+    @ToolTipHeader("Conjunction")
+    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
+    @ToolTipBody("Yields TRUE if booleans %s and %s are both TRUE")
     @InfixSymbol(symbol = "&", precedence = AND)
     public abstract Bool and(Bool arg0, Bool arg1);
 
     /** Disjunction. */
+    @ToolTipHeader("Disjunction")
+    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
+    @ToolTipBody("Yields TRUE if at least one of booleans %s and %s is TRUE")
     @InfixSymbol(symbol = "|", precedence = OR)
     public abstract Bool or(Bool arg0, Bool arg1);
 
     /** Equality test. */
+    @ToolTipHeader("Boolean equality test")
+    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
+    @ToolTipBody("Yields TRUE if boolean %s equals boolean %s")
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Bool arg0, Bool arg1);
 
