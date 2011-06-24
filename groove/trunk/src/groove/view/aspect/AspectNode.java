@@ -19,6 +19,7 @@ package groove.view.aspect;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.COLOR;
 import static groove.view.aspect.AspectKind.CONNECT;
+import static groove.view.aspect.AspectKind.EDGE;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ID;
 import static groove.view.aspect.AspectKind.IMPORT;
@@ -249,6 +250,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             }
         } else if (kind == ID) {
             setId(value);
+        } else if (kind == EDGE) {
+            setEdge(value);
         } else if (kind == COLOR) {
             setColor(value);
         } else if (kind == IMPORT) {
@@ -576,6 +579,26 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return this.imported != null;
     }
 
+    /** Indicates if this is a nodified edge. */
+    public boolean isEdge() {
+        return getEdge() != null;
+    }
+
+    /** Sets the colour aspect of this node. */
+    private void setEdge(Aspect edge) throws FormatException {
+        assert edge.getKind() == EDGE : String.format(
+            "Aspect %s is not an edge declaration", edge);
+        if (this.color != null) {
+            throw new FormatException("Duplicate colour specification");
+        }
+        this.edge = edge;
+    }
+
+    /** Returns the colour aspect of this node, if any. */
+    public Aspect getEdge() {
+        return this.edge;
+    }
+
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
         assert hasParam();
@@ -672,6 +695,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private Aspect id;
     /** The colour aspect of this node, if any. */
     private Aspect color;
+    /** The edge declaration of this node, if any. */
+    private Aspect edge;
     /** The import aspect of this node, if any. */
     private Aspect imported;
     /** The aspect node representing the nesting level of this node. */

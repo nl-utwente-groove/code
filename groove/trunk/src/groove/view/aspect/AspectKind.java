@@ -23,6 +23,7 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.annotation.Help;
 import groove.graph.GraphRole;
+import groove.graph.LabelPattern;
 import groove.graph.Multiplicity;
 import groove.util.Colors;
 import groove.util.Pair;
@@ -101,6 +102,8 @@ public enum AspectKind {
     PARAM_OUT("parout", ContentKind.PARAM),
 
     // type-related aspects
+    /** Indicates a nodified edge type. */
+    EDGE("edge", ContentKind.EDGE),
     /** Indicates an abstract type. */
     ABSTRACT("abs"),
     /** Indicates an imported type. */
@@ -533,6 +536,17 @@ public enum AspectKind {
             }
             break;
 
+        case EDGE:
+            s = "%s.COLON.QUOTE.format.QUOTE.[COMMA.field]+";
+            h = "Nodifier edge pattern";
+            b.add("Declares the node type to be a nodified edge,");
+            b.add("meaning that it will not be displayed as a node.");
+            b.add("Instead, the incoming edges will be labelled by expanding %s");
+            b.add("with the concrete values of the %s list");
+            p.add("String format, with parameter syntax as in String.format");
+            p.add("Comma-separated list of attribute field names");
+            break;
+
         case EMBARGO:
             if (!forNode) {
                 s = "%s[EQUALS.q]COLON.label";
@@ -897,6 +911,7 @@ public enum AspectKind {
         tokenMap.put("COLON", "" + AspectParser.SEPARATOR);
         tokenMap.put("EQUALS", "" + AspectParser.ASSIGN);
         tokenMap.put("DOT", ".");
+        tokenMap.put("COMMA", ",");
         tokenMap.put("QUOTE", "\"");
         tokenMap.put("TRUE", "true");
         tokenMap.put("FALSE", "false");
@@ -960,7 +975,7 @@ public enum AspectKind {
                 break;
             case TYPE:
                 allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
-                    REAL, STRING, ABSTRACT, IMPORT, COLOR));
+                    REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE));
                 allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, ABSTRACT,
                     SUBTYPE, MULT_IN, MULT_OUT, COMPOSITE));
                 break;
@@ -1312,6 +1327,24 @@ public enum AspectKind {
             @Override
             Assignment parseContent(String text) throws FormatException {
                 return Assignment.parse(text);
+            }
+        },
+        /** Edge declaration content. */
+        EDGE {
+            @Override
+            Pair<Object,String> parse(String text, int pos)
+                throws FormatException {
+                if (text.charAt(pos) != SEPARATOR) {
+                    throw new FormatException(
+                        "Can't parse edge pattern declaration");
+                }
+                return new Pair<Object,String>(
+                    parseContent(text.substring(pos + 1)), "");
+            }
+
+            @Override
+            LabelPattern parseContent(String text) throws FormatException {
+                return LabelPattern.parse(text);
             }
         };
 

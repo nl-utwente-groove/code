@@ -71,6 +71,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeNode image = addNode(otherTypeNode.getType());
             image.setAbstract(otherTypeNode.isAbstract());
             image.setColor(otherTypeNode.getColor());
+            image.setLabelPattern(otherTypeNode.getLabelPattern());
             boolean imported = image.isImported() && otherTypeNode.isImported();
             image.setImported(imported);
             if (imported) {
@@ -105,6 +106,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             this.labelStore.addLabel(node.getType());
             if (node.getColor() != null) {
                 this.labelStore.setColor(node.getType(), node.getColor());
+            }
+            if (node.getLabelPattern() != null) {
+                this.labelStore.setPattern(node.getType(),
+                    node.getLabelPattern());
             }
         }
         return result;
@@ -154,6 +159,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         this.labelStore.addLabel(result.label());
         if (label.isNodeType() && source.getColor() != null) {
             this.labelStore.setColor(result.label(), source.getColor());
+        }
+        if (label.isNodeType() && source.getLabelPattern() != null) {
+            this.labelStore.setPattern(result.label(), source.getLabelPattern());
         }
         return result;
     }

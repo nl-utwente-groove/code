@@ -78,7 +78,7 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.
-     * @param kind TODO
+     * @param kind display kind on which this JGraph will be showing
      * @param editing if {@code true}, the graph is editable
      */
     public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
@@ -571,6 +571,14 @@ final public class AspectJGraph extends GraphJGraph {
     /** Map from line style names to corresponding actions. */
     private final Map<String,JCellEditAction> setLineStyleActionMap =
         new HashMap<String,JCellEditAction>();
+    /** Display attributes for a nodified edge. */
+    static public final JAttr.AttributeMap EDGE_NODE_ATTR;
+    static {
+        JAttr v = new JAttr();
+        v.linewidth = 0;
+        v.lineColour = Color.WHITE;
+        EDGE_NODE_ATTR = v.getNodeAttrs();
+    }
     /** Collection of attributes for rule nodes. */
     static public final Map<AspectKind,JAttr.AttributeMap> ASPECT_NODE_ATTR =
         new EnumMap<AspectKind,JAttr.AttributeMap>(AspectKind.class);

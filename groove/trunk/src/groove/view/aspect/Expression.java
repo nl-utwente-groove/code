@@ -103,10 +103,10 @@ abstract public class Expression {
      */
     public static Object parse(String text) throws FormatException {
         Object result;
-        try {
-            result = Assignment.parse(text);
-        } catch (FormatException e) {
+        if (text.indexOf('=') < 0) {
             result = parse(text, null);
+        } else {
+            result = Assignment.parse(text);
         }
         return result;
     }

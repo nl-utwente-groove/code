@@ -7,10 +7,15 @@ import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.LabelPattern;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleLabel;
 import groove.view.FormatError;
+import groove.view.FormatException;
+import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
@@ -66,6 +71,17 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public AspectNode getTargetNode() {
         return (AspectNode) super.getTargetNode();
+    }
+
+    /** Indicates if this is the incoming part of a nodified edge. */
+    public boolean isNodeEdgeIn() {
+        return getTargetVertex() != null
+            && ((AspectJVertex) getTargetVertex()).isEdge();
+    }
+
+    /** Indicates if this is the incoming pars of a nodified edge. */
+    public boolean isNodeEdgeOut() {
+        return ((AspectJVertex) getSourceVertex()).isEdge();
     }
 
     @SuppressWarnings("unchecked")
@@ -152,6 +168,32 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public boolean addEdge(Edge<?> edge) {
         return addEdge(edge, false);
+    }
+
+    @Override
+    public String getText() {
+        String result = null;
+        if (isNodeEdgeIn()) {
+            LabelPattern pattern =
+                ((AspectJVertex) getTargetVertex()).getEdgeLabelPattern();
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            GraphBasedModel<HostGraph> resourceModel =
+                (GraphBasedModel) getJGraph().getModel().getResourceModel();
+            try {
+                result =
+                    pattern.getLabel(
+                        resourceModel.toResource(),
+                        (HostNode) resourceModel.getMap().getNode(
+                            getTargetNode()));
+            } catch (FormatException e) {
+                assert false;
+            }
+        } else if (isNodeEdgeOut()) {
+            result = "";
+        } else {
+            result = super.getText();
+        }
+        return result;
     }
 
     @Override
@@ -342,6 +384,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (edge != null && edge.isComposite()) {
             GraphConstants.setBeginSize(result, 15);
             GraphConstants.setLineBegin(result, GraphConstants.ARROW_DIAMOND);
+        }
+        if (edge != null && isNodeEdgeIn()) {
+            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
         }
         if (edge != null
             && (edge.getInMult() != null || edge.getOutMult() != null)) {

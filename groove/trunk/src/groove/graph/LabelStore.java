@@ -59,6 +59,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
             }
         }
         this.colorMap.putAll(other.colorMap);
+        this.patternMap.putAll(other.patternMap);
     }
 
     /** Adds a label to the set of known labels. */
@@ -496,21 +497,31 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return false;
     }
 
-    /** Returns the (possibly {@code null}) colour associated with a given type label. */
-    public Color getColor(TypeLabel label) {
-        Color result = this.colorMap.get(label);
-        if (result == null && RANDOM_COLORS) {
-            this.colorMap.put(label, result =
-                new Color((int) (Math.random() * 256),
-                    (int) (Math.random() * 256), (int) (Math.random() * 256)));
-        }
-        return result;
-    }
-
     /** Associates a colour with a node type label. */
     public void setColor(TypeLabel label, Color colour) {
         assert label.isNodeType();
         this.colorMap.put(label, colour);
+    }
+
+    /** Returns the (possibly {@code null}) colour associated with a given type label. */
+    public Color getColor(TypeLabel label) {
+        Color result = this.colorMap.get(label);
+        return result;
+    }
+
+    /** Associates a label pattern with a node type label. */
+    public void setPattern(TypeLabel label, LabelPattern pattern) {
+        assert label.isNodeType();
+        this.patternMap.put(label, pattern);
+    }
+
+    /** 
+     * Returns the (possibly {@code null}) pattern associated with a
+     * nodified edge label.
+     */
+    public LabelPattern getLabelPattern(TypeLabel label) {
+        LabelPattern result = this.patternMap.get(label);
+        return result;
     }
 
     @Override
@@ -553,8 +564,12 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     private Map<TypeLabel,Set<TypeLabel>> dirSuperMap;
     /** Mapping from a type label to its set of subtypes (including itself). */
     private Map<TypeLabel,Set<TypeLabel>> superMap;
+    /** Mapping from node types to declared colours. */
     private final Map<TypeLabel,Color> colorMap =
         new HashMap<TypeLabel,Color>();
+    /** Mapping from node types to nodified edge label patterns. */
+    private final Map<TypeLabel,LabelPattern> patternMap =
+        new HashMap<TypeLabel,LabelPattern>();
 
     /** Creates and prints a label store out of a property string. */
     static public void main(String[] args) {

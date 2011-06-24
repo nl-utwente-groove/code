@@ -184,8 +184,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             jCell.clearExtraErrors();
         }
         this.errorMap.clear();
-        GraphBasedModel<?> resource = this.grammar.createGraphModel(getGraph());
-        for (FormatError error : resource.getErrors()) {
+        for (FormatError error : getResourceModel().getErrors()) {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
@@ -198,6 +197,16 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
             }
         }
+    }
+
+    /** Returns an up-to-date resource model for the graph being edited here. */
+    GraphBasedModel<?> getResourceModel() {
+        if (this.resource == null
+            || this.resourceCount != getModificationCount()) {
+            this.resource = this.grammar.createGraphModel(getGraph());
+            this.resourceCount = getModificationCount();
+        }
+        return this.resource;
     }
 
     /** 
@@ -389,6 +398,10 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated system properties. */
     private final GrammarModel grammar;
+    /** The modification count at which {@code resource} was created. */
+    private int resourceCount;
+    /** The resource model of the graph being edited. */
+    private GraphBasedModel<?> resource;
     /** Counter of the number of times this model has been updated. */
     private int modificationCount;
     /** Properties map of the graph being displayed or edited. */

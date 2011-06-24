@@ -121,7 +121,9 @@ public class JAttr {
         if (this.inset != 0) {
             GraphConstants.setInset(result, this.inset);
         }
-        GraphConstants.setDashPattern(result, this.dash);
+        if (this.dash != null) {
+            GraphConstants.setDashPattern(result, this.dash);
+        }
         GraphConstants.setLineBegin(result, this.lineBegin);
         GraphConstants.setLineEnd(result, this.lineEnd);
         GraphConstants.setEndSize(result, this.endSize);
@@ -372,7 +374,7 @@ public class JAttr {
     /**
      * Dash pattern specifying "no dash"
      */
-    static private final float[] NO_DASH = {10f, 0f};
+    static private final float[] NO_DASH = null;
 
     /**
      * Dash pattern used for nesting elements.
