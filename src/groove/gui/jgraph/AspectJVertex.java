@@ -6,6 +6,7 @@ import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
+import groove.graph.LabelPattern;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
@@ -547,15 +548,34 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected AttributeMap createAttributes() {
-        AttributeMap result =
-            AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
+        AttributeMap result;
+        result = AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
         }
         return result;
     }
 
-    /** Retrieves a node color from the model's label store, if any. */
+    /** Indicates if this vertex is in fact a nodified edge. */
+    public boolean isEdge() {
+        return getJGraph().getMode() != JGraphMode.EDIT_MODE
+            && getEdgeLabelPattern() != null;
+    }
+
+    /**
+     * Returns the (possibly {@code null}) edge label pattern, if
+     * this node is a nodified edge. 
+     */
+    public LabelPattern getEdgeLabelPattern() {
+        LabelPattern result = null;
+        if (getNode().getGraphRole() == GraphRole.HOST
+            && getJGraph().getLabelStore() != null) {
+            result = getJGraph().getLabelStore().getLabelPattern(getNodeType());
+        }
+        return result;
+    }
+
+    /** Retrieves a node colour from the model's label store, if any. */
     @Override
     public Color getColor() {
         Color result = super.getColor();

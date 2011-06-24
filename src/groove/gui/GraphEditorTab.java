@@ -120,6 +120,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         getUndoManager().discardAllEdits();
         updateHistoryButtons();
         updateStatus();
+        updateGrammar(getSimulatorModel().getGrammar());
         setSnapToGrid();
         initListeners();
         this.graph = null;

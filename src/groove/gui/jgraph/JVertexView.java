@@ -88,6 +88,12 @@ public class JVertexView extends VertexView {
         return (GraphJVertex) super.getCell();
     }
 
+    /** Indicates if the vertex is actually a nodified edge. */
+    private boolean isEdge() {
+        return getCell() instanceof AspectJVertex
+            && ((AspectJVertex) getCell()).isEdge();
+    }
+
     /**
      * This implementation returns the (static) {@link JVertexView.MyRenderer}.
      */
@@ -143,7 +149,9 @@ public class JVertexView extends VertexView {
         } else if (getCell() instanceof LTSJVertex) {
             graphRole = GraphRole.LTS;
         }
-        if (graphRole == GraphRole.TYPE) {
+        if (isEdge()) {
+            return VertexShape.ELLIPSE;
+        } else if (graphRole == GraphRole.TYPE) {
             return VertexShape.RECTANGLE;
         } else if (graphRole == GraphRole.LTS) {
             return VertexShape.OVAL;
@@ -171,6 +179,20 @@ public class JVertexView extends VertexView {
         return this.text;
     }
 
+    @Override
+    public Rectangle2D getBounds() {
+        Rectangle2D result = super.getBounds();
+        if (isEdge()) {
+            double x = result.getCenterX();
+            double y = result.getCenterY();
+            double radius = NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE;
+            result =
+                new Rectangle2D.Double(x - radius, y - radius, 2 * radius,
+                    2 * radius);
+        }
+        return result;
+    }
+
     /*
      * Overwrites the super method because we have a different renderer.
      */
@@ -179,18 +201,19 @@ public class JVertexView extends VertexView {
         Point2D result = null;
         // use the adornment bounds if there is an adornment, and the
         // source lies to the northwest of it
-        Rectangle2D bounds = null;
-        bounds = getAdornBounds();
-        if (bounds == null || bounds.getX() + bounds.getWidth() <= p.getX()
-            || bounds.getY() + bounds.getHeight() <= p.getY()) {
-            bounds = getBounds().getBounds2D();
+        Rectangle2D bounds = getAdornBounds();
+        if (bounds == null || bounds.getMaxX() <= p.getX()
+            || bounds.getMaxY() <= p.getY()) {
             // revert to the actual borders by subtracting the
             // extra border space
+            bounds = getBounds();
             float extra =
                 EXTRA_BORDER_SPACE
                     - GraphConstants.getLineWidth(getAllAttributes());
-            bounds.setRect(bounds.getX() + extra, bounds.getY() + extra,
-                bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+            bounds =
+                new Rectangle2D.Double(bounds.getX() + extra, bounds.getY()
+                    + extra, bounds.getWidth() - 2 * extra, bounds.getHeight()
+                    - 2 * extra);
         }
         if (source == null) {
             // be smart about positioning the perimeter point if p is within
@@ -238,16 +261,20 @@ public class JVertexView extends VertexView {
         return result;
     }
 
+    /** Returns the cell bounds including the parameter adornment, if any. */
     private Rectangle2D getAdornBounds() {
+        Rectangle2D result = null;
         String adornment = getCell().getAdornment();
-        if (adornment == null) {
-            return null;
+        if (adornment != null) {
+            result = getBounds();
+            MyRenderer renderer =
+                ((MyRenderer) getRendererComponent(this.jGraph, false, false,
+                    false));
+            result =
+                new Rectangle2D.Double(result.getX(), result.getY(),
+                    renderer.adornWidth, renderer.adornHeight);
         }
-        Rectangle2D b = getBounds();
-        MyRenderer renderer =
-            ((MyRenderer) getRendererComponent(this.jGraph, false, false, false));
-        return new Rectangle2D.Double(b.getX(), b.getY(), renderer.adornWidth,
-            renderer.adornHeight);
+        return result;
     }
 
     /**
@@ -532,6 +559,7 @@ public class JVertexView extends VertexView {
         fontTag = createSpanTag(argument);
     }
 
+    static final private double NODE_EDGE_RADIUS = 3;
     /**
      * Fraction of the width or height that is the minimum for special perimeter
      * point placement.
@@ -628,13 +656,19 @@ public class JVertexView extends VertexView {
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             Shape shape = getShape(this.lineWidth / 2);
-            if (isOpaque()) {
-                paintBackground(g2, shape);
+            if (this.view.isEdge()) {
+                paintBorder(g2, shape);
+                g.setColor(this.lineColor);
+                g2.fill(shape);
+            } else {
+                if (isOpaque()) {
+                    paintBackground(g2, shape);
+                }
+                paintText(g2);
+                paintBorder(g2, shape);
+                paintErrorOverlay(g2);
+                paintParameter(g2);
             }
-            paintText(g2);
-            paintBorder(g2, shape);
-            paintErrorOverlay(g2);
-            paintParameter(g2);
         }
 
         /**

@@ -116,6 +116,16 @@ public class TypeNode implements Node {
         this.imported = value;
     }
 
+    /** Returns the (possibly {@code null}) label pattern associated with this type node. */
+    public final LabelPattern getLabelPattern() {
+        return this.pattern;
+    }
+
+    /** Sets the label pattern of this type node. */
+    public final void setLabelPattern(LabelPattern pattern) {
+        this.pattern = pattern;
+    }
+
     /** Returns the (possibly {@code null}) colour of this type node. */
     public final Color getColor() {
         return this.colour;
@@ -132,6 +142,8 @@ public class TypeNode implements Node {
     private boolean imported;
     /** The display colour of this node, if any. */
     private Color colour;
+    /** The label pattern of this node, if any. */
+    private LabelPattern pattern;
     /** The number of this node. */
     private final int nr;
     /** The type of this node. */

@@ -25,7 +25,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({DefaultGraphTest.class, GraphCreationTest.class,
-    NodeSetEdgeSetGraphTest.class})
+    NodeSetEdgeSetGraphTest.class, LabelPatternTest.class})
 public class AllGraphTests {
     // Empty by design.
 }

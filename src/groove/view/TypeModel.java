@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
+import groove.graph.LabelPattern;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
@@ -184,6 +185,9 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 typeNode.setImported(modelNode.hasImport());
                 if (modelNode.hasColor()) {
                     typeNode.setColor((Color) modelNode.getColor().getContent());
+                }
+                if (modelNode.isEdge()) {
+                    typeNode.setLabelPattern((LabelPattern) modelNode.getEdge().getContent());
                 }
                 this.model.addNode(typeNode);
                 this.typeNodeMap.put(typeLabel, typeNode);
