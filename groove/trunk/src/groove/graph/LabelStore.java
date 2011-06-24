@@ -373,6 +373,34 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return result;
     }
 
+    @Override
+    public void setFixed() {
+        // subtypes inherit colours
+        Map<TypeLabel,Color> extraColors = new HashMap<TypeLabel,Color>();
+        for (Map.Entry<TypeLabel,Color> colorEntry : this.colorMap.entrySet()) {
+            Color color = colorEntry.getValue();
+            for (TypeLabel subtype : getSubs(colorEntry.getKey())) {
+                if (!this.colorMap.containsKey(subtype)) {
+                    extraColors.put(subtype, color);
+                }
+            }
+        }
+        this.colorMap.putAll(extraColors);
+        // subtypes inherit label patterns
+        Map<TypeLabel,LabelPattern> extraPatterns =
+            new HashMap<TypeLabel,LabelPattern>();
+        for (Map.Entry<TypeLabel,LabelPattern> patternEntry : this.patternMap.entrySet()) {
+            LabelPattern pattern = patternEntry.getValue();
+            for (TypeLabel subtype : getSubs(patternEntry.getKey())) {
+                if (!this.patternMap.containsKey(subtype)) {
+                    extraPatterns.put(subtype, pattern);
+                }
+            }
+        }
+        this.patternMap.putAll(extraPatterns);
+        super.setFixed();
+    }
+
     /**
      * Two label stores are equal if they have the same direct subtyping
      * relation.
@@ -499,6 +527,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
 
     /** Associates a colour with a node type label. */
     public void setColor(TypeLabel label, Color colour) {
+        testFixed(false);
         assert label.isNodeType();
         this.colorMap.put(label, colour);
     }
@@ -511,6 +540,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
 
     /** Associates a label pattern with a node type label. */
     public void setPattern(TypeLabel label, LabelPattern pattern) {
+        testFixed(false);
         assert label.isNodeType();
         this.patternMap.put(label, pattern);
     }
