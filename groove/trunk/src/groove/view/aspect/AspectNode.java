@@ -588,8 +588,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private void setEdge(Aspect edge) throws FormatException {
         assert edge.getKind() == EDGE : String.format(
             "Aspect %s is not an edge declaration", edge);
-        if (this.color != null) {
-            throw new FormatException("Duplicate colour specification");
+        if (this.edge != null) {
+            throw new FormatException("Duplicate edge pattern specification");
         }
         this.edge = edge;
     }
