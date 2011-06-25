@@ -18,7 +18,6 @@ package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Constant;
-import groove.algebra.Operator;
 import groove.graph.GraphRole;
 import groove.graph.algebra.VariableNode;
 import groove.view.FormatException;
@@ -98,18 +97,20 @@ public class Aspect {
     /**
      * Creates a new aspect, of the same kind of this one, but
      * wrapping content derived from given (non-{@code null} text.
+     * @param role intended graph role of the new aspect
      * @throws UnsupportedOperationException if this aspect is itself already
      * instantiated
      * @throws FormatException if the text cannot be correctly parsed as content
      * for this aspect
      */
-    public Aspect newInstance(String text) throws FormatException {
+    public Aspect newInstance(String text, GraphRole role)
+        throws FormatException {
         if (!this.prototype) {
             throw new UnsupportedOperationException(
                 "New aspects can only be created from prototypes");
         }
         return new Aspect(this.aspectKind, this.contentKind,
-            this.contentKind.parseContent(text));
+            this.contentKind.parseContent(text, role));
     }
 
     /** Returns the aspect kind. */
@@ -166,7 +167,7 @@ public class Aspect {
         boolean result =
             AspectKind.allowedEdgeKinds.get(role).contains(getKind());
         if (result && getKind().isTypedData()) {
-            result = getContent() instanceof Operator;
+            result = !(getContent() instanceof Constant);
         }
         return result;
     }

@@ -549,7 +549,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
      * Returns the (possibly {@code null}) pattern associated with a
      * nodified edge label.
      */
-    public LabelPattern getLabelPattern(TypeLabel label) {
+    public LabelPattern getPattern(TypeLabel label) {
         LabelPattern result = this.patternMap.get(label);
         return result;
     }

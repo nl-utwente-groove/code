@@ -253,7 +253,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         } else if (sourceKind.isQuantifier() || targetKind.isQuantifier()) {
             if (getKind() != NESTED && getKind() != REMARK
                 && getAttrKind() != TEST) {
-                setAspect(NESTED.getAspect().newInstance(getInnerText()));
+                setAspect(NESTED.getAspect().newInstance(getInnerText(),
+                    getGraphRole()));
             }
         } else if (getKind() != REMARK && getKind() != SUBTYPE
             && getKind() != CONNECT && getKind() != LET) {
@@ -386,6 +387,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      * if the edge does not give rise to a type label.
      */
     private RuleLabel createRuleLabel() throws FormatException {
+        assert getGraphRole() == RULE;
         RuleLabel result;
         if (getKind().isMeta() || isAssign() || isPredicate()) {
             result = null;
@@ -422,6 +424,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
                 result = TypeLabel.createBinaryLabel(getInnerText());
+            } else if (getGraphRole() == GraphRole.TYPE
+                && getAttrKind().isTypedData()) {
+                result =
+                    TypeLabel.createBinaryLabel(getAttrAspect().getContentString());
             } else {
                 result = TypeLabel.createLabel(getInnerText());
             }
@@ -558,7 +564,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             this.argumentNr = (Integer) this.attr.getContent();
         } else if (kind.isTypedData()) {
             this.attr = type;
-            this.operator = (Operator) type.getContent();
+            if (getGraphRole() == RULE) {
+                this.operator = (Operator) type.getContent();
+            }
         }
     }
 

@@ -278,12 +278,19 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 }
             }
             if (getNode().getGraphRole() == GraphRole.RULE
-                && getNode().getColor() != null) {
+                && getNode().hasColor()) {
                 StringBuilder line = new StringBuilder("& ");
                 line.append(AspectKind.COLOR.getName());
                 HTMLTag colorTag =
                     HTMLConverter.createColorTag(Colors.findColor(getNode().getColor().getContentString()));
                 result.add(colorTag.on(line));
+            }
+            if (getNode().getGraphRole() == GraphRole.TYPE
+                && getNode().isEdge()) {
+                StringBuilder line = new StringBuilder();
+                LabelPattern pattern = getNode().getEdgePattern();
+                line.append(pattern.getLabel(pattern.getArgNames().toArray()));
+                result.add(HTMLConverter.STRONG_TAG.on(line));
             }
         }
         return result;
@@ -294,10 +301,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         // if the node has an ID, that will be displayed part of the type
         if (!getNode().hasId()) {
-            //            result.add(ITALIC_TAG.on(new StringBuilder(
-            //                getNode().getId().getContentString())));
-            //            return result;
-            //        } else {
             result.addAll(super.getNodeIdLines());
             if (getNode().hasImport()) {
                 result.add(new StringBuilder(ITALIC_TAG.on(IMPORT_TEXT)));
@@ -370,13 +373,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         AspectEdge aspectEdge = (AspectEdge) edge;
         aspectEdge.testFixed(true);
         StringBuilder result = new StringBuilder();
-        if (getJGraph().isShowAspects()) {
-            result.append(TypeLabel.toHtmlString(aspectEdge.label()));
-        } else {
-            result.append(TypeLabel.toHtmlString(aspectEdge.getDisplayLabel()));
-        }
-        if (aspectEdge.getKind() == AspectKind.ABSTRACT) {
-            result = HTMLConverter.ITALIC_TAG.on(result);
+        Label label =
+            getJGraph().isShowAspects() ? aspectEdge.label()
+                    : aspectEdge.getDisplayLabel();
+        result.append(TypeLabel.toHtmlString(label));
+        if (aspectEdge.getKind() == AspectKind.ABSTRACT && label.isNodeType()) {
+            result = ITALIC_TAG.on(result);
         }
         if (edge.target() != edge.source()) {
             // this is an attribute edge displayed as a node label
@@ -390,6 +392,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                         + actualTarget.getAttrAspect().getContentString();
             }
             result.append(HTMLConverter.toHtml(suffix));
+        } else {
+            if (getNode().getGraphRole() == GraphRole.TYPE
+                && aspectEdge.getAttrKind().isTypedData()) {
+                // this is a field declaration
+                result.append(TYPE_TEXT);
+                result.append(aspectEdge.getAttrKind().getName());
+            }
         }
         // use special node label prefixes to indicate edge role
         Aspect edgeAspect = aspectEdge.getAspect();
@@ -570,7 +579,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         LabelPattern result = null;
         if (getNode().getGraphRole() == GraphRole.HOST
             && getJGraph().getLabelStore() != null) {
-            result = getJGraph().getLabelStore().getLabelPattern(getNodeType());
+            result = getJGraph().getLabelStore().getPattern(getNodeType());
         }
         return result;
     }

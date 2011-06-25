@@ -658,8 +658,8 @@ public class JVertexView extends VertexView {
             Shape shape = getShape(this.lineWidth / 2);
             if (this.view.isEdge()) {
                 paintBorder(g2, shape);
-                g.setColor(this.lineColor);
-                g2.fill(shape);
+                //                g.setColor(this.lineColor);
+                //                g2.fill(shape);
             } else {
                 if (isOpaque()) {
                     paintBackground(g2, shape);

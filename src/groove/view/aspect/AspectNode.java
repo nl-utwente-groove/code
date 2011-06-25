@@ -31,6 +31,7 @@ import groove.algebra.Operator;
 import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
+import groove.graph.LabelPattern;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -584,7 +585,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return getEdge() != null;
     }
 
-    /** Sets the colour aspect of this node. */
+    /** Sets the edge aspect of this node. */
     private void setEdge(Aspect edge) throws FormatException {
         assert edge.getKind() == EDGE : String.format(
             "Aspect %s is not an edge declaration", edge);
@@ -597,6 +598,11 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Returns the colour aspect of this node, if any. */
     public Aspect getEdge() {
         return this.edge;
+    }
+
+    /** Returns the edge label pattern of this node, if any. */
+    public LabelPattern getEdgePattern() {
+        return isEdge() ? (LabelPattern) getEdge().getContent() : null;
     }
 
     /** Returns the parameter kind of this node, if any. */
