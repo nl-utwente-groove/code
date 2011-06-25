@@ -21,7 +21,6 @@ import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
-import groove.graph.LabelPattern;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
@@ -109,9 +108,9 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectNode modelNode : getSource().nodeSet()) {
             AspectKind attrKind = modelNode.getAttrKind();
             if (attrKind != NONE) {
-                TypeLabel modelLabel =
+                TypeLabel typeLabel =
                     TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
-                addNodeType(modelNode, modelLabel);
+                addNodeType(modelNode, typeLabel);
             }
         }
         // collect node type edges and build the model type map
@@ -178,23 +177,37 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 oldTypeNode.getType()));
         } else {
             this.modelTyping.put(modelNode, typeLabel);
-            TypeNode typeNode = this.typeNodeMap.get(typeLabel);
-            if (typeNode == null) {
-                typeNode = new TypeNode(modelNode.getNumber(), typeLabel);
-                typeNode.setAbstract(modelNode.getKind() == ABSTRACT);
-                typeNode.setImported(modelNode.hasImport());
-                if (modelNode.hasColor()) {
-                    typeNode.setColor((Color) modelNode.getColor().getContent());
-                }
-                if (modelNode.isEdge()) {
-                    typeNode.setLabelPattern((LabelPattern) modelNode.getEdge().getContent());
-                }
-                this.model.addNode(typeNode);
-                this.typeNodeMap.put(typeLabel, typeNode);
-                this.resourceTyping.put(typeNode, typeLabel);
+            TypeNode typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
+            if (modelNode.getKind() == ABSTRACT) {
+                typeNode.setAbstract(true);
             }
+            if (modelNode.hasImport()) {
+                typeNode.setImported(true);
+            }
+            if (modelNode.hasColor()) {
+                typeNode.setColor((Color) modelNode.getColor().getContent());
+            }
+            if (modelNode.isEdge()) {
+                typeNode.setLabelPattern(modelNode.getEdgePattern());
+            }
+            this.model.addNode(typeNode);
             this.modelMap.putNode(modelNode, typeNode);
         }
+    }
+
+    /**
+     * Returns a type node for a given type label,
+     * with other aspects taken from a given model node.
+     * Reuses previously stored type nodes whenever possible.
+     */
+    private TypeNode getTypeNode(int nr, TypeLabel typeLabel) {
+        TypeNode typeNode = this.typeNodeMap.get(typeLabel);
+        if (typeNode == null) {
+            typeNode = new TypeNode(nr, typeLabel);
+            this.typeNodeMap.put(typeLabel, typeNode);
+            this.resourceTyping.put(typeNode, typeLabel);
+        }
+        return typeNode;
     }
 
     /**
@@ -215,13 +228,23 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         assert typeTarget != null : String.format(
             "Target of model edge '%s' not in element map %s",
             modelEdge.source(), elementMap);
-        if (modelEdge.getKind() == SUBTYPE) {
+        TypeEdge typeEdge = null;
+        if (modelEdge.getAttrKind().isTypedData()) {
+            TypeLabel typeLabel =
+                TypeLabel.createLabel(NODE_TYPE,
+                    modelEdge.getAttrKind().getName());
+            TypeNode typeNode = getTypeNode(0, typeLabel);
+            typeEdge =
+                model.addEdge(typeSource,
+                    modelEdge.getAttrAspect().getContentString(), typeNode);
+        } else if (modelEdge.getKind() == SUBTYPE) {
             model.addSubtype(typeTarget, typeSource);
         } else {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            TypeEdge typeEdge =
-                model.addEdge(typeSource, typeLabel, typeTarget);
+            typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);
             typeEdge.setAbstract(modelEdge.getKind() == ABSTRACT);
+        }
+        if (typeEdge != null) {
             elementMap.putEdge(modelEdge, typeEdge);
         }
     }

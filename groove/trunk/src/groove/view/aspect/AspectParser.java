@@ -79,7 +79,8 @@ public class AspectParser {
                             "Can't parse prefix '%s' (precede with ':' to use literal text)",
                             rest.substring(0, nextSeparator));
                     }
-                    Pair<Aspect,String> parseResult = kind.parseAspect(rest);
+                    Pair<Aspect,String> parseResult =
+                        kind.parseAspect(rest, result.getGraphRole());
                     Aspect aspect = parseResult.one();
                     result.addAspect(aspect);
                     rest = parseResult.two();

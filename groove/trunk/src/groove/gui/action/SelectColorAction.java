@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.GraphTab;
@@ -88,7 +89,8 @@ public class SelectColorAction extends SimulatorAction implements
                     newColour.getGreen(), newColour.getBlue());
             try {
                 colourAspect =
-                    AspectKind.COLOR.getAspect().newInstance(colourString);
+                    AspectKind.COLOR.getAspect().newInstance(colourString,
+                        GraphRole.TYPE);
             } catch (FormatException e) {
                 // this can't happen, as the colour string is constructed correctly
                 assert false;
