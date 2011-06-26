@@ -532,7 +532,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectNode node : nodeSet()) {
             DefaultNode image = result.addNode(node.getNumber());
             elementMap.putNode(node, image);
-            for (DefaultLabel nodeLabel : node.getPlainLabels()) {
+            for (DefaultLabel nodeLabel : node.relabel(oldLabel, newLabel).getPlainLabels()) {
                 result.addEdge(image, nodeLabel, image);
             }
         }
@@ -551,14 +551,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 replacement = TypeLabel.toPrefixedString(newLabel);
             }
             AspectLabel edgeLabel = edge.label();
-            if (replacement != null) {
+            AspectLabel newEdgeLabel = edgeLabel.relabel(oldLabel, newLabel);
+            // force a new object if the inner text has to change
+            if (replacement != null && newEdgeLabel == edgeLabel) {
+                newEdgeLabel = edgeLabel.clone();
+            }
+            if (newEdgeLabel != edgeLabel) {
                 graphChanged = true;
-                AspectLabel newEdgeLabel = edgeLabel.clone();
-                newEdgeLabel.setInnerText(replacement);
-                newEdgeLabel.setFixed();
-                if (!newEdgeLabel.hasErrors()) {
-                    edgeLabel = newEdgeLabel;
+                if (replacement != null) {
+                    newEdgeLabel.setInnerText(replacement);
                 }
+                newEdgeLabel.setFixed();
+                edgeLabel = newEdgeLabel;
             }
             DefaultNode sourceImage = elementMap.getNode(edge.source());
             DefaultNode targetImage = elementMap.getNode(edge.target());

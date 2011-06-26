@@ -19,11 +19,11 @@ package groove.view.aspect;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.COLOR;
 import static groove.view.aspect.AspectKind.CONNECT;
+import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.EDGE;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ID;
 import static groove.view.aspect.AspectKind.IMPORT;
-import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import static groove.view.aspect.AspectKind.READER;
 import static groove.view.aspect.AspectKind.UNTYPED;
@@ -32,6 +32,7 @@ import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
+import groove.graph.TypeLabel;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -154,6 +155,29 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return result;
     }
 
+    /**
+     * Returns an aspect node obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public AspectNode relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        AspectNode result = new AspectNode(getNumber(), getGraphRole());
+        boolean isNew = false;
+        for (AspectLabel oldNodeLabel : this.nodeLabels) {
+            AspectLabel newNodeLabel = oldNodeLabel.relabel(oldLabel, newLabel);
+            newNodeLabel.setFixed();
+            isNew |= newNodeLabel != oldNodeLabel;
+            result.setAspects(newNodeLabel);
+        }
+        if (!isNew) {
+            result = this;
+        }
+        return result;
+    }
+
     @Override
     public boolean hasErrors() {
         return !this.errors.isEmpty();
@@ -210,7 +234,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             throw new FormatException("Node aspect %s only allowed in rules",
                 getAspect(), this);
         } else if (!hasAspect()) {
-            setAspect(AspectKind.NONE.getAspect());
+            setAspect(AspectKind.DEFAULT.getAspect());
         }
         if (hasImport()) {
             if (getAttrKind().isData()) {
@@ -222,7 +246,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             }
         }
         if (!hasAttrAspect()) {
-            setAttrAspect(AspectKind.NONE.getAspect());
+            setAttrAspect(AspectKind.DEFAULT.getAspect());
         }
     }
 
@@ -458,7 +482,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Sets or specialises the attribute aspect of this node. */
     private void setAttrAspect(Aspect newAttr) throws FormatException {
         AspectKind attrKind = newAttr.getKind();
-        assert attrKind == NONE || attrKind.isAttrKind() : String.format(
+        assert attrKind == DEFAULT || attrKind.isAttrKind() : String.format(
             "Aspect %s is not attribute-related", newAttr);
         // it may be the new attribute is inferred from an incoming edge
         // but then we only change the attribute if the new one is "better"
@@ -484,12 +508,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /** Indicates if this represents a rule parameter. */
     public boolean hasAttrAspect() {
-        return this.attr != null && this.attr.getKind() != NONE;
+        return this.attr != null && this.attr.getKind() != DEFAULT;
     }
 
     @Override
     public AspectKind getAttrKind() {
-        return hasAttrAspect() ? getAttrAspect().getKind() : NONE;
+        return hasAttrAspect() ? getAttrAspect().getKind() : DEFAULT;
     }
 
     /** 
@@ -505,7 +529,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /** Changes the (aspect) type of this node. */
     private void setParam(Aspect type) {
-        assert type.getKind() == NONE || type.getKind().isParam() : String.format(
+        assert type.getKind() == DEFAULT || type.getKind().isParam() : String.format(
             "Aspect %s is not a parameter", type);
         this.param = type;
     }
@@ -608,7 +632,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** Returns the parameter kind of this node, if any. */
     public AspectKind getParamKind() {
         assert hasParam();
-        return hasParam() ? getParam().getKind() : NONE;
+        return hasParam() ? getParam().getKind() : DEFAULT;
     }
 
     /** Returns the parameter number, or {@code -1} if there is none. */
@@ -650,7 +674,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      */
     @Override
     public AspectKind getKind() {
-        return hasAspect() ? getAspect().getKind() : NONE;
+        return hasAspect() ? getAspect().getKind() : DEFAULT;
     }
 
     /** 

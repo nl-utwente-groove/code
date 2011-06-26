@@ -141,7 +141,7 @@ public class JVertexView extends VertexView {
      */
     private VertexShape getVertexShape() {
         GraphRole graphRole = GraphRole.NONE;
-        AspectKind attrKind = AspectKind.NONE;
+        AspectKind attrKind = AspectKind.DEFAULT;
         if (getCell() instanceof AspectJVertex) {
             AspectNode node = ((AspectJVertex) getCell()).getNode();
             graphRole = node.getGraphRole();

@@ -56,9 +56,9 @@ public interface AspectElement extends Element, Fixable {
     Aspect getAttrAspect();
 
     /** 
-     * Returns the kind of attribute-related aspect for this element, or {@link AspectKind#NONE}.
+     * Returns the kind of attribute-related aspect for this element, or {@link AspectKind#DEFAULT}.
      * The return value is guaranteed to be valid for the kind of graph,
-     * and if not {@link AspectKind#NONE}, to satisfy {@link AspectKind#isAttrKind()}
+     * and if not {@link AspectKind#DEFAULT}, to satisfy {@link AspectKind#isAttrKind()}
      * @see #getAttrAspect()
      */
     AspectKind getAttrKind();

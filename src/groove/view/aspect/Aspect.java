@@ -19,6 +19,7 @@ package groove.view.aspect;
 import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Constant;
 import groove.graph.GraphRole;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.VariableNode;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.ContentKind;
@@ -109,8 +110,28 @@ public class Aspect {
             throw new UnsupportedOperationException(
                 "New aspects can only be created from prototypes");
         }
-        return new Aspect(this.aspectKind, this.contentKind,
+        return new Aspect(getKind(), this.contentKind,
             this.contentKind.parseContent(text, role));
+    }
+
+    /**
+     * Returns an aspect obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public Aspect relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        Aspect result = this;
+        if (hasContent()) {
+            Object newContent =
+                this.contentKind.relabel(getContent(), oldLabel, newLabel);
+            if (newContent != getContent()) {
+                result = new Aspect(getKind(), this.contentKind, newContent);
+            }
+        }
+        return result;
     }
 
     /** Returns the aspect kind. */

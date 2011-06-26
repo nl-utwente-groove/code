@@ -16,7 +16,7 @@
  */
 package groove.io.external.util;
 
-import static groove.view.aspect.AspectKind.NONE;
+import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
@@ -665,7 +665,7 @@ public final class GraphToTikz {
 
         AspectKind nodeKind =
             node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getKind() : NONE;
+                    ? ((AspectJVertex) node).getNode().getKind() : DEFAULT;
         switch (nodeKind) {
         case ERASER: // Eraser node
             styles.add(ERASER_NODE_STYLE);
@@ -703,7 +703,7 @@ public final class GraphToTikz {
 
         AspectKind attrKind =
             node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind() : NONE;
+                    ? ((AspectJVertex) node).getNode().getAttrKind() : DEFAULT;
         if (attrKind.isData()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
@@ -1003,7 +1003,7 @@ public final class GraphToTikz {
 
         AspectKind edgeKind =
             edge instanceof AspectJEdge
-                    ? ((AspectJEdge) edge).getEdge().getKind() : NONE;
+                    ? ((AspectJEdge) edge).getEdge().getKind() : DEFAULT;
         switch (edgeKind) {
         case ERASER:
             styles.setOne(ERASER_EDGE_STYLE);

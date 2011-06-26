@@ -581,9 +581,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         if (label.equals(GraphJCell.NO_LABEL)) {
             text.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
-        } else if (label.equals(GraphJCell.SUBTYPE_LABEL)) {
-            text.append(Options.SUBTYPE_LABEL_TEXT);
-            specialLabelColour = true;
         } else if (label.text().length() == 0) {
             text.append(Options.EMPTY_LABEL_TEXT);
             specialLabelColour = true;
