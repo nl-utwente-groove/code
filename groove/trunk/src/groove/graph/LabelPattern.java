@@ -141,6 +141,37 @@ public class LabelPattern {
         return true;
     }
 
+    /**
+     * Returns a pattern obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public LabelPattern relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        LabelPattern result = this;
+        if (oldLabel.isBinary()) {
+            List<String> newArgNames = new ArrayList<String>();
+            boolean isNew = false;
+            for (int i = 0; i < getArgNames().size(); i++) {
+                String oldArgName = getArgNames().get(i);
+                boolean relabel = oldLabel.text().equals(oldArgName);
+                String newArgName = relabel ? newLabel.text() : oldArgName;
+                isNew |= newArgName != oldArgName;
+                newArgNames.add(newArgName);
+            }
+            if (isNew) {
+                try {
+                    result = new LabelPattern(getFormat(), newArgNames);
+                } catch (FormatException e) {
+                    assert false;
+                }
+            }
+        }
+        return result;
+    }
+
     private final String format;
     private final List<String> argNames = new ArrayList<String>();
     private final Map<String,Integer> argPositions =

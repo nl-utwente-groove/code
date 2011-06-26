@@ -25,6 +25,7 @@ import groove.annotation.Help;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
 import groove.graph.Multiplicity;
+import groove.graph.TypeLabel;
 import groove.util.Colors;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -48,7 +49,7 @@ import java.util.TreeMap;
  */
 public enum AspectKind {
     /** Default aspect, if none is specified. */
-    NONE("none") {
+    DEFAULT("none") {
         @Override
         public String getPrefix() {
             return "";
@@ -726,7 +727,7 @@ public enum AspectKind {
             b.add("<li> COUNT points to the cardinality of a quantifier.");
             break;
 
-        case NONE:
+        case DEFAULT:
             break;
 
         case PARAM_BI:
@@ -985,35 +986,40 @@ public enum AspectKind {
 
     static {
         for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+            Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:
-                allowedNodeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, INT, BOOL, REAL, STRING, COLOR));
-                allowedEdgeKinds.put(role,
-                    EnumSet.of(NONE, REMARK, LITERAL, LET));
+                nodeKinds =
+                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR);
+                edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
-                allowedNodeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
-                    CREATOR, ADDER, EMBARGO, UNTYPED, BOOL, INT, REAL, STRING,
-                    PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, FORALL, FORALL_POS,
-                    EXISTS, EXISTS_OPT, ID, COLOR));
-                allowedEdgeKinds.put(role, EnumSet.of(REMARK, READER, ERASER,
-                    CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL, STRING,
-                    ARGUMENT, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                    EXISTS_OPT, NESTED, LET, TEST));
+                nodeKinds =
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
+                        UNTYPED, BOOL, INT, REAL, STRING, PRODUCT, PARAM_BI,
+                        PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
+                        EXISTS_OPT, ID, COLOR);
+                edgeKinds =
+                    EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
+                        CONNECT, BOOL, INT, REAL, STRING, ARGUMENT, PATH,
+                        LITERAL, FORALL, FORALL_POS, EXISTS, EXISTS_OPT,
+                        NESTED, LET, TEST);
                 break;
             case TYPE:
-                allowedNodeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
-                    REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE));
-                allowedEdgeKinds.put(role, EnumSet.of(NONE, REMARK, INT, BOOL,
-                    REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
-                    COMPOSITE));
+                nodeKinds =
+                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING,
+                        ABSTRACT, IMPORT, COLOR, EDGE);
+                edgeKinds =
+                    EnumSet.of(INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE,
+                        MULT_IN, MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
-                allowedNodeKinds.put(role, EnumSet.noneOf(AspectKind.class));
-                allowedEdgeKinds.put(role, EnumSet.noneOf(AspectKind.class));
+                nodeKinds = EnumSet.noneOf(AspectKind.class);
+                edgeKinds = EnumSet.noneOf(AspectKind.class);
             }
+            allowedNodeKinds.put(role, nodeKinds);
+            allowedEdgeKinds.put(role, edgeKinds);
         }
     }
 
@@ -1327,9 +1333,9 @@ public enum AspectKind {
             @Override
             Object parseContent(String text, GraphRole role)
                 throws FormatException {
-                Object result = Expression.parse(text);
-                if (result instanceof Expression) {
-                    Expression expr = (Expression) result;
+                Object result;
+                if (text.indexOf('=') < 0) {
+                    Expression expr = Expression.parse(text);
                     if (expr.getKind() == Kind.FIELD) {
                         throw new FormatException(
                             "Identifier '%s' not allowed as predicate expression",
@@ -1341,6 +1347,9 @@ public enum AspectKind {
                             "Non-boolean expression '%s' not allowed as predicate expression",
                             text);
                     }
+                    result = expr;
+                } else {
+                    result = Assignment.parse(text);
                 }
                 return result;
             }
@@ -1348,6 +1357,16 @@ public enum AspectKind {
             @Override
             String toString(Object content) {
                 return content.toString();
+            }
+
+            @Override
+            Object relabel(Object content, TypeLabel oldLabel,
+                    TypeLabel newLabel) {
+                if (content instanceof Assignment) {
+                    return ((Assignment) content).relabel(oldLabel, newLabel);
+                } else {
+                    return ((Expression) content).relabel(oldLabel, newLabel);
+                }
             }
         },
         /** Let expression content. */
@@ -1367,7 +1386,14 @@ public enum AspectKind {
                 throws FormatException {
                 return Assignment.parse(text);
             }
+
+            @Override
+            Object relabel(Object content, TypeLabel oldLabel,
+                    TypeLabel newLabel) {
+                return ((Assignment) content).relabel(oldLabel, newLabel);
+            }
         },
+
         /** Edge declaration content. */
         EDGE {
             @Override
@@ -1385,6 +1411,12 @@ public enum AspectKind {
             LabelPattern parseContent(String text, GraphRole role)
                 throws FormatException {
                 return LabelPattern.parse(text);
+            }
+
+            @Override
+            Object relabel(Object content, TypeLabel oldLabel,
+                    TypeLabel newLabel) {
+                return ((LabelPattern) content).relabel(oldLabel, newLabel);
             }
         };
 
@@ -1504,6 +1536,25 @@ public enum AspectKind {
             } else {
                 return aspect.getPrefix() + toString(content);
             }
+        }
+
+        /**
+        * Relabels a given a content object by changing all
+        * occurrences of a certain label into another.
+        * @param oldLabel the label to be changed
+        * @param newLabel the new value for {@code oldLabel}
+        * @return a clone of the original content with changed labels, or 
+        * the original content if {@code oldLabel} did not occur
+         */
+        Object relabel(Object content, TypeLabel oldLabel, TypeLabel newLabel) {
+            Object result = content;
+            if (this.signature != null && content instanceof String) {
+                // this is a field name
+                if (oldLabel.isBinary() && oldLabel.text().equals(content)) {
+                    result = newLabel.text();
+                }
+            }
+            return result;
         }
 
         /**

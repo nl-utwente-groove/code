@@ -20,12 +20,12 @@ import static groove.graph.GraphRole.RULE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.CONNECT;
+import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.EMBARGO;
 import static groove.view.aspect.AspectKind.ERASER;
 import static groove.view.aspect.AspectKind.LET;
 import static groove.view.aspect.AspectKind.LITERAL;
 import static groove.view.aspect.AspectKind.NESTED;
-import static groove.view.aspect.AspectKind.NONE;
 import static groove.view.aspect.AspectKind.PATH;
 import static groove.view.aspect.AspectKind.READER;
 import static groove.view.aspect.AspectKind.REMARK;
@@ -181,13 +181,13 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             throw new FormatException("Edge aspect %s only allowed in rules",
                 getAspect(), this);
         } else if (!hasAspect()) {
-            setAspect(AspectKind.NONE.getAspect());
+            setAspect(AspectKind.DEFAULT.getAspect());
         }
         if (!hasAttrAspect()) {
-            setAttrAspect(AspectKind.NONE.getAspect());
+            setAttrAspect(AspectKind.DEFAULT.getAspect());
         }
         if (!hasLabelMode()) {
-            setLabelMode(AspectKind.NONE.getAspect());
+            setLabelMode(AspectKind.DEFAULT.getAspect());
         }
     }
 
@@ -367,6 +367,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                         getGraphRole() == RULE ? ":=" : "=");
             } else if (getKind() == CONNECT) {
                 text = "+";
+            } else if (getGraphRole() == GraphRole.TYPE
+                && getAttrKind().isTypedData()) {
+                text = getAttrAspect().getContentString();
             } else {
                 text = getInnerText();
             }
@@ -419,15 +422,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
-        if (getKind() == REMARK || isAssign() || isPredicate()) {
+        if (getKind() == REMARK || isAssign() || isPredicate()
+            || getGraphRole() == GraphRole.TYPE && getAttrKind().isTypedData()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
                 result = TypeLabel.createBinaryLabel(getInnerText());
-            } else if (getGraphRole() == GraphRole.TYPE
-                && getAttrKind().isTypedData()) {
-                result =
-                    TypeLabel.createBinaryLabel(getAttrAspect().getContentString());
             } else {
                 result = TypeLabel.createLabel(getInnerText());
             }
@@ -520,7 +520,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
      */
     @Override
     public AspectKind getKind() {
-        return hasAspect() ? getAspect().getKind() : NONE;
+        return hasAspect() ? getAspect().getKind() : DEFAULT;
     }
 
     /** Retrieves the optional quantification level name of this edge. */
@@ -556,7 +556,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Setter for the aspect type. */
     private void setAttrAspect(Aspect type) {
         AspectKind kind = type.getKind();
-        assert kind == AspectKind.NONE || kind.isAttrKind();
+        assert kind == AspectKind.DEFAULT || kind.isAttrKind();
         assert this.attr == null;
         this.attr = type;
         if (type.getKind() == ARGUMENT) {
@@ -577,12 +577,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     @Override
     public boolean hasAttrAspect() {
-        return this.attr != null && this.attr.getKind() != NONE;
+        return this.attr != null && this.attr.getKind() != DEFAULT;
     }
 
     @Override
     public AspectKind getAttrKind() {
-        return hasAttrAspect() ? getAttrAspect().getKind() : NONE;
+        return hasAttrAspect() ? getAttrAspect().getKind() : DEFAULT;
     }
 
     /** Indicates if this is an argument edge. */
@@ -651,7 +651,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Setter for the label mode. */
     private void setLabelMode(Aspect type) throws FormatException {
         AspectKind kind = type.getKind();
-        assert kind == NONE || kind == PATH || kind == LITERAL;
+        assert kind == DEFAULT || kind == PATH || kind == LITERAL;
         if (this.labelMode == null) {
             this.labelMode = type;
         } else {
@@ -664,7 +664,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
 
     /**
      * Retrieves the label mode of this edge.
-     * This is either {@link AspectKind#NONE}, {@link AspectKind#PATH} or {@link AspectKind#LITERAL}.
+     * This is either {@link AspectKind#DEFAULT}, {@link AspectKind#PATH} or {@link AspectKind#LITERAL}.
      */
     public Aspect getLabelMode() {
         return this.labelMode;

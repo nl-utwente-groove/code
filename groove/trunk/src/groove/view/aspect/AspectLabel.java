@@ -19,6 +19,7 @@ package groove.view.aspect;
 import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
+import groove.graph.TypeLabel;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
@@ -120,6 +121,32 @@ public class AspectLabel extends AbstractLabel {
     @Override
     public AspectLabel clone() {
         return new AspectLabel(this);
+    }
+
+    /**
+     * Returns an aspect label obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        AspectLabel result = this;
+        boolean isNew = false;
+        List<Aspect> newAspects = new ArrayList<Aspect>();
+        for (Aspect aspect : getAspects()) {
+            Aspect newAspect = aspect.relabel(oldLabel, newLabel);
+            isNew |= newAspect != aspect;
+            newAspects.add(newAspect);
+        }
+        if (isNew) {
+            result = new AspectLabel(getGraphRole());
+            for (Aspect newAspect : newAspects) {
+                result.addAspect(newAspect);
+            }
+        }
+        return result;
     }
 
     /** Tests if the aspects and text of this object equal those of another. */

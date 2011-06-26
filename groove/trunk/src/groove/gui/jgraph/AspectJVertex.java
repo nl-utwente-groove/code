@@ -1,6 +1,7 @@
 package groove.gui.jgraph;
 
 import static groove.io.HTMLConverter.ITALIC_TAG;
+import static groove.io.HTMLConverter.STRONG_TAG;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
@@ -71,7 +72,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         super.reset(node);
         this.errors.clear();
         clearExtraErrors();
-        this.aspect = AspectKind.NONE;
+        this.aspect = AspectKind.DEFAULT;
     }
 
     @Override
@@ -290,7 +291,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 StringBuilder line = new StringBuilder();
                 LabelPattern pattern = getNode().getEdgePattern();
                 line.append(pattern.getLabel(pattern.getArgNames().toArray()));
-                result.add(HTMLConverter.STRONG_TAG.on(line));
+                result.add(STRONG_TAG.on(line));
             }
         }
         return result;
@@ -397,7 +398,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 && aspectEdge.getAttrKind().isTypedData()) {
                 // this is a field declaration
                 result.append(TYPE_TEXT);
-                result.append(aspectEdge.getAttrKind().getName());
+                result.append(STRONG_TAG.on(aspectEdge.getAttrKind().getName()));
             }
         }
         // use special node label prefixes to indicate edge role

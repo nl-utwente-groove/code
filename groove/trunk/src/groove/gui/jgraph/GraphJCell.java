@@ -19,7 +19,6 @@ package groove.gui.jgraph;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
-import groove.trans.RuleLabel;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -101,7 +100,4 @@ public interface GraphJCell extends GraphCell, Serializable {
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel(
         EdgeRole.NODE_TYPE, "\u0000");
-    /** Pseudo-label for subtype edges. */
-    static public final RuleLabel SUBTYPE_LABEL = new RuleLabel(
-        TypeLabel.createLabel(EdgeRole.NODE_TYPE, "\u0001"));
 }

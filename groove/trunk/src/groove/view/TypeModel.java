@@ -18,7 +18,7 @@ package groove.view;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
-import static groove.view.aspect.AspectKind.NONE;
+import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import groove.graph.GraphInfo;
 import groove.graph.TypeEdge;
@@ -107,7 +107,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
             AspectKind attrKind = modelNode.getAttrKind();
-            if (attrKind != NONE) {
+            if (attrKind != DEFAULT) {
                 TypeLabel typeLabel =
                     TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
                 addNodeType(modelNode, typeLabel);
@@ -230,10 +230,10 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             modelEdge.source(), elementMap);
         TypeEdge typeEdge = null;
         if (modelEdge.getAttrKind().isTypedData()) {
-            TypeLabel typeLabel =
+            TypeLabel dataTypeLabel =
                 TypeLabel.createLabel(NODE_TYPE,
                     modelEdge.getAttrKind().getName());
-            TypeNode typeNode = getTypeNode(0, typeLabel);
+            TypeNode typeNode = getTypeNode(0, dataTypeLabel);
             typeEdge =
                 model.addEdge(typeSource,
                     modelEdge.getAttrAspect().getContentString(), typeNode);

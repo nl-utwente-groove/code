@@ -993,7 +993,8 @@ public class DefaultFileSystemStore extends SystemStore {
          * The change information in this edit.
          * @see #getChange()
          */
-        private Set<ResourceKind> change;
+        private final Set<ResourceKind> change =
+            EnumSet.noneOf(ResourceKind.class);
         /** The name of this edit. */
         private final String presentationName;
     }

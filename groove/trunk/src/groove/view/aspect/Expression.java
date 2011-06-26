@@ -21,6 +21,7 @@ import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Precedence;
+import groove.graph.TypeLabel;
 import groove.util.ExprParser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -93,6 +94,16 @@ abstract public class Expression {
         return result;
     }
 
+    /**
+     * Returns an expression obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    abstract public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel);
+
     private final Kind kind;
 
     /**
@@ -101,14 +112,8 @@ abstract public class Expression {
      * @return the resulting expression
      * @throws FormatException if the input string contains syntax errors
      */
-    public static Object parse(String text) throws FormatException {
-        Object result;
-        if (text.indexOf('=') < 0) {
-            result = parse(text, null);
-        } else {
-            result = Assignment.parse(text);
-        }
-        return result;
+    public static Expression parse(String text) throws FormatException {
+        return parse(text, null);
     }
 
     /**
@@ -337,10 +342,18 @@ abstract public class Expression {
             return result.toString();
         }
 
+        @Override
+        public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+            if (oldLabel.isBinary() && oldLabel.text().equals(this.field)) {
+                return new Field(getType(), getOwner(), newLabel.text());
+            } else {
+                return this;
+            }
+        }
+
         private final String owner;
         private final String field;
         private final String type;
-
     }
 
     /** Constant expression. */
@@ -393,6 +406,11 @@ abstract public class Expression {
             StringBuilder result = new StringBuilder();
             result.append(getConstant().getSymbol());
             return result.toString();
+        }
+
+        @Override
+        public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+            return this;
         }
 
         private final Constant constant;
@@ -510,9 +528,28 @@ abstract public class Expression {
             return result.toString();
         }
 
+        @Override
+        public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+            Call result = this;
+            if (oldLabel.isBinary()) {
+                List<Expression> newArgs = new ArrayList<Expression>();
+                boolean isNew = false;
+                for (int i = 0; i < getArguments().size(); i++) {
+                    Expression oldArg = getArguments().get(i);
+                    Expression newArg = oldArg.relabel(oldLabel, newLabel);
+                    newArgs.add(newArg);
+                    isNew |= newArg != oldArg;
+                }
+                if (isNew) {
+                    result = new Call(getOperator());
+                    result.getArguments().addAll(newArgs);
+                }
+            }
+            return result;
+        }
+
         private final Operator operator;
         private final List<Expression> arguments = new ArrayList<Expression>();
-
     }
 
     /** Expression kind. */

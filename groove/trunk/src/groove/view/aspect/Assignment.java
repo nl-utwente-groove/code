@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
 /**
@@ -79,6 +80,27 @@ public class Assignment {
         return this.lhs.equals(other.lhs) && this.rhs.equals(other.rhs);
     }
 
+    /**
+     * Returns an assignment obtained from this one by changing all
+     * occurrences of a certain label into another.
+     * @param oldLabel the label to be changed
+     * @param newLabel the new value for {@code oldLabel}
+     * @return a clone of this object with changed labels, or this object
+     *         if {@code oldLabel} did not occur
+     */
+    public Assignment relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        Assignment result = this;
+        if (oldLabel.isBinary()) {
+            Expression newRhs = getRhs().relabel(oldLabel, newLabel);
+            String newLhs =
+                oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
+            if (newRhs != getRhs() || newLhs != getLhs()) {
+                result = new Assignment(newLhs, newRhs);
+            }
+        }
+        return result;
+    }
+
     private final Expression rhs;
     private final String lhs;
 
@@ -104,7 +126,7 @@ public class Assignment {
             throw new FormatException(
                 "Assignment target '%s' is not an identifier", lhs);
         }
-        return new Assignment(lhs, Expression.parse(rhs, null));
+        return new Assignment(lhs, Expression.parse(rhs));
     }
 
     private static boolean isIdentifier(String text) {

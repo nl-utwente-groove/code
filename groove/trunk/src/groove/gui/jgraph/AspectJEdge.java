@@ -1,7 +1,7 @@
 package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.ARGUMENT;
-import static groove.view.aspect.AspectKind.NONE;
+import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
@@ -45,7 +45,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     public AspectJEdge(AspectJGraph jGraph) {
         super(jGraph);
         setUserObject(null);
-        this.aspect = NONE;
+        this.aspect = DEFAULT;
         refreshAttributes();
     }
 
@@ -101,7 +101,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         super.reset();
         this.errors.clear();
         clearExtraErrors();
-        this.aspect = NONE;
+        this.aspect = DEFAULT;
     }
 
     @Override
