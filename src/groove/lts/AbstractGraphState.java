@@ -52,7 +52,6 @@ abstract public class AbstractGraphState extends
         super(reference);
         assert number >= 0;
         this.nr = number;
-        stateCount++;
     }
 
     @Override
@@ -409,12 +408,6 @@ abstract public class AbstractGraphState extends
     /** The total number of delta graphs frozen. */
     static private int frozenGraphCount;
 
-    /**
-     * The number of DefaultStates constructed.
-     * 
-     * @invariant nrNodes >= 0
-     */
-    private static int stateCount;
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new GraphTransitionStub[0];

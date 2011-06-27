@@ -44,7 +44,6 @@ public class ProductNode extends AbstractNode implements RuleNode {
         for (int i = 0; i < arity; i++) {
             this.arguments.add(null);
         }
-        this.argCount = 0;
     }
 
     /**
@@ -68,9 +67,7 @@ public class ProductNode extends AbstractNode implements RuleNode {
                 String.format("Null argument not allowed"));
         }
         VariableNode oldArg = this.arguments.set(i, arg);
-        if (oldArg == null) {
-            this.argCount++;
-        } else if (!oldArg.equals(arg)) {
+        if (oldArg != null && !oldArg.equals(arg)) {
             throw new IllegalArgumentException(String.format(
                 "Argument number %d already contains %s", i, oldArg));
         }
@@ -99,11 +96,7 @@ public class ProductNode extends AbstractNode implements RuleNode {
      * which an outgoing AlgebraEdge is pointing).
      */
     private final List<VariableNode> arguments;
-    /**
-     * The number of arguments (i.e., elements of <code>argument</code>) that
-     * have already been set.
-     */
-    private int argCount;
+
     /** Empty list of value nodes, to be passed to the super constructor. */
     static private final List<VariableNode> EMPTY_ARGUMENT_LIST =
         Arrays.asList();
