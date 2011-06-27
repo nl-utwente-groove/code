@@ -236,7 +236,8 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     /**
      * @return <code>true</code> if the condition associated with this
-     * condition-checker has any negative subconditions (with operator {@link Condition.Op#NOT}). 
+     * condition-checker has any negative subconditions (with operator 
+     * {@link groove.trans.Condition.Op#NOT}). 
      */
     public boolean hasNacs() {
         return this.hasNacSubconditions;
