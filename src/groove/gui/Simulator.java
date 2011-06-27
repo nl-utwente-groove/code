@@ -328,35 +328,6 @@ public class Simulator implements SimulatorListener {
     /** Error display. */
     private ErrorListPanel errorPanel;
 
-    /** Returns the panel containing the control program. */
-    public ControlDisplay getControlDisplay() {
-        if (this.controlDisplay == null) {
-            this.controlDisplay = new ControlDisplay(this);
-        }
-        return this.controlDisplay;
-    }
-
-    /**
-     * Returns the simulator panel on which the LTS. Note that this panel may
-     * currently not be visible.
-     */
-    public LTSDisplay getLtsDisplay() {
-        if (this.ltsDisplay == null) {
-            this.ltsDisplay = new LTSDisplay(this);
-        }
-        return this.ltsDisplay;
-    }
-
-    /**
-     * Returns the prolog panel.
-     */
-    public PrologDisplay getPrologDisplay() {
-        if (this.prologDisplay == null) {
-            this.prologDisplay = new PrologDisplay(this);
-        }
-        return this.prologDisplay;
-    }
-
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
         DisplayKind displayKind = getModel().getDisplay();
@@ -687,6 +658,11 @@ public class Simulator implements SimulatorListener {
     private JMenu createOptionsMenu() {
         JMenu result = new JMenu(OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
+        for (ResourceKind kind : Options.getOptionalTabs()) {
+            String showTabOption = Options.getShowTabOption(kind);
+            result.add(getOptions().getItem(showTabOption));
+        }
+        result.addSeparator();
         result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
         result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
@@ -696,7 +672,6 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.addSeparator();
-        result.add(getOptions().getItem(Options.CANCEL_CONTROL_EDIT_OPTION));
         for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
             result.add(getOptions().getItem(Options.getDeleteOption(resource)));
         }
@@ -861,15 +836,6 @@ public class Simulator implements SimulatorListener {
      * This application's main frame.
      */
     private JFrame frame;
-
-    /** Control display panel. */
-    private ControlDisplay controlDisplay;
-
-    /** LTS display panel. (which is contained in the ConditionalLTSPanel) */
-    private LTSDisplay ltsDisplay;
-
-    /** Prolog display panel. */
-    private PrologDisplay prologDisplay;
 
     /** Returns the history of simulation steps. */
     public StepHistory getStepHistory() {

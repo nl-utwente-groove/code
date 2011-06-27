@@ -214,7 +214,9 @@ public class DefaultFileSystemStore extends SystemStore {
             activeNames.addAll(getProperties().getPrologNames());
             break;
         case CONTROL:
-            activeNames.add(getProperties().getControlName());
+            if (getProperties().isUseControl()) {
+                activeNames.add(getProperties().getControlName());
+            }
         }
         for (String name : names) {
             String text = getTextMap(kind).remove(name);
@@ -282,7 +284,9 @@ public class DefaultFileSystemStore extends SystemStore {
             activeNames.addAll(getProperties().getPrologNames());
             break;
         case CONTROL:
-            activeNames.add(getProperties().getControlName());
+            if (getProperties().isUseControl()) {
+                activeNames.add(getProperties().getControlName());
+            }
         }
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();

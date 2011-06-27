@@ -796,32 +796,50 @@ public class LabelTree extends JTree implements GraphModelListener,
         private final boolean topNode;
     }
 
-    /** Class to deal with mouse events over the label list. */
-    private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor with the correct visibility. */
-        MyMouseListener() {
-            // empty
+    /** Tree node wrapping a type graph. */
+    public class TypeGraphTreeNode extends DefaultMutableTreeNode {
+        /**
+         * Constructs a new node, for a given type graph.
+         * @param name name of the type graph
+         * @param labels labels declared in the type graph 
+         */
+        TypeGraphTreeNode(String name, Set<TypeLabel> labels) {
+            this.name = name;
+            this.labels = labels;
+        }
+
+        /** Returns the name of this type graph. */
+        public final String getName() {
+            return this.name;
+        }
+
+        /** Returns the set of labels defined in this type graph. */
+        public final Set<TypeLabel> getLabels() {
+            return this.labels;
+        }
+
+        /** Indicates if the type graph is currently showing. */
+        public final boolean isShowing() {
+            return this.showing;
+        }
+
+        /** Changes the showing status of this node. */
+        public final void setShowing(boolean showing) {
+            this.showing = showing;
         }
 
         @Override
-        public void mousePressed(MouseEvent evt) {
-            // if (evt.getButton() == MouseEvent.BUTTON3) {
-            // int index =
-            // getRowForLocation(evt.getPoint().x, evt.getPoint().y);
-            // if (index >= 0) {
-            // if (evt.isControlDown()) {
-            // addSelectionInterval(index, index);
-            // } else if (evt.isShiftDown()) {
-            // addSelectionInterval(
-            // getRowForPath(getAnchorSelectionPath()), index);
-            // } else {
-            // setSelectionRow(index);
-            // }
-            // }
-            // }
-            maybeShowPopup(evt);
+        public final String toString() {
+            return "Type graph node for " + this.name;
         }
 
+        private final String name;
+        private final Set<TypeLabel> labels;
+        private boolean showing;
+    }
+
+    /** Class to deal with mouse events over the label list. */
+    private class MyMouseListener extends MouseAdapter {
         @Override
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
@@ -946,6 +964,13 @@ public class LabelTree extends JTree implements GraphModelListener,
                         ? (LabelTree.LabelTreeNode) value : null;
             if (this.labelNode != null && this.labelNode.hasFilterControl()) {
                 this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
+                setBackground(background);
+                // re-add the label (it gets detached if used as a stand-alone
+                // renderer)
+                add(this.jLabel, BorderLayout.CENTER);
+                result = this;
+            } else if (value instanceof TypeGraphTreeNode) {
+                this.checkbox.setSelected(((TypeGraphTreeNode) value).isShowing());
                 setBackground(background);
                 // re-add the label (it gets detached if used as a stand-alone
                 // renderer)

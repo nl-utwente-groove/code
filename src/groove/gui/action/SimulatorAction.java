@@ -148,7 +148,7 @@ public abstract class SimulatorAction extends AbstractAction implements
         case CONTROL:
             return getControlDisplay();
         case HOST:
-            return getStateDisplay();
+            return getHostDisplay();
         case PROLOG:
             return getPrologDisplay();
         case RULE:
@@ -163,7 +163,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the state panel of the simulator. */
-    protected final HostDisplay getStateDisplay() {
+    protected final HostDisplay getHostDisplay() {
         return getDisplaysPanel().getHostDisplay();
     }
 
@@ -179,17 +179,17 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Returns the control panel that owns the action. */
     final protected ControlDisplay getControlDisplay() {
-        return getSimulator().getControlDisplay();
+        return getDisplaysPanel().getControlDisplay();
     }
 
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
-        return getSimulator().getPrologDisplay();
+        return getDisplaysPanel().getPrologDisplay();
     }
 
     /** Returns the prolog panel that owns the action. */
     final protected LTSDisplay getLtsDisplay() {
-        return getSimulator().getLtsDisplay();
+        return getDisplaysPanel().getLtsDisplay();
     }
 
     /** Returns the (possibly {@code null}) edit type of this action.*/

@@ -32,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -69,6 +70,9 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 public class Options implements Cloneable {
     /** Creates an initialised options object. */
     public Options() {
+        for (ResourceKind resource : getOptionalTabs()) {
+            addCheckbox(getShowTabOption(resource));
+        }
         addCheckbox(SHOW_NODE_IDS_OPTION);
         addCheckbox(SHOW_ANCHORS_OPTION);
         addCheckbox(SHOW_ASPECTS_OPTION);
@@ -77,7 +81,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_VALUE_NODES_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
-        addBehaviour(CANCEL_CONTROL_EDIT_OPTION, 2);
         for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
             addBehaviour(getDeleteOption(resource), 2);
         }
@@ -204,14 +207,6 @@ public class Options implements Cloneable {
             result.put(entry.getKey(), entry.getValue().isSelected());
         }
         return result.toString();
-    }
-
-    /** Returns a clone of this options object. */
-    @Override
-    public Options clone() {
-        Options result = new Options();
-        result.itemMap.putAll(this.itemMap);
-        return result;
     }
 
     /**
@@ -847,22 +842,53 @@ public class Options implements Cloneable {
 
     private static final Map<ResourceKind,String> deleteOptionMap =
         new EnumMap<ResourceKind,String>(ResourceKind.class);
+
+    /** Returns the tab show option text for a given resource kind. */
+    public static String getShowTabOption(ResourceKind kind) {
+        String result = showTabOptionMap.get(kind);
+        if (result == null) {
+            showTabOptionMap.put(kind,
+                result = String.format("Show %ss", kind.getDescription()));
+        }
+        return result;
+    }
+
+    private static final Map<ResourceKind,String> showTabOptionMap =
+        new EnumMap<ResourceKind,String>(ResourceKind.class);
+
+    /** Returns the resource kinds for which the display tab is optional. */
+    public static final Set<ResourceKind> getOptionalTabs() {
+        return Collections.unmodifiableSet(optionalTabs);
+    }
+
+    /** Set of resource kinds for which the display tab is optional. */
+    private static final Set<ResourceKind> optionalTabs = EnumSet.of(
+        ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE);
+
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
+    /** Show aspects in graphs and rules option */
+    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
+    /** Show background colour for nodes. */
+    static public final String SHOW_BACKGROUND_OPTION =
+        "Show node background colour";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
+    /** Show the tab for control programs. */
+    static public final String SHOW_CONTROL_TAB_OPTION =
+        "Show control program tab";
+    /** Show the tab for prolog programs. */
+    static public final String SHOW_PROLOG_TAB_OPTION =
+        "Show prolog program tab";
+    /** Show the tab for type graphs. */
+    static public final String SHOW_TYPE_TAB_OPTION = "Show type graph tab";
+    /** Show remark nodes and edges. */
+    static public final String SHOW_REMARKS_OPTION = "Show remarks";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show unfiltered edges to filtered nodes. */
     static public final String SHOW_UNFILTERED_EDGES_OPTION =
         "Show all unfiltered edges";
-    /** Show aspects in graphs and rules option */
-    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
-    /** Show remark nodes and edges. */
-    static public final String SHOW_REMARKS_OPTION = "Show remarks";
-    /** Show background colour for nodes. */
-    static public final String SHOW_BACKGROUND_OPTION =
-        "Show node background colour";
     /** Show data values as nodes rather than assignments. */
     static public final String SHOW_VALUE_NODES_OPTION =
         "Show data values as nodes";
@@ -891,6 +917,9 @@ public class Options implements Cloneable {
         new HashMap<String,Integer>();
 
     static {
+        for (ResourceKind optionalTab : optionalTabs) {
+            boolOptionDefaults.put(getShowTabOption(optionalTab), false);
+        }
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
@@ -899,7 +928,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
-        intOptionDefaults.put(CANCEL_CONTROL_EDIT_OPTION, BehaviourOption.ASK);
         for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
             intOptionDefaults.put(getDeleteOption(resource),
                 BehaviourOption.ASK);
