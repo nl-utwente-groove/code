@@ -124,9 +124,7 @@ public class RuleLabel extends AbstractLabel {
         return this.regExpr != null;
     }
 
-    /**
-     * Returns the underlying regular expression.
-     */
+    /** Returns the underlying regular expression. */
     public RegExpr getMatchExpr() {
         return this.regExpr;
     }
@@ -166,18 +164,14 @@ public class RuleLabel extends AbstractLabel {
         return result;
     }
 
-    /**
-     * Tests this label wraps a
-     * {@link RegExpr.Atom}.
-     */
+    /** Tests this label wraps a {@link groove.rel.RegExpr.Atom}. */
     public boolean isAtom() {
         return getAtomText() != null;
     }
 
     /**
-     * If this label wraps a
-     * {@link RegExpr.Atom}, returns the text of the atom. Returns
-     * <code>null</code> otherwise.
+     * If this label wraps a {@link groove.rel.RegExpr.Atom}, returns the
+     * text of the atom. Returns <code>null</code> otherwise.
      */
     public String getAtomText() {
         RegExpr expr = getMatchExpr();
@@ -187,7 +181,7 @@ public class RuleLabel extends AbstractLabel {
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Atom} or a {@link RegExpr.Sharp}, 
+     * {@link groove.rel.RegExpr.Atom} or a {@link groove.rel.RegExpr.Sharp}, 
      * returns the default label corresponding
      * to the atom or sharp text. Returns
      * <code>null</code> otherwise.
@@ -203,18 +197,12 @@ public class RuleLabel extends AbstractLabel {
         }
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Empty}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Empty}. */
     public boolean isEmpty() {
         return getMatchExpr() instanceof RegExpr.Empty;
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Sharp}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Sharp}. */
     public boolean isSharp() {
         RegExpr regExpr = getMatchExpr();
         return regExpr == null ? false : regExpr.isSharp();
@@ -222,7 +210,7 @@ public class RuleLabel extends AbstractLabel {
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Sharp}, returns the sharp type label.
+     * {@link groove.rel.RegExpr.Sharp}, returns the sharp type label.
      * Returns {@code null} otherwise.
      */
     public TypeLabel getSharpLabel() {
@@ -230,10 +218,7 @@ public class RuleLabel extends AbstractLabel {
         return regExpr == null ? null : regExpr.getSharpLabel();
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Wildcard}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Wildcard}. */
     public boolean isWildcard() {
         RegExpr regExpr = getMatchExpr();
         return regExpr == null ? false : regExpr.isWildcard();
@@ -250,7 +235,7 @@ public class RuleLabel extends AbstractLabel {
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Wildcard}, returns the kind of label the wildcard
+     * {@link groove.rel.RegExpr.Wildcard}, returns the kind of label the wildcard
      * matches against.
      * Returns {@code -1} otherwise.
      */
@@ -261,7 +246,7 @@ public class RuleLabel extends AbstractLabel {
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Wildcard}, returns the constraint of the wildcard, if any.
+     * {@link groove.rel.RegExpr.Wildcard}, returns the constraint of the wildcard, if any.
      * Returns <code>null</code> in all other cases.
      */
     public Property<TypeLabel> getWildcardGuard() {
@@ -269,17 +254,14 @@ public class RuleLabel extends AbstractLabel {
         return regExpr == null ? null : regExpr.getWildcardGuard();
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Choice}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Choice}. */
     public boolean isChoice() {
         return getChoiceOperands() != null;
     }
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Choice}, returns the list of operands of the regular
+     * {@link groove.rel.RegExpr.Choice}, returns the list of operands of the regular
      * expression. Returns <code>null</code> otherwise.
      */
     public List<RegExpr> getChoiceOperands() {
@@ -290,16 +272,13 @@ public class RuleLabel extends AbstractLabel {
         return null;
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Seq}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Seq}. */
     public boolean isSeq() {
         return getSeqOperands() != null;
     }
 
     /**
-     * If this label wraps a {@link RegExpr.Seq},
+     * If this label wraps a {@link groove.rel.RegExpr.Seq},
      * returns the list of operands of the regular expression. Returns
      * <code>null</code> in all other cases.
      */
@@ -311,17 +290,14 @@ public class RuleLabel extends AbstractLabel {
         return null;
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Star}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Star}. */
     public boolean isStar() {
         return getStarOperand() != null;
     }
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Star}, returns the operand of the regular expression.
+     * {@link groove.rel.RegExpr.Star}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
     public RegExpr getStarOperand() {
@@ -332,17 +308,14 @@ public class RuleLabel extends AbstractLabel {
         return null;
     }
 
-    /**
-     * Tests if whis label wraps a
-     * {@link RegExpr.Plus}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Plus}. */
     public boolean isPlus() {
         return getPlusOperand() != null;
     }
 
     /**
      * If this label wraps a
-     * {@link RegExpr.Plus}, returns the operand of the regular expression.
+     * {@link groove.rel.RegExpr.Plus}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
     public RegExpr getPlusOperand() {
@@ -353,16 +326,13 @@ public class RuleLabel extends AbstractLabel {
         return null;
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Inv}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Inv}. */
     public boolean isInv() {
         return getInvLabel() != null;
     }
 
     /**
-     * If this label wraps a {@link RegExpr.Inv},
+     * If this label wraps a {@link groove.rel.RegExpr.Inv},
      * returns the operand label. Returns
      * <code>null</code> otherwise.
      */
@@ -375,16 +345,13 @@ public class RuleLabel extends AbstractLabel {
         return result;
     }
 
-    /**
-     * Tests if this label wraps a
-     * {@link RegExpr.Neg}.
-     */
+    /** Tests if this label wraps a {@link groove.rel.RegExpr.Neg}. */
     public boolean isNeg() {
         return getNegOperand() != null;
     }
 
     /**
-     * If  this label wraps a {@link RegExpr.Neg},
+     * If  this label wraps a {@link groove.rel.RegExpr.Neg},
      * returns the operand of the regular expression. Returns
      * <code>null</code> in all other cases.
      */

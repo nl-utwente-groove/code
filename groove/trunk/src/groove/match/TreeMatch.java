@@ -74,9 +74,10 @@ public class TreeMatch implements Fixable {
     /**
      * Returns the operator of this tree match.
      * Note that this may be different from the operator of the condition:
-     * in particular, the match operator may be {@link Condition.Op#AND} when
-     * the condition is {@link Condition.Op#FORALL}, or {@link Condition.Op#OR} when
-     * the condition is {@link Condition.Op#EXISTS}.
+     * in particular, the match operator may be {@link groove.trans.Condition.Op#AND} when
+     * the condition is {@link groove.trans.Condition.Op#FORALL}, or
+     * {@link groove.trans.Condition.Op#OR} when the condition is
+     * {@link groove.trans.Condition.Op#EXISTS}.
      */
     public final Condition.Op getOp() {
         return this.op;

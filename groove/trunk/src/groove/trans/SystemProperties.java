@@ -668,10 +668,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     static public final SystemProperties DEFAULT_PROPERTIES = getInstance();
 
     /**
-     * Extends the {@link Property.IsBoolean} class by also allowing positive
-     * numerical values to stand for <code>true</code>, and <code>0</code> for
-     * <code>false</code>. Used for compatibility purposes (these properties at
-     * some point only accepted numerical values).
+     * Extends the {@link groove.util.Property.IsBoolean} class by also
+     * allowing positive numerical values to stand for <code>true</code>, and
+     * <code>0</code> for <code>false</code>. Used for compatibility purposes
+     * (these properties at some point only accepted numerical values).
      */
     static private class IsExtendedBoolean extends Property.IsBoolean {
         /**

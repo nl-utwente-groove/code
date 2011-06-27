@@ -25,7 +25,6 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.rel.RegAut;
-import groove.rel.RegExpr;
 import groove.trans.Condition.Op;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -561,7 +560,7 @@ public class RuleDependencies {
      * Returns the (default) labels that may be matched modulo subtyping by a given
      * condition label - such as a sharp label, wildcard, or other
      * type of regular expression.
-     * The label may not wrap {@link RegExpr.Neg}.
+     * The label may not wrap {@link groove.rel.RegExpr.Neg}.
      */
     private Set<TypeLabel> getMatchedLabels(RuleLabel label) {
         assert !label.isNeg();
@@ -581,7 +580,7 @@ public class RuleDependencies {
     /**
      * Returns the (default) label that may be precisely matched by a given
      * condition label - such as a default label or wildcard.
-     * The label may not wrap {@link RegExpr.Neg}.
+     * The label may not wrap {@link groove.rel.RegExpr.Neg}.
      */
     private TypeLabel getSharpLabel(RuleLabel label) {
         assert !label.isNeg();
