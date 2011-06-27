@@ -91,10 +91,8 @@ public abstract class ResourceDisplay extends Display implements
             res.add(getCopyAction());
             res.add(getDeleteAction());
             res.add(getRenameAction());
-            if (getResourceKind() != ResourceKind.PROLOG) {
-                res.addSeparator();
-                res.add(getEnableAction());
-            }
+            res.addSeparator();
+            res.add(getEnableAction());
         }
         return res;
     }
@@ -129,9 +127,7 @@ public abstract class ResourceDisplay extends Display implements
         } else {
             result.addSeparator();
         }
-        if (getKind() != DisplayKind.PROLOG) {
-            result.add(getEnableButton());
-        }
+        result.add(getEnableButton());
         return result;
     }
 

@@ -19,12 +19,10 @@ package groove.io.store;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
-import static groove.trans.ResourceKind.CONTROL;
 import static groove.trans.ResourceKind.PROPERTIES;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultGraph;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.EditType;
@@ -209,22 +207,37 @@ public class DefaultFileSystemStore extends SystemStore {
             Collection<String> names) throws IOException {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
+        boolean activeChanged = false;
+        Set<String> activeNames = new TreeSet<String>();
+        switch (kind) {
+        case PROLOG:
+            activeNames.addAll(getProperties().getPrologNames());
+            break;
+        case CONTROL:
+            activeNames.add(getProperties().getControlName());
+        }
         for (String name : names) {
             String text = getTextMap(kind).remove(name);
             if (text != null) {
                 oldTexts.put(name, text);
                 createFile(kind, name).delete();
+                activeChanged |= activeNames.remove(name);
             }
         }
         // change the control-related system properties, if necessary
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        if (kind == CONTROL
-            && oldTexts.keySet().equals(getProperties().getControlName())) {
+        if (activeChanged) {
             oldProps = getProperties();
             newProps = getProperties().clone();
-            newProps.setUseControl(false);
-            newProps.setControlName("");
+            switch (kind) {
+            case PROLOG:
+                newProps.setPrologNames(activeNames);
+                break;
+            case CONTROL:
+                newProps.setUseControl(false);
+                newProps.setControlName("");
+            }
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
@@ -260,13 +273,28 @@ public class DefaultFileSystemStore extends SystemStore {
         String previous = getTextMap(kind).put(newName, text);
         assert previous == null;
         newTexts.put(newName, text);
+        // check if this affects the system properties
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        String activeControl = getProperties().getControlName();
-        if (kind == CONTROL && oldName.equals(activeControl)) {
+        Set<String> activeNames = new TreeSet<String>();
+        switch (kind) {
+        case PROLOG:
+            activeNames.addAll(getProperties().getPrologNames());
+            break;
+        case CONTROL:
+            activeNames.add(getProperties().getControlName());
+        }
+        if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
-            newProps.setControlName(newName);
+            switch (kind) {
+            case PROLOG:
+                activeNames.add(newName);
+                newProps.setPrologNames(activeNames);
+                break;
+            case CONTROL:
+                newProps.setControlName(newName);
+            }
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts,
@@ -516,7 +544,6 @@ public class DefaultFileSystemStore extends SystemStore {
                 loadGraphs(kind, kind.getFilter());
             }
         }
-        enableTypes();
         notifyObservers(new MyEdit(EditType.CREATE,
             EnumSet.allOf(ResourceKind.class)));
         this.initialised = true;
@@ -583,20 +610,6 @@ public class DefaultFileSystemStore extends SystemStore {
             return LayedOutXml.getInstance();
         } else {
             return DefaultGxl.getInstance();
-        }
-    }
-
-    /**
-     * Processes the {@link SystemProperties#getTypeNames()} field by
-     * setting the enabling of the rtype graphs accordingly
-     */
-    private void enableTypes() {
-        // enable the active types listed in the system properties
-        Set<String> enabledTypes =
-            new HashSet<String>(getProperties().getTypeNames());
-        for (AspectGraph typeGraph : getGraphMap(TYPE).values()) {
-            GraphInfo.getProperties(typeGraph, true).setEnabled(
-                enabledTypes.contains(typeGraph.getName()));
         }
     }
 
@@ -778,7 +791,6 @@ public class DefaultFileSystemStore extends SystemStore {
         if (oldPropertiesFile.exists()) {
             oldPropertiesFile.delete();
         }
-        enableTypes();
     }
 
     private void testInit() throws IllegalStateException {
@@ -1145,6 +1157,21 @@ public class DefaultFileSystemStore extends SystemStore {
         public PutPropertiesEdit(SystemProperties oldProperties,
                 SystemProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
+            if (!oldProperties.getPrologNames().equals(
+                newProperties.getPrologNames())) {
+                addChange(ResourceKind.PROLOG);
+            }
+            if (oldProperties.isUseControl() != newProperties.isUseControl()) {
+                addChange(ResourceKind.CONTROL);
+            } else if (oldProperties.isUseControl()
+                && !oldProperties.getControlName().equals(
+                    newProperties.getControlName())) {
+                addChange(ResourceKind.CONTROL);
+            }
+            if (!oldProperties.getTypeNames().equals(
+                newProperties.getTypeNames())) {
+                addChange(ResourceKind.TYPE);
+            }
             this.oldProperties = oldProperties;
             this.newProperties = newProperties;
         }

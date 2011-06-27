@@ -38,7 +38,7 @@ public class PrologModel extends TextBasedModel<String> {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return getGrammar().getProperties().getPrologNames().contains(getName());
     }
 
     @Override

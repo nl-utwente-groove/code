@@ -55,6 +55,11 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     @Override
+    public boolean isEnabled() {
+        return getGrammar().getProperties().getTypeNames().contains(getName());
+    }
+
+    @Override
     public TypeGraph toResource() throws FormatException {
         initialise();
         if (this.model == null) {
