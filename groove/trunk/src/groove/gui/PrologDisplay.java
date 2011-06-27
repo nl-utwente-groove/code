@@ -73,7 +73,6 @@ import javax.swing.tree.TreePath;
  * @author Michiel Hendriks
  */
 public class PrologDisplay extends ResourceDisplay {
-    private static final long serialVersionUID = 1728208313657610091L;
     private static final int MAX_HISTORY = 50;
 
     static final Preferences PREFS =

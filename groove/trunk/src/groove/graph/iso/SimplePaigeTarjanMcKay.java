@@ -269,8 +269,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
 
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;
-    /** Total number of times the symmetry was broken. */
-    static private int mergedBlockCount;
+
     /** Number of bits in an int. */
     static private final int INT_WIDTH = 32;
 
@@ -662,7 +661,6 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
                 otherNode.setBlock(this);
                 this.nodes.add(otherNode);
             }
-            SimplePaigeTarjanMcKay.mergedBlockCount++;
         }
 
         /**

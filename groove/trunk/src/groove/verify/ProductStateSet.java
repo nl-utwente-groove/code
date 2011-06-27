@@ -47,8 +47,6 @@ public class ProductStateSet {
         // new states are first considered open
         if (result == null) {
             // openStates.put(newState);
-            this.stateCount++;
-            this.openStateCount++;
             fireAddState(newState);
         }
         return result;
@@ -61,9 +59,7 @@ public class ProductStateSet {
      */
     public void setClosed(ProductState state) {
         if (state.setClosed()) {
-            // openStates.remove(state);
             this.closedCount++;
-            this.openStateCount--;
         }
         // always notify listeners of state-closing
         // even if the state was already closed
@@ -143,8 +139,6 @@ public class ProductStateSet {
     }
 
     private final TreeHashSet<ProductState> stateSet = new TreeHashStateSet();
-    private int stateCount = 0;
-    private int openStateCount = 0;
     private int closedCount = 0;
 
     private final Set<ProductListener> listeners =
