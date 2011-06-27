@@ -509,11 +509,13 @@ public class GrammarModel implements Observer {
             this.prologEnvironment = new GrooveEnvironment(null, null);
             for (ResourceModel<?> model : getResourceSet(PROLOG)) {
                 PrologModel prologModel = (PrologModel) model;
-                try {
-                    this.prologEnvironment.loadProgram(prologModel.getProgram());
-                    prologModel.clearErrors();
-                } catch (FormatException e) {
-                    prologModel.setErrors(e.getErrors());
+                if (model.isEnabled()) {
+                    try {
+                        this.prologEnvironment.loadProgram(prologModel.getProgram());
+                        prologModel.clearErrors();
+                    } catch (FormatException e) {
+                        prologModel.setErrors(e.getErrors());
+                    }
                 }
             }
         }

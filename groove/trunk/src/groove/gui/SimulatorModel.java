@@ -185,17 +185,24 @@ public class SimulatorModel implements Cloneable {
                 getStore().putGraphs(ResourceKind.RULE, newRules);
                 break;
             case TYPE:
-                List<String> activeTypes =
-                    new ArrayList<String>(newProperties.getTypeNames());
+            case PROLOG:
+                List<String> actives = new ArrayList<String>();
+                if (resource == ResourceKind.TYPE) {
+                    actives.addAll(newProperties.getTypeNames());
+                } else {
+                    actives.addAll(newProperties.getPrologNames());
+                }
                 for (String typeName : names) {
-                    if (!activeTypes.remove(typeName)) {
-                        activeTypes.add(typeName);
+                    if (!actives.remove(typeName)) {
+                        actives.add(typeName);
                     }
                 }
-                newProperties.setTypeNames(activeTypes);
+                if (resource == ResourceKind.TYPE) {
+                    newProperties.setTypeNames(actives);
+                } else {
+                    newProperties.setPrologNames(actives);
+                }
                 getStore().putProperties(newProperties);
-                break;
-            case PROLOG:
                 break;
             case PROPERTIES:
             default:
