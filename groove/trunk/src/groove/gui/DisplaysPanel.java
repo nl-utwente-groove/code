@@ -19,11 +19,14 @@ package groove.gui;
 import groove.gui.Display.ListPanel;
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
+import groove.view.GrammarModel;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EnumSet;
@@ -51,14 +54,12 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         this.simulator = simulator;
         addTab(getHostDisplay());
         addTab(getRuleDisplay());
-        addTab(simulator.getLtsDisplay());
-        addTab(simulator.getControlDisplay());
+        addTab(getLtsDisplay());
+        addTab(getControlDisplay());
         addTab(getTypeDisplay());
-        addTab(simulator.getPrologDisplay());
+        addTab(getPrologDisplay());
         setSelectedIndex(0);
         installListeners();
-        simulator.getModel().addListener(this, Change.DISPLAY, Change.HOST,
-            Change.RULE, Change.TYPE);
         setVisible(true);
     }
 
@@ -66,7 +67,36 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         DisplayKind kind = component.getKind();
         this.displaysMap.put(kind, component);
         this.listKindMap.put(component.getListPanel(), kind);
-        attach(component);
+        if (Options.getOptionalTabs().contains(kind.getResource())) {
+            showOrHideTab(kind.getResource());
+        } else {
+            attach(component);
+        }
+    }
+
+    /** 
+     * Shows or hides one of the optional tabs.
+     * @return {@code true} if the tab is now shown
+     */
+    private boolean showOrHideTab(ResourceKind resource) {
+        String optionName = Options.getShowTabOption(resource);
+        boolean show = this.simulator.getOptions().isSelected(optionName);
+        if (!show) {
+            GrammarModel grammar = getSimulatorModel().getGrammar();
+            show =
+                grammar != null && !grammar.getResourceSet(resource).isEmpty();
+        }
+        Display display = getDisplayFor(resource);
+        DisplayKind displayKind = DisplayKind.toDisplay(resource);
+        if (show) {
+            if (!this.detachedMap.containsKey(displayKind)) {
+                attach(display);
+            }
+        } else {
+            remove(display.getDisplayPanel());
+            getListsPanel(displayKind).remove(display.getListPanel());
+        }
+        return show;
     }
 
     private void installListeners() {
@@ -74,11 +104,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int index = indexAtLocation(e.getX(), e.getY());
-                if (index >= 0 && e.getButton() == MouseEvent.BUTTON3) {
-                    Display panel = getDisplayAt(index);
-                    createDetachMenu(panel).show(DisplaysPanel.this, e.getX(),
-                        e.getY());
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    int index = indexAtLocation(e.getX(), e.getY());
+                    JPopupMenu menu;
+                    if (index >= 0) {
+                        Display panel = getDisplayAt(index);
+                        menu = createDetachMenu(panel);
+                    } else {
+                        menu = createOptionalsMenu();
+                    }
+                    menu.show(DisplaysPanel.this, e.getX(), e.getY());
                 }
             }
         });
@@ -94,6 +129,21 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 DisplaysPanel.this.changingTabs = false;
             }
         };
+        Options options = this.simulator.getOptions();
+        for (final ResourceKind optionalTab : Options.getOptionalTabs()) {
+            String optionName = Options.getShowTabOption(optionalTab);
+            options.getItem(optionName).addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if (showOrHideTab(optionalTab)) {
+                        getSimulatorModel().setDisplay(
+                            DisplayKind.toDisplay(optionalTab));
+                    }
+                }
+            });
+        }
+        this.simulator.getModel().addListener(this, Change.DISPLAY,
+            Change.GRAMMAR);
         activateListeners();
     }
 
@@ -131,6 +181,35 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.typeDisplay;
     }
 
+    /**
+     * Returns the simulator panel on which the LTS. Note that this panel may
+     * currently not be visible.
+     */
+    public LTSDisplay getLtsDisplay() {
+        if (this.ltsDisplay == null) {
+            this.ltsDisplay = new LTSDisplay(this.simulator);
+        }
+        return this.ltsDisplay;
+    }
+
+    /** Returns the panel containing the control program. */
+    public ControlDisplay getControlDisplay() {
+        if (this.controlDisplay == null) {
+            this.controlDisplay = new ControlDisplay(this.simulator);
+        }
+        return this.controlDisplay;
+    }
+
+    /**
+     * Returns the prolog panel.
+     */
+    public PrologDisplay getPrologDisplay() {
+        if (this.prologDisplay == null) {
+            this.prologDisplay = new PrologDisplay(this.simulator);
+        }
+        return this.prologDisplay;
+    }
+
     /** Upper tabbed pane holding the list panels of the various components on the 
      * {@link DisplaysPanel}.
      * @see Display#getListPanel()
@@ -166,6 +245,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
+        if (changes.contains(Change.GRAMMAR)) {
+            for (ResourceKind optionalTab : Options.getOptionalTabs()) {
+                showOrHideTab(optionalTab);
+            }
+        }
         if (changes.contains(Change.DISPLAY)) {
             if (!this.changingTabs) {
                 Display panel = this.displaysMap.get(source.getDisplay());
@@ -253,6 +337,23 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
         this.detachedMap.remove(display.getKind());
         DisplayKind myKind = display.getKind();
+        // first add the corresponding list panel
+        JPanel listPanel = display.getListPanel();
+        JTabbedPane tabbedPane = getListsPanel(display.getKind());
+        if (tabbedPane.indexOfComponent(listPanel) < 0) {
+            int index;
+            for (index = 0; index < tabbedPane.getTabCount(); index++) {
+                DisplayKind otherKind =
+                    this.listKindMap.get(tabbedPane.getComponentAt(index));
+                if (otherKind == null || myKind.compareTo(otherKind) < 0) {
+                    // insert here
+                    break;
+                }
+            }
+            tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
+                myKind.getTip(), index);
+        }
+        // now add the display panel
         int index;
         for (index = 0; index < getTabCount(); index++) {
             DisplayKind otherKind = getDisplayAt(index).getKind();
@@ -264,25 +365,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         insertTab(null, null, display.getDisplayPanel(), myKind.getTip(), index);
         TabLabel tabComponent =
             new TabLabel(this, display, myKind.getTabIcon(), null);
-        //        tabComponent.setVerticalTextPosition(JLabel.BOTTOM);
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
-        // now add the corresponding list panel
-        JPanel listPanel = display.getListPanel();
-        JTabbedPane tabbedPane = getListsPanel(display.getKind());
-        if (tabbedPane.indexOfComponent(listPanel) < 0) {
-            for (index = 0; index < tabbedPane.getTabCount(); index++) {
-                DisplayKind otherKind =
-                    this.listKindMap.get(tabbedPane.getComponentAt(index));
-                if (otherKind == null || myKind.compareTo(otherKind) < 0) {
-                    // insert here
-                    break;
-                }
-            }
+        if (index == getSelectedIndex()) {
+            setTabEnabled(index, true);
         }
-        tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
-            myKind.getTip(), index);
-        setSelectedComponent(display.getDisplayPanel());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
@@ -297,7 +384,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public JFrame getFrameOf(Component panel) {
         if (indexOfComponent(panel) < 0) {
             Container window = panel.getParent();
-            while (!(window instanceof DisplayWindow)) {
+            while (window != null && !(window instanceof DisplayWindow)) {
                 window = window.getParent();
             }
             return (JFrame) window;
@@ -335,6 +422,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 detach(component);
             }
         });
+        return result;
+    }
+
+    /** Creates a popup menu for showing the optional tabs. */
+    private JPopupMenu createOptionalsMenu() {
+        JPopupMenu result = new JPopupMenu();
+        for (ResourceKind optionalTab : Options.getOptionalTabs()) {
+            String optionName = Options.getShowTabOption(optionalTab);
+            result.add(this.simulator.getOptions().getItem(optionName));
+        }
         return result;
     }
 
@@ -414,12 +511,19 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping of currently detached displays. */
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
-    /** The rule tab shown on this panel. */
+    /** The state tab shown on this panel. */
     private HostDisplay stateDisplay;
     /** The rule tab shown on this panel. */
     private RuleDisplay ruleDisplay;
-    /** The type tab shown on this panel. */
+    /** The type graph tab shown on this panel. */
     private TypeDisplay typeDisplay;
+    /** LTS tab shown on this panel. */
+    private LTSDisplay ltsDisplay;
+    /** Prolog display panel. */
+    private PrologDisplay prologDisplay;
+    /** Control display panel. */
+    private ControlDisplay controlDisplay;
+
     /** Panel with the rules and states lists. */
     private JTabbedPane upperListsPanel;
     /** Panel with the other resource lists. */

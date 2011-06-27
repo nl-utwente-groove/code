@@ -98,7 +98,7 @@ public class TabLabel extends JPanel {
                 Font.BOLD));
         }
         add(this.iconLabel);
-        if (button) {
+        if (button && title != null) {
             add(getButton());
         }
     }

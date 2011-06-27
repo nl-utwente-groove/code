@@ -365,7 +365,8 @@ public class ActionStore implements SimulatorListener {
     /** Returns the export action appropriate for a given simulator tab kind. */
     public ExportAction getExportStateAction() {
         if (this.exportStateAction == null) {
-            LTSDisplay display = this.simulator.getLtsDisplay();
+            LTSDisplay display =
+                this.simulator.getDisplaysPanel().getLtsDisplay();
             this.exportStateAction =
                 display.getStateTab().getJGraph().getExportAction();
         }
