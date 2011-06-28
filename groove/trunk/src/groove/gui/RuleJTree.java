@@ -838,7 +838,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             if (value instanceof DirectoryTreeNode) {
                 icon = Icons.GPS_FOLDER_ICON;
             } else if (value instanceof RuleTreeNode) {
-                String ruleName = value.toString();
+                String ruleName = ((RuleTreeNode) value).getRule().getName();
                 icon = RuleJTree.this.display.getListIcon(ruleName);
                 error = RuleJTree.this.display.hasError(ruleName);
                 setToolTipText(((RuleTreeNode) value).getToolTipText());
