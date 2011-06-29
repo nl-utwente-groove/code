@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n43"/>
+        <node id="n42"/>
+        <edge from="n42" to="n43">
+            <attr name="label">
+                <string>a</string>
+            </attr>
+        </edge>
+        <edge from="n42" to="n42">
+            <attr name="label">
+                <string>a</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
