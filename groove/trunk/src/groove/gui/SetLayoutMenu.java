@@ -19,6 +19,7 @@ package groove.gui;
 import groove.gui.action.LayoutAction;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.LayoutKind;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 
@@ -58,6 +59,10 @@ public class SetLayoutMenu extends JMenu {
     public SetLayoutMenu(GraphJGraph jgraph) {
         this(jgraph, new ForestLayouter());
         addLayoutItem(new SpringLayouter());
+        this.addSeparator();
+        for (LayoutKind kind : LayoutKind.values()) {
+            addLayoutItem(LayoutKind.getLayouterItemProto(kind));
+        }
     }
 
     /** Returns the layout item describing the currently selected layout action. */
