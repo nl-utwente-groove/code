@@ -72,6 +72,7 @@ public class ErrorDialog extends JDialog {
 
         // setup message pane
         JPanel messagePane = new JPanel(new BorderLayout());
+        messagePane.setPreferredSize(new Dimension(300, 100));
         messagePane.add(this.detailsPane, BorderLayout.CENTER);
 
         // setup option pane
@@ -97,6 +98,7 @@ public class ErrorDialog extends JDialog {
         ActionListener buttonListener = new ButtonListener();
         this.cancelButton.addActionListener(buttonListener);
         this.detailsButton.addActionListener(buttonListener);
+        pack();
     }
 
     /**
@@ -132,8 +134,7 @@ public class ErrorDialog extends JDialog {
             this.detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
         }
         this.detailsButton.setText(DETAILS_LEVEL_TEXT[detailsLevel]);
-        setPreferredSize();
-        pack();
+        repaint();
     }
 
     /** Button to control the amount of detail shown about the error. */
