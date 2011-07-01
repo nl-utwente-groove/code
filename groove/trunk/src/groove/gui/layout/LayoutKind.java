@@ -16,6 +16,9 @@
  */
 package groove.gui.layout;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.jgraph.layout.JGraphLayout;
 import com.jgraph.layout.graph.JGraphSimpleLayout;
 import com.jgraph.layout.organic.JGraphFastOrganicLayout;
@@ -76,6 +79,14 @@ public enum LayoutKind {
 
     /** Returns the prototype instance of the menu item. */
     public static LayouterItem getLayouterItemProto(LayoutKind kind) {
-        return new LayouterItem(kind);
+        LayouterItem result = map.get(kind);
+        if (result == null) {
+            result = new LayouterItem(kind);
+            map.put(kind, result);
+        }
+        return result;
     }
+
+    private static Map<LayoutKind,LayouterItem> map =
+        new HashMap<LayoutKind,LayouterItem>();
 }
