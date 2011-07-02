@@ -26,8 +26,10 @@ import static groove.gui.jgraph.JGraphUI.DragMode.PAN;
 import static groove.gui.jgraph.JGraphUI.DragMode.SELECT;
 import static java.awt.event.MouseEvent.BUTTON1;
 import static java.awt.event.MouseEvent.BUTTON3;
+import groove.gui.Icons;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -286,9 +288,6 @@ public class JGraphUI extends BasicGraphUI {
                 return;
             }
             autoscroll(getJGraph(), e.getPoint());
-            if (this.dragMode != MOVE) {
-                getJGraph().setCursor(getJGraph().getMode().getDragCursor());
-            }
             switch (this.dragMode) {
             case PAN:
                 if (this.dragStart != null) {
@@ -307,6 +306,7 @@ public class JGraphUI extends BasicGraphUI {
                     GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
                     if (cell == null) {
                         cell = getJCellAt(this.dragStart.getPoint());
+                        getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
                     }
                     if (!getJGraph().isCellSelected(cell)) {
                         getJGraph().setSelectionCell(cell);
@@ -352,8 +352,8 @@ public class JGraphUI extends BasicGraphUI {
                     this.dragOrigX = -1;
                     this.dragOrigY = -1;
                 }
-                getJGraph().setCursor(getJGraph().getMode().getCursor());
             }
+            getJGraph().setCursor(getJGraph().getMode().getCursor());
         }
 
         @Override
@@ -362,13 +362,17 @@ public class JGraphUI extends BasicGraphUI {
                 return;
             }
             if (isEdgeAdding()) {
-                if (e.isControlDown() || e.isShiftDown()) {
+                if (e.isControlDown() || e.isShiftDown() || e.isAltDown()) {
                     cancelEdgeAdding(e);
                 } else {
                     continueEdgeAdding(e);
                 }
+            } else if (JGraphUI.this.handle != null) {
+                JGraphUI.this.handle.mouseMoved(e);
+                if (!e.isConsumed()) {
+                    getJGraph().setCursor(getJGraph().getMode().getCursor());
+                }
             }
-            getJGraph().setCursor(getJGraphMode().getCursor());
         }
 
         @Override
@@ -504,6 +508,8 @@ public class JGraphUI extends BasicGraphUI {
             // possibly start adding edge
             this.edgeAdding = true;
             this.edgeAddStart = e;
+            getJGraph().setCursor(
+                Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         }
 
         private void continueEdgeAdding(MouseEvent e) {
@@ -521,6 +527,7 @@ public class JGraphUI extends BasicGraphUI {
                     this.edgeHandler.mouseReleased(e);
                 }
             }
+            getJGraph().setCursor(getJGraph().getMode().getCursor());
         }
 
         /** Completes the edge drag action. */
