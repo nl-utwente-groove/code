@@ -235,8 +235,15 @@ final public class AspectJGraph extends GraphJGraph {
             result.addSeparator();
             break;
         }
-        result.add(getActions().getEditAction(
-            ResourceKind.toResource(getGraphRole())));
+        Action editAction;
+        if (isForState()) {
+            editAction = getActions().getEditStateAction();
+        } else {
+            editAction =
+                getActions().getEditAction(
+                    ResourceKind.toResource(getGraphRole()));
+        }
+        result.add(editAction);
         addSubmenu(result, createEditMenu(atPoint));
         addSubmenu(result, super.createPopupMenu(atPoint));
         return result;
