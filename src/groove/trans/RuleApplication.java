@@ -72,7 +72,8 @@ public class RuleApplication implements DeltaApplier {
         if (event instanceof BasicEvent) {
             this.anchorMap = ((BasicEvent) event).getAnchorMap();
         }
-        assert testEvent(event, source);
+        assert testEvent(event, source) : String.format(
+            "Event error for %s applied to %s", event, source);
     }
 
     /**

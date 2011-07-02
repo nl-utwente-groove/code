@@ -259,6 +259,9 @@ public class JAttr {
      */
     public static final int EXTRA_BORDER_SPACE = 6;
 
+    /** Node radius for nodified edges. */
+    static final public double NODE_EDGE_RADIUS = 3;
+
     /** The height of the adornment text box. */
     public static final int ADORNMENT_HEIGHT = 12;
     /** The font used for adornment text. */
@@ -374,7 +377,7 @@ public class JAttr {
     /**
      * Dash pattern specifying "no dash"
      */
-    static private final float[] NO_DASH = null;
+    static private final float[] NO_DASH = new float[] {10.f, 0.f};
 
     /**
      * Dash pattern used for nesting elements.

@@ -598,13 +598,14 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
                 }
-                DisplayKind toDisplay;
-                if (path.getLastPathComponent() instanceof RuleTreeNode) {
+                DisplayKind toDisplay = null;
+                Object lastComponent = path.getLastPathComponent();
+                if (lastComponent instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
-                } else {
+                } else if (lastComponent instanceof MatchTreeNode) {
                     toDisplay = DisplayKind.LTS;
                 }
-                if (evt.getClickCount() == 1) {
+                if (evt.getClickCount() == 1 && toDisplay != null) {
                     getSimulatorModel().setDisplay(toDisplay);
                 } else if (evt.getClickCount() == 2
                     && toDisplay == DisplayKind.RULE) { // Left double click

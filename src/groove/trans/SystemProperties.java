@@ -78,7 +78,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public boolean isUseControl() {
         String control = getProperty(Key.CONTROL_ENABLED);
-        return control == null || Boolean.valueOf(control);
+        return control != null && Boolean.valueOf(control);
     }
 
     /** Sets the {@link Key#CONTROL_ENABLED} property to the given value * */

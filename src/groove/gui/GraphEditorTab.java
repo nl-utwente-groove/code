@@ -316,18 +316,13 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         assert evt.getPropertyName().equals(GraphJGraph.JGRAPH_MODE_PROPERTY);
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
+            this.refreshing = true;
+            getModel().syncGraph();
             getJGraph().setEditable(mode != PREVIEW_MODE);
-            refresh();
+            getJGraph().refreshAllCells();
+            getJGraph().refresh();
+            this.refreshing = false;
         }
-    }
-
-    /** Refreshes the editor display. */
-    private void refresh() {
-        getModel().syncGraph();
-        updateStatus();
-        this.refreshing = true;
-        getEditArea().refresh();
-        this.refreshing = false;
     }
 
     @Override
@@ -402,11 +397,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         return this.jGraphPanel;
     }
 
-    /** Lazily creates and returns the error panel. */
-    private JLabel getStatusBar() {
-        return this.statusBar;
-    }
-
     /**
      * Updates the Undo/Redo Button State based on Undo Manager. Also sets
      * {@link #isDirty()} if no more undos are available.
@@ -449,7 +439,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
     }
 
     /**
-     * Updates the status bar and the error panel 
+     * Updates the the error panel 
      * with information about the currently edited graph.
      */
     private void updateStatus() {
@@ -458,11 +448,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    int nodeCount = getGraph().nodeCount();
-                    int edgeCount = getGraph().edgeCount();
-                    getStatusBar().setText(
-                        String.format("%s nodes, %s edges", nodeCount,
-                            edgeCount));
                     if (!getJGraph().isInserting()) {
                         updateErrors();
                     }
@@ -638,9 +623,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
 
     /** The jgraph panel used in this editor. */
     private JGraphPanel<AspectJGraph> jGraphPanel;
-
-    /** Status bar of the editor. */
-    private final JLabel statusBar = new JLabel();
 
     /** 
      * The number of edit steps the editor state is removed

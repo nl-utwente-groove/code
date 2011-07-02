@@ -177,7 +177,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 result.addEdge(elementMap.getNode(edge.source()), label,
                     elementMap.getNode(edge.target()));
             elementMap.putEdge(edge, edgeImage);
-            if (!edge.source().equals(edge.target()) && !label.isBinary()) {
+            if (!edge.source().equals(edge.target())
+                && edgeImage.getRole() != EdgeRole.BINARY) {
                 errors.add(new FormatError("%s %s must be a node label",
                     label.getRole().getDescription(true), label, edgeImage));
             }

@@ -254,11 +254,6 @@ abstract public class AbstractLayouter implements Layouter {
                 } else {
                     assert cellView instanceof VertexView : String.format(
                         "%s instance of %s", cellView, cellView.getClass());
-                    // insert the bounds of the cell as layoutable
-                    // failed attempt to store edges beck so they will be layed
-                    // out live
-                    // GraphConstants.setBounds(cell.getAttributes(),
-                    // cellBounds);
                     Layoutable layoutable =
                         new VertexLayoutable((VertexView) cellView);
                     this.toLayoutableMap.put(jCell, layoutable);
