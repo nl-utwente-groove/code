@@ -96,7 +96,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     @Override
     public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
-        this.loading = true;
+        setLoading(true);
         super.loadGraph(graph);
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
@@ -104,7 +104,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         loadViewErrors();
         this.properties = GraphInfo.getProperties(graph, false);
         increaseModificationCount();
-        this.loading = false;
+        setLoading(false);
     }
 
     /** 
@@ -115,7 +115,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * notified.
      */
     public void syncGraph() {
-        if (this.loading) {
+        if (isLoading()) {
             return;
         }
         GraphRole role = getGraph().getRole();
@@ -299,7 +299,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
         // synchronise the graph to match the edits,
         // unless the model is busy loading the graph
-        if (!this.loading) {
+        if (!isLoading()) {
             // only reload if the edit changed the graph structure
             // (and not just the layout)
             boolean changed =
@@ -329,6 +329,15 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             Groove.printStackTrace(System.out, false);
         }
         super.fireGraphChanged(source, edit);
+    }
+
+    /** Indicates if the model is currently executing {@link #loadGraph(Graph)}. */
+    final boolean isLoading() {
+        return this.loading;
+    }
+
+    private void setLoading(boolean loading) {
+        this.loading = loading;
     }
 
     /**

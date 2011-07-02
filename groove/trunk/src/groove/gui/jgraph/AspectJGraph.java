@@ -62,6 +62,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
@@ -69,6 +71,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
 /**
@@ -91,6 +94,18 @@ final public class AspectJGraph extends GraphJGraph {
         setCloneable(editing);
         setConnectable(editing);
         setDisconnectable(editing);
+    }
+
+    @Override
+    public void setModel(GraphModel model) {
+        GraphModel oldModel = getModel();
+        if (oldModel != null) {
+            oldModel.removeGraphModelListener(getRefreshGraphListener());
+        }
+        super.setModel(model);
+        if (model != null) {
+            model.addGraphModelListener(getRefreshGraphListener());
+        }
     }
 
     @Override
@@ -942,4 +957,22 @@ final public class AspectJGraph extends GraphJGraph {
         }
     }
 
+    private GraphModelListener getRefreshGraphListener() {
+        if (this.refreshListener == null) {
+            this.refreshListener = new RefreshGraphListener();
+        }
+        return this.refreshListener;
+    }
+
+    private GraphModelListener refreshListener;
+
+    /** 
+     * Repaints the graph on a model change.
+     */
+    private class RefreshGraphListener implements GraphModelListener {
+        @Override
+        public void graphChanged(GraphModelEvent e) {
+            refresh();
+        }
+    }
 }
