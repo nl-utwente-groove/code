@@ -106,7 +106,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         this.jgraph = new AspectJGraph(getSimulator(), parent.getKind(), true);
         setFocusCycleRoot(true);
         setName(graph.getName());
-        start();
     }
 
     /** Starts the editor with the graph passed in at construction time. */
@@ -119,7 +118,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         setDirty(false);
         getUndoManager().discardAllEdits();
         updateHistoryButtons();
-        updateStatus();
         updateGrammar(getSimulatorModel().getGrammar());
         setSnapToGrid();
         initListeners();
