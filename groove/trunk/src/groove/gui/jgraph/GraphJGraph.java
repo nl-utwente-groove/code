@@ -49,6 +49,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
@@ -281,6 +282,47 @@ public class GraphJGraph extends org.jgraph.JGraph {
             }
         }
         return res.toArray();
+    }
+
+    /**
+     * Overwritten to freeze nodes to their center on
+     * size changes.
+     */
+    @Override
+    public void updateAutoSize(CellView view) {
+        if (view != null && !isEditing()) {
+            Rectangle2D bounds =
+                (view.getAttributes() != null)
+                        ? GraphConstants.getBounds(view.getAttributes()) : null;
+            AttributeMap attrs = getModel().getAttributes(view.getCell());
+            if (bounds == null) {
+                bounds = GraphConstants.getBounds(attrs);
+            }
+            if (bounds != null) {
+                boolean autosize =
+                    GraphConstants.isAutoSize(view.getAllAttributes());
+                boolean resize =
+                    GraphConstants.isResize(view.getAllAttributes());
+                if (autosize || resize) {
+                    Dimension2D d = getUI().getPreferredSize(this, view);
+                    // adjust the x,y corner so that the center stays in place
+                    double shiftX = (bounds.getWidth() - d.getWidth()) / 2;
+                    double shiftY = (bounds.getHeight() - d.getHeight()) / 2;
+                    bounds.setFrame(bounds.getX() + shiftX, bounds.getY()
+                        + shiftY, d.getWidth(), d.getHeight());
+                    // Remove resize attribute
+                    snap(bounds);
+                    if (resize) {
+                        if (view.getAttributes() != null) {
+                            view.getAttributes().remove(GraphConstants.RESIZE);
+                        }
+                        attrs.remove(GraphConstants.RESIZE);
+                    }
+                    view.refresh(getGraphLayoutCache(), getGraphLayoutCache(),
+                        false);
+                }
+            }
+        }
     }
 
     /**

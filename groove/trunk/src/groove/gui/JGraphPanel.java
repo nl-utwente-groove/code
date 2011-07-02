@@ -192,7 +192,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public void setJModel(GraphJModel<?,?> jModel) {
         if (jModel == getJModel()) {
-            getJGraph().getGraphLayoutCache().reload();
+            //            getJGraph().getGraphLayoutCache().reload();
             getJGraph().repaint();
         } else {
             getJGraph().setModel(jModel);

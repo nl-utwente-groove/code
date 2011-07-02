@@ -179,19 +179,21 @@ public class JVertexView extends VertexView {
         return this.text;
     }
 
-    @Override
-    public Rectangle2D getBounds() {
-        Rectangle2D result = super.getBounds();
-        if (isEdge()) {
-            double x = result.getCenterX();
-            double y = result.getCenterY();
-            double radius = NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE;
-            result =
-                new Rectangle2D.Double(x - radius, y - radius, 2 * radius,
-                    2 * radius);
-        }
-        return result;
-    }
+    //    @Override
+    //    public Rectangle2D getBounds() {
+    //        Rectangle2D result = super.getBounds();
+    //        if (isEdge()) {
+    //            double x = result.getCenterX();
+    //            double y = result.getCenterY();
+    //            double radius = NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE;
+    //            result.setRect(new Rectangle2D.Double(x - radius, y - radius,
+    //                2 * radius, 2 * radius));
+    //            //            result =
+    //            //                new Rectangle2D.Double(x - radius, y - radius, 2 * radius,
+    //            //                    2 * radius);
+    //        }
+    //        return result;
+    //    }
 
     /*
      * Overwrites the super method because we have a different renderer.
@@ -559,7 +561,6 @@ public class JVertexView extends VertexView {
         fontTag = createSpanTag(argument);
     }
 
-    static final private double NODE_EDGE_RADIUS = 3;
     /**
      * Fraction of the width or height that is the minimum for special perimeter
      * point placement.

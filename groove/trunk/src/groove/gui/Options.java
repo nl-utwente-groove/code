@@ -713,10 +713,10 @@ public class Options implements Cloneable {
         KeyStroke.getKeyStroke("alt RIGHT");
     /** Find and go to final state keystroke */
     public static final KeyStroke GOTO_FINAL_STATE_KEY =
-        KeyStroke.getKeyStroke("control END");
+        KeyStroke.getKeyStroke("control shift END");
     /** Goto start state keystroke */
     public static final KeyStroke GOTO_START_STATE_KEY =
-        KeyStroke.getKeyStroke("control HOME");
+        KeyStroke.getKeyStroke("control shift HOME");
     /**
      * Insert keystroke
      */

@@ -103,9 +103,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     public EdgeRole getRole() {
         if (this.isPredicate()) {
             // We just want the edge role to be non-binary...
-            return EdgeRole.NODE_TYPE;
+            return EdgeRole.FLAG;
         } else {
-            return super.getRole();
+            return getDisplayLabel().getRole();
         }
     }
 

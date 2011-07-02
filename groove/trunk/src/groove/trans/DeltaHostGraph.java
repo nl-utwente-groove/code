@@ -769,7 +769,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
             HostNode target = (elem).target();
             boolean refreshSource = this.freshNodeKeys.add(source);
             boolean refreshTarget =
-                source != target && this.freshNodeKeys.add(target);
+                source == target ? refreshSource
+                        : this.freshNodeKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
                     && this.freshLabelKeys.add((elem).label());
@@ -787,7 +788,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
             HostNode target = edge.target();
             boolean refreshSource = this.freshNodeKeys.add(source);
             boolean refreshTarget =
-                source != target && this.freshNodeKeys.add(target);
+                source == target ? refreshSource
+                        : this.freshNodeKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
                     && this.freshLabelKeys.add(edge.label());
