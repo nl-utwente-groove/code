@@ -123,6 +123,20 @@ public class GrammarModel implements Observer {
         return this.resourceMap.get(kind).values();
     }
 
+    /** Returns a named graph-based resource model of a given kind. */
+    public GraphBasedModel<?> getGraphResource(ResourceKind kind, String name) {
+        assert kind.isGraphBased() : String.format(
+            "Resource kind %s is not graph-based", kind);
+        return (GraphBasedModel<?>) getResourceMap(kind).get(name);
+    }
+
+    /** Returns a named text-based resource model of a given kind. */
+    public TextBasedModel<?> getTextResource(ResourceKind kind, String name) {
+        assert kind.isTextBased() : String.format(
+            "Resource kind %s is not text-based", kind);
+        return (TextBasedModel<?>) getResourceMap(kind).get(name);
+    }
+
     /** Returns a named resource model of a given kind. */
     public ResourceModel<?> getResource(ResourceKind kind, String name) {
         return getResourceMap(kind).get(name);

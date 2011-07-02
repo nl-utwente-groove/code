@@ -21,7 +21,9 @@ import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
+import groove.view.TextBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -779,6 +781,30 @@ public class SimulatorModel implements Cloneable {
     public final ResourceModel<?> getResource(ResourceKind resource) {
         String name = getSelected(resource);
         return name == null ? null : getGrammar().getResource(resource, name);
+    }
+
+    /** 
+     * Returns the selected graph-based resource of a given kind, or {@code null}
+     * if no resource is selected.
+     * Convenience method for {@code getGrammar().getGraphResource(resource,getSelected(name))}. 
+     * @param resource the resource kind for which the resource is retrieved; must be graph-based
+     */
+    public final GraphBasedModel<?> getGraphResource(ResourceKind resource) {
+        String name = getSelected(resource);
+        return name == null ? null : getGrammar().getGraphResource(resource,
+            name);
+    }
+
+    /** 
+     * Returns the selected resource of a given kind, or {@code null}
+     * if no resource is selected.
+     * Convenience method for {@code getGrammar().getTextResource(resource,getSelected(name))}. 
+     * @param resource the resource kind for which the resource is retrieved; must be text-based
+     */
+    public final TextBasedModel<?> getTextResource(ResourceKind resource) {
+        String name = getSelected(resource);
+        return name == null ? null : getGrammar().getTextResource(resource,
+            name);
     }
 
     /** 

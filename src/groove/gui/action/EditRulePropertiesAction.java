@@ -45,8 +45,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
     @Override
     public void execute() {
         AspectGraph rule =
-            getSimulatorModel().getStore().getGraphs(RULE).get(
-                getSimulatorModel().getSelected(RULE));
+            getSimulatorModel().getGraphResource(RULE).getSource();
         // Associated rule properties.
         GraphProperties properties =
             GraphInfo.getProperties(rule, true).clone();
@@ -55,13 +54,13 @@ public class EditRulePropertiesAction extends SimulatorAction {
             new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
                 true);
 
-        if (dialog.showDialog(getFrame()) && confirmStopSimulation()
-            && getRuleDisplay().cancelEditResource(rule.getName(), true)) {
-
+        if (getRuleDisplay().cancelEditResource(rule.getName(), true)
+            && confirmStopSimulation() && dialog.showDialog(getFrame())) {
             // We go through the results of the dialog.
             GraphProperties editedProperties =
                 new GraphProperties(dialog.getEditedProperties());
-            AspectGraph newGraph = rule.clone();
+            AspectGraph newGraph =
+                getSimulatorModel().getGraphResource(RULE).getSource().clone();
             GraphInfo.setProperties(newGraph, editedProperties);
             newGraph.setFixed();
             try {
