@@ -265,7 +265,7 @@ public abstract class ResourceDisplay extends Display implements
         boolean result = true;
         ResourceTab editor = getEditors().get(name);
         if (editor != null) {
-            result = editor.cancelEditing(true);
+            result = editor.cancelEditing(confirm);
         }
         return result;
     }

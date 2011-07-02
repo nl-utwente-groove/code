@@ -88,7 +88,7 @@ public class PreviewControlAction extends SimulatorAction {
         if (grammarModel != null) {
             GraphGrammar grammar = grammarModel.toGrammar();
             ControlModel controlModel =
-                (ControlModel) getSimulatorModel().getResource(
+                (ControlModel) getSimulatorModel().getTextResource(
                     getResourceKind());
             result =
                 controlModel == null ? grammar.getCtrlAut()

@@ -29,7 +29,8 @@ public class SetPriorityAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        RuleModel ruleModel = (RuleModel) getSimulatorModel().getResource(RULE);
+        RuleModel ruleModel =
+            (RuleModel) getSimulatorModel().getGraphResource(RULE);
         NumberDialog dialog = new NumberDialog("New priority: ");
         if (dialog.showDialog(getFrame(), Options.SET_PRIORITY_ACTION_NAME,
             ruleModel.getPriority())) {
