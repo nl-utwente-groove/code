@@ -740,7 +740,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
             this.edgeSet = createEdgeSet(graph.edgeSet);
             this.nodeEdgeMap =
                 new LinkedHashMap<HostNode,HostEdgeSet>(graph.nodeEdgeMap);
-            this.freshNodeKeys = createNodeSet(null);
+            this.freshSourceKeys = createNodeSet(null);
+            this.freshTargetKeys = createNodeSet(null);
             if (graph.labelEdgeMap != null) {
                 this.labelEdgeMap =
                     new LinkedHashMap<TypeLabel,HostEdgeSet>(graph.labelEdgeMap);
@@ -767,10 +768,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         public boolean addEdge(HostEdge elem) {
             HostNode source = (elem).source();
             HostNode target = (elem).target();
-            boolean refreshSource = this.freshNodeKeys.add(source);
-            boolean refreshTarget =
-                source == target ? refreshSource
-                        : this.freshNodeKeys.add(target);
+            boolean refreshSource = this.freshSourceKeys.add(source);
+            boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
                     && this.freshLabelKeys.add((elem).label());
@@ -786,10 +785,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         public boolean removeEdge(HostEdge edge) {
             HostNode source = edge.source();
             HostNode target = edge.target();
-            boolean refreshSource = this.freshNodeKeys.add(source);
-            boolean refreshTarget =
-                source == target ? refreshSource
-                        : this.freshNodeKeys.add(target);
+            boolean refreshSource = this.freshSourceKeys.add(source);
+            boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
                     && this.freshLabelKeys.add(edge.label());
@@ -797,8 +794,10 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
                 refreshLabel);
         }
 
-        /** Auxiliary set to determine the nodes changed w.r.t. the basis. */
-        private final Set<HostNode> freshNodeKeys;
+        /** Auxiliary set to determine the source nodes changed w.r.t. the basis. */
+        private final Set<HostNode> freshSourceKeys;
+        /** Auxiliary set to determine the source nodes changed w.r.t. the basis. */
+        private final Set<HostNode> freshTargetKeys;
         /** Auxiliary set to determine the labels changed w.r.t. the basis. */
         private final Set<TypeLabel> freshLabelKeys;
     }
