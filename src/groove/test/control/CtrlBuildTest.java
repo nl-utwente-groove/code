@@ -66,8 +66,7 @@ public class CtrlBuildTest {
             this.prioGrammar =
                 Groove.loadGrammar(GRAMMAR_DIR + "emptypriorules").toGrammar();
         } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            fail(e.getMessage());
         }
     }
 
