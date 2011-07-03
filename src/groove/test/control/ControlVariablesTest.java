@@ -18,7 +18,7 @@ package groove.test.control;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
@@ -77,8 +77,7 @@ public class ControlVariablesTest {
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e.getMessage());
         }
     }
 }

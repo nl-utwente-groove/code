@@ -29,10 +29,10 @@ import groove.abstraction.ShapeEdge;
 import groove.abstraction.ShapeNode;
 import groove.graph.EdgeRole;
 import groove.trans.DefaultHostGraph;
+import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
-import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -227,7 +227,7 @@ public class TestShape {
             fail();
         } catch (FormatException e) {
             e.printStackTrace();
-            fail();
+            fail(e.getMessage());
         }
     }
 
