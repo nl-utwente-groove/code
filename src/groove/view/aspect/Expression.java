@@ -165,9 +165,17 @@ abstract public class Expression {
                 throw new FormatException("Can't parse '%s' as expression",
                     text);
             }
-            String operatorName = rest.substring(0, rest.length() - 1);
-            return parseAsOperator(operatorName, splitText.two().get(0),
-                signature);
+            String two = splitText.two().get(0);
+            if (two.charAt(0) == '\"') {
+                if (rest.length() > 1) {
+                    throw new FormatException("Can't parse '%s' as expression",
+                        text);
+                }
+                return new Const(Algebras.getConstant(two));
+            } else {
+                String operatorName = rest.substring(0, rest.length() - 1);
+                return parseAsOperator(operatorName, two, signature);
+            }
         default:
             throw new FormatException("Can't parse '%s' as expression", text);
         }
@@ -254,7 +262,7 @@ abstract public class Expression {
     }
 
     private static final ExprParser parser = new ExprParser(
-        ExprParser.PLACEHOLDER, new char[] {}, new char[] {'(', ')'});
+        ExprParser.PLACEHOLDER, new char[] {'\"'}, new char[] {'(', ')'});
 
     /** Field expression. */
     public static class Field extends Expression {
