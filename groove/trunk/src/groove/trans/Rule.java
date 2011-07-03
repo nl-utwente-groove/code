@@ -143,15 +143,15 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert this.coRootMap != null : String.format(
+        assert getCoRootMap() != null : String.format(
             "Sub-rule at level %s must have a non-trivial co-root map",
             Arrays.toString(level));
         if (parent != null) {
             assert parent.rhs().nodeSet().containsAll(
-                this.coRootMap.nodeMap().keySet()) : String.format(
+                getCoRootMap().nodeMap().keySet()) : String.format(
                 "Rule '%s': Parent nodes %s do not contain all co-roots %s",
                 getName(), parent.rhs().nodeSet(),
-                this.coRootMap.nodeMap().keySet());
+                getCoRootMap().nodeMap().keySet());
         }
         this.parent = parent;
     }
@@ -985,7 +985,8 @@ public class Rule implements Fixable, Comparable<Rule> {
         return result;
     }
 
-    RuleGraphMorphism getCoRootMap() {
+    /** Returns the mapping from the parent RHS to this rule's RHS. */
+    final RuleGraphMorphism getCoRootMap() {
         return this.coRootMap;
     }
 

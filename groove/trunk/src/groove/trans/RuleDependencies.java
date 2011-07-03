@@ -588,7 +588,8 @@ public class RuleDependencies {
         if (label.isWildcard()) {
             result = ALL_LABEL;
         } else {
-            assert label.isAtom() || label.isSharp();
+            assert label.isAtom() || label.isSharp() : String.format(
+                "Label %s should be atomic", label);
             result = label.getTypeLabel();
         }
         return result;

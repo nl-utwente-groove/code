@@ -60,7 +60,8 @@ public class RuleToHostMap extends
                 result = getVar(var);
             }
         } else {
-            assert ruleLabel.isSharp() || ruleLabel.isAtom();
+            assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format(
+                "Label %s should be sharp or atom", label);
             result = ruleLabel.getTypeLabel();
         }
         return result;
