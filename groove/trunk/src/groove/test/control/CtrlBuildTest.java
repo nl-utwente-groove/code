@@ -29,8 +29,8 @@ import groove.control.CtrlLabel;
 import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
-import groove.trans.Rule;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -57,8 +57,7 @@ public class CtrlBuildTest {
             this.testGrammar =
                 Groove.loadGrammar(GRAMMAR_DIR + "emptyrules").toGrammar();
         } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            fail(e.getMessage());
         }
     }
     private GraphGrammar prioGrammar;
@@ -305,9 +304,8 @@ public class CtrlBuildTest {
             } else {
                 aut = buildString(name);
             }
-            System.err.printf("%s builds without errors: %n%s%n", name,
-                aut.toString());
-            assertTrue(false);
+            fail(String.format("%s builds without errors: %n%s%n", name,
+                aut.toString()));
         } catch (FormatException e) {
             if (DEBUG) {
                 System.out.println(e.getMessage());
@@ -327,8 +325,7 @@ public class CtrlBuildTest {
             assertEquals(nodeCount, result.nodeCount());
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
-            System.err.printf("Errors in %s:%n%s%n", name, e.getMessage());
-            fail();
+            fail(e.getMessage());
         }
         return result;
     }
@@ -346,7 +343,7 @@ public class CtrlBuildTest {
                     result);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            fail(e.getMessage());
         }
         return result;
     }
