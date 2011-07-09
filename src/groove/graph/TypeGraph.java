@@ -241,7 +241,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeLabel label = getActualType(edge.label());
             if (label != null && label.isNodeType()) {
                 if (edge.label() instanceof RuleLabel
-                    && ((RuleLabel) edge.label()).isSharp()) {
+                    && (((RuleLabel) edge.label()).isSharp() || getLabelStore().getDirectSubtypes(
+                        label).isEmpty())) {
                     sharpNodes.add(node);
                 }
                 TypeNode type = getTypeNode(label);
