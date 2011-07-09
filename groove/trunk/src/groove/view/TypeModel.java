@@ -62,10 +62,10 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     @Override
     public TypeGraph toResource() throws FormatException {
         initialise();
-        if (this.model == null) {
+        if (this.typeGraph == null) {
             throw new FormatException(getErrors());
         } else {
-            return this.model;
+            return this.typeGraph;
         }
     }
 
@@ -88,8 +88,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     @Override
     public Set<TypeLabel> getLabels() {
         initialise();
-        return this.model == null ? null
-                : this.model.getLabelStore().getLabels();
+        return this.typeGraph == null ? null
+                : this.typeGraph.getLabelStore().getLabels();
     }
 
     /** Constructs the model and associated data structures from the view,
@@ -100,14 +100,14 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         if (this.errors == null) {
             this.errors = new ArrayList<FormatError>(getSource().getErrors());
             if (this.errors.isEmpty()) {
-                initialiseModel();
+                initialiseTypeGraph();
             }
         }
     }
 
     /** Constructs the model and associated data structures for model. */
-    private void initialiseModel() {
-        this.model = new TypeGraph(getName());
+    private void initialiseTypeGraph() {
+        this.typeGraph = new TypeGraph(getName());
         this.modelMap = new TypeModelMap();
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
@@ -137,7 +137,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             } else {
                 // add a node anyhow, to ensure all edge ends have images
                 TypeNode typeNode = new TypeNode(modelNode.getNumber());
-                this.model.addNode(typeNode);
+                this.typeGraph.addNode(typeNode);
                 this.modelMap.putNode(modelNode, typeNode);
             }
         }
@@ -151,7 +151,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             if (typeLabel == null || !typeLabel.isNodeType()) {
                 try {
-                    processModelEdge(this.model, this.modelMap, modelEdge);
+                    processModelEdge(this.typeGraph, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
                     this.errors.addAll(exc.getErrors());
                 }
@@ -159,13 +159,13 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
         if (this.errors.isEmpty()) {
             try {
-                this.model.test();
+                this.typeGraph.test();
             } catch (FormatException exc) {
                 this.errors.addAll(exc.getErrors());
             }
         }
         // transfer graph info such as layout from model to model
-        GraphInfo.transfer(getSource(), this.model, this.modelMap);
+        GraphInfo.transfer(getSource(), this.typeGraph, this.modelMap);
 
     }
 
@@ -195,7 +195,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             if (modelNode.isEdge()) {
                 typeNode.setLabelPattern(modelNode.getEdgePattern());
             }
-            this.model.addNode(typeNode);
+            this.typeGraph.addNode(typeNode);
             this.modelMap.putNode(modelNode, typeNode);
         }
     }
@@ -255,7 +255,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     /** The resource being constructed. */
-    private TypeGraph model;
+    private TypeGraph typeGraph;
     /**
      * List of errors in the model that prevent the resource from being constructed.
      */

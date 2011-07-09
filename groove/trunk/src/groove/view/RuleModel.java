@@ -168,12 +168,24 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** Returns the set of labels occurring in this rule. */
     @Override
     public Set<TypeLabel> getLabels() {
-        return getLevelTree().getLabelSet();
+        if (this.labelSet == null) {
+            this.labelSet = new HashSet<TypeLabel>();
+            for (AspectEdge edge : getSource().edgeSet()) {
+                RuleLabel label = edge.getRuleLabel();
+                if (label != null) {
+                    RegExpr labelExpr = label.getMatchExpr();
+                    if (labelExpr != null) {
+                        this.labelSet.addAll(labelExpr.getTypeLabels());
+                    }
+                }
+            }
+        }
+        return this.labelSet;
     }
 
     @Override
     public RuleModelMap getMap() {
-        return getLevelTree().getRuleModelMap();
+        return this.modelMap;
     }
 
     /** Returns the (possibly {@code null}) type graph of this rule. */
@@ -235,6 +247,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private void initialiseTree() {
         if (isGrammarModified()) {
             this.ruleErrors.clear();
+            this.modelMap.clear();
             this.ruleReset = true;
             this.rule = null;
             this.levelTree = new LevelMap();
@@ -250,7 +263,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     this.levelTree.initialise(normalSource);
                 } catch (FormatException exc) {
                     Map<RuleElement,AspectElement> inverseMap =
-                        this.levelTree.getInverseModelMap();
+                        getInverseModelMap();
                     for (FormatError error : exc.getErrors()) {
                         this.ruleErrors.add(error.transfer(inverseMap));
                     }
@@ -268,7 +281,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 this.ruleReset = false;
             } catch (FormatException exc) {
                 Map<RuleElement,AspectElement> inverseMap =
-                    this.levelTree.getInverseModelMap();
+                    getInverseModelMap();
                 for (FormatError error : exc.getErrors()) {
                     this.ruleErrors.add(error.transfer(inverseMap));
                 }
@@ -364,6 +377,49 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     /**
+     * Callback method to create a graph that can serve as LHS or RHS of a rule.
+     * @see #getSource()
+     */
+    RuleGraph createGraph(String name) {
+        return new RuleGraph(name);
+    }
+
+    /**
+     * Lazily creates and returns a rule image for a given model node.
+     * @param modelNode the node for which an image is to be created
+     * @throws FormatException if <code>node</code> does not occur in a
+     *         correct way in <code>context</code>
+     */
+    private RuleNode getNodeImage(AspectNode modelNode) throws FormatException {
+        RuleNode result = this.modelMap.getNode(modelNode);
+        if (result == null) {
+            this.modelMap.putNode(modelNode, result =
+                computeNodeImage(modelNode));
+
+        }
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns a rule image for a given model edge.
+     * @param modelEdge the node for which an image is to be created
+     * @return the rule edge corresponding to <code>viewEdge</code>; may be
+     *         <code>null</code>
+     * @throws FormatException if <code>node</code> does not occur in a
+     *         correct way in <code>context</code>
+     */
+    private RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
+        RuleEdge result = this.modelMap.getEdge(modelEdge);
+        if (result == null) {
+            result = computeEdgeImage(modelEdge, this.modelMap.nodeMap());
+            if (result != null) {
+                this.modelMap.putEdge(modelEdge, result);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Creates an image for a given aspect node. Node numbers are copied.
      * @param node the node for which an image is to be created
      * @return the fresh node
@@ -382,12 +438,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     /**
-     * Creates a an edge by copying a given edge under a given node mapping. The
+     * Creates an edge by copying a given model edge under a given node mapping. The
      * mapping is assumed to have images for all end nodes.
      * @param edge the edge for which an image is to be created
      * @param elementMap the mapping of the end nodes
-     * @return the new edge; may be <code>null</code> if the edge stands for an
-     *         attribute value
+     * @return the new edge
      * @throws FormatException if <code>edge</code> does not occur in a correct
      *         way in <code>context</code>
      */
@@ -412,14 +467,32 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             targetImage);
     }
 
-    /**
-     * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @see #getSource()
-     */
-    RuleGraph createGraph(String name) {
-        return new RuleGraph(name);
+    /** Returns the model-to-rule element map. */
+    public final RuleModelMap getRuleModelMap() {
+        return this.modelMap;
     }
 
+    /** Returns the inverse of the model-to-rule map. */
+    public final Map<RuleElement,AspectElement> getInverseModelMap() {
+        Map<RuleElement,AspectElement> result =
+            new HashMap<RuleElement,AspectElement>();
+        for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
+            result.put(nodeEntry.getValue(), nodeEntry.getKey());
+        }
+        for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
+            result.put(edgeEntry.getValue(), edgeEntry.getKey());
+        }
+        return result;
+    }
+
+    /**
+     * Mapping from the elements of the aspect graph representation to the
+     * corresponding elements of the rule.
+     */
+    private final RuleModelMap modelMap = new RuleModelMap();
+
+    /** Set of all labels occurring in the rule. */
+    private Set<TypeLabel> labelSet;
     /** The level tree for this rule model. */
     private LevelMap levelTree;
     /** Errors found while converting the model to a rule. */
@@ -720,7 +793,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         /** Constructs the stage 1 rule levels. */
         private void buildLevels1() throws FormatException {
-            this.modelMap.clear();
             Set<FormatError> errors = new TreeSet<FormatError>();
             // initialise the match count nodes
             // this is done straight away, to ensure that the rule graph
@@ -728,36 +800,24 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             for (Map.Entry<LevelIndex,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
                 AspectNode matchCount = matchCountEntry.getValue();
                 RuleLevel1 level = this.level1Map.get(matchCountEntry.getKey());
-                level.setMatchCount(matchCount,
-                    (VariableNode) getNodeImage(matchCount));
+                level.setMatchCount(matchCount);
             }
             // add nodes to nesting data structures
             for (AspectNode node : this.source.nodeSet()) {
                 if (!node.getKind().isMeta()) {
-                    try {
-                        RuleLevel1 level = getLevel(node);
-                        level.addNode(node, getNodeImage(node));
-                    } catch (FormatException exc) {
-                        errors.addAll(exc.getErrors());
-                    }
+                    RuleLevel1 level = getLevel(node);
+                    level.addNode(node);
                 }
             }
             // add edges to nesting data structures
             for (AspectEdge edge : this.source.edgeSet()) {
-                RuleLevel1 level = getLevel(edge);
-                if (edge.getKind() == CONNECT) {
-                    RuleNode sourceImage = getNodeImage(edge.source());
-                    RuleNode targetImage = getNodeImage(edge.target());
-                    level.addConnect(edge, sourceImage, targetImage);
-                } else if (!edge.getKind().isMeta()) {
-                    try {
-                        RuleEdge edgeImage = getEdgeImage(edge);
-                        if (edgeImage != null) {
-                            level.addEdge(edge, edgeImage);
-                        }
-                    } catch (FormatException exc) {
-                        errors.addAll(exc.getErrors());
+                try {
+                    RuleLevel1 level = getLevel(edge);
+                    if (!edge.getKind().isMeta()) {
+                        level.addEdge(edge);
                     }
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
                 }
             }
             if (!errors.isEmpty()) {
@@ -875,76 +935,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return this.nodeLevelMap;
         }
 
-        /**
-         * Lazily creates and returns a rule image for a given model node.
-         * @param modelNode the node for which an image is to be created
-         * @throws FormatException if <code>node</code> does not occur in a
-         *         correct way in <code>context</code>
-         */
-        private RuleNode getNodeImage(AspectNode modelNode)
-            throws FormatException {
-            RuleNode result = this.modelMap.getNode(modelNode);
-            if (result == null) {
-                this.modelMap.putNode(modelNode, result =
-                    computeNodeImage(modelNode));
-
-            }
-            return result;
-        }
-
-        /**
-         * Lazily creates and returns a rule image for a given model edge.
-         * @param modelEdge the node for which an image is to be created
-         * @return the rule edge corresponding to <code>viewEdge</code>; may be
-         *         <code>null</code>
-         * @throws FormatException if <code>node</code> does not occur in a
-         *         correct way in <code>context</code>
-         */
-        private RuleEdge getEdgeImage(AspectEdge modelEdge)
-            throws FormatException {
-            RuleEdge result = this.modelMap.getEdge(modelEdge);
-            if (result == null) {
-                result = computeEdgeImage(modelEdge, this.modelMap.nodeMap());
-                if (result != null) {
-                    this.modelMap.putEdge(modelEdge, result);
-                    RegExpr labelExpr = result.label().getMatchExpr();
-                    if (labelExpr != null) {
-                        this.labelSet.addAll(labelExpr.getTypeLabels());
-                    }
-                }
-            }
-            return result;
-        }
-
-        /** Returns the model-to-rule element map. */
-        public final RuleModelMap getRuleModelMap() {
-            return this.modelMap;
-        }
-
-        /** Returns the inverse of the model-to-rule map. */
-        public final Map<RuleElement,AspectElement> getInverseModelMap() {
-            Map<RuleElement,AspectElement> result =
-                new HashMap<RuleElement,AspectElement>();
-            for (Map.Entry<AspectNode,? extends RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
-                result.put(nodeEntry.getValue(), nodeEntry.getKey());
-            }
-            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
-                result.put(edgeEntry.getValue(), edgeEntry.getKey());
-            }
-            return result;
-        }
-
-        /**
-         * Mapping from the elements of the aspect graph representation to the
-         * corresponding elements of the rule.
-         */
-        private final RuleModelMap modelMap = new RuleModelMap();
-
-        /** Returns the set of labels occurring in the model. */
-        public final Set<TypeLabel> getLabelSet() {
-            return this.labelSet;
-        }
-
         @Override
         public String toString() {
             return "LevelMap: " + this.level1Map;
@@ -952,8 +942,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         /** The normalised source of the rule model. */
         private AspectGraph source;
-        /** Set of all labels occurring in the rule. */
-        private final Set<TypeLabel> labelSet = new HashSet<TypeLabel>();
         /** The top level of the rule tree. */
         private LevelIndex topLevelIndex;
         /** Mapping from level indices to state 1 levels. */
@@ -971,8 +959,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     /**
-     * Class collecting the information about all rule elements on a given 
-     * rule level. This is the first stage of constructing the
+     * Class collecting all rule model elements and corresponding
+     * rule elements on a given rule level.
+     * The elements are not yet differentiated by role. 
+     * This is the first stage of constructing the
      * flat rule at that level.
      */
     private class RuleLevel1 implements Comparable<RuleLevel1> {
@@ -1007,19 +997,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * is also added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
          */
-        public void addNode(AspectNode modelNode, RuleNode ruleNode) {
+        public void addNode(AspectNode modelNode) {
             if (isForThisLevel(modelNode)) {
                 // put the node on this level
-                this.modelMap.putNode(modelNode, ruleNode);
-                if (modelNode.hasColor()) {
-                    this.colorMap.put(ruleNode,
-                        (Color) modelNode.getColor().getContent());
-                }
+                this.modelNodes.add(modelNode);
             }
             // put the node on the sublevels, if it is supposed to be there
             if (isForNextLevel(modelNode)) {
                 for (RuleLevel1 sublevel : this.children) {
-                    sublevel.addNode(modelNode, ruleNode);
+                    sublevel.addNode(modelNode);
                 }
             }
         }
@@ -1029,53 +1015,42 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * is also added to the
          * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
          */
-        public void addEdge(AspectEdge modelEdge, RuleEdge ruleEdge) {
+        public void addEdge(AspectEdge modelEdge) {
             if (isForThisLevel(modelEdge)) {
                 // put the edge on this level
-                this.modelMap.putEdge(modelEdge, ruleEdge);
+                this.modelEdges.add(modelEdge);
                 // add end nodes to this and all parent levels, if
                 // they are not yet there
-                addNodeToParents(modelEdge.source(), ruleEdge.source());
-                addNodeToParents(modelEdge.target(), ruleEdge.target());
+                addNodeToParents(modelEdge.source());
+                addNodeToParents(modelEdge.target());
             }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(modelEdge)) {
                 for (RuleLevel1 sublevel : this.children) {
-                    sublevel.addEdge(modelEdge, ruleEdge);
+                    sublevel.addEdge(modelEdge);
                 }
-            } else if (!modelEdge.getKind().inNAC()
-                && ruleEdge.getRole() == NODE_TYPE) {
+            } else {
                 // add type edges to all sublevels
                 for (RuleLevel1 sublevel : this.children) {
-                    sublevel.addParentType(ruleEdge);
+                    sublevel.addParentType(modelEdge);
                 }
             }
         }
 
-        /** Adds a connection edge to the level. */
-        public void addConnect(AspectEdge connectEdge, RuleNode node1,
-                RuleNode node2) {
-            Set<RuleNode> nodeSet =
-                new HashSet<RuleNode>(Arrays.asList(node1, node2));
-            this.connectMap.put(connectEdge, nodeSet);
-        }
-
         /** Initialises the match count for this (universal) level. */
-        public void setMatchCount(AspectNode matchCount,
-                VariableNode matchCountImage) {
-            assert matchCountImage != null;
-            this.matchCountImage = matchCountImage;
+        public void setMatchCount(AspectNode matchCount) {
+            this.matchCountNode = matchCount;
         }
 
         /**
          * Adds a node to this and all parent levels, if it is not yet there
          */
-        private void addNodeToParents(AspectNode modelNode, RuleNode ruleNode) {
+        private void addNodeToParents(AspectNode modelNode) {
             RuleLevel1 ascendingLevel = this;
-            while (ascendingLevel.modelMap.putNode(modelNode, ruleNode) == null) {
+            while (ascendingLevel.modelNodes.add(modelNode)) {
                 assert !ascendingLevel.index.isTopLevel() : String.format("Node not found at any level");
                 ascendingLevel = ascendingLevel.parent;
-                assert ascendingLevel.modelMap != null : String.format(
+                assert ascendingLevel.modelNodes != null : String.format(
                     "Nodes on level %s not yet initialised",
                     ascendingLevel.getIndex());
             }
@@ -1086,18 +1061,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * The edge is not properly part of the rule, but may be
          * necessary to check the typing.
          */
-        private void addParentType(RuleEdge ruleEdge) {
-            Set<TypeLabel> parentTypes =
-                this.parentTypeMap.get(ruleEdge.source());
-            if (parentTypes == null) {
-                this.parentTypeMap.put(ruleEdge.source(), parentTypes =
-                    new HashSet<TypeLabel>());
-            }
-            if (ruleEdge.label().isAtom()) {
-                parentTypes.add(ruleEdge.label().getTypeLabel());
-            }
+        private void addParentType(AspectEdge modelEdge) {
+            this.parentEdges.add(modelEdge);
             for (RuleLevel1 sublevel : this.children) {
-                sublevel.addParentType(ruleEdge);
+                sublevel.addParentType(modelEdge);
             }
         }
 
@@ -1147,9 +1114,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return this.index;
         }
 
-        /** Index of this level. */
-        private final LevelIndex index;
-
         @Override
         public String toString() {
             return String.format("Level %s", getIndex());
@@ -1160,33 +1124,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return getIndex().compareTo(o.getIndex());
         }
 
-        /** Returns the mapping of aspect elements to rule elements of this level. */
-        public final RuleModelMap getModelMap() {
-            return this.modelMap;
-        }
-
+        /** Index of this level. */
+        private final LevelIndex index;
         /** Parent level; {@code null} if this is the top level. */
         private final RuleLevel1 parent;
         /** Children level data. */
         private final List<RuleLevel1> children = new ArrayList<RuleLevel1>();
-        /** Map of all model nodes on this level. */
-        private final RuleModelMap modelMap = new RuleModelMap();
-        /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap =
-            new HashMap<RuleNode,Color>();
-        /** Map of all connect edges on this level. */
-        private final Map<AspectEdge,Set<RuleNode>> connectMap =
-            new HashMap<AspectEdge,Set<RuleNode>>();
-        /** Set of additional (parent level) node type edges. */
-        private final Map<RuleNode,Set<TypeLabel>> parentTypeMap =
-            new HashMap<RuleNode,Set<TypeLabel>>();
-        /** The rule node registering the match count. */
-        private VariableNode matchCountImage;
+        /** Set of all parent edges, used to figure out node types. */
+        private final Set<AspectEdge> parentEdges = new HashSet<AspectEdge>();
+        /** Set of model nodes on this level. */
+        private final Set<AspectNode> modelNodes = new HashSet<AspectNode>();
+        /** Set of model edges on this level. */
+        private final Set<AspectEdge> modelEdges = new HashSet<AspectEdge>();
+        /** The model node registering the match count. */
+        private AspectNode matchCountNode;
     }
 
     /**
-     * Class containing all elements on a given rule level. Capable of computing
-     * the rule on that level.
+     * Class containing all rule elements on a given rule level,
+     * differentiated by role (LHS, RHS and NACs).
      */
     private class RuleLevel2 {
         /**
@@ -1200,26 +1156,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             LevelIndex index = this.index = origin.index;
             this.isRule = index.isTopLevel();
             this.parent = parent;
-            this.colorMap = origin.colorMap;
-            this.connectMap = origin.connectMap;
-            this.parentTypeMap = origin.parentTypeMap;
-            this.matchCountImage = origin.matchCountImage;
             // initialise the rule data structures
             this.lhs = createGraph(getName() + "-" + index + "-lhs");
             this.rhs = createGraph(getName() + "-" + index + "-rhs");
-            this.ruleMorph = createMorphism();
-            this.rhsMap = new RuleModelMap();
-            this.nacNodeSet = new HashSet<RuleNode>();
-            this.nacEdgeSet = new HashSet<RuleEdge>();
-            this.typableNodes = new HashSet<RuleNode>();
-            this.typableEdges = new HashSet<RuleEdge>();
-            RuleModelMap modelMap = origin.getModelMap();
-            this.mergerMap = computeMergerMap(modelMap.edgeMap());
-            this.defaultNodeMap = modelMap.nodeMap();
+            this.partition =
+                computePartition(origin.modelNodes, origin.modelEdges);
             Set<FormatError> errors = new TreeSet<FormatError>();
-            for (Map.Entry<AspectNode,? extends RuleNode> modelEntry : modelMap.nodeMap().entrySet()) {
+            try {
+                if (origin.matchCountNode != null) {
+                    this.matchCountImage =
+                        (VariableNode) getNodeImage(origin.matchCountNode);
+                }
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+            for (AspectNode modelNode : origin.modelNodes) {
                 try {
-                    processNode(modelEntry.getKey(), modelEntry.getValue());
+                    processNode(modelNode);
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
@@ -1228,9 +1181,20 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            for (Map.Entry<AspectEdge,? extends RuleEdge> modelEntry : modelMap.edgeMap().entrySet()) {
+            for (AspectEdge modelEdge : origin.modelEdges) {
                 try {
-                    processEdge(modelEntry.getKey(), modelEntry.getValue());
+                    if (modelEdge.getKind() == CONNECT) {
+                        addConnect(modelEdge);
+                    } else {
+                        processEdge(modelEdge);
+                    }
+                } catch (FormatException exc) {
+                    errors.addAll(exc.getErrors());
+                }
+            }
+            for (AspectEdge parentType : origin.parentEdges) {
+                try {
+                    processParentType(parentType);
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
@@ -1240,39 +1204,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
         }
 
-        /** Collects the set of merger edges on this level. */
-        private Map<AspectEdge,RuleEdge> computeMergerMap(
-                Map<AspectEdge,RuleEdge> mergers) {
-            Map<AspectEdge,RuleEdge> result =
-                new HashMap<AspectEdge,RuleEdge>();
-            for (Map.Entry<AspectEdge,? extends RuleEdge> edgeEntry : mergers.entrySet()) {
-                AspectEdge modelEdge = edgeEntry.getKey();
-                RuleEdge ruleEdge = edgeEntry.getValue();
-                AspectKind kind = modelEdge.getKind();
-                if (kind.isCreator() && ruleEdge.label().isEmpty()) {
-                    result.put(modelEdge, ruleEdge);
-                }
-            }
-            return result;
-        }
-
         /**
          * Adds a node to this level.
          */
-        private void processNode(AspectNode modelNode, RuleNode lhsNode)
-            throws FormatException {
+        private void processNode(AspectNode modelNode) throws FormatException {
             AspectKind nodeKind = modelNode.getKind();
             this.isRule |= nodeKind.inLHS() != nodeKind.inRHS();
-            if (nodeKind.inLHS() || nodeKind.inNAC()) {
-                if (nodeKind.inLHS()) {
-                    this.lhs.addNode(lhsNode);
-                    this.typableNodes.add(lhsNode);
-                } else {
-                    this.nacNodeSet.add(lhsNode);
-                }
+            RuleNode lhsNode = getNodeImage(modelNode);
+            if (nodeKind.inLHS()) {
+                this.lhs.addNode(lhsNode);
+            } else if (nodeKind.inNAC()) {
+                this.nacNodeSet.add(lhsNode);
             }
             if (nodeKind.inRHS()) {
-                this.typableNodes.add(lhsNode);
                 RuleNode rhsNode = getRepresentative(modelNode);
                 assert rhsNode != null;
                 RuleNode oldRhsNode = this.rhsMap.putNode(modelNode, rhsNode);
@@ -1288,25 +1232,35 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     }
                 }
             }
+            if (modelNode.hasColor()) {
+                this.colorMap.put(lhsNode,
+                    (Color) modelNode.getColor().getContent());
+            }
         }
 
-        private void processEdge(AspectEdge modelEdge, RuleEdge lhsEdge)
-            throws FormatException {
+        /** Adds a connection edge to the level. */
+        public void addConnect(AspectEdge connectEdge) throws FormatException {
+            RuleNode node1 = getNodeImage(connectEdge.source());
+            RuleNode node2 = getNodeImage(connectEdge.target());
+            Set<RuleNode> nodeSet =
+                new HashSet<RuleNode>(Arrays.asList(node1, node2));
+            this.connectMap.put(connectEdge, nodeSet);
+        }
+
+        private void processEdge(AspectEdge modelEdge) throws FormatException {
             AspectKind edgeKind = modelEdge.getKind();
             this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
             // flag indicating that the rule edge is not fresh in the LHS
             boolean existsInLhs = false;
+            RuleEdge lhsEdge = getEdgeImage(modelEdge);
             if (edgeKind.inLHS()) {
-                this.typableEdges.add(lhsEdge);
                 existsInLhs = !this.lhs.addEdge(lhsEdge);
             } else if (edgeKind.inNAC()) {
                 this.nacEdgeSet.add(lhsEdge);
             }
             boolean addToRhs =
-                edgeKind.inRHS() && !this.mergerMap.containsKey(modelEdge)
-                    && !existsInLhs;
+                edgeKind.inRHS() && !lhsEdge.label().isEmpty() && !existsInLhs;
             if (addToRhs) {
-                this.typableEdges.add(lhsEdge);
                 RuleEdge rhsEdge =
                     computeEdgeImage(modelEdge, this.rhsMap.nodeMap());
                 assert rhsEdge != null : String.format(
@@ -1337,6 +1291,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         }
                     }
                 }
+            }
+        }
+
+        /**
+         * Adds a type edge (from a parent level) to this level.
+         * The edge is not properly part of the rule, but may be
+         * necessary to check the typing.
+         */
+        private void processParentType(AspectEdge modelEdge)
+            throws FormatException {
+            RuleEdge ruleEdge = getEdgeImage(modelEdge);
+            Set<TypeLabel> parentTypes =
+                this.parentTypeMap.get(ruleEdge.source());
+            if (parentTypes == null) {
+                this.parentTypeMap.put(ruleEdge.source(), parentTypes =
+                    new HashSet<TypeLabel>());
+            }
+            if (ruleEdge.label().isAtom()) {
+                parentTypes.add(ruleEdge.label().getTypeLabel());
             }
         }
 
@@ -1416,47 +1389,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private RuleNode getRepresentative(AspectNode node)
             throws FormatException {
-            // if there are no mergers, each node is its own representative
-            // unless one of the top level calculated its partition
-            boolean needsPartition =
-                hasPartition() || !this.mergerMap.isEmpty()
-                    || this.parent != null && this.parent.hasPartition();
-            if (needsPartition) {
-                SortedSet<AspectNode> cell = getPartition().get(node);
-                assert cell != null : String.format(
-                    "Partition %s does not contain cell for '%s'",
-                    getPartition(), node);
-                return this.defaultNodeMap.get(cell.first());
-            } else {
-                return this.defaultNodeMap.get(node);
-            }
-        }
-
-        /** 
-         * Indicates that the partition has been created.
-         * This means that all sublevels should do the same, even if there
-         * are no further mergers there.
-         */
-        private boolean hasPartition() {
-            return this.partition != null;
+            SortedSet<AspectNode> cell = getPartition().get(node);
+            assert cell != null : String.format(
+                "Partition %s does not contain cell for '%s'", getPartition(),
+                node);
+            return getNodeImage(cell.first());
         }
 
         /**
-         * Lazily creates and returns the partition on a given quantification
-         * level.
+         * Returns the precomputed RHS partition of this level.
          */
-        private Map<AspectNode,SortedSet<AspectNode>> getPartition()
-            throws FormatException {
-            if (this.partition == null) {
-                this.partition = computePartition();
-            }
+        private Map<AspectNode,SortedSet<AspectNode>> getPartition() {
             return this.partition;
         }
 
         /**
          * Computes the partition of rule nodes according to RHS mergers.
          */
-        private Map<AspectNode,SortedSet<AspectNode>> computePartition()
+        private Map<AspectNode,SortedSet<AspectNode>> computePartition(
+                Set<AspectNode> modelNodes, Set<AspectEdge> modelEdges)
             throws FormatException {
             Map<AspectNode,SortedSet<AspectNode>> result =
                 new HashMap<AspectNode,SortedSet<AspectNode>>();
@@ -1469,7 +1420,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             // create singleton cells for the nodes appearing fresh on this
             // level
-            for (AspectNode newNode : this.defaultNodeMap.keySet()) {
+            for (AspectNode newNode : modelNodes) {
+                getNodeImage(newNode);
                 // test if the node is new
                 if (!result.containsKey(newNode)) {
                     SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
@@ -1478,18 +1430,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
             }
             // now merge nodes whenever there is a merger
-            for (AspectEdge merger : this.mergerMap.keySet()) {
-                SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
-                assert result.containsKey(merger.source()) : String.format(
-                    "Result %s is missing image for %s", result,
-                    merger.source());
-                assert result.containsKey(merger.target()) : String.format(
-                    "Result %s is missing image for %s", result,
-                    merger.target());
-                newCell.addAll(result.get(merger.source()));
-                newCell.addAll(result.get(merger.target()));
-                for (AspectNode node : newCell) {
-                    result.put(node, newCell);
+            for (AspectEdge merger : modelEdges) {
+                RuleEdge lhsEdge = getEdgeImage(merger);
+                if (merger.getKind().isCreator() && lhsEdge.label().isEmpty()) {
+                    SortedSet<AspectNode> newCell = new TreeSet<AspectNode>();
+                    assert result.containsKey(merger.source()) : String.format(
+                        "Result %s is missing image for %s", result,
+                        merger.source());
+                    assert result.containsKey(merger.target()) : String.format(
+                        "Result %s is missing image for %s", result,
+                        merger.target());
+                    newCell.addAll(result.get(merger.source()));
+                    newCell.addAll(result.get(merger.target()));
+                    for (AspectNode node : newCell) {
+                        result.put(node, newCell);
+                    }
                 }
             }
             return result;
@@ -1735,17 +1690,29 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             // Merged equal types are not caught, so we have to
             // check them for sharpness separately
-            for (Map.Entry<AspectEdge,RuleEdge> mergerEntry : this.mergerMap.entrySet()) {
-                RuleEdge edge = mergerEntry.getValue();
-                RuleNode source = edge.source();
-                Label sourceType = lhsTyping.getType(source);
-                RuleNode target = edge.target();
-                Label targetType = lhsTyping.getType(target);
-                if (sourceType.equals(targetType) && !lhsTyping.isSharp(source)
-                    && !lhsTyping.isSharp(target)) {
+            for (SortedSet<AspectNode> cell : getPartition().values()) {
+                if (cell.size() == 1) {
+                    continue;
+                }
+                Label cellType = null;
+                // flag indicating that at least one type in the cell is sharp
+                boolean equal = true;
+                // flag indicating that all types in the cell are equal
+                boolean sharp = false;
+                for (AspectNode modelNode : cell) {
+                    RuleNode ruleNode = getNodeImage(modelNode);
+                    Label type = lhsTyping.getType(ruleNode);
+                    if (cellType == null) {
+                        cellType = type;
+                    } else {
+                        equal &= type.equals(cellType);
+                    }
+                    sharp |= lhsTyping.isSharp(ruleNode);
+                }
+                if (equal && !sharp) {
                     errors.add(new FormatError(
-                        "One of the merged types '%s' or '%s' should be sharp",
-                        sourceType, targetType, edge));
+                        "Merged type %s should be sharp", cellType,
+                        cell.first()));
                 }
             }
             // check for creation of abstract elements
@@ -1906,14 +1873,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return result;
         }
 
-        /**
-         * Callback method to create an ordinary graph morphism.
-         * @see #toRule()
-         */
-        private RuleGraphMorphism createMorphism() {
-            return new RuleGraphMorphism();
-        }
-
         @Override
         public String toString() {
             return String.format("Level %s", getIndex());
@@ -1928,36 +1887,31 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private final LevelIndex index;
         /** Parent level. */
         private final RuleLevel2 parent;
-        /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap;
         /** Map of all connect edges on this level. */
-        private final Map<AspectEdge,Set<RuleNode>> connectMap;
+        private final Map<AspectEdge,Set<RuleNode>> connectMap =
+            new HashMap<AspectEdge,Set<RuleNode>>();
         /** Set of additional (parent level) node type edges. */
-        private final Map<RuleNode,Set<TypeLabel>> parentTypeMap;
+        private final Map<RuleNode,Set<TypeLabel>> parentTypeMap =
+            new HashMap<RuleNode,Set<TypeLabel>>();
         /** The rule node registering the match count. */
-        private final VariableNode matchCountImage;
+        private VariableNode matchCountImage;
+        /** Map from rule nodes to declared colours. */
+        private final Map<RuleNode,Color> colorMap =
+            new HashMap<RuleNode,Color>();
         /** Flag indicating that modifiers have been found at this level. */
         private boolean isRule;
-        /** Mapping from model nodes to their default representatives. */
-        private final Map<AspectNode,RuleNode> defaultNodeMap;
         /** Mapping from model nodes and edges to the RHS. */
-        private final RuleModelMap rhsMap;
+        private final RuleModelMap rhsMap = new RuleModelMap();
         /** The left hand side graph of the rule. */
         private final RuleGraph lhs;
         /** The right hand side graph of the rule. */
         private final RuleGraph rhs;
-        /** The set of mergers on this level. */
-        private final Map<AspectEdge,RuleEdge> mergerMap;
-        /** Set of all (lhs and rhs) typable nodes. */
-        private final Set<RuleNode> typableNodes;
-        /** Set of all (lhs and rhs) typable edges. */
-        private final Set<RuleEdge> typableEdges;
         /** Rule morphism (from LHS to RHS). */
-        private final RuleGraphMorphism ruleMorph;
+        private final RuleGraphMorphism ruleMorph = new RuleGraphMorphism();
         /** The set of nodes appearing in NACs. */
-        private final Set<RuleNode> nacNodeSet;
+        private final Set<RuleNode> nacNodeSet = new HashSet<RuleNode>();
         /** The set of edges appearing in NACs. */
-        private final Set<RuleEdge> nacEdgeSet;
+        private final Set<RuleEdge> nacEdgeSet = new HashSet<RuleEdge>();
         /** Node partition on this quantification level. */
         private Map<AspectNode,SortedSet<AspectNode>> partition;
     }
@@ -2022,7 +1976,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                             throw new FormatException(
                                 "Anchor node must be in LHS", node);
                         }
-                        RuleNode nodeImage = level.getModelMap().getNode(node);
+                        RuleNode nodeImage = getMap().getNode(node);
                         this.hiddenPars.add(nodeImage);
                     }
                 }
@@ -2071,11 +2025,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     "Parameter '%d' is a required input, but no control is in use",
                     nr, node);
             }
-            RuleLevel1 level = getLevelTree().getLevel(node);
             RuleNode nodeImage;
             boolean creator;
             if (nodeKind.inLHS()) {
-                nodeImage = level.getModelMap().getNode(node);
+                nodeImage = getNodeImage(node);
                 creator = false;
             } else if (nodeKind.inRHS()) {
                 if (inOnly) {
@@ -2083,7 +2036,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         "Creator node cannot be used as input parameter", node);
                 }
                 outOnly = true;
-                nodeImage = level.getModelMap().getNode(node);
+                nodeImage = getNodeImage(node);
                 creator = true;
             } else {
                 throw new FormatException(
