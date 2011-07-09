@@ -18,11 +18,11 @@ package groove.graph.algebra;
 
 import groove.algebra.Constant;
 import groove.graph.AbstractNode;
+import groove.graph.TypeNode;
 import groove.trans.RuleNode;
 
 /**
- * Class of nullary product nodes, used to represent attribute variables in
- * rules and conditions.
+ * Nodes used to represent attribute variables in rules and conditions.
  * @author Arend Rensink
  * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
  */
@@ -105,6 +105,16 @@ public class VariableNode extends AbstractNode implements RuleNode {
      */
     public Constant getConstant() {
         return this.constant;
+    }
+
+    @Override
+    public boolean hasType() {
+        return false;
+    }
+
+    @Override
+    public TypeNode getType() {
+        return null;
     }
 
     /** The signature name of this variable node, if any. */

@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 
 /**
@@ -28,5 +29,10 @@ import groove.graph.algebra.ProductNode;
  * @version $Revision $
  */
 public interface RuleNode extends Node, RuleElement {
-    // no additional functionality
+    /** Indicates if this rule node is typed. */
+    public boolean hasType();
+
+    /** Returns the type of the rule node, or {@code null} if
+     * the rule node is untyped. */
+    public TypeNode getType();
 }

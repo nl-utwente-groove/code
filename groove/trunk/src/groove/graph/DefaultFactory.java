@@ -16,26 +16,15 @@
  */
 package groove.graph;
 
-import groove.util.TreeHashSet;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /** Factory class for graph elements. */
-public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
+public class DefaultFactory extends
+        StoreFactory<DefaultNode,DefaultEdge,DefaultLabel> {
     /** Private constructor. */
     protected DefaultFactory() {
         // empty
-    }
-
-    /** Creates a fresh node. */
-    public DefaultNode createNode() {
-        return this.nodeStore.createNode();
-    }
-
-    @Override
-    public DefaultNode createNode(int nr) {
-        return this.nodeStore.createNode(nr);
     }
 
     /**
@@ -53,76 +42,6 @@ public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
 
     @Override
     public DefaultLabel createLabel(String text) {
-        return newLabel(text);
-    }
-
-    @Override
-    public DefaultEdge createEdge(DefaultNode source, String text,
-            DefaultNode target) {
-        return createEdge(source, createLabel(text), target);
-    }
-
-    @Override
-    public DefaultEdge createEdge(DefaultNode source, Label label,
-            DefaultNode target) {
-        assert source != null : "Source node of default edge should not be null";
-        assert target != null : "Target node of default edge should not be null";
-        assert label instanceof DefaultLabel : "Label of default edge should not be null";
-        DefaultEdge edge =
-            new DefaultEdge(source, (DefaultLabel) label, target,
-                getEdgeCount());
-        DefaultEdge result = this.edgeSet.put(edge);
-        if (result == null) {
-            result = edge;
-        }
-        return result;
-    }
-
-    @Override
-    public Morphism<DefaultNode,DefaultEdge> createMorphism() {
-        return new Morphism<DefaultNode,DefaultEdge>(this);
-    }
-
-    /** Returns the highest default node node number. */
-    @Override
-    public int getMaxNodeNr() {
-        return this.nodeStore.getMaxNodeNr();
-    }
-
-    /** Returns the number of created nodes. */
-    public int getNodeCount() {
-        return this.nodeStore.getNodeCount();
-    }
-
-    /**
-     * Returns the total number of default edges created.
-     */
-    public int getEdgeCount() {
-        return this.edgeSet.size();
-    }
-
-    /**
-     * Yields the number of labels created in the course of the program.
-     * @return Number of labels created
-     */
-    public int getLabelCount() {
-        return this.labelMap.size();
-    }
-
-    /** Clears the store of canonical edges. */
-    public void clear() {
-        this.edgeSet.clear();
-        this.labelMap.clear();
-        this.nodeStore.clear();
-    }
-
-    /**
-     * Returns a label with the given text, reusing previously created
-     * labels where possible.
-     * @param text the label text being looked up
-     * @return the (reused or new) label object.
-     */
-    private DefaultLabel newLabel(String text) {
         DefaultLabel result = this.labelMap.get(text);
         if (result == null) {
             int index = this.labelMap.size();
@@ -134,9 +53,29 @@ public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
         }
     }
 
-    /** Store and factory of canonical default nodes. */
-    private final NodeStore<DefaultNode> nodeStore =
-        new NodeStore<DefaultNode>(new DefaultNode(0));
+    @Override
+    public Morphism<DefaultNode,DefaultEdge> createMorphism() {
+        return new Morphism<DefaultNode,DefaultEdge>(this);
+    }
+
+    /** Clears the store of canonical edges. */
+    @Override
+    public void clear() {
+        super.clear();
+        this.labelMap.clear();
+    }
+
+    @Override
+    protected DefaultEdge createEdge(DefaultNode source, Label label,
+            DefaultNode target, int nr) {
+        return new DefaultEdge(source, (DefaultLabel) label, target, nr);
+    }
+
+    @Override
+    protected NodeStore<? extends DefaultNode> createNodeStore() {
+        return new NodeStore<DefaultNode>(new DefaultNode(0));
+    }
+
     /**
      * The internal translation table from strings to standard (non-node type)
      * label indices.
@@ -146,30 +85,6 @@ public class DefaultFactory implements ElementFactory<DefaultNode,DefaultEdge> {
 
     /** Counter to support the generation of fresh labels. */
     private int freshLabelIndex;
-
-    /**
-     * A identity map, mapping previously created instances of
-     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
-     * reused.
-     */
-    private final TreeHashSet<DefaultEdge> edgeSet =
-        new TreeHashSet<DefaultEdge>() {
-            /**
-             * As {@link DefaultEdge}s test equality by object identity,
-             * we need to weaken the set's equality test.
-             */
-            @Override
-            final protected boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
-                return o1.source().equals(o2.source())
-                    && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-
-            @Override
-            final protected boolean allEqual() {
-                return false;
-            }
-        };
 
     /** Returns the singleton instance of this factory. */
     public static DefaultFactory instance() {

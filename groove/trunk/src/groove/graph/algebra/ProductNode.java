@@ -17,6 +17,7 @@
 package groove.graph.algebra;
 
 import groove.graph.AbstractNode;
+import groove.graph.TypeNode;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -89,6 +90,16 @@ public class ProductNode extends AbstractNode implements RuleNode {
     @Override
     public String getToStringPrefix() {
         return "p";
+    }
+
+    @Override
+    public boolean hasType() {
+        return false;
+    }
+
+    @Override
+    public TypeNode getType() {
+        return null;
     }
 
     /**

@@ -127,16 +127,6 @@ abstract public class AbstractNode implements Node, Cloneable {
     }
 
     /**
-     * Callback method to test if this node is distinguishable (content-wise)
-     * from another. Used to assert correctness of {@link #equals(Object)}. This
-     * implementation tests for distinctness of actual class or node number.
-     */
-    protected boolean testDiffers(AbstractNode other) {
-        return other.getClass() != this.getClass()
-            || (this.getNumber() != other.getNumber());
-    }
-
-    /**
      * Computes the hash code for this node.
      * @return the hashcode for this node.
      */

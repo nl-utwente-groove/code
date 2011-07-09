@@ -21,6 +21,7 @@ import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.view.FormatException;
+import groove.view.aspect.AspectKind;
 
 /**
  * Labels encapsulating node or edge types.
@@ -163,4 +164,10 @@ public final class TypeLabel extends AbstractLabel {
 
     static private final TypeFactory factory = TypeFactory.instance();
 
+    /** Type label for nodes in an untyped setting. */
+    static public final TypeLabel NODE =
+        createLabel(EdgeRole.NODE_TYPE, "Node");
+    /** Type label for untyped data variables. */
+    static public final TypeLabel DATA = createLabel(EdgeRole.NODE_TYPE,
+        AspectKind.UNTYPED.getName());
 }

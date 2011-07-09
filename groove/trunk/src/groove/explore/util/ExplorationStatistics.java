@@ -250,7 +250,6 @@ public class ExplorationStatistics {
     private void reportGraphElementStatistics() {
         HostFactory factory = this.gts.getHostFactory();
         printf("\n\tDefault nodes:\t%d%n", factory.getNodeCount());
-        printf("\tDefault labels:\t%d%n", factory.getLabelCount());
         printf("\tFresh nodes:\t%d%n", RuleApplication.getFreshNodeCount());
         printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
