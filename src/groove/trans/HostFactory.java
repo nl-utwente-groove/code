@@ -18,14 +18,12 @@ package groove.trans;
 
 import groove.algebra.Algebra;
 import groove.algebra.Algebras;
-import groove.graph.DefaultEdge;
-import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.NodeStore;
+import groove.graph.StoreFactory;
 import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
-import groove.util.TreeHashSet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,23 +37,10 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class HostFactory implements ElementFactory<HostNode,HostEdge> {
+public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     /** Constructor for a fresh factory. */
     protected HostFactory() {
-        this.nodeStore = createNodeStore();
-        this.edgeSet = createEdgeStore();
-    }
-
-    /** Creates a fresh default host node. */
-    public DefaultHostNode createNode() {
-        return this.nodeStore.createNode();
-    }
-
-    /** Creates a default host node with a given number.
-     * @throws IllegalArgumentException if this factory has created a value node with this number
-     */
-    public DefaultHostNode createNode(int nr) {
-        return this.nodeStore.createNode(nr);
+        //
     }
 
     /**
@@ -68,10 +53,10 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
         Map<Object,ValueNode> valueMap = getValueMap(algebra);
         ValueNode result = valueMap.get(value);
         if (result == null) {
-            int nr = this.nodeStore.getNextNodeNr();
+            int nr = getNodeStore().getNextNodeNr();
             result = new ValueNode(nr, algebra, value);
             valueMap.put(value, result);
-            this.nodeStore.addNode(result);
+            getNodeStore().addNode(result);
         }
         return result;
     }
@@ -104,8 +89,9 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
      * @throws IllegalArgumentException if an incompatible node with the same
      * number is already in the factory
      */
+    @Override
     public boolean addNode(HostNode node) throws IllegalArgumentException {
-        boolean result = this.nodeStore.addNode(node);
+        boolean result = super.addNode(node);
         if (node instanceof ValueNode) {
             // make sure this value was not already wrapped in another node
             ValueNode valueNode = (ValueNode) node;
@@ -121,11 +107,6 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
             }
         }
         return result;
-    }
-
-    /** Creates a label with the given text. */
-    public TypeLabel createLabel(String text) {
-        return LABEL_FACTORY.createLabel(text);
     }
 
     /** Retrieves the value-to-node map for a given algebra,
@@ -145,70 +126,20 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
         return createEdge(source, createLabel(text), target);
     }
 
-    public HostEdge createEdge(HostNode source, Label label, HostNode target) {
-        assert source != null : "Source node of host edge should not be null";
-        assert target != null : "Target node of host edge should not be null";
-        assert label instanceof TypeLabel : "Label of default edge should be TypeLabel";
-        HostEdge edge = createEdge(source, label, target, getEdgeCount());
-        HostEdge result = this.edgeSet.put(edge);
-        if (result == null) {
-            result = edge;
-        }
-        return result;
-    }
-
     /** 
      * Callback factory method to create a new edge object.
      * This will then be compared with the edge store to replace it by its
      * canonical representative.
      */
+    @Override
     protected HostEdge createEdge(HostNode source, Label label,
             HostNode target, int nr) {
         return new HostEdge(this, source, (TypeLabel) label, target, nr);
     }
 
-    /** 
-     * Adds a given edge to the edges known to this store.
-     * The source and target nodes are assumed to be known already.
-     * Throws an exception if an equal but not identical edge was already in the store
-     * @return {@code true} if the edge was not already known in this store.
-     * @throws IllegalArgumentException if an equal but not identical edge
-     * was already in the store
-     */
-    public boolean addEdge(HostEdge edge) throws IllegalArgumentException {
-        HostEdge oldEdge = this.edgeSet.put(edge);
-        if (oldEdge != null && oldEdge != edge) {
-            throw new IllegalArgumentException(String.format(
-                "Duplicate edges %s", edge));
-        }
-        return oldEdge == null;
-    }
-
-    /** Returns the highest default node node number. */
     @Override
-    public int getMaxNodeNr() {
-        return this.nodeStore.getMaxNodeNr();
-    }
-
-    /** Returns the number of known nodes. */
-    public int getNodeCount() {
-        return this.nodeStore.getNodeCount();
-    }
-
-    /**
-     * Returns the total number of host edges created.
-     * Since they are numbered in sequence, this is also the next free edge number.
-     */
-    public int getEdgeCount() {
-        return this.edgeSet.size();
-    }
-
-    /**
-     * Yields the number of labels created in the course of the program.
-     * @return Number of labels created
-     */
-    public int getLabelCount() {
-        return LABEL_FACTORY.getLabelCount();
+    public TypeLabel createLabel(String text) {
+        return LABEL_FACTORY.createLabel(text);
     }
 
     @Override
@@ -222,44 +153,14 @@ public class HostFactory implements ElementFactory<HostNode,HostEdge> {
     }
 
     /** Callback factory method to initialise the node store. */
+    @Override
     protected NodeStore<? extends DefaultHostNode> createNodeStore() {
         return new NodeStore<DefaultHostNode>(new DefaultHostNode(0));
     }
 
-    /** Callback factory method to initialise the edge store. */
-    protected TreeHashSet<HostEdge> createEdgeStore() {
-        return new TreeHashSet<HostEdge>() {
-            /**
-             * As {@link HostEdge}s test equality by object identity,
-             * we need to weaken the set's equality test.
-             */
-            @Override
-            final protected boolean areEqual(HostEdge o1, HostEdge o2) {
-                return o1.source().equals(o2.source())
-                    && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-
-            @Override
-            final protected boolean allEqual() {
-                return false;
-            }
-        };
-    }
-
-    /** Store and factory of canonical host nodes. */
-    private final NodeStore<? extends DefaultHostNode> nodeStore;
-
     /** Internal store of previously generated value nodes. */
     private final Map<String,Map<Object,ValueNode>> valueMaps =
         new HashMap<String,Map<Object,ValueNode>>();
-
-    /**
-     * A identity map, mapping previously created instances of
-     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
-     * reused.
-     */
-    private final TreeHashSet<HostEdge> edgeSet;
 
     /** Returns a fresh instance of this factory. */
     public static HostFactory newInstance() {

@@ -63,7 +63,7 @@ public class TypeNode implements Node {
 
     @Override
     public int hashCode() {
-        return this.nr;
+        return getNumber() ^ getType().hashCode();
     }
 
     @Override
@@ -148,4 +148,9 @@ public class TypeNode implements Node {
     private final int nr;
     /** The type of this node. */
     private final TypeLabel type;
+
+    /** Type node for non-data nodes in an untyped setting. */
+    public static final TypeNode TOP_NODE = new TypeNode(0, TypeLabel.NODE);
+    /** Type node for data nodes in an untyped setting. */
+    public static final TypeNode TOP_DATA = new TypeNode(1, TypeLabel.DATA);
 }

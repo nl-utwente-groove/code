@@ -14,17 +14,20 @@
  * 
  * $Id: DefaultNode.java,v 1.17 2008-02-19 10:35:31 fladder Exp $
  */
-package groove.graph;
+package groove.trans;
 
+import groove.graph.AbstractNode;
+import groove.graph.Node;
+import groove.graph.TypeNode;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
  * equality is determined by object identity and not by node number.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 2971 $
  */
-public class DefaultNode extends AbstractNode implements
-        Node.Factory<DefaultNode> {
+public class DefaultRuleNode extends AbstractNode implements RuleNode,
+        Node.Factory<RuleNode> {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
@@ -32,16 +35,44 @@ public class DefaultNode extends AbstractNode implements
      * using one of the <code>createNode</code> methods in preference to this
      * constructor.
      * @param nr the number for this node
-     * @see #createNode()
-     * @see #createNode(int)
      */
-    protected DefaultNode(int nr) {
+    protected DefaultRuleNode(int nr, TypeNode type) {
         super(nr);
+        this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        DefaultRuleNode other = (DefaultRuleNode) obj;
+        if (hasType()) {
+            return getType().equals(other.getType());
+        } else {
+            return !other.hasType();
+        }
+    }
+
+    @Override
+    protected int computeHashCode() {
+        int result = super.computeHashCode();
+        if (hasType()) {
+            int prime = 31;
+            result = prime * result + getType().hashCode();
+        }
+        return result;
     }
 
     /** Factory constructor. */
-    public DefaultNode newNode(int nr) {
-        return new DefaultNode(nr);
+    @Override
+    public DefaultRuleNode newNode(int nr) {
+        return new DefaultRuleNode(nr, null);
+    }
+
+    /** Factory constructor. */
+    public DefaultRuleNode newNode(int nr, TypeNode type) {
+        return new DefaultRuleNode(nr, type);
     }
 
     /**
@@ -52,15 +83,14 @@ public class DefaultNode extends AbstractNode implements
         return "n";
     }
 
-    /** Default method that uses the DefaultNode constructor. */
-    static public DefaultNode createNode(int nr) {
-        return factory.createNode(nr);
+    public boolean hasType() {
+        return getType() != null;
     }
 
-    /** Returns the node with the first currently unused node number. */
-    static public DefaultNode createNode() {
-        return factory.createNode();
+    public TypeNode getType() {
+        return this.type;
     }
 
-    static private final DefaultFactory factory = DefaultFactory.instance();
+    /** The (possibly {@code null}) type of this rule node. */
+    private final TypeNode type;
 }

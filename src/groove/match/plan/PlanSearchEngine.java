@@ -17,7 +17,6 @@
 package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
-import groove.graph.DefaultNode;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -29,6 +28,7 @@ import groove.rel.RegExpr;
 import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
+import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
 import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
@@ -396,7 +396,7 @@ public class PlanSearchEngine extends SearchEngine {
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
-            } else if (node instanceof DefaultNode) {
+            } else if (node instanceof DefaultRuleNode) {
                 result = new NodeSearchItem(node);
             }
             return result;

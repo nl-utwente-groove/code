@@ -1412,7 +1412,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     private static AnchorFactory<Rule> anchorFactory =
         MinimalAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
-    private static final boolean PRINT = false;
+    private static final boolean PRINT = true;
     /**
      * The lowest rule priority, which is also the default value if no explicit
      * priority is given.
