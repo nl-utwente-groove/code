@@ -17,8 +17,9 @@
 package groove.graph.algebra;
 
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
-import groove.graph.TypeNode;
+import groove.graph.TypeLabel;
 import groove.trans.RuleNode;
 
 /**
@@ -39,7 +40,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
     /**
      * Constructs a (numbered) typed variable node.
      */
-    public VariableNode(int nr, String signature) {
+    public VariableNode(int nr, SignatureKind signature) {
         super(nr);
         this.signature = signature;
         this.constant = null;
@@ -89,7 +90,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
      * Method returning the (possibly null) signature to which the variable node
      * belongs.
      */
-    public String getSignature() {
+    public SignatureKind getSignature() {
         return this.signature;
     }
 
@@ -108,17 +109,16 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     @Override
-    public boolean hasType() {
-        return false;
-    }
-
-    @Override
-    public TypeNode getType() {
-        return null;
+    public TypeLabel getType() {
+        if (this.signature == null) {
+            return TypeLabel.DATA;
+        } else {
+            return TypeLabel.getLabel(this.signature);
+        }
     }
 
     /** The signature name of this variable node, if any. */
-    private final String signature;
+    private final SignatureKind signature;
     /** Optional constant symbol. */
     private final Constant constant;
 }

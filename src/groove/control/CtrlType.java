@@ -17,8 +17,9 @@
 package groove.control;
 
 import static groove.view.aspect.AspectKind.UNTYPED;
-import groove.algebra.Algebras;
+import groove.algebra.SignatureKind;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,8 +117,8 @@ public class CtrlType {
         new HashMap<String,CtrlType>();
     static {
         // initialise the data type map
-        for (String signature : Algebras.getSigNames()) {
-            dataTypeMap.put(signature, new CtrlType(signature));
+        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+            dataTypeMap.put(sigKind.getName(), new CtrlType(sigKind.getName()));
         }
     }
 }

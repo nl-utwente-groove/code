@@ -21,6 +21,7 @@ import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Precedence;
+import groove.algebra.SignatureKind;
 import groove.graph.TypeLabel;
 import groove.util.ExprParser;
 import groove.util.Pair;
@@ -46,7 +47,7 @@ abstract public class Expression {
     }
 
     /** Returns the type of this expression (as a signature name). */
-    abstract public String getType();
+    abstract public SignatureKind getType();
 
     @Override
     public final String toString() {
@@ -123,7 +124,7 @@ abstract public class Expression {
      * @return the resulting expression
      * @throws FormatException if the input string contains syntax errors
      */
-    public static Expression parse(String text, String type)
+    public static Expression parse(String text, SignatureKind type)
         throws FormatException {
         if (text.length() == 0) {
             throw new FormatException(
@@ -133,14 +134,15 @@ abstract public class Expression {
         String outer = splitText.one();
         // find the signature
         int pos = outer.indexOf(AspectParser.SEPARATOR);
-        String signature = type;
+        String sigName;
+        SignatureKind signature = type;
         if (pos >= 0) {
-            signature = outer.substring(0, pos);
-            if (!Algebras.isSigName(signature)) {
-                throw new FormatException("Unknown signature '%s'", signature,
-                    text);
+            sigName = outer.substring(0, pos);
+            signature = SignatureKind.getKind(sigName);
+            if (signature == null) {
+                throw new FormatException("Unknown signature '%s'", sigName);
             }
-            if (type != null && !signature.equals(type)) {
+            if (type != null && signature != type) {
                 throw new FormatException(
                     "Declared type %s differs from inferred type %s",
                     signature, type);
@@ -153,7 +155,7 @@ abstract public class Expression {
             if (constant == null) {
                 return parseAsField(rest, signature);
             } else if (signature != null
-                && !constant.getSignature().equals(signature)) {
+                && constant.getSignature() != signature) {
                 throw new FormatException(
                     "Declared type %s differs from constant type %s",
                     signature, constant.getSignature());
@@ -181,7 +183,7 @@ abstract public class Expression {
         }
     }
 
-    private static Expression parseAsField(String field, String type)
+    private static Expression parseAsField(String field, SignatureKind type)
         throws FormatException {
         if (type == null) {
             throw new FormatException("Missing type declaration for field %s",
@@ -220,7 +222,7 @@ abstract public class Expression {
      * @throws FormatException if there is a syntax error
      */
     private static Expression parseAsOperator(String operatorName,
-            String argsText, String signature) throws FormatException {
+            String argsText, SignatureKind signature) throws FormatException {
         if (signature == null) {
             throw new FormatException(
                 "Missing type declaration for operator %s", operatorName);
@@ -244,7 +246,7 @@ abstract public class Expression {
                 argsArray.length, arity, operatorName);
         }
         for (int i = 0; i < argsArray.length; i++) {
-            String argType = operator.getParamTypes().get(i);
+            SignatureKind argType = operator.getParamTypes().get(i);
             result.addArgument(parse(argsArray[i], argType));
         }
         return result;
@@ -267,7 +269,7 @@ abstract public class Expression {
     /** Field expression. */
     public static class Field extends Expression {
         /** Constructs a call expression for a given operator. */
-        public Field(String type, String owner, String field) {
+        public Field(SignatureKind type, String owner, String field) {
             super(Kind.FIELD);
             this.type = type;
             this.owner = owner;
@@ -289,7 +291,7 @@ abstract public class Expression {
          * The signature is {@code null} if the expression is an identifier.
          */
         @Override
-        public String getType() {
+        public SignatureKind getType() {
             return this.type;
         }
 
@@ -361,7 +363,7 @@ abstract public class Expression {
 
         private final String owner;
         private final String field;
-        private final String type;
+        private final SignatureKind type;
     }
 
     /** Constant expression. */
@@ -378,7 +380,7 @@ abstract public class Expression {
         }
 
         @Override
-        public String getType() {
+        public SignatureKind getType() {
             return getConstant().getSignature();
         }
 
@@ -453,7 +455,7 @@ abstract public class Expression {
         }
 
         @Override
-        public String getType() {
+        public SignatureKind getType() {
             return getOperator().getResultType();
         }
 

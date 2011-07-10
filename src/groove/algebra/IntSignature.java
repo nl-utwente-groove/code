@@ -130,6 +130,11 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @ToolTipBody("Yields a string representation of %s")
     public abstract String toString(Int arg);
 
+    @Override
+    public SignatureKind getKind() {
+        return SignatureKind.INT;
+    }
+
     /**
      * Tests if the number can be parsed as a {@link BigInteger}. This means
      * that a number of any length is accepted.

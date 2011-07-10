@@ -17,6 +17,7 @@
 package groove.graph;
 
 import static groove.graph.GraphRole.TYPE;
+import groove.algebra.SignatureKind;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -277,7 +278,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
         for (N node : (Set<N>) model.nodeSet()) {
             if (!nodeTypeMap.containsKey(node)) {
-                String signature = null;
+                SignatureKind signature = null;
                 if (node instanceof VariableNode) {
                     signature = ((VariableNode) node).getSignature();
                 } else if (node instanceof ValueNode) {
@@ -286,8 +287,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     untypedNodes.remove(node);
                 }
                 if (signature != null) {
-                    nodeTypeMap.put(node,
-                        TypeLabel.createLabel(EdgeRole.NODE_TYPE, signature));
+                    nodeTypeMap.put(
+                        node,
+                        TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+                            signature.getName()));
                     untypedNodes.remove(node);
                 }
             }

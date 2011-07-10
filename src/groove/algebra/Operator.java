@@ -27,10 +27,10 @@ public class Operator {
     Operator(Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.signature =
-            Algebras.getSigName((Class<? extends Signature>) method.getDeclaringClass());
+            Algebras.getSigKind((Class<? extends Signature>) method.getDeclaringClass());
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
-        this.parameterTypes = new ArrayList<String>();
+        this.parameterTypes = new ArrayList<SignatureKind>();
         for (int i = 0; i < this.arity; i++) {
             if (!(methodParameterTypes[i] instanceof TypeVariable<?>)) {
                 throw new IllegalArgumentException(String.format(
@@ -39,7 +39,7 @@ public class Operator {
             }
             String typeName =
                 ((TypeVariable<?>) methodParameterTypes[i]).getName();
-            this.parameterTypes.add(typeName.toLowerCase());
+            this.parameterTypes.add(SignatureKind.getKind(typeName.toLowerCase()));
         }
         Type returnType = method.getGenericReturnType();
         if (!(returnType instanceof TypeVariable<?>)) {
@@ -48,7 +48,7 @@ public class Operator {
                     method.getName()));
         }
         String typeName = ((TypeVariable<?>) returnType).getName();
-        this.returnType = typeName.toLowerCase();
+        this.returnType = SignatureKind.getKind(typeName.toLowerCase());
         InfixSymbol infix = method.getAnnotation(InfixSymbol.class);
         PrefixSymbol prefix = method.getAnnotation(PrefixSymbol.class);
         this.symbol =
@@ -60,7 +60,7 @@ public class Operator {
     }
 
     /** Returns the signature to which this operator belongs. */
-    public String getSignature() {
+    public SignatureKind getSignature() {
         return this.signature;
     }
 
@@ -78,7 +78,7 @@ public class Operator {
      * Returns the parameter type names of this operator.
      * The type names are actually the names of the defining signatures. 
      */
-    public List<String> getParamTypes() {
+    public List<SignatureKind> getParamTypes() {
         return this.parameterTypes;
     }
 
@@ -86,7 +86,7 @@ public class Operator {
      * Returns the result type name of this operator.
      * The type name is actually the name of the defining signature.
      */
-    public String getResultType() {
+    public SignatureKind getResultType() {
         return this.returnType;
     }
 
@@ -111,10 +111,10 @@ public class Operator {
             + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
     }
 
-    private final String signature;
+    private final SignatureKind signature;
     private final int arity;
-    private final List<String> parameterTypes;
-    private final String returnType;
+    private final List<SignatureKind> parameterTypes;
+    private final SignatureKind returnType;
     private final String name;
     private final String symbol;
     private final Precedence precedence;

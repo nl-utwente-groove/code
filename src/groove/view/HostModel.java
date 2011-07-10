@@ -20,6 +20,7 @@ import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.TypeGraph;
@@ -242,7 +243,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             if (attrType.isData()) {
                 assert attrType != UNTYPED;
                 Algebra<?> nodeAlgebra =
-                    this.algebraFamily.getAlgebra(attrType.getName());
+                    this.algebraFamily.getAlgebra(SignatureKind.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();
                 String symbol = ((Constant) dataType.getContent()).getSymbol();
                 nodeImage =

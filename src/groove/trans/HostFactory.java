@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.algebra.Algebra;
-import groove.algebra.Algebras;
 import groove.graph.Label;
 import groove.graph.NodeStore;
 import groove.graph.StoreFactory;
@@ -102,8 +101,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
             assert result == (oldNode == null);
             if (oldNode != null && oldNode != node) {
                 throw new IllegalArgumentException(String.format(
-                    "Duplicate value nodes for %s:%s",
-                    Algebras.getSigName(algebra), algebra.getSymbol(value)));
+                    "Duplicate value nodes for %s:%s", algebra.getKind(),
+                    algebra.getSymbol(value)));
             }
         }
         return result;

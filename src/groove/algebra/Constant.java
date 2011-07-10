@@ -21,9 +21,9 @@ public class Constant {
     /**
      * Constructs a new constant from a given signature and 
      * constant symbol.
-     * The parameters are required to satisfy {@link Algebras#isConstant(String, String)}.
+     * The parameters are required to satisfy {@link Algebras#isConstant(SignatureKind, String)}.
      */
-    Constant(String signature, String symbol) {
+    Constant(SignatureKind signature, String symbol) {
         this.signature = signature;
         this.symbol = symbol;
     }
@@ -61,7 +61,7 @@ public class Constant {
     }
 
     /** Returns the signature name of this constant. */
-    public final String getSignature() {
+    public final SignatureKind getSignature() {
         return this.signature;
     }
 
@@ -70,6 +70,6 @@ public class Constant {
         return this.symbol;
     }
 
-    private final String signature;
+    private final SignatureKind signature;
     private final String symbol;
 }

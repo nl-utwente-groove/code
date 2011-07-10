@@ -21,6 +21,7 @@ import static groove.view.aspect.AspectParser.SEPARATOR;
 import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.SignatureKind;
 import groove.annotation.Help;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
@@ -76,13 +77,13 @@ public enum AspectKind {
     /** Indicates a data value of unknown type. */
     UNTYPED("attr"),
     /** Indicates a boolean value or operator. */
-    BOOL("bool", ContentKind.BOOL_LITERAL),
+    BOOL(SignatureKind.BOOL.getName(), ContentKind.BOOL_LITERAL),
     /** Indicates an integer value or operator. */
-    INT("int", ContentKind.INT_LITERAL),
+    INT(SignatureKind.INT.getName(), ContentKind.INT_LITERAL),
     /** Indicates a floating-point value or operator. */
-    REAL("real", ContentKind.REAL_LITERAL),
+    REAL(SignatureKind.REAL.getName(), ContentKind.REAL_LITERAL),
     /** Indicates a string value or operator. */
-    STRING("string", ContentKind.STRING_LITERAL),
+    STRING(SignatureKind.STRING.getName(), ContentKind.STRING_LITERAL),
 
     // auxiliary attribute-related aspects
     /** Indicates an argument edge. */
@@ -371,7 +372,7 @@ public enum AspectKind {
     }
 
     /** Returns the aspect kinds corresponding to a given signature. */
-    public static AspectKind getSignatureKind(String signature) {
+    public static AspectKind toAspectKind(SignatureKind signature) {
         return sigKindMap.get(signature);
     }
 
@@ -919,8 +920,8 @@ public enum AspectKind {
     private static final Map<String,String> tokenMap =
         new HashMap<String,String>();
     /** Mapping from signature names to aspect kinds. */
-    private static final Map<String,AspectKind> sigKindMap =
-        new HashMap<String,AspectKind>();
+    private static final Map<SignatureKind,AspectKind> sigKindMap =
+        new EnumMap<SignatureKind,AspectKind>(SignatureKind.class);
 
     static {
         // initialise the aspect kind map
@@ -928,8 +929,9 @@ public enum AspectKind {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
-            if (Algebras.isSigName(kind.getName())) {
-                sigKindMap.put(kind.getName(), kind);
+            SignatureKind sigKind = SignatureKind.getKind(kind.getName());
+            if (sigKind != null) {
+                sigKindMap.put(sigKind, kind);
             }
         }
         // initialise the nested value map
@@ -1096,19 +1098,19 @@ public enum AspectKind {
         /** 
          * String constant, used in a typed value aspect. 
          */
-        STRING_LITERAL("string"),
+        STRING_LITERAL(SignatureKind.STRING),
         /** 
          * Boolean constant, used in a typed value aspect. 
          */
-        BOOL_LITERAL("bool"),
+        BOOL_LITERAL(SignatureKind.BOOL),
         /**
          * Integer number constant, used in a typed value aspect. 
          */
-        INT_LITERAL("int"),
+        INT_LITERAL(SignatureKind.INT),
         /** 
          * Real number constant, used in a typed value aspect. 
          */
-        REAL_LITERAL("real"),
+        REAL_LITERAL(SignatureKind.REAL),
         /**
          * Multiplicity: either a single number,
          * or of the form {@code n..m} where {@code n<m} or {@code m=*}.
@@ -1341,8 +1343,8 @@ public enum AspectKind {
                             "Identifier '%s' not allowed as predicate expression",
                             text);
                     }
-                    String type = expr.getType();
-                    if (!type.equals(BOOL_LITERAL.signature)) {
+                    SignatureKind type = expr.getType();
+                    if (type != SignatureKind.BOOL) {
                         throw new FormatException(
                             "Non-boolean expression '%s' not allowed as predicate expression",
                             text);
@@ -1426,7 +1428,7 @@ public enum AspectKind {
         }
 
         /** Constructor for literals of a given signature. */
-        private ContentKind(String signature) {
+        private ContentKind(SignatureKind signature) {
             this.signature = signature;
         }
 
@@ -1575,7 +1577,7 @@ public enum AspectKind {
             return Character.isJavaIdentifierPart(c);
         }
 
-        private final String signature;
+        private final SignatureKind signature;
 
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';

@@ -35,6 +35,9 @@ package groove.algebra;
  * @version $Revision $
  */
 public interface Signature {
+    /** Returns the signature kind of this signature. */
+    public SignatureKind getKind();
+
     /**
      * Tests if a given string is a representation of a value of the signature.
      * This should be implemented in the concrete signature, not in the algebra.

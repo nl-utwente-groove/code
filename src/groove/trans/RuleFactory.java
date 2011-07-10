@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.ElementFactory;
 import groove.graph.Label;
-import groove.graph.TypeNode;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
@@ -38,7 +38,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     }
 
     /** Creates a node with a given number. */
-    public RuleNode createNode(int nr, TypeNode type) {
+    public RuleNode createNode(int nr, TypeLabel type) {
         this.maxNodeNr = Math.max(this.maxNodeNr, nr);
         return new DefaultRuleNode(nr, type);
     }

@@ -19,12 +19,13 @@ package groove.algebra;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Register for the currently used algebras.
@@ -54,11 +55,11 @@ public class AlgebraFamily {
      * @param algebra the algebra to be added
      */
     private void setImplementation(Algebra<?> algebra) {
-        String signatureName = Algebras.getSigName(algebra);
-        Algebra<?> oldAlgebra = this.algebraMap.put(signatureName, algebra);
+        SignatureKind sigKind = algebra.getKind();
+        Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
             throw new IllegalArgumentException(String.format(
-                "Signature '%s' already implemented by '%s'", signatureName,
+                "Signature '%s' already implemented by '%s'", sigKind,
                 oldAlgebra.getName()));
         }
     }
@@ -69,11 +70,10 @@ public class AlgebraFamily {
      *         some signature.
      */
     private void checkCompleteness() throws IllegalStateException {
-        for (String signatureName : Algebras.getSigNames()) {
-            if (!this.algebraMap.containsKey(signatureName)) {
+        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+            if (!this.algebraMap.containsKey(sigKind)) {
                 throw new IllegalStateException(String.format(
-                    "Implementation of signature '%s' is missing",
-                    signatureName));
+                    "Implementation of signature '%s' is missing", sigKind));
             }
         }
     }
@@ -86,8 +86,8 @@ public class AlgebraFamily {
     /**
      * Returns the algebra class registered for a given named signature, if any.
      */
-    public Algebra<?> getAlgebra(String sigName) {
-        return this.algebraMap.get(sigName);
+    public Algebra<?> getAlgebra(SignatureKind sigKind) {
+        return this.algebraMap.get(sigKind);
     }
 
     /** 
@@ -97,7 +97,7 @@ public class AlgebraFamily {
      * @return the value {@code constant} (in the appropriate algebra)
      * @see #getAlgebraFor(String)
      */
-    public Object getValue(String signature, String constant) {
+    public Object getValue(SignatureKind signature, String constant) {
         return getAlgebra(signature).getValueFromString(constant);
     }
 
@@ -116,18 +116,18 @@ public class AlgebraFamily {
      * @throws UnknownSymbolException if the signature name does not exist, or
      *         the operation name does not occur in the signature.
      */
-    public Operation getOperation(String signatureName, String operation)
+    public Operation getOperation(SignatureKind sigKind, String operation)
         throws UnknownSymbolException {
-        Algebra<?> algebra = getAlgebra(signatureName);
+        Algebra<?> algebra = getAlgebra(sigKind);
         if (algebra == null) {
             throw new UnknownSymbolException(String.format(
-                "No algebra registered for signature '%s'", signatureName));
+                "No algebra registered for signature '%s'", sigKind));
         }
         Operation result = getOperations(algebra).get(operation);
         if (result == null) {
             throw new UnknownSymbolException(String.format(
                 "Operation '%s' does not occur in signature '%s'", operation,
-                signatureName));
+                sigKind));
         }
         return result;
     }
@@ -224,9 +224,9 @@ public class AlgebraFamily {
 
     /** The algebra family name. */
     private final String name;
-    /** A map from signature names to algebras registered for that name. */
-    private final Map<String,Algebra<?>> algebraMap =
-        new TreeMap<String,Algebra<?>>();
+    /** A map from signature kinds to algebras registered for that name. */
+    private final Map<SignatureKind,Algebra<?>> algebraMap =
+        new EnumMap<SignatureKind,Algebra<?>>(SignatureKind.class);
     /** Store of operations created from the algebras. */
     private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
         new HashMap<Algebra<?>,Map<String,Operation>>();
@@ -290,10 +290,9 @@ public class AlgebraFamily {
         Operation(AlgebraFamily register, Algebra<?> algebra, Method method) {
             this.algebra = algebra;
             this.method = method;
-            String returnTypeName =
-                Algebras.getOperator(Algebras.getSigName(algebra),
-                    method.getName()).getResultType();
-            this.returnType = register.getAlgebra(returnTypeName);
+            SignatureKind returnType =
+                Algebras.getOperator(algebra.getKind(), method.getName()).getResultType();
+            this.returnType = register.getAlgebra(returnType);
         }
 
         public Object apply(List<Object> args) throws IllegalArgumentException {

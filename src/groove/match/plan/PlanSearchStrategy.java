@@ -16,6 +16,7 @@
  */
 package groove.match.plan;
 
+import groove.algebra.SignatureKind;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -451,11 +452,10 @@ public class PlanSearchStrategy implements SearchStrategy {
                 if (!keyIsVariableNode) {
                     return false;
                 } else {
-                    String keySignature =
+                    SignatureKind keySignature =
                         ((VariableNode) nodeKey).getSignature();
                     if (keySignature != null
-                        && !((ValueNode) image).getSignature().equals(
-                            keySignature)) {
+                        && ((ValueNode) image).getSignature() != keySignature) {
                         return false;
                     }
                 }

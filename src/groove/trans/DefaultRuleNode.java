@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractNode;
 import groove.graph.Node;
-import groove.graph.TypeNode;
+import groove.graph.TypeLabel;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
@@ -36,7 +36,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      * constructor.
      * @param nr the number for this node
      */
-    protected DefaultRuleNode(int nr, TypeNode type) {
+    protected DefaultRuleNode(int nr, TypeLabel type) {
         super(nr);
         this.type = type;
     }
@@ -47,17 +47,17 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
             return false;
         }
         DefaultRuleNode other = (DefaultRuleNode) obj;
-        if (hasType()) {
+        if (getType() != null) {
             return getType().equals(other.getType());
         } else {
-            return !other.hasType();
+            return other.getType() == null;
         }
     }
 
     @Override
     protected int computeHashCode() {
         int result = super.computeHashCode();
-        if (hasType()) {
+        if (getType() != null) {
             int prime = 31;
             result = prime * result + getType().hashCode();
         }
@@ -71,7 +71,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
     }
 
     /** Factory constructor. */
-    public DefaultRuleNode newNode(int nr, TypeNode type) {
+    public DefaultRuleNode newNode(int nr, TypeLabel type) {
         return new DefaultRuleNode(nr, type);
     }
 
@@ -83,14 +83,10 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
         return "n";
     }
 
-    public boolean hasType() {
-        return getType() != null;
-    }
-
-    public TypeNode getType() {
+    public TypeLabel getType() {
         return this.type;
     }
 
     /** The (possibly {@code null}) type of this rule node. */
-    private final TypeNode type;
+    private final TypeLabel type;
 }
