@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractNode;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 
 /**
  * Default nodes used in host graphs.
@@ -36,7 +37,45 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      * @param nr the number for this node
      */
     protected DefaultHostNode(int nr) {
+        this(nr, null);
+    }
+
+    /**
+     * Constructs a fresh node, with an explicitly given number and node type.
+     * Note that node
+     * equality is determined by identity, but it is assumed that never two
+     * distinct nodes with the same number will be compared. This is achieved by
+     * using one of the <code>createNode</code> methods in preference to this
+     * constructor.
+     * @param nr the number for this node
+     * @param type the node type; may be {@code null}.
+     */
+    protected DefaultHostNode(int nr, TypeLabel type) {
         super(nr);
+        this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        DefaultHostNode other = (DefaultHostNode) obj;
+        if (getType() != null) {
+            return getType().equals(other.getType());
+        } else {
+            return other.getType() == null;
+        }
+    }
+
+    @Override
+    protected int computeHashCode() {
+        int result = super.computeHashCode();
+        if (getType() != null) {
+            int prime = 31;
+            result = prime * result + getType().hashCode();
+        }
+        return result;
     }
 
     /** Factory constructor. */
@@ -51,4 +90,11 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
     public String getToStringPrefix() {
         return "n";
     }
+
+    @Override
+    public TypeLabel getType() {
+        return this.type;
+    }
+
+    private final TypeLabel type;
 }

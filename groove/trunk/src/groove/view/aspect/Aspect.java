@@ -18,6 +18,7 @@ package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.VariableNode;
@@ -177,7 +178,9 @@ public class Aspect {
             if (hasContent()) {
                 result = new VariableNode(nr, (Constant) getContent());
             } else {
-                result = new VariableNode(nr, getKind().getName());
+                result =
+                    new VariableNode(nr,
+                        SignatureKind.getKind(getKind().getName()));
             }
         }
         return result;

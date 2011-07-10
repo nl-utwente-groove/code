@@ -400,7 +400,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 field.getField(), owner, source);
         }
         // look up the field
-        AspectKind sigKind = AspectKind.getSignatureKind(field.getType());
+        AspectKind sigKind = AspectKind.toAspectKind(field.getType());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
             result = addNestedNode(source);
@@ -451,7 +451,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 operator.getTypedName(), source);
         }
         AspectNode result = addNestedNode(source);
-        result.setAspects(createLabel(AspectKind.getSignatureKind(call.getType())));
+        result.setAspects(createLabel(AspectKind.toAspectKind(call.getType())));
         AspectNode product = addNestedNode(source);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge

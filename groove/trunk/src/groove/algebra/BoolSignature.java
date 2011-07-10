@@ -59,6 +59,11 @@ public abstract class BoolSignature<Bool> implements Signature {
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Bool arg0, Bool arg1);
 
+    @Override
+    public SignatureKind getKind() {
+        return SignatureKind.BOOL;
+    }
+
     /** Only <code>true</code> and <code>false</code> are legal values. */
     final public boolean isValue(String value) {
         return value.equals("true") || value.equals("false");

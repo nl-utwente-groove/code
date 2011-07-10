@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
-import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -51,13 +51,13 @@ public class Algebras {
         }
         String sigName = text.substring(0, pos);
         String elemName = text.substring(pos + 1);
-        Class<? extends Signature> sig = signatureMap.get(sigName);
-        if (sig == null) {
+        SignatureKind sigKind = SignatureKind.getKind(sigName);
+        if (sigKind == null) {
             throw new FormatException("Unknown signature '%s'", sigName);
         }
-        Object result = getConstant(sigName, elemName);
+        Object result = getConstant(sigKind, elemName);
         if (result == null) {
-            result = getOperator(sigName, elemName);
+            result = getOperator(sigKind, elemName);
         }
         if (result == null) {
             throw new FormatException(
@@ -67,34 +67,13 @@ public class Algebras {
         return result;
     }
 
-    /** Tests if a given string represents a known signature. */
-    static public boolean isSigName(String sigName) {
-        return signatureMap.containsKey(sigName);
-    }
-
-    /** Returns the set of all known signature names. */
-    static public Set<String> getSigNames() {
-        return Collections.unmodifiableSet(signatureMap.keySet());
-    }
-
-    /** Returns the signature name for a given algebra. */
-    static public String getSigName(Algebra<?> algebra) {
-        String result = getSigName(getSignature(algebra));
-        if (!Algebras.signatureMap.containsKey(result)) {
-            throw new IllegalArgumentException(String.format(
-                "Algebra '%s' implements unknown signature '%s'",
-                algebra.getName(), result));
-        }
-        return result;
-    }
-
     /**
      * Returns the operator for a given signature name and operator name,
      * or {@code null} if the signature or operator does not exist.
      */
-    static public Operator getOperator(String sigName, String operName) {
+    static public Operator getOperator(SignatureKind sigKind, String operName) {
         Operator result = null;
-        Map<String,Operator> operators = operatorsMap.get(sigName);
+        Map<String,Operator> operators = operatorsMap.get(sigKind);
         if (operators != null) {
             result = operators.get(operName);
         }
@@ -110,10 +89,10 @@ public class Algebras {
      * Returns the name of the signature defining a constant value with a given
      * string representation, if any.
      */
-    static public String getSigNameFor(String symbol) {
-        for (Class<? extends Signature> signature : signatureMap.values()) {
-            if (isConstant(signature, symbol)) {
-                return getSigName(signature);
+    static public SignatureKind getSigNameFor(String symbol) {
+        for (Map.Entry<SignatureKind,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
+            if (isConstant(sigEntry.getValue(), symbol)) {
+                return sigEntry.getKey();
             }
         }
         return null;
@@ -143,7 +122,7 @@ public class Algebras {
      */
     static public Constant getConstant(String symbol) {
         Constant result = null;
-        for (Map.Entry<String,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
+        for (Map.Entry<SignatureKind,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
             if (isConstant(sigEntry.getValue(), symbol)) {
                 result = new Constant(sigEntry.getKey(), symbol);
                 break;
@@ -157,9 +136,9 @@ public class Algebras {
      * @return {@code true} if the signature exists and the symbol represents
      * a known value in that signature
      */
-    static public boolean isConstant(String sigName, String symbol) {
+    static public boolean isConstant(SignatureKind sigKind, String symbol) {
         boolean result = false;
-        Class<? extends Signature> signature = signatureMap.get(sigName);
+        Class<? extends Signature> signature = signatureMap.get(sigKind);
         if (signature != null) {
             result = isConstant(signature, symbol);
         }
@@ -172,9 +151,9 @@ public class Algebras {
      * not exist, or the constant symbol does not represent a value of this
      * signature.
      */
-    static public Constant getConstant(String sigName, String symbol) {
-        if (isConstant(sigName, symbol)) {
-            return new Constant(sigName, symbol);
+    static public Constant getConstant(SignatureKind sigKind, String symbol) {
+        if (isConstant(sigKind, symbol)) {
+            return new Constant(sigKind, symbol);
         } else {
             return null;
         }
@@ -186,10 +165,10 @@ public class Algebras {
     static private boolean isConstant(Class<? extends Signature> signature,
             String value) {
         Method isValueMethod = getIsValueMethod(signature);
-        String signatureName = getSigName(signature);
+        SignatureKind sigKind = getSigKind(signature);
         try {
             return (Boolean) isValueMethod.invoke(
-                AlgebraFamily.getInstance().getAlgebra(signatureName), value);
+                AlgebraFamily.getInstance().getAlgebra(sigKind), value);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException();
         } catch (InvocationTargetException e) {
@@ -204,7 +183,7 @@ public class Algebras {
      */
     static private void addSignature(Class<? extends Signature> signature)
         throws IllegalArgumentException {
-        String signatureName = getSigName(signature);
+        SignatureKind sigKind = getSigKind(signature);
         int sigModifiers = signature.getModifiers();
         if (Modifier.isInterface(sigModifiers)
             || !Modifier.isAbstract(sigModifiers)) {
@@ -225,9 +204,9 @@ public class Algebras {
                 "Method '%s' in signature '%s' should be final",
                 isValueMethod.getName(), signature));
         }
-        if (signatureMap.put(signatureName, signature) != null) {
+        if (signatureMap.put(sigKind, signature) != null) {
             throw new IllegalArgumentException(String.format(
-                "Signature named %s already registered", signatureName));
+                "Signature named %s already registered", sigKind));
         }
     }
 
@@ -267,6 +246,16 @@ public class Algebras {
         return result.toLowerCase();
     }
 
+    /**
+     * Looks up the kind of a signature or algebra class. The name is taken to
+     * be the first part of the interface name, after which only
+     * {@link #SIGNATURE_SUFFIX} follows.
+     */
+    static SignatureKind getSigKind(Class<? extends Signature> signature)
+        throws IllegalArgumentException {
+        return SignatureKind.getKind(getSigName(signature));
+    }
+
     /** Returns the signature implemented by a given algebra. */
     @SuppressWarnings("unchecked")
     static Class<Signature> getSignature(Algebra<?> algebra) {
@@ -301,7 +290,7 @@ public class Algebras {
         for (Class<? extends Signature> signature : signatureMap.values()) {
             for (TypeVariable<?> type : signature.getTypeParameters()) {
                 String typeName = type.getName().toLowerCase();
-                if (!signatureMap.containsKey(typeName)) {
+                if (SignatureKind.getKind(typeName) == null) {
                     throw new IllegalArgumentException(String.format(
                         "Type '%s' not declared by any signature", typeName));
                 }
@@ -310,13 +299,14 @@ public class Algebras {
     }
 
     /** Creates content for {@link #operatorsMap}. */
-    static private SortedMap<String,SortedMap<String,Operator>> createOperatorsMap() {
-        SortedMap<String,SortedMap<String,Operator>> result =
-            new TreeMap<String,SortedMap<String,Operator>>();
-        for (Map.Entry<String,Class<? extends Signature>> signatureEntry : signatureMap.entrySet()) {
+    static private EnumMap<SignatureKind,SortedMap<String,Operator>> createOperatorsMap() {
+        EnumMap<SignatureKind,SortedMap<String,Operator>> result =
+            new EnumMap<SignatureKind,SortedMap<String,Operator>>(
+                SignatureKind.class);
+        for (Map.Entry<SignatureKind,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
             SortedMap<String,Operator> operators =
                 new TreeMap<String,Operator>();
-            Method[] methods = signatureEntry.getValue().getDeclaredMethods();
+            Method[] methods = sigEntry.getValue().getDeclaredMethods();
             for (Method method : methods) {
                 if (Modifier.isAbstract(method.getModifiers())
                     && Modifier.isPublic(method.getModifiers())) {
@@ -326,11 +316,11 @@ public class Algebras {
                         throw new IllegalArgumentException(
                             String.format(
                                 "Operator overloading for '%s' (signature '%s') not allowed",
-                                method.getName(), signatureEntry.getKey()));
+                                method.getName(), sigEntry.getKey()));
                     }
                 }
             }
-            result.put(signatureEntry.getKey(), operators);
+            result.put(sigEntry.getKey(), operators);
         }
         return result;
     }
@@ -338,10 +328,11 @@ public class Algebras {
     /**
      * The map of registered signatures.
      */
-    static private final Map<String,Class<? extends Signature>> signatureMap =
-        new TreeMap<String,Class<? extends Signature>>();
+    static private final Map<SignatureKind,Class<? extends Signature>> signatureMap =
+        new EnumMap<SignatureKind,Class<? extends Signature>>(
+            SignatureKind.class);
     /** Map from signature and method names to operators. */
-    static private final SortedMap<String,SortedMap<String,Operator>> operatorsMap;
+    static private final Map<SignatureKind,SortedMap<String,Operator>> operatorsMap;
 
     static {
         addSignature(BoolSignature.class);
@@ -365,7 +356,7 @@ public class Algebras {
 
     private static Map<String,String> computeDocMap() {
         Map<String,String> result = new TreeMap<String,String>();
-        for (Map.Entry<String,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
+        for (Map.Entry<SignatureKind,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
             Map<String,String> sigMap = new HashMap<String,String>(tokenMap);
             sigMap.put(sigEntry.getValue().getSimpleName(),
                 Help.bf(sigEntry.getKey()));

@@ -17,7 +17,8 @@
 package groove.graph.algebra;
 
 import groove.graph.AbstractNode;
-import groove.graph.TypeNode;
+import groove.graph.EdgeRole;
+import groove.graph.TypeLabel;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -93,13 +94,8 @@ public class ProductNode extends AbstractNode implements RuleNode {
     }
 
     @Override
-    public boolean hasType() {
-        return false;
-    }
-
-    @Override
-    public TypeNode getType() {
-        return null;
+    public TypeLabel getType() {
+        return PROD_LABEL;
     }
 
     /**
@@ -111,4 +107,8 @@ public class ProductNode extends AbstractNode implements RuleNode {
     /** Empty list of value nodes, to be passed to the super constructor. */
     static private final List<VariableNode> EMPTY_ARGUMENT_LIST =
         Arrays.asList();
+    static final private char TIMES_CHAR = '\u2a09';
+    /** Type label of product nodes. */
+    static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(
+        EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
 }

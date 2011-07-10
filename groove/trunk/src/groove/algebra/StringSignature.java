@@ -113,4 +113,9 @@ public abstract class StringSignature<String,Bool> implements Signature {
      * representation to the algebra representation.
      */
     protected abstract String toValue(java.lang.String constant);
+
+    @Override
+    public SignatureKind getKind() {
+        return SignatureKind.STRING;
+    }
 }

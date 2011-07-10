@@ -17,8 +17,9 @@
 package groove.graph.algebra;
 
 import groove.algebra.Algebra;
-import groove.algebra.Algebras;
+import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
+import groove.graph.TypeLabel;
 import groove.trans.HostNode;
 import groove.view.aspect.AspectParser;
 
@@ -47,7 +48,7 @@ public class ValueNode extends AbstractNode implements HostNode {
     public ValueNode(int nr, Algebra<?> algebra, Object value) {
         super(nr);
         this.algebra = algebra;
-        this.signature = Algebras.getSigName(algebra);
+        this.signature = algebra.getKind();
         this.value = value;
         assert algebra != null && value != null;
     }
@@ -95,13 +96,18 @@ public class ValueNode extends AbstractNode implements HostNode {
      * Returns the signature to which the value node
      * belongs.
      */
-    public String getSignature() {
+    public SignatureKind getSignature() {
         assert this != DUMMY_NODE;
         return this.signature;
     }
 
-    /** The signature name of this value node. */
-    private final String signature;
+    @Override
+    public TypeLabel getType() {
+        return TypeLabel.getLabel(this.signature);
+    }
+
+    /** The signature of this value node. */
+    private final SignatureKind signature;
     /** The algebra of this value node. */
     private final Algebra<?> algebra;
     /**

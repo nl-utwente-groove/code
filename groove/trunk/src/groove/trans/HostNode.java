@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 
 /**
@@ -27,5 +28,7 @@ import groove.graph.algebra.ValueNode;
  * @version $Revision $
  */
 public interface HostNode extends Node, HostElement {
-    // no additional functionality
+    /** Returns the type of the host node, or {@code null} if
+     * the host node is untyped. */
+    public TypeLabel getType();
 }

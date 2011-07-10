@@ -18,6 +18,7 @@ package groove.match.plan;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.algebra.SignatureKind;
 import groove.graph.algebra.ValueNode;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
@@ -58,7 +59,7 @@ class ConditionSearchItem extends AbstractSearchItem {
         if (condition.hasPattern()) {
             this.intAlgebra =
                 AlgebraFamily.getInstance(properties.getAlgebraFamily()).getAlgebra(
-                    "int");
+                    SignatureKind.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
             this.neededVars = VarSupport.getAllVars(this.rootGraph);
