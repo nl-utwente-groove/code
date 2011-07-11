@@ -859,7 +859,7 @@ public class DefaultFileSystemStore extends SystemStore {
         try {
             // ignore query and reference part of the URL
             return new File(new URI(url.getProtocol(), url.getAuthority(),
-                url.getPath(), null, null));
+                url.toURI().getPath(), null, null));
         } catch (URISyntaxException exc) {
             throw new IllegalArgumentException(String.format(
                 "URL '%s' is not formatted correctly: %s", url,
