@@ -218,7 +218,7 @@ public abstract class CtrlPar {
             this.algebra = algebra;
             this.value = algebra.getValueFromString(repr);
             this.type =
-                CtrlType.getDataType(Algebras.getSigNameFor(repr).getName());
+                CtrlType.getDataType(Algebras.getSignatureFor(repr).getName());
         }
 
         @Override

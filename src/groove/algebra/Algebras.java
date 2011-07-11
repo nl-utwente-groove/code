@@ -81,15 +81,15 @@ public class Algebras {
     }
 
     /** Returns the operator names for a given signature. */
-    static public Set<String> getOperatorNames(String sigName) {
-        return operatorsMap.get(sigName).keySet();
+    static public Set<String> getOperatorNames(SignatureKind sigKind) {
+        return operatorsMap.get(sigKind).keySet();
     }
 
     /**
      * Returns the name of the signature defining a constant value with a given
      * string representation, if any.
      */
-    static public SignatureKind getSigNameFor(String symbol) {
+    static public SignatureKind getSignatureFor(String symbol) {
         for (Map.Entry<SignatureKind,Class<? extends Signature>> sigEntry : signatureMap.entrySet()) {
             if (isConstant(sigEntry.getValue(), symbol)) {
                 return sigEntry.getKey();
