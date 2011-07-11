@@ -895,7 +895,7 @@ public enum AspectKind {
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
         assert kind.isTypedData();
-        for (String opName : Algebras.getOperatorNames(kind.getName())) {
+        for (String opName : Algebras.getOperatorNames(SignatureKind.getKind(kind.getName()))) {
             if (result.length() > 0) {
                 result.append(", ");
             }
