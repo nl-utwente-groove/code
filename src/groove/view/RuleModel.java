@@ -1212,7 +1212,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             checkAttributes(errors);
             checkVariables(errors);
-            checkTyping(errors);
+            if (isTyped()) {
+                checkTyping(errors);
+            }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
@@ -1264,6 +1266,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     if (edgeKind.inRHS()) {
                         this.rhs.addEdge(ruleEdge);
                         this.ruleMorph.putEdge(ruleEdge, ruleEdge);
+                    } else if (isTyped() && ruleEdge.label().isNodeType()
+                        && this.rhs.containsNode(ruleEdge.source())) {
+                        throw new FormatException(
+                            "Node type %s cannot be deleted", ruleEdge.label(),
+                            ruleEdge.source());
                     }
                 } else {
                     if (!edgeKind.inRHS()) {
@@ -1279,6 +1286,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     this.nacEdgeSet.add(ruleEdge);
                 }
                 if (edgeKind.inRHS()) {
+                    if (isTyped() && ruleEdge.label().isNodeType()
+                        && this.lhs.containsNode(ruleEdge.source())) {
+                        throw new FormatException(
+                            "Node type %s cannot be created", ruleEdge.label(),
+                            ruleEdge.source());
+                    }
                     // creator edge
                     this.rhs.addEdge(ruleEdge);
                     if (isRhsAsNac()) {
@@ -1457,36 +1470,33 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         /** Checks the typing of the rule graphs. */
         private void checkTyping(Set<FormatError> errors) {
-            // check typing
-            if (isTyped()) {
-                // check type specialisation
-                try {
-                    TypeGraph.Typing<RuleNode,RuleEdge> lhsTypeMap =
-                        getType().getTyping(this.lhs, this.parentTypeMap);
-                    // for the purpose of typing, pretend that nodes that are
-                    // about to be merged are still typed according to the LHS
-                    for (RuleEdge rhsEdge : this.rhs.edgeSet()) {
-                        if (isMerger(rhsEdge)) {
-                            RuleNode source = rhsEdge.source();
-                            TypeLabel sourceType = lhsTypeMap.getType(source);
-                            if (sourceType != null) {
-                                addParentType(source, sourceType);
-                            }
-                            RuleNode target = rhsEdge.target();
-                            TypeLabel targetType = lhsTypeMap.getType(target);
-                            if (targetType != null) {
-                                addParentType(target, targetType);
-                            }
+            // check type specialisation
+            try {
+                TypeGraph.Typing<RuleNode,RuleEdge> lhsTypeMap =
+                    getType().getTyping(this.lhs, this.parentTypeMap);
+                // for the purpose of typing, pretend that nodes that are
+                // about to be merged are still typed according to the LHS
+                for (RuleEdge rhsEdge : this.rhs.edgeSet()) {
+                    if (isMerger(rhsEdge)) {
+                        RuleNode source = rhsEdge.source();
+                        TypeLabel sourceType = lhsTypeMap.getType(source);
+                        if (sourceType != null) {
+                            addParentType(source, sourceType);
+                        }
+                        RuleNode target = rhsEdge.target();
+                        TypeLabel targetType = lhsTypeMap.getType(target);
+                        if (targetType != null) {
+                            addParentType(target, targetType);
                         }
                     }
-                    TypeGraph.Typing<RuleNode,RuleEdge> rhsTypeMap =
-                        getType().getTyping(this.rhs, this.parentTypeMap);
-                    checkTypeSpecialisation(lhsTypeMap, rhsTypeMap);
-                } catch (FormatException e) {
-                    errors.addAll(e.getErrors());
                 }
-                checkNacTyping(errors);
+                TypeGraph.Typing<RuleNode,RuleEdge> rhsTypeMap =
+                    getType().getTyping(this.rhs, this.parentTypeMap);
+                checkTypeSpecialisation(lhsTypeMap, rhsTypeMap);
+            } catch (FormatException e) {
+                errors.addAll(e.getErrors());
             }
+            checkNacTyping(errors);
         }
 
         /**
@@ -1534,17 +1544,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             // check for ambiguous mergers
             for (RuleEdge merger : this.rhs.edgeSet()) {
-                if (merger.label().isEmpty() && !this.lhs.containsEdge(merger)) {
+                if (isMerger(merger)) {
                     RuleNode source = merger.source();
-                    RuleNode target = merger.target();
-                    boolean sourceSharp = rhsTyping.isSharp(source);
-                    boolean targetSharp = rhsTyping.isSharp(target);
-                    if (!(sourceSharp || targetSharp)) {
-                        TypeLabel sourceType = rhsTyping.getType(source);
-                        TypeLabel targetType = rhsTyping.getType(target);
+                    TypeLabel sourceType = rhsTyping.getType(source);
+                    if (!rhsTyping.isSharp(source)) {
                         errors.add(new FormatError(
-                            "Merging of types %s and %s is ambiguous",
-                            sourceType, targetType, source, target));
+                            "Merged type %s must be sharp", sourceType, source));
+                    }
+                    RuleNode target = merger.target();
+                    TypeLabel targetType = rhsTyping.getType(target);
+                    if (!rhsTyping.isSharp(target)) {
+                        errors.add(new FormatError(
+                            "Merged type %s must be sharp", targetType, target));
+                    }
+                    if (!sourceType.equals(targetType)) {
+                        errors.add(new FormatError(
+                            "Merged types %s and %s must coincide", sourceType,
+                            targetType, source, target));
                     }
                 }
             }
