@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="generaliseType">
-        <attr name="$version">
-            <string>curly</string>
+        <attr name="enabled">
+            <string>false</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>182 91 34 31</string>
-            </attr>
-        </node>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>90 73 45 61</string>
             </attr>
         </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>182 91 34 31</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>del:type:#B</string>
+            </attr>
+        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>Type generalisation should be disallowed</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>new:type:A</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -34,7 +37,7 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>del:type:#B</string>
+                <string>new:type:A</string>
             </attr>
         </edge>
     </graph>
