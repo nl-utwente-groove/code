@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeWithSupertype">
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
+    <graph edgemode="directed" edgeids="false" role="rule" id="mergeNonSharpTypes">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -12,40 +9,40 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>89 110 45 46</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>189 111 34 46</string>
+                <string>82 89 247 31</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>55 49 242 31</string>
+                <string>229 152 56 31</string>
             </attr>
         </node>
-        <edge to="n0" from="n1">
+        <node id="n1">
+            <attr name="layout">
+                <string>132 151 56 31</string>
+            </attr>
+        </node>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:#B</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>Non-sharp node types cannot be merged</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
             <attr name="label">
                 <string>new:=</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
-            <attr name="label">
-                <string>del:type:#B</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>Type generalisation should be disallowed</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
             <attr name="label">
                 <string>rem:</string>
             </attr>

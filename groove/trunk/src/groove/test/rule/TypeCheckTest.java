@@ -38,9 +38,9 @@ public class TypeCheckTest {
     /** Tests the rules in the creators grammar. */
     @Test
     public void testTypeSpecialisation() {
-        setCorrect("specialiseType", "mergeWithSubtype");
-        setErroneous("generaliseType", "mergeWithSupertype", "deleteSharpType",
-            "specialiseNonsharpType");
+        setCorrect("mergeSharpTypes");
+        setErroneous("createType", "deleteType", "mergeDistinctTypes",
+            "mergeNonSharpTypes");
         test("type-specialisation");
     }
 
@@ -64,7 +64,8 @@ public class TypeCheckTest {
                     testCorrect(grammarView, ruleName);
                 } else if (this.erroneous.contains(ruleName)) {
                     testErroneous(grammarView, ruleName);
-                } else {
+                } else if (grammarView.getGraphResource(ResourceKind.RULE,
+                    ruleName).isEnabled()) {
                     Assert.fail("Rule " + ruleName + " not declared");
                 }
             }

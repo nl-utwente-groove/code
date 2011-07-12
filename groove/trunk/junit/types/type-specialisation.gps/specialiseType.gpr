@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="specialiseType">
-        <attr name="$version">
-            <string>curly</string>
+        <attr name="enabled">
+            <string>false</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>152 67 242 31</string>
-            </attr>
-        </node>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>72 50 46 61</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>del:type:#A</string>
+        <node id="n1">
+            <attr name="layout">
+                <string>152 67 242 31</string>
             </attr>
-        </edge>
+        </node>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>Type specialisation should be allowed</string>
@@ -35,6 +33,11 @@
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>del:type:#A</string>
             </attr>
         </edge>
     </graph>
