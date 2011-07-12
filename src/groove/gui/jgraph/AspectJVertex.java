@@ -290,7 +290,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 && getNode().isEdge()) {
                 StringBuilder line = new StringBuilder();
                 LabelPattern pattern = getNode().getEdgePattern();
-                line.append("&gt;&gt; ");
+                line.append(">> ");
                 line.append(pattern.getLabel(pattern.getArgNames().toArray()));
                 result.add(line);
             }

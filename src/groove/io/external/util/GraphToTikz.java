@@ -271,6 +271,12 @@ public final class GraphToTikz {
             line.replace(i, i + 6, PI);
             i = line.indexOf(HTMLConverter.HTML_PI);
         }
+        // Convert the greater than sign in type nodes.
+        i = line.indexOf(HTMLConverter.HTML_GT);
+        while (i != -1) {
+            line.replace(i, i + 5, GT);
+            i = line.indexOf(HTMLConverter.HTML_GT);
+        }
         return line;
     }
 
@@ -475,6 +481,14 @@ public final class GraphToTikz {
     // Methods to handle special colors.
     // END
 
+    private static boolean isNodifiedEdge(GraphJVertex node) {
+        return node instanceof AspectJVertex && ((AspectJVertex) node).isEdge();
+    }
+
+    private static boolean hasNonEmptyLabel(GraphJEdge edge) {
+        return !"".equals(edge.getText());
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -605,7 +619,7 @@ public final class GraphToTikz {
 
             // Node Labels.
             List<StringBuilder> lines = node.getLines();
-            if (lines.isEmpty()) {
+            if (lines.isEmpty() || isNodifiedEdge(node)) {
                 this.result.append(EMPTY_NODE_LAB);
             } else {
                 this.result.append(BEGIN_NODE_LAB);
@@ -689,10 +703,14 @@ public final class GraphToTikz {
             styles.add(QUANTIFIER_NODE_STYLE);
             break;
         default:
-            if (node.isGrayedOut()) {
-                styles.add(THIN_NODE_STYLE);
-            } else if (!isControlNode) {
-                styles.add(BASIC_NODE_STYLE);
+            if (isNodifiedEdge(node)) {
+                styles.add(NODIFIED_EDGE_STYLE);
+            } else {
+                if (node.isGrayedOut()) {
+                    styles.add(THIN_NODE_STYLE);
+                } else if (!isControlNode) {
+                    styles.add(BASIC_NODE_STYLE);
+                }
             }
         }
 
@@ -1376,7 +1394,7 @@ public final class GraphToTikz {
      */
     private void appendEdgeLabel(GraphJEdge edge, JEdgeLayout layout,
             String labStyle, List<Point2D> points) {
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
             Point2D labelPos =
                 convertRelativeLabelPositionToAbsolute(
                     layout.getLabelPosition(), points);
@@ -1391,7 +1409,7 @@ public final class GraphToTikz {
 
     /** Appends the edge label along the path that is being drawn. */
     private void appendEdgeLabelInPath(GraphJEdge edge, String labStyle) {
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE)) {
+        if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
             this.result.append(NODE);
             this.result.append(encloseBrack(labStyle));
             this.appendEdgeLabel(edge);
@@ -1472,6 +1490,7 @@ public final class GraphToTikz {
     private static final String THIN_NODE_STYLE = "thinnode";
     private static final String THIN_EDGE_STYLE = "thinedge";
     private static final String THIN_LABEL_STYLE = "thinlab";
+    private static final String NODIFIED_EDGE_STYLE = "nodified";
     private static final String TYPE_NODE_STYLE = "type";
     private static final String ABS_NODE_STYLE = "absnode";
     private static final String ABS_EDGE_STYLE = "absedge";
@@ -1518,6 +1537,7 @@ public final class GraphToTikz {
     private static final String VERT_BAR = "$|$";
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
+    private static final String GT = ">";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
