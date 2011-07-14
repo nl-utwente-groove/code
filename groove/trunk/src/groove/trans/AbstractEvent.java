@@ -49,6 +49,14 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return this;
     }
 
+    @Override
+    public RuleApplicationRecord recordApplication(HostGraph host) {
+        RuleApplicationRecord result =
+            new RuleApplicationRecord(host.nodeSet());
+        record(result);
+        return result;
+    }
+
     boolean isReuse() {
         return this.reuse;
     }
@@ -123,14 +131,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     public RuleApplication newApplication(HostGraph source) {
         return new RuleApplication(this, source);
     }
-
-    /** Returns the cached set of nodes erased by the event. */
-    public Set<HostNode> getErasedNodes() {
-        return getCache().getErasedNodes();
-    }
-
-    /** Computes and returns the set of erased nodes. */
-    abstract Set<HostNode> computeErasedNodes();
 
     @Override
     public String toString() {
@@ -303,17 +303,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {
-        /** Returns the cached set of nodes erased by the event. */
-        public final Set<HostNode> getErasedNodes() {
-            if (this.erasedNodeSet == null) {
-                this.erasedNodeSet = computeErasedNodes();
-            }
-            return this.erasedNodeSet;
-        }
-
-        /**
-         * Set of nodes from the source that are to be erased in the target.
-         */
-        private Set<HostNode> erasedNodeSet;
+        // nothing here
     }
 }

@@ -23,8 +23,6 @@ import groove.util.Visitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -97,15 +95,6 @@ public class CompositeEvent extends
         return result;
     }
 
-    @Override
-    Set<HostNode> computeErasedNodes() {
-        Set<HostNode> result = createNodeSet(this.eventArray.length);
-        for (BasicEvent event : this.eventArray) {
-            event.collectErasedNodes(result);
-        }
-        return result;
-    }
-
     public Proof getMatch(HostGraph source) {
         Property<Proof> isMyMatch = new Property<Proof>() {
             @Override
@@ -125,39 +114,21 @@ public class CompositeEvent extends
             "Can't find match for event %s", this));
     }
 
+    @Override
+    public void record(RuleApplicationRecord record) {
+        BasicEvent[] events = this.eventArray;
+        int eventCount = events.length;
+        for (int i = 0; i < eventCount; i++) {
+            events[i].record(record);
+        }
+    }
+
     public MergeMap getMergeMap() {
         MergeMap result = new MergeMap(this.eventArray[0].getHostFactory());
         for (RuleEvent event : this.eventArray) {
             for (Map.Entry<HostNode,? extends HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
                 result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
             }
-        }
-        return result;
-    }
-
-    public Set<HostEdge> getSimpleCreatedEdges() {
-        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
-        for (BasicEvent event : this.eventArray) {
-            event.collectSimpleCreatedEdges(getErasedNodes(), result);
-        }
-        return result;
-    }
-
-    public Collection<HostEdge> getComplexCreatedEdges(
-            Iterator<HostNode> createdNodes) {
-        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
-        Map<RuleNode,HostNode> coRootImages = new HashMap<RuleNode,HostNode>();
-        for (BasicEvent event : this.eventArray) {
-            event.collectComplexCreatedEdges(getErasedNodes(), createdNodes,
-                coRootImages, result);
-        }
-        return result;
-    }
-
-    public Set<HostEdge> getSimpleErasedEdges() {
-        Set<HostEdge> result = createEdgeSet(this.eventArray.length * 2);
-        for (BasicEvent event : this.eventArray) {
-            event.collectSimpleErasedEdges(result);
         }
         return result;
     }

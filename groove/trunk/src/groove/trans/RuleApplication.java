@@ -25,7 +25,6 @@ import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -193,7 +192,7 @@ public class RuleApplication implements DeltaApplier {
      */
     private HostGraphMorphism computeMorphism() {
         HostGraphMorphism result = createMorphism();
-        MergeMap mergeMap = getMergeMap();
+        MergeMap mergeMap = getEvent().getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
         Set<HostNode> sourceNodes =
@@ -206,7 +205,7 @@ public class RuleApplication implements DeltaApplier {
                 result.putNode(node, nodeImage);
             }
         }
-        Set<HostEdge> erasedEdges = getErasedEdges();
+        Collection<HostEdge> erasedEdges = getRecord().getErasedEdges();
         for (HostEdge edge : sourceEdges) {
             if (!erasedEdges.contains(edge)) {
                 HostEdge edgeImage = mergeMap.mapEdge(edge);
@@ -214,31 +213,6 @@ public class RuleApplication implements DeltaApplier {
                     result.putEdge(edge, edgeImage);
                 }
             }
-        }
-        return result;
-    }
-
-    private HostNode[] getCreatedNodes() {
-        if (this.coanchorImage == null) {
-            this.coanchorImage = computeCreatedNodes();
-        }
-        return this.coanchorImage;
-    }
-
-    /**
-     * Callback factory method to create a coanchor image for this application
-     * from a given match and for a given host graph. The image consists of
-     * fresh images for the creator nodes of the rule.
-     */
-    private HostNode[] computeCreatedNodes() {
-        HostNode[] result;
-        Set<HostNode> createdNodes =
-            getEvent().getCreatedNodes(this.source.nodeSet());
-        if (createdNodes.size() == 0) {
-            result = EMPTY_COANCHOR_IMAGE;
-        } else {
-            result = new HostNode[createdNodes.size()];
-            createdNodes.toArray(result);
         }
         return result;
     }
@@ -252,18 +226,24 @@ public class RuleApplication implements DeltaApplier {
      */
     public void applyDelta(DeltaTarget target) {
         if (this.rule.isModifying()) {
-            eraseEdges(target);
+            RuleApplicationRecord record = getRecord();
+            eraseEdges(record, target);
             // either merge or erase the LHS nodes
-            if (this.rule.hasMergers()) {
-                mergeNodes(target);
+            if (record.hasMergeMap()) {
+                mergeNodes(record, target);
             } else {
-                eraseNodes(target);
+                eraseNodes(record, target);
             }
-            if (this.rule.hasCreators()) {
-                createNodes(target);
-                createEdges(target);
-            }
+            createNodes(record, target);
+            createEdges(record, target);
         }
+    }
+
+    private RuleApplicationRecord getRecord() {
+        if (this.record == null) {
+            this.record = getEvent().recordApplication(getSource());
+        }
+        return this.record;
     }
 
     /**
@@ -279,36 +259,22 @@ public class RuleApplication implements DeltaApplier {
      * incident edges.
      * @param target the target to which to apply the changes
      */
-    private void eraseNodes(DeltaTarget target) {
-        Set<HostNode> nodeSet = getErasedNodes();
+    private void eraseNodes(RuleApplicationRecord record, DeltaTarget target) {
+        Set<HostNode> nodeSet = record.getErasedNodes();
         // also remove the incident edges of the eraser nodes
-        if (!nodeSet.isEmpty()) {
+        if (nodeSet != null && !nodeSet.isEmpty()) {
             // there is a choice here to query the graph for its incident edge
-            // set
-            // which may be expensive if it hasn't yet been computed
-            Set<HostEdge> removedEdges = new HashSet<HostEdge>();
+            // set, which may be expensive if it hasn't yet been computed
+            // the alternative is to iterate over all edges of the source
+            // graph
             for (HostNode node : nodeSet) {
                 for (HostEdge edge : this.source.edgeSet(node)) {
-                    if (removedEdges.add(edge)) {
+                    if (!record.isErasedEdge(edge)) {
                         target.removeEdge(edge);
                         registerErasure(edge);
                     }
                 }
             }
-            // // the alternative is to iterate over all edges of the source
-            // graph
-            // // currently this seems to be fastest
-            // for (Edge edgeMatch: source.edgeSet()) {
-            // int arity = edgeMatch.endCount();
-            // boolean removed = false;
-            // for (int i = 0; !removed && i < arity; i++) {
-            // removed = nodeSet.contains(edgeMatch.end(i));
-            // }
-            // if (removed) {
-            // target.removeEdge(edgeMatch);
-            // registerErasure(edgeMatch);
-            // }
-            // }
             removeNodeSet(target, nodeSet);
         }
         removeIsolatedValueNodes(target);
@@ -331,13 +297,17 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Performs the edge erasure necessary according to the rule.
+     * Performs the edge erasure necessary according to a given application record.
+     * @param record object holding the set of edges to be erased
      * @param target the target to which to apply the changes
      */
-    private void eraseEdges(DeltaTarget target) {
-        for (HostEdge erasedEdge : getErasedEdges()) {
-            target.removeEdge(erasedEdge);
-            registerErasure(erasedEdge);
+    private void eraseEdges(RuleApplicationRecord record, DeltaTarget target) {
+        Collection<HostEdge> erasedEdges = record.getErasedEdges();
+        if (erasedEdges != null) {
+            for (HostEdge erasedEdge : erasedEdges) {
+                target.removeEdge(erasedEdge);
+                registerErasure(erasedEdge);
+            }
         }
     }
 
@@ -360,39 +330,25 @@ public class RuleApplication implements DeltaApplier {
      * Performs the node (and edge) merging.
      * @param target the target to which to apply the changes
      */
-    private void mergeNodes(DeltaTarget target) {
+    private void mergeNodes(RuleApplicationRecord record, DeltaTarget target) {
         // delete the merged nodes
-        MergeMap mergeMap = getMergeMap();
-        Set<HostEdge> renamedEdges = new HashSet<HostEdge>();
-        Set<HostEdge> erasedEdges = getErasedEdges();
-        for (HostNode mergedElem : mergeMap.nodeMap().keySet()) {
-            removeNode(target, mergedElem);
-            // replace the incident edges of the merged nodes
-            for (HostEdge sourceEdge : this.source.edgeSet(mergedElem)) {
-                if (!erasedEdges.contains(sourceEdge)) {
-                    target.removeEdge(sourceEdge);
-                    HostEdge image = mergeMap.mapEdge(sourceEdge);
-                    assert image != sourceEdge;
-                    // if the edge is in the source and not erased, it is also
-                    // already
-                    // in the target, so we do not have to add it
-                    if (image != null
-                        && (erasedEdges.contains(image) || !this.source.containsEdge(image))) {
-                        // maybe we added the edge already, due to another
-                        // merged node
-                        if (renamedEdges.add(image)) {
-                            addEdge(target, image);
-                        }
-                    } else {
+        MergeMap mergeMap = record.getMergeMap();
+        if (mergeMap != null) {
+            for (HostNode mergedElem : mergeMap.nodeMap().keySet()) {
+                // replace the incident edges of the merged nodes
+                for (HostEdge sourceEdge : this.source.edgeSet(mergedElem)) {
+                    if (!record.isErasedEdge(sourceEdge)) {
+                        target.removeEdge(sourceEdge);
                         registerErasure(sourceEdge);
+                        // we register this as an edge to be added later
+                        // at that point the merge map is taken into account
+                        record.addCreatedEdge(sourceEdge);
                     }
                 }
+                removeNode(target, mergedElem);
             }
+            removeIsolatedValueNodes(target);
         }
-        if (!renamedEdges.isEmpty()) {
-            getRenamedEdges().addAll(renamedEdges);
-        }
-        removeIsolatedValueNodes(target);
     }
 
     /**
@@ -400,9 +356,12 @@ public class RuleApplication implements DeltaApplier {
      * 
      * @param target the target to which to apply the changes
      */
-    private void createNodes(DeltaTarget target) {
-        for (HostNode node : getCreatedNodes()) {
-            target.addNode(node);
+    private void createNodes(RuleApplicationRecord record, DeltaTarget target) {
+        Collection<HostNode> createdNodes = record.getCreatedNodes();
+        if (createdNodes != null) {
+            for (HostNode node : createdNodes) {
+                target.addNode(node);
+            }
         }
     }
 
@@ -410,25 +369,14 @@ public class RuleApplication implements DeltaApplier {
      * Adds edges to the target, as dictated by the rule's RHS.
      * @param target the target to which to apply the changes
      */
-    protected void createEdges(DeltaTarget target) {
-        // don't build the renamed edge set if that was not done already
-        Set<HostEdge> renamedEdges = this.renamedEdges;
-        // first add the (pre-computed) simple creator edge images
-        for (HostEdge image : getEvent().getSimpleCreatedEdges()) {
-            // only add if not already in the source or renamed, or just erased
-            boolean existing =
-                this.source.containsEdge(image) || renamedEdges != null
-                    && renamedEdges.contains(image);
-            if (!existing || getErasedEdges().contains(image)) {
-                addEdge(target, image);
-            }
-        }
-        // now compute and add the complex creator edge images
-        for (HostEdge image : getEvent().getComplexCreatedEdges(
-            Arrays.asList(getCreatedNodes()).iterator())) {
-            // only add if the image exists
-            if (image != null) {
-                addEdge(target, image);
+    private void createEdges(RuleApplicationRecord record, DeltaTarget target) {
+        Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
+        if (createdEdges != null) {
+            for (HostEdge createdEdge : createdEdges) {
+                boolean existing = this.source.containsEdge(createdEdge);
+                if (!existing || record.isErasedEdge(createdEdge)) {
+                    addEdge(target, createdEdge);
+                }
             }
         }
     }
@@ -446,28 +394,15 @@ public class RuleApplication implements DeltaApplier {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof RuleApplication) {
-            RuleApplication other = (RuleApplication) obj;
-            return equalsEvent(other) && equalsSource(other);
-        } else {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof RuleApplication)) {
             return false;
         }
-    }
-
-    /**
-     * Tests if the rules of two rule applications coincide. Callback method
-     * from {@link #equals(Object)}.
-     */
-    protected boolean equalsSource(RuleApplication other) {
-        return getSource() == other.getSource();
-    }
-
-    /**
-     * Tests if the rules of two rule applications coincide. Callback method
-     * from {@link #equals(Object)}.
-     */
-    protected boolean equalsEvent(RuleApplication other) {
-        return getEvent() == other.getEvent();
+        RuleApplication other = (RuleApplication) obj;
+        return getEvent() == other.getEvent()
+            && getSource() == other.getSource();
     }
 
     @Override
@@ -479,25 +414,6 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Returns the set of explicitly erased nodes, i.e., the images of the LHS
-     * eraser nodes.
-     */
-    protected Set<HostNode> getErasedNodes() {
-        return this.event.getErasedNodes();
-    }
-
-    /**
-     * Returns the set of explicitly erased edges, i.e., the images of the LHS
-     * eraser edges.
-     */
-    protected Set<HostEdge> getErasedEdges() {
-        if (this.erasedEdges == null) {
-            this.erasedEdges = this.event.getSimpleErasedEdges();
-        }
-        return this.erasedEdges;
-    }
-
-    /**
      * Returns the event underlying this application.
      */
     public RuleEvent getEvent() {
@@ -505,21 +421,10 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Returns a mapping from source to target graph nodes, dictated by the
-     * merger and eraser nodes in the rules.
-     * @return an {@link MergeMap} that maps nodes of the source that are merged
-     *         away to their merged images, and deleted nodes to
-     *         <code>null</code>.
-     */
-    protected MergeMap getMergeMap() {
-        return this.event.getMergeMap();
-    }
-
-    /**
      * Callback factory method to create a morphism from source to target graph.
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
-    protected HostGraphMorphism createMorphism() {
+    private HostGraphMorphism createMorphism() {
         return new HostGraphMorphism(getSource().getFactory());
     }
 
@@ -528,7 +433,7 @@ public class RuleApplication implements DeltaApplier {
      * This implementation clones the source.
      * @see HostGraph#clone()
      */
-    protected HostGraph createTarget() {
+    private HostGraph createTarget() {
         return getSource().clone();
     }
 
@@ -538,7 +443,7 @@ public class RuleApplication implements DeltaApplier {
      * {@link Graph#addEdgeWithoutCheck(Edge)} if the target is an
      * {@link Graph}.
      */
-    protected void addEdge(DeltaTarget target, HostEdge edge) {
+    private void addEdge(DeltaTarget target, HostEdge edge) {
         HostNode targetNode = edge.target();
         if (targetNode instanceof ValueNode
             && (!this.source.containsNode(targetNode) && !getAddedValueNodes().contains(
@@ -632,16 +537,6 @@ public class RuleApplication implements DeltaApplier {
         return this.addedValueNodes;
     }
 
-    /**
-     * Returns the set of edges that were renamed due to node mergers.
-     */
-    private Set<HostEdge> getRenamedEdges() {
-        if (this.renamedEdges == null) {
-            this.renamedEdges = new HashSet<HostEdge>();
-        }
-        return this.renamedEdges;
-    }
-
     /** Returns the relation between rule nodes and target graph nodes. */
     public Map<RuleNode,Set<HostNode>> getComatch() {
         if (this.comatch == null) {
@@ -709,6 +604,8 @@ public class RuleApplication implements DeltaApplier {
      * The event from which we get the rule and anchor image.
      */
     private final RuleEvent event;
+    /** The application record. */
+    private RuleApplicationRecord record;
     /**
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
@@ -744,27 +641,4 @@ public class RuleApplication implements DeltaApplier {
     private Set<ValueNode> addedValueNodes;
     /** The set of value nodes that have been removed due to edge deletion. */
     private Set<ValueNode> removedValueNodes;
-    /** The set of edges (to be) erased by this rule applications. */
-    private Set<HostEdge> erasedEdges;
-    /** 
-     * Set of edges that were already in the source graph but were changed
-     * in the target because of node mergers.
-     */
-    private Set<HostEdge> renamedEdges;
-
-    /**
-     * Returns the number of nodes that were created during rule application.
-     */
-    static public int getFreshNodeCount() {
-        return freshNodeCount;
-    }
-
-    /**
-     * The total number of nodes (over all rules) created by {@link BasicEvent}.
-     */
-    static int freshNodeCount;
-
-    /** Static constant for rules with coanchors. */
-    static private final HostNode[] EMPTY_COANCHOR_IMAGE = new HostNode[0];
-    /** Reporter for profiling the application class. */
 }

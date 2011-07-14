@@ -19,8 +19,6 @@ package groove.trans;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -69,15 +67,17 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     /** Returns the size of the anchor. */
     public int getAnchorSize();
 
-    /** Returns the set of nodes erased by the event. */
-    public Set<HostNode> getErasedNodes();
+    /**
+     * Constructs and records the application of this event to
+     * a given host graph.
+     */
+    public RuleApplicationRecord recordApplication(HostGraph host);
 
     /**
-     * Returns the set of edges explicitly erased by the event. This does
-     * <code>not</code> include all incident edges of the erased or merged
-     * nodes.
+     * Records the application of this event, by storing the relevant
+     * information into the record object passed in as a parameter.
      */
-    public Set<HostEdge> getSimpleErasedEdges();
+    public void record(RuleApplicationRecord record);
 
     /**
      * Returns the merge map of the event. The merge map contains entries for
@@ -87,13 +87,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     public MergeMap getMergeMap();
 
     /**
-     * Returns the set of explicitly created edges between existing nodes. These
-     * are the images of those creator edges of which the endpoints are not
-     * fresh.
-     */
-    public Set<HostEdge> getSimpleCreatedEdges();
-
-    /**
      * Returns a set of created nodes of this event, given a set of nodes
      * already existing in the graph (i.e., which may not be used).
      * An iterator over the set returns the created nodes in the order
@@ -101,15 +94,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * @param hostNodes set of nodes not available as fresh nodes
      */
     public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes);
-
-    /**
-     * Returns the set of explicitly created edges of which at least one end is
-     * a fresh node.
-     * @param createdNodes the images of the creator nodes, in the order of the
-     *        rule's creator nodes.
-     */
-    public Collection<HostEdge> getComplexCreatedEdges(
-            Iterator<HostNode> createdNodes);
 
     /**
      * Returns a match of this event's rule, based on the anchor map in this

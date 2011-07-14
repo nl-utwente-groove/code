@@ -23,15 +23,12 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import groove.trans.HostGraph;
+import groove.trans.RuleApplicationRecord;
 import groove.trans.RuleEvent;
-import groove.trans.BasicEvent;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
- * Predicate created_edge(+RuleEvent,?Edge)
+ * Predicate created_edge(+RuleEvent,+Graph,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_created_edge extends TransPrologCode {
@@ -45,25 +42,17 @@ public class Predicate_ruleevent_created_edge extends TransPrologCode {
             return it.nextSolution(interpreter);
         } else {
             RuleEvent re = getRuleEvent(args[0]);
-            PrologCollectionIterator it;
-            if (re instanceof BasicEvent) {
-                BasicEvent se = (BasicEvent) re;
-                Set<HostEdge> edges = new HashSet<HostEdge>();
-                Set<HostNode> createdNodes = new HashSet<HostNode>();
-                createdNodes.addAll(se.getCreatedNodes(new HashSet<HostNode>(
-                    se.getAnchorMap().nodeMap().values())));
-                // combine the created edges from both new and old nodes
-                edges.addAll(se.getComplexCreatedEdges(createdNodes.iterator()));
-                edges.addAll(se.getSimpleCreatedEdges());
-                it =
-                    new PrologCollectionIterator(edges, args[1],
-                        interpreter.getUndoPosition());
+            HostGraph graph = (HostGraph) getGraph(args[1]);
+            RuleApplicationRecord record = re.recordApplication(graph);
+            Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
+            if (createdEdges == null) {
+                return FAIL;
             } else {
-                it =
-                    new PrologCollectionIterator(re.getSimpleCreatedEdges(),
-                        args[1], interpreter.getUndoPosition());
+                PrologCollectionIterator it =
+                    new PrologCollectionIterator(createdEdges, args[2],
+                        interpreter.getUndoPosition());
+                return it.nextSolution(interpreter);
             }
-            return it.nextSolution(interpreter);
         }
     }
 }

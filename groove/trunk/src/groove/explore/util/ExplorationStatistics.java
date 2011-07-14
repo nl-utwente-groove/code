@@ -29,7 +29,6 @@ import groove.lts.GraphTransition;
 import groove.trans.BasicEvent;
 import groove.trans.HostFactory;
 import groove.trans.Rule;
-import groove.trans.RuleApplication;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -250,7 +249,7 @@ public class ExplorationStatistics {
     private void reportGraphElementStatistics() {
         HostFactory factory = this.gts.getHostFactory();
         printf("\n\tDefault nodes:\t%d%n", factory.getNodeCount());
-        printf("\tFresh nodes:\t%d%n", RuleApplication.getFreshNodeCount());
+        printf("\tFresh nodes:\t%d%n", BasicEvent.getFreshNodeCount());
         printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()

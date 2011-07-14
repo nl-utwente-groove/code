@@ -22,15 +22,15 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.RuleApplicationRecord;
 import groove.trans.RuleEvent;
-import groove.trans.BasicEvent;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
- * Predicate created_node(+RuleEvent,?Node)
+ * Predicate created_node(+RuleEvent,+Graph,?Node)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_created_node extends TransPrologCode {
@@ -44,16 +44,17 @@ public class Predicate_ruleevent_created_node extends TransPrologCode {
             return it.nextSolution(interpreter);
         } else {
             RuleEvent event = getRuleEvent(args[0]);
-            if (!(event instanceof BasicEvent)) {
+            HostGraph graph = (HostGraph) getGraph(args[1]);
+            RuleApplicationRecord record = event.recordApplication(graph);
+            Collection<HostNode> createdNodes = record.getCreatedNodes();
+            if (createdNodes == null) {
                 return FAIL;
+            } else {
+                PrologCollectionIterator it =
+                    new PrologCollectionIterator(createdNodes, args[2],
+                        interpreter.getUndoPosition());
+                return it.nextSolution(interpreter);
             }
-            Collection<? extends HostNode> filterNodes =
-                ((BasicEvent) event).getAnchorMap().nodeMap().values();
-            PrologCollectionIterator it =
-                new PrologCollectionIterator(
-                    event.getCreatedNodes(new HashSet<HostNode>(filterNodes)),
-                    args[1], interpreter.getUndoPosition());
-            return it.nextSolution(interpreter);
         }
     }
 }
