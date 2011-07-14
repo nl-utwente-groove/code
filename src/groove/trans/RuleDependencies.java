@@ -386,13 +386,12 @@ public class RuleDependencies {
             Set<TypeLabel> produced, Set<CtrlType> inPars, Set<CtrlType> outPars) {
         RuleGraph lhs = rule.lhs();
         RuleGraph rhs = rule.rhs();
-        RuleGraphMorphism ruleMorphism = rule.getMorphism();
         // test if a node is consumed (and there is no dangling edge check)
         Iterator<RuleNode> lhsNodeIter = lhs.nodeSet().iterator();
         while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)
             && !this.properties.isCheckDangling()) {
             RuleNode lhsNode = lhsNodeIter.next();
-            if (!ruleMorphism.containsNodeKey(lhsNode)) {
+            if (!rhs.containsNode(lhsNode)) {
                 consumed.addAll(getIncidentLabels(lhs, lhsNode));
             }
         }
@@ -400,7 +399,7 @@ public class RuleDependencies {
         Iterator<RuleEdge> lhsEdgeIter = lhs.edgeSet().iterator();
         while (lhsEdgeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
             RuleEdge lhsEdge = lhsEdgeIter.next();
-            if (!ruleMorphism.containsEdgeKey(lhsEdge)) {
+            if (!rhs.containsEdge(lhsEdge)) {
                 // the only regular expressions allowed on erasers are wildcards
                 consumed.addAll(getMatchedLabels(lhsEdge.label()));
             }
@@ -409,20 +408,18 @@ public class RuleDependencies {
         Iterator<RuleEdge> rhsEdgeIter = rhs.edgeSet().iterator();
         while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
             RuleEdge rhsEdge = rhsEdgeIter.next();
-            if (!ruleMorphism.containsEdgeValue(rhsEdge)) {
+            if (!lhs.containsEdge(rhsEdge)) {
                 produced.add(getSharpLabel(rhsEdge.label()));
             }
         }
         // determine if the rule contains a merger
-        if (!ruleMorphism.isInjective()) {
+        if (rule.hasMergers()) {
             produced.add(MERGE_LABEL);
             produced.add(ALL_LABEL);
         }
         // determine if the rule introduces an isolated node
         for (RuleNode rhsNode : rhs.nodeSet()) {
-            if (!ruleMorphism.containsNodeValue(rhsNode)) { // &&
-                // rhs.edgeSet(rhsNode).isEmpty())
-                // {
+            if (!lhs.containsNode(rhsNode)) {
                 produced.add(ANY_NODE);
             }
         }
@@ -587,6 +584,8 @@ public class RuleDependencies {
         TypeLabel result;
         if (label.isWildcard()) {
             result = ALL_LABEL;
+        } else if (label.isEmpty()) {
+            result = MERGE_LABEL;
         } else {
             assert label.isAtom() || label.isSharp() : String.format(
                 "Label %s should be atomic", label);

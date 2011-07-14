@@ -59,36 +59,32 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
-     * @param morphism the mapping from the LHS to the RHS
      * @param ruleProperties the rule properties
      */
-    public Rule(Condition condition, RuleGraph rhs, RuleGraphMorphism morphism,
+    public Rule(Condition condition, RuleGraph rhs,
             GraphProperties ruleProperties) {
-        this(condition, rhs, morphism, null, ruleProperties);
+        this(condition, rhs, new RuleGraph(condition.getName() + "-root"),
+            ruleProperties);
     }
 
     /**
      * Constructs a rule that is a sub-condition of another rule.
      * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
-     * @param morphism the mapping from the LHS to the RHS
-     * @param coRootMap map of creator nodes in the parent rule to creator nodes
+     * @param coRoot map of creator nodes in the parent rule to creator nodes
      *        of this rule
      * @param ruleProperties the rule properties
      */
-    public Rule(Condition condition, RuleGraph rhs, RuleGraphMorphism morphism,
-            RuleGraphMorphism coRootMap, GraphProperties ruleProperties) {
+    public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot,
+            GraphProperties ruleProperties) {
         this.condition = condition;
-        this.coRootMap =
-            coRootMap == null ? new RuleGraphMorphism() : coRootMap;
+        this.coRoot = coRoot;
         this.lhs = condition.getPattern();
         this.rhs = rhs;
-        this.morphism = morphism;
         this.ruleProperties = ruleProperties;
-        assert coRootMap == null
-            || rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format(
+        assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String.format(
             "RHS nodes %s do not contain all co-root values %s",
-            rhs().nodeSet(), coRootMap.nodeMap().values());
+            rhs().nodeSet(), coRoot.nodeSet());
     }
 
     /** Returns the condition with which this rule is associated. */
@@ -143,15 +139,13 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert getCoRootMap() != null : String.format(
+        assert getCoRoot() != null : String.format(
             "Sub-rule at level %s must have a non-trivial co-root map",
             Arrays.toString(level));
         if (parent != null) {
-            assert parent.rhs().nodeSet().containsAll(
-                getCoRootMap().nodeMap().keySet()) : String.format(
+            assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String.format(
                 "Rule '%s': Parent nodes %s do not contain all co-roots %s",
-                getName(), parent.rhs().nodeSet(),
-                getCoRootMap().nodeMap().keySet());
+                getName(), parent.rhs().nodeSet(), getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -635,15 +629,6 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Returns the rule morphism, which is the partial morphism from LHS to RHS.
-     * @see #lhs()
-     * @see #rhs()
-     */
-    public RuleGraphMorphism getMorphism() {
-        return this.morphism;
-    }
-
-    /**
      * Adds entries to the colour map for this rule.
      * The changes are eventually pushed to the top rule in the hierarchy.
      */
@@ -942,13 +927,13 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleEdge[] computeEraserEdges() {
         testFixed(true);
-        Set<RuleEdge> eraserEdgeSet = new HashSet<RuleEdge>(lhs().edgeSet());
-        eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
+        Set<RuleEdge> result = new HashSet<RuleEdge>(lhs().edgeSet());
+        result.removeAll(rhs().edgeSet());
         // also remove the incident edges of the lhs-only nodes
         for (RuleNode eraserNode : getEraserNodes()) {
-            eraserEdgeSet.removeAll(lhs().edgeSet(eraserNode));
+            result.removeAll(lhs().edgeSet(eraserNode));
         }
-        return eraserEdgeSet.toArray(new RuleEdge[eraserEdgeSet.size()]);
+        return result.toArray(new RuleEdge[result.size()]);
     }
 
     /** Returns the eraser edges that are not themselves anchors. */
@@ -984,10 +969,9 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleNode[] computeEraserNodes() {
         //testFixed(true);
-        Set<RuleNode> eraserNodeSet = new HashSet<RuleNode>(lhs().nodeSet());
-        eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
-        // eraserNodeSet.removeAll(getCoRootMap().nodeMap().values());
-        return eraserNodeSet.toArray(new RuleNode[eraserNodeSet.size()]);
+        Set<RuleNode> result = new HashSet<RuleNode>(lhs().nodeSet());
+        result.removeAll(rhs().nodeSet());
+        return result.toArray(new RuleNode[result.size()]);
     }
 
     /**
@@ -1007,29 +991,24 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private Set<RuleNode> computeModifierEnds() {
         Set<RuleNode> result = new HashSet<RuleNode>();
-        // add the end nodes of creator edges
-        Set<RuleNode> creatorNodes = getCreatorGraph().nodeSet();
-        for (Map.Entry<RuleNode,RuleNode> ruleMorphNodeEntry : getMorphism().nodeMap().entrySet()) {
-            if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
-                result.add(ruleMorphNodeEntry.getKey());
-            }
-        }
         // add the end nodes of eraser edges
         for (RuleEdge eraserEdge : getEraserEdges()) {
-            RuleNode end = eraserEdge.source();
-            if (getMorphism().containsNodeKey(end)) {
-                result.add(end);
-            }
-            end = eraserEdge.target();
-            if (getMorphism().containsNodeKey(end)) {
-                result.add(end);
+            result.add(eraserEdge.source());
+            result.add(eraserEdge.target());
+        }
+        // add the end nodes of creator and merger edges
+        for (RuleEdge rhsEdge : rhs().edgeSet()) {
+            if (!lhs().containsEdge(rhsEdge)) {
+                RuleNode source = rhsEdge.source();
+                if (lhs().containsNode(source)) {
+                    result.add(source);
+                }
+                RuleNode target = rhsEdge.target();
+                if (lhs().containsNode(target)) {
+                    result.add(target);
+                }
             }
         }
-        // add merged nodes
-        result.addAll(getMergeMap().keySet());
-        assert lhs().nodeSet().containsAll(result) : String.format(
-            "LHS node set %s does not contain all anchors in %s",
-            lhs().nodeSet(), result);
         return result;
     }
 
@@ -1058,8 +1037,8 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the mapping from the parent RHS to this rule's RHS. */
-    final RuleGraphMorphism getCoRootMap() {
-        return this.coRootMap;
+    final RuleGraph getCoRoot() {
+        return this.coRoot;
     }
 
     /**
@@ -1077,7 +1056,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleEdge[] computeSimpleCreatorEdges() {
         List<RuleEdge> result = new ArrayList<RuleEdge>();
-        Set<RuleNode> nonCreatorNodes = getCreatorMap().nodeMap().keySet();
+        Set<RuleNode> nonCreatorNodes = getCreatorEnds();
         // iterate over all creator edges
         for (RuleEdge edge : getCreatorEdges()) {
             // determine if this edge is simple
@@ -1124,8 +1103,12 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleEdge[] computeCreatorEdges() {
         Set<RuleEdge> result = new HashSet<RuleEdge>(rhs().edgeSet());
-        result.removeAll(getMorphism().edgeMap().values());
-        result.removeAll(getCoRootMap().edgeMap().values());
+        result.removeAll(lhs().edgeSet());
+        Rule parent = getParent();
+        if (parent != null && parent != this) {
+            result.removeAll(parent.rhs().edgeSet());
+        }
+        result.removeAll(getMergers());
         return result.toArray(new RuleEdge[result.size()]);
     }
 
@@ -1144,8 +1127,11 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleNode[] computeCreatorNodes() {
         Set<RuleNode> result = new HashSet<RuleNode>(rhs().nodeSet());
-        result.removeAll(getMorphism().nodeMap().values());
-        result.removeAll(getCoRootMap().nodeMap().values());
+        result.removeAll(lhs().nodeSet());
+        Rule parent = getParent();
+        if (parent != null && parent != this) {
+            result.removeAll(parent.rhs().edgeSet());
+        }
         return result.toArray(new RuleNode[result.size()]);
     }
 
@@ -1198,29 +1184,32 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Returns a partial map from the nodes of the creator graph (see
-     * {@link #getCreatorGraph()}) that are not themselves creator nodes but are
-     * the ends of creator edges, to the corresponding nodes of the LHS.
+     * Returns the RHS nodes that are not themselves creator nodes but are
+     * the ends of creator edges.
      */
-    final RuleGraphMorphism getCreatorMap() {
-        if (this.creatorMap == null) {
-            this.creatorMap = computeCreatorMap();
+    final Set<RuleNode> getCreatorEnds() {
+        if (this.creatorEnds == null) {
+            this.creatorEnds =
+                new HashSet<RuleNode>(getCreatorGraph().nodeSet());
+            this.creatorEnds.retainAll(lhs().nodeSet());
         }
-        return this.creatorMap;
+        return this.creatorEnds;
     }
 
-    /**
-     * Computes a value for the creator map. The creator map maps the endpoints
-     * of creator edges that are not themselves creator nodes to one of their
-     * pre-images.
-     */
-    private RuleGraphMorphism computeCreatorMap() {
-        // construct rhsOnlyMap
-        RuleGraphMorphism result = new RuleGraphMorphism();
-        Set<? extends RuleNode> creatorNodes = getCreatorGraph().nodeSet();
-        for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
-            if (creatorNodes.contains(nodeEntry.getValue())) {
-                result.putNode(nodeEntry.getValue(), nodeEntry.getKey());
+    /** Returns the set of merger edges in the RHS. */
+    private final Set<RuleEdge> getMergers() {
+        if (this.mergers == null) {
+            this.mergers = computeMergers();
+        }
+        return this.mergers;
+    }
+
+    /** Returns the set of merger edges in the RHS. */
+    private final Set<RuleEdge> computeMergers() {
+        Set<RuleEdge> result = new HashSet<RuleEdge>();
+        for (RuleEdge rhsEdge : rhs().edgeSet()) {
+            if (rhsEdge.label().isEmpty()) {
+                result.add(rhsEdge);
             }
         }
         return result;
@@ -1238,24 +1227,25 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Computes the merge map, which maps each LHS node that is merged with
-     * others to the LHS node it is merged with.
+     * Computes the merge map, which maps each rule node that is merged with
+     * others to the rule node it is merged with.
      */
     private Map<RuleNode,RuleNode> computeMergeMap() {
         testFixed(true);
         Map<RuleNode,RuleNode> result = new HashMap<RuleNode,RuleNode>();
-        Map<RuleNode,RuleNode> rhsToLhsMap = new HashMap<RuleNode,RuleNode>();
-        for (Map.Entry<RuleNode,RuleNode> nodeEntry : getMorphism().nodeMap().entrySet()) {
-            RuleNode mergeTarget = rhsToLhsMap.get(nodeEntry.getValue());
-            if (mergeTarget == null) {
-                mergeTarget = nodeEntry.getKey();
-                rhsToLhsMap.put(nodeEntry.getValue(), mergeTarget);
-            } else {
-                result.put(nodeEntry.getKey(), mergeTarget);
-                // the merge target is also merged
-                // maybe we do this more than once, but that's negligible
-                result.put(mergeTarget, mergeTarget);
+        for (RuleEdge merger : getMergers()) {
+            result.put(merger.source(), merger.target());
+        }
+        // transitively close the map
+        // because we don't expect long chains of mergers, 
+        // we can sacrifice efficiency for brevity
+        for (Map.Entry<RuleNode,RuleNode> mergeEntry : result.entrySet()) {
+            RuleNode oldValue = mergeEntry.getValue();
+            RuleNode newValue = oldValue;
+            while (result.containsKey(newValue)) {
+                newValue = result.get(newValue);
             }
+            mergeEntry.setValue(newValue);
         }
         return result;
     }
@@ -1335,13 +1325,6 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Indicates if the {@link #modifying} variable has been computed
      */
     private boolean modifyingSet;
-    //    /** Flag indicating if this rule is now fixed, i.e., unchangeable. */
-    //    private boolean fixed;
-    /**
-     * The underlying production morphism.
-     * @invariant ruleMorph : lhs --> rhs
-     */
-    private final RuleGraphMorphism morphism;
     /**
      * This production rule's left hand side.
      * @invariant lhs != null
@@ -1353,7 +1336,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleGraph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private final RuleGraphMorphism coRootMap;
+    private final RuleGraph coRoot;
     /** Flag indicating whether rule applications should be checked for dangling edges. */
     private boolean checkDangling;
     /** Flag indicating whether the rule has been fixed. */
@@ -1370,7 +1353,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * the restriction of the inverse of <tt>ruleMorph</tt> to
      * <tt>rhsOnlyGraph</tt>.
      */
-    private RuleGraphMorphism creatorMap;
+    private Set<RuleNode> creatorEnds;
     /**
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
@@ -1434,6 +1417,8 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Variables occurring in the rhsOnlyEdges
      */
     private LabelVar[] creatorVars;
+    /** Set of merger edges. */
+    private Set<RuleEdge> mergers;
     /**
      * A partial mapping from LHS nodes to RHS nodes, indicating which nodes are
      * merged and which nodes are deleted.

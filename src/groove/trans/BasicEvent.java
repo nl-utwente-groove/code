@@ -779,23 +779,21 @@ final public class BasicEvent extends
             RuleToHostMap anchorMap = getAnchorMap();
             // add coanchor mappings for creator edge ends that are themselves
             // not creators
-            for (Map.Entry<RuleNode,RuleNode> creatorEntry : getRule().getCreatorMap().nodeMap().entrySet()) {
-                RuleNode creatorKey = creatorEntry.getKey();
-                RuleNode creatorValue = creatorEntry.getValue();
+            for (RuleNode creatorEnd : getRule().getCreatorEnds()) {
                 HostNode createdValue;
-                if (creatorValue instanceof ValueNode) {
-                    createdValue = (ValueNode) creatorValue;
+                if (creatorEnd instanceof ValueNode) {
+                    createdValue = (ValueNode) creatorEnd;
                 } else {
-                    createdValue = anchorMap.getNode(creatorEntry.getValue());
-                    assert creatorValue != null : String.format(
+                    createdValue = anchorMap.getNode(creatorEnd);
+                    assert creatorEnd != null : String.format(
                         "Event '%s': No coanchor image for '%s' in %s",
-                        BasicEvent.this, creatorKey, anchorMap);
+                        BasicEvent.this, creatorEnd, anchorMap);
                 }
                 // if the value is null, the image was deleted due to a delete
                 // conflict
                 // or it is yet to be created by a parent rule
                 if (createdValue != null) {
-                    result.putNode(creatorKey, createdValue);
+                    result.putNode(creatorEnd, createdValue);
                 }
             }
             // add variable images
