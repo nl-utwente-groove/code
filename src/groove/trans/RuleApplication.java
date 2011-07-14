@@ -205,9 +205,8 @@ public class RuleApplication implements DeltaApplier {
                 result.putNode(node, nodeImage);
             }
         }
-        Collection<HostEdge> erasedEdges = getRecord().getErasedEdges();
         for (HostEdge edge : sourceEdges) {
-            if (!erasedEdges.contains(edge)) {
+            if (getRecord().isErasedEdge(edge)) {
                 HostEdge edgeImage = mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
