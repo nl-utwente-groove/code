@@ -68,10 +68,10 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
             removeNode(key);
         } else if (keyImage != valueImage) {
             if (keyImage == null) {
-                // delete the key
+                // delete the value
                 removeNode(valueImage);
             } else if (valueImage == null) {
-                // delete the value
+                // delete the key
                 removeNode(keyImage);
             } else {
                 // merge key and value
@@ -108,14 +108,13 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         super.putNode(key, image);
         this.mergeTargets.add(image);
         // now redirect all pre-images of key, if necessary
-        if (this.mergeTargets.contains(key)) {
+        if (this.mergeTargets.remove(key)) {
             // map all pre-images of key to image
             for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                 if (entry.getValue() == key) {
                     setValue(entry, image);
                 }
             }
-            this.mergeTargets.remove(key);
         }
     }
 
@@ -128,14 +127,13 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         if (keyImage != null) {
             super.putNode(keyImage, UNDEFINED);
             // now redirect all pre-images of keyImage, if necessary
-            if (this.mergeTargets.contains(keyImage)) {
+            if (this.mergeTargets.remove(keyImage)) {
                 // map all pre-images of keyImage to UNDEFINED
                 for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
                     if (entry.getValue() == keyImage) {
                         entry.setValue(UNDEFINED);
                     }
                 }
-                this.mergeTargets.remove(keyImage);
             }
         }
         return keyImage;
