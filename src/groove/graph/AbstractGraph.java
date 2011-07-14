@@ -69,7 +69,8 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
      * Defers the containment question to {@link #edgeSet()}
      */
     public boolean containsEdge(Edge<?> elem) {
-        assert isTypeCorrect(elem);
+        assert isTypeCorrect(elem) : String.format(
+            "Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
     }
 

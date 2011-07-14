@@ -22,10 +22,13 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.RuleApplicationRecord;
 import groove.trans.RuleEvent;
 
 /**
- * Predicate erased_edge(+RuleEvent,?Edge)
+ * Predicate erased_edge(+RuleEvent,+Graph,?Edge)
  * @author Michiel Hendriks
  */
 public class Predicate_ruleevent_erased_edge extends TransPrologCode {
@@ -38,11 +41,18 @@ public class Predicate_ruleevent_erased_edge extends TransPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            RuleEvent re = getRuleEvent(args[0]);
-            PrologCollectionIterator it =
-                new PrologCollectionIterator(re.getSimpleErasedEdges(),
-                    args[1], interpreter.getUndoPosition());
-            return it.nextSolution(interpreter);
+            RuleEvent event = getRuleEvent(args[0]);
+            HostGraph graph = (HostGraph) getGraph(args[1]);
+            RuleApplicationRecord record = event.recordApplication(graph);
+            Iterable<HostEdge> erasedEdges = record.getErasedEdges();
+            if (erasedEdges == null) {
+                return FAIL;
+            } else {
+                PrologCollectionIterator it =
+                    new PrologCollectionIterator(erasedEdges, args[2],
+                        interpreter.getUndoPosition());
+                return it.nextSolution(interpreter);
+            }
         }
     }
 

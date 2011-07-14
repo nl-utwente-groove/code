@@ -820,7 +820,8 @@ public class Rule implements Fixable, Comparable<Rule> {
     private boolean computeIsModifying() {
         boolean result =
             getEraserEdges().length > 0 || getEraserNodes().length > 0
-                || hasMergers() || hasCreators() || !getColorMap().isEmpty();
+                || hasMergers() || hasNodeCreators() || hasEdgeCreators()
+                || !getColorMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.isModifying();
@@ -833,22 +834,93 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Indicates if the rule creates any nodes or edges.
+     * Indicates if the rule creates any nodes.
      */
-    public boolean hasCreators() {
-        if (!this.hasCreatorsSet) {
-            this.hasCreators = computeHasCreators();
-            this.hasCreatorsSet = true;
+    public boolean hasNodeCreators() {
+        if (!this.hasNodeCreatorsSet) {
+            this.hasNodeCreators = computeHasNodeCreators();
+            this.hasNodeCreatorsSet = true;
         }
-        return this.hasCreators;
+        return this.hasNodeCreators;
     }
 
-    private boolean computeHasCreators() {
-        boolean result =
-            getCreatorNodes().length + getCreatorEdges().length > 0;
+    private boolean computeHasNodeCreators() {
+        boolean result = getCreatorNodes().length > 0;
         if (!result) {
             for (Rule subRule : getSubRules()) {
-                result = subRule.hasCreators();
+                result = subRule.hasNodeCreators();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if the rule creates any edges.
+     */
+    public boolean hasEdgeCreators() {
+        if (!this.hasEdgeCreatorsSet) {
+            this.hasEdgeCreators = computeHasEdgeCreators();
+            this.hasEdgeCreatorsSet = true;
+        }
+        return this.hasEdgeCreators;
+    }
+
+    private boolean computeHasEdgeCreators() {
+        boolean result = getCreatorEdges().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasEdgeCreators();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if the rule creates any nodes.
+     */
+    public boolean hasNodeErasers() {
+        if (!this.hasNodeErasersSet) {
+            this.hasNodeErasers = computeHasNodeErasers();
+            this.hasNodeErasersSet = true;
+        }
+        return this.hasNodeErasers;
+    }
+
+    private boolean computeHasNodeErasers() {
+        boolean result = getEraserNodes().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasNodeErasers();
+                if (result) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if the rule creates any edges.
+     */
+    public boolean hasEdgeErasers() {
+        if (!this.hasEdgeErasersSet) {
+            this.hasEdgeErasers = computeHasEdgeErasers();
+            this.hasEdgeErasersSet = true;
+        }
+        return this.hasEdgeErasers;
+    }
+
+    private boolean computeHasEdgeErasers() {
+        boolean result = getEraserEdges().length > 0;
+        if (!result) {
+            for (Rule subRule : getSubRules()) {
+                result = subRule.hasEdgeErasers();
                 if (result) {
                     break;
                 }
@@ -1232,12 +1304,29 @@ public class Rule implements Fixable, Comparable<Rule> {
     /** Flag indicating if the {@link #hasMergers} has been computed. */
     private boolean hasMergersSet;
     /**
-     * Indicates if this rule has creator edges or nodes.
-     * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>
+     * Indicates if this rule has creator nodes.
      */
-    private boolean hasCreators;
-    /** Flag indicating if the {@link #hasCreators} has been computed. */
-    private boolean hasCreatorsSet;
+    private boolean hasNodeCreators;
+    /** Flag indicating if the {@link #hasNodeCreators} has been computed. */
+    private boolean hasNodeCreatorsSet;
+    /**
+     * Indicates if this rule has creator edges.
+     */
+    private boolean hasEdgeCreators;
+    /** Flag indicating if the {@link #hasEdgeCreators} has been computed. */
+    private boolean hasEdgeCreatorsSet;
+    /**
+     * Indicates if this rule has eraser nodes.
+     */
+    private boolean hasNodeErasers;
+    /** Flag indicating if the {@link #hasNodeErasers} has been computed. */
+    private boolean hasNodeErasersSet;
+    /**
+     * Indicates if this rule has eraser edges.
+     */
+    private boolean hasEdgeErasers;
+    /** Flag indicating if the {@link #hasEdgeErasers} has been computed. */
+    private boolean hasEdgeErasersSet;
     /**
      * Indicates if this rule makes changes to a graph at all.
      */

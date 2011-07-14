@@ -275,12 +275,12 @@ public class PredicateTests {
         success("active_ruleevent(RE), is_ruleevent(RE)");
 
         // Assert that created_edge and created_node give a edge and node
-        success("active_ruleevent(RE), ruleevent_created_edge(RE,E), is_edge(E)");
-        success("active_ruleevent(RE), ruleevent_created_node(RE,N), is_node(N)");
+        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_edge(RE,G,E), is_edge(E)");
+        success("state(S), state_graph(S,G), active_ruleevent(RE), ruleevent_created_node(RE,G,N), is_node(N)");
 
         // Test ruleevent_erased_node and ruleevent_erased_edge
-        success("state(S), state_transition(S,T), transition_event(T,RE), ruleevent_erased_node(RE,N), is_node(N)");
-        // succ("state(S), state_transition(S,T), transition_event(T,RE), ruleevent_erased_edge(RE,E), is_edge(E)");
+        success("state(S), state_graph(S,G), state_transition(S,T), transition_event(T,RE), ruleevent_erased_node(RE,G,N), is_node(N)");
+        // succ("state(S), state_graph(S,G), state_transition(S,T), transition_event(T,RE), ruleevent_erased_edge(RE,G,E), is_edge(E)");
 
         // Assert that ruleevent_rule gives rule-b
         success("active_ruleevent(RE), ruleevent_rule(RE,R), rule('rule-a',R)");

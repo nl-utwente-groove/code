@@ -186,7 +186,7 @@ public class MatchApplier implements RuleEventApplier {
     private HostNode[] getCreatedNodes(RuleEvent event, HostGraph graph) {
         // optimise to avoid reconstructing the node set if there
         // are no node creators in the rule
-        if (event.getRule().hasCreators()) {
+        if (event.getRule().hasNodeCreators()) {
             return event.getCreatedNodes(graph.nodeSet()).toArray(
                 EMPTY_NODE_ARRAY);
         } else {

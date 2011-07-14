@@ -16,9 +16,9 @@
  */
 package groove.prolog.builtin;
 
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipPars;
 
 /** Transition-based GROOVE predicates. */
 @SuppressWarnings("all")
@@ -68,37 +68,38 @@ public class TransPredicates extends GroovePredicates {
         s(":-build_in(ruleevent_transpose/3,'groove.prolog.builtin.trans.Predicate_ruleevent_transpose').");
     }
 
-    @ToolTipBody("Erased edges in this event")
-    @Signature({"RuleEvent", "Edge", "+?"})
-    @ToolTipPars({"the rule event", "the edge"})
-    public void ruleevent_erased_edge_2() {
-        s(":-build_in(ruleevent_erased_edge/2,'groove.prolog.builtin.trans.Predicate_ruleevent_erased_edge').");
+    @ToolTipBody("Erased edges in this event, with respect to a given host graph.")
+    @Signature({"RuleEvent", "Graph", "Edge", "++?"})
+    @ToolTipPars({"the rule event", "the host graph", "the edge"})
+    public void ruleevent_erased_edge_3() {
+        s(":-build_in(ruleevent_erased_edge/3,'groove.prolog.builtin.trans.Predicate_ruleevent_erased_edge').");
     }
 
-    @ToolTipBody("Erased nodes in this event")
-    @Signature({"RuleEvent", "Node", "+?"})
-    @ToolTipPars({"the rule event", "the node"})
-    public void ruleevent_erased_node_2() {
-        s(":-build_in(ruleevent_erased_node/2,'groove.prolog.builtin.trans.Predicate_ruleevent_erased_node').");
+    @ToolTipBody("Erased nodes in this event, with respect to a given host graph.")
+    @Signature({"RuleEvent", "Graph", "Node", "++?"})
+    @ToolTipPars({"the rule event", "the host graph", "the node"})
+    public void ruleevent_erased_node_3() {
+        s(":-build_in(ruleevent_erased_node/3,'groove.prolog.builtin.trans.Predicate_ruleevent_erased_node').");
     }
 
-    @ToolTipBody("Created edges in this event.")
-    @Signature({"RuleEvent", "Edge", "+?"})
-    @ToolTipPars({"the rule event", "the edge"})
-    public void ruleevent_created_edge_2() {
-        s(":-build_in(ruleevent_created_edge/2,'groove.prolog.builtin.trans.Predicate_ruleevent_created_edge').");
+    @ToolTipBody("Created edges in this event, with respect to a given host graph.")
+    @Signature({"RuleEvent", "Graph", "Edge", "++?"})
+    @ToolTipPars({"the rule event", "the host graph", "the edge"})
+    public void ruleevent_created_edge_3() {
+        s(":-build_in(ruleevent_created_edge/3,'groove.prolog.builtin.trans.Predicate_ruleevent_created_edge').");
     }
 
-    @ToolTipBody("Created nodes in this event.")
-    @Signature({"RuleEvent", "Node", "+?"})
-    @ToolTipPars({"the rule event", "the node"})
-    public void ruleevent_created_node_2() {
-        s(":-build_in(ruleevent_created_node/2,'groove.prolog.builtin.trans.Predicate_ruleevent_created_node').");
+    @ToolTipBody("Created nodes in this event, with respect to a given host graph.")
+    @Signature({"RuleEvent", "Graph", "Node", "++?"})
+    @ToolTipPars({"the rule event", "the host graph", "the node"})
+    public void ruleevent_created_node_3() {
+        s(":-build_in(ruleevent_created_node/3,'groove.prolog.builtin.trans.Predicate_ruleevent_created_node').");
     }
 
     @ToolTipBody("The rule match")
     @Signature({"RuleEvent", "Graph", "RuleMatch", "++?"})
-    @ToolTipPars({"the rule event", "the graph to match against", "the rule match"})
+    @ToolTipPars({"the rule event", "the graph to match against",
+        "the rule match"})
     //    % @see groove.trans.RuleEvent#getMatch()
     public void ruleevent_match_3() {
         s(":-build_in(ruleevent_match/3,'groove.prolog.builtin.trans.Predicate_ruleevent_match').");
