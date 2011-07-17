@@ -74,8 +74,8 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     }
 
     public GraphTransition toTransition(GraphState source) {
-        return new DefaultGraphTransition(getEvent(source),
-            getAddedNodes(source), source, getTarget(source), isSymmetry());
+        return new DefaultGraphTransition(source,
+            getEvent(source), getAddedNodes(source), getTarget(source), isSymmetry());
     }
 
     /**

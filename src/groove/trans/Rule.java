@@ -774,7 +774,8 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Computes if the rule has mergers or not.
      */
     private boolean computeHasMergers() {
-        boolean result = !getMergeMap().isEmpty();
+        boolean result =
+            !getLhsMergeMap().isEmpty() || !getRhsMergeMap().isEmpty();
         if (!result) {
             for (Rule subRule : getSubRules()) {
                 result = subRule.hasMergers();
@@ -1108,7 +1109,8 @@ public class Rule implements Fixable, Comparable<Rule> {
         if (parent != null && parent != this) {
             result.removeAll(parent.rhs().edgeSet());
         }
-        result.removeAll(getMergers());
+        result.removeAll(getLhsMergers());
+        result.removeAll(getRhsMergers());
         return result.toArray(new RuleEdge[result.size()]);
     }
 
@@ -1196,58 +1198,82 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.creatorEnds;
     }
 
-    /** Returns the set of merger edges in the RHS. */
-    private final Set<RuleEdge> getMergers() {
-        if (this.mergers == null) {
-            this.mergers = computeMergers();
+    /** Returns the set of merger edges in the RHS of which both ends are in the LHS. */
+    private final Set<RuleEdge> getLhsMergers() {
+        if (this.lhsMergers == null) {
+            initMergers();
         }
-        return this.mergers;
+        return this.lhsMergers;
+    }
+
+    /** 
+     * Returns the set of merger edges in the RHS of which at least one end
+     * is a creator node. 
+     */
+    private final Set<RuleEdge> getRhsMergers() {
+        if (this.rhsMergers == null) {
+            initMergers();
+        }
+        return this.rhsMergers;
     }
 
     /** Returns the set of merger edges in the RHS. */
-    private final Set<RuleEdge> computeMergers() {
-        Set<RuleEdge> result = new HashSet<RuleEdge>();
+    private final void initMergers() {
+        this.lhsMergers = new HashSet<RuleEdge>();
+        this.rhsMergers = new HashSet<RuleEdge>();
+        this.lhsMergeMap = new HashMap<RuleNode,RuleNode>();
+        this.rhsMergeMap = new HashMap<RuleNode,RuleNode>();
         for (RuleEdge rhsEdge : rhs().edgeSet()) {
             if (rhsEdge.label().isEmpty()) {
-                result.add(rhsEdge);
+                RuleNode source = rhsEdge.source();
+                RuleNode target = rhsEdge.target();
+                if (lhs().containsNode(source) && lhs().containsNode(target)) {
+                    this.lhsMergeMap.put(source, target);
+                    this.lhsMergers.add(rhsEdge);
+                } else {
+                    this.rhsMergeMap.put(source, target);
+                    this.rhsMergers.add(rhsEdge);
+                }
             }
         }
-        return result;
+        closeMergeMap(this.lhsMergeMap);
+        closeMergeMap(this.rhsMergeMap);
     }
 
     /**
-     * Returns a map from LHS nodes that are merged to those LHS nodes they are
-     * merged with.
+     * Returns a map from each LHS node that is merged with
+     * another to the LHS node it is merged with.
      */
-    final Map<RuleNode,RuleNode> getMergeMap() {
-        if (this.mergeMap == null) {
-            this.mergeMap = computeMergeMap();
+    public final Map<RuleNode,RuleNode> getLhsMergeMap() {
+        if (this.lhsMergeMap == null) {
+            initMergers();
         }
-        return this.mergeMap;
+        return this.lhsMergeMap;
     }
 
     /**
-     * Computes the merge map, which maps each rule node that is merged with
-     * others to the rule node it is merged with.
+     * Returns a map from merged nodes to their merge targets,
+     * at least one of which is a creator node.
      */
-    private Map<RuleNode,RuleNode> computeMergeMap() {
-        testFixed(true);
-        Map<RuleNode,RuleNode> result = new HashMap<RuleNode,RuleNode>();
-        for (RuleEdge merger : getMergers()) {
-            result.put(merger.source(), merger.target());
+    final Map<RuleNode,RuleNode> getRhsMergeMap() {
+        if (this.rhsMergeMap == null) {
+            initMergers();
         }
+        return this.rhsMergeMap;
+    }
+
+    private void closeMergeMap(Map<RuleNode,RuleNode> mergeMap) {
         // transitively close the map
         // because we don't expect long chains of mergers, 
         // we can sacrifice efficiency for brevity
-        for (Map.Entry<RuleNode,RuleNode> mergeEntry : result.entrySet()) {
+        for (Map.Entry<RuleNode,RuleNode> mergeEntry : mergeMap.entrySet()) {
             RuleNode oldValue = mergeEntry.getValue();
             RuleNode newValue = oldValue;
-            while (result.containsKey(newValue)) {
-                newValue = result.get(newValue);
+            while (mergeMap.containsKey(newValue)) {
+                newValue = mergeMap.get(newValue);
             }
             mergeEntry.setValue(newValue);
         }
-        return result;
     }
 
     /**
@@ -1417,13 +1443,18 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Variables occurring in the rhsOnlyEdges
      */
     private LabelVar[] creatorVars;
-    /** Set of merger edges. */
-    private Set<RuleEdge> mergers;
+    /** Set of merger edges whose source and target nodes are both in the LHS. */
+    private Set<RuleEdge> lhsMergers;
+    /** Set of merger edges whose source and target nodes are not both in the LHS. */
+    private Set<RuleEdge> rhsMergers;
     /**
-     * A partial mapping from LHS nodes to RHS nodes, indicating which nodes are
-     * merged and which nodes are deleted.
+     * A mapping from merge sources to merge targets within the LHS.
      */
-    private Map<RuleNode,RuleNode> mergeMap;
+    private Map<RuleNode,RuleNode> lhsMergeMap;
+    /**
+     * A mapping from merge sources to merge targets outside the LHS.
+     */
+    private Map<RuleNode,RuleNode> rhsMergeMap;
 
     /** Mapping from rule nodes to explicitly declared colours. */
     private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();

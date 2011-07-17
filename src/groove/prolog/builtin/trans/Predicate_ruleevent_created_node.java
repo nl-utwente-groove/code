@@ -24,7 +24,7 @@ import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.RuleApplicationRecord;
+import groove.trans.RuleEffect;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
@@ -45,7 +45,7 @@ public class Predicate_ruleevent_created_node extends TransPrologCode {
         } else {
             RuleEvent event = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
-            RuleApplicationRecord record = event.recordApplication(graph);
+            RuleEffect record = event.recordApplication(graph);
             Collection<HostNode> createdNodes = record.getCreatedNodes();
             if (createdNodes == null) {
                 return FAIL;

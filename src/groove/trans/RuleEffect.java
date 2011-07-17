@@ -17,28 +17,72 @@
 package groove.trans;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Temporary record of the changes involved in a rule application.
+ * Temporary record of the effects of a rule application.
  * Built up by a {@link RuleEvent} and then used in a {@link RuleApplication}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleApplicationRecord {
-    /** Creates a record with respect to a given graph node set. */
-    public RuleApplicationRecord(Set<? extends HostNode> sourceNodes) {
-        this.sourceNodes = sourceNodes;
+public class RuleEffect {
+    /** Creates a full record with respect to a given source graph. */
+    public RuleEffect(HostGraph host) {
+        this(host, Fragment.ALL);
+    }
+
+    /** 
+     * Creates a partial record with respect to a given source graph.
+     */
+    public RuleEffect(HostGraph host, Fragment fragment) {
+        this.sourceNodes = host.nodeSet();
+        this.fragment = fragment;
+        this.createdNodeArray = null;
+        this.createdNodeIndex = -1;
+    }
+
+    /** 
+     * Creates a full record based on a predefined set of created nodes.
+     */
+    public RuleEffect(HostNode[] createdNodes) {
+        this(createdNodes, Fragment.ALL);
+    }
+
+    /** 
+     * Creates a partial record based on a predefined set of created nodes.
+     */
+    public RuleEffect(HostNode[] createdNodes, Fragment fragment) {
+        this.sourceNodes = null;
+        this.fragment = fragment;
+        this.createdNodeArray = createdNodes;
+        this.createdNodeIndex = 0;
     }
 
     /** Returns the set of nodes of the source graph. */
     Set<? extends HostNode> getSourceNodes() {
         return this.sourceNodes;
+    }
+
+    /** Returns the fragment of the record that is to be generated. */
+    final Fragment getFragment() {
+        return this.fragment;
+    }
+
+    /** 
+     * Indicates that the created nodes have been predefined.
+     * This implies that {@link #addCreatorNodes(RuleNode[])} rather than
+     * {@link #addCreatedNodes(RuleNode[], HostNode[])} should be used to 
+     * complete the record. 
+     */
+    final boolean isNodesInitialised() {
+        return this.createdNodeIndex >= 0;
     }
 
     /**
@@ -50,44 +94,54 @@ public class RuleApplicationRecord {
     }
 
     /** 
+     * Adds information about the node creators.
+     * This method should be used (in preference to {@link #addCreatedNodes(RuleNode[], HostNode[])})
+     * if the created nodes have been pre-initialised.
+     * @param creatorNodes next set of node creators
+     * @see #addCreatedNodes(RuleNode[], HostNode[])
+     * @see #isNodesInitialised()
+     */
+    void addCreatorNodes(RuleNode[] creatorNodes) {
+        assert isNodesInitialised();
+        HostNode[] createdNodes = this.createdNodeArray;
+        Map<RuleNode,HostNode> createdNodeMap = this.createdNodeMap;
+        if (createdNodeMap == null) {
+            this.createdNodeMap =
+                createdNodeMap = new HashMap<RuleNode,HostNode>();
+        }
+        int createdNodeStart = this.createdNodeIndex;
+        int creatorCount = creatorNodes.length;
+        for (int i = 0; i < creatorCount; i++) {
+            createdNodeMap.put(creatorNodes[i], createdNodes[createdNodeStart
+                + i]);
+        }
+        this.createdNodeIndex = createdNodeStart + creatorCount;
+    }
+
+    /** 
      * Adds information about created nodes to that already stored in the record.
-     * @param createdNodeMap mapping from node creators to corresponding created nodes
+     * Should only be used if {@link #isNodesInitialised()} is {@code false}.
+     * @param creatorNodes node creators
      * @param createdNodes set of created nodes; should equal the values of the map
      */
-    void addCreatedNodes(Map<RuleNode,HostNode> createdNodeMap,
-            Set<HostNode> createdNodes) {
-        assert createdNodes.containsAll(createdNodeMap.values());
-        assert createdNodes.size() == createdNodeMap.size();
-        if (!createdNodes.isEmpty()) {
+    void addCreatedNodes(RuleNode[] creatorNodes, HostNode[] createdNodes) {
+        assert !isNodesInitialised();
+        int createdNodeCount = createdNodes.length;
+        if (createdNodeCount > 0) {
             Map<RuleNode,HostNode> oldCreatedNodeMap = this.createdNodeMap;
-            Set<HostNode> oldCreatedNodes = this.createdNodes;
-            Map<RuleNode,HostNode> newCreatedNodeMap;
-            Set<HostNode> newCreatedNodes;
-            // alias the parameter set if there were no created nodes up till now
+            Set<HostNode> oldCreatedNodes = this.createdNodeSet;
             if (oldCreatedNodes == null) {
-                newCreatedNodeMap = createdNodeMap;
-                newCreatedNodes = createdNodes;
-                this.createdNodesAliased = true;
-            } else {
-                if (this.createdNodesAliased) {
-                    // copy the currently aliased structures
-                    int size =
-                        (oldCreatedNodes.size() + createdNodeMap.size()) * 2;
-                    newCreatedNodeMap = new HashMap<RuleNode,HostNode>(size);
-                    newCreatedNodeMap.putAll(oldCreatedNodeMap);
-                    newCreatedNodes = new HashSet<HostNode>(size);
-                    newCreatedNodes.addAll(oldCreatedNodes);
-                    this.createdNodesAliased = false;
-                } else {
-                    // the structures were already copied
-                    newCreatedNodeMap = oldCreatedNodeMap;
-                    newCreatedNodes = oldCreatedNodes;
-                }
-                newCreatedNodeMap.putAll(createdNodeMap);
-                newCreatedNodes.addAll(createdNodes);
+                int size = createdNodeCount * 2;
+                oldCreatedNodeMap = new HashMap<RuleNode,HostNode>(size);
+                oldCreatedNodes = new LinkedHashSet<HostNode>(size);
             }
-            this.createdNodeMap = newCreatedNodeMap;
-            this.createdNodes = newCreatedNodes;
+            for (int i = 0; i < createdNodeCount; i++) {
+                HostNode createdNode = createdNodes[i];
+                oldCreatedNodes.add(createdNode);
+                oldCreatedNodeMap.put(creatorNodes[i], createdNode);
+            }
+            this.createdNodeMap = oldCreatedNodeMap;
+            this.createdNodeSet = oldCreatedNodes;
         }
     }
 
@@ -237,14 +291,25 @@ public class RuleApplicationRecord {
         return hasErasedEdges() && getErasedEdges().contains(edge);
     }
 
+    /** Returns the (possibly {@code null}) array of created nodes. */
+    final public HostNode[] getCreatedNodeArray() {
+        if (this.createdNodeArray == null && this.createdNodeSet != null) {
+            this.createdNodeArray =
+                this.createdNodeSet.toArray(new HostNode[this.createdNodeSet.size()]);
+        }
+        return this.createdNodeArray;
+    }
+
     /** Returns the (possibly {@code null}) set of created nodes. */
-    final public Set<HostNode> getCreatedNodes() {
-        return this.createdNodes;
+    final public Collection<HostNode> getCreatedNodes() {
+        return isNodesInitialised() ? Arrays.asList(this.createdNodeArray)
+                : this.createdNodeSet;
     }
 
     /** Indicates if the set of created nodes is non-empty. */
     final public boolean hasCreatedNodes() {
-        return this.createdNodes != null;
+        return isNodesInitialised() ? this.createdNodeArray.length > 0
+                : this.createdNodeSet != null;
     }
 
     /** 
@@ -373,6 +438,9 @@ public class RuleApplicationRecord {
 
     /** The nodes of the source graph. */
     private final Set<? extends HostNode> sourceNodes;
+    /** The part of the record that is generated. */
+    private final Fragment fragment;
+    /** Flag indicating that the created nodes are predefined. */
     /** Collection of erased nodes. */
     private Set<HostNode> erasedNodes;
     /** Flag indicating if {@link #erasedNodes} is currently an alias. */
@@ -383,10 +451,18 @@ public class RuleApplicationRecord {
     private boolean erasedEdgesAliased;
     /** Mapping from rule node creators to the corresponding created nodes. */
     private Map<RuleNode,HostNode> createdNodeMap;
-    /** Collection of created nodes. */
-    private Set<HostNode> createdNodes;
-    /** Flag indicating if {@link #createdNodes} is currently an alias. */
-    private boolean createdNodesAliased;
+    /** 
+     * Collection of created nodes. 
+     * Only used if the created nodes are not predefined (see {@link #createdNodeArray}). 
+     */
+    private Set<HostNode> createdNodeSet;
+    /** 
+     * Predefined array of created nodes; if {@code null}, the created nodes
+     * are not predefined.
+     */
+    private HostNode[] createdNodeArray;
+    /** Index of the first unused element in {@link #createdNodeArray}. */
+    private int createdNodeIndex;
     /** Collection of created edges. */
     private Collection<HostEdge> createdEdges;
     /** Flag indicating if {@link #createdEdges} is currently an alias. */
@@ -395,4 +471,14 @@ public class RuleApplicationRecord {
     private MergeMap mergeMap;
     /** Flag indicating if {@link #mergeMap} is currently an alias. */
     private boolean mergeMapAliased;
+
+    /** Values indicating which part of the effect is recorded. */
+    public static enum Fragment {
+        /** Only node creation is recorded. */
+        NODE_CREATION,
+        /** Only node manipulation (creation, merging and deletion) is recorded. */
+        NODE_ALL,
+        /** Everything is recorded. */
+        ALL;
+    }
 }

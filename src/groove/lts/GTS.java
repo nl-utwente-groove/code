@@ -669,9 +669,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                 Set<?> myEdgeSet = new HashSet<HostEdge>(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
+            } else {
+                return this.checker.areIsomorphic(myGraph, otherGraph,
+                    myBoundNodes, otherBoundNodes);
             }
-            return this.checker.areIsomorphic(myGraph, otherGraph,
-                myBoundNodes, otherBoundNodes);
         }
 
         /**

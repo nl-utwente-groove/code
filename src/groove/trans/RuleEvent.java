@@ -19,8 +19,6 @@ package groove.trans;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
 
-import java.util.Set;
-
 /**
  * Interface to encode a rule instantiation that provides images to the rule
  * anchors. Together with the host graph, the event uniquely defines a
@@ -36,14 +34,6 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * Returns the rule for which this is an application.
      */
     public Rule getRule();
-
-    /**
-     * Constructs an argument array for this event, with respect to
-     *  given array of added nodes (which are the images of the creator nodes).
-     * @param addedNodes the added nodes; if {@code null}, the creator
-     * node images will be set to {@code null}
-     */
-    public HostNode[] getArguments(HostNode[] addedNodes);
 
     /**
      * Returns a string representation of the anchor image.
@@ -64,36 +54,35 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      */
     public HostElement getAnchorImage(int i);
 
-    /** Returns the size of the anchor. */
-    public int getAnchorSize();
-
     /**
      * Constructs and records the application of this event to
      * a given host graph.
      */
-    public RuleApplicationRecord recordApplication(HostGraph host);
+    public RuleEffect recordApplication(HostGraph host);
 
     /**
      * Records the application of this event, by storing the relevant
      * information into the record object passed in as a parameter.
      */
-    public void record(RuleApplicationRecord record);
+    void recordEffect(RuleEffect record);
 
     /**
      * Returns the merge map of the event. The merge map contains entries for
      * nodes that are deleted, and nodes that are mapped to another node as a
      * consequence of a merger in the rule.
+     * @param source source graph with respect to which the created nodes are
+     * computed
      */
-    public MergeMap getMergeMap();
+    public MergeMap getMergeMap(HostGraph source);
 
     /**
      * Returns a set of created nodes of this event, given a set of nodes
      * already existing in the graph (i.e., which may not be used).
      * An iterator over the set returns the created nodes in the order
      * of the creator nodes.
-     * @param hostNodes set of nodes not available as fresh nodes
+     * @param source set of nodes not available as fresh nodes
      */
-    public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes);
+    public HostNode[] getCreatedNodes(HostGraph source);
 
     /**
      * Returns a match of this event's rule, based on the anchor map in this

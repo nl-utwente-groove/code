@@ -7,32 +7,22 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <node id="n2">
+            <attr name="layout">
+                <string>243 152 28 31</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>141 151 37 31</string>
+            </attr>
+        </node>
         <node id="n0">
             <attr name="layout">
                 <string>82 89 247 31</string>
             </attr>
         </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>229 152 56 31</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>132 151 56 31</string>
-            </attr>
-        </node>
         <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:#B</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Non-sharp node types cannot be merged</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:B</string>
             </attr>
@@ -44,7 +34,17 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
+                <string>Non-sharp node types cannot be merged</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
     </graph>

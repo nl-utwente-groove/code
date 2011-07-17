@@ -47,8 +47,8 @@ public class DefaultGraphTransition extends
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public DefaultGraphTransition(RuleEvent event, HostNode[] addedNodes,
-            GraphState source, GraphState target, boolean symmetry) {
+    public DefaultGraphTransition(GraphState source, RuleEvent event,
+            HostNode[] addedNodes, GraphState target, boolean symmetry) {
         super(source, new DerivationLabel(event, addedNodes), target);
         this.event = event;
         this.addedNodes = addedNodes;
@@ -66,7 +66,7 @@ public class DefaultGraphTransition extends
      */
     public DefaultGraphTransition(RuleEvent event, GraphState source,
             GraphState target) {
-        this(event, null, source, target, false);
+        this(source, event, null, target, false);
     }
 
     public RuleEvent getEvent() {

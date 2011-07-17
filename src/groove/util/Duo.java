@@ -26,4 +26,9 @@ public class Duo<O> extends Pair<O,O> {
     public Duo(O one, O two) {
         super(one, two);
     }
+
+    /** Constructs and returns a new duo. */
+    public static <O> Duo<O> newDuo(O one, O two) {
+        return new Duo<O>(one, two);
+    }
 }

@@ -23,7 +23,7 @@ import groove.util.Visitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,11 +72,6 @@ public class CompositeEvent extends
         return this.eventArray[0].getAnchorMap();
     }
 
-    @Override
-    public int getAnchorSize() {
-        return this.eventArray[0].getAnchorSize();
-    }
-
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<String>();
         for (BasicEvent event : this.eventArray) {
@@ -86,11 +81,22 @@ public class CompositeEvent extends
         return Arrays.toString(eventLabels.toArray());
     }
 
-    public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes) {
-        Set<HostNode> result =
-            new LinkedHashSet<HostNode>(this.eventArray.length);
-        for (BasicEvent event : this.eventArray) {
-            event.collectCreatedNodes(hostNodes, result);
+    public HostNode[] getCreatedNodes(HostGraph source) {
+        HostNode[] result;
+        if (getRule().hasNodeCreators()) {
+            int size = 0;
+            for (BasicEvent event : this.eventArray) {
+                size += event.getRule().getCreatorNodes().length;
+            }
+            result = new HostNode[size];
+            int start = 0;
+            for (BasicEvent event : this.eventArray) {
+                event.collectCreatedNodes(source.nodeSet(),
+                    new HashSet<HostNode>(), result, start);
+                start += event.getRule().getCreatorNodes().length;
+            }
+        } else {
+            result = EMPTY_NODE_ARRAY;
         }
         return result;
     }
@@ -115,18 +121,19 @@ public class CompositeEvent extends
     }
 
     @Override
-    public void record(RuleApplicationRecord record) {
+    public void recordEffect(RuleEffect record) {
         BasicEvent[] events = this.eventArray;
         int eventCount = events.length;
         for (int i = 0; i < eventCount; i++) {
-            events[i].record(record);
+            events[i].recordEffect(record);
         }
     }
 
-    public MergeMap getMergeMap() {
+    public MergeMap getMergeMap(HostGraph source) {
         MergeMap result = new MergeMap(this.eventArray[0].getHostFactory());
         for (RuleEvent event : this.eventArray) {
-            for (Map.Entry<HostNode,? extends HostNode> mergeEntry : event.getMergeMap().nodeMap().entrySet()) {
+            for (Map.Entry<HostNode,? extends HostNode> mergeEntry : event.getMergeMap(
+                source).nodeMap().entrySet()) {
                 result.putNode(mergeEntry.getKey(), mergeEntry.getValue());
             }
         }
@@ -191,7 +198,7 @@ public class CompositeEvent extends
     }
 
     @Override
-    public HostNode[] getArguments(HostNode[] addedNodes) {
+    HostNode[] getArguments(HostNode[] addedNodes) {
         return this.eventArray[0].getArguments(addedNodes);
     }
 

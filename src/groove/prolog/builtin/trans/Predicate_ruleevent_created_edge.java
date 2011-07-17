@@ -24,7 +24,7 @@ import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
-import groove.trans.RuleApplicationRecord;
+import groove.trans.RuleEffect;
 import groove.trans.RuleEvent;
 
 /**
@@ -43,7 +43,7 @@ public class Predicate_ruleevent_created_edge extends TransPrologCode {
         } else {
             RuleEvent re = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
-            RuleApplicationRecord record = re.recordApplication(graph);
+            RuleEffect record = re.recordApplication(graph);
             Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
             if (createdEdges == null) {
                 return FAIL;

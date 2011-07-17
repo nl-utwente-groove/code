@@ -181,7 +181,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
-            this.morphism = computeMorphism();
+            this.morphism = computeMorphism(getRecord());
         }
         return this.morphism;
     }
@@ -190,9 +190,9 @@ public class RuleApplication implements DeltaApplier {
      * Constructs the morphism between source and target graph from the
      * application.
      */
-    private HostGraphMorphism computeMorphism() {
+    private HostGraphMorphism computeMorphism(RuleEffect record) {
         HostGraphMorphism result = createMorphism();
-        MergeMap mergeMap = getEvent().getMergeMap();
+        MergeMap mergeMap = record.getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
         Set<HostNode> sourceNodes =
@@ -200,14 +200,16 @@ public class RuleApplication implements DeltaApplier {
         Set<HostEdge> sourceEdges =
             new HashSet<HostEdge>(this.source.edgeSet());
         for (HostNode node : sourceNodes) {
-            HostNode nodeImage = mergeMap.getNode(node);
+            HostNode nodeImage =
+                mergeMap == null ? node : mergeMap.getNode(node);
             if (nodeImage != null && getTarget().containsNode(nodeImage)) {
                 result.putNode(node, nodeImage);
             }
         }
         for (HostEdge edge : sourceEdges) {
             if (getRecord().isErasedEdge(edge)) {
-                HostEdge edgeImage = mergeMap.mapEdge(edge);
+                HostEdge edgeImage =
+                    mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                 }
@@ -225,7 +227,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public void applyDelta(DeltaTarget target) {
         if (this.rule.isModifying()) {
-            RuleApplicationRecord record = getRecord();
+            RuleEffect record = getRecord();
             eraseEdges(record, target);
             // either merge or erase the LHS nodes
             if (record.hasMergeMap()) {
@@ -238,9 +240,15 @@ public class RuleApplication implements DeltaApplier {
         }
     }
 
-    private RuleApplicationRecord getRecord() {
+    private RuleEffect getRecord() {
         if (this.record == null) {
-            this.record = getEvent().recordApplication(getSource());
+            // use the predefined created nodes, if available
+            if (this.coanchorImage == null) {
+                this.record = new RuleEffect(getSource());
+            } else {
+                this.record = new RuleEffect(this.coanchorImage);
+            }
+            getEvent().recordEffect(this.record);
         }
         return this.record;
     }
@@ -258,7 +266,7 @@ public class RuleApplication implements DeltaApplier {
      * incident edges.
      * @param target the target to which to apply the changes
      */
-    private void eraseNodes(RuleApplicationRecord record, DeltaTarget target) {
+    private void eraseNodes(RuleEffect record, DeltaTarget target) {
         Set<HostNode> nodeSet = record.getErasedNodes();
         // also remove the incident edges of the eraser nodes
         if (nodeSet != null && !nodeSet.isEmpty()) {
@@ -300,7 +308,7 @@ public class RuleApplication implements DeltaApplier {
      * @param record object holding the set of edges to be erased
      * @param target the target to which to apply the changes
      */
-    private void eraseEdges(RuleApplicationRecord record, DeltaTarget target) {
+    private void eraseEdges(RuleEffect record, DeltaTarget target) {
         Collection<HostEdge> erasedEdges = record.getErasedEdges();
         if (erasedEdges != null) {
             for (HostEdge erasedEdge : erasedEdges) {
@@ -329,7 +337,7 @@ public class RuleApplication implements DeltaApplier {
      * Performs the node (and edge) merging.
      * @param target the target to which to apply the changes
      */
-    private void mergeNodes(RuleApplicationRecord record, DeltaTarget target) {
+    private void mergeNodes(RuleEffect record, DeltaTarget target) {
         // delete the merged nodes
         MergeMap mergeMap = record.getMergeMap();
         if (mergeMap != null) {
@@ -339,9 +347,11 @@ public class RuleApplication implements DeltaApplier {
                     if (!record.isErasedEdge(sourceEdge)) {
                         target.removeEdge(sourceEdge);
                         registerErasure(sourceEdge);
-                        // we register this as an edge to be added later
-                        // at that point the merge map is taken into account
-                        record.addCreatedEdge(sourceEdge);
+                        if (!sourceEdge.label().isNodeType()) {
+                            // we register this as an edge to be added later
+                            // at that point the merge map is taken into account
+                            record.addCreatedEdge(sourceEdge);
+                        }
                     }
                 }
                 removeNode(target, mergedElem);
@@ -355,7 +365,7 @@ public class RuleApplication implements DeltaApplier {
      * 
      * @param target the target to which to apply the changes
      */
-    private void createNodes(RuleApplicationRecord record, DeltaTarget target) {
+    private void createNodes(RuleEffect record, DeltaTarget target) {
         Collection<HostNode> createdNodes = record.getCreatedNodes();
         if (createdNodes != null) {
             for (HostNode node : createdNodes) {
@@ -368,7 +378,7 @@ public class RuleApplication implements DeltaApplier {
      * Adds edges to the target, as dictated by the rule's RHS.
      * @param target the target to which to apply the changes
      */
-    private void createEdges(RuleApplicationRecord record, DeltaTarget target) {
+    private void createEdges(RuleEffect record, DeltaTarget target) {
         Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
         if (createdEdges != null) {
             for (HostEdge createdEdge : createdEdges) {
@@ -604,7 +614,7 @@ public class RuleApplication implements DeltaApplier {
      */
     private final RuleEvent event;
     /** The application record. */
-    private RuleApplicationRecord record;
+    private RuleEffect record;
     /**
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.

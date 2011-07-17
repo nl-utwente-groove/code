@@ -17,6 +17,7 @@
 package groove.explore.util;
 
 import groove.control.CtrlState;
+import groove.control.CtrlTransition;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.DefaultGraphTransition;
@@ -26,11 +27,16 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.lts.MatchResult;
-import groove.trans.HostGraph;
+import groove.trans.CompositeEvent;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
+import groove.trans.MergeMap;
 import groove.trans.Rule;
+import groove.trans.RuleEffect;
+import groove.trans.RuleEffect.Fragment;
+import groove.trans.RuleEvent;
 import groove.util.Reporter;
+
+import java.util.Set;
 
 /**
  * Provides functionality to add states and transitions to a GTS, based on known
@@ -63,9 +69,10 @@ public class MatchApplier implements RuleEventApplier {
         GraphTransition transition = null;
         Rule rule = match.getEvent().getRule();
         CtrlState sourceCtrl = source.getCtrlState();
-        if (!sourceCtrl.getTransition(rule).isModifying()) {
+        CtrlTransition ctrlTrans = sourceCtrl.getTransition(rule);
+        if (!ctrlTrans.isModifying()) {
             if (!rule.isModifying()) {
-                transition = createTransition(match, source, source, false);
+                transition = createTransition(source, match, source, false);
             } else if (match instanceof GraphTransition) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
@@ -83,7 +90,7 @@ public class MatchApplier implements RuleEventApplier {
                         sibling.getOutStub(sourceEvent);
                     if (siblingOut != null) {
                         transition =
-                            createTransition(match, source,
+                            createTransition(source, match,
                                 siblingOut.getTarget(sibling),
                                 siblingOut.isSymmetry());
                         confluentDiamondCount++;
@@ -92,14 +99,16 @@ public class MatchApplier implements RuleEventApplier {
             }
         }
         if (transition == null) {
-            GraphNextState freshTarget = createState(match, source);
+            GraphNextState freshTarget = createState(source, ctrlTrans, match);
             addStateReporter.start();
             GraphState isoTarget = getGTS().addState(freshTarget);
             addStateReporter.stop();
             if (isoTarget == null) {
                 transition = freshTarget;
             } else {
-                transition = createTransition(match, source, isoTarget, true);
+                transition =
+                    new DefaultGraphTransition(source, match.getEvent(),
+                        freshTarget.getAddedNodes(), isoTarget, true);
             }
         }
         // add transition to gts
@@ -112,21 +121,32 @@ public class MatchApplier implements RuleEventApplier {
      * Creates a fresh graph state, based on a given rule application and source
      * state.
      */
-    private GraphNextState createState(MatchResult match, GraphState source) {
+    private GraphNextState createState(GraphState source,
+            CtrlTransition ctrlTrans, MatchResult match) {
         HostNode[] addedNodes;
-        RuleEvent event;
-        if (match instanceof GraphTransition) {
+        HostNode[] boundNodes;
+        RuleEvent event = match.getEvent();
+        if (reuseCreatedNodes(source, match)) {
             GraphTransition parentOut = (GraphTransition) match;
-            event = parentOut.getEvent();
-            addedNodes = getCreatedNodes(parentOut, source);
+            addedNodes = parentOut.getAddedNodes();
+        } else if (event.getRule().hasNodeCreators()) {
+            RuleEffect record =
+                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            event.recordEffect(record);
+            addedNodes = record.getCreatedNodeArray();
         } else {
-            assert match instanceof RuleEvent;
-            event = (RuleEvent) match;
-            addedNodes = getCreatedNodes(event, source.getGraph());
+            addedNodes = EMPTY_NODE_ARRAY;
         }
-
+        if (ctrlTrans.target().getBoundVars().isEmpty()) {
+            boundNodes = EMPTY_NODE_ARRAY;
+        } else {
+            RuleEffect record = new RuleEffect(addedNodes, Fragment.NODE_ALL);
+            event.recordEffect(record);
+            boundNodes = computeBoundNodes(ctrlTrans, source, event, record);
+        }
+        assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
         return new DefaultGraphNextState(this.gts.nodeCount(),
-            (AbstractGraphState) source, event, addedNodes);
+            (AbstractGraphState) source, event, addedNodes, boundNodes);
     }
 
     /**
@@ -134,63 +154,97 @@ public class MatchApplier implements RuleEventApplier {
      * and target state. A final parameter determines if the target state is
      * directly derived from the source, or modulo a symmetry.
      */
-    private GraphTransition createTransition(MatchResult match,
-            GraphState source, GraphState target, boolean symmetry) {
+    private GraphTransition createTransition(GraphState source,
+            MatchResult match, GraphState target, boolean symmetry) {
         HostNode[] addedNodes;
-        RuleEvent event;
-        if (match instanceof GraphTransition) {
+        RuleEvent event = match.getEvent();
+        if (reuseCreatedNodes(source, match)) {
             GraphTransition parentOut = (GraphTransition) match;
-            event = parentOut.getEvent();
-            addedNodes = getCreatedNodes(parentOut, source);
+            addedNodes = parentOut.getAddedNodes();
         } else {
-            assert match instanceof RuleEvent;
-            event = (RuleEvent) match;
-            addedNodes = getCreatedNodes(event, source.getGraph());
+            RuleEffect record =
+                new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
+            event.recordEffect(record);
+            addedNodes =
+                record.hasCreatedNodes() ? record.getCreatedNodeArray()
+                        : EMPTY_NODE_ARRAY;
         }
-        return new DefaultGraphTransition(event, addedNodes, source, target,
+        return new DefaultGraphTransition(source, event, addedNodes, target,
             symmetry);
     }
 
     /**
-     * Returns the array of nodes created when applying a given virtual event to
-     * a given source state.
-     * @return the inner added nodes of the virtual event, unless this event
-     *         coincides with the source state event; otherwise, the added nodes
-     *         are computed from the event.
+     * Indicates if the created nodes in a given match can be reused
+     * as created nodes for a new target graph.
      */
-    private HostNode[] getCreatedNodes(GraphTransition parentOut,
-            GraphState source) {
+    private boolean reuseCreatedNodes(GraphState source, MatchResult match) {
+        if (!(match instanceof GraphTransition)) {
+            return false;
+        }
+        if (!(source instanceof GraphNextState)) {
+            return false;
+        }
+        if (((GraphTransition) match).getAddedNodes().length == 0) {
+            return true;
+        }
+        RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
+        if (sourceEvent instanceof CompositeEvent) {
+            return false;
+        }
+        RuleEvent matchEvent = match.getEvent();
+        if (match instanceof CompositeEvent) {
+            return false;
+        }
+        return sourceEvent != matchEvent;
+    }
+
+    private HostNode[] computeBoundNodes(CtrlTransition ctrlTrans,
+            GraphState source, RuleEvent event, RuleEffect record) {
         HostNode[] result;
-        result = parentOut.getAddedNodes();
-        // if this application's event is the same as that of the source,
-        // test if the added nodes coincide
-        if (result.length > 0
-            && ((GraphNextState) source).getEvent() == parentOut.getEvent()) {
-            HostGraph host = source.getGraph();
-            HostNode[] sourceAddedNodes =
-                ((GraphNextState) source).getAddedNodes();
-            boolean conflict = false;
-            for (int i = 0; !conflict && i < result.length; i++) {
-                conflict = result[i] == sourceAddedNodes[i];
-                assert conflict || !host.containsNode(result[i]);
+        int[] varBinding = ctrlTrans.getTargetVarBinding();
+        int valueCount = varBinding.length;
+        result = new HostNode[valueCount];
+        HostNode[] parentValues = source.getBoundNodes();
+        Rule rule = event.getRule();
+        int anchorNodeCount = rule.getAnchorNodes().length;
+        HostNode[] createdNodes = record.getCreatedNodeArray();
+        Set<HostNode> erasedNodes = record.getErasedNodes();
+        MergeMap mergeMap = record.getMergeMap();
+        for (int i = 0; i < valueCount; i++) {
+            int fromI = varBinding[i];
+            HostNode value;
+            if (fromI >= parentValues.length) {
+                // this is an output parameter of the rule
+                int binding = rule.getParBinding(fromI - parentValues.length);
+                if (binding < anchorNodeCount) {
+                    // the parameter is not a creator node
+                    HostNode sourceValue =
+                        (HostNode) event.getAnchorImage(binding);
+                    value = getNodeImage(sourceValue, mergeMap, erasedNodes);
+                } else {
+                    // the parameter is a creator node
+                    value = createdNodes[binding - anchorNodeCount];
+                }
+            } else {
+                // this is an input parameter of the rule
+                HostNode sourceValue = parentValues[fromI];
+                value = getNodeImage(sourceValue, mergeMap, erasedNodes);
             }
-            if (conflict) {
-                // the nodes coincide, so delegate the method
-                result = getCreatedNodes(parentOut.getEvent(), host);
-            }
+            result[i] = value;
         }
         return result;
     }
 
-    /** Computes the nodes created by applying a given event to a given graph. */
-    private HostNode[] getCreatedNodes(RuleEvent event, HostGraph graph) {
-        // optimise to avoid reconstructing the node set if there
-        // are no node creators in the rule
-        if (event.getRule().hasNodeCreators()) {
-            return event.getCreatedNodes(graph.nodeSet()).toArray(
-                EMPTY_NODE_ARRAY);
+    private HostNode getNodeImage(HostNode key, MergeMap mergeMap,
+            Set<HostNode> erasedNodes) {
+        if (mergeMap == null) {
+            if (erasedNodes == null || !erasedNodes.contains(key)) {
+                return key;
+            } else {
+                return null;
+            }
         } else {
-            return EMPTY_NODE_ARRAY;
+            return mergeMap.getNode(key);
         }
     }
 

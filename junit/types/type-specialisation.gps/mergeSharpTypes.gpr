@@ -12,26 +12,16 @@
                 <string>226 151 38 31</string>
             </attr>
         </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>82 89 247 31</string>
-            </attr>
-        </node>
         <node id="n1">
             <attr name="layout">
                 <string>141 151 38 31</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Sharp node types can be merged</string>
+        <node id="n0">
+            <attr name="layout">
+                <string>103 89 204 31</string>
             </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:#A</string>
-            </attr>
-        </edge>
+        </node>
         <edge to="n2" from="n1">
             <attr name="label">
                 <string>new:=</string>
@@ -39,7 +29,17 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
+                <string>Sharp node types can be merged</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:A</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">

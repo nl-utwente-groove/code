@@ -1509,57 +1509,40 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 TypeGraph.Typing<RuleNode,RuleEdge> rhsTyping)
             throws FormatException {
             Set<FormatError> errors = new TreeSet<FormatError>();
-            // check for type changes
             LabelStore labelStore = getType().getLabelStore();
-            for (Map.Entry<RuleNode,TypeLabel> lhsTypeEntry : lhsTyping.getTypeMap().entrySet()) {
-                RuleNode lhsNode = lhsTypeEntry.getKey();
-                TypeLabel lhsType = lhsTypeEntry.getValue();
-                // test if this is a reader node
-                if (this.rhs.containsNode(lhsNode) && !lhsType.isDataType()) {
-                    RuleLabel ruleLabelForLhsType =
-                        lhsTyping.isSharp(lhsNode) ? new RuleLabel(
-                            RegExpr.sharp(lhsType)) : new RuleLabel(lhsType);
-                    RuleEdge lhsEdge =
-                        ruleFactory.createEdge(lhsNode, ruleLabelForLhsType,
-                            lhsNode);
-                    // test if the type is deleted
-                    // note that (in case of nested levels) the type edge
-                    // may actually fail to exist in the lhs
-                    if (this.lhs.containsEdge(lhsEdge)
-                        && !this.mid.containsEdge(lhsEdge)) {
-                        if (!lhsTyping.isSharp(lhsNode)) {
-                            errors.add(new FormatError(
-                                "Modified type '%s' should be sharp", lhsType,
-                                lhsNode));
-                        }
-                        TypeLabel rhsType = rhsTyping.getType(lhsNode);
-                        if (!labelStore.getSubtypes(lhsType).contains(rhsType)) {
-                            errors.add(new FormatError(
-                                "New type '%s' should be subtype of modified type '%s'",
-                                rhsType, lhsType, lhsNode));
-                        }
-                    }
-                }
-            }
             // check for ambiguous mergers
-            for (RuleEdge merger : this.rhs.edgeSet()) {
+            for (RuleEdge merger : new HashSet<RuleEdge>(this.rhs.edgeSet())) {
                 if (isMerger(merger)) {
                     RuleNode source = merger.source();
                     TypeLabel sourceType = rhsTyping.getType(source);
-                    if (!rhsTyping.isSharp(source)) {
-                        errors.add(new FormatError(
-                            "Merged type %s must be sharp", sourceType, source));
-                    }
                     RuleNode target = merger.target();
                     TypeLabel targetType = rhsTyping.getType(target);
-                    if (!rhsTyping.isSharp(target)) {
+                    if (sourceType.equals(targetType)) {
+                        if (!rhsTyping.isSharp(source)
+                            && !rhsTyping.isSharp(target)) {
+                            errors.add(new FormatError(
+                                "One of merged %s-nodes must be sharply typed",
+                                targetType.text(), target));
+                        }
+                    } else if (labelStore.getSubtypes(targetType).contains(
+                        sourceType)) {
+                        if (!rhsTyping.isSharp(target)) {
+                            errors.add(new FormatError(
+                                "Merged type %s must be sharp",
+                                targetType.text(), target));
+                        }
+                    } else if (labelStore.getSubtypes(sourceType).contains(
+                        targetType)) {
+                        if (!rhsTyping.isSharp(source)) {
+                            errors.add(new FormatError(
+                                "Merged type %s must be sharp",
+                                sourceType.text(), source));
+                        }
+                    } else {
                         errors.add(new FormatError(
-                            "Merged type %s must be sharp", targetType, target));
-                    }
-                    if (!sourceType.equals(targetType)) {
-                        errors.add(new FormatError(
-                            "Merged types %s and %s must coincide", sourceType,
-                            targetType, source, target));
+                            "One of merged types %s and %s must be subtype of the other",
+                            sourceType.text(), targetType.text(), source,
+                            target));
                     }
                 }
             }
@@ -1572,11 +1555,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 if (elem instanceof RuleNode) {
                     errors.add(new FormatError(
                         "Creation of abstract %s-node not allowed",
-                        rhsTyping.getType((RuleNode) elem), elem));
+                        rhsTyping.getType((RuleNode) elem).text(), elem));
                 } else {
                     errors.add(new FormatError(
                         "Creation of abstract %s-edge not allowed",
-                        ((RuleEdge) elem).label(), elem));
+                        ((RuleEdge) elem).label().text(), elem));
                 }
             }
             if (!errors.isEmpty()) {
@@ -1942,14 +1925,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             Map<Integer,CtrlPar.Var> parMap =
                 new HashMap<Integer,CtrlPar.Var>();
             int parCount = 0;
-            // add nodes to nesting data structures
+            // collect parameter nodes
             for (AspectNode node : getSource().nodeSet()) {
                 // check if the node is a parameter
                 if (node.hasParam()) {
                     RuleLevel1 level = getLevelTree().getLevel(node);
+                    boolean topLevel = level.getIndex().isTopLevel();
                     Integer nr = (Integer) node.getParam().getContent();
                     if (nr != null) {
-                        if (!level.getIndex().isTopLevel()) {
+                        if (!topLevel) {
                             throw new FormatException(
                                 "Parameter '%d' only allowed on top existential level",
                                 nr, node);
@@ -1963,7 +1947,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     } else {
                         // this is an unnumbered parameter,
                         // which serves as an explicit anchor node
-                        if (!level.getIndex().isTopLevel()) {
+                        if (!topLevel) {
                             throw new FormatException(
                                 "Anchor node only allowed on top existential level",
                                 node);

@@ -23,7 +23,10 @@ import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.GrammarModel;
+
+import java.io.IOException;
 
 import org.junit.Test;
 
@@ -76,8 +79,10 @@ public class ControlVariablesTest {
             assertFalse(scenario.isInterrupted());
             assertEquals(expectedNodes, lts.nodeCount());
             assertEquals(expectedEdges, lts.edgeCount());
-        } catch (Exception e) {
-            fail(e.getMessage());
+        } catch (IOException e) {
+            fail(e.toString());
+        } catch (FormatException e) {
+            fail(e.toString());
         }
     }
 }
