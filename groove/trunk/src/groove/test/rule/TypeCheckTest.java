@@ -38,9 +38,10 @@ public class TypeCheckTest {
     /** Tests the rules in the creators grammar. */
     @Test
     public void testTypeSpecialisation() {
-        setCorrect("mergeSharpTypes");
-        setErroneous("createType", "deleteType", "mergeDistinctTypes",
-            "mergeNonSharpTypes");
+        setCorrect("mergeSharpTypes", "mergeWithSubtype", "specialiseType");
+        setErroneous("createType", "deleteType", "generaliseType",
+            "mergeNonSharpTypes", "mergeWithSupertype",
+            "specialiseNonSharpType");
         test("type-specialisation");
     }
 

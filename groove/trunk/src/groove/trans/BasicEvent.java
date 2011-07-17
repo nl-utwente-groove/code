@@ -19,6 +19,7 @@ package groove.trans;
 import groove.graph.DefaultNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
+import groove.trans.RuleEffect.Fragment;
 import groove.util.CacheReference;
 import groove.util.Groove;
 
@@ -29,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,11 +125,12 @@ final public class BasicEvent extends
      * @param addedNodes the added nodes; if {@code null}, the creator
      * node images will be set to {@code null}
      */
-    public HostNode[] getArguments(HostNode[] addedNodes) {
+    @Override
+    HostNode[] getArguments(HostNode[] addedNodes) {
         HostNode[] result;
         int size = getRule().getSignature().size();
         if (size == 0) {
-            result = EMPTY_NODE_ARRAY;
+            result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
             int anchorNodeCount = getRule().getAnchorNodes().length;
@@ -219,11 +220,6 @@ final public class BasicEvent extends
     @Override
     public HostElement getAnchorImage(int i) {
         return getAnchorImage()[i];
-    }
-
-    @Override
-    public int getAnchorSize() {
-        return getAnchorImage().length;
     }
 
     /**
@@ -322,55 +318,58 @@ final public class BasicEvent extends
      * Records the application of this event, by storing the relevant
      * information into the record object passed in as a parameter.
      */
-    public void record(RuleApplicationRecord record) {
+    @Override
+    public void recordEffect(RuleEffect record) {
         if (getRule().isModifying()) {
-            if (getRule().getEraserEdges().length > 0) {
-                recordErasedEdges(record);
-            }
-            if (getRule().getEraserNodes().length > 0) {
-                recordErasedNodes(record);
-            }
-            if (!getRule().getMergeMap().isEmpty()) {
-                recordMergeMap(record);
-            }
             if (getRule().getCreatorNodes().length > 0) {
                 recordCreatedNodes(record);
             }
-            if (getRule().getCreatorEdges().length > 0) {
-                recordCreatedEdges(record);
+            if (record.getFragment() != Fragment.NODE_CREATION) {
+                if (getRule().getEraserNodes().length > 0) {
+                    recordErasedNodes(record);
+                }
+                if (!getRule().getLhsMergeMap().isEmpty()
+                    || !getRule().getRhsMergeMap().isEmpty()) {
+                    recordMergeMap(record);
+                }
+            }
+            if (record.getFragment() == Fragment.ALL) {
+                if (getRule().getEraserEdges().length > 0) {
+                    recordErasedEdges(record);
+                }
+                if (getRule().getCreatorEdges().length > 0) {
+                    recordCreatedEdges(record);
+                }
             }
         }
     }
 
-    private void recordErasedNodes(RuleApplicationRecord record) {
+    private void recordErasedNodes(RuleEffect record) {
         record.addErasedNodes(getErasedNodes());
     }
 
-    private void recordErasedEdges(RuleApplicationRecord record) {
+    private void recordErasedEdges(RuleEffect record) {
         record.addErasedEdges(getErasedEdges());
     }
 
     /** Adds the created nodes to the application record. */
-    private void recordCreatedNodes(RuleApplicationRecord record) {
-        Map<RuleNode,HostNode> createdNodeMap =
-            new HashMap<RuleNode,HostNode>();
-        Set<HostNode> createdNodes = getCreatedNodes(record.getSourceNodes());
+    private void recordCreatedNodes(RuleEffect record) {
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
-        int creatorNodeCount = creatorNodes.length;
-        Iterator<HostNode> createdNodeIter = createdNodes.iterator();
-        for (int i = 0; i < creatorNodeCount; i++) {
-            RuleNode creatorNode = creatorNodes[i];
-            HostNode createdNode = createdNodeIter.next();
-            createdNodeMap.put(creatorNode, createdNode);
+        if (record.isNodesInitialised()) {
+            record.addCreatorNodes(creatorNodes);
+        } else {
+            HostNode[] createdNodes =
+                computeCreatedNodes(record.getSourceNodes(),
+                    record.getCreatedNodes());
+            record.addCreatedNodes(creatorNodes, createdNodes);
         }
-        record.addCreatedNodes(createdNodeMap, createdNodes);
     }
 
     /** 
      * Adds the created edges to the application record.
      * This should be called only after any nodes have been created.
      */
-    private void recordCreatedEdges(RuleApplicationRecord record) {
+    private void recordCreatedEdges(RuleEffect record) {
         Set<HostEdge> simpleCreatedEdges = getSimpleCreatedEdges();
         record.addCreatedEdges(simpleCreatedEdges);
         Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
@@ -398,8 +397,31 @@ final public class BasicEvent extends
     }
 
     /** Adds the created nodes to the application record. */
-    private void recordMergeMap(RuleApplicationRecord record) {
-        record.addMergeMap(getMergeMap());
+    private void recordMergeMap(RuleEffect record) {
+        MergeMap lhsMergeMap = getCache().getMergeMap();
+        Map<RuleNode,RuleNode> rhsMergers = getRule().getRhsMergeMap();
+        if (rhsMergers.isEmpty()) {
+            record.addMergeMap(lhsMergeMap);
+        } else {
+            MergeMap rhsMergeMap = new MergeMap(lhsMergeMap.getFactory());
+            rhsMergeMap.putAll(lhsMergeMap);
+            RuleToHostMap anchorMap = getAnchorMap();
+            Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
+            for (Map.Entry<RuleNode,RuleNode> rhsMergeEntry : rhsMergers.entrySet()) {
+                RuleNode ruleSource = rhsMergeEntry.getKey();
+                RuleNode ruleTarget = rhsMergeEntry.getValue();
+                HostNode source = anchorMap.getNode(ruleSource);
+                if (source == null) {
+                    source = createdNodeMap.get(ruleSource);
+                }
+                HostNode target = anchorMap.getNode(ruleTarget);
+                if (target == null) {
+                    target = createdNodeMap.get(ruleTarget);
+                }
+                rhsMergeMap.putNode(source, target);
+            }
+            record.addMergeMap(rhsMergeMap);
+        }
     }
 
     /**
@@ -485,15 +507,9 @@ final public class BasicEvent extends
         return result;
     }
 
-    /**
-     * Returns a mapping from source to target graph nodes, dictated by the
-     * merger and eraser nodes in the rules.
-     * @return an {@link MergeMap} that maps nodes of the source that are merged
-     *         away to their merged images, and deleted nodes to
-     *         <code>null</code>.
-     */
-    public MergeMap getMergeMap() {
-        return getCache().getMergeMap();
+    public MergeMap getMergeMap(HostGraph source) {
+        MergeMap result = getCache().getMergeMap();
+        return result;
     }
 
     /**
@@ -508,16 +524,17 @@ final public class BasicEvent extends
         return result;
     }
 
-    public Set<HostNode> getCreatedNodes(Set<? extends HostNode> hostNodes) {
-        Set<HostNode> result = computeCreatedNodes(hostNodes);
+    public HostNode[] getCreatedNodes(HostGraph source) {
+        HostNode[] result = computeCreatedNodes(source.nodeSet(), null);
         if (isReuse()) {
             if (this.coanchorImageMap == null) {
                 this.coanchorImageMap =
-                    new HashMap<Set<HostNode>,Set<HostNode>>();
+                    new HashMap<List<HostNode>,HostNode[]>();
             }
-            Set<HostNode> existingResult = this.coanchorImageMap.get(result);
+            List<HostNode> resultAsList = Arrays.asList(result);
+            HostNode[] existingResult = this.coanchorImageMap.get(resultAsList);
             if (existingResult == null) {
-                this.coanchorImageMap.put(result, result);
+                this.coanchorImageMap.put(resultAsList, result);
                 coanchorImageCount++;
             } else {
                 result = existingResult;
@@ -527,15 +544,15 @@ final public class BasicEvent extends
         return result;
     }
 
-    private Set<HostNode> computeCreatedNodes(
-            Set<? extends HostNode> currentNodes) {
-        Set<HostNode> result;
+    private HostNode[] computeCreatedNodes(Set<? extends HostNode> sourceNodes,
+            Collection<HostNode> added) {
+        HostNode[] result;
         int coanchorSize = getRule().getCreatorNodes().length;
         if (coanchorSize == 0) {
-            result = EMPTY_NODE_SET;
+            result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
-            result = new LinkedHashSet<HostNode>(coanchorSize);
-            collectCreatedNodes(currentNodes, result);
+            result = new HostNode[coanchorSize];
+            collectCreatedNodes(sourceNodes, added, result, 0);
         }
         return result;
     }
@@ -544,15 +561,16 @@ final public class BasicEvent extends
      * Adds nodes created by this event into a given list of created nodes. The
      * created nodes are guaranteed to be fresh with respect to a given set of
      * currently existing nodes
-     * @param currentNodes the set of currently existing nodes
+     * @param sourceNodes set of nodes in the source graph
+     * @param added set of nodes already added in to the source graph
      * @param result list of created nodes to be extended by this method
      */
-    void collectCreatedNodes(Set<? extends HostNode> currentNodes,
-            Set<HostNode> result) {
+    void collectCreatedNodes(Set<? extends HostNode> sourceNodes,
+            Collection<HostNode> added, HostNode[] result, int start) {
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int creatorNodeCount = creatorNodes.length;
         for (int i = 0; i < creatorNodeCount; i++) {
-            addFreshNode(i, currentNodes, result);
+            result[start + i] = addFreshNode(i, sourceNodes, added);
         }
     }
 
@@ -562,32 +580,38 @@ final public class BasicEvent extends
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
      * {@link #createNode()}.
-     * @param creatorIndex index in the rhsOnlyNodes array indicating the node
+     * @param creatorIndex index in the creator nodes array indicating the node
      *        of the rule for which a new image is to be created
-     * @param currentNodes the existing nodes, which should not contain the
+     * @param sourceNodes the existing nodes, which should not contain the
      *        fresh node
-     * @param result the collection of already added nodes; the newly added node
+     * @param current the collection of already added nodes; the newly added node
      *        is guaranteed to be fresh with respect to these
      */
-    private void addFreshNode(int creatorIndex,
-            Set<? extends HostNode> currentNodes, Set<HostNode> result) {
+    private HostNode addFreshNode(int creatorIndex,
+            Set<? extends HostNode> sourceNodes, Collection<HostNode> current) {
+        HostNode result = null;
         boolean added = false;
-        Collection<HostNode> currentFreshNodes = getFreshNodes(creatorIndex);
-        if (currentFreshNodes != null) {
-            Iterator<HostNode> freshNodeIter = currentFreshNodes.iterator();
+        Collection<HostNode> previous = getFreshNodes(creatorIndex);
+        if (previous != null) {
+            Iterator<HostNode> freshNodeIter = previous.iterator();
             while (!added && freshNodeIter.hasNext()) {
-                HostNode freshNode = freshNodeIter.next();
+                result = freshNodeIter.next();
                 added =
-                    !currentNodes.contains(freshNode) && result.add(freshNode);
+                    !sourceNodes.contains(result)
+                        && (current == null || current.add(result));
             }
         }
         if (!added) {
-            HostNode addedNode = createNode();
-            result.add(addedNode);
-            if (currentFreshNodes != null) {
-                currentFreshNodes.add(addedNode);
+            result = createNode();
+            if (current != null) {
+                current.add(result);
+            }
+            if (previous != null) {
+                previous.add(result);
             }
         }
+        assert result != null;
+        return result;
     }
 
     /**
@@ -659,7 +683,7 @@ final public class BasicEvent extends
      */
     private List<List<HostNode>> freshNodeList;
     /** Store of previously used (canonical) coanchor images. */
-    private Map<Set<HostNode>,Set<HostNode>> coanchorImageMap;
+    private Map<List<HostNode>,HostNode[]> coanchorImageMap;
     /**
      * The total number of nodes (over all rules) created by {@link BasicEvent}.
      */
@@ -702,8 +726,6 @@ final public class BasicEvent extends
     /** Global empty set of nodes. */
     static private final Set<HostNode> EMPTY_NODE_SET =
         Collections.<HostNode>emptySet();
-    /** Global empty set of nodes. */
-    static private final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);
@@ -804,11 +826,11 @@ final public class BasicEvent extends
         }
 
         /**
-         * Returns a mapping from source to target graph nodes, dictated by the
-         * merger and eraser nodes in the rules.
+         * Returns a mapping from source to source graph nodes, dictated by the
+         * LHS mergers and erasers in the rule.
          * @return an {@link MergeMap} that maps nodes of the source that are
-         *         merged away to their merged images, and deleted nodes to
-         *         <code>null</code>.
+         *         merged away to their merged images, and the erased nodes to
+         *         {@code null}.
          */
         final MergeMap getMergeMap() {
             if (this.mergeMap == null) {
@@ -827,7 +849,7 @@ final public class BasicEvent extends
         private MergeMap computeMergeMap() {
             RuleToHostMap anchorMap = getAnchorMap();
             MergeMap mergeMap = createMergeMap();
-            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule().getMergeMap().entrySet()) {
+            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule().getLhsMergeMap().entrySet()) {
                 HostNode mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
                 HostNode mergeImage =
                     anchorMap.getNode(ruleMergeEntry.getValue());

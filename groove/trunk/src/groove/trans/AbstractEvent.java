@@ -50,10 +50,9 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     }
 
     @Override
-    public RuleApplicationRecord recordApplication(HostGraph host) {
-        RuleApplicationRecord result =
-            new RuleApplicationRecord(host.nodeSet());
-        record(result);
+    public RuleEffect recordApplication(HostGraph host) {
+        RuleEffect result = new RuleEffect(host);
+        recordEffect(result);
         return result;
     }
 
@@ -112,6 +111,14 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         }
         return result;
     }
+
+    /**
+     * Constructs an argument array for this event, with respect to
+     *  given array of added nodes (which are the images of the creator nodes).
+     * @param addedNodes the added nodes; if {@code null}, the creator
+     * node images will be set to {@code null}
+     */
+    abstract HostNode[] getArguments(HostNode[] addedNodes);
 
     public R getRule() {
         return this.rule;
@@ -254,7 +261,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
             throw new UnsupportedOperationException(
                 "Only unmodifying events can be used as graph transition stubs");
         }
-        return new DefaultGraphTransition(this, EMPTY_NODE_ARRAY, source,
+        return new DefaultGraphTransition(source, this, EMPTY_NODE_ARRAY,
             source, false);
     }
 
@@ -298,8 +305,8 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     private int hashCode;
     /** The pre-computed identity hash code for this object. */
     private int identityHashCode;
-    /** Constant empty node array. */
-    private static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
+    /** Global empty set of nodes. */
+    static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 
     /** Cache holding the anchor map. */
     abstract protected class AbstractEventCache {
