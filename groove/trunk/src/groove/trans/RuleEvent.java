@@ -55,40 +55,22 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
     public HostElement getAnchorImage(int i);
 
     /**
+     * Returns a match of this event's rule, based on the anchor map in this
+     * event. Returns <code>null</code> if no match exists.
+     */
+    public Proof getMatch(HostGraph source);
+
+    /**
      * Constructs and records the application of this event to
      * a given host graph.
      */
-    public RuleEffect recordApplication(HostGraph host);
+    public RuleEffect getEffect(HostGraph host);
 
     /**
      * Records the application of this event, by storing the relevant
      * information into the record object passed in as a parameter.
      */
     void recordEffect(RuleEffect record);
-
-    /**
-     * Returns the merge map of the event. The merge map contains entries for
-     * nodes that are deleted, and nodes that are mapped to another node as a
-     * consequence of a merger in the rule.
-     * @param source source graph with respect to which the created nodes are
-     * computed
-     */
-    public MergeMap getMergeMap(HostGraph source);
-
-    /**
-     * Returns a set of created nodes of this event, given a set of nodes
-     * already existing in the graph (i.e., which may not be used).
-     * An iterator over the set returns the created nodes in the order
-     * of the creator nodes.
-     * @param source set of nodes not available as fresh nodes
-     */
-    public HostNode[] getCreatedNodes(HostGraph source);
-
-    /**
-     * Returns a match of this event's rule, based on the anchor map in this
-     * event. Returns <code>null</code> if no match exists.
-     */
-    public Proof getMatch(HostGraph source);
 
     /**
      * Tests if this event conflicts with another, in the sense that if the

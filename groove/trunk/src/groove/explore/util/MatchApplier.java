@@ -142,7 +142,7 @@ public class MatchApplier implements RuleEventApplier {
         } else {
             RuleEffect record = new RuleEffect(addedNodes, Fragment.NODE_ALL);
             event.recordEffect(record);
-            boundNodes = computeBoundNodes(ctrlTrans, source, event, record);
+            boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
         }
         assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
         return new DefaultGraphNextState(this.gts.nodeCount(),
@@ -198,8 +198,8 @@ public class MatchApplier implements RuleEventApplier {
         return sourceEvent != matchEvent;
     }
 
-    private HostNode[] computeBoundNodes(CtrlTransition ctrlTrans,
-            GraphState source, RuleEvent event, RuleEffect record) {
+    private HostNode[] computeBoundNodes(GraphState source,
+            RuleEvent event, CtrlTransition ctrlTrans, RuleEffect record) {
         HostNode[] result;
         int[] varBinding = ctrlTrans.getTargetVarBinding();
         int valueCount = varBinding.length;

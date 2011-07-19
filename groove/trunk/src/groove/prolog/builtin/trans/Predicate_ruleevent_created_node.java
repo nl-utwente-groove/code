@@ -45,7 +45,7 @@ public class Predicate_ruleevent_created_node extends TransPrologCode {
         } else {
             RuleEvent event = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
-            RuleEffect record = event.recordApplication(graph);
+            RuleEffect record = event.getEffect(graph);
             Collection<HostNode> createdNodes = record.getCreatedNodes();
             if (createdNodes == null) {
                 return FAIL;
