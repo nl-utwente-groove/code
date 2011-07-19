@@ -67,7 +67,7 @@ public class RuleApplication implements DeltaApplier {
         this.event = event;
         this.rule = event.getRule();
         this.source = source;
-        this.coanchorImage = coanchorImage;
+        this.addedNodes = coanchorImage;
         if (event instanceof BasicEvent) {
             this.anchorMap = ((BasicEvent) event).getAnchorMap();
         }
@@ -181,7 +181,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public HostGraphMorphism getMorphism() {
         if (this.morphism == null) {
-            this.morphism = computeMorphism(getRecord());
+            this.morphism = computeMorphism(getEffect());
         }
         return this.morphism;
     }
@@ -207,7 +207,7 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         for (HostEdge edge : sourceEdges) {
-            if (getRecord().isErasedEdge(edge)) {
+            if (getEffect().isErasedEdge(edge)) {
                 HostEdge edgeImage =
                     mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
@@ -227,7 +227,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public void applyDelta(DeltaTarget target) {
         if (this.rule.isModifying()) {
-            RuleEffect record = getRecord();
+            RuleEffect record = getEffect();
             eraseEdges(record, target);
             // either merge or erase the LHS nodes
             if (record.hasMergeMap()) {
@@ -240,13 +240,13 @@ public class RuleApplication implements DeltaApplier {
         }
     }
 
-    private RuleEffect getRecord() {
+    private RuleEffect getEffect() {
         if (this.record == null) {
             // use the predefined created nodes, if available
-            if (this.coanchorImage == null) {
+            if (this.addedNodes == null) {
                 this.record = new RuleEffect(getSource());
             } else {
-                this.record = new RuleEffect(this.coanchorImage);
+                this.record = new RuleEffect(this.addedNodes);
             }
             getEvent().recordEffect(this.record);
         }
@@ -582,7 +582,7 @@ public class RuleApplication implements DeltaApplier {
         }
         RuleNode[] creators = rule.getCreatorNodes();
         for (int i = 0; i < creators.length; i++) {
-            addToComatch(result, creators[i], this.coanchorImage[i]);
+            addToComatch(result, creators[i], this.addedNodes[i]);
         }
     }
 
@@ -638,7 +638,7 @@ public class RuleApplication implements DeltaApplier {
      * The images of the creator nodes. This is part of the information needed
      * to (re)construct the derivation target.
      */
-    private HostNode[] coanchorImage;
+    private HostNode[] addedNodes;
     /**
      * A mapping from target value nodes of erased edges to their remaining
      * incident edges, used to judge spurious value nodes.

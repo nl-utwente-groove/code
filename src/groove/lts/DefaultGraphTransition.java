@@ -192,6 +192,7 @@ public class DefaultGraphTransition extends
      */
     protected HostGraphMorphism computeMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
+        HostGraphMorphism result = appl.getMorphism();
         if (isSymmetry()) {
             HostGraph derivedTarget = new DefaultHostGraph(appl.getTarget());
             HostGraph realTarget = new DefaultHostGraph(target().getGraph());
@@ -205,10 +206,9 @@ public class DefaultGraphTransition extends
                 + " and \n"
                 + AbstractGraph.toString(realTarget)
                 + " \nnot isomorphic";
-            return appl.getMorphism().then(iso);
-        } else {
-            return appl.getMorphism();
+            result = result.then(iso);
         }
+        return result;
     }
 
     // ----------------------- OBJECT OVERRIDES -----------------------

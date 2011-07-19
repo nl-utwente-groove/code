@@ -50,7 +50,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     }
 
     @Override
-    public RuleEffect recordApplication(HostGraph host) {
+    public RuleEffect getEffect(HostGraph host) {
         RuleEffect result = new RuleEffect(host);
         recordEffect(result);
         return result;

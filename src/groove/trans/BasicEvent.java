@@ -359,7 +359,7 @@ final public class BasicEvent extends
             record.addCreatorNodes(creatorNodes);
         } else {
             HostNode[] createdNodes =
-                computeCreatedNodes(record.getSourceNodes(),
+                getCreatedNodes(record.getSourceNodes(),
                     record.getCreatedNodes());
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
@@ -507,25 +507,26 @@ final public class BasicEvent extends
         return result;
     }
 
-    public MergeMap getMergeMap(HostGraph source) {
-        MergeMap result = getCache().getMergeMap();
-        return result;
-    }
-
-    /**
-     * Creates an array of lists to store the fresh nodes created by this rule.
+    /** Computes an array of created nodes that are fresh both
+     * with respect to a given set of source graph nodes and with respect
+     * to a set of nodes that were already created.
+     * @param sourceNodes the set of nodes in the source graph
+     * @param added the set of nodes already added with respect to the source graph
+     * @return array of fresh nodes, in the order of the node creators
      */
-    private List<List<HostNode>> createFreshNodeList() {
-        int creatorNodeCount = getRule().getCreatorNodes().length;
-        List<List<HostNode>> result = new ArrayList<List<HostNode>>();
-        for (int i = 0; i < creatorNodeCount; i++) {
-            result.add(new ArrayList<HostNode>());
+    private HostNode[] getCreatedNodes(Set<? extends HostNode> sourceNodes,
+            Collection<HostNode> added) {
+        HostNode[] result;
+        int count = getRule().getCreatorNodes().length;
+        if (count == 0) {
+            result = AbstractEvent.EMPTY_NODE_ARRAY;
+        } else {
+            result = new HostNode[count];
+            for (int i = 0; i < count; i++) {
+                result[i] = createNode(i, sourceNodes, added);
+            }
         }
-        return result;
-    }
-
-    public HostNode[] getCreatedNodes(HostGraph source) {
-        HostNode[] result = computeCreatedNodes(source.nodeSet(), null);
+        // normalise the result to a previously stored instance
         if (isReuse()) {
             if (this.coanchorImageMap == null) {
                 this.coanchorImageMap =
@@ -544,39 +545,9 @@ final public class BasicEvent extends
         return result;
     }
 
-    private HostNode[] computeCreatedNodes(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> added) {
-        HostNode[] result;
-        int coanchorSize = getRule().getCreatorNodes().length;
-        if (coanchorSize == 0) {
-            result = AbstractEvent.EMPTY_NODE_ARRAY;
-        } else {
-            result = new HostNode[coanchorSize];
-            collectCreatedNodes(sourceNodes, added, result, 0);
-        }
-        return result;
-    }
-
-    /**
-     * Adds nodes created by this event into a given list of created nodes. The
-     * created nodes are guaranteed to be fresh with respect to a given set of
-     * currently existing nodes
-     * @param sourceNodes set of nodes in the source graph
-     * @param added set of nodes already added in to the source graph
-     * @param result list of created nodes to be extended by this method
-     */
-    void collectCreatedNodes(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> added, HostNode[] result, int start) {
-        RuleNode[] creatorNodes = getRule().getCreatorNodes();
-        int creatorNodeCount = creatorNodes.length;
-        for (int i = 0; i < creatorNodeCount; i++) {
-            result[start + i] = addFreshNode(i, sourceNodes, added);
-        }
-    }
-
     /**
      * Adds a node that is fresh with respect to a given graph to a collection
-     * of already added node. The previously created fresh nodes are tried first
+     * of already added nodes. The previously created fresh nodes are tried first
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
      * {@link #createNode()}.
@@ -587,15 +558,15 @@ final public class BasicEvent extends
      * @param current the collection of already added nodes; the newly added node
      *        is guaranteed to be fresh with respect to these
      */
-    private HostNode addFreshNode(int creatorIndex,
+    private HostNode createNode(int creatorIndex,
             Set<? extends HostNode> sourceNodes, Collection<HostNode> current) {
         HostNode result = null;
         boolean added = false;
-        Collection<HostNode> previous = getFreshNodes(creatorIndex);
+        List<HostNode> previous = getFreshNodes(creatorIndex);
         if (previous != null) {
-            Iterator<HostNode> freshNodeIter = previous.iterator();
-            while (!added && freshNodeIter.hasNext()) {
-                result = freshNodeIter.next();
+            int previousCount = previous.size();
+            for (int i = 0; !added && i < previousCount; i++) {
+                result = previous.get(i);
                 added =
                     !sourceNodes.contains(result)
                         && (current == null || current.add(result));
@@ -611,6 +582,18 @@ final public class BasicEvent extends
             }
         }
         assert result != null;
+        return result;
+    }
+
+    /**
+     * Creates an array of lists to store the fresh nodes created by this rule.
+     */
+    private List<List<HostNode>> createFreshNodeList() {
+        int creatorNodeCount = getRule().getCreatorNodes().length;
+        List<List<HostNode>> result = new ArrayList<List<HostNode>>();
+        for (int i = 0; i < creatorNodeCount; i++) {
+            result.add(new ArrayList<HostNode>());
+        }
         return result;
     }
 
