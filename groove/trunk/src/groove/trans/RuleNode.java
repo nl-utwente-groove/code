@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 
 /**
@@ -31,5 +31,11 @@ import groove.graph.algebra.ProductNode;
 public interface RuleNode extends Node, RuleElement {
     /** Returns the type of the rule node, or {@code null} if
      * the rule node is untyped. */
-    public TypeLabel getType();
+    public TypeNode getType();
+
+    /** 
+     * Indicates if the rule node is sharply typed.
+     * Returns {@code false} if the node is untyped.
+     */
+    public boolean isSharp();
 }

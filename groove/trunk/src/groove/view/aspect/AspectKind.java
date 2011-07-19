@@ -261,8 +261,18 @@ public enum AspectKind {
      * Indicates if this aspect is among the set of typed data aspects.
      * @see #data 
      */
-    public boolean isTypedData() {
-        return isData() && this != UNTYPED;
+    public boolean hasSignature() {
+        boolean result = isData() && this != UNTYPED;
+        assert result == (getSignature() != null);
+        return result;
+    }
+
+    /** 
+     * Returns the (possibly {@code null} signature of this aspect kind.
+     * @see #hasSignature()
+     */
+    public SignatureKind getSignature() {
+        return this.contentKind.signature;
     }
 
     /** 
@@ -894,7 +904,7 @@ public enum AspectKind {
     /** Returns a list of operations from a given signature. */
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
-        assert kind.isTypedData();
+        assert kind.hasSignature();
         for (String opName : Algebras.getOperatorNames(SignatureKind.getKind(kind.getName()))) {
             if (result.length() > 0) {
                 result.append(", ");

@@ -303,7 +303,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         if (one.equals(two)) {
             return true;
         }
-        if (!one.getKind().isTypedData() || !two.getKind().isTypedData()) {
+        if (!one.getKind().hasSignature() || !two.getKind().hasSignature()) {
             return false;
         }
         if (!one.getKind().equals(two.getKind())) {
@@ -347,7 +347,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     private void setDataType(SignatureKind type) throws FormatException {
         assert !isFixed();
         Aspect newType = Aspect.getAspect(type.getName());
-        assert newType.getKind().isTypedData();
+        assert newType.getKind().hasSignature();
         setAttrAspect(newType);
     }
 

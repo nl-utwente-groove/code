@@ -32,6 +32,7 @@ import static groove.view.aspect.AspectKind.REMARK;
 import static groove.view.aspect.AspectKind.SUBTYPE;
 import static groove.view.aspect.AspectKind.TEST;
 import groove.algebra.Operator;
+import groove.algebra.SignatureKind;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.EdgeRole;
@@ -368,7 +369,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             } else if (getKind() == CONNECT) {
                 text = "+";
             } else if (getGraphRole() == GraphRole.TYPE
-                && getAttrKind().isTypedData()) {
+                && getAttrKind().hasSignature()) {
                 text = getAttrAspect().getContentString();
             } else {
                 text = getInnerText();
@@ -423,7 +424,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     private TypeLabel createTypeLabel() throws FormatException {
         TypeLabel result;
         if (getKind() == REMARK || isAssign() || isPredicate()
-            || getGraphRole() == GraphRole.TYPE && getAttrKind().isTypedData()) {
+            || getGraphRole() == GraphRole.TYPE && getAttrKind().hasSignature()) {
             result = null;
         } else if (!getKind().isRole() && getLabelKind() != PATH) {
             if (getLabelKind() == LITERAL) {
@@ -562,8 +563,9 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         if (type.getKind() == ARGUMENT) {
             this.attr = type;
             this.argumentNr = (Integer) this.attr.getContent();
-        } else if (kind.isTypedData()) {
+        } else if (kind.hasSignature()) {
             this.attr = type;
+            this.signature = kind.getSignature();
             if (getGraphRole() == RULE) {
                 this.operator = (Operator) type.getContent();
             }
@@ -583,6 +585,11 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     @Override
     public AspectKind getAttrKind() {
         return hasAttrAspect() ? getAttrAspect().getKind() : DEFAULT;
+    }
+
+    /** Returns the signature of the attribute aspect, if any. */
+    public SignatureKind getSignature() {
+        return this.signature;
     }
 
     /** Indicates if this is an argument edge. */
@@ -693,6 +700,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     private Aspect aspect;
     /** An optional attribute-related aspect. */
     private Aspect attr;
+    /** The signature of the attribute-related aspect, if any. */
+    private SignatureKind signature;
     /** The parser mode of the label (either TypeAspect#PATH or TypeAspect#EMPTY). */
     private Aspect labelMode;
     /** The quantifier level name, if any. */

@@ -16,7 +16,12 @@
  */
 package groove.graph;
 
+import groove.algebra.SignatureKind;
+
 import java.awt.Color;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * Node in a type graph.
@@ -57,13 +62,13 @@ public class TypeNode implements Node {
         boolean result =
             obj instanceof TypeNode
                 && ((TypeNode) obj).getNumber() == getNumber()
-                && ((TypeNode) obj).getType().equals(getType());
+                && ((TypeNode) obj).getLabel().equals(getLabel());
         return result;
     }
 
     @Override
     public int hashCode() {
-        return getNumber() ^ getType().hashCode();
+        return getNumber() ^ getLabel().hashCode();
     }
 
     @Override
@@ -92,7 +97,7 @@ public class TypeNode implements Node {
     }
 
     /** Returns the type of this node. */
-    public TypeLabel getType() {
+    public TypeLabel getLabel() {
         return this.type;
     }
 
@@ -149,8 +154,21 @@ public class TypeNode implements Node {
     /** The type of this node. */
     private final TypeLabel type;
 
+    /** Returns the default type node for a given data signature. */
+    public static TypeNode getDataType(SignatureKind signature) {
+        return dataTypeMap.get(signature);
+    }
+
+    /** Mapping from signatures to corresponding type nodes. */
+    private static final Map<SignatureKind,TypeNode> dataTypeMap =
+        new EnumMap<SignatureKind,TypeNode>(SignatureKind.class);
+    static {
+        for (SignatureKind sig : EnumSet.allOf(SignatureKind.class)) {
+            dataTypeMap.put(sig, new TypeNode(0, TypeLabel.getLabel(sig)));
+        }
+    }
     /** Type node for non-data nodes in an untyped setting. */
     public static final TypeNode TOP_NODE = new TypeNode(0, TypeLabel.NODE);
     /** Type node for data nodes in an untyped setting. */
-    public static final TypeNode TOP_DATA = new TypeNode(1, TypeLabel.DATA);
+    public static final TypeNode TOP_DATA = new TypeNode(0, TypeLabel.DATA);
 }

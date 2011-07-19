@@ -179,7 +179,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         if (oldTypeNode != null) {
             this.errors.add(new FormatError(
                 "Node '%s' has types '%s' and '%s'", modelNode, typeLabel,
-                oldTypeNode.getType()));
+                oldTypeNode.getLabel()));
         } else {
             this.modelTyping.put(modelNode, typeLabel);
             TypeNode typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
@@ -227,18 +227,15 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             modelEdge.source(), elementMap);
         if (typeSource.isImported()) {
             throw new FormatException("Can't change imported type '%s'",
-                typeSource.getType(), modelEdge);
+                typeSource.getLabel(), modelEdge);
         }
         TypeNode typeTarget = elementMap.getNode(modelEdge.target());
         assert typeTarget != null : String.format(
             "Target of model edge '%s' not in element map %s",
             modelEdge.source(), elementMap);
         TypeEdge typeEdge = null;
-        if (modelEdge.getAttrKind().isTypedData()) {
-            TypeLabel dataTypeLabel =
-                TypeLabel.createLabel(NODE_TYPE,
-                    modelEdge.getAttrKind().getName());
-            TypeNode typeNode = getTypeNode(0, dataTypeLabel);
+        if (modelEdge.getAttrKind().hasSignature()) {
+            TypeNode typeNode = TypeNode.getDataType(modelEdge.getSignature());
             typeEdge =
                 model.addEdge(typeSource,
                     modelEdge.getAttrAspect().getContentString(), typeNode);

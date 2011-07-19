@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultEdge;
+import groove.graph.TypeEdge;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 
@@ -38,5 +39,22 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
             label.getRole().getDescription(false), label, source, target);
+        this.type = null;
     }
+
+    /**
+     * Constructs a fresh rule edge
+     */
+    public RuleEdge(RuleNode source, TypeEdge type, RuleNode target) {
+        super(source, new RuleLabel(type.label()), target);
+        this.type = type;
+    }
+
+    /** Returns the (possibly {@code null}) edge type of this edge. */
+    public TypeEdge getType() {
+        return this.type;
+    }
+
+    /** The edge type of this rule edge. */
+    private final TypeEdge type;
 }

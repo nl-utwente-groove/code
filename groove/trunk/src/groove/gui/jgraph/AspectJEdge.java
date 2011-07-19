@@ -212,7 +212,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             AspectKind attrKind = getEdge().getAttrKind();
             if (attrKind == ARGUMENT) {
                 result.append(new StringBuilder("Argument edge"));
-            } else if (attrKind.isTypedData()) {
+            } else if (attrKind.hasSignature()) {
                 result.append(new StringBuilder("Operation edge"));
             } else {
                 result.append(super.getEdgeDescription());
@@ -341,7 +341,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             return getTargetNode().getAttrAspect().hasContent()
                 && !getTargetNode().hasParam();
         } else {
-            return getTargetNode().getAttrKind().isTypedData();
+            return getTargetNode().getAttrKind().hasSignature();
         }
     }
 

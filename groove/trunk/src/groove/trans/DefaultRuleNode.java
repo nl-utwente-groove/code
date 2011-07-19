@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractNode;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
@@ -29,16 +29,23 @@ import groove.graph.TypeLabel;
 public class DefaultRuleNode extends AbstractNode implements RuleNode,
         Node.Factory<RuleNode> {
     /**
-     * Constructs a fresh node, with an explicitly given number. Note that node
-     * equality is determined by identity, but it is assumed that never two
-     * distinct nodes with the same number will be compared. This is achieved by
-     * using one of the <code>createNode</code> methods in preference to this
-     * constructor.
+     * Constructs a fresh node, with an explicitly given number.
      * @param nr the number for this node
      */
-    protected DefaultRuleNode(int nr, TypeLabel type) {
+    protected DefaultRuleNode(int nr) {
+        this(nr, null, false);
+    }
+
+    /**
+     * Constructs a fresh node, with an explicitly given number and node type.
+     * @param nr the number for this node
+     * @param type the node type; may be {@code null}
+     * @param sharp if {@code true}, the node is sharply typed
+     */
+    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp) {
         super(nr);
         this.type = type;
+        this.sharp = sharp;
     }
 
     @Override
@@ -67,12 +74,12 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
     /** Factory constructor. */
     @Override
     public DefaultRuleNode newNode(int nr) {
-        return new DefaultRuleNode(nr, null);
+        return new DefaultRuleNode(nr, null, false);
     }
 
     /** Factory constructor. */
-    public DefaultRuleNode newNode(int nr, TypeLabel type) {
-        return new DefaultRuleNode(nr, type);
+    public DefaultRuleNode newNode(int nr, TypeNode type, boolean sharp) {
+        return new DefaultRuleNode(nr, type, sharp);
     }
 
     /**
@@ -83,10 +90,16 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
         return "n";
     }
 
-    public TypeLabel getType() {
+    public TypeNode getType() {
         return this.type;
     }
 
+    public boolean isSharp() {
+        return this.sharp;
+    }
+
+    /** Flag indicating if this node is sharply typed. */
+    private final boolean sharp;
     /** The (possibly {@code null}) type of this rule node. */
-    private final TypeLabel type;
+    private final TypeNode type;
 }

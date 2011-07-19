@@ -69,7 +69,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         Map<TypeNode,TypeNode> otherToThis = new HashMap<TypeNode,TypeNode>();
         for (Node otherNode : other.nodeSet()) {
             TypeNode otherTypeNode = (TypeNode) otherNode;
-            TypeNode image = addNode(otherTypeNode.getType());
+            TypeNode image = addNode(otherTypeNode.getLabel());
             image.setAbstract(otherTypeNode.isAbstract());
             image.setColor(otherTypeNode.getColor());
             image.setLabelPattern(otherTypeNode.getLabelPattern());
@@ -98,18 +98,18 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         if (result) {
             assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
             this.predefinedNodes = true;
-            TypeNode oldType = this.typeMap.put(node.getType(), node);
+            TypeNode oldType = this.typeMap.put(node.getLabel(), node);
             assert oldType == null : String.format(
-                "Duplicate type node for %s", oldType.getType());
+                "Duplicate type node for %s", oldType.getLabel());
             if (node.isImported()) {
                 this.imports.add(node);
             }
-            this.labelStore.addLabel(node.getType());
+            this.labelStore.addLabel(node.getLabel());
             if (node.getColor() != null) {
-                this.labelStore.setColor(node.getType(), node.getColor());
+                this.labelStore.setColor(node.getLabel(), node.getColor());
             }
             if (node.getLabelPattern() != null) {
-                this.labelStore.setPattern(node.getType(),
+                this.labelStore.setPattern(node.getLabel(),
                     node.getLabelPattern());
             }
         }
@@ -381,7 +381,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         sourceType.text(), edgeType, source, edge));
                 } else {
                     TypeLabel declaredTargetType =
-                        (typeEdge.target()).getType();
+                        (typeEdge.target()).getLabel();
                     if (declaredTargetType.isDataType()
                         || targetType.isDataType()) {
                         if (!targetType.equals(declaredTargetType)) {
@@ -492,7 +492,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Returns the unique node type label of a given node. */
     private TypeLabel getType(Node node) {
-        return ((TypeNode) node).getType();
+        return ((TypeNode) node).getLabel();
     }
 
     /** 
