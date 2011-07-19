@@ -19,7 +19,7 @@ package groove.graph.algebra;
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.RuleNode;
 
 /**
@@ -109,12 +109,17 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     @Override
-    public TypeLabel getType() {
+    public TypeNode getType() {
         if (this.signature == null) {
-            return TypeLabel.DATA;
+            return null;
         } else {
-            return TypeLabel.getLabel(this.signature);
+            return TypeNode.getDataType(this.signature);
         }
+    }
+
+    @Override
+    public boolean isSharp() {
+        return this.signature != null;
     }
 
     /** The signature name of this variable node, if any. */

@@ -19,6 +19,7 @@ package groove.graph.algebra;
 import groove.graph.AbstractNode;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -94,8 +95,13 @@ public class ProductNode extends AbstractNode implements RuleNode {
     }
 
     @Override
-    public TypeLabel getType() {
-        return PROD_LABEL;
+    public TypeNode getType() {
+        return null;
+    }
+
+    @Override
+    public boolean isSharp() {
+        return true;
     }
 
     /**

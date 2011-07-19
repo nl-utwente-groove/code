@@ -174,7 +174,7 @@ public class Aspect {
         VariableNode result = null;
         if (getKind() == UNTYPED) {
             result = new VariableNode(nr);
-        } else if (getKind().isTypedData()) {
+        } else if (getKind().hasSignature()) {
             if (hasContent()) {
                 result = new VariableNode(nr, (Constant) getContent());
             } else {
@@ -190,7 +190,7 @@ public class Aspect {
     public boolean isForEdge(GraphRole role) {
         boolean result =
             AspectKind.allowedEdgeKinds.get(role).contains(getKind());
-        if (result && getKind().isTypedData()) {
+        if (result && getKind().hasSignature()) {
             result = !(getContent() instanceof Constant);
         }
         return result;
@@ -200,7 +200,7 @@ public class Aspect {
     public boolean isForNode(GraphRole role) {
         boolean result =
             AspectKind.allowedNodeKinds.get(role).contains(getKind());
-        if (result && getKind().isTypedData()) {
+        if (result && getKind().hasSignature()) {
             if (hasContent()) {
                 // data aspects with content not allowed in type graphs
                 result =

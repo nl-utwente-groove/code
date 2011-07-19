@@ -315,7 +315,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private List<StringBuilder> getDataLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         Aspect attrAspect = getNode().getAttrAspect();
-        if (attrAspect.getKind().isTypedData()) {
+        if (attrAspect.getKind().hasSignature()) {
             String dataLine = null;
             if (!attrAspect.hasContent()) {
                 dataLine =
@@ -396,7 +396,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             result.append(HTMLConverter.toHtml(suffix));
         } else {
             if (getNode().getGraphRole() == GraphRole.TYPE
-                && aspectEdge.getAttrKind().isTypedData()) {
+                && aspectEdge.getAttrKind().hasSignature()) {
                 // this is a field declaration
                 result.append(TYPE_TEXT);
                 result.append(STRONG_TAG.on(aspectEdge.getAttrKind().getName()));
@@ -457,7 +457,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 result.addAll(getListLabels(edge));
             }
             Aspect attrAspect = getNode().getAttrAspect();
-            if (attrAspect.getKind().isTypedData()) {
+            if (attrAspect.getKind().hasSignature()) {
                 if (attrAspect.hasContent()) {
                     result.add(TypeLabel.createLabel(attrAspect.getContentString()));
                 } else {
@@ -511,7 +511,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return false;
         }
         Aspect attr = getNode().getAttrAspect();
-        if (!attr.getKind().isTypedData()) {
+        if (!attr.getKind().hasSignature()) {
             return false;
         }
         return getNode().getGraphRole() == GraphRole.TYPE || attr.hasContent();
