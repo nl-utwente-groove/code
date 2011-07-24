@@ -35,8 +35,8 @@ public class NodeStore<N extends Node> {
     }
 
     /** Returns the node with the first currently unused node number. */
-    public N createNode() {
-        return createNode(getNextNodeNr());
+    public N createNode(TypeNode type) {
+        return createNode(getNextNodeNr(), type);
     }
 
     /**
@@ -44,11 +44,11 @@ public class NodeStore<N extends Node> {
      * is to create canonical representatives, so node equality is object
      * equality.
      */
-    public N createNode(int nr) {
+    public N createNode(int nr, TypeNode type) {
         N result;
         assert nr >= 0;
         if (nr >= this.nodes.length || this.nodes[nr] == null) {
-            addNode(result = this.factory.newNode(nr));
+            addNode(result = this.factory.newNode(nr, type));
         } else {
             result = this.nodes[nr];
         }

@@ -73,8 +73,8 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
 
     /** Factory constructor. */
     @Override
-    public DefaultRuleNode newNode(int nr) {
-        return new DefaultRuleNode(nr, null, false);
+    public DefaultRuleNode newNode(int nr, TypeNode type) {
+        return new DefaultRuleNode(nr, type, false);
     }
 
     /** Factory constructor. */
@@ -87,7 +87,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      */
     @Override
     public String getToStringPrefix() {
-        return "n";
+        return getType() == null ? "n" : getType().getLabel().text() + "-";
     }
 
     public TypeNode getType() {

@@ -20,6 +20,7 @@ import groove.graph.Label;
 import groove.graph.Node.Factory;
 import groove.graph.NodeStore;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
@@ -31,9 +32,9 @@ public class ShapeFactory extends HostFactory {
         super();
     }
 
-    @Override
+    /** Creates an untyped node with the next number. */
     public ShapeNode createNode() {
-        return (ShapeNode) super.createNode();
+        return (ShapeNode) createNode(null);
     }
 
     @Override
@@ -62,8 +63,8 @@ public class ShapeFactory extends HostFactory {
     protected NodeStore<ShapeNode> createNodeStore() {
         return new NodeStore<ShapeNode>(new Factory<ShapeNode>() {
             @Override
-            public ShapeNode newNode(int nr) {
-                return NODE_PROTOTYPE.newNode(nr);
+            public ShapeNode newNode(int nr, TypeNode type) {
+                return NODE_PROTOTYPE.newNode(nr, type);
             }
         });
     }
@@ -74,5 +75,5 @@ public class ShapeFactory extends HostFactory {
     }
 
     /** Used only as a reference for the constructor. */
-    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0);
+    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0, null);
 }

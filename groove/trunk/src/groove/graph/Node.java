@@ -38,6 +38,6 @@ public interface Node extends Element {
         /** 
          * Creates a new node of the specified type, with a given number.
          */
-        N newNode(int nr);
+        N newNode(int nr, TypeNode type);
     }
 }

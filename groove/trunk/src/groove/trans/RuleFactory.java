@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.ElementFactory;
 import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
@@ -66,6 +67,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         } else {
             return new RuleEdge(source, ruleLabel, target);
         }
+    }
+
+    /** Creates a typed rule edge. */
+    public RuleEdge createEdge(RuleNode source, TypeEdge type, RuleNode target) {
+        return new RuleEdge(source, type, target);
     }
 
     @Override

@@ -27,6 +27,11 @@ public class DefaultFactory extends
         // empty
     }
 
+    /** Creates a new, untyped node. */
+    public DefaultNode createNode() {
+        return createNode(null);
+    }
+
     /**
      * Generates a previously non-existent label. The label generated is of the
      * form "L"+index, where the index increases for every next fresh label.

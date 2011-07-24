@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -14,21 +14,20 @@
  *
  * $Id$
  */
-package groove.trans;
-
-import groove.graph.DefaultNode;
-import groove.graph.Node;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ValueNode;
+package groove.util;
 
 /**
- * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
- * These are {@link DefaultNode}s and {@link ValueNode}s.
+ * Construction status of a lazily constructed structure.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostNode extends Node, HostElement {
-    /** Returns the type of the host node, or {@code null} if
-     * the host node is untyped. */
-    public TypeNode getType();
+public enum Status {
+    /** Initial state: nothing has been done. */
+    START,
+    /** The construction has finished successfully. */
+    DONE,
+    /** 
+     * Error state: the construction has failed.
+     */
+    ERROR;
 }

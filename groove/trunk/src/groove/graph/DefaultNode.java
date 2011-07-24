@@ -16,7 +16,6 @@
  */
 package groove.graph;
 
-
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
  * equality is determined by object identity and not by node number.
@@ -39,8 +38,11 @@ public class DefaultNode extends AbstractNode implements
         super(nr);
     }
 
-    /** Factory constructor. */
-    public DefaultNode newNode(int nr) {
+    /** Factory constructor.
+     * The type is should always be {@code null}. 
+     */
+    public DefaultNode newNode(int nr, TypeNode type) {
+        assert type == null;
         return new DefaultNode(nr);
     }
 
@@ -59,7 +61,7 @@ public class DefaultNode extends AbstractNode implements
 
     /** Returns the node with the first currently unused node number. */
     static public DefaultNode createNode() {
-        return factory.createNode();
+        return factory.createNode(null);
     }
 
     static private final DefaultFactory factory = DefaultFactory.instance();

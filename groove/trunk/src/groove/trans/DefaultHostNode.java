@@ -18,7 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractNode;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 
 /**
  * Default nodes used in host graphs.
@@ -27,7 +27,7 @@ import groove.graph.TypeLabel;
  * @version $Revision: 2936 $
  */
 public class DefaultHostNode extends AbstractNode implements HostNode,
-        Node.Factory<DefaultHostNode> {
+        Node.Factory<HostNode> {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
@@ -50,7 +50,7 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      * @param nr the number for this node
      * @param type the node type; may be {@code null}.
      */
-    protected DefaultHostNode(int nr, TypeLabel type) {
+    protected DefaultHostNode(int nr, TypeNode type) {
         super(nr);
         this.type = type;
     }
@@ -79,8 +79,8 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
     }
 
     /** Factory constructor. */
-    public DefaultHostNode newNode(int nr) {
-        return new DefaultHostNode(nr);
+    public DefaultHostNode newNode(int nr, TypeNode type) {
+        return new DefaultHostNode(nr, type);
     }
 
     /**
@@ -88,13 +88,20 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      */
     @Override
     public String getToStringPrefix() {
-        return "n";
+        return getType() == null ? "n" : getType().getLabel().text() + "-";
     }
 
     @Override
-    public TypeLabel getType() {
+    final public TypeNode getType() {
         return this.type;
     }
 
-    private final TypeLabel type;
+    private final TypeNode type;
+
+    /** Creates a node factory for a given node type.
+     * @param type the node type for the factory; may be {@code null}. 
+     */
+    public static Node.Factory<HostNode> createFactory(TypeNode type) {
+        return new DefaultHostNode(0, type);
+    }
 }
