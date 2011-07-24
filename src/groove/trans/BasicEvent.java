@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.DefaultNode;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.trans.RuleEffect.Fragment;
@@ -517,13 +518,15 @@ final public class BasicEvent extends
     private HostNode[] getCreatedNodes(Set<? extends HostNode> sourceNodes,
             Collection<HostNode> added) {
         HostNode[] result;
-        int count = getRule().getCreatorNodes().length;
+        RuleNode[] creatorNodes = getRule().getCreatorNodes();
+        int count = creatorNodes.length;
         if (count == 0) {
             result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
             for (int i = 0; i < count; i++) {
-                result[i] = createNode(i, sourceNodes, added);
+                result[i] =
+                    createNode(i, creatorNodes[i].getType(), sourceNodes, added);
             }
         }
         // normalise the result to a previously stored instance
@@ -550,7 +553,7 @@ final public class BasicEvent extends
      * of already added nodes. The previously created fresh nodes are tried first
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
-     * {@link #createNode()}.
+     * {@link #createNode(TypeNode)}.
      * @param creatorIndex index in the creator nodes array indicating the node
      *        of the rule for which a new image is to be created
      * @param sourceNodes the existing nodes, which should not contain the
@@ -558,7 +561,7 @@ final public class BasicEvent extends
      * @param current the collection of already added nodes; the newly added node
      *        is guaranteed to be fresh with respect to these
      */
-    private HostNode createNode(int creatorIndex,
+    private HostNode createNode(int creatorIndex, TypeNode type,
             Set<? extends HostNode> sourceNodes, Collection<HostNode> current) {
         HostNode result = null;
         boolean added = false;
@@ -573,7 +576,7 @@ final public class BasicEvent extends
             }
         }
         if (!added) {
-            result = createNode();
+            result = createNode(type);
             if (current != null) {
                 current.add(result);
             }
@@ -602,10 +605,10 @@ final public class BasicEvent extends
      * returns a {@link DefaultNode}, with a node number determined by the
      * grammar's node counter.
      */
-    private HostNode createNode() {
+    private HostNode createNode(TypeNode type) {
         BasicEvent.freshNodeCount++;
         HostFactory record = getHostFactory();
-        return record.createNode();
+        return record.createNode(type);
     }
 
     /**
@@ -662,7 +665,7 @@ final public class BasicEvent extends
      */
     private final HostElement[] anchorImage;
     /**
-     * The list of nodes created by {@link #createNode()}.
+     * The list of nodes created by {@link #createNode(TypeNode)}.
      */
     private List<List<HostNode>> freshNodeList;
     /** Store of previously used (canonical) coanchor images. */

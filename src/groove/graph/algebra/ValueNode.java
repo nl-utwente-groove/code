@@ -19,7 +19,7 @@ package groove.graph.algebra;
 import groove.algebra.Algebra;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.HostNode;
 import groove.view.aspect.AspectParser;
 
@@ -102,8 +102,8 @@ public class ValueNode extends AbstractNode implements HostNode {
     }
 
     @Override
-    public TypeLabel getType() {
-        return TypeLabel.getLabel(this.signature);
+    public TypeNode getType() {
+        return TypeNode.getDataType(this.signature);
     }
 
     /** The signature of this value node. */

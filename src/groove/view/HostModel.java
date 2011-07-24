@@ -34,13 +34,13 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
+import groove.util.Status;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +70,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      */
     public DefaultHostGraph toHost() throws FormatException {
         initialise();
-        if (this.model == null) {
+        if (this.status == Status.ERROR) {
             throw new FormatException(getErrors());
         } else {
             return this.model;
@@ -91,6 +91,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     public HostModelMap getMap() {
         initialise();
+        if (this.status == Status.ERROR) {
+            throw new IllegalStateException();
+        }
         return this.hostModelMap;
     }
 
@@ -127,8 +130,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Constructs the resource and associated data structures from the model. */
     private void initialise() {
         // first test if there is something to be done
-        boolean init = isGrammarModified() || this.errors == null;
-        if (init) {
+        if (isGrammarModified()) {
+            this.status = Status.START;
+        }
+        if (this.status == Status.START) {
             this.algebraFamily = getFamily();
             if (getSource().hasErrors()) {
                 this.errors = getSource().getErrors();
@@ -140,6 +145,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 this.hostModelMap = modelPlusMap.two();
                 this.errors = GraphInfo.getErrors(this.model);
             }
+            this.status = this.errors.isEmpty() ? Status.DONE : Status.ERROR;
         }
     }
 
@@ -189,26 +195,9 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         // test against the type graph, if any
         TypeGraph type = getGrammar().getTypeGraph();
         if (type != null) {
-            Collection<FormatError> typeErrors;
             try {
-                TypeGraph.Typing<HostNode,HostEdge> typing =
-                    type.checkTyping(result);
-                typeErrors = new TreeSet<FormatError>();
-                for (Element elem : typing.getAbstractElements()) {
-                    if (elem instanceof HostNode) {
-                        typeErrors.add(new FormatError(
-                            "Graph may not contain abstract %s-node",
-                            typing.getType((HostNode) elem), elem));
-                    } else {
-                        typeErrors.add(new FormatError(
-                            "Graph may not contain abstract %s-edge",
-                            ((HostEdge) elem).label(), elem));
-                    }
-                }
+                type.analyzeHost(result);
             } catch (FormatException e) {
-                typeErrors = e.getErrors();
-            }
-            if (!typeErrors.isEmpty()) {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
                     new HashMap<Element,Element>();
@@ -218,7 +207,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 for (Map.Entry<AspectEdge,? extends HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
                     inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
                 }
-                for (FormatError error : typeErrors) {
+                for (FormatError error : e.getErrors()) {
                     errors.add(error.transfer(inverseMap));
                 }
             }
@@ -290,6 +279,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return new DefaultHostGraph(name);
     }
 
+    /** Status of the construction of the host model. */
+    private Status status = Status.START;
     /** The host graph that is being constructed. */
     private DefaultHostGraph model;
     /**

@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.graph.Label;
 import groove.graph.NodeStore;
 import groove.graph.StoreFactory;
+import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
@@ -125,6 +126,13 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return createEdge(source, createLabel(text), target);
     }
 
+    /** Creates a typed rule edge. */
+    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
+        HostEdge edge =
+            new HostEdge(this, source, type, target, getEdgeCount());
+        return storeEdge(edge);
+    }
+
     /** 
      * Callback factory method to create a new edge object.
      * This will then be compared with the edge store to replace it by its
@@ -153,8 +161,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Callback factory method to initialise the node store. */
     @Override
-    protected NodeStore<? extends DefaultHostNode> createNodeStore() {
-        return new NodeStore<DefaultHostNode>(new DefaultHostNode(0));
+    protected NodeStore<? extends HostNode> createNodeStore() {
+        return new NodeStore<HostNode>(DefaultHostNode.createFactory(null));
     }
 
     /** Internal store of previously generated value nodes. */

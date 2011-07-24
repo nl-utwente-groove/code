@@ -16,6 +16,7 @@
  */
 package groove.abstraction;
 
+import groove.graph.TypeNode;
 import groove.trans.DefaultHostNode;
 
 /**
@@ -31,8 +32,8 @@ public final class ShapeNode extends DefaultHostNode {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    ShapeNode(int nr) {
-        super(nr);
+    ShapeNode(int nr, TypeNode type) {
+        super(nr, type);
     }
 
     // ------------------------------------------------------------------------
@@ -41,7 +42,7 @@ public final class ShapeNode extends DefaultHostNode {
 
     /** Factory constructor. */
     @Override
-    public ShapeNode newNode(int nr) {
-        return new ShapeNode(nr);
+    public ShapeNode newNode(int nr, TypeNode type) {
+        return new ShapeNode(nr, type);
     }
 }

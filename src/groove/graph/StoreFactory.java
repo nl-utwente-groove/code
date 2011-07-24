@@ -35,8 +35,13 @@ abstract public class StoreFactory<N extends Node,E extends Edge<N>,L extends La
     }
 
     /** Creates a fresh default host node. */
-    public N createNode() {
-        return this.nodeStore.createNode();
+    public N createNode(int nr) {
+        return createNode(nr, null);
+    }
+
+    /** Creates a fresh default host node. */
+    public N createNode(TypeNode type) {
+        return this.nodeStore.createNode(type);
     }
 
     /**
@@ -44,8 +49,8 @@ abstract public class StoreFactory<N extends Node,E extends Edge<N>,L extends La
      * @throws IllegalArgumentException if this factory has already created a 
      * node with this number
      */
-    public N createNode(int nr) {
-        return this.nodeStore.createNode(nr);
+    public N createNode(int nr, TypeNode type) {
+        return this.nodeStore.createNode(nr, type);
     }
 
     /** 
@@ -72,11 +77,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge<N>,L extends La
         assert source != null : "Source node of host edge should not be null";
         assert target != null : "Target node of host edge should not be null";
         E edge = createEdge(source, label, target, getEdgeCount());
-        E result = this.edgeStore.put(edge);
-        if (result == null) {
-            result = edge;
-        }
-        return result;
+        return storeEdge(edge);
     }
 
     /** 
@@ -85,6 +86,15 @@ abstract public class StoreFactory<N extends Node,E extends Edge<N>,L extends La
      * canonical representative.
      */
     abstract protected E createEdge(N source, Label label, N target, int nr);
+
+    /** Puts an edge in the store and returns its canonical representative. */
+    protected E storeEdge(E edge) {
+        E result = this.edgeStore.put(edge);
+        if (result == null) {
+            result = edge;
+        }
+        return result;
+    }
 
     /** 
      * Adds a given edge to the edges known to this store.

@@ -57,6 +57,7 @@ public class CtrlBuildTest {
             this.testGrammar =
                 Groove.loadGrammar(GRAMMAR_DIR + "emptyrules").toGrammar();
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }

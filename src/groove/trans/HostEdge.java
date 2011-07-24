@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.AbstractEdge;
+import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 
 /**
@@ -25,15 +26,28 @@ import groove.graph.TypeLabel;
  */
 public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
         HostElement {
-    /** Default constructor. */
-    protected HostEdge(HostFactory factory, HostNode source, TypeLabel label,
-            HostNode target, int nr) {
+    /** Inner constructor to initialise all fields. */
+    private HostEdge(HostFactory factory, HostNode source, TypeEdge type,
+            TypeLabel label, HostNode target, int nr) {
         super(source, label, target);
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
             label.getRole().getDescription(false), label, source, target);
         this.factory = factory;
         this.nr = nr;
+        this.type = type;
+    }
+
+    /** Constructor for a typed edge. */
+    protected HostEdge(HostFactory factory, HostNode source, TypeEdge type,
+            HostNode target, int nr) {
+        this(factory, source, type, type.label(), target, nr);
+    }
+
+    /** Constructor for a labelled, untyped edge. */
+    protected HostEdge(HostFactory factory, HostNode source, TypeLabel label,
+            HostNode target, int nr) {
+        this(factory, source, null, label, target, nr);
     }
 
     // ------------------------------------------------------------------------
@@ -69,16 +83,6 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
             return false;
         }
         return true;
-        //        boolean result = this == obj;
-        //        // test that the result is the same as number equality
-        //        // or source-label-target equality
-        //        assert result == (obj instanceof HostEdge && this.nr == ((HostEdge) obj).nr) : String.format(
-        //            "Distinct %s and %s %s with the same number %d",
-        //            getClass().getName(), obj.getClass().getName(), this, this.nr);
-        //        assert result == (obj instanceof HostEdge && super.equals(obj)) : String.format(
-        //            "Distinct %s and %s %s with the same content",
-        //            getClass().getName(), obj.getClass().getName(), this);
-        //        return result;
     }
 
     /** 
@@ -89,8 +93,18 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
         return this.nr;
     }
 
+    /** 
+     * Returns the (possibly {@code null}) type of this edge.
+     * The number is guaranteed to be unique for each canonical edge representative.
+     */
+    public TypeEdge getType() {
+        return this.type;
+    }
+
     /** The factory that created this edge. */
     private final HostFactory factory;
     /** The (unique) number of this edge. */
     private final int nr;
+    /** Possibly {@code null} type of this edge. */
+    private final TypeEdge type;
 }
