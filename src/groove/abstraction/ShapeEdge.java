@@ -26,7 +26,7 @@ import groove.trans.HostEdge;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeEdge extends groove.trans.HostEdge {
+public final class ShapeEdge extends HostEdge {
     /** Default constructor. */
     ShapeEdge(ShapeFactory factory, ShapeNode source, TypeLabel label,
             ShapeNode target, int nr) {
