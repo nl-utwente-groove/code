@@ -1660,7 +1660,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             Collection<FormatError> errors = createErrors();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
-                if (nodeType.isAbstract() && !lhs.containsNode(node)) {
+                if (nodeType != null && nodeType.isAbstract()
+                    && !lhs.containsNode(node)) {
                     errors.add(new FormatError(
                         "Creation of abstract %s-edge not allowed",
                         nodeType.getLabel().text(), node));
