@@ -16,7 +16,6 @@
  */
 package groove.test;
 
-import groove.test.abstraction.AllAbstractionTests;
 import groove.test.control.AllControlTests;
 import groove.test.graph.AllGraphTests;
 import groove.test.prolog.AllPrologTests;
@@ -31,11 +30,11 @@ import org.junit.runners.Suite;
  * @version $Revision$
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AllAbstractionTests.class, AllControlTests.class,
-    AllGraphTests.class, AllPrologTests.class, AllRuleTests.class,
-    AllVerifyTests.class, AutomatonTest.class, BinaryEdgeTest.class,
-    ExplorationTest.class, HashBagTest.class, IOTest.class,
-    LabelStoreTest.class, TreeHashSetTest.class})
+@Suite.SuiteClasses({AllControlTests.class, AllGraphTests.class,
+    AllPrologTests.class, AllRuleTests.class, AllVerifyTests.class,
+    AutomatonTest.class, BinaryEdgeTest.class, ExplorationTest.class,
+    HashBagTest.class, IOTest.class, LabelStoreTest.class,
+    TreeHashSetTest.class})
 public class AllTests {
     // Empty by design.
 }

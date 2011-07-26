@@ -1,6 +1,5 @@
 package groove.explore;
 
-import groove.abstraction.ShapeBFSStrategy;
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
@@ -105,19 +104,16 @@ public enum StrategyValue implements ParsableValue {
                 + "If the number of edges in a newly reached state exceeds a "
                 + "given bound, it is not explored further. "
                 + "All other states are explored normally."),
-    /** Shape exploration strategy. */
-    SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
-            "This strategy is used for abstract state space exploration."),
-    /** Shape exploration strategy. */
+    /** LTL model checking strategy. */
     LTL("ltl", "LTL Model Checking",
             "Nested Depth-First Search for a given LTL formula."),
-    /** Shape exploration strategy. */
+    /** Bounded LTL model checking  strategy. */
     LTL_BOUNDED(
             "ltlbounded",
             "Bounded LTL Model Checking",
             "Nested Depth-First Search for a given LTL formula,"
                 + "using incremental bounds based on graph size or rule applications"),
-    /** Shape exploration strategy. */
+    /** Bounded LTL model checking strategy. */
     LTL_POCKET(
             "ltlpocket",
             "Pocket LTL Model Checking",
@@ -282,14 +278,6 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
 
-        case SHAPE_BFS:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new ShapeBFSStrategy();
-                }
-            };
-
         case LTL:
             return new MyTemplate1<String>(new PAll("prop"), "prop",
                 new EncodedLtlProperty()) {
@@ -352,7 +340,7 @@ public enum StrategyValue implements ParsableValue {
         LTL_BOUNDED, LTL_POCKET);
     /** Special mask for development strategies only. Treated specially. */
     public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
-        EnumSet.of(SHAPE_BFS, RETE, RETE_LINEAR, RETE_RANDOM);
+        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM);
 
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Strategy> {

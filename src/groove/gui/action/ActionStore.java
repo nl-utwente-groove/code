@@ -828,21 +828,6 @@ public class ActionStore implements SimulatorListener {
     private StartSimulationAction startSimulationAction;
 
     /**
-     * Lazily creates and returns an instance of
-     * {@link ToggleExplorationStateAction}.
-     */
-    public Action getToggleExplorationStateAction() {
-        if (this.toggleExplorationStateAction == null) {
-            this.toggleExplorationStateAction =
-                new ToggleExplorationStateAction(this.simulator);
-        }
-        return this.toggleExplorationStateAction;
-    }
-
-    /** The action to toggle between concrete and abstract exploration. */
-    private ToggleExplorationStateAction toggleExplorationStateAction;
-
-    /**
      * Returns the undo action permanently associated with this simulator.
      */
     public UndoSimulatorAction getUndoAction() {

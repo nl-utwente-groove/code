@@ -1,6 +1,5 @@
 package groove.gui;
 
-import groove.abstraction.lts.AGTS;
 import groove.explore.Exploration;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
@@ -555,12 +554,7 @@ public class SimulatorModel implements Cloneable {
     public final boolean setGts() {
         try {
             GraphGrammar grammar = getGrammar().toGrammar();
-            GTS gts;
-            if (isAbstractionMode()) {
-                gts = new AGTS(grammar);
-            } else {
-                gts = new GTS(grammar);
-            }
+            GTS gts = new GTS(grammar);
             gts.getRecord().setRandomAccess(true);
             return setGts(gts, false);
         } catch (FormatException e) {
