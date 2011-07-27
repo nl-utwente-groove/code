@@ -14,28 +14,18 @@
  * 
  * $Id: AllTests.java,v 1.7 2008-03-17 17:42:09 iovka Exp $
  */
-package groove.test;
+package groove.test.abstraction;
 
-import groove.test.abstraction.AllAbstractionTests;
-import groove.test.control.AllControlTests;
-import groove.test.graph.AllGraphTests;
-import groove.test.prolog.AllPrologTests;
-import groove.test.rule.AllRuleTests;
-import groove.test.verify.AllVerifyTests;
+import groove.test.abstraction.neigh.AllNeighAbstractionTests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * @author Arend Rensink
- * @version $Revision$
+ * @author Eduardo Zambon
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AllAbstractionTests.class, AllControlTests.class,
-    AllGraphTests.class, AllPrologTests.class, AllRuleTests.class,
-    AllVerifyTests.class, AutomatonTest.class, BinaryEdgeTest.class,
-    ExplorationTest.class, HashBagTest.class, IOTest.class,
-    LabelStoreTest.class, TreeHashSetTest.class})
-public class AllTests {
+@Suite.SuiteClasses({AllNeighAbstractionTests.class})
+public class AllAbstractionTests {
     // Empty by design.
 }
