@@ -36,6 +36,41 @@ public final class Multiplicity {
     private static Multiplicity EDGE_MULT_STORE[];
 
     // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    /** The lower bound of the multiplicity. */
+    private final int i;
+    /** The upper bound of the multiplicity. */
+    private final int j;
+    /** The kind of the multiplicity. */
+    private final MultKind kind;
+    /**
+     * The index of the multiplicity object in the store.
+     * Serves as a perfect hash.
+     */
+    private final int index;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /**
+     * Private constructor to avoid object creation.
+     * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
+     * multiplicity from the store.
+     */
+    private Multiplicity(int i, int j, MultKind kind, int index) {
+        assert index >= 0;
+        assert isInN(i) && isInNOmega(j);
+        assert i <= j;
+        this.i = i;
+        this.j = j;
+        this.kind = kind;
+        this.index = index;
+    }
+
+    // ------------------------------------------------------------------------
     // Static Methods
     // ------------------------------------------------------------------------
 
@@ -215,41 +250,6 @@ public final class Multiplicity {
     }
 
     // ------------------------------------------------------------------------
-    // Object Fields
-    // ------------------------------------------------------------------------
-
-    /** The lower bound of the multiplicity. */
-    private final int i;
-    /** The upper bound of the multiplicity. */
-    private final int j;
-    /** The kind of the multiplicity. */
-    private final MultKind kind;
-    /**
-     * The index of the multiplicity object in the store.
-     * Serves as a perfect hash.
-     */
-    private final int index;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
-    /**
-     * Private constructor to avoid object creation.
-     * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
-     * multiplicity from the store.
-     */
-    private Multiplicity(int i, int j, MultKind kind, int index) {
-        assert index >= 0;
-        assert isInN(i) && isInNOmega(j);
-        assert i <= j;
-        this.i = i;
-        this.j = j;
-        this.kind = kind;
-        this.index = index;
-    }
-
-    // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
@@ -299,6 +299,21 @@ public final class Multiplicity {
     // Other methods
     // ------------------------------------------------------------------------
 
+    /** Basic getter method. */
+    public int getLowerBound() {
+        return this.i;
+    }
+
+    /** Basic getter method. */
+    public int getUpperBound() {
+        return this.j;
+    }
+
+    /** Returns false if the multiplicity equals zero; true, otherwise. */
+    public boolean isPositive() {
+        return this.i > 0;
+    }
+
     /** Returns the addition of the two given multiplicities. */
     public Multiplicity add(Multiplicity other) {
         assert this.kind == other.kind;
@@ -334,6 +349,14 @@ public final class Multiplicity {
         NODE_MULT,
         /** Edge multiplicity kind. */
         EDGE_MULT
+    }
+
+    /** Enumeration of edge multiplicity directions. */
+    public enum EdgeMultDir {
+        /** Outgoing edge multiplicity. */
+        OUTGOING,
+        /** Incoming edge multiplicity. */
+        INCOMING
     }
 
 }
