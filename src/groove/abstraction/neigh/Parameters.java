@@ -16,10 +16,8 @@
  */
 package groove.abstraction.neigh;
 
+import gnu.trove.THashSet;
 import groove.graph.TypeLabel;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class that stores the parameters of the abstraction.
@@ -42,7 +40,7 @@ public final class Parameters {
      * The labels to be used in the abstraction.
      * Taken from the grammar properties.
      */
-    private static Set<TypeLabel> absLabels = new HashSet<TypeLabel>();
+    private static THashSet<TypeLabel> absLabels = new THashSet<TypeLabel>();
 
     // ------------------------------------------------------------------------
     // Static methods
@@ -64,7 +62,7 @@ public final class Parameters {
     }
 
     /** Basic getter method. */
-    public static Set<TypeLabel> getAbsLabels() {
+    public static THashSet<TypeLabel> getAbsLabels() {
         return absLabels;
     }
 
@@ -87,7 +85,7 @@ public final class Parameters {
     }
 
     /** Basic setter method. */
-    public static void setAbsLabels(Set<TypeLabel> absLabels) {
+    public static void setAbsLabels(THashSet<TypeLabel> absLabels) {
         Parameters.absLabels.clear();
         Parameters.absLabels.addAll(absLabels);
     }

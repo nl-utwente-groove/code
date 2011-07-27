@@ -23,7 +23,7 @@ import org.junit.runners.Suite;
  * @author Eduardo Zambon
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({TestMultiplicity.class})
+@Suite.SuiteClasses({TestMultiplicity.class, TestGraphNeighEquiv.class})
 public class AllNeighAbstractionTests {
     // Empty by design.
 }
