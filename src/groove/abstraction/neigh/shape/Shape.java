@@ -24,13 +24,17 @@ import static groove.graph.EdgeRole.BINARY;
 import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
+import groove.abstraction.neigh.equiv.GraphNeighEquiv;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 
 import java.util.Set;
@@ -77,18 +81,53 @@ public final class Shape extends DefaultHostGraph {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** EDUARDO: Todo */
-    public Shape(String name) {
-        super(name);
-        this.equivRel = null;
-        this.nodeMultMap = null;
-        this.outEdgeMultMap = null;
-        this.inEdgeMultMap = null;
+    /** Private constructor. */
+    private Shape() {
+        super("shape", ShapeFactory.instance());
+        this.equivRel = new EquivRelation<ShapeNode>();
+        this.nodeMultMap = new THashMap<ShapeNode,Multiplicity>();
+        this.outEdgeMultMap = new THashMap<EdgeSignature,Multiplicity>();
+        this.inEdgeMultMap = new THashMap<EdgeSignature,Multiplicity>();
+    }
+
+    // ------------------------------------------------------------------------
+    // Static Methods
+    // ------------------------------------------------------------------------
+
+    /** Creates a shape from the given graph. */
+    public static Shape createShape(HostGraph graph) {
+        return createShape(graph, new HostToShapeMap());
+    }
+
+    /** Creates a shape from the given graph. */
+    public static Shape createShape(HostGraph graph, HostToShapeMap map) {
+        assert map.isEmpty();
+        Shape shape = new Shape();
+        int radius = Parameters.getAbsRadius();
+        // Compute the equivalence relation on the given graph.
+        GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
+        // Now build the shape.
+        shape.createShapeNodes(gne, map);
+        shape.createEquivRelation(gne.getPrevEquivRelation(), map);
+        shape.createShapeEdges(gne.getEdgesEquivRel(), map);
+        shape.createEdgeMultMaps(gne, map, graph);
+        assert shape.isInvariantOK();
+        return shape;
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
+
+    @Override
+    protected boolean isTypeCorrect(Node node) {
+        return node instanceof ShapeNode;
+    }
+
+    @Override
+    protected boolean isTypeCorrect(Edge<?> edge) {
+        return edge instanceof ShapeEdge;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -136,12 +175,8 @@ public final class Shape extends DefaultHostGraph {
             sb.append("  " + this.getEdgeMult(e, OUTGOING) + ":" + e + ":"
                 + this.getEdgeMult(e, INCOMING) + "\n");
         }
+        sb.append("Equiv. Relation: " + this.equivRel + "\n");
         return sb.toString();
-    }
-
-    private String getEdgeMult(ShapeEdge e, EdgeMultDir outgoing) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /**
@@ -162,8 +197,8 @@ public final class Shape extends DefaultHostGraph {
         boolean added = super.addNode(node);
         if (added) {
             ShapeNode nodeS = (ShapeNode) node;
-            this.setNodeMult(nodeS,
-                Multiplicity.getMultiplicity(1, 1, NODE_MULT));
+            Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+            this.setNodeMult(nodeS, one);
             this.addToNewEquivClass(nodeS);
         }
         return added;
@@ -195,20 +230,135 @@ public final class Shape extends DefaultHostGraph {
         return added;
     }
 
-    private EdgeSignature getEdgeSignature(ShapeEdge edgeS,
-            EdgeMultDir direction) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     @Override
     public ShapeFactory getFactory() {
         return (ShapeFactory) super.getFactory();
     }
 
+    @Override
+    public void setFixed() {
+        super.setFixed();
+        this.equivRel.setFixed();
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /**
+     * Creates nodes in the shape based on the equivalence relation given. 
+     */
+    private void createShapeNodes(GraphNeighEquiv gne, HostToShapeMap map) {
+        assert !this.isFixed();
+        // Each node of the shape correspond to an equivalence class
+        // of the graph.
+        for (EquivClass<HostNode> ec : gne) {
+            // We are building a shape from a graph, this means that the
+            // graph nodes are from a different type and therefore are
+            // stored in a different node factory. Thus we have to create
+            // shape nodes.
+            ShapeNode nodeS = this.getFactory().createNode();
+            // Add a shape node to the shape.
+            // Call the super method because we have additional information on
+            // the node to be added.
+            super.addNode(nodeS);
+            // Fill the shape node multiplicity.
+            int size = ec.size();
+            Multiplicity mult = Multiplicity.approx(size, size, NODE_MULT);
+            this.setNodeMult(nodeS, mult);
+            // Update the abstraction morphism map.
+            for (HostNode node : ec) {
+                map.putNode(node, nodeS);
+            }
+        }
+    }
+
+    /**
+     * Creates the equivalence relation between shape nodes based on the
+     * equivalence relation given.
+     */
+    private void createEquivRelation(EquivRelation<HostNode> er,
+            HostToShapeMap map) {
+        assert !this.isFixed();
+        for (EquivClass<HostNode> ecG : er) {
+            EquivClass<ShapeNode> ecS = new EquivClass<ShapeNode>();
+            for (HostNode node : ecG) {
+                ecS.add(map.getNode(node));
+            }
+            this.equivRel.add(ecS);
+        }
+    }
+
+    /**
+     * Creates the edges of the shape based on the equivalence relation given. 
+     */
+    private void createShapeEdges(EquivRelation<HostEdge> er, HostToShapeMap map) {
+        assert !this.isFixed();
+        // Each edge of the shape correspond to an equivalence class
+        // of the graph.
+        for (EquivClass<HostEdge> ecG : er) {
+            // Get an arbitrary edge from the equivalence class.
+            HostEdge edgeG = ecG.iterator().next();
+            // Create and add a shape edge to the shape.
+            HostNode srcG = edgeG.source();
+            HostNode tgtG = edgeG.target();
+            ShapeNode srcS = map.getNode(srcG);
+            ShapeNode tgtS = map.getNode(tgtG);
+            TypeLabel labelS = edgeG.label();
+            ShapeEdge edgeS = (ShapeEdge) this.createEdge(srcS, labelS, tgtS);
+            // Call the super method because we will set the multiplicity maps
+            // later.
+            super.addEdge(edgeS);
+            // Update the abstraction morphism map.
+            for (HostEdge eG : ecG) {
+                map.putEdge(eG, edgeS);
+            }
+        }
+    }
+
+    /**
+     * Creates the edge multiplicity maps from a graph neighbourhood relation.
+     */
+    private void createEdgeMultMaps(GraphNeighEquiv gne, HostToShapeMap map,
+            HostGraph graph) {
+        assert !this.isFixed();
+        // For all binary edges of the shape.
+        for (ShapeEdge edgeS : Util.getBinaryEdges(this)) {
+            // For outgoing and incoming maps.
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                // Get the edge signature.
+                EdgeSignature es = this.getEdgeSignature(edgeS, direction);
+                // Get the reverse abstraction morphism for the class.
+                EquivClass<HostNode> ecG = map.getPreImages(es.getEquivClass());
+                HostNode nodeG = null;
+                int size = 0;
+                switch (direction) {
+                case OUTGOING:
+                    // Get an arbitrary node of the graph that was mapped to
+                    // the shape edge source.
+                    nodeG = map.getPreImages(edgeS.source()).iterator().next();
+                    // Compute the number of intersecting edges in the graph.
+                    size =
+                        Util.getIntersectEdges(graph, nodeG, ecG, edgeS.label()).size();
+                    break;
+                case INCOMING:
+                    // Get an arbitrary node of the graph that was mapped to
+                    // the shape edge target.
+                    nodeG = map.getPreImages(edgeS.target()).iterator().next();
+                    // Compute the number of intersecting edges in the graph.
+                    size =
+                        Util.getIntersectEdges(graph, ecG, nodeG, edgeS.label()).size();
+                    break;
+                default:
+                    assert false;
+                }
+                // Approximate the cardinality of the set of intersecting edges.
+                Multiplicity mult = Multiplicity.approx(size, size, EDGE_MULT);
+                // Store the multiplicity in the proper multiplicity map.
+                this.getEdgeMultMap(direction).put(es, mult);
+            }
+        }
+    }
 
     /** Returns the proper multiplicity map accordingly to the given direction. */
     private THashMap<EdgeSignature,Multiplicity> getEdgeMultMap(
@@ -230,6 +380,63 @@ public final class Shape extends DefaultHostGraph {
     /** Basic getter method. */
     public EquivRelation<ShapeNode> getEquivRelation() {
         return this.equivRel;
+    }
+
+    /**
+     * Looks at the keys of the edge multiplicity maps for an edge signature
+     * that contains the given edge. If no suitable edge signature is found, a
+     * new one is created and returned, but it is not stored.
+     */
+    private EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature result = null;
+        for (EdgeSignature es : this.getEdgeMultMap(direction).keySet()) {
+            if (es.contains(edge, direction)) {
+                result = es;
+                break;
+            }
+        }
+        if (result == null) {
+            ShapeNode node = null;
+            TypeLabel label = edge.label();
+            EquivClass<ShapeNode> ec = null;
+            switch (direction) {
+            case OUTGOING:
+                node = edge.source();
+                ec = this.getEquivClassOf(edge.target());
+                break;
+            case INCOMING:
+                node = edge.target();
+                ec = this.getEquivClassOf(edge.source());
+                break;
+            default:
+                assert false;
+            }
+            result = new EdgeSignature(node, label, ec);
+        }
+        return result;
+    }
+
+    /**
+     * Looks at the keys of the edge multiplicity maps for an edge signature
+     * with the given fields. If no suitable edge signature is found, a new
+     * one is created and returned, but it is not stored.
+     */
+    public EdgeSignature getEdgeSignature(ShapeNode node, TypeLabel label,
+            EquivClass<ShapeNode> ec) {
+        EdgeSignature result = null;
+        dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (EdgeSignature es : this.getEdgeMultMap(direction).keySet()) {
+                if (es.getNode().equals(node) && es.getLabel().equals(label)
+                    && es.getEquivClass().equals(ec)) {
+                    result = es;
+                    break dirLoop;
+                }
+            }
+        }
+        if (result == null) {
+            result = new EdgeSignature(node, label, ec);
+        }
+        return result;
     }
 
     /**
@@ -258,7 +465,7 @@ public final class Shape extends DefaultHostGraph {
         } else {
             // Setting a multiplicity to zero is equivalent to
             // removing all edges in the signature from the shape.
-            // EDUARDO : Check this.
+            // EDUARDO : IMPLEMENT this.
         }
     }
 
@@ -271,6 +478,32 @@ public final class Shape extends DefaultHostGraph {
         return mult;
     }
 
+    /** Basic getter method. */
+    public Multiplicity getEdgeMult(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature es = this.getEdgeSignature(edge, direction);
+        Multiplicity mult = this.getEdgeSigMult(es, direction);
+        return mult;
+    }
+
+    /** Basic getter method. */
+    public Multiplicity getEdgeSigMult(EdgeSignature es, EdgeMultDir direction) {
+        Multiplicity mult = this.getEdgeMultMap(direction).get(es);
+        if (mult == null) {
+            mult = Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
+        }
+        return mult;
+    }
+
+    /**
+     * Returns the equivalence class of the given node. It is assumed that
+     * the given node is in the shape. 
+     */
+    public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
+        assert this.nodeSet().contains(node) : "Node " + node
+            + " is not in the shape!";
+        return this.equivRel.getEquivClassOf(node);
+    }
+
     /** Creates a new equivalence class and adds the given node in it. */
     private EquivClass<ShapeNode> addToNewEquivClass(ShapeNode node) {
         assert !this.isFixed();
@@ -280,19 +513,43 @@ public final class Shape extends DefaultHostGraph {
         return newEc;
     }
 
-    @Override
-    protected boolean isTypeCorrect(Node node) {
-        return node instanceof ShapeNode;
+    /**
+     * Check if the shape is in a state that complies to the shape invariant.
+     * See last item of Def. 7, pg. 10.
+     * This check is expensive. Use it only in assertions.
+     * @return true if the invariant holds, false otherwise.
+     */
+    public boolean isInvariantOK() {
+        boolean result = true;
+        // For all labels.
+        labelLoop: for (TypeLabel label : Util.getBinaryLabels(this)) {
+            // For all nodes in the shape.
+            for (ShapeNode node : this.nodeSet()) {
+                // For all equivalence classes.
+                for (EquivClass<ShapeNode> ec : this.equivRel) {
+                    // Check outgoing multiplicities.
+                    if (Util.getIntersectEdges(this, node, ec, label).isEmpty()) {
+                        EdgeSignature es =
+                            this.getEdgeSignature(node, label, ec);
+                        Multiplicity mult = this.getEdgeSigMult(es, OUTGOING);
+                        if (!mult.isZero()) {
+                            result = false;
+                            break labelLoop;
+                        }
+                    }
+                    // Check incoming multiplicities.
+                    if (Util.getIntersectEdges(this, ec, node, label).isEmpty()) {
+                        EdgeSignature es =
+                            this.getEdgeSignature(node, label, ec);
+                        Multiplicity mult = this.getEdgeSigMult(es, INCOMING);
+                        if (!mult.isZero()) {
+                            result = false;
+                            break labelLoop;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
-
-    @Override
-    protected boolean isTypeCorrect(Edge<?> edge) {
-        return edge instanceof ShapeEdge;
-    }
-
-    public Multiplicity getEdgeSigMult(EdgeSignature es, EdgeMultDir direction) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

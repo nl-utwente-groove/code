@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 /** Mapping from rules to shapes, used in pre-matches and matches. */
-// EDUARDO: Check this class for proper data structures.
 public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     /** Creates an empty rule-to-shape match. */
     public RuleToShapeMap(ShapeFactory factory) {

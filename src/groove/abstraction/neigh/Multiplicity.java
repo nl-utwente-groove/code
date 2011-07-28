@@ -309,9 +309,14 @@ public final class Multiplicity {
         return this.j;
     }
 
-    /** Returns false if the multiplicity equals zero; true, otherwise. */
+    /** Returns false if the lower bound equals zero; true, otherwise. */
     public boolean isPositive() {
         return this.i > 0;
+    }
+
+    /** Returns true if the multiplicity equals zero; false, otherwise. */
+    public boolean isZero() {
+        return this.i == 0 && this.j == 0;
     }
 
     /** Returns the addition of the two given multiplicities. */
