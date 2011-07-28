@@ -71,10 +71,12 @@ public class ShapeFactory extends HostFactory {
     }
 
     /** Returns the singleton instance of this factory. */
-    public static ShapeFactory newInstance() {
-        return new ShapeFactory();
+    public static ShapeFactory instance() {
+        return INSTANCE;
     }
 
     /** Used only as a reference for the constructor. */
     private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0, null);
+    /** The singleton instance of this class. */
+    private static final ShapeFactory INSTANCE = new ShapeFactory();
 }

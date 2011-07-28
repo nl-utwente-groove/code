@@ -80,8 +80,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      */
     private static Multiplicity getEdgeSetMult(THashSet<HostEdge> edges) {
         int setSize = edges.size();
-        return Multiplicity.getMultiplicity(setSize, setSize,
-            MultKind.EDGE_MULT);
+        return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
     }
 
     /** Returns true if both given sets have the same multiplicity. */

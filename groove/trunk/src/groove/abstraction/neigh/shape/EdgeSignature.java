@@ -134,9 +134,4 @@ public final class EdgeSignature {
         return this.equivClass;
     }
 
-    /** Returns true if C is a singleton set. */
-    public boolean isUnique() {
-        return this.equivClass.size() == 1;
-    }
-
 }
