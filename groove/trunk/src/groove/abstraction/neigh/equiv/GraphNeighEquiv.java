@@ -19,7 +19,6 @@ package groove.abstraction.neigh.equiv;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.graph.TypeLabel;
@@ -74,19 +73,11 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // Static Methods
     // ------------------------------------------------------------------------
 
-    /**
-     * Returns the multiplicity of the set of edges given, bounded by the edge
-     * multiplicity bound (\mu) set in the Parameters class. 
-     */
-    private static Multiplicity getEdgeSetMult(THashSet<HostEdge> edges) {
-        int setSize = edges.size();
-        return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
-    }
-
     /** Returns true if both given sets have the same multiplicity. */
     private static boolean haveSameMult(THashSet<HostEdge> s0,
             THashSet<HostEdge> s1) {
-        return getEdgeSetMult(s0).equals(getEdgeSetMult(s1));
+        return Multiplicity.getEdgeSetMult(s0).equals(
+            Multiplicity.getEdgeSetMult(s1));
     }
 
     // ------------------------------------------------------------------------

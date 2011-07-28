@@ -18,14 +18,19 @@ package groove.abstraction.neigh;
 
 import static groove.graph.EdgeRole.BINARY;
 import gnu.trove.THashSet;
-import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+
+import java.util.Set;
 
 /**
  * This class is only a collection of utility methods for abstraction and
@@ -90,37 +95,40 @@ public final class Util {
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static THashSet<HostEdge> getIntersectEdges(HostGraph graph,
-            HostNode src, HostNode tgt, TypeLabel label) {
-        THashSet<HostEdge> result = new THashSet<HostEdge>();
-        for (HostEdge outEdge : graph.outEdgeSet(src)) {
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+            Graph<?,?> graph, N src, N tgt, Label label) {
+        THashSet<E> result = new THashSet<E>();
+        for (Edge<?> outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label) && outEdge.target().equals(tgt)) {
-                result.add(outEdge);
+                result.add((E) outEdge);
             }
         }
         return result;
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static THashSet<HostEdge> getIntersectEdges(HostGraph graph,
-            EquivClass<? extends HostNode> srcs, HostNode tgt, TypeLabel label) {
-        THashSet<HostEdge> result = new THashSet<HostEdge>();
-        for (HostEdge inEdge : graph.inEdgeSet(tgt)) {
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+            Graph<?,?> graph, Set<N> srcs, N tgt, Label label) {
+        THashSet<E> result = new THashSet<E>();
+        for (Edge<?> inEdge : graph.inEdgeSet(tgt)) {
             if (inEdge.label().equals(label) && srcs.contains(inEdge.source())) {
-                result.add(inEdge);
+                result.add((E) inEdge);
             }
         }
         return result;
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
-    public static THashSet<HostEdge> getIntersectEdges(HostGraph graph,
-            HostNode src, EquivClass<? extends HostNode> tgts, TypeLabel label) {
-        THashSet<HostEdge> result = new THashSet<HostEdge>();
-        for (HostEdge outEdge : graph.outEdgeSet(src)) {
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+            Graph<?,?> graph, N src, Set<N> tgts, Label label) {
+        THashSet<E> result = new THashSet<E>();
+        for (Edge<?> outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label)
                 && tgts.contains(outEdge.target())) {
-                result.add(outEdge);
+                result.add((E) outEdge);
             }
         }
         return result;

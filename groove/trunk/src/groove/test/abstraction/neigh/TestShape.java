@@ -142,7 +142,6 @@ public class TestShape {
     public void testShapeBuild4() {
         File file = new File(DIRECTORY + "shape-build-test-8.gst");
         Shape shape = createShape(file);
-        System.out.println(shape);
         assertEquals(3, shape.nodeSet().size());
         assertEquals(2, Util.getBinaryEdges(shape).size());
         Multiplicity twoPlus =

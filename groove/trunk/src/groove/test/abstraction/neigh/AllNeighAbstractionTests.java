@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({TestMultiplicity.class, TestGraphNeighEquiv.class,
-    TestShape.class})
+    TestShape.class, TestPreMatch.class})
 public class AllNeighAbstractionTests {
     // Empty by design.
 }
