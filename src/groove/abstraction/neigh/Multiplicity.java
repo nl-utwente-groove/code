@@ -16,6 +16,11 @@
  */
 package groove.abstraction.neigh;
 
+import groove.graph.Edge;
+import groove.graph.Node;
+
+import java.util.Set;
+
 /**
  * A multiplicity is an interval on \Nat^\omega, closed on both lower and upper
  * bounds. It is used as an approximate way for counting.
@@ -247,6 +252,24 @@ public final class Multiplicity {
     public static Multiplicity scale(Multiplicity mult, int factor) {
         assert factor >= 0;
         return approx(mult.i * factor, mult.j * factor, mult.kind);
+    }
+
+    /**
+     * Returns the multiplicity of the set of nodes given, bounded by the node
+     * multiplicity bound (\nu) set in the Parameters class. 
+     */
+    public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
+        int setSize = nodes.size();
+        return Multiplicity.approx(setSize, setSize, MultKind.NODE_MULT);
+    }
+
+    /**
+     * Returns the multiplicity of the set of edges given, bounded by the edge
+     * multiplicity bound (\mu) set in the Parameters class. 
+     */
+    public static Multiplicity getEdgeSetMult(Set<? extends Edge<?>> edges) {
+        int setSize = edges.size();
+        return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
     }
 
     // ------------------------------------------------------------------------
