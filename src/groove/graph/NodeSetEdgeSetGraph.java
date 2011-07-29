@@ -29,7 +29,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraph<N extends Node,E extends Edge<N>> extends
+public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         AbstractGraph<N,E> implements Cloneable {
     /**
      * Creates a new, named empty graph.

@@ -36,7 +36,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
+public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         AbstractCacheHolder<GraphCache<N,E>> implements Graph<N,E> {
     /**
      * Constructs an abstract named graph.
@@ -68,7 +68,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
     /**
      * Defers the containment question to {@link #edgeSet()}
      */
-    public boolean containsEdge(Edge<?> elem) {
+    public boolean containsEdge(Edge elem) {
         assert isTypeCorrect(elem) : String.format(
             "Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
@@ -252,7 +252,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
     /** 
      * Tests if an edge is of the correct type to be included in this graph.
      */
-    protected boolean isTypeCorrect(Edge<?> edge) {
+    protected boolean isTypeCorrect(Edge edge) {
         return true;
     }
 
@@ -348,12 +348,13 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
      * {@link #addEdgeWithoutCheck(Edge)} for the actual addition of
      * the edge and its incident nodes.
      */
+    @SuppressWarnings("unchecked")
     public boolean addEdge(E edge) {
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
-            addNode(edge.source());
-            addNode(edge.target());
+            addNode((N) edge.source());
+            addNode((N) edge.target());
             addEdgeWithoutCheck(edge);
         }
         return added;
@@ -401,6 +402,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
         return removed;
     }
 
+    @SuppressWarnings("unchecked")
     public boolean mergeNodes(N from, N to) {
         assert isTypeCorrect(from);
         assert isTypeCorrect(to);
@@ -408,12 +410,12 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
             // compute edge replacements and add new edges
             for (E edge : new HashSet<E>(edgeSet(from))) {
                 boolean changed = false;
-                N source = edge.source();
+                N source = (N) edge.source();
                 if (source.equals(from)) {
                     source = to;
                     changed = true;
                 }
-                N target = edge.target();
+                N target = (N) edge.target();
                 if (target.equals(from)) {
                     target = to;
                     changed = true;
@@ -501,7 +503,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
      * @param edgeSet the set of edges to be partitioned
      * @return The set of maximal connected subsets of <code>elementSet</code>
      */
-    static public <N extends Node,E extends Edge<N>> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
+    static public <N extends Node,E extends Edge> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
             Collection<N> nodeSet, Collection<E> edgeSet) {
         // mapping from nodes of elementSet to sets of connected elements
         Map<Element,Pair<Set<N>,Set<E>>> resultMap =
@@ -581,7 +583,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge<N>> extends
      * @see #getCertifier(boolean)
      */
     static private CertificateStrategy<?,?> certificateFactory =
-        new PartitionRefiner<Node,Edge<Node>>((Graph<Node,Edge<Node>>) null);
+        new PartitionRefiner<Node,Edge>((Graph<Node,Edge>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.

@@ -77,7 +77,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     @Override
     public GraphJVertex clone() {
         GraphJVertex clone = (GraphJVertex) super.clone();
-        clone.jVertexLabels = new TreeSet<Edge<?>>();
+        clone.jVertexLabels = new TreeSet<Edge>();
         return clone;
     }
 
@@ -105,7 +105,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      *         <tt>edge</tt> is not compatible with this j-vertex and cannot be
      *         added.
      */
-    public boolean addJVertexLabel(Edge<?> edge) {
+    public boolean addJVertexLabel(Edge edge) {
         assert edge.source() == edge.target() && edge.source() == getNode();
         if (isJVertexLabel(edge)) {
             this.jVertexLabels.add(edge);
@@ -116,7 +116,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
-    protected boolean isJVertexLabel(Edge<?> edge) {
+    protected boolean isJVertexLabel(Edge edge) {
         return edge.getRole() != BINARY
             || getJGraph().isShowLoopsAsNodeLabels();
     }
@@ -130,7 +130,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns an unmodifiable view on the self edges.
      * These are the edges added using {@link #addJVertexLabel(Edge)}.
      */
-    public Set<? extends Edge<?>> getJVertexLabels() {
+    public Set<? extends Edge> getJVertexLabels() {
         return Collections.unmodifiableSet(this.jVertexLabels);
     }
 
@@ -182,7 +182,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         // show the node identity if required
         result.addAll(getNodeIdLines());
         // only add edges that have an unfiltered label
-        for (Edge<?> edge : getJVertexLabels()) {
+        for (Edge edge : getJVertexLabels()) {
             if (!isFiltered(edge)) {
                 result.add(new StringBuilder(getLine(edge)));
             }
@@ -213,7 +213,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * (as returned by {@link #getListLabels()})
      * is being filtered.
      */
-    final protected boolean isFiltered(Edge<?> edge) {
+    final protected boolean isFiltered(Edge edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
             if (getJGraph().isFiltering(label)) {
@@ -228,7 +228,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns the text to be shown for the node label of a given edge.
      * This implementation delegates to {@link Edge#label()}. 
      */
-    protected StringBuilder getLine(Edge<?> edge) {
+    protected StringBuilder getLine(Edge edge) {
         StringBuilder result = new StringBuilder(edge.label().text());
         HTMLConverter.toHtml(result);
         return result;
@@ -241,7 +241,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     public Collection<? extends Label> getListLabels() {
         Collection<Label> result = new ArrayList<Label>();
-        for (Edge<?> edge : getJVertexLabels()) {
+        for (Edge edge : getJVertexLabels()) {
             result.addAll(getListLabels(edge));
         }
         if (getJVertexLabels().isEmpty()) {
@@ -251,7 +251,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    protected Set<? extends Label> getListLabels(Edge<?> edge) {
+    protected Set<? extends Label> getListLabels(Edge edge) {
         return Collections.singleton(edge.label());
     }
 
@@ -406,7 +406,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /** The graph node modelled by this jgraph node. */
     private Node node;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge<?>> jVertexLabels = new TreeSet<Edge<?>>();
+    private Set<Edge> jVertexLabels = new TreeSet<Edge>();
 
     /** Returns a prototype {@link GraphJVertex} for a given {@link GraphJGraph}. */
     public static GraphJVertex getPrototype(GraphJGraph jGraph) {

@@ -43,7 +43,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
+public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
@@ -69,7 +69,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge<N1>> PaigeTarjanMcKay<N1,E1> newInstance(
+    public <N1 extends Node,E1 extends Edge> PaigeTarjanMcKay<N1,E1> newInstance(
             Graph<N1,E1> graph, boolean strong) {
         return new PaigeTarjanMcKay<N1,E1>(graph, strong);
     }

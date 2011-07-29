@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.shape;
 
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -55,7 +56,7 @@ public class ShapeMorphism extends HostGraphMorphism {
     }
 
     @Override
-    public ShapeNode getNode(HostNode key) {
+    public ShapeNode getNode(Node key) {
         return (ShapeNode) super.getNode(key);
     }
 

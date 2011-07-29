@@ -22,7 +22,7 @@ package groove.graph;
  * @version $Revision$
  */
 public abstract class AbstractEdge<N extends Node,L extends Label> implements
-        Edge<N> {
+        Edge {
     /**
      * Creates an edge with a given source node and label.
      */
@@ -106,7 +106,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
         if (obj instanceof Node) {
             result = compareToNode((Node) obj);
         } else {
-            result = compareToEdge((Edge<?>) obj);
+            result = compareToEdge((Edge) obj);
         }
         return result;
     }
@@ -114,7 +114,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     /**
      * Compares this edge to another edge.
      */
-    protected int compareToEdge(Edge<?> other) {
+    protected int compareToEdge(Edge other) {
         int result;
         result = source().compareTo(other.source());
         if (result != 0) {
@@ -152,8 +152,8 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      */
     @Override
     public boolean equals(Object obj) {
-        return isTypeEqual(obj) && isEndEqual((Edge<?>) obj)
-            && isLabelEqual((Edge<?>) obj);
+        return isTypeEqual(obj) && isEndEqual((Edge) obj)
+            && isLabelEqual((Edge) obj);
     }
 
     // -------------------- Object and related methods --------------------
@@ -161,7 +161,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     /**
      * Improves the testing for end point equality.
      */
-    protected boolean isEndEqual(Edge<?> other) {
+    protected boolean isEndEqual(Edge other) {
         return (this.source.equals(other.source()))
             && this.target.equals(other.target());
     }
@@ -183,7 +183,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      * equal end points as another. Callback method from {@link #equals(Object)}
      * .
      */
-    protected boolean isLabelEqual(Edge<?> other) {
+    protected boolean isLabelEqual(Edge other) {
         return label().equals(other.label());
     }
 

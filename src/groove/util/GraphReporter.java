@@ -108,7 +108,7 @@ public class GraphReporter extends CommandLineTool {
         StringBuilder result = new StringBuilder();
         // count the labels
         Bag<Label> labels = new TreeBag<Label>();
-        for (Edge<?> edge : graph.edgeSet()) {
+        for (Edge edge : graph.edgeSet()) {
             labels.add(edge.label());
         }
         for (Map.Entry<Label,? extends Bag.Multiplicity> labelEntry : labels.multiplicityMap().entrySet()) {

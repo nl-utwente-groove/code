@@ -29,8 +29,7 @@ import groove.view.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends GraphTransitionStub, Edge<GraphState>,
-        MatchResult {
+public interface GraphTransition extends GraphTransitionStub, Edge, MatchResult {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 

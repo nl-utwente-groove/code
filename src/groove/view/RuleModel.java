@@ -378,7 +378,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
             result.put(nodeEntry.getValue(), nodeEntry.getKey());
         }
-        for (Map.Entry<? extends Edge<?>,? extends Edge<?>> edgeEntry : map.edgeMap().entrySet()) {
+        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap().entrySet()) {
             result.put(edgeEntry.getValue(), edgeEntry.getKey());
         }
         return result;

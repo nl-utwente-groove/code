@@ -88,13 +88,13 @@ public abstract class GraphPrologCode implements PrologCode {
      * @param term      A term representing an edge
      * @return          An edge
      */
-    public static final Edge<?> getEdge(Term term) throws PrologException {
+    public static final Edge getEdge(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
             JavaObjectTerm jot = (JavaObjectTerm) term;
             if (!(jot.value instanceof Edge)) {
                 PrologException.domainError(GraphPrologCode.EDGE_ATOM, term);
             }
-            return (Edge<?>) jot.value;
+            return (Edge) jot.value;
         } else {
             PrologException.typeError(GraphPrologCode.EDGE_ATOM, term);
         }

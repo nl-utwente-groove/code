@@ -153,7 +153,7 @@ public class RelationCalculator extends GTSAdapter implements
      */
     public NodeRelation computeWildcard(RegExpr.Wildcard expr) {
         NodeRelation result = getFactory().newInstance();
-        for (Edge<?> edge : this.graph.edgeSet()) {
+        for (Edge edge : this.graph.edgeSet()) {
             result.addRelated(edge);
         }
         return result;
@@ -194,42 +194,42 @@ public class RelationCalculator extends GTSAdapter implements
 
     private NodeRelation createRelation(Label label) {
         NodeRelation result = getFactory().newInstance();
-        Set<Edge<?>> edges = getEdgeSet(label);
+        Set<Edge> edges = getEdgeSet(label);
         if (edges != null) {
-            for (Edge<?> edge : edges) {
+            for (Edge edge : edges) {
                 result.addRelated(edge);
             }
         }
         return result;
     }
 
-    private Set<Edge<?>> getEdgeSet(Label label) {
+    private Set<Edge> getEdgeSet(Label label) {
         if (this.labelEdgeMap == null) {
             this.labelEdgeMap = computeLabelEdgeMap();
         }
         return this.labelEdgeMap.get(label.text());
     }
 
-    private Map<String,Set<Edge<?>>> computeLabelEdgeMap() {
-        Map<String,Set<Edge<?>>> result = new HashMap<String,Set<Edge<?>>>();
-        for (Edge<?> edge : this.graph.edgeSet()) {
+    private Map<String,Set<Edge>> computeLabelEdgeMap() {
+        Map<String,Set<Edge>> result = new HashMap<String,Set<Edge>>();
+        for (Edge edge : this.graph.edgeSet()) {
             addToLabelEdgeMap(edge, result);
         }
         return result;
     }
 
     /** Adds an edge to a given label-edge-set-map. */
-    private void addToLabelEdgeMap(Edge<?> edge, Map<String,Set<Edge<?>>> result) {
+    private void addToLabelEdgeMap(Edge edge, Map<String,Set<Edge>> result) {
         String text = edge.label().text();
-        Set<Edge<?>> edges = result.get(text);
+        Set<Edge> edges = result.get(text);
         if (edges == null) {
-            result.put(text, edges = new HashSet<Edge<?>>());
+            result.put(text, edges = new HashSet<Edge>());
         }
         edges.add(edge);
     }
 
     /** Mapping from label test to sets of edges. */
-    private Map<String,Set<Edge<?>>> labelEdgeMap;
+    private Map<String,Set<Edge>> labelEdgeMap;
     /** The graph from which relations are to be computed. */
     private final Graph<?,?> graph;
     /** Factory for creating relations. */

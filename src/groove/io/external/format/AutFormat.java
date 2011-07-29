@@ -173,7 +173,7 @@ public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
         }
         writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(),
             graph.nodeCount());
-        for (Edge<?> edge : graph.edgeSet()) {
+        for (Edge edge : graph.edgeSet()) {
             String format;
             if (edge.label().text().indexOf(',') >= 0) {
                 format = "(%d,\"%s\",%d)%n";

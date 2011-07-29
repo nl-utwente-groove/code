@@ -475,7 +475,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge<?> edge) {
+    protected boolean isTypeCorrect(Edge edge) {
         boolean result =
             edge instanceof RegEdge && edge.label() instanceof RuleLabel;
         if (result) {

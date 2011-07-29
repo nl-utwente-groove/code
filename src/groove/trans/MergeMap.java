@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 import java.util.HashSet;
@@ -46,8 +47,9 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
      * map contains <tt>null</tt>.
      */
     @Override
-    public HostNode getNode(HostNode key) {
-        return internalToExternal(super.getNode(key), key);
+    public HostNode getNode(Node key) {
+        assert key instanceof HostNode;
+        return internalToExternal(super.getNode(key), (HostNode) key);
     }
 
     /**

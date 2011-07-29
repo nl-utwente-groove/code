@@ -42,7 +42,7 @@ import java.util.Queue;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
+public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
@@ -68,7 +68,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge<N1>> SimplePaigeTarjanMcKay<N1,E1> newInstance(
+    public <N1 extends Node,E1 extends Edge> SimplePaigeTarjanMcKay<N1,E1> newInstance(
             Graph<N1,E1> graph, boolean strong) {
         return new SimplePaigeTarjanMcKay<N1,E1>(graph);
     }
@@ -317,8 +317,8 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyNodeCert<N extends Node,E extends Edge<N>> // extends LinkedListCell<NodeCertificate>
-            implements NodeCertificate<N> {
+    static class MyNodeCert<N extends Node,E extends Edge> implements
+            NodeCertificate<N> {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -437,7 +437,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
      * @author Arend Rensink
      * @version $Revision $
      */
-    static class MyValueNodeCert<N extends Node,E extends Edge<N>> extends
+    static class MyValueNodeCert<N extends Node,E extends Edge> extends
             MyNodeCert<N,E> {
         /**
          * Constructs a new certificate node. The incidence count (i.e., the
@@ -465,7 +465,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
         private final ValueNode node;
     }
 
-    static class MyEdge1Cert<N extends Node,E extends Edge<N>> implements
+    static class MyEdge1Cert<N extends Node,E extends Edge> implements
             EdgeCertificate<N,E> {
         MyEdge1Cert(E edge, MyNodeCert<N,E> sourceCert) {
             this.edge = edge;
@@ -510,7 +510,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge<N>> extends
         private final int value;
     }
 
-    static class MyEdge2Cert<N extends Node,E extends Edge<N>> extends
+    static class MyEdge2Cert<N extends Node,E extends Edge> extends
             MyEdge1Cert<N,E> {
         MyEdge2Cert(SimplePaigeTarjanMcKay<?,E> strategy, E edge,
                 MyNodeCert<N,E> sourceCert, MyNodeCert<N,E> targetCert) {

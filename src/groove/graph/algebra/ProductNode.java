@@ -115,6 +115,7 @@ public class ProductNode extends AbstractNode implements RuleNode {
         Arrays.asList();
     static final private char TIMES_CHAR = '\u2a09';
     /** Type label of product nodes. */
+    @SuppressWarnings("unused")
     static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(
         EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
 }

@@ -116,7 +116,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * label, depending on #isShowAnchors().
      */
     @Override
-    public StringBuilder getLine(Edge<?> edge) {
+    public StringBuilder getLine(Edge edge) {
         String text =
             getJGraph().isShowAnchors()
                     ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())

@@ -39,7 +39,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     }
 
     @Override
-    public GraphJEdge newJEdge(Edge<?> edge) {
+    public GraphJEdge newJEdge(Edge edge) {
         return new LTSJEdge(getJGraph(), (GraphTransition) edge);
     }
 
@@ -75,7 +75,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     }
 
     @Override
-    protected StringBuilder getLine(Edge<?> edge) {
+    protected StringBuilder getLine(Edge edge) {
         String text =
             getJGraph().isShowAnchors()
                     ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())

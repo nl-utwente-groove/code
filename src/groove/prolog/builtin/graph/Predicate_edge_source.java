@@ -32,7 +32,7 @@ public class Predicate_edge_source extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Edge<?> edge = getEdge(args[0]);
+        Edge edge = getEdge(args[0]);
         Term nodeTerm = new JavaObjectTerm(edge.source());
         return interpreter.unify(args[1], nodeTerm);
     }

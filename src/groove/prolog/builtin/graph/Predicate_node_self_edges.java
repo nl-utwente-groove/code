@@ -100,7 +100,7 @@ public class Predicate_node_self_edges extends GraphPrologCode {
         while (bi.nodes.hasNext()) {
             Node n = bi.nodes.next();
             List<String> edgeLabels = new ArrayList<String>();
-            for (Edge<?> edge : bi.graph.outEdgeSet(n)) {
+            for (Edge edge : bi.graph.outEdgeSet(n)) {
                 if (edge.target() == n && edge.source() == n) {
                     edgeLabels.add(edge.label().text());
                 }

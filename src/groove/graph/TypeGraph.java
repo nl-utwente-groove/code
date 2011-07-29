@@ -766,7 +766,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge<?> edge) {
+    protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof TypeEdge;
     }
 

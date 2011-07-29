@@ -553,7 +553,7 @@ final public class AspectJGraph extends GraphJGraph {
         if (elem instanceof Node) {
             cell = getModel().getJCellForNode((Node) elem);
         } else if (elem instanceof Edge) {
-            cell = getModel().getJCellForEdge((Edge<?>) elem);
+            cell = getModel().getJCellForEdge((Edge) elem);
         }
         if (cell != null) {
             if (cell instanceof AspectJEdge

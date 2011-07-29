@@ -112,7 +112,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public AspectJEdge newJEdge(Edge<?> edge) {
+    public AspectJEdge newJEdge(Edge edge) {
         if (edge == null) {
             return new AspectJEdge(getJGraph());
         } else {
@@ -127,7 +127,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * aspects conflict with previously added edges (but an error is added
      * to the edge).
      */
-    private boolean addEdge(Edge<?> edge, boolean mustAdd) {
+    private boolean addEdge(Edge edge, boolean mustAdd) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         boolean first = getEdges().isEmpty();
         AspectEdge oldEdge = getEdge();
@@ -166,7 +166,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * added equal those of this j-edge, and the superclass is also willing.
      */
     @Override
-    public boolean addEdge(Edge<?> edge) {
+    public boolean addEdge(Edge edge) {
         return addEdge(edge, false);
     }
 
@@ -285,7 +285,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * On demand prefixes the label with the edge's aspect values.
      */
     @Override
-    public StringBuilder getLine(Edge<?> edge) {
+    public StringBuilder getLine(Edge edge) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         StringBuilder result = new StringBuilder();
         result.append(aspectEdge.getDisplayLabel().text());
@@ -311,7 +311,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public Set<? extends Label> getListLabels(Edge<?> edge) {
+    public Set<? extends Label> getListLabels(Edge edge) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         Set<? extends Label> result;
         Label label = aspectEdge.getRuleLabel();

@@ -75,11 +75,11 @@ public final class GraphToTikz {
     /** The jGraph to be output. */
     private final GraphJGraph jGraph;
     /** The underlying model for jGraph. */
-    private final GraphJModel<Node,Edge<Node>> model;
+    private final GraphJModel<Node,Edge> model;
     /** The underlying Groove graph connected to the jGraph. */
-    private final Graph<Node,Edge<Node>> graph;
+    private final Graph<Node,Edge> graph;
     /** The layout map of the graph. */
-    private final LayoutMap<Node,Edge<Node>> layoutMap;
+    private final LayoutMap<Node,Edge> layoutMap;
     /** The color map of the graph. */
     private final Map<GraphJVertex,Color> colorMap;
     /** The builder that holds the Tikz string. */
@@ -96,7 +96,7 @@ public final class GraphToTikz {
     @SuppressWarnings("unchecked")
     private GraphToTikz(GraphJGraph jGraph) {
         this.jGraph = jGraph;
-        this.model = (GraphJModel<Node,Edge<Node>>) this.jGraph.getModel();
+        this.model = (GraphJModel<Node,Edge>) this.jGraph.getModel();
         this.graph = this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.colorMap = this.createColorMap();
@@ -108,7 +108,7 @@ public final class GraphToTikz {
     // ------------------------------------------------------------------------
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge<N>> void export(
+    static public <N extends Node,E extends Edge> void export(
             GraphJGraph graph, PrintWriter writer) {
         writer.print(GraphToTikz.convert(graph));
     }
@@ -510,7 +510,7 @@ public final class GraphToTikz {
                 this.jGraph.getSelectionModel().isCellSelected(vertex));
         }
 
-        for (Edge<Node> edge : this.graph.edgeSet()) {
+        for (Edge edge : this.graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
@@ -1372,7 +1372,7 @@ public final class GraphToTikz {
     }
 
     private void appendEdgeLabel(GraphJEdge edge) {
-        Edge<?> e = edge.getEdge();
+        Edge e = edge.getEdge();
         if (e instanceof AspectEdge) {
             RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
             if (ruleLabel != null && ruleLabel.isMatchable()

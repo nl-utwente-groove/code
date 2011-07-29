@@ -32,7 +32,7 @@ public class CtrlJEdge extends GraphJEdge {
     }
 
     @Override
-    public CtrlJEdge newJEdge(Edge<?> edge) {
+    public CtrlJEdge newJEdge(Edge edge) {
         return new CtrlJEdge(getJGraph(), (CtrlTransition) edge);
     }
 

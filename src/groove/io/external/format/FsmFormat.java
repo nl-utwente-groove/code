@@ -88,7 +88,7 @@ public class FsmFormat extends AbstractExternalFileFormat<Graph<?,?>> {
             nr++;
         }
         writer.println("---");
-        for (Edge<?> edge : graph.edgeSet()) {
+        for (Edge edge : graph.edgeSet()) {
             writer.println(nodeMap.get(edge.source()) + " "
                 + nodeMap.get(edge.target()) + " " + "\"" + edge.label() + "\"");
         }

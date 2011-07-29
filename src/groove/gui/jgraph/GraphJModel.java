@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphJModel<N extends Node,E extends Edge<N>> extends
+public class GraphJModel<N extends Node,E extends Edge> extends
         DefaultGraphModel {
     /**
      * Creates a new GraphJModel instance on top of a given Graph, with given
@@ -181,7 +181,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
         if (elem instanceof Node) {
             return getJCellForNode((Node) elem);
         } else {
-            return getJCellForEdge((Edge<?>) elem);
+            return getJCellForEdge((Edge) elem);
         }
     }
 
@@ -195,7 +195,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      *         || result instanceof JEdge &&
      *         result.labels().contains(edge.label())
      */
-    public GraphJCell getJCellForEdge(Edge<?> edge) {
+    public GraphJCell getJCellForEdge(Edge edge) {
         return this.edgeJCellMap.get(edge);
     }
 
@@ -219,7 +219,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
             GraphInfo.setLayoutMap(getGraph(), currentLayout);
         }
         if (jCell instanceof GraphJEdge) {
-            for (Edge<?> edge : ((GraphJEdge) jCell).getEdges()) {
+            for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
                 currentLayout.putEdge((E) edge, jCell.getAttributes());
             }
         } else {
@@ -293,6 +293,7 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
      * existing j-edge, if the edge can be represented by it. Otherwise, it will
      * be a new j-edge.
      */
+    @SuppressWarnings("unchecked")
     protected GraphJCell addEdge(E edge) {
         // first try to add the edge as vertex label to its source vertex
         if (edge.source() == edge.target()
@@ -304,8 +305,8 @@ public class GraphJModel<N extends Node,E extends Edge<N>> extends
                 return jVertex;
             }
         }
-        N source = edge.source();
-        N target = edge.target();
+        N source = (N) edge.source();
+        N target = (N) edge.target();
         // maybe a JEdge between this source and target is already in the
         // JGraph
         Set<GraphJEdge> outJEdges = this.addedOutJEdges.get(source);

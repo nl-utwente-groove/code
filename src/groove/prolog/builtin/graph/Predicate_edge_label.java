@@ -32,7 +32,7 @@ public class Predicate_edge_label extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Edge<?> edge = getEdge(args[0]);
+        Edge edge = getEdge(args[0]);
         Term labelTerm = AtomTerm.get(edge.label().text());
         return interpreter.unify(args[1], labelTerm);
     }
