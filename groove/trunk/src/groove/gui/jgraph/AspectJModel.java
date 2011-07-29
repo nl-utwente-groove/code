@@ -84,7 +84,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Specialises the return type. */
     @Override
-    public AspectJCell getJCellForEdge(Edge<?> edge) {
+    public AspectJCell getJCellForEdge(Edge edge) {
         return (AspectJCell) super.getJCellForEdge(edge);
     }
 
@@ -188,7 +188,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge) {
-                    errorCell = getJCell(((Edge<?>) errorObject).source());
+                    errorCell = getJCell(((Edge) errorObject).source());
                 }
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);

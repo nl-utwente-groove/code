@@ -27,7 +27,7 @@ import java.util.Set;
  * and target nodes and edge label.
  * @version $Revision$ $Date: 2008-01-30 09:32:52 $
  */
-public interface Graph<N extends Node,E extends Edge<N>> extends Fixable {
+public interface Graph<N extends Node,E extends Edge> extends Fixable {
     /**
      * Returns the set of nodes of this graph. The return value is an
      * unmodifiable view of the underlying node set, which is <i>not</i>
@@ -125,7 +125,7 @@ public interface Graph<N extends Node,E extends Edge<N>> extends Fixable {
      * Tests whether this graph contains a given edge.
      * @param edge the edge of which the presence is tested.
      */
-    boolean containsEdge(Edge<?> edge);
+    boolean containsEdge(Edge edge);
 
     // -------------------- Commands -----------------
 

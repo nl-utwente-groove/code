@@ -74,7 +74,7 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
     private final AspectGraph source;
 
     /** Mapping from source graph elements to resource elements. */
-    abstract public static class ModelMap<N extends Node,E extends Edge<N>>
+    abstract public static class ModelMap<N extends Node,E extends Edge>
             extends ElementMap<AspectNode,AspectEdge,N,E> {
         /**
          * Creates a new map, on the basis of a given factory.

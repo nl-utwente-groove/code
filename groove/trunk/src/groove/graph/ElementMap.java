@@ -27,7 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ElementMap<SN extends Node,SE extends Edge<SN>,TN extends Node,TE extends Edge<TN>>
+public class ElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
         implements Cloneable {
     /**
      * Constructs an empty map.
@@ -65,7 +65,7 @@ public class ElementMap<SN extends Node,SE extends Edge<SN>,TN extends Node,TE e
     /**
      * Returns the image for a given node key.
      */
-    public TN getNode(SN key) {
+    public TN getNode(Node key) {
         return nodeMap().get(key);
     }
 

@@ -88,7 +88,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public boolean addJVertexLabel(Edge<?> edge) {
+    public boolean addJVertexLabel(Edge edge) {
         boolean result = super.addJVertexLabel(edge);
         if (result) {
             this.errors.addAll(((AspectEdge) edge).getErrors());
@@ -97,7 +97,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    protected boolean isJVertexLabel(Edge<?> edge) {
+    protected boolean isJVertexLabel(Edge edge) {
         return super.isJVertexLabel(edge)
             || ((AspectEdge) edge).getKind() == REMARK;
     }
@@ -371,7 +371,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * On demand prefixes the label with the edge's aspect values.
      */
     @Override
-    protected StringBuilder getLine(Edge<?> edge) {
+    protected StringBuilder getLine(Edge edge) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         aspectEdge.testFixed(true);
         StringBuilder result = new StringBuilder();
@@ -453,7 +453,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return Collections.emptySet();
         } else {
             result = new ArrayList<Label>();
-            for (Edge<?> edge : getJVertexLabels()) {
+            for (Edge edge : getJVertexLabels()) {
                 result.addAll(getListLabels(edge));
             }
             Aspect attrAspect = getNode().getAttrAspect();
@@ -476,7 +476,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    protected Set<? extends Label> getListLabels(Edge<?> edge) {
+    protected Set<? extends Label> getListLabels(Edge edge) {
         AspectEdge aspectEdge = (AspectEdge) edge;
         Set<? extends Label> result;
         Label label = aspectEdge.getDisplayLabel();

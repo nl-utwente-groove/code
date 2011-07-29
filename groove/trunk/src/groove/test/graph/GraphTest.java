@@ -45,7 +45,7 @@ import org.junit.Test;
  * @version $Revision$
  */
 @SuppressWarnings("all")
-public abstract class GraphTest<N extends Node,E extends Edge<N>> {
+public abstract class GraphTest<N extends Node,E extends Edge> {
     static public final String MATCH_DOM_NAME = "match-dom-";
     static public final String MATCH_COD_NAME = "match-cod";
     static public final String ISO_GRAPH_NAME = "iso-";

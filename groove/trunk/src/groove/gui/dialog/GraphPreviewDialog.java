@@ -1,5 +1,6 @@
 package groove.gui.dialog;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.gui.DisplayKind;
 import groove.gui.JGraphPanel;
@@ -59,7 +60,7 @@ public class GraphPreviewDialog extends JDialog {
             jGraph =
                 GraphJGraph.createJGraph(this.graph, new AttributeFactory() {
                     @Override
-                    public AttributeMap getAttributes(groove.graph.Edge<?> edge) {
+                    public AttributeMap getAttributes(Edge edge) {
                         return null;
                     }
 

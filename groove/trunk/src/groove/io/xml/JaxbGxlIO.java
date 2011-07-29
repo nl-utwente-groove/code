@@ -149,7 +149,7 @@ public class JaxbGxlIO implements GxlIO {
     }
 
     /** Adds a layout attribute to a gxlEdge. */
-    private void layout(LayoutMap<?,?> map, Edge<?> edge, EdgeType gxl) {
+    private void layout(LayoutMap<?,?> map, Edge edge, EdgeType gxl) {
         if (map == null) {
             return;
         }
@@ -230,7 +230,7 @@ public class JaxbGxlIO implements GxlIO {
             }
         }
         // add the edges
-        for (Edge<?> edge : graph.edgeSet()) {
+        for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
             String prefixedLabel = TypeLabel.toPrefixedString(edge.label());
             if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
@@ -250,9 +250,9 @@ public class JaxbGxlIO implements GxlIO {
                 labelStore.getDirectSubtypeMap();
             for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : subtypeMap.entrySet()) {
                 for (TypeLabel subtype : subtypeEntry.getValue()) {
-                    for (Edge<?> subtypeEdge : graph.labelEdgeSet(subtype)) {
+                    for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {
                         Label supertype = subtypeEntry.getKey();
-                        for (Edge<?> supertypeEdge : graph.labelEdgeSet(supertype)) {
+                        for (Edge supertypeEdge : graph.labelEdgeSet(supertype)) {
                             nodesEdges.add(createGxlEdge(nodeMap,
                                 subtypeEdge.source(), SUBTYPE_PREFIX,
                                 supertypeEdge.source()));

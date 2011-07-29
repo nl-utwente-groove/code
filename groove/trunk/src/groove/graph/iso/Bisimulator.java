@@ -33,7 +33,7 @@ import groove.util.TreeIntSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Bisimulator<N extends Node,E extends Edge<N>> extends
+public class Bisimulator<N extends Node,E extends Edge> extends
         CertificateStrategy<N,E> {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
@@ -45,7 +45,7 @@ public class Bisimulator<N extends Node,E extends Edge<N>> extends
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge<N1>> CertificateStrategy<N1,E1> newInstance(
+    public <N1 extends Node,E1 extends Edge> CertificateStrategy<N1,E1> newInstance(
             Graph<N1,E1> graph, boolean strong) {
         return new Bisimulator<N1,E1>(graph);
     }
@@ -404,7 +404,7 @@ public class Bisimulator<N extends Node,E extends Edge<N>> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge2Cert<N extends Node,E extends Edge<N>> extends
+    static private class MyEdge2Cert<N extends Node,E extends Edge> extends
             Certificate<E> implements EdgeCertificate<N,E> {
         /**
          * Constructs a certificate for a binary edge.
@@ -494,7 +494,7 @@ public class Bisimulator<N extends Node,E extends Edge<N>> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge1Cert<N extends Node,E extends Edge<N>> extends
+    static private class MyEdge1Cert<N extends Node,E extends Edge> extends
             Certificate<E> implements EdgeCertificate<N,E> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public MyEdge1Cert(E edge, MyNodeCert<?> source) {

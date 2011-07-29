@@ -40,7 +40,7 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayoutMap<N extends Node,E extends Edge<N>> {
+public class LayoutMap<N extends Node,E extends Edge> {
     /**
      * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
      * groove node.
@@ -237,7 +237,7 @@ public class LayoutMap<N extends Node,E extends Edge<N>> {
     /**
      * Composes the inverse of a given element map in front of this layout map.
      */
-    public <OtherN extends Node,OtherE extends Edge<OtherN>> LayoutMap<OtherN,OtherE> afterInverse(
+    public <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> afterInverse(
             ElementMap<N,E,OtherN,OtherE> other) {
         LayoutMap<OtherN,OtherE> result = newInstance();
         for (Map.Entry<N,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
@@ -258,7 +258,7 @@ public class LayoutMap<N extends Node,E extends Edge<N>> {
     /**
      * Specialises the return type of the super method to {@link LayoutMap}.
      */
-    protected <OtherN extends Node,OtherE extends Edge<OtherN>> LayoutMap<OtherN,OtherE> newInstance() {
+    protected <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> newInstance() {
         return new LayoutMap<OtherN,OtherE>();
     }
 

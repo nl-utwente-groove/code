@@ -125,7 +125,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge<?> edge) {
+    protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof ShapeEdge;
     }
 

@@ -61,7 +61,7 @@ public class LayoutIO {
     }
 
     /** Writes a layout map in the correct format to a given output stream. */
-    public <N extends Node,E extends Edge<N>> void writeLayout(
+    public <N extends Node,E extends Edge> void writeLayout(
             LayoutMap<N,E> layoutMap, OutputStream out) {
         // if there is layout information, create a file for it
         PrintWriter layoutWriter = new PrintWriter(out);
@@ -389,7 +389,7 @@ public class LayoutIO {
     /**
      * Converts a graph edge plus layout information to a string.
      */
-    private String toString(Edge<?> edge, JEdgeLayout layout) {
+    private String toString(Edge edge, JEdgeLayout layout) {
         StringBuffer result = new StringBuffer();
         result.append(EDGE_PREFIX + " ");
         result.append(edge.source() + " ");

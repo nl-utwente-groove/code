@@ -30,7 +30,7 @@ public class Predicate_edge_role_flag extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Edge<?> edge = getEdge(args[0]);
+        Edge edge = getEdge(args[0]);
 
         if (edge.getRole() == EdgeRole.FLAG) {
             return SUCCESS_LAST;

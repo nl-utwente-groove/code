@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class IsoChecker<N extends Node,E extends Edge<N>> {
+public class IsoChecker<N extends Node,E extends Edge> {
     /**
      * Empty constructor, for the singleton instance of this class.
      * @param strong if <code>true</code>, the checker will not returns false
@@ -171,7 +171,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 Set<?> domEdgeSet, codEdgeSet;
                 if (domCertifier == null || codCertifier == null) {
                     // copy the edge set of the codomain to avoid sharing problems
-                    codEdgeSet = new HashSet<Edge<?>>(cod.edgeSet());
+                    codEdgeSet = new HashSet<Edge>(cod.edgeSet());
                     domEdgeSet = dom.edgeSet();
                 } else {
                     codEdgeSet = codCertifier.getCertificateMap().keySet();
@@ -259,6 +259,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
      * @param codNodes list of nodes (from the codomain) to compare 
      * in addition to the graphs themselves
      */
+    @SuppressWarnings("unchecked")
     private boolean areCertEqual(CertificateStrategy<N,E> dom,
             CertificateStrategy<N,E> cod, N[] domNodes, N[] codNodes) {
         boolean result;
@@ -284,9 +285,10 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 E edgeKey = domEdgeCert.getElement();
                 E edgeImage = image.getSingleton();
                 result =
-                    checkNodeMap(nodeMap, edgeKey.source(), edgeImage.source())
-                        && checkNodeMap(nodeMap, edgeKey.target(),
-                            edgeImage.target());
+                    checkNodeMap(nodeMap, (N) edgeKey.source(),
+                        (N) edgeImage.source())
+                        && checkNodeMap(nodeMap, (N) edgeKey.target(),
+                            (N) edgeImage.target());
             }
         }
         if (result && domNodes != null) {
@@ -490,11 +492,11 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 i--;
             } else {
                 E key = item.key;
-                N keyTarget = key.target();
-                N keySource = key.source();
+                N keyTarget = (N) key.target();
+                N keySource = (N) key.source();
                 E image = records[i].next();
-                N imageSource = image.source();
-                N imageTarget = image.target();
+                N imageSource = (N) image.source();
+                N imageTarget = (N) image.target();
                 if (item.sourcePreMatched) {
                     if (!result.getNode(keySource).equals(imageSource)) {
                         // the source node had a different image; take next edge
@@ -563,6 +565,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private List<IsoSearchItem> computePlan(
             CertificateStrategy<N,E> domCertifier,
             CertificateStrategy<N,E> codCertifier, Morphism<N,E> resultMap,
@@ -606,7 +609,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 subIter.remove();
                 // add incident edges from the source node, if that was not
                 // already matched
-                N keySource = next.key.source();
+                N keySource = (N) next.key.source();
                 next.sourcePreMatched = !connectedNodes.add(keySource);
                 if (!next.sourcePreMatched) {
                     for (E edge : dom.edgeSet(keySource)) {
@@ -618,7 +621,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
                 }
                 // add incident edges from the target node, if that was not
                 // already matched
-                N keyTarget = next.key.target();
+                N keyTarget = (N) next.key.target();
                 next.targetPreMatched = !connectedNodes.add(keyTarget);
                 if (!next.targetPreMatched) {
                     for (E edge : dom.edgeSet(keyTarget)) {
@@ -796,14 +799,15 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
+    @SuppressWarnings("unchecked")
     private boolean setEdge(E key, E value, Morphism<N,E> result,
             Set<N> connectedNodes, Set<N> usedCodNodes) {
-        if (!setNode(key.source(), value.source(), result, connectedNodes,
-            usedCodNodes)) {
+        if (!setNode((N) key.source(), (N) value.source(), result,
+            connectedNodes, usedCodNodes)) {
             return false;
         }
-        if (!setNode(key.target(), value.target(), result, connectedNodes,
-            usedCodNodes)) {
+        if (!setNode((N) key.target(), (N) value.target(), result,
+            connectedNodes, usedCodNodes)) {
             return false;
         }
         result.putEdge(key, value);
@@ -889,6 +893,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean checkIsomorphism(Graph<N,E> dom, Morphism<N,E> map) {
         for (E edge : dom.edgeSet()) {
             if (edge.source() != edge.target()
@@ -899,8 +904,8 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
         }
         for (Map.Entry<E,E> edgeEntry : map.edgeMap().entrySet()) {
             E key = edgeEntry.getKey();
-            N keySource = key.source();
-            N keyTarget = key.target();
+            N keySource = (N) key.source();
+            N keyTarget = (N) key.target();
             E value = edgeEntry.getValue();
             if (!map.getNode(keySource).equals(value.source())) {
                 System.out.printf(
@@ -1002,12 +1007,12 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
      *        negatives.
      */
     @SuppressWarnings("unchecked")
-    static public <N extends Node,E extends Edge<N>> IsoChecker<N,E> getInstance(
+    static public <N extends Node,E extends Edge> IsoChecker<N,E> getInstance(
             boolean strong) {
         // initialise lazily to avoid initialisation circularities
         if (strongInstance == null) {
-            strongInstance = new IsoChecker<Node,Edge<Node>>(true);
-            weakInstance = new IsoChecker<Node,Edge<Node>>(false);
+            strongInstance = new IsoChecker<Node,Edge>(true);
+            weakInstance = new IsoChecker<Node,Edge>(false);
 
         }
         return (IsoChecker<N,E>) (strong ? strongInstance : weakInstance);
@@ -1253,7 +1258,7 @@ public class IsoChecker<N extends Node,E extends Edge<N>> {
     // circularities in class initialisation
     /** Certificate factory for testing purposes. */
     private final CertificateStrategy<?,?> certificateFactory =
-        new PartitionRefiner<Node,Edge<Node>>(null);
+        new PartitionRefiner<Node,Edge>(null);
 
     private class IsoSearchPair implements Comparable<IsoSearchPair> {
         /** Constructs an instance from given data. */

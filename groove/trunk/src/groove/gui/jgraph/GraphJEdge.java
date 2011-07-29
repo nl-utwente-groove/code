@@ -52,7 +52,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    GraphJEdge(GraphJGraph jGraph, Edge<?> edge) {
+    GraphJEdge(GraphJGraph jGraph, Edge edge) {
         this(jGraph);
         this.source = edge.source();
         this.target = edge.target();
@@ -104,14 +104,14 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      *          <tt>edge.target() == getTargetNode()</tt>
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(Edge<?> edge) {
+    public boolean addEdge(Edge edge) {
         assert edge.source().equals(getSourceNode());
         assert edge.target().equals(getTargetNode());
         return this.edges.add(edge);
     }
 
     /** Replaces an edge with another, equal one. */
-    void replaceEdge(Edge<?> edge) {
+    void replaceEdge(Edge edge) {
         this.edges.remove(edge);
         this.edges.add(edge);
     }
@@ -122,7 +122,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     @Override
     public GraphJEdge clone() {
         GraphJEdge clone = (GraphJEdge) super.clone();
-        clone.edges = new TreeSet<Edge<?>>();
+        clone.edges = new TreeSet<Edge>();
         return clone;
     }
 
@@ -130,7 +130,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
-    public GraphJEdge newJEdge(Edge<?> edge) {
+    public GraphJEdge newJEdge(Edge edge) {
         return new GraphJEdge(getJGraph(), edge);
     }
 
@@ -254,14 +254,14 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
-    public Set<? extends Edge<?>> getEdges() {
+    public Set<? extends Edge> getEdges() {
         return Collections.unmodifiableSet(this.edges);
     }
 
     /**
      * Returns the first edge from the set of underlying edges.
      */
-    public Edge<?> getEdge() {
+    public Edge getEdge() {
         return this.edges.isEmpty() ? null : this.edges.iterator().next();
     }
 
@@ -272,7 +272,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (Edge<?> edge : getEdges()) {
+        for (Edge edge : getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(edge)) {
                 result.add(getLine(edge));
@@ -287,7 +287,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * (as returned by {@link #getListLabels()})
      * is being filtered.
      */
-    final protected boolean isFiltered(Edge<?> edge) {
+    final protected boolean isFiltered(Edge edge) {
         boolean result = false;
         for (Label label : getListLabels(edge)) {
             if (getJGraph().isFiltering(label)) {
@@ -303,7 +303,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * edge label) from a given edge.
      * @see #getLines()
      */
-    protected StringBuilder getLine(Edge<?> edge) {
+    protected StringBuilder getLine(Edge edge) {
         return new StringBuilder(edge.label().text());
     }
 
@@ -313,14 +313,14 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      */
     public Collection<? extends Label> getListLabels() {
         List<Label> result = new ArrayList<Label>();
-        for (Edge<?> edge : getEdges()) {
+        for (Edge edge : getEdges()) {
             result.addAll(getListLabels(edge));
         }
         return result;
     }
 
     /** Returns the listable labels on a given edge. */
-    public Set<? extends Label> getListLabels(Edge<?> edge) {
+    public Set<? extends Label> getListLabels(Edge edge) {
         return Collections.singleton(edge.label());
     }
 
@@ -379,7 +379,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** Target node of the underlying graph edges. */
     private Node target;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge<?>> edges = new TreeSet<Edge<?>>();
+    private Set<Edge> edges = new TreeSet<Edge>();
 
     private final GraphJGraph jGraph;
     private boolean layoutable;

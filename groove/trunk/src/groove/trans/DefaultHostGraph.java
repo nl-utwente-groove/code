@@ -69,7 +69,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * Turns a given graph into a host graph,
      * by creating the appropriate types of nodes and edges.
      */
-    public <N extends Node,E extends Edge<N>> DefaultHostGraph(Graph<N,E> graph) {
+    public <N extends Node,E extends Edge> DefaultHostGraph(Graph<N,E> graph) {
         this(graph.getName());
         ElementMap<N,E,HostNode,HostEdge> map =
             new ElementMap<N,E,HostNode,HostEdge>(getFactory());
@@ -136,7 +136,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     @Override
-    protected boolean isTypeCorrect(Edge<?> edge) {
+    protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof HostEdge;
     }
 

@@ -17,7 +17,7 @@
 package groove.graph;
 
 /** Factory class for graph elements. */
-public interface ElementFactory<N extends Node,E extends Edge<N>> {
+public interface ElementFactory<N extends Node,E extends Edge> {
     /** Creates a node with a given number. */
     N createNode(int nr);
 

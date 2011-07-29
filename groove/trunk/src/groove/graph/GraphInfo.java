@@ -33,7 +33,7 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
+public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     /** Constructs a copy of an existing information object. */
     public GraphInfo(GraphInfo<?,?> info) {
         this.data = new HashMap<String,Object>(info.getData());
@@ -130,8 +130,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * certain value.
      * @see #getLayoutMap()
      */
-    public void setLayoutMap(
-            LayoutMap<? extends Node,? extends Edge<N>> layoutMap) {
+    public void setLayoutMap(LayoutMap<? extends Node,? extends Edge> layoutMap) {
         this.data.put(LAYOUT_KEY, layoutMap);
     }
 
@@ -229,7 +228,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * @return a non-<code>null</code> value which equals (afterwards)
      *         <code>graph.getInfo()</code>
      */
-    public static <N extends Node,E extends Edge<N>> GraphInfo<N,E> getInfo(
+    public static <N extends Node,E extends Edge> GraphInfo<N,E> getInfo(
             Graph<N,E> graph, boolean create) {
         GraphInfo<N,E> result = graph.getInfo();
         if (result == null && create) {
@@ -243,7 +242,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Convenience method to indicate if a graph has a non-empty set of errors.
      * @see #getErrors()
      */
-    public static <N extends Node,E extends Edge<N>> boolean hasErrors(
+    public static <N extends Node,E extends Edge> boolean hasErrors(
             Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.getErrors() != null;
@@ -254,7 +253,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * @return a list of errors, of {@code null} if the errors were not initialised
      * @see #getErrors()
      */
-    public static <N extends Node,E extends Edge<N>> List<FormatError> getErrors(
+    public static <N extends Node,E extends Edge> List<FormatError> getErrors(
             Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
@@ -268,7 +267,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Convenience method to add a list of errors to a graph.
      * @see #addErrors(List)
      */
-    public static <N extends Node,E extends Edge<N>> void addErrors(
+    public static <N extends Node,E extends Edge> void addErrors(
             Graph<N,E> graph, List<FormatError> errors) {
         getInfo(graph, true).addErrors(errors);
     }
@@ -277,7 +276,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Convenience method to set the list of format errors of a graph.
      * @see #setErrors(Collection)
      */
-    public static <N extends Node,E extends Edge<N>> void setErrors(
+    public static <N extends Node,E extends Edge> void setErrors(
             Graph<N,E> graph, Collection<FormatError> errors) {
         if (errors != null) {
             assert !graph.isFixed();
@@ -288,8 +287,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /**
      * Convenience method to retrieve the file of a graph.
      */
-    public static <N extends Node,E extends Edge<N>> File getFile(
-            Graph<N,E> graph) {
+    public static <N extends Node,E extends Edge> File getFile(Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         return new File(graphInfo.getFile());
     }
@@ -297,7 +295,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /**
      * Convenience method to set the file of a graph.
      */
-    public static <N extends Node,E extends Edge<N>> void setFile(
+    public static <N extends Node,E extends Edge> void setFile(
             Graph<N,E> graph, String file) {
         if (file != null) {
             assert !graph.isFixed();
@@ -308,7 +306,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /**
      * Convenience method to test if a graph contains layout information.
      */
-    public static <N extends Node,E extends Edge<N>> boolean hasLayoutMap(
+    public static <N extends Node,E extends Edge> boolean hasLayoutMap(
             Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         return graphInfo != null && graphInfo.hasLayoutMap();
@@ -317,7 +315,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /**
      * Convenience method to retrieve the layout map from a graph.
      */
-    public static <N extends Node,E extends Edge<N>> LayoutMap<N,E> getLayoutMap(
+    public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
             Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
         if (graphInfo == null) {
@@ -330,7 +328,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
     /**
      * Convenience method to set the layout map of a graph.
      */
-    public static <N extends Node,E extends Edge<N>> void setLayoutMap(
+    public static <N extends Node,E extends Edge> void setLayoutMap(
             Graph<N,E> graph, LayoutMap<N,E> layoutMap) {
         if (layoutMap != null) {
             getInfo(graph, true).setLayoutMap(layoutMap);
@@ -345,7 +343,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      *        object itself) should be created if not yet there
      * @return the properties map of <code>graph</code>, or <code>null</code>
      */
-    public static <N extends Node,E extends Edge<N>> GraphProperties getProperties(
+    public static <N extends Node,E extends Edge> GraphProperties getProperties(
             Graph<N,E> graph, boolean create) {
         GraphInfo<N,E> graphInfo = getInfo(graph, create);
         if (graphInfo == null) {
@@ -359,7 +357,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * Convenience method to set the graph properties of a graph. Only sets the
      * map if it is not <code>null</code> or empty.
      */
-    public static <N extends Node,E extends Edge<N>> void setProperties(
+    public static <N extends Node,E extends Edge> void setProperties(
             Graph<N,E> graph, GraphProperties properties) {
         if (properties != null) {
             assert !graph.isFixed();
@@ -401,7 +399,7 @@ public class GraphInfo<N extends Node,E extends Edge<N>> implements Cloneable {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static <N1 extends Node,E1 extends Edge<N1>,N2 extends Node,E2 extends Edge<N2>> void transfer(
+    public static <N1 extends Node,E1 extends Edge,N2 extends Node,E2 extends Edge> void transfer(
             Graph<N1,E1> source, Graph<N2,E2> target,
             ElementMap<N1,E1,N2,E2> elementMap) {
         GraphInfo<N1,E1> sourceInfo = source.getInfo();

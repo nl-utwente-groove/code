@@ -38,7 +38,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
+abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     @SuppressWarnings("unchecked")
     CertificateStrategy(Graph<N,E> graph) {
         this.graph = graph;
@@ -181,8 +181,9 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
      * Creates an {@link EdgeCertificate} for a given graph edge, and inserts
      * into the certificate edge map.
      */
+    @SuppressWarnings("unchecked")
     private void initEdgeCert(E edge) {
-        N source = edge.source();
+        N source = (N) edge.source();
         NodeCertificate<N> sourceCert = getNodeCert(source);
         assert sourceCert != null : String.format(
             "No source certifiate found for %s", edge);
@@ -196,7 +197,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
-            NodeCertificate<N> targetCert = getNodeCert(edge.target());
+            NodeCertificate<N> targetCert = getNodeCert((N) edge.target());
             assert targetCert != null : String.format(
                 "No target certifiate found for %s", edge);
             EdgeCertificate<N,E> edge2Cert =
@@ -327,7 +328,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
      * @return a fresh certificate strategy for <tt>graph</tt>
      * @see #getStrength()
      */
-    abstract public <N1 extends Node,E1 extends Edge<N1>> CertificateStrategy<N1,E1> newInstance(
+    abstract public <N1 extends Node,E1 extends Edge> CertificateStrategy<N1,E1> newInstance(
             Graph<N1,E1> graph, boolean strong);
 
     /** 
@@ -431,7 +432,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge<N>> {
     }
 
     /** Specialised certificate for edges. */
-    static public interface EdgeCertificate<N extends Node,E extends Edge<N>>
+    static public interface EdgeCertificate<N extends Node,E extends Edge>
             extends Certificate<E> {
         // no added functionality
     }

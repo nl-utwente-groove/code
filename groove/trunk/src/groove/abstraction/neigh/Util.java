@@ -96,10 +96,10 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+    public static <N extends Node,E extends Edge> THashSet<E> getIntersectEdges(
             Graph<?,?> graph, N src, N tgt, Label label) {
         THashSet<E> result = new THashSet<E>();
-        for (Edge<?> outEdge : graph.outEdgeSet(src)) {
+        for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label) && outEdge.target().equals(tgt)) {
                 result.add((E) outEdge);
             }
@@ -109,10 +109,10 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+    public static <N extends Node,E extends Edge> THashSet<E> getIntersectEdges(
             Graph<?,?> graph, Set<N> srcs, N tgt, Label label) {
         THashSet<E> result = new THashSet<E>();
-        for (Edge<?> inEdge : graph.inEdgeSet(tgt)) {
+        for (Edge inEdge : graph.inEdgeSet(tgt)) {
             if (inEdge.label().equals(label) && srcs.contains(inEdge.source())) {
                 result.add((E) inEdge);
             }
@@ -122,10 +122,10 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge<?>> THashSet<E> getIntersectEdges(
+    public static <N extends Node,E extends Edge> THashSet<E> getIntersectEdges(
             Graph<?,?> graph, N src, Set<N> tgts, Label label) {
         THashSet<E> result = new THashSet<E>();
-        for (Edge<?> outEdge : graph.outEdgeSet(src)) {
+        for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label)
                 && tgts.contains(outEdge.target())) {
                 result.add((E) outEdge);

@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphCache<N extends Node,E extends Edge<N>> {
+public class GraphCache<N extends Node,E extends Edge> {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
@@ -326,9 +326,10 @@ public class GraphCache<N extends Node,E extends Edge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
+    @SuppressWarnings("unchecked")
     private void addToNodeInEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.target(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
         }
     }
 
@@ -337,9 +338,10 @@ public class GraphCache<N extends Node,E extends Edge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
+    @SuppressWarnings("unchecked")
     private void addToNodeOutEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.source(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
         }
     }
 
@@ -348,10 +350,11 @@ public class GraphCache<N extends Node,E extends Edge<N>> {
      * @param currentMap the mapping to be updated
      * @param edge the edge to be added
      */
+    @SuppressWarnings("unchecked")
     private void addToNodeEdgeMap(Map<N,Set<E>> currentMap, E edge) {
         if (currentMap != null) {
-            addToNodeEdgeMap(currentMap, edge.source(), edge);
-            addToNodeEdgeMap(currentMap, edge.target(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.source(), edge);
+            addToNodeEdgeMap(currentMap, (N) edge.target(), edge);
         }
     }
 
