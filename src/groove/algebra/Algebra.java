@@ -39,6 +39,11 @@ public interface Algebra<T> extends Signature {
     /** Conversion of algebra values to their string representations. */
     String getSymbol(Object value);
 
-    /** Returns the name of the algebra. */
+    /** 
+     * Returns the name of the algebra.
+     * Note that this is <i>not</i> the same as the name of the signature;
+     * for the signature name, use {@code getKind().getName()}
+     * @see #getKind()
+     */
     String getName();
 }

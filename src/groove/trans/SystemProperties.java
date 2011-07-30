@@ -73,20 +73,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Indicates if control is used and that the system will look for a control
-     * program. Default value: <code>true</code>
-     */
-    public boolean isUseControl() {
-        String control = getProperty(Key.CONTROL_ENABLED);
-        return control != null && Boolean.valueOf(control);
-    }
-
-    /** Sets the {@link Key#CONTROL_ENABLED} property to the given value * */
-    public void setUseControl(boolean useControl) {
-        setProperty(Key.CONTROL_ENABLED, "" + useControl);
-    }
-
-    /**
      * Indicates if the LTS labels should be surrounded by angular brackets.
      * Default value: <code>true</code>.
      */
@@ -805,11 +791,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          */
         ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
                 "Flag controlling state graphs are checked up to isomorphism"),
-        /**
-         * Flag that determines if control is used
-         */
-        CONTROL_ENABLED("enableControl", PropertyKind.EXTENDED_BOOLEAN,
-                "Flag determining if control is enabled"),
         /**
          * Name of the active control program.
          */

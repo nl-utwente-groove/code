@@ -214,9 +214,7 @@ public class DefaultFileSystemStore extends SystemStore {
             activeNames.addAll(getProperties().getPrologNames());
             break;
         case CONTROL:
-            if (getProperties().isUseControl()) {
-                activeNames.add(getProperties().getControlName());
-            }
+            activeNames.add(getProperties().getControlName());
         }
         for (String name : names) {
             String text = getTextMap(kind).remove(name);
@@ -237,7 +235,6 @@ public class DefaultFileSystemStore extends SystemStore {
                 newProps.setPrologNames(activeNames);
                 break;
             case CONTROL:
-                newProps.setUseControl(false);
                 newProps.setControlName("");
             }
             doPutProperties(newProps);
@@ -284,9 +281,7 @@ public class DefaultFileSystemStore extends SystemStore {
             activeNames.addAll(getProperties().getPrologNames());
             break;
         case CONTROL:
-            if (getProperties().isUseControl()) {
-                activeNames.add(getProperties().getControlName());
-            }
+            activeNames.add(getProperties().getControlName());
         }
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
@@ -1165,11 +1160,8 @@ public class DefaultFileSystemStore extends SystemStore {
                 newProperties.getPrologNames())) {
                 addChange(ResourceKind.PROLOG);
             }
-            if (oldProperties.isUseControl() != newProperties.isUseControl()) {
-                addChange(ResourceKind.CONTROL);
-            } else if (oldProperties.isUseControl()
-                && !oldProperties.getControlName().equals(
-                    newProperties.getControlName())) {
+            if (!oldProperties.getControlName().equals(
+                newProperties.getControlName())) {
                 addChange(ResourceKind.CONTROL);
             }
             if (!oldProperties.getTypeNames().equals(
