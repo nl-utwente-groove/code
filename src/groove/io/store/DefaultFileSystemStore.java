@@ -1160,8 +1160,10 @@ public class DefaultFileSystemStore extends SystemStore {
                 newProperties.getPrologNames())) {
                 addChange(ResourceKind.PROLOG);
             }
-            if (!oldProperties.getControlName().equals(
-                newProperties.getControlName())) {
+            String oldControlName = oldProperties.getControlName();
+            String newControlName = newProperties.getControlName();
+            if (oldControlName == null ? newControlName != null
+                    : !oldControlName.equals(newControlName)) {
                 addChange(ResourceKind.CONTROL);
             }
             if (!oldProperties.getTypeNames().equals(

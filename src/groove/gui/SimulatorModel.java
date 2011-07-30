@@ -158,10 +158,11 @@ public class SimulatorModel implements Cloneable {
             SystemProperties newProperties = oldProperties.clone();
             switch (resource) {
             case CONTROL:
-                if (!name.equals(getGrammar().getActiveControlName())) {
-                    newProperties.setControlName(name);
-                    getStore().putProperties(newProperties);
+                if (name.equals(oldProperties.getControlName())) {
+                    name = "";
                 }
+                newProperties.setControlName(name);
+                getStore().putProperties(newProperties);
                 break;
             case HOST:
                 getGrammar().setStartGraph(name);
