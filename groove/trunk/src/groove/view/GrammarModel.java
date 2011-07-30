@@ -85,21 +85,7 @@ public class GrammarModel implements Observer {
 
     /** Returns the system properties of this grammar model. */
     public SystemProperties getProperties() {
-        SystemProperties result = this.store.getProperties();
-        // take care that, if there is no explicit control program name,
-        // either the control program name is set to the 
-        // default if such a control program exists, or the useControl property
-        // is set to false
-        if (!this.controlPropertyAdjusted && result.isUseControl()
-            && result.getControlName() == null) {
-            if (getDefaultControlName() == null) {
-                result.setUseControl(false);
-            } else {
-                result.setControlName(getDefaultControlName());
-            }
-            this.controlPropertyAdjusted = true;
-        }
-        return result;
+        return this.store.getProperties();
     }
 
     /** Returns all names of grammar resources of a given kind. */
@@ -158,8 +144,7 @@ public class GrammarModel implements Observer {
      * from the system properties.
      */
     public String getActiveControlName() {
-        return getProperties().isUseControl()
-                ? getProperties().getControlName() : null;
+        return getProperties().getControlName();
     }
 
     /**
@@ -368,23 +353,6 @@ public class GrammarModel implements Observer {
         return getActiveControlName() != null;
     }
 
-    /** 
-     * Returns the default control name.
-     * The first choice is {@link Groove#DEFAULT_CONTROL_NAME};
-     * if that does not exist, the next choice is the grammar name.
-     * If that does not exist either, the name is {@code null}.
-     */
-    // second default name: grammar name
-    private String getDefaultControlName() {
-        String result = null;
-        if (getResourceMap(CONTROL).containsKey(Groove.DEFAULT_CONTROL_NAME)) {
-            result = Groove.DEFAULT_CONTROL_NAME;
-        } else if (getResourceMap(CONTROL).containsKey(getName())) {
-            result = getName();
-        }
-        return result;
-    }
-
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
         this.errors = new ArrayList<FormatError>();
@@ -544,7 +512,6 @@ public class GrammarModel implements Observer {
         this.modificationCount++;
         this.grammar = null;
         this.errors = null;
-        this.controlPropertyAdjusted = false;
         if (this.startGraphName != null) {
             this.startGraph = null;
         }
@@ -669,13 +636,6 @@ public class GrammarModel implements Observer {
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private int modificationCount;
-    /** 
-     * Flag indicating that the system properties
-     * have been adjusted to reflect the presence of a control program
-     * with a default name.
-     * @see #getProperties()
-     */
-    private boolean controlPropertyAdjusted;
     /** The start graph of the grammar. */
     private HostModel startGraph;
     /**

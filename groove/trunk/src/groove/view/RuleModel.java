@@ -2080,7 +2080,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             AspectKind paramKind = node.getParamKind();
             boolean hasControl =
                 getSystemProperties() != null
-                    && getSystemProperties().isUseControl();
+                    && getSystemProperties().getControlName() != null;
             CtrlType varType;
             AspectKind attrKind = node.getAttrKind();
             if (!attrKind.isData()) {

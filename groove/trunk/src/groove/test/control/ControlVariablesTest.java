@@ -70,7 +70,6 @@ public class ControlVariablesTest {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
-            sp.setUseControl(true);
             GTS lts = new GTS(sgv.toGrammar());
 
             Exploration scenario = new Exploration("bfs", "final", 0);

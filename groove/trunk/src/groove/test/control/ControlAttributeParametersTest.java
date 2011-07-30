@@ -49,7 +49,6 @@ public class ControlAttributeParametersTest {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             SystemProperties sp = sgv.getProperties();
             sp.setControlName(control);
-            sp.setUseControl(true);
             GTS lts = new GTS(sgv.toGrammar());
 
             Exploration exploration = new Exploration();
