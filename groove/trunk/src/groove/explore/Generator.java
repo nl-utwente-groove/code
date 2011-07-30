@@ -572,7 +572,9 @@ public class Generator extends CommandLineTool {
                 for (GraphState finalState : getGTS().getFinalStates()) {
                     String outFileName = getFinalSaveName() + "-" + finalState;
                     outFileName = STATE_FILTER.addExtension(outFileName);
-                    Groove.saveGraph(finalState.getGraph(), outFileName);
+                    Groove.saveGraph(
+                        finalState.getGraph().toAspectMap().getAspectGraph(),
+                        outFileName);
                 }
                 printfMedium("Resulting graphs saved: %s%n",
                     getGTS().getFinalStates());
