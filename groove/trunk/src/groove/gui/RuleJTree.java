@@ -539,17 +539,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     private boolean anchorImageOptionListenerSet = false;
 
     /**
-     * Transforms a given rule name into the string that shows this rule is
-     * disabled. This implementation puts brackets around the rule name.
-     * @param name The rule name; non-<code>null</code>
-     * @return a string constructed from <code>name</code> that shows the rule
-     *         to be disabled
-     */
-    static public String showDisabled(String name) {
-        return "(" + name + ")";
-    }
-
-    /**
      * Selection listener that invokes <tt>setRule</tt> if a rule node is
      * selected, and <tt>setDerivation</tt> if a match node is selected.
      * @see SimulatorModel#setMatch
@@ -684,17 +673,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
         }
 
         /**
-         * To display, show child name only. Also visualise enabledness.
-         * @see RuleJTree#showDisabled(String)
+         * To display, show child name only.
          */
         @Override
         public String toString() {
-            String name = new RuleName(getRule().getName()).child();
-            if (getRule().isEnabled()) {
-                return name;
-            } else {
-                return showDisabled(name);
-            }
+            return new RuleName(getRule().getName()).child();
         }
 
         /** Returns HTML-formatted tool tip text for this rule node. */
@@ -836,19 +819,24 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
             boolean error = false;
             Icon icon = null;
+            String text = value.toString();
+            String tip = null;
             if (value instanceof DirectoryTreeNode) {
                 icon = Icons.GPS_FOLDER_ICON;
             } else if (value instanceof RuleTreeNode) {
-                String ruleName = ((RuleTreeNode) value).getRule().getName();
-                icon = RuleJTree.this.display.getListIcon(ruleName);
-                error = RuleJTree.this.display.hasError(ruleName);
-                setToolTipText(((RuleTreeNode) value).getToolTipText());
+                RuleTreeNode node = (RuleTreeNode) value;
+                tip = node.getToolTipText();
+                RuleDisplay display = RuleJTree.this.display;
+                String ruleName = node.getRule().getName();
+                icon = display.getListIcon(ruleName);
+                error = display.hasError(ruleName);
+                text = display.getLabelText(text);
             } else if (value instanceof MatchTreeNode) {
                 icon = Icons.GRAPH_MATCH_ICON;
-                setToolTipText(null);
             }
             setIcon(icon);
-            setText(value.toString());
+            setText(text);
+            setToolTipText(tip);
             setForeground(JAttr.getForeground(cellSelected, cellFocused, error));
             Color background =
                 JAttr.getBackground(cellSelected, cellFocused, error);

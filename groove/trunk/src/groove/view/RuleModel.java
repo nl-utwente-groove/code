@@ -246,6 +246,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         } else if (this.status != Status.START) {
             return;
         }
+        this.ruleErrors.clear();
         if (getSource().hasErrors()) {
             this.ruleErrors.addAll(getSource().getErrors());
             this.status = Status.ERROR;

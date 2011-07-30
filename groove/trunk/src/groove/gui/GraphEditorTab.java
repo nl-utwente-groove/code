@@ -437,7 +437,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
     }
 
     /**
-     * Updates the the error panel 
+     * Updates the observers
      * with information about the currently edited graph.
      */
     private void updateStatus() {
