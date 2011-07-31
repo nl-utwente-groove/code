@@ -2,7 +2,6 @@ package groove.trans;
 
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
-import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
 import groove.io.FileType;
 import groove.util.Fixable;
@@ -182,24 +181,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     public void setCommonLabels(List<String> commonLabels) {
         setProperty(Key.COMMON_LABELS,
             Groove.toString(commonLabels.toArray(), "", "", " "));
-    }
-
-    /**
-     * Returns the string description of the subtype relation, or the empty
-     * string if the property is not set.
-     * @see Key#SUBTYPE
-     */
-    public String getSubtypes() {
-        String result = getProperty(Key.SUBTYPE);
-        return result == null ? "" : result;
-    }
-
-    /**
-     * Sets the subtype property.
-     * @see Key#SUBTYPE
-     */
-    public void setSubtypes(String subtypes) {
-        setProperty(Key.SUBTYPE, subtypes);
     }
 
     /**
@@ -504,23 +485,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             result.setCommonLabels(newCommonLabels);
             hasChanged = true;
         }
-        // change the subtype relation
-        if (getTypeNames().isEmpty()) {
-            try {
-                LabelStore subtypeStore =
-                    LabelStore.createLabelStore(getSubtypes());
-                LabelStore newSubtypeStore =
-                    subtypeStore.relabel(oldLabel, newLabel);
-                if (subtypeStore != newSubtypeStore) {
-                    result.setSubtypes(newSubtypeStore.toDirectSubtypeString());
-                    hasChanged = true;
-                }
-            } catch (FormatException exc) {
-                assert false : String.format(
-                    "Subtype string '%s' gives rise to format error: %s",
-                    getSubtypes(), exc.getMessage());
-            }
-        }
         return hasChanged ? result : this;
     }
 
@@ -679,33 +643,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Property testing if the value of {@link Key#SUBTYPE} is correctly
-     * formatted.
-     */
-    static private class IsSubtypeString extends Property<String> {
-        /**
-         * Returns an instance of this property, with appropriate description
-         * and comment.
-         */
-        public IsSubtypeString() {
-            super(
-                "string of the form 'type > sub [, sub]* [; type > sub [, sub]*]*",
-                "Specifies the subtype relation");
-        }
-
-        @Override
-        public boolean isSatisfied(String value) {
-            boolean result = true;
-            try {
-                LabelStore.parseDirectSubtypeString(value);
-            } catch (FormatException exc) {
-                result = false;
-            }
-            return result;
-        }
-    }
-
-    /**
      * Property testing if the value of {@link Key#EXPLORATION} is correctly
      * formatted.
      */
@@ -747,12 +684,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          */
         REMARK("remark",
                 "A one-line description of the graph production system"),
-        /**
-         * List of subtypes of a graph grammar. The property must
-         * be formatted according to {@link LabelStore#addDirectSubtypes(String)}.
-         */
-        SUBTYPE("subtypes", PropertyKind.BOOLEAN,
-                "Algebra family that should be used in simulation (empty for default)"),
         /**
          * Property name for the algebra to be used during simulation.
          */
@@ -902,12 +833,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
                         AlgebraFamily.DEFAULT_ALGEBRAS,
                         AlgebraFamily.POINT_ALGEBRAS,
                         AlgebraFamily.BIG_ALGEBRAS);
-                }
-            },
-            SUBTYPE {
-                @Override
-                public Property<String> newInstance(String comment) {
-                    return new IsSubtypeString();
                 }
             },
             EXPLORATION {

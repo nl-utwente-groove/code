@@ -20,12 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
-import groove.view.FormatException;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -215,49 +213,6 @@ public class LabelStoreTest {
     }
 
     /**
-     * Test method for {@link groove.graph.LabelStore#toDirectSubtypeString()}.
-     */
-    @Test
-    public void testToDirectSubtypeString() {
-        assertEquals(this.store1.toDirectSubtypeString(), "A > B, D; B > C");
-        assertEquals(this.store2.toDirectSubtypeString(), "");
-    }
-
-    /**
-     * Test method for
-     * {@link groove.graph.LabelStore#addDirectSubtypes(java.lang.String)}.
-     */
-    @Test
-    public void testAddDirectSubtypes() {
-        LabelStore store1Clone = this.store1.clone();
-        try {
-            store1Clone.addDirectSubtypes("");
-        } catch (FormatException exc) {
-            fail();
-        }
-        assertEquals(this.store1, store1Clone);
-        try {
-            this.store2.addDirectSubtypes("A > B, D; B > C");
-        } catch (FormatException exc) {
-            fail();
-        }
-        assertEquals(this.store1, this.store2);
-        try {
-            this.store2.addDirectSubtypes("A > D");
-        } catch (FormatException exc) {
-            fail();
-        }
-        assertEquals(this.store1, this.store2);
-        try {
-            this.store2.addDirectSubtypes("A > C");
-        } catch (FormatException exc) {
-            fail();
-        }
-        this.store1.addSubtype(this.typeA, this.typeC);
-        assertEquals(this.store1, this.store2);
-    }
-
-    /**
      * Test method for {@link groove.graph.LabelStore#clone()}.
      */
     @Test
@@ -265,46 +220,16 @@ public class LabelStoreTest {
         assertEquals(this.store2.clone().getLabels(), Collections.emptySet());
     }
 
-    /**
-     * Test method for
-     * {@link groove.graph.LabelStore#parseDirectSubtypeString(java.lang.String)}
-     * .
-     */
-    @Test
-    public void testParseDirectSubtypeString() {
-        correctDirectSubtypeString("A > B; A>C;B> C,D;  B >D,E");
-        correctDirectSubtypeString("A > C;");
-        correctDirectSubtypeString("");
-        incorrectDirectSubtypeString("A > C D");
-        incorrectDirectSubtypeString("A, C > D");
-        incorrectDirectSubtypeString("; C > D");
-        incorrectDirectSubtypeString("C > ,D");
-    }
-
-    private void correctDirectSubtypeString(String string) {
-        try {
-            LabelStore.parseDirectSubtypeString(string);
-        } catch (FormatException exc) {
-            fail(String.format("Wrong format error in '%s': %s", string,
-                exc.getMessage()));
-        }
-    }
-
-    private void incorrectDirectSubtypeString(String string) {
-        try {
-            LabelStore.parseDirectSubtypeString(string);
-            fail(String.format("Format error in '%s' not caught", string));
-        } catch (FormatException exc) {
-            // ignore
-        }
-    }
-
     private LabelStore store1;
     private LabelStore store2;
-    private final TypeLabel typeA = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "A");
-    private final TypeLabel typeB = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "B");
-    private final TypeLabel typeC = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "C");
-    private final TypeLabel typeD = TypeLabel.createLabel(EdgeRole.NODE_TYPE, "D");
+    private final TypeLabel typeA = TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+        "A");
+    private final TypeLabel typeB = TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+        "B");
+    private final TypeLabel typeC = TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+        "C");
+    private final TypeLabel typeD = TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+        "D");
     private final TypeLabel a = TypeLabel.createBinaryLabel("a");
     private final TypeLabel b = TypeLabel.createBinaryLabel("b");
     private final TypeLabel c = TypeLabel.createBinaryLabel("c");

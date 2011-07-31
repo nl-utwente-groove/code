@@ -26,10 +26,8 @@ import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
-import groove.graph.LabelStore;
 import groove.gui.Display.Tab;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -50,7 +48,6 @@ import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.RuleApplication;
 import groove.trans.RuleNode;
-import groove.trans.SystemProperties;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -60,18 +57,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -177,26 +170,6 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         addRefreshListener(SHOW_REMARKS_OPTION);
         addRefreshListener(SHOW_VALUE_NODES_OPTION);
         addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-        getLabelTree().addLabelStoreObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                assert arg instanceof LabelStore;
-                final SystemProperties newProperties =
-                    getGrammar().getProperties().clone();
-                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            getSimulatorModel().doSetProperties(newProperties);
-                        } catch (IOException exc) {
-                            new ErrorDialog(StateTab.this,
-                                "Error while modifying type hierarchy", exc).setVisible(true);
-                        }
-                    }
-                });
-            }
-        });
         getSimulatorModel().addListener(this.simulatorListener, GRAMMAR, GTS,
             STATE, MATCH);
         activateListening();

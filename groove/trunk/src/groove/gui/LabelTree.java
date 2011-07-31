@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.LabelStore;
 import groove.graph.TypeLabel;
@@ -32,24 +31,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -73,7 +65,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
@@ -128,7 +119,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         setShowsRootHandles(true);
         // set drag and drop
         setDropMode(DropMode.ON_OR_INSERT);
-        setTransferHandler(new MyTransferHandler());
         // make sure the checkbox never selects the label
         // note that the BasicTreeUI may not be what is used in the current LAF,
         // but I don't know any other way to modify the selection behaviour
@@ -635,15 +625,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         this.showsSubtypes = show;
     }
 
-    /**
-     * Adds an observer to this label tree. The observers will be updates when
-     * the subtyping relation changes as a result of a drag-and-drop action in
-     * the label tree.
-     */
-    public void addLabelStoreObserver(Observer observer) {
-        this.labelStoreChange.addObserver(observer);
-    }
-
     /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
     private boolean isOverCheckBox(TreePath path, int x) {
         boolean result = false;
@@ -693,16 +674,6 @@ public class LabelTree extends JTree implements GraphModelListener,
     private final ObservableSet<Label> filteredLabels;
     /** The top node in the JTree. */
     private final DefaultMutableTreeNode topNode;
-    /** Observable used to signal changes to the label store. */
-    private final Observable labelStoreChange = new Observable() {
-        @Override
-        public void notifyObservers(Object arg) {
-            // make sure the notification indeed reaches the observers
-            setChanged();
-            super.notifyObservers(arg);
-        }
-    };
-
     /** 
      * Flag indicating that the selection model is changing.
      * This means the listener should not be active.
@@ -1197,142 +1168,6 @@ public class LabelTree extends JTree implements GraphModelListener,
 
         /** The actual editor is just an instance of the renderer. */
         private final MyCellRenderer editor = new MyCellRenderer();
-    }
-
-    private class MyTransferHandler extends TransferHandler {
-        @Override
-        public int getSourceActions(JComponent c) {
-            return COPY_OR_MOVE;
-        }
-
-        @Override
-        public boolean canImport(TransferSupport support) {
-            boolean result = false;
-            JTree.DropLocation location =
-                (JTree.DropLocation) support.getDropLocation();
-            TreePath dropPath = location.getPath();
-            if (dropPath != null) {
-                if (dropPath.getLastPathComponent() instanceof LabelTreeNode) {
-                    LabelTreeNode labelNode =
-                        (LabelTreeNode) dropPath.getLastPathComponent();
-                    result =
-                        labelNode.getLabel().isNodeType()
-                            && location.getChildIndex() < 0;
-                } else {
-                    result = true;
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public boolean importData(TransferSupport support) {
-            boolean result = false;
-            try {
-                // decompose transferred data
-                Map<Label,Set<Label>> draggedLabels =
-                    new HashMap<Label,Set<Label>>();
-                String data =
-                    (String) support.getTransferable().getTransferData(
-                        DataFlavor.stringFlavor);
-                for (String dataRow : data.split("\n")) {
-                    int separatorIndex = dataRow.indexOf(' ');
-                    if (separatorIndex < 0) {
-                        Label keyType =
-                            TypeLabel.createLabel(EdgeRole.NODE_TYPE, dataRow);
-                        if (!draggedLabels.containsKey(keyType)) {
-                            draggedLabels.put(keyType, new HashSet<Label>());
-                        }
-                    } else {
-                        Label keyType =
-                            TypeLabel.createLabel(EdgeRole.NODE_TYPE,
-                                dataRow.substring(0, separatorIndex));
-                        Label valueType =
-                            TypeLabel.createLabel(EdgeRole.NODE_TYPE,
-                                dataRow.substring(separatorIndex + 1));
-                        Set<Label> values = draggedLabels.get(keyType);
-                        if (values == null) {
-                            draggedLabels.put(keyType, values =
-                                new HashSet<Label>());
-                        }
-                        values.add(valueType);
-                    }
-                }
-                JTree.DropLocation location =
-                    (JTree.DropLocation) support.getDropLocation();
-                LabelStore newStore = getLabelStore().clone();
-                // first remove subtypings if action was move
-                if (support.getDropAction() == MOVE) {
-                    for (Map.Entry<Label,Set<Label>> dragEntry : draggedLabels.entrySet()) {
-                        for (Label value : dragEntry.getValue()) {
-                            Label oldSubtype =
-                                isShowsSubtypes() ? dragEntry.getKey() : value;
-                            Label oldSupertype =
-                                isShowsSubtypes() ? value : dragEntry.getKey();
-                            newStore.removeSubtype((TypeLabel) oldSupertype,
-                                (TypeLabel) oldSubtype);
-                        }
-                    }
-                }
-                // now add new subtypings, if the drop is on an existing node
-                // type
-                if (location.getChildIndex() < 0) {
-                    TreePath dropPath = location.getPath();
-                    Label targetType =
-                        ((LabelTreeNode) dropPath.getLastPathComponent()).getLabel();
-                    for (Label keyType : draggedLabels.keySet()) {
-                        Label newSubtype =
-                            isShowsSubtypes() ? keyType : targetType;
-                        Label newSupertype =
-                            isShowsSubtypes() ? targetType : keyType;
-                        if (!newStore.getSubtypes((TypeLabel) newSubtype).contains(
-                            newSupertype)) {
-                            newStore.addSubtype((TypeLabel) newSupertype,
-                                (TypeLabel) newSubtype);
-                        }
-                    }
-                }
-                if (!newStore.equals(getLabelStore())) {
-                    LabelTree.this.labelStoreChange.notifyObservers(newStore);
-                    result = true;
-                }
-            } catch (IOException exc) {
-                // do nothing
-            } catch (UnsupportedFlavorException exc) {
-                // do nothing
-            }
-            return result;
-        }
-
-        @Override
-        protected Transferable createTransferable(JComponent c) {
-            Transferable result = null;
-            if (!isSelectionEmpty()) {
-                StringBuffer content = new StringBuffer();
-                List<TreePath> keepSelection = new ArrayList<TreePath>();
-                for (TreePath path : getSelectionPaths()) {
-                    Label label =
-                        ((LabelTreeNode) path.getLastPathComponent()).getLabel();
-                    if (label.isNodeType()) {
-                        content.append(label.text());
-                        Object parentNode =
-                            path.getParentPath().getLastPathComponent();
-                        if (parentNode instanceof LabelTreeNode) {
-                            content.append(" ");
-                            content.append(((LabelTreeNode) parentNode).getLabel().text());
-                        }
-                        content.append("\n");
-                        keepSelection.add(path);
-                    }
-                }
-                if (keepSelection.size() > 0) {
-                    setSelectionPaths(keepSelection.toArray(new TreePath[keepSelection.size()]));
-                    result = new StringSelection(content.toString());
-                }
-            }
-            return result;
-        }
-
     }
 
     /** Action changing the show mode to showing subtypes or supertypes. */
