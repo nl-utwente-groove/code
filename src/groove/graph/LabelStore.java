@@ -17,7 +17,6 @@
 package groove.graph;
 
 import groove.util.DefaultFixable;
-import groove.util.ExprParser;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -433,75 +432,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     }
 
     /**
-     * Returns a string encoding the direct subtyping relation in this label
-     * store. The string is formatted according to
-     * <ul>
-     * <li> <code>RESULT</code> = (<code>DECL</code> ({@link #MAIN_SEPARATOR}
-     * <code>DECL</code>)*)?
-     * <li> <code>DECL</code> = <code>ID</code> {@link #SUPERTYPE_SYMBOL}
-     * <code>ID</code> ({@link #SUBTYPE_SEPARATOR} <code>ID</code>)*
-     * <li> <code>ID</code> = Node type identifier
-     * </ul>
-     * The string can be parsed by
-     */
-    public String toDirectSubtypeString() {
-        StringBuilder result = new StringBuilder();
-        boolean firstLabel = true;
-        for (Map.Entry<TypeLabel,Set<TypeLabel>> dirSubEntry : getDirSubMap().entrySet()) {
-            // only treat proper entries
-            if (dirSubEntry.getValue().isEmpty()) {
-                continue;
-            }
-            if (!firstLabel) {
-                result.append(MAIN_SEPARATOR + " ");
-            } else {
-                firstLabel = false;
-            }
-            result.append(dirSubEntry.getKey().text());
-            result.append(" " + SUPERTYPE_SYMBOL + " ");
-            boolean firstSubtype = true;
-            for (TypeLabel subType : dirSubEntry.getValue()) {
-                if (firstSubtype) {
-                    firstSubtype = false;
-                } else {
-                    result.append(SUBTYPE_SEPARATOR + " ");
-                }
-                result.append(subType.text());
-            }
-        }
-        return result.toString();
-    }
-
-    /**
-     * Adds direct subtypes to this label store, as encoded in a string. The
-     * string is parsed according to the format described in
-     * {@link #toDirectSubtypeString()}.
-     * @param directSubtypeString the string containing the information about
-     *        direct subtypes
-     * @throws FormatException if the input string is not correctly formatted
-     * @see #toDirectSubtypeString()
-     * @see #parseDirectSubtypeString(String)
-     */
-    public void addDirectSubtypes(String directSubtypeString)
-        throws FormatException {
-        try {
-            for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : parseDirectSubtypeString(
-                directSubtypeString).entrySet()) {
-                TypeLabel type = subtypeEntry.getKey();
-                addLabel(type);
-                for (TypeLabel subtype : subtypeEntry.getValue()) {
-                    addLabel(subtype);
-                    getDirSubs(type).add(subtype);
-                }
-            }
-            invalidateSubtypes();
-        } catch (FormatException exc) {
-            this.errors.addAll(exc.getErrors());
-            throw exc;
-        }
-    }
-
-    /**
      * @return true is the store has at least one node type.
      */
     public boolean hasNodeTypes() {
@@ -601,80 +531,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     private final Map<TypeLabel,LabelPattern> patternMap =
         new HashMap<TypeLabel,LabelPattern>();
 
-    /** Creates and prints a label store out of a property string. */
-    static public void main(String[] args) {
-        for (String arg : args) {
-            try {
-                System.out.println(createLabelStore(arg).toString());
-            } catch (FormatException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Factory method to create a label store from a string description of the
-     * subtyping relation. The string description should be formatted according
-     * to the specification in {@link #toDirectSubtypeString()}.
-     * @throws FormatException if the input string is not formatted correctly.
-     */
-    static public LabelStore createLabelStore(String directSubtypes)
-        throws FormatException {
-        LabelStore result = new LabelStore();
-        result.addDirectSubtypes(directSubtypes);
-        return result;
-    }
-
-    /**
-     * Parses a string formatted according to the output of
-     * {@link #toDirectSubtypeString()} and returns the corresponding mapping
-     * from supertypes to sets of direct subtypes.
-     * @throws FormatException if the input string is not formatted correctly.
-     */
-    static public Map<TypeLabel,Set<TypeLabel>> parseDirectSubtypeString(
-            String directSubtypes) throws FormatException {
-        Map<TypeLabel,Set<TypeLabel>> result =
-            new HashMap<TypeLabel,Set<TypeLabel>>();
-        if (directSubtypes.trim().length() > 0) {
-            String[] declarations =
-                directSubtypes.split(WHITESPACE + MAIN_SEPARATOR + WHITESPACE);
-            for (String declaration : declarations) {
-                String[] splitDecl =
-                    declaration.split(WHITESPACE + SUPERTYPE_SYMBOL
-                        + WHITESPACE);
-                if (splitDecl.length != 2) {
-                    throw new FormatException(
-                        "Subtype declaration '%s' should contain single instance of supertype symbol '%s'",
-                        declaration, SUPERTYPE_SYMBOL);
-                }
-                if (!ExprParser.isIdentifier(splitDecl[0])) {
-                    throw new FormatException(
-                        "Invalid node type identifier '%s'", splitDecl[0]);
-                }
-                TypeLabel supertype =
-                    TypeLabel.createLabel(EdgeRole.NODE_TYPE, splitDecl[0]);
-                Set<TypeLabel> subtypes = result.get(supertype);
-                if (subtypes == null) {
-                    result.put(supertype, subtypes = new TreeSet<TypeLabel>());
-                }
-                String[] declSubtypes =
-                    splitDecl[1].split(WHITESPACE + SUBTYPE_SEPARATOR
-                        + WHITESPACE);
-                for (String subtype : declSubtypes) {
-                    if (!ExprParser.isIdentifier(subtype)) {
-                        throw new FormatException(
-                            "Invalid node type identifier '%s'", subtype);
-                    }
-                    subtypes.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE,
-                        subtype));
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Regular expression recogniser for a whitespace sequence. */
-    static private final String WHITESPACE = "\\s*";
     /** Separator between subtype declarations. */
     static public final char MAIN_SEPARATOR = ';';
     /** Separator between the subtypes in a single subtype declaration. */

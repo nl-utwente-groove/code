@@ -5,19 +5,15 @@ import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.graph.LabelStore;
 import groove.gui.ResourceDisplay.MainTab;
-import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
-import groove.trans.SystemProperties;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,21 +44,6 @@ final public class GraphTab extends ResourceTab implements MainTab {
     protected void start() {
         super.start();
         getJGraph().setToolTipEnabled(true);
-        getJGraph().getLabelTree().addLabelStoreObserver(new Observer() {
-            @Override
-            public void update(Observable o, Object arg) {
-                assert arg instanceof LabelStore;
-                SystemProperties newProperties =
-                    getSimulatorModel().getGrammar().getProperties().clone();
-                newProperties.setSubtypes(((LabelStore) arg).toDirectSubtypeString());
-                try {
-                    getSimulatorModel().doSetProperties(newProperties);
-                } catch (IOException exc) {
-                    new ErrorDialog(getDisplay().createDisplayPanel(),
-                        "Error while modifying type hierarchy", exc).setVisible(true);
-                }
-            }
-        });
         getJGraph().addMouseListener(new EditMouseListener());
     }
 

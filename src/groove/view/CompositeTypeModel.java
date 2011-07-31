@@ -120,11 +120,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 if (host != null) {
                     result.addLabels(host.getLabels());
                 }
-                try {
-                    result.addDirectSubtypes(getGrammar().getProperties().getSubtypes());
-                } catch (FormatException exc) {
-                    // do nothing
-                }
                 result.setFixed();
             } else {
                 // get the labels from the type graph
