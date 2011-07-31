@@ -9,12 +9,10 @@ import groove.graph.TypeNode;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectNode;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -32,67 +30,20 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     @Override
     public boolean isEnabled() {
-        initialise();
+        synchronise();
         return !this.typeModelMap.isEmpty();
-    }
-
-    /**
-     * @return the composite type graph from the model list, or {@code null}
-     * if there are no active type models
-     * @throws FormatException if any of the models has errors.
-     * @throws IllegalArgumentException if the composition of types gives
-     *         rise to typing cycles.
-     */
-    @Override
-    public TypeGraph toResource() throws FormatException,
-        IllegalArgumentException {
-        initialise();
-        if (hasErrors()) {
-            throw new FormatException(getErrors());
-        } else {
-            if (this.typeModelMap.isEmpty()) {
-                return null;
-            } else {
-                return this.typeGraph;
-            }
-        }
-    }
-
-    /**
-     * @return the errors in the underlying type models.
-     */
-    @Override
-    public List<FormatError> getErrors() {
-        initialise();
-        return this.errors;
     }
 
     /** Returns a mapping from names to type graphs,
      * which together make up the combined type model. */
     public Map<String,TypeGraph> getTypeGraphMap() {
-        initialise();
-        return this.typeGraph == null ? null
+        synchronise();
+        return hasErrors() ? null
                 : Collections.unmodifiableMap(this.typeGraphMap);
     }
 
-    /**
-     * Initialises the model if the grammar has been modified.
-     * @see #isGrammarModified()
-     */
-    private void initialise() {
-        if (isGrammarModified()) {
-            this.errors.clear();
-            try {
-                this.typeGraph = compute();
-            } catch (FormatException e1) {
-                this.typeGraph = null;
-                this.errors.addAll(e1.getErrors());
-            }
-        }
-    }
-
     @Override
-    protected TypeGraph compute() throws FormatException {
+    TypeGraph compute() throws FormatException {
         TypeGraph result = null;
         Collection<FormatError> errors = createErrors();
         this.typeModelMap.clear();
@@ -152,10 +103,12 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     /** Computes the label store or retrieves it from the type graph. */
     public LabelStore getLabelStore() {
-        initialise();
+        synchronise();
         if (this.labelStore == null) {
+            // construct the label store
             LabelStore result;
-            if (this.typeGraph == null) {
+            if (getResource() == null) {
+                // get the labels from the rules and host graphs
                 result = new LabelStore();
                 for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
                     for (ResourceModel<?> model : getGrammar().getResourceSet(
@@ -174,7 +127,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 }
                 result.setFixed();
             } else {
-                result = this.typeGraph.getLabelStore();
+                // get the labels from the type graph
+                result = getResource().getLabelStore();
             }
             this.labelStore = result;
         }
@@ -196,13 +150,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         new HashMap<String,TypeModel>();
     private final Map<String,TypeGraph> typeGraphMap =
         new TreeMap<String,TypeGraph>();
-    /** The composed type graph; may be {@code null}. */
-    private TypeGraph typeGraph;
     /**
      * The label store, either from the type graph
      * or independently computed.
      */
     private LabelStore labelStore;
-    /** The list of errors in the composite type. */
-    private final List<FormatError> errors = new ArrayList<FormatError>();
 }

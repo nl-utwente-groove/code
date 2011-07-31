@@ -379,7 +379,7 @@ public class GrammarModel implements Observer {
             try {
                 // only add the enabled rules
                 if (ruleModel.isEnabled()) {
-                    result.add(((RuleModel) ruleModel).toRule());
+                    result.add(((RuleModel) ruleModel).toResource());
                 }
             } catch (FormatException exc) {
                 // do not add this rule
@@ -412,7 +412,7 @@ public class GrammarModel implements Observer {
             try {
                 // only add the enabled rules
                 if (ruleModel.isEnabled()) {
-                    result.add(((RuleModel) ruleModel).toRule());
+                    result.add(((RuleModel) ruleModel).toResource());
                 }
             } catch (FormatException exc) {
                 for (FormatError error : exc.getErrors()) {
