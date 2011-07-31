@@ -68,7 +68,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * Constructs the host graph from this resource.
      * @throws FormatException if the resource contains errors. 
      */
-    public DefaultHostGraph toHost() throws FormatException {
+    public HostGraph toHost() throws FormatException {
         initialise();
         if (this.status == Status.ERROR) {
             throw new FormatException(getErrors());
@@ -78,7 +78,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
-    public DefaultHostGraph toResource() throws FormatException {
+    public HostGraph toResource() throws FormatException {
         return toHost();
     }
 
@@ -134,19 +134,32 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             this.status = Status.START;
         }
         if (this.status == Status.START) {
-            this.algebraFamily = getFamily();
-            if (getSource().hasErrors()) {
-                this.errors = getSource().getErrors();
-            } else {
-                this.labelSet = new HashSet<TypeLabel>();
-                Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
-                    computeModel(getSource());
-                this.model = modelPlusMap.one();
-                this.hostModelMap = modelPlusMap.two();
-                this.errors = GraphInfo.getErrors(this.model);
+            try {
+                this.model = compute();
+                this.errors = Collections.emptyList();
+                this.status = Status.DONE;
+            } catch (FormatException e) {
+                this.errors = e.getErrors();
+                this.status = Status.ERROR;
             }
-            this.status = this.errors.isEmpty() ? Status.DONE : Status.ERROR;
         }
+    }
+
+    @Override
+    protected HostGraph compute() throws FormatException {
+        this.algebraFamily = getFamily();
+        if (getSource().hasErrors()) {
+            throw new FormatException(getSource().getErrors());
+        }
+        this.labelSet = new HashSet<TypeLabel>();
+        Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
+            computeModel(getSource());
+        HostGraph result = modelPlusMap.one();
+        if (GraphInfo.hasErrors(result)) {
+            throw new FormatException(GraphInfo.getErrors(result));
+        }
+        this.hostModelMap = modelPlusMap.two();
+        return result;
     }
 
     /**
@@ -282,7 +295,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Status of the construction of the host model. */
     private Status status = Status.START;
     /** The host graph that is being constructed. */
-    private DefaultHostGraph model;
+    private HostGraph model;
     /**
      * List of errors in the model that prevent the resource from being constructed.
      */

@@ -335,7 +335,7 @@ public class GraphGrammar {
      * @return the start graph of this GraphGrammar
      * @ensure <tt>result != null</tt>
      */
-    public DefaultHostGraph getStartGraph() {
+    public HostGraph getStartGraph() {
         if (this.startGraph == null) {
             setStartGraph(createGraph());
         }
@@ -350,7 +350,7 @@ public class GraphGrammar {
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
-    public void setStartGraph(DefaultHostGraph startGraph)
+    public void setStartGraph(HostGraph startGraph)
         throws IllegalStateException {
         testFixed(false);
         this.startGraph = startGraph;
@@ -447,7 +447,7 @@ public class GraphGrammar {
     /**
      * The start graph of this graph grammar.
      */
-    private DefaultHostGraph startGraph;
+    private HostGraph startGraph;
     /**
      * The control automaton of this grammar; <code>null</code> if there is
      * none.

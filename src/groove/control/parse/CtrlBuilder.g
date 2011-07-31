@@ -10,7 +10,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.trans.SPORule;
+import groove.trans.Rule;
 import java.util.Set;
 import java.util.HashSet;
 }

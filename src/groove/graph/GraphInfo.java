@@ -245,7 +245,8 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     public static <N extends Node,E extends Edge> boolean hasErrors(
             Graph<N,E> graph) {
         GraphInfo<N,E> graphInfo = graph.getInfo();
-        return graphInfo != null && graphInfo.getErrors() != null;
+        return graphInfo != null && graphInfo.getErrors() != null
+            && !graphInfo.getErrors().isEmpty();
     }
 
     /**
@@ -405,7 +406,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
         GraphInfo<N1,E1> sourceInfo = source.getInfo();
         if (sourceInfo != null) {
             // copy all the info
-            GraphInfo<N2,E2> targetInfo = target.setInfo(sourceInfo);
+            GraphInfo<N2,E2> targetInfo = target.setInfo(sourceInfo.clone());
             if (elementMap != null) {
                 // modify the layout map using the element map
                 LayoutMap<N1,E1> sourceLayoutMap = sourceInfo.getLayoutMap();

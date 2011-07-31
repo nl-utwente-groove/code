@@ -830,7 +830,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 String ruleName = node.getRule().getName();
                 icon = display.getListIcon(ruleName);
                 error = display.hasError(ruleName);
-                text = display.getLabelText(text);
+                text = display.getLabelText(ruleName);
             } else if (value instanceof MatchTreeNode) {
                 icon = Icons.GRAPH_MATCH_ICON;
             }

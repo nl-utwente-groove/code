@@ -31,8 +31,8 @@ import groove.graph.TypeGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
-import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
@@ -426,8 +426,7 @@ public class GrammarModel implements Observer {
             ControlModel controlModel = getControlModel(getControlName());
             if (controlModel == null) {
                 errors.add(new FormatError(
-                    "Control program '%s' cannot be found",
-                    getControlName()));
+                    "Control program '%s' cannot be found", getControlName()));
             } else if (result.hasMultiplePriorities()) {
                 errors.add(new FormatError(
                     "Rule priorities and control programs are incompatible, please disable either."));
@@ -458,7 +457,7 @@ public class GrammarModel implements Observer {
         } else {
             List<FormatError> startGraphErrors;
             try {
-                DefaultHostGraph startGraph = getStartGraphModel().toResource();
+                HostGraph startGraph = getStartGraphModel().toResource();
                 result.setStartGraph(startGraph);
                 startGraphErrors = GraphInfo.getErrors(startGraph);
             } catch (FormatException exc) {

@@ -52,6 +52,7 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
+import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
@@ -108,6 +109,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         graph.testFixed(true);
     }
 
+    @Override
+    public String getLastName() {
+        return new RuleName(getName()).child();
+    }
+
     /**
      * Returns the priority of the rule of which this is a model. Yields the same
      * result as <code>toRule().getPriority()</code>.
@@ -159,6 +165,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     public List<FormatError> getErrors() {
         initialise();
         return this.ruleErrors;
+    }
+
+    @Override
+    protected Rule compute() throws FormatException {
+        if (getSource().hasErrors()) {
+            throw new FormatException(getSource().getErrors());
+        }
+        AspectGraph normalSource = getSource().normalise();
+        if (normalSource.hasErrors()) {
+            throw new FormatException(normalSource.getErrors());
+        }
+        LevelTree levelTree = new LevelTree(normalSource);
+        this.modelMap.clear();
+        this.modelMap.putAll(levelTree.getModelMap());
+        return computeRule(levelTree);
     }
 
     /** Returns the set of labels occurring in this rule. */
@@ -247,27 +268,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return;
         }
         this.ruleErrors.clear();
-        if (getSource().hasErrors()) {
-            this.ruleErrors.addAll(getSource().getErrors());
-            this.status = Status.ERROR;
-            return;
-        }
-        AspectGraph normalSource = getSource().normalise();
-        if (normalSource.hasErrors()) {
-            this.ruleErrors.addAll(normalSource.getErrors());
-            this.status = Status.ERROR;
-            return;
-        }
         try {
-            LevelTree levelTree = new LevelTree(normalSource);
-            this.modelMap.clear();
-            this.modelMap.putAll(levelTree.getModelMap());
-            this.rule = computeRule(levelTree);
+            this.rule = compute();
             this.status = Status.DONE;
-        } catch (FormatException exc) {
-            this.ruleErrors.addAll(exc.getErrors());
+        } catch (FormatException e) {
+            this.ruleErrors.addAll(e.getErrors());
             this.status = Status.ERROR;
-            return;
         }
     }
 
@@ -391,11 +397,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      */
     RuleGraph createGraph(String name) {
         return new RuleGraph(name);
-    }
-
-    /** Callback factory method to create an appropriate error collection. */
-    Collection<FormatError> createErrors() {
-        return new TreeSet<FormatError>();
     }
 
     /** Status of the rule construction. */

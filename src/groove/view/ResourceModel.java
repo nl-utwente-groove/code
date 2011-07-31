@@ -19,7 +19,9 @@ package groove.view;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * General interface for classes that provide part of a graph grammar. 
@@ -64,9 +66,18 @@ abstract public class ResourceModel<R> {
     }
 
     /**
-     * Returns the (non-<code>null</code>) name of the underlying model.
+     * Returns the (non-<code>null</code>) full name of the underlying model.
      */
     public final String getName() {
+        return this.name;
+    }
+
+    /**
+     * Returns the (non-<code>null</code>) last part of the name of the underlying model.
+     * This equals the name if names cannot be hierarchical.
+     * @see #getName()
+     */
+    public String getLastName() {
         return this.name;
     }
 
@@ -106,6 +117,17 @@ abstract public class ResourceModel<R> {
     public final boolean hasErrors() {
         return !getErrors().isEmpty();
     }
+
+    /** Callback factory method to create an appropriate error collection. */
+    Collection<FormatError> createErrors() {
+        return new TreeSet<FormatError>();
+    }
+
+    /** 
+     * Callback method that (re)computes the resource.
+     * Called on initialisation and whenever the grammar model has changed.
+     */
+    abstract protected R compute() throws FormatException;
 
     /** The grammar model to which this resource belongs. */
     private final GrammarModel grammar;

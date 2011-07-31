@@ -1,4 +1,4 @@
-// $ANTLR 3.4 Ctrl.g 2011-07-31 09:50:03
+// $ANTLR 3.4 Ctrl.g 2011-07-31 10:26:20
 
 package groove.control.parse;
 import groove.control.*;
@@ -864,7 +864,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: WHILE, stat, stat, cond
+                            // elements: cond, stat, WHILE, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -935,7 +935,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, cond, UNTIL, stat
+                            // elements: stat, stat, cond, UNTIL
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2192,7 +2192,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "call"
-    // Ctrl.g:216:1: call : rule_name ( arg_list )? -> ^( CALL[$rule_name.text] rule_name ( arg_list )? ) ;
+    // Ctrl.g:216:1: call : rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) ;
     public final CtrlParser.call_return call() throws RecognitionException {
         CtrlParser.call_return retval = new CtrlParser.call_return();
         retval.start = input.LT(1);
@@ -2208,7 +2208,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_arg_list=new RewriteRuleSubtreeStream(adaptor,"rule arg_list");
         RewriteRuleSubtreeStream stream_rule_name=new RewriteRuleSubtreeStream(adaptor,"rule rule_name");
         try {
-            // Ctrl.g:217:2: ( rule_name ( arg_list )? -> ^( CALL[$rule_name.text] rule_name ( arg_list )? ) )
+            // Ctrl.g:217:2: ( rule_name ( arg_list )? -> ^( CALL[$rule_name.start] rule_name ( arg_list )? ) )
             // Ctrl.g:221:4: rule_name ( arg_list )?
             {
             pushFollow(FOLLOW_rule_name_in_call1054);
@@ -2243,7 +2243,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: rule_name, arg_list
+            // elements: arg_list, rule_name
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2255,18 +2255,18 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 222:4: -> ^( CALL[$rule_name.text] rule_name ( arg_list )? )
+            // 222:4: -> ^( CALL[$rule_name.start] rule_name ( arg_list )? )
             {
-                // Ctrl.g:222:7: ^( CALL[$rule_name.text] rule_name ( arg_list )? )
+                // Ctrl.g:222:7: ^( CALL[$rule_name.start] rule_name ( arg_list )? )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot(
-                (CommonTree)adaptor.create(CALL, (rule_name71!=null?input.toString(rule_name71.start,rule_name71.stop):null))
+                (CommonTree)adaptor.create(CALL, (rule_name71!=null?((Token)rule_name71.start):null))
                 , root_1);
 
                 adaptor.addChild(root_1, stream_rule_name.nextTree());
 
-                // Ctrl.g:222:41: ( arg_list )?
+                // Ctrl.g:222:42: ( arg_list )?
                 if ( stream_arg_list.hasNext() ) {
                     adaptor.addChild(root_1, stream_arg_list.nextTree());
 
@@ -3015,7 +3015,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: var_type, ID
+            // elements: ID, var_type
             // token labels: 
             // rule labels: retval
             // token list labels: 
