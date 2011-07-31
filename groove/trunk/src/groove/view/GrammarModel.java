@@ -143,7 +143,7 @@ public class GrammarModel implements Observer {
      * enabled, or {@code null} otherwise. This is taken
      * from the system properties.
      */
-    public String getActiveControlName() {
+    public String getControlName() {
         return getProperties().getControlName();
     }
 
@@ -153,7 +153,7 @@ public class GrammarModel implements Observer {
      *         is no control program loaded.
      */
     public ControlModel getActiveControlModel() {
-        return isUseControl() ? getControlModel(getActiveControlName()) : null;
+        return isUseControl() ? getControlModel(getControlName()) : null;
     }
 
     /**
@@ -350,7 +350,7 @@ public class GrammarModel implements Observer {
      * Indicates if control is explicitly enabled.
      */
     public boolean isUseControl() {
-        return getActiveControlName() != null;
+        return getControlName() != null;
     }
 
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
@@ -423,11 +423,11 @@ public class GrammarModel implements Observer {
         }
         // set control
         if (isUseControl()) {
-            ControlModel controlModel = getControlModel(getActiveControlName());
+            ControlModel controlModel = getControlModel(getControlName());
             if (controlModel == null) {
                 errors.add(new FormatError(
                     "Control program '%s' cannot be found",
-                    getActiveControlName()));
+                    getControlName()));
             } else if (result.hasMultiplePriorities()) {
                 errors.add(new FormatError(
                     "Rule priorities and control programs are incompatible, please disable either."));
@@ -438,7 +438,7 @@ public class GrammarModel implements Observer {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
                             "Error in control program '%s': %s",
-                            getActiveControlName(), error, controlModel));
+                            getControlName(), error, controlModel));
                     }
                 }
             }

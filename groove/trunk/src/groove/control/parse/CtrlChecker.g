@@ -11,8 +11,8 @@ options {
 package groove.control.parse;
 import groove.control.*;
 import groove.trans.Rule;
-import groove.trans.SPORule;
 import groove.algebra.AlgebraFamily;
+import groove.view.FormatError;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -24,14 +24,14 @@ import java.util.HashMap;
     private CtrlHelper helper;
     
     public void displayRecognitionError(String[] tokenNames,
-                                        RecognitionException e) {
+            RecognitionException e) {
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        helper.addError(hdr + " " + msg);
+        this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
-    
-    public List<String> getErrors() {
-        return helper.getErrors();
+
+    public List<FormatError> getErrors() {
+        return this.helper.getErrors();
     }
 
     /**

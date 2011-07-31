@@ -29,6 +29,7 @@ import java.util.LinkedList;
 package groove.control.parse;
 import groove.control.*;
 import groove.algebra.AlgebraFamily;
+import groove.view.FormatError;
 import java.util.LinkedList;
 }
 
@@ -39,14 +40,14 @@ import java.util.LinkedList;
     private CtrlHelper helper;
     
     public void displayRecognitionError(String[] tokenNames,
-                                        RecognitionException e) {
+            RecognitionException e) {
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        helper.addError(hdr + " " + msg);
+        this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
-    
-    public List<String> getErrors() {
-        return helper.getErrors();
+
+    public List<FormatError> getErrors() {
+        return this.helper.getErrors();
     }
 
     /**
@@ -218,7 +219,7 @@ call
 	  //@P the rule or function name
 	  //@P optional comma-separated list of arguments
 	  rule_name arg_list?
-	  -> ^(CALL[$rule_name] rule_name arg_list?)
+	  -> ^(CALL[$rule_name.text] rule_name arg_list?)
 	;
 
 /** @H Argument list 

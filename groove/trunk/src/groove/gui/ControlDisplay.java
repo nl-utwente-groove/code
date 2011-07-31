@@ -172,7 +172,7 @@ final public class ControlDisplay extends ResourceDisplay {
 
     @Override
     protected void decorateLabelText(String name, StringBuilder text) {
-        if (name.equals(getGrammar().getActiveControlName())) {
+        if (name.equals(getGrammar().getControlName())) {
             HTMLConverter.STRONG_TAG.on(text);
             HTMLConverter.HTML_TAG.on(text);
         }

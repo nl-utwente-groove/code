@@ -26,6 +26,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class CtrlLoader {
             if (DEBUG) {
                 System.out.printf("Parse tree: %s%n", tree.toStringTree());
             }
-            List<String> errors = this.parser.getErrors();
+            List<FormatError> errors = this.parser.getErrors();
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
