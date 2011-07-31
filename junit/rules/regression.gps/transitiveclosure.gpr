@@ -7,104 +7,39 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n4">
+        <node id="n1">
             <attr name="layout">
-                <string>363 136 50 46</string>
-            </attr>
-        </node>
-        <node id="n5">
-            <attr name="layout">
-                <string>157 78 34 31</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>365 305 50 46</string>
+                <string>340 174 51 46</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>214 218 51 46</string>
+                <string>57 178 51 46</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>39 25 547 31</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>513 455 30 31</string>
+                <string>324 406 30 31</string>
             </attr>
         </node>
-        <node id="n1">
+        <node id="n4">
             <attr name="layout">
-                <string>497 214 51 46</string>
+                <string>206 96 50 46</string>
             </attr>
         </node>
-        <edge to="n1" from="n3">
-            <attr name="label">
-                <string>trg</string>
+        <node id="n3">
+            <attr name="layout">
+                <string>208 265 50 46</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:Edge</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n4">
-            <attr name="label">
-                <string>type:Edge</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n3">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n0">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n5">
-            <attr name="label">
-                <string>Regular expressions and merge embargoes should not be put in the root graph of subconditions</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>new:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>forall:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n4">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
+        </node>
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>-src.trg.-src.trg</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n3">
-            <attr name="label">
-                <string>src</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Node</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:Node</string>
             </attr>
         </edge>
         <edge to="n1" from="n4">
@@ -112,9 +47,9 @@
                 <string>trg</string>
             </attr>
         </edge>
-        <edge to="n0" from="n4">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>src</string>
+                <string>forall:</string>
             </attr>
         </edge>
         <edge to="n4" from="n4">
@@ -124,7 +59,72 @@
         </edge>
         <edge to="n5" from="n5">
             <attr name="label">
+                <string>Regular expressions and merge embargoes should not be put in the root graph of subconditions</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n4">
+            <attr name="label">
+                <string>src</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
+            <attr name="label">
+                <string>type:Edge</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:Edge</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n3">
+            <attr name="label">
+                <string>src</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n4">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:Node</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n3">
+            <attr name="label">
+                <string>trg</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:Node</string>
             </attr>
         </edge>
     </graph>
