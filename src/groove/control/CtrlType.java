@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.SignatureKind;
 
 import java.util.EnumSet;
@@ -69,11 +68,6 @@ public class CtrlType {
         return nodeTypeInstance;
     }
 
-    /** Returns the attribute type instance. */
-    public static CtrlType getAttrType() {
-        return attrTypeInstance;
-    }
-
     /** 
      * Returns a data type instance for a given signature name.
      * @throws IllegalArgumentException if there is no signature with the given name 
@@ -95,8 +89,6 @@ public class CtrlType {
         CtrlType result;
         if (NODE_TYPE_NAME.equals(name)) {
             result = getNodeType();
-        } else if (ATTR_TYPE_NAME.equals(name)) {
-            result = getAttrType();
         } else {
             result = getDataType(name);
         }
@@ -105,13 +97,9 @@ public class CtrlType {
 
     /** The name of the node type. */
     static public final String NODE_TYPE_NAME = "node";
-    /** The name of the (general) attribute type. */
-    static public final String ATTR_TYPE_NAME = UNTYPED.getName();
     /** The singleton node type. */
     private static final CtrlType nodeTypeInstance = new CtrlType(
         NODE_TYPE_NAME);
-    private static final CtrlType attrTypeInstance = new CtrlType(
-        ATTR_TYPE_NAME);
     /** Static mapping from data signatures to data types. */
     private static final Map<String,CtrlType> dataTypeMap =
         new HashMap<String,CtrlType>();

@@ -145,7 +145,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return null;
         } else if (getNode().hasAttrAspect()) {
             Aspect attrAspect = getNode().getAttrAspect();
-            if (attrAspect.getKind().isData()) {
+            if (attrAspect.getKind().hasSignature()) {
                 // delegate the identity string to a corresponding variable node
                 return attrAspect.getVariableNode(getNode().getNumber()).toString();
             } else {
@@ -174,7 +174,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             }
             HTMLConverter.red.on(result);
         } else {
-            if (getNode().getAttrKind().isData()) {
+            if (getNode().getAttrKind().hasSignature()) {
                 if (getNode().getAttrAspect().hasContent()) {
                     result.append("Constant node");
                 } else {

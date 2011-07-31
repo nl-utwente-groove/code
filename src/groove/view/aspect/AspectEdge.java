@@ -397,7 +397,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             result = null;
         } else if (getAttrKind() == ARGUMENT) {
             result = new RuleLabel(getArgument());
-        } else if (getAttrKind().isData()) {
+        } else if (getAttrKind().hasSignature()) {
             result = new RuleLabel(getOperator());
         } else {
             assert isAssign() || getKind().isRole();

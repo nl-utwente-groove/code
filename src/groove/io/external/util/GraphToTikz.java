@@ -722,7 +722,7 @@ public final class GraphToTikz {
         AspectKind attrKind =
             node instanceof AspectJVertex
                     ? ((AspectJVertex) node).getNode().getAttrKind() : DEFAULT;
-        if (attrKind.isData()) {
+        if (attrKind.hasSignature()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
             styles.add(PRODUCT_NODE_STYLE);
