@@ -1132,7 +1132,7 @@ public class Rule implements Fixable, Comparable<Rule> {
         result.removeAll(lhs().nodeSet());
         Rule parent = getParent();
         if (parent != null && parent != this) {
-            result.removeAll(parent.rhs().edgeSet());
+            result.removeAll(parent.rhs().nodeSet());
         }
         return result.toArray(new RuleNode[result.size()]);
     }

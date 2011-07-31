@@ -432,10 +432,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
         for (HostNode node : source.nodeSet()) {
             if (!morphism.containsNodeKey(node)) {
-                if (!(node instanceof ValueNode)) {
+                if (node instanceof ValueNode) {
+                    morphism.putNode(node, node);
+                } else {
                     errors.add(new FormatError("Untyped node '%s'", node));
                 }
-                morphism.putNode(node, node);
             }
         }
         for (HostEdge edge : source.edgeSet()) {
