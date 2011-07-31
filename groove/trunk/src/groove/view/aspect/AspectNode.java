@@ -26,7 +26,6 @@ import static groove.view.aspect.AspectKind.ID;
 import static groove.view.aspect.AspectKind.IMPORT;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import static groove.view.aspect.AspectKind.READER;
-import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
@@ -238,7 +237,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             setAspect(AspectKind.DEFAULT.getAspect());
         }
         if (hasImport()) {
-            if (getAttrKind().isData()) {
+            if (getAttrKind().hasSignature()) {
                 throw new FormatException("Can't import data type",
                     getAttrKind(), this);
             } else if (getKind() == ABSTRACT) {
@@ -488,8 +487,6 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         // it may be the new attribute is inferred from an incoming edge
         // but then we only change the attribute if the new one is "better"
         if (!hasAttrAspect()) {
-            this.attr = newAttr;
-        } else if (getAttrKind() == UNTYPED && newAttr.getKind().isData()) {
             this.attr = newAttr;
         } else if (getAttrKind() != attrKind) {
             throw new FormatException("Conflicting (inferred) types %s and %s",

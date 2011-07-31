@@ -155,7 +155,7 @@ public class JVertexView extends VertexView {
             return VertexShape.RECTANGLE;
         } else if (graphRole == GraphRole.LTS) {
             return VertexShape.OVAL;
-        } else if (attrKind.isData()) {
+        } else if (attrKind.hasSignature()) {
             return VertexShape.ELLIPSE;
         } else if (attrKind == PRODUCT) {
             return VertexShape.DIAMOND;

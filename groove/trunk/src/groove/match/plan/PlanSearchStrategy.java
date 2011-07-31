@@ -454,8 +454,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                 } else {
                     SignatureKind keySignature =
                         ((VariableNode) nodeKey).getSignature();
-                    if (keySignature != null
-                        && ((ValueNode) image).getSignature() != keySignature) {
+                    if (((ValueNode) image).getSignature() != keySignature) {
                         return false;
                     }
                 }

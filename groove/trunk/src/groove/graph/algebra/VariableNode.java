@@ -29,15 +29,6 @@ import groove.trans.RuleNode;
  */
 public class VariableNode extends AbstractNode implements RuleNode {
     /**
-     * Constructs a (numbered) untyped variable node.
-     */
-    public VariableNode(int nr) {
-        super(nr);
-        this.signature = null;
-        this.constant = null;
-    }
-
-    /**
      * Constructs a (numbered) typed variable node.
      */
     public VariableNode(int nr, SignatureKind signature) {
@@ -87,7 +78,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     /**
-     * Method returning the (possibly null) signature to which the variable node
+     * Method returning the (non-{@code null}) signature to which the variable node
      * belongs.
      */
     public SignatureKind getSignature() {

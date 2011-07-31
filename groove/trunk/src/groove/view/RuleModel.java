@@ -24,7 +24,6 @@ import static groove.view.aspect.AspectKind.PARAM_BI;
 import static groove.view.aspect.AspectKind.PARAM_IN;
 import static groove.view.aspect.AspectKind.PARAM_OUT;
 import static groove.view.aspect.AspectKind.PRODUCT;
-import static groove.view.aspect.AspectKind.UNTYPED;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -1409,7 +1408,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (nodeAttrKind == PRODUCT) {
                 return new ProductNode(node.getNumber(),
                     node.getArgNodes().size());
-            } else if (nodeAttrKind.isData()) {
+            } else if (nodeAttrKind.hasSignature()) {
                 return node.getAttrAspect().getVariableNode(node.getNumber());
             } else {
                 return ruleFactory.createNode(node.getNumber());
@@ -2035,12 +2034,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     && getSystemProperties().getControlName() != null;
             CtrlType varType;
             AspectKind attrKind = node.getAttrKind();
-            if (!attrKind.isData()) {
-                varType = CtrlType.getNodeType();
-            } else if (attrKind == UNTYPED) {
-                varType = CtrlType.getAttrType();
-            } else {
+            if (attrKind.hasSignature()) {
                 varType = CtrlType.getDataType(attrKind.getName());
+            } else {
+                varType = CtrlType.getNodeType();
             }
             CtrlVar var = new CtrlVar("arg" + nr, varType);
             boolean inOnly = paramKind == PARAM_IN;

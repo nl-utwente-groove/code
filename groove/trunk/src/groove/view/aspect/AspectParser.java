@@ -97,7 +97,7 @@ public class AspectParser {
         if (rest.startsWith(typePrefix)) {
             Aspect primType =
                 Aspect.getAspect(rest.substring(typePrefix.length()));
-            if (primType != null && primType.getKind().isData()) {
+            if (primType != null && primType.getKind().hasSignature()) {
                 result.addAspect(primType);
                 rest = "";
             }

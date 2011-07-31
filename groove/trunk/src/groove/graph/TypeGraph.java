@@ -274,10 +274,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
         for (RuleNode node : source.nodeSet()) {
             if (!morphism.containsNodeKey(node)) {
-                if (node instanceof VariableNode
-                    && ((VariableNode) node).getSignature() != null) {
-                    morphism.putNode(node, node);
-                } else if (node instanceof ProductNode) {
+                if (node instanceof VariableNode || node instanceof ProductNode) {
                     morphism.putNode(node, node);
                 } else {
                     RuleNode parentImage = parentTyping.getNode(node);

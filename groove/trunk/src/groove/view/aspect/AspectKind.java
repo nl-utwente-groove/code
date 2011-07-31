@@ -74,8 +74,6 @@ public enum AspectKind {
     CONNECT("or", ContentKind.EMPTY),
 
     // data types
-    /** Indicates a data value of unknown type. */
-    UNTYPED("attr"),
     /** Indicates a boolean value or operator. */
     BOOL(SignatureKind.BOOL.getName(), ContentKind.BOOL_LITERAL),
     /** Indicates an integer value or operator. */
@@ -259,12 +257,10 @@ public enum AspectKind {
 
     /** 
      * Indicates if this aspect is among the set of typed data aspects.
-     * @see #data 
+     * @see #getSignature() 
      */
     public boolean hasSignature() {
-        boolean result = isData() && this != UNTYPED;
-        assert result == (getSignature() != null);
-        return result;
+        return getSignature() != null;
     }
 
     /** 
@@ -273,14 +269,6 @@ public enum AspectKind {
      */
     public SignatureKind getSignature() {
         return this.contentKind.signature;
-    }
-
-    /** 
-     * Indicates if this aspect is among the set of (typed or untyped) data aspects.
-     * @see #data 
-     */
-    public boolean isData() {
-        return data.contains(this);
     }
 
     /** 
@@ -414,7 +402,11 @@ public enum AspectKind {
         edgeKinds.remove(LET);
         edgeKinds.remove(TEST);
         if (role == GraphRole.TYPE) {
-            edgeKinds.removeAll(data);
+            for (AspectKind kind : edgeKinds) {
+                if (kind.hasSignature()) {
+                    edgeKinds.remove(kind);
+                }
+            }
         }
         for (AspectKind kind : edgeKinds) {
             Help help = computeHelp(kind, role, false, true);
@@ -881,12 +873,6 @@ public enum AspectKind {
             }
             break;
 
-        case UNTYPED:
-            s = "%s.COLON";
-            h = "Untyped variable";
-            b.add("Declares an untyped attribute variable node");
-            break;
-
         default:
             throw new IllegalStateException();
         }
@@ -970,9 +956,6 @@ public enum AspectKind {
     /** Set of role aspects appearing in RHSs. */
     public static final Set<AspectKind> rhs =
         EnumSet.of(READER, CREATOR, ADDER);
-    /** Set of data aspects, typed or untyped. */
-    public static final Set<AspectKind> data = EnumSet.of(UNTYPED, STRING,
-        BOOL, INT, REAL);
     /** Set of meta-aspects, i.e., which do not reflect real graph structure. */
     public static final Set<AspectKind> meta = EnumSet.of(FORALL, FORALL_POS,
         EXISTS, EXISTS_OPT, NESTED, REMARK, CONNECT);
@@ -987,7 +970,7 @@ public enum AspectKind {
         FORALL_POS);
     /** Set of attribute-related aspects. */
     public static final Set<AspectKind> attributers = EnumSet.of(PRODUCT,
-        ARGUMENT, UNTYPED, STRING, INT, BOOL, REAL, TEST);
+        ARGUMENT, STRING, INT, BOOL, REAL, TEST);
 
     /** Mapping from graph roles to the node aspects allowed therein. */
     public static final Map<GraphRole,Set<AspectKind>> allowedNodeKinds =
@@ -1008,9 +991,9 @@ public enum AspectKind {
             case RULE:
                 nodeKinds =
                     EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
-                        UNTYPED, BOOL, INT, REAL, STRING, PRODUCT, PARAM_BI,
-                        PARAM_IN, PARAM_OUT, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, ID, COLOR);
+                        BOOL, INT, REAL, STRING, PRODUCT, PARAM_BI, PARAM_IN,
+                        PARAM_OUT, FORALL, FORALL_POS, EXISTS, EXISTS_OPT, ID,
+                        COLOR);
                 edgeKinds =
                     EnumSet.of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO,
                         CONNECT, BOOL, INT, REAL, STRING, ARGUMENT, PATH,
