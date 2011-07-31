@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,24 +60,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     @Override
-    public TypeGraph toResource() throws FormatException {
-        initialise();
-        if (this.typeGraph == null) {
-            throw new FormatException(getErrors());
-        } else {
-            return this.typeGraph;
-        }
-    }
-
-    @Override
-    public List<FormatError> getErrors() {
-        initialise();
-        return this.errors;
-    }
-
-    @Override
     public TypeModelMap getMap() {
-        initialise();
+        synchronise();
         return this.modelMap;
     }
 
@@ -88,13 +71,13 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      */
     @Override
     public Set<TypeLabel> getLabels() {
-        initialise();
-        return this.typeGraph == null ? null
-                : this.typeGraph.getLabelStore().getLabels();
+        TypeGraph typeGraph = getResource();
+        return typeGraph == null ? Collections.<TypeLabel>emptySet()
+                : typeGraph.getLabelStore().getLabels();
     }
 
     @Override
-    protected TypeGraph compute() throws FormatException {
+    TypeGraph compute() throws FormatException {
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
         }
@@ -179,21 +162,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         }
     }
 
-    /** Constructs the model and associated data structures from the view,
-     * if this has not already been done and the model itself does not contain
-     * errors. */
-    private void initialise() {
-        // first test if there is something to be done
-        if (this.errors == null) {
-            try {
-                this.typeGraph = compute();
-                this.errors = Collections.emptyList();
-            } catch (FormatException e) {
-                this.errors = e.getErrors();
-            }
-        }
-    }
-
     /**
      * Returns a node type for a given model node and type label.
      * Also adds the type to the {@link #modelMap}.
@@ -273,13 +241,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             elementMap.putEdge(modelEdge, typeEdge);
         }
     }
-
-    /** The resource being constructed. */
-    private TypeGraph typeGraph;
-    /**
-     * List of errors in the model that prevent the resource from being constructed.
-     */
-    private List<FormatError> errors;
 
     /** Auxiliary from types to resource nodes */
     private Map<TypeLabel,TypeNode> typeNodeMap =

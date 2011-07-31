@@ -19,10 +19,6 @@ package groove.view;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.trans.ResourceKind;
-import groove.util.Status;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Bridge between control programs (which are just strings) and control
@@ -45,64 +41,19 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         return getName().equals(getGrammar().getControlName());
     }
 
-    @Override
-    public CtrlAut toResource() throws FormatException {
-        return toCtrlAut();
-    }
-
     /**
      * Returns the control automaton for a given grammar. 
      */
     public CtrlAut toCtrlAut() throws FormatException {
-        initialise();
-        if (this.status == Status.ERROR) {
-            throw new FormatException(this.errors);
-        } else {
-            return this.automaton;
-        }
-    }
-
-    /**
-     * Returns the syntax errors in this control program, if any.
-     */
-    @Override
-    public List<FormatError> getErrors() {
-        initialise();
-        return this.errors;
-    }
-
-    /**
-     * Initialises the control automaton and error fields,
-     * or reinitialises them if the grammar has changed.
-     */
-    private void initialise() {
-        if (isGrammarModified()) {
-            this.status = Status.START;
-        }
-        if (this.status == Status.START) {
-            this.errors.clear();
-            try {
-                this.automaton = compute();
-                this.status = Status.DONE;
-            } catch (FormatException e) {
-                this.errors.addAll(e.getErrors());
-                this.status = Status.ERROR;
-            }
-        }
+        return toResource();
     }
 
     @Override
-    protected CtrlAut compute() throws FormatException {
+    CtrlAut compute() throws FormatException {
         return parser.runString(getProgram(), getGrammar().getProperties(),
             getGrammar().getRules());
     }
 
-    /** Status of the construction. */
-    private Status status = Status.START;
-    /** The most recently computed control automaton. */
-    private CtrlAut automaton;
-    /** Errors encountered in the automaton. */
-    private final List<FormatError> errors = new ArrayList<FormatError>();
     /** The control parser. */
     private static final CtrlLoader parser = CtrlLoader.getInstance();
 }

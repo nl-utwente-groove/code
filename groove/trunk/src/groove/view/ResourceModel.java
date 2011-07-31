@@ -17,10 +17,10 @@
 package groove.view;
 
 import groove.trans.ResourceKind;
+import groove.util.Status;
 import groove.view.aspect.AspectGraph;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -100,7 +100,13 @@ abstract public class ResourceModel<R> {
      * @throws FormatException if there are syntax errors in the model that
      *         prevent it from being translated to a resource
      */
-    public abstract R toResource() throws FormatException;
+    public final R toResource() throws FormatException {
+        synchronise();
+        if (this.status == Status.ERROR) {
+            throw new FormatException(getErrors());
+        }
+        return this.resource;
+    }
 
     /**
      * Retrieves the list of syntax errors in this model. Conversion to a resource
@@ -108,7 +114,10 @@ abstract public class ResourceModel<R> {
      * @return a non-<code>null</code>, possibly empty list of syntax errors
      * @see #toResource()
      */
-    public abstract List<FormatError> getErrors();
+    public final Collection<FormatError> getErrors() {
+        synchronise();
+        return this.errors;
+    }
 
     /** 
      * Indicates that there are errors in the model.
@@ -119,15 +128,54 @@ abstract public class ResourceModel<R> {
     }
 
     /** Callback factory method to create an appropriate error collection. */
-    Collection<FormatError> createErrors() {
+    final Collection<FormatError> createErrors() {
         return new TreeSet<FormatError>();
+    }
+
+    /** 
+     * Synchronises the resource with the model source.
+     * After invocation of this method, the status is either
+     * {@link Status#DONE} or {@link Status#ERROR}.
+     * @see #getStatus() 
+     */
+    final void synchronise() {
+        if (isGrammarModified()) {
+            this.status = Status.START;
+        }
+        if (this.status == Status.START) {
+            this.errors.clear();
+            try {
+                this.resource = compute();
+                this.status = Status.DONE;
+            } catch (FormatException e) {
+                this.resource = null;
+                this.errors.addAll(e.getErrors());
+                this.status = Status.ERROR;
+            }
+        }
+    }
+
+    /** Returns the status of the resource construction. */
+    final Status getStatus() {
+        return this.status;
+    }
+
+    /** 
+     * Returns the constructed resource.
+     * @return The constructed resource, or {@code null} if there were
+     * errors.
+     * @see #toResource()
+     */
+    final R getResource() {
+        synchronise();
+        return this.resource;
     }
 
     /** 
      * Callback method that (re)computes the resource.
      * Called on initialisation and whenever the grammar model has changed.
      */
-    abstract protected R compute() throws FormatException;
+    abstract R compute() throws FormatException;
 
     /** The grammar model to which this resource belongs. */
     private final GrammarModel grammar;
@@ -135,6 +183,12 @@ abstract public class ResourceModel<R> {
     private final ResourceKind kind;
     /** The name of this resource. */
     private final String name;
+    /** Status of the construction of the resource. */
+    private Status status = Status.START;
+    /** The constructed resource, if {@link #status} equals {@link Status#DONE}. */
+    private R resource;
+    /** The errors found during resource construction. */
+    private final Collection<FormatError> errors = createErrors();
     /** Grammar modification count at the last invocation of #isGrammarModified(). */
     private int lastModCount;
 }

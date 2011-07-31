@@ -58,7 +58,6 @@ import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.Status;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
@@ -141,34 +140,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return GraphProperties.isConfluent(getSource());
     }
 
-    /**
-     * Creates and returns the production rule corresponding to this rule graph.
-     */
     @Override
-    public Rule toResource() throws FormatException {
-        return toRule();
-    }
-
-    /**
-     * Creates and returns the production rule corresponding to this rule graph.
-     */
-    public Rule toRule() throws FormatException {
-        initialise();
-        if (this.status == Status.DONE) {
-            return this.rule;
-        } else {
-            throw new FormatException(this.ruleErrors);
-        }
-    }
-
-    @Override
-    public List<FormatError> getErrors() {
-        initialise();
-        return this.ruleErrors;
-    }
-
-    @Override
-    protected Rule compute() throws FormatException {
+    Rule compute() throws FormatException {
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
         }
@@ -202,8 +175,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     public RuleModelMap getMap() {
-        initialise();
-        if (this.status == Status.ERROR) {
+        synchronise();
+        if (hasErrors()) {
             throw new IllegalStateException();
         }
         return this.modelMap;
@@ -258,23 +231,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     final boolean isCheckCreatorEdges() {
         return getSystemProperties() != null
             && getSystemProperties().isCheckCreatorEdges();
-    }
-
-    private final void initialise() {
-        // reset if the grammar was modified
-        if (isGrammarModified()) {
-            this.status = Status.START;
-        } else if (this.status != Status.START) {
-            return;
-        }
-        this.ruleErrors.clear();
-        try {
-            this.rule = compute();
-            this.status = Status.DONE;
-        } catch (FormatException e) {
-            this.ruleErrors.addAll(e.getErrors());
-            this.status = Status.ERROR;
-        }
     }
 
     /**
@@ -399,8 +355,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return new RuleGraph(name);
     }
 
-    /** Status of the rule construction. */
-    private Status status = Status.START;
     /**
      * Mapping from the elements of the aspect graph representation to the
      * corresponding elements of the rule.
@@ -409,10 +363,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     /** Set of all labels occurring in the rule. */
     private Set<TypeLabel> labelSet;
-    /** Errors found while converting the model to a rule. */
-    private final List<FormatError> ruleErrors = new ArrayList<FormatError>();
-    /** The rule derived from this graph, once it is computed. */
-    private Rule rule;
     static private final RuleFactory ruleFactory = RuleFactory.instance();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
@@ -1932,7 +1882,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * @param context the context-graph
          * @param embargoEdge the edge to be turned into an embargo
          * @return the new {@link groove.trans.EdgeEmbargo}
-         * @see #toRule()
+         * @see #toResource()
          */
         private EdgeEmbargo createEdgeEmbargo(RuleGraph context,
                 RuleEdge embargoEdge) {
@@ -1943,7 +1893,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * Callback method to create a general NAC on a given graph.
          * @param nac the context-graph
          * @return the new {@link groove.trans.Condition}
-         * @see #toRule()
+         * @see #toResource()
          */
         private Condition createNAC(RuleGraph nac) {
             String name = nac.getName();

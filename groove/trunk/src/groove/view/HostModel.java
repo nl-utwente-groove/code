@@ -34,7 +34,6 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
-import groove.util.Status;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -44,7 +43,6 @@ import groove.view.aspect.AspectNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -69,29 +67,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * @throws FormatException if the resource contains errors. 
      */
     public HostGraph toHost() throws FormatException {
-        initialise();
-        if (this.status == Status.ERROR) {
-            throw new FormatException(getErrors());
-        } else {
-            return this.model;
-        }
-    }
-
-    @Override
-    public HostGraph toResource() throws FormatException {
-        return toHost();
-    }
-
-    @Override
-    public List<FormatError> getErrors() {
-        initialise();
-        return this.errors;
+        return toResource();
     }
 
     @Override
     public HostModelMap getMap() {
-        initialise();
-        if (this.status == Status.ERROR) {
+        synchronise();
+        if (hasErrors()) {
             throw new IllegalStateException();
         }
         return this.hostModelMap;
@@ -100,7 +82,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Returns the set of labels used in this graph. */
     @Override
     public Set<TypeLabel> getLabels() {
-        initialise();
+        synchronise();
         return this.labelSet == null ? Collections.<TypeLabel>emptySet()
                 : this.labelSet;
     }
@@ -127,26 +109,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return result;
     }
 
-    /** Constructs the resource and associated data structures from the model. */
-    private void initialise() {
-        // first test if there is something to be done
-        if (isGrammarModified()) {
-            this.status = Status.START;
-        }
-        if (this.status == Status.START) {
-            try {
-                this.model = compute();
-                this.errors = Collections.emptyList();
-                this.status = Status.DONE;
-            } catch (FormatException e) {
-                this.errors = e.getErrors();
-                this.status = Status.ERROR;
-            }
-        }
-    }
-
     @Override
-    protected HostGraph compute() throws FormatException {
+    HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
@@ -292,14 +256,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return new DefaultHostGraph(name);
     }
 
-    /** Status of the construction of the host model. */
-    private Status status = Status.START;
-    /** The host graph that is being constructed. */
-    private HostGraph model;
-    /**
-     * List of errors in the model that prevent the resource from being constructed.
-     */
-    private List<FormatError> errors;
     /** Map from model to resource nodes. */
     private HostModelMap hostModelMap;
     /** Set of labels occurring in this graph. */

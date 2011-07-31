@@ -33,7 +33,7 @@ public class PrologModel extends TextBasedModel<String> {
      */
     public PrologModel(GrammarModel grammar, String name, String program) {
         super(grammar, ResourceKind.PROLOG, name, program);
-        this.errors = Collections.emptyList();
+        this.externalErrors = Collections.emptyList();
     }
 
     @Override
@@ -41,36 +41,25 @@ public class PrologModel extends TextBasedModel<String> {
         return getGrammar().getProperties().getPrologNames().contains(getName());
     }
 
-    @Override
-    public String toResource() throws FormatException {
-        return compute();
-    }
-
     /** Clears the errors in this view. */
     public void clearErrors() {
-        this.errors = Collections.emptyList();
+        this.externalErrors = Collections.emptyList();
     }
 
     /** Sets the errors in this view to a given list. */
     public void setErrors(List<FormatError> errors) {
-        this.errors = errors;
-    }
-
-    /** Returns the list of errors in this view. */
-    @Override
-    public List<FormatError> getErrors() {
-        return this.errors;
+        this.externalErrors = errors;
     }
 
     @Override
-    protected String compute() throws FormatException {
-        if (hasErrors()) {
-            throw new FormatException(getErrors());
-        } else {
+    String compute() throws FormatException {
+        if (this.externalErrors.isEmpty()) {
             return getProgram();
+        } else {
+            throw new FormatException(getErrors());
         }
     }
 
     /** List of Prolog formatting errors in this program. */
-    private List<FormatError> errors;
+    private List<FormatError> externalErrors;
 }
