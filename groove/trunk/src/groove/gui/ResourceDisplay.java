@@ -481,7 +481,7 @@ public abstract class ResourceDisplay extends Display implements
         if (this.editorMap.containsKey(name)) {
             result.append(this.editorMap.get(name).getTitle());
         } else {
-            result.append(name);
+            result.append(getResource(name).getLastName());
         }
         decorateLabelText(name, result);
         return result.toString();

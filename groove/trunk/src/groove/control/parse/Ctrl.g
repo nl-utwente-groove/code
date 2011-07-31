@@ -219,7 +219,7 @@ call
 	  //@P the rule or function name
 	  //@P optional comma-separated list of arguments
 	  rule_name arg_list?
-	  -> ^(CALL[$rule_name.text] rule_name arg_list?)
+	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
 	;
 
 /** @H Argument list 

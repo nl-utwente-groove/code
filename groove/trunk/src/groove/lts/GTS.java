@@ -94,8 +94,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Initialises the start state and corresponding host factory. */
     protected void initialise() {
         assert this.hostFactory == null && this.startState == null;
-        DefaultHostGraph startGraph =
-            createStartGraph(this.grammar.getStartGraph());
+        HostGraph startGraph = createStartGraph(this.grammar.getStartGraph());
         this.hostFactory = startGraph.getFactory();
         this.startState = createStartState(startGraph);
         addState(this.startState);
@@ -105,7 +104,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * Returns a copy of the given graph with a fresh element factory.
      * The resulting graph will be used as start graph state.
      */
-    protected DefaultHostGraph createStartGraph(DefaultHostGraph startGraph) {
+    protected DefaultHostGraph createStartGraph(HostGraph startGraph) {
         HostFactory factory = HostFactory.newInstance();
         DefaultHostGraph result =
             new DefaultHostGraph(startGraph.getName(), factory);
@@ -117,7 +116,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             factory.addEdge(edge);
             result.addEdge(edge);
         }
-        result.setInfo(GraphInfo.getInfo(startGraph, true).clone());
+        GraphInfo.transfer(startGraph, result, null);
         result.setFixed();
         return result;
     }
@@ -126,7 +125,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * Creates the start state for this GTS.
      * Makes sure that the start state graph has a fresh factory.
      */
-    protected GraphState createStartState(DefaultHostGraph startGraph) {
+    protected GraphState createStartState(HostGraph startGraph) {
         return new StartGraphState(this.record, startGraph);
     }
 

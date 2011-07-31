@@ -82,15 +82,19 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         if (this.status == Status.START) {
             this.errors.clear();
             try {
-                this.automaton =
-                    parser.runString(getProgram(),
-                        getGrammar().getProperties(), getGrammar().getRules());
+                this.automaton = compute();
                 this.status = Status.DONE;
             } catch (FormatException e) {
                 this.errors.addAll(e.getErrors());
                 this.status = Status.ERROR;
             }
         }
+    }
+
+    @Override
+    protected CtrlAut compute() throws FormatException {
+        return parser.runString(getProgram(), getGrammar().getProperties(),
+            getGrammar().getRules());
     }
 
     /** Status of the construction. */

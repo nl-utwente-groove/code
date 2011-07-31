@@ -32,7 +32,8 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -92,22 +93,13 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 : this.typeGraph.getLabelStore().getLabels();
     }
 
-    /** Constructs the model and associated data structures from the view,
-     * if this has not already been done and the model itself does not contain
-     * errors. */
-    private void initialise() {
-        // first test if there is something to be done
-        if (this.errors == null) {
-            this.errors = new ArrayList<FormatError>(getSource().getErrors());
-            if (this.errors.isEmpty()) {
-                initialiseTypeGraph();
-            }
+    @Override
+    protected TypeGraph compute() throws FormatException {
+        if (getSource().hasErrors()) {
+            throw new FormatException(getSource().getErrors());
         }
-    }
-
-    /** Constructs the model and associated data structures for model. */
-    private void initialiseTypeGraph() {
-        this.typeGraph = new TypeGraph(getName());
+        Collection<FormatError> errors = createErrors();
+        TypeGraph result = new TypeGraph(getName());
         this.modelMap = new TypeModelMap();
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
@@ -115,20 +107,34 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             if (attrKind != DEFAULT) {
                 TypeLabel typeLabel =
                     TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
-                addNodeType(modelNode, typeLabel);
+                try {
+                    TypeNode typeNode = getNodeType(modelNode, typeLabel);
+                    result.addNode(typeNode);
+                } catch (FormatException e) {
+                    errors.addAll(e.getErrors());
+                }
             }
         }
         // collect node type edges and build the model type map
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             if (typeLabel != null && typeLabel.isNodeType()) {
-                addNodeType(modelEdge.source(), typeLabel);
+                AspectNode modelNode = modelEdge.source();
+                try {
+                    TypeNode typeNode = getNodeType(modelNode, typeLabel);
+                    result.addNode(typeNode);
+                } catch (FormatException e) {
+                    errors.addAll(e.getErrors());
+                }
             }
+        }
+        if (!errors.isEmpty()) {
+            throw new FormatException(errors);
         }
         // check if there are untyped, non-virtual nodes
         Set<AspectNode> untypedNodes =
             new HashSet<AspectNode>(getSource().nodeSet());
-        untypedNodes.removeAll(this.modelTyping.keySet());
+        untypedNodes.removeAll(this.modelMap.nodeMap().keySet());
         Iterator<AspectNode> untypedNodeIter = untypedNodes.iterator();
         while (untypedNodeIter.hasNext()) {
             AspectNode modelNode = untypedNodeIter.next();
@@ -137,12 +143,12 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             } else {
                 // add a node anyhow, to ensure all edge ends have images
                 TypeNode typeNode = new TypeNode(modelNode.getNumber());
-                this.typeGraph.addNode(typeNode);
+                result.addNode(typeNode);
                 this.modelMap.putNode(modelNode, typeNode);
             }
         }
         for (AspectNode untypedNode : untypedNodes) {
-            this.errors.add(new FormatError("Node '%s' has no type label",
+            errors.add(new FormatError("Node '%s' has no type label",
                 untypedNode));
         }
         // copy the edges from model to model
@@ -151,53 +157,71 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             if (typeLabel == null || !typeLabel.isNodeType()) {
                 try {
-                    processModelEdge(this.typeGraph, this.modelMap, modelEdge);
+                    processModelEdge(result, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
-                    this.errors.addAll(exc.getErrors());
+                    errors.addAll(exc.getErrors());
                 }
             }
         }
-        if (this.errors.isEmpty()) {
+        if (errors.isEmpty()) {
             try {
-                this.typeGraph.test();
+                result.test();
             } catch (FormatException exc) {
-                this.errors.addAll(exc.getErrors());
+                errors.addAll(exc.getErrors());
             }
         }
-        // transfer graph info such as layout from model to model
-        GraphInfo.transfer(getSource(), this.typeGraph, this.modelMap);
+        if (errors.isEmpty()) {
+            // transfer graph info such as layout from model to resource
+            GraphInfo.transfer(getSource(), result, this.modelMap);
+            return result;
+        } else {
+            throw new FormatException(errors);
+        }
+    }
 
+    /** Constructs the model and associated data structures from the view,
+     * if this has not already been done and the model itself does not contain
+     * errors. */
+    private void initialise() {
+        // first test if there is something to be done
+        if (this.errors == null) {
+            try {
+                this.typeGraph = compute();
+                this.errors = Collections.emptyList();
+            } catch (FormatException e) {
+                this.errors = e.getErrors();
+            }
+        }
     }
 
     /**
-     * Adds a node type to the model.
+     * Returns a node type for a given model node and type label.
+     * Also adds the type to the {@link #modelMap}.
      * @param modelNode the node in the aspect graph that stands for a node type
      * @param typeLabel the node type label
      */
-    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel) {
+    private TypeNode getNodeType(AspectNode modelNode, TypeLabel typeLabel)
+        throws FormatException {
         TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
-            this.errors.add(new FormatError(
-                "Node '%s' has types '%s' and '%s'", modelNode, typeLabel,
-                oldTypeNode.getLabel()));
-        } else {
-            this.modelTyping.put(modelNode, typeLabel);
-            TypeNode typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
-            if (modelNode.getKind() == ABSTRACT) {
-                typeNode.setAbstract(true);
-            }
-            if (modelNode.hasImport()) {
-                typeNode.setImported(true);
-            }
-            if (modelNode.hasColor()) {
-                typeNode.setColor((Color) modelNode.getColor().getContent());
-            }
-            if (modelNode.isEdge()) {
-                typeNode.setLabelPattern(modelNode.getEdgePattern());
-            }
-            this.typeGraph.addNode(typeNode);
-            this.modelMap.putNode(modelNode, typeNode);
+            throw new FormatException("Duplicate types '%s' and '%s'",
+                typeLabel.text(), oldTypeNode.getLabel().text(), modelNode);
         }
+        TypeNode typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
+        if (modelNode.getKind() == ABSTRACT) {
+            typeNode.setAbstract(true);
+        }
+        if (modelNode.hasImport()) {
+            typeNode.setImported(true);
+        }
+        if (modelNode.hasColor()) {
+            typeNode.setColor((Color) modelNode.getColor().getContent());
+        }
+        if (modelNode.isEdge()) {
+            typeNode.setLabelPattern(modelNode.getEdgePattern());
+        }
+        this.modelMap.putNode(modelNode, typeNode);
+        return typeNode;
     }
 
     /**
@@ -210,7 +234,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         if (typeNode == null) {
             typeNode = new TypeNode(nr, typeLabel);
             this.typeNodeMap.put(typeLabel, typeNode);
-            this.resourceTyping.put(typeNode, typeLabel);
         }
         return typeNode;
     }
@@ -258,12 +281,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      */
     private List<FormatError> errors;
 
-    /** Auxiliary mapping from model nodes to types. */
-    private Map<AspectNode,TypeLabel> modelTyping =
-        new HashMap<AspectNode,TypeLabel>();
-    /** Auxiliary from resource nodes to type labels */
-    private Map<TypeNode,TypeLabel> resourceTyping =
-        new HashMap<TypeNode,TypeLabel>();
     /** Auxiliary from types to resource nodes */
     private Map<TypeLabel,TypeNode> typeNodeMap =
         new HashMap<TypeLabel,TypeNode>();

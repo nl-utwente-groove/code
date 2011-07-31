@@ -43,11 +43,7 @@ public class PrologModel extends TextBasedModel<String> {
 
     @Override
     public String toResource() throws FormatException {
-        if (hasErrors()) {
-            throw new FormatException(getErrors());
-        } else {
-            return getProgram();
-        }
+        return compute();
     }
 
     /** Clears the errors in this view. */
@@ -64,6 +60,15 @@ public class PrologModel extends TextBasedModel<String> {
     @Override
     public List<FormatError> getErrors() {
         return this.errors;
+    }
+
+    @Override
+    protected String compute() throws FormatException {
+        if (hasErrors()) {
+            throw new FormatException(getErrors());
+        } else {
+            return getProgram();
+        }
     }
 
     /** List of Prolog formatting errors in this program. */
