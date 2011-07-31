@@ -19,8 +19,9 @@ package groove.view;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.trans.ResourceKind;
+import groove.util.Status;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
 
     @Override
     public boolean isEnabled() {
-        return getName().equals(getGrammar().getActiveControlName());
+        return getName().equals(getGrammar().getControlName());
     }
 
     @Override
@@ -53,18 +54,11 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
      * Returns the control automaton for a given grammar. 
      */
     public CtrlAut toCtrlAut() throws FormatException {
-        int modCount = getGrammar().getModificationCount();
-        // use the stored result if that was for the same grammar
-        if (modCount != this.lastCount) {
-            this.lastAut =
-                this.parser.runString(getProgram(),
-                    getGrammar().getProperties(), getGrammar().getRules());
-            this.lastCount = modCount;
-        }
-        if (!this.lastAut.getInfo().getErrors().isEmpty()) {
-            throw new FormatException(this.lastAut.getInfo().getErrors());
+        initialise();
+        if (this.status == Status.ERROR) {
+            throw new FormatException(this.errors);
         } else {
-            return this.lastAut;
+            return this.automaton;
         }
     }
 
@@ -73,20 +67,38 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
      */
     @Override
     public List<FormatError> getErrors() {
-        List<FormatError> result;
-        try {
-            toCtrlAut();
-            result = Collections.emptyList();
-        } catch (FormatException e) {
-            result = e.getErrors();
-        }
-        return result;
+        initialise();
+        return this.errors;
     }
 
-    /** The grammar of the most recently computed control automaton. */
-    private int lastCount = -1;
+    /**
+     * Initialises the control automaton and error fields,
+     * or reinitialises them if the grammar has changed.
+     */
+    private void initialise() {
+        if (isGrammarModified()) {
+            this.status = Status.START;
+        }
+        if (this.status == Status.START) {
+            this.errors.clear();
+            try {
+                this.automaton =
+                    parser.runString(getProgram(),
+                        getGrammar().getProperties(), getGrammar().getRules());
+                this.status = Status.DONE;
+            } catch (FormatException e) {
+                this.errors.addAll(e.getErrors());
+                this.status = Status.ERROR;
+            }
+        }
+    }
+
+    /** Status of the construction. */
+    private Status status = Status.START;
     /** The most recently computed control automaton. */
-    private CtrlAut lastAut;
+    private CtrlAut automaton;
+    /** Errors encountered in the automaton. */
+    private final List<FormatError> errors = new ArrayList<FormatError>();
     /** The control parser. */
-    private final CtrlLoader parser = CtrlLoader.getInstance();
+    private static final CtrlLoader parser = CtrlLoader.getInstance();
 }

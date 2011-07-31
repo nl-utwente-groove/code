@@ -21,6 +21,7 @@ import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.view.FormatError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -395,22 +396,24 @@ public class CtrlHelper {
     }
 
     private void emitErrorMessage(Tree marker, String message, Object... args) {
+        int line = marker.getLine();
+        int column = marker.getCharPositionInLine();
         message =
-            String.format("line %d:%d %s", marker.getLine(),
-                marker.getCharPositionInLine(), String.format(message, args));
+            String.format("line %d:%d %s", line, column,
+                String.format(message, args));
         //        this.recogniser.emitErrorMessage(message);
-        addError(message);
+        addError(message, line, column);
     }
 
-    void addError(String message) {
-        this.errors.add(message);
+    void addError(String message, int line, int column) {
+        this.errors.add(new FormatError(message, line, column));
     }
 
     /**
      * Returns the (possibly empty) list of errors found during the last call of
      * the program.
      */
-    List<String> getErrors() {
+    List<FormatError> getErrors() {
         return this.errors;
     }
 
@@ -427,7 +430,7 @@ public class CtrlHelper {
     /** The algebra family to be used for constant arguments. */
     private final AlgebraFamily algebraFamily;
     /** Flag indicating that errors were found during the current run. */
-    private final List<String> errors = new ArrayList<String>();
+    private final List<FormatError> errors = new ArrayList<FormatError>();
     /** The symbol table holding the local variable declarations. */
     private final SymbolTable symbolTable = new SymbolTable();
     private final Map<String,Set<String>> dependencyMap =

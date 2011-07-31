@@ -59,7 +59,7 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             switch (resource) {
             case CONTROL:
-                result = names.contains(grammar.getActiveControlName());
+                result = names.contains(grammar.getControlName());
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
@@ -112,7 +112,7 @@ public class SimulatorModel implements Cloneable {
         try {
             switch (resource) {
             case CONTROL:
-                result = oldName.equals(getGrammar().getActiveControlName());
+                result = oldName.equals(getGrammar().getControlName());
                 break;
             case HOST:
                 GrammarModel grammar = getGrammar();
@@ -254,7 +254,7 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             boolean result =
                 kind != ResourceKind.CONTROL
-                    || name.equals(grammar.getActiveControlName());
+                    || name.equals(grammar.getControlName());
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
             changeSelected(kind, name);
@@ -890,7 +890,7 @@ public class SimulatorModel implements Cloneable {
                 }
             } else if (resource == ResourceKind.CONTROL) {
                 // for control, the best choice is the active control program
-                name = getGrammar().getActiveControlName();
+                name = getGrammar().getControlName();
             }
             if (name == null && !allNames.isEmpty()) {
                 // otherwise, just take the first existing name (if there is one)

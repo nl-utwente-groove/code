@@ -168,7 +168,10 @@ final public class TextTab extends ResourceTab implements MainTab {
     /** Selects a given line in the text area. */
     public void select(int line, int column) {
         try {
-            int pos = this.textArea.getLineStartOffset(line - 1) + column - 1;
+            int pos = this.textArea.getLineStartOffset(line - 1);
+            if (column > 0) {
+                pos += column - 1;
+            }
             this.textArea.select(pos, pos);
             this.textArea.requestFocusInWindow();
         } catch (BadLocationException e) {
