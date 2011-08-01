@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphProperties;
@@ -27,6 +28,8 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,6 +73,35 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
      * @return the set of labels occurring in the resource.
      */
     abstract public Set<TypeLabel> getLabels();
+
+    /** 
+     * Transfers a collection of errors according to the
+     * inverse of a model map.
+     * @param errors the original errors
+     * @param map mapping from aspect elements to rule graph elements
+     * @return the transferred errors
+     */
+    final Collection<FormatError> transferErrors(
+            Collection<FormatError> errors, ElementMap<?,?,?,?> map) {
+        Map<Element,Element> inverseMap = getInverseMap(map);
+        Collection<FormatError> newErrors = createErrors();
+        for (FormatError error : errors) {
+            newErrors.add(error.transfer(inverseMap));
+        }
+        return newErrors;
+    }
+
+    /** Convenience method to return the inverse of a given model map. */
+    private final Map<Element,Element> getInverseMap(ElementMap<?,?,?,?> map) {
+        Map<Element,Element> result = new HashMap<Element,Element>();
+        for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
+            result.put(nodeEntry.getValue(), nodeEntry.getKey());
+        }
+        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap().entrySet()) {
+            result.put(edgeEntry.getValue(), edgeEntry.getKey());
+        }
+        return result;
+    }
 
     private final AspectGraph source;
 

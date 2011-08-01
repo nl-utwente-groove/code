@@ -158,7 +158,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             GraphInfo.transfer(getSource(), result, this.modelMap);
             return result;
         } else {
-            throw new FormatException(errors);
+            throw new FormatException(transferErrors(errors, this.modelMap));
         }
     }
 
