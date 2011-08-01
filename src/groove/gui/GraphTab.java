@@ -10,12 +10,9 @@ import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
-import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -83,16 +80,6 @@ final public class GraphTab extends ResourceTab implements MainTab {
     @Override
     protected void saveResource() {
         // do nothing
-    }
-
-    @Override
-    protected Collection<FormatError> getErrors() {
-        AspectJModel jModel = getJModel();
-        if (jModel == null) {
-            return Collections.emptySet();
-        } else {
-            return jModel.getErrorMap().keySet();
-        }
     }
 
     @Override

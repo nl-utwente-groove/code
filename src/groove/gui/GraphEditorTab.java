@@ -37,9 +37,9 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.rel.RegExpr;
 import groove.util.Pair;
-import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
+import groove.view.ResourceModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
@@ -220,12 +220,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
     }
 
     @Override
-    protected Collection<FormatError> getErrors() {
-        //        getModel().loadViewErrors();
-        return getModel().getErrorMap().keySet();
-    }
-
-    @Override
     public void setClean() {
         setDirty(false);
     }
@@ -272,6 +266,11 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         getModel().loadGraph(newGraph);
         updateStatus();
         setName(newName);
+    }
+
+    @Override
+    protected ResourceModel<?> getResource() {
+        return getModel().getResourceModel();
     }
 
     @Override

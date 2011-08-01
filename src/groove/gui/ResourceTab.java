@@ -22,6 +22,7 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
 import groove.view.FormatError;
+import groove.view.ResourceModel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -234,7 +235,13 @@ abstract public class ResourceTab extends JPanel implements Tab {
         this.display.getListPanel().repaint();
     }
 
-    /** Saves the resource that is currently being edited. */
+    /** Returns the resource model displayed on this tab. */
+    protected ResourceModel<?> getResource() {
+        return getSimulatorModel().getGrammar().getResource(getResourceKind(),
+            getName());
+    }
+
+    /** Saves the resource that is currently being displayed. */
     abstract protected void saveResource();
 
     /** Disposes the editor, by removing it as a listener and simulator panel component. */
@@ -242,15 +249,17 @@ abstract public class ResourceTab extends JPanel implements Tab {
         getDisplay().getTabPane().remove(this);
     }
 
-    /** Returns the display on which this editor is placed. */
+    /** Returns the display on which this tab is placed. */
     public final ResourceDisplay getDisplay() {
         return this.display;
     }
 
-    /** Returns the errors of the edited resource. */
-    abstract protected Collection<FormatError> getErrors();
+    /** Returns the errors of the displayed resource. */
+    protected Collection<FormatError> getErrors() {
+        return getResource().getErrors();
+    }
 
-    /** Indicates if the edited resource is currently in an error state. */
+    /** Indicates if the displayed resource is currently in an error state. */
     final protected boolean hasErrors() {
         return !getErrors().isEmpty();
     }
