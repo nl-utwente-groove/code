@@ -18,6 +18,7 @@
 package groove.gui.jgraph;
 
 import static groove.graph.EdgeRole.BINARY;
+import groove.abstraction.neigh.gui.jgraph.EquivClassJCell;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -109,7 +110,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public Graph<N,E> getGraph() {
+    public Graph<?,?> getGraph() {
         return this.graph;
     }
 
@@ -216,12 +217,15 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         // create the layout map if it does not yet exist
         if (currentLayout == null) {
             currentLayout = new LayoutMap<N,E>();
-            GraphInfo.setLayoutMap(getGraph(), currentLayout);
+            GraphInfo.setLayoutMap((Graph<N,E>) getGraph(), currentLayout);
         }
         if (jCell instanceof GraphJEdge) {
             for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
                 currentLayout.putEdge((E) edge, jCell.getAttributes());
             }
+        } else if (jCell instanceof EquivClassJCell) {
+            // EDUARDO: FIX THIS!
+            // Do nothing.
         } else {
             currentLayout.putNode((N) ((GraphJVertex) jCell).getNode(),
                 jCell.getAttributes());
@@ -491,12 +495,12 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * GraphJModel.
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
-    private final List<GraphJCell> addedJCells = new LinkedList<GraphJCell>();
+    protected final List<GraphJCell> addedJCells = new LinkedList<GraphJCell>();
     /**
      * Set of GraphModel connections. Used in the process of constructing a
      * GraphJModel.
      */
-    private ConnectionSet connections;
+    protected ConnectionSet connections;
 
     /** See {@link #setVetoFireGraphChanged(boolean)}. */
     private boolean vetoFireGraphChanged;

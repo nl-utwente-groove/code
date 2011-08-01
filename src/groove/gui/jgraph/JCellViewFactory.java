@@ -66,6 +66,11 @@ public class JCellViewFactory extends DefaultCellViewFactory {
         return new JEdgeView((GraphJEdge) edge, this.jGraph);
     }
 
+    /** Basic getter method. */
+    public GraphJGraph getJGraph() {
+        return this.jGraph;
+    }
+
     /**
      * The underlying graph on which all views are to be displayed.
      */

@@ -317,8 +317,9 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
      * Convenience method to retrieve the layout map from a graph.
      */
     public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
-            Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
+            Graph<?,?> graph) {
+        @SuppressWarnings("unchecked")
+        GraphInfo<N,E> graphInfo = (GraphInfo<N,E>) graph.getInfo();
         if (graphInfo == null) {
             return null;
         } else {

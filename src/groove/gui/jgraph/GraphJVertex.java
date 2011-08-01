@@ -51,7 +51,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    GraphJVertex(GraphJGraph jGraph, Node node) {
+    protected GraphJVertex(GraphJGraph jGraph, Node node) {
         this.jGraph = jGraph;
         add(new DefaultPort());
         this.node = node;
