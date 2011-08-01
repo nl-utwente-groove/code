@@ -22,6 +22,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JCellViewFactory;
 
 import java.awt.Rectangle;
 
@@ -49,7 +50,12 @@ public final class ShapeJGraph extends GraphJGraph {
     @Override
     public ShapeJModel newModel() {
         return new ShapeJModel(ShapeJVertex.getPrototype(this),
-            GraphJEdge.getPrototype(this), EquivClassJCell.getPrototype(this));
+            ShapeJEdge.getPrototype(this), EquivClassJCell.getPrototype(this));
+    }
+
+    @Override
+    protected JCellViewFactory createViewFactory() {
+        return new ShapeJCellViewFactory(this);
     }
 
     /** Returns the shape from the model. */

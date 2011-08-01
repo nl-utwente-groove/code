@@ -34,7 +34,8 @@ import java.util.List;
  */
 public class ShapeJVertex extends GraphJVertex {
 
-    ShapeJVertex(ShapeJGraph jGraph, ShapeNode node) {
+    // Private constructor. Use the prototype.
+    private ShapeJVertex(ShapeJGraph jGraph, ShapeNode node) {
         super(jGraph, node);
     }
 

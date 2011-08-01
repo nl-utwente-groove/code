@@ -16,24 +16,42 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
+import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.graph.Edge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
- * Objects of this class can be flagged as the main edge for the source and/or
- * target edge bundles. A main edge is the one that is used when calculating
- * the relative position of ports on node boundaries. If a main edge is dragged,
- * the ports move accordingly.
- * 
  * @author Eduardo Zambon
  */
 public class ShapeJEdge extends GraphJEdge {
 
-    ShapeJEdge(GraphJGraph jGraph, Edge edge) {
-        super(jGraph, edge);
-        // TODO Auto-generated constructor stub
+    private ShapeJEdge(ShapeJGraph jGraph) {
+        super(jGraph);
     }
 
+    private ShapeJEdge(ShapeJGraph jGraph, ShapeEdge edge) {
+        super(jGraph, edge);
+    }
+
+    @Override
+    public ShapeJGraph getJGraph() {
+        return (ShapeJGraph) super.getJGraph();
+    }
+
+    /** 
+     * Factory method, in case this object is used as a prototype.
+     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
+     */
+    @Override
+    public GraphJEdge newJEdge(Edge edge) {
+        assert edge instanceof ShapeEdge;
+        return new ShapeJEdge(getJGraph(), (ShapeEdge) edge);
+    }
+
+    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
+    public static ShapeJEdge getPrototype(ShapeJGraph jGraph) {
+        return new ShapeJEdge(jGraph);
+    }
 }

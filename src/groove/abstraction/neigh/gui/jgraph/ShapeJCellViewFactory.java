@@ -56,7 +56,7 @@ public class ShapeJCellViewFactory extends JCellViewFactory {
     @Override
     protected JEdgeView createEdgeView(Object cell) {
         if (cell instanceof ShapeJEdge) {
-            return null;// new ShapeJEdgeView(cell);
+            return new ShapeJEdgeView((ShapeJEdge) cell, this.getJGraph());
         } else {
             return super.createEdgeView(cell);
         }
@@ -66,6 +66,8 @@ public class ShapeJCellViewFactory extends JCellViewFactory {
     protected VertexView createVertexView(Object cell) {
         if (cell instanceof ShapeJVertex) {
             return new ShapeJVertexView((ShapeJVertex) cell, this.getJGraph());
+        } else if (cell instanceof EquivClassJCell) {
+            return new EquivClassJCellView((EquivClassJCell) cell);
         } else {
             return super.createVertexView(cell);
         }
