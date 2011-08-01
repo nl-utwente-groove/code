@@ -214,9 +214,13 @@ public class DefaultFileSystemStore extends SystemStore {
             activeNames.addAll(getProperties().getPrologNames());
             break;
         case CONTROL:
-            activeNames.add(getProperties().getControlName());
+            String controlName = getProperties().getControlName();
+            if (controlName != null) {
+                activeNames.add(getProperties().getControlName());
+            }
         }
         for (String name : names) {
+            assert name != null;
             String text = getTextMap(kind).remove(name);
             if (text != null) {
                 oldTexts.put(name, text);
