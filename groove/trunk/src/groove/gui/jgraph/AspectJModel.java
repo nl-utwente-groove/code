@@ -200,7 +200,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /** Returns an up-to-date resource model for the graph being edited here. */
-    GraphBasedModel<?> getResourceModel() {
+    public GraphBasedModel<?> getResourceModel() {
         if (this.resource == null
             || this.resourceCount != getModificationCount()) {
             this.resource = this.grammar.createGraphModel(getGraph());

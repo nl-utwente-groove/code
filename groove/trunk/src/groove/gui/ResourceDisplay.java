@@ -528,7 +528,7 @@ public abstract class ResourceDisplay extends Display implements
         return 0;
     }
 
-    /** Indicates if a given (named) graph has errors. */
+    /** Indicates if a given (named) resource has errors. */
     final protected boolean hasError(String name) {
         boolean result;
         if (this.editorMap.containsKey(name)) {
