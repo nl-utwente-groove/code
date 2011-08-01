@@ -76,9 +76,9 @@ public class ShapeJPortView extends PortView {
         if (edge != null) {
             assert edge instanceof ShapeJEdgeView;
             ShapeJEdgeView edgeView = (ShapeJEdgeView) edge;
-            ShapeJEdge jEdge = edgeView.getShapeJEdge();
-            boolean srcVertex = edgeView.isSrcVertex((ShapeJVertexView) vertex);
-            boolean tgtVertex = edgeView.isTgtVertex((ShapeJVertexView) vertex);
+            ShapeJEdge jEdge = null; // edgeView.getShapeJEdge();
+            boolean srcVertex = false; // edgeView.isSrcVertex((ShapeJVertexView) vertex);
+            boolean tgtVertex = false; // edgeView.isTgtVertex((ShapeJVertexView) vertex);
             if (nearest != null
             /*&& ((srcVertex && jEdge.isMainSrc()) || (tgtVertex && jEdge.isMainTgt()))*/) {
                 pos = vertex.getPerimeterPoint(edge, null, nearest);
