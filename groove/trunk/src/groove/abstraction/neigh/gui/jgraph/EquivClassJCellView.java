@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,22 +16,22 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.gui.jgraph.JEdgeView;
+import org.jgraph.graph.VertexView;
 
 /**
- * View renderer for ShapeJEdges.
- * 
+ * View renderer for EquivClassJCell.
  * @author Eduardo Zambon
  */
-public class ShapeJEdgeView extends JEdgeView {
+public class EquivClassJCellView extends VertexView {
 
-    /**
-     * Creates an edge view for a given edge, to be displayed on a given graph.
-     * @param jEdge the edge underlying the view
-     * @param jGraph the graph on which the edge is to be displayed
-     */
-    public ShapeJEdgeView(ShapeJEdge jEdge, ShapeJGraph jGraph) {
-        super(jEdge, jGraph);
+    /** Basic constructor. */
+    public EquivClassJCellView(EquivClassJCell cell) {
+        super(cell);
+    }
+
+    @Override
+    public String toString() {
+        return "";
     }
 
 }

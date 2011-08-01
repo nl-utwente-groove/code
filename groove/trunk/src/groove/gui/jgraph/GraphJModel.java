@@ -18,7 +18,6 @@
 package groove.gui.jgraph;
 
 import static groove.graph.EdgeRole.BINARY;
-import groove.abstraction.neigh.gui.jgraph.EquivClassJCell;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -223,10 +222,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
                 currentLayout.putEdge((E) edge, jCell.getAttributes());
             }
-        } else if (jCell instanceof EquivClassJCell) {
-            // EDUARDO: FIX THIS!
-            // Do nothing.
-        } else {
+        } else if (jCell instanceof GraphJVertex) {
             currentLayout.putNode((N) ((GraphJVertex) jCell).getNode(),
                 jCell.getAttributes());
         }

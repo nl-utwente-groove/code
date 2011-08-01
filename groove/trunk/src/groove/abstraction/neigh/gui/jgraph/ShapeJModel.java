@@ -22,9 +22,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
 
 import org.jgraph.graph.ParentMap;
 
@@ -40,7 +38,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     private EquivClassJCell ecJCellProt;
 
     /** Creates a new jModel with the given prototypes. */
-    protected ShapeJModel(GraphJVertex jVertexProt, GraphJEdge jEdgeProt,
+    ShapeJModel(ShapeJVertex jVertexProt, ShapeJEdge jEdgeProt,
             EquivClassJCell ecJCellProt) {
         super(jVertexProt, jEdgeProt);
         this.ecJCellProt = ecJCellProt;

@@ -44,7 +44,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
-    GraphJEdge(GraphJGraph jGraph) {
+    protected GraphJEdge(GraphJGraph jGraph) {
         this.jGraph = jGraph;
     }
 
@@ -381,6 +381,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge> edges = new TreeSet<Edge>();
 
+    /** The jgraph that displays this edge. */
     private final GraphJGraph jGraph;
     private boolean layoutable;
     private boolean grayedOut;

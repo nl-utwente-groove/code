@@ -1319,6 +1319,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
         private final Object[] cells;
     }
 
+    /** Creates the view factory for this jGraph. */
+    protected JCellViewFactory createViewFactory() {
+        return new JCellViewFactory(this);
+    }
+
     /**
      * A layout cache that, for efficiency, does not pass on all change events,
      * and sets a {@link JCellViewFactory}. It should be possible to use the
@@ -1328,7 +1333,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private class MyGraphLayoutCache extends GraphLayoutCache {
         /** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
-            super(null, new JCellViewFactory(GraphJGraph.this), true);
+            super(null, GraphJGraph.this.createViewFactory(), true);
             setSelectsLocalInsertedCells(false);
             setShowsExistingConnections(false);
             setShowsChangedConnections(false);
