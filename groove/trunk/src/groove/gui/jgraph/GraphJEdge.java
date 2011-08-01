@@ -52,7 +52,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    GraphJEdge(GraphJGraph jGraph, Edge edge) {
+    protected GraphJEdge(GraphJGraph jGraph, Edge edge) {
         this(jGraph);
         this.source = edge.source();
         this.target = edge.target();

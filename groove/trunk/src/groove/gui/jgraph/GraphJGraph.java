@@ -465,7 +465,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * @param x x-coordinate of the location we want to find a cell at
      * @param y y-coordinate of the location we want to find a cell at
      * @param vertex <tt>true</tt> if we are not interested in edges
-     * @param edge <tt>true</tt> if we are not interested in vertice
+     * @param edge <tt>true</tt> if we are not interested in vertices
      * @return the topmost visible cell at a given point
      */
     protected GraphJCell getFirstCellForLocation(double x, double y,

@@ -97,7 +97,7 @@ public final class GraphToTikz {
     private GraphToTikz(GraphJGraph jGraph) {
         this.jGraph = jGraph;
         this.model = (GraphJModel<Node,Edge>) this.jGraph.getModel();
-        this.graph = this.model.getGraph();
+        this.graph = (Graph<Node,Edge>) this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.colorMap = this.createColorMap();
         this.result = new StringBuilder();

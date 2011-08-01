@@ -43,6 +43,9 @@ public class GraphPreviewDialog extends JDialog {
         autPanel.setEnabled(true);
         add(autPanel);
         setSize(600, 700);
+        if (simulator == null) {
+            this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        }
     }
 
     private GraphJGraph getJGraph() {
@@ -52,8 +55,9 @@ public class GraphPreviewDialog extends JDialog {
         return this.jGraph;
     }
 
+    /** Returns the proper jGraph for the graph set in the constructor. */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private GraphJGraph createJGraph() {
+    protected GraphJGraph createJGraph() {
         GraphJGraph jGraph;
         switch (this.graph.getRole()) {
         case BUCHI:
@@ -102,8 +106,10 @@ public class GraphPreviewDialog extends JDialog {
     }
 
     private GraphJGraph jGraph;
-    private final Graph<?,?> graph;
-    private final Simulator simulator;
+    /** The graph to be displayed in the dialog. */
+    protected final Graph<?,?> graph;
+    /** The simulator reference, may be null. */
+    protected final Simulator simulator;
 
     /**
      * Creates a dialog for the given graph, and sets it to visible.
