@@ -28,11 +28,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.ElementMap;
 import groove.graph.GraphProperties;
-import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -316,34 +312,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             throw new FormatException(transferErrors(errors,
                 levelTree.getModelMap()));
         }
-    }
-
-    /** Transfers a collection of errors according to the
-     * inverse of a model map.
-     * @param errors the original errors
-     * @param map mapping from aspect elements to rule graph elements
-     * @return the transferred errors
-     */
-    final Collection<FormatError> transferErrors(
-            Collection<FormatError> errors, ElementMap<?,?,?,?> map) {
-        Map<Element,Element> inverseMap = getInverseMap(map);
-        Collection<FormatError> newErrors = createErrors();
-        for (FormatError error : errors) {
-            newErrors.add(error.transfer(inverseMap));
-        }
-        return newErrors;
-    }
-
-    /** Convenience method to return the inverse of a given model map. */
-    private final Map<Element,Element> getInverseMap(ElementMap<?,?,?,?> map) {
-        Map<Element,Element> result = new HashMap<Element,Element>();
-        for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
-            result.put(nodeEntry.getValue(), nodeEntry.getKey());
-        }
-        for (Map.Entry<? extends Edge,? extends Edge> edgeEntry : map.edgeMap().entrySet()) {
-            result.put(edgeEntry.getValue(), edgeEntry.getKey());
-        }
-        return result;
     }
 
     /**

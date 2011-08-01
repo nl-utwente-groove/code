@@ -53,7 +53,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             if (typeModel.isEnabled()) {
                 this.typeModelMap.put(typeModel.getName(),
                     (TypeModel) typeModel);
-                errors.addAll(typeModel.getErrors());
+                for (FormatError error : typeModel.getErrors()) {
+                    errors.add(new FormatError("Error in type '%s': %s",
+                        typeModel.getName(), error, typeModel.getSource()));
+                }
             }
         }
         // first test if there is something to be done
