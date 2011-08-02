@@ -37,6 +37,8 @@ public class ShapeJVertex extends GraphJVertex {
     // Private constructor. Use the prototype.
     private ShapeJVertex(ShapeJGraph jGraph, ShapeNode node) {
         super(jGraph, node);
+        // Remove the default port that was added by the super constructor.
+        this.remove(0);
     }
 
     @Override

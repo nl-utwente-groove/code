@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.gui.jgraph;
 
 import groove.abstraction.neigh.shape.EdgeSignature;
-import groove.abstraction.neigh.shape.Shape;
 
 import java.awt.geom.Point2D;
 
@@ -37,17 +36,13 @@ public class ShapeJPort extends DefaultPort {
 
     /**
      * Constructor.
-     * @param shape the shape of the edge signature.
-     * @param es the edge signature associated with this port.
      * @param vertex the vertex to add this port to.
-     * @param outgoing flag controlling if the edges are coming in or out from
-     *                 the port. 
      */
-    public ShapeJPort(Shape shape, EdgeSignature es, ShapeJVertex vertex,
-            boolean outgoing) {
+    public ShapeJPort(ShapeJVertex vertex, EdgeSignature es) {
         super();
         GraphConstants.setOffset(this.getAttributes(), new Point2D.Double(0, 0));
         vertex.add(this);
+        this.setUserObject(es);
     }
 
 }

@@ -153,11 +153,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * the sake of efficiency.
      */
     public void loadGraph(Graph<N,E> graph) {
-        this.graph = graph;
-        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
-        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
-        this.nodeJCellMap.clear();
-        this.edgeJCellMap.clear();
+        this.prepareLoad(graph);
         // add nodes from Graph to GraphModel
         prepareInsert();
         for (N node : graph.nodeSet()) {
@@ -167,6 +163,17 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             addEdge(edge);
         }
         doInsert(true, false);
+    }
+
+    /**
+     * Prepare the object fields for loading a new graph.
+     */
+    protected void prepareLoad(Graph<N,E> graph) {
+        this.graph = graph;
+        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
+        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
+        this.nodeJCellMap.clear();
+        this.edgeJCellMap.clear();
     }
 
     /**

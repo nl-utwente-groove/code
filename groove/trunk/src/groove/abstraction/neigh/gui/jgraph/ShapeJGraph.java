@@ -25,6 +25,8 @@ import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCellViewFactory;
 
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import org.jgraph.graph.CellView;
 
@@ -39,6 +41,7 @@ public final class ShapeJGraph extends GraphJGraph {
     public ShapeJGraph(Simulator simulator) {
         super(simulator, true);
         this.setPortsVisible(true);
+        this.addMouseListener(new MyMouseListener());
     }
 
     /** Specialises the return type to a {@link ShapeJModel}. */
@@ -56,6 +59,11 @@ public final class ShapeJGraph extends GraphJGraph {
     @Override
     protected JCellViewFactory createViewFactory() {
         return new ShapeJCellViewFactory(this);
+    }
+
+    @Override
+    public boolean isShowLoopsAsNodeLabels() {
+        return false;
     }
 
     /** Returns the shape from the model. */
@@ -115,5 +123,27 @@ public final class ShapeJGraph extends GraphJGraph {
         GraphJCell result =
             vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
         return result;
+    }
+
+    /**
+     * Mouse listener that creates the popup menu and adds and deletes points on
+     * appropriate events.
+     */
+    private class MyMouseListener extends MouseAdapter {
+        /** Empty constructor wit the correct visibility. */
+        MyMouseListener() {
+            // empty
+        }
+
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            maybeShowPopup(evt);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            maybeShowPopup(evt);
+            ShapeJGraph.this.refresh();
+        }
     }
 }

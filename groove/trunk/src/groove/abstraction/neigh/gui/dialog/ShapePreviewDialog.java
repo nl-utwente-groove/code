@@ -25,12 +25,17 @@ import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.layout.LayoutKind;
+import groove.gui.layout.LayouterItem;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+
+import javax.swing.SwingConstants;
+
+import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
 
 /**
  * Dialog for displaying shapes.
@@ -66,8 +71,15 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         GraphJModel<?,?> model = jGraph.newModel();
         model.loadGraph((Graph) this.graph);
         jGraph.setModel(model);
-        // EDUARDO: FIX THIS.
-        jGraph.setLayouter(LayoutKind.getLayouterItemProto(LayoutKind.FAST_ORGANIC));
+        // EDUARDO says: this is some fine tuning of the layout algorithm
+        // that is better suited for shapes. Should be moved to some other place.
+        LayouterItem layouter =
+            LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
+        JGraphHierarchicalLayout layout =
+            (JGraphHierarchicalLayout) layouter.getLayout();
+        layout.setOrientation(SwingConstants.WEST);
+        layout.setCompactLayout(true);
+        jGraph.setLayouter(layouter);
         jGraph.doGraphLayout();
         return jGraph;
     }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.jgraph.layout.JGraphLayout;
 import com.jgraph.layout.graph.JGraphSimpleLayout;
+import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
 import com.jgraph.layout.organic.JGraphFastOrganicLayout;
 import com.jgraph.layout.organic.JGraphOrganicLayout;
 import com.jgraph.layout.organic.JGraphSelfOrganizingOrganicLayout;
@@ -57,7 +58,9 @@ public enum LayoutKind {
     /** Organic Layout (Fast) */
     FAST_ORGANIC("Fast Organic", new JGraphFastOrganicLayout()),
     /** Self-organizing map. */
-    SELF_ORGANIZ("Self-Organizing", new JGraphSelfOrganizingOrganicLayout());
+    SELF_ORGANIZ("Self-Organizing", new JGraphSelfOrganizingOrganicLayout()),
+    /** Hierarchical Layout. */
+    HIERARCHICAL("Hierarchical", new JGraphHierarchicalLayout());
 
     private String displayString;
     private JGraphLayout layout;
