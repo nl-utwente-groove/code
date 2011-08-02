@@ -119,20 +119,16 @@ public class FormatError implements Comparable<FormatError> {
      */
     @Override
     public int compareTo(FormatError other) {
-        int result = 0;
+        int result = toString().compareTo(other.toString());
         // establish lexicographical ordering of error objects
-        int upper = Math.min(this.elements.size(), other.elements.size());
-        for (int i = 0; i < upper; i++) {
-            result = getElements().get(i).compareTo(other.getElements().get(i));
-            if (result != 0) {
-                break;
-            }
+        List<Element> myElements = this.getElements();
+        List<Element> otherElements = other.getElements();
+        int upper = Math.min(myElements.size(), otherElements.size());
+        for (int i = 0; result == 0 && i < upper; i++) {
+            result = myElements.get(i).compareTo(otherElements.get(i));
         }
         if (result == 0) {
-            result = this.elements.size() - other.elements.size();
-        }
-        if (result == 0) {
-            result = toString().compareTo(other.toString());
+            result = myElements.size() - otherElements.size();
         }
         return result;
     }

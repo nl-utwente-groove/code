@@ -150,6 +150,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return computeRule(levelTree);
     }
 
+    @Override
+    void notifyGrammarModified() {
+        super.notifyGrammarModified();
+        this.labelSet = null;
+    }
+
     /** Returns the set of labels occurring in this rule. */
     @Override
     public Set<TypeLabel> getLabels() {
@@ -193,11 +199,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** Returns the (possibly {@code null}) type graph of this rule. */
     final TypeGraph getType() {
         return getGrammar().getTypeGraph();
-    }
-
-    /** Indicates if this rule is typed. */
-    boolean isTyped() {
-        return getType() != null;
     }
 
     /**
@@ -1145,7 +1146,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     if (edgeKind.inRHS()) {
                         this.rhs.addEdge(ruleEdge);
                         this.mid.addEdge(ruleEdge);
-                    } else if (isTyped() && ruleEdge.label().isNodeType()
+                    } else if (!getType().isDegenerate()
+                        && ruleEdge.label().isNodeType()
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
                             "Node type %s cannot be deleted", ruleEdge.label(),
@@ -1165,7 +1167,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     this.nacEdgeSet.add(ruleEdge);
                 }
                 if (edgeKind.inRHS()) {
-                    if (isTyped() && ruleEdge.label().isNodeType()
+                    if (!getType().isDegenerate()
+                        && ruleEdge.label().isNodeType()
                         && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
                             "Node type %s cannot be created", ruleEdge.label(),
@@ -1301,7 +1304,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         varEdge));
                 }
             }
-            if (isTyped()) {
+            if (!getType().isDegenerate()) {
                 // check use of variables
                 lhsVarEdges.removeAll(this.mid.edgeSet());
                 for (RuleEdge eraserVarEdge : lhsVarEdges) {
@@ -1470,7 +1473,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.isRule = origin.isRule;
             this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             this.rhs = toTypedGraph(origin.rhs, parentTypeMap, this.typeMap);
-            if (isTyped()) {
+            if (!getType().isDegenerate()) {
                 try {
                     checkTypeSpecialisation(this.lhs, this.rhs);
                 } catch (FormatException exc) {
