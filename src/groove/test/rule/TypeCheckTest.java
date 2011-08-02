@@ -20,11 +20,11 @@ import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.ResourceModel;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.EnumSet;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -34,25 +34,19 @@ import org.junit.Test;
 public class TypeCheckTest {
     /** Location of the samples. */
     static public final String INPUT_DIR = "junit/types";
+    private static final String ERR_PREFIX = "ERR-";
+    private static final String OK_PREFIX = "OK-";
 
-    /** Tests the rules in the creators grammar. */
+    /** Tests type specialisation. */
     @Test
     public void testTypeSpecialisation() {
-        setCorrect("mergeSharpTypes", "mergeWithSubtype", "specialiseType");
-        setErroneous("createType", "deleteType", "generaliseType",
-            "mergeNonSharpTypes", "mergeWithSupertype",
-            "specialiseNonSharpType");
         test("type-specialisation");
     }
 
-    /** Assigns the set of correct rules. */
-    private void setCorrect(String... ruleNames) {
-        this.correct = new HashSet<String>(Arrays.asList(ruleNames));
-    }
-
-    /** Assigns the set of erroneous rules. */
-    private void setErroneous(String... ruleNames) {
-        this.erroneous = new HashSet<String>(Arrays.asList(ruleNames));
+    /** Tests abstract node and edge types and edge shadowing. */
+    @Test
+    public void testShadow() {
+        test("shadow");
     }
 
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
@@ -60,14 +54,17 @@ public class TypeCheckTest {
         try {
             GrammarModel grammarView =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            for (String ruleName : grammarView.getNames(ResourceKind.RULE)) {
-                if (this.correct.contains(ruleName)) {
-                    testCorrect(grammarView, ruleName);
-                } else if (this.erroneous.contains(ruleName)) {
-                    testErroneous(grammarView, ruleName);
-                } else if (grammarView.getGraphResource(ResourceKind.RULE,
-                    ruleName).isEnabled()) {
-                    Assert.fail("Rule " + ruleName + " not declared");
+            for (ResourceKind kind : EnumSet.of(ResourceKind.RULE,
+                ResourceKind.HOST, ResourceKind.TYPE)) {
+                for (Map.Entry<String,ResourceModel<?>> entry : grammarView.getResourceMap(
+                    kind).entrySet()) {
+                    String name = entry.getKey();
+                    ResourceModel<?> model = entry.getValue();
+                    if (name.startsWith(OK_PREFIX)) {
+                        testCorrect(model);
+                    } else if (name.startsWith(ERR_PREFIX)) {
+                        testErroneous(model);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -76,28 +73,29 @@ public class TypeCheckTest {
     }
 
     /** Tests that a given rule has no errors. */
-    private void testCorrect(GrammarModel grammarView, String ruleName) {
+    private void testCorrect(ResourceModel<?> model) {
+        String kindName = model.getKind().getName();
+        String modelName = model.getName();
         try {
-            grammarView.getRuleModel(ruleName).toResource();
+            model.toResource();
         } catch (NullPointerException e) {
-            Assert.fail("Rule " + ruleName + " does not exist");
+            Assert.fail(kindName + " " + modelName + " does not exist");
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
     }
 
     /** Tests that a given rule has errors. */
-    private void testErroneous(GrammarModel grammarView, String ruleName) {
+    private void testErroneous(ResourceModel<?> model) {
+        String kindName = model.getKind().getName();
+        String modelName = model.getName();
         try {
-            grammarView.getRuleModel(ruleName).toResource();
-            Assert.fail("Rule " + ruleName + " has no errors");
+            model.toResource();
+            Assert.fail(kindName + " " + modelName + " has no errors");
         } catch (NullPointerException e) {
-            Assert.fail("Rule " + ruleName + " does not exist");
+            Assert.fail(kindName + " " + modelName + " does not exist");
         } catch (FormatException e) {
             // do nothing; this is the expected case
         }
     }
-
-    private Set<String> correct;
-    private Set<String> erroneous;
 }

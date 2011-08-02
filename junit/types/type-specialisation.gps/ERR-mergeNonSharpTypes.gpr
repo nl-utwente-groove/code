@@ -1,45 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="specialiseType">
+    <graph edgemode="directed" edgeids="false" role="rule" id="ERR-mergeNonSharpTypes">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
-            <attr name="layout">
-                <string>258 126 28 31</string>
-            </attr>
-        </node>
         <node id="n1">
             <attr name="layout">
-                <string>108 55 223 31</string>
+                <string>141 151 37 31</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>243 152 28 31</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>139 129 38 31</string>
+                <string>82 89 247 31</string>
             </attr>
         </node>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>Type specialisation should be allowed</string>
-            </attr>
-        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:#A</string>
+                <string>Non-sharp node types cannot be merged</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>new:</string>
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -47,9 +37,14 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>new:=</string>
             </attr>
         </edge>
     </graph>

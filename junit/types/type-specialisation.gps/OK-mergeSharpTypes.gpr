@@ -1,55 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="generaliseType">
+    <graph edgemode="directed" edgeids="false" role="rule" id="OK-mergeSharpTypes">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
-            <attr name="layout">
-                <string>93 117 37 31</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>187 117 38 31</string>
-            </attr>
-        </node>
         <node id="n1">
             <attr name="layout">
-                <string>44 52 242 31</string>
+                <string>141 151 38 31</string>
             </attr>
         </node>
-        <edge to="n2" from="n3">
-            <attr name="label">
-                <string>new:=</string>
+        <node id="n2">
+            <attr name="layout">
+                <string>226 151 38 31</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n3">
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>103 89 204 31</string>
+            </attr>
+        </node>
+        <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:#B</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>Type generalisation should be disallowed</string>
+                <string>type:#A</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>new:</string>
+                <string>Sharp node types can be merged</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>new:=</string>
             </attr>
         </edge>
     </graph>
