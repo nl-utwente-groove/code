@@ -334,9 +334,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 typeEdge =
                     getTypeEdge(sourceType, getActualType(edgeType), targetType);
                 if (typeEdge == null) {
-                    errors.add(new FormatError("%s-node has unknown %s '%s'",
-                        sourceType, edge.getRole().getDescription(false),
-                        edgeType, source));
+                    errors.add(new FormatError("%s-node has unknown %s-%s",
+                        sourceType, edgeType, edge.getRole().getDescription(
+                            false), edge.source()));
                 } else {
                     morphism.putEdge(edge, ruleFactory.createEdge(sourceImage,
                         typeEdge, targetImage));
@@ -406,13 +406,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeEdge typeEdge =
                 getTypeEdge(sourceType, getActualType(edgeType), targetType);
             if (typeEdge == null) {
-                errors.add(new FormatError("%s-node has unknown %s '%s'",
-                    sourceType, edgeType.getRole().getDescription(false),
-                    edgeType.text(), source));
+                errors.add(new FormatError("%s-node has unknown %s-%s",
+                    sourceType, edgeType.text(),
+                    edgeType.getRole().getDescription(false), edge.source()));
             } else if (typeEdge.isAbstract()) {
-                errors.add(new FormatError("%s-node has abstract %s '%s'",
-                    sourceType, edgeType.getRole().getDescription(false),
-                    edgeType.text(), source));
+                errors.add(new FormatError("%s-node has abstract %s-%s",
+                    sourceType, edgeType.text(),
+                    edgeType.getRole().getDescription(false), edge.source()));
             } else {
                 morphism.putEdge(edge,
                     hostFactory.createEdge(sourceImage, typeEdge, targetImage));

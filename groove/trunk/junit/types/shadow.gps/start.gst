@@ -1,50 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeSharpTypes">
+    <graph edgemode="directed" edgeids="false" role="graph" id="start">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <attr name="$version">
-            <string>curly</string>
-        </attr>
-        <node id="n2">
-            <attr name="layout">
-                <string>226 151 38 31</string>
-            </attr>
-        </node>
         <node id="n1">
             <attr name="layout">
-                <string>141 151 38 31</string>
+                <string>88 191 37 31</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>103 89 204 31</string>
+                <string>89 104 36 31</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>213 192 36 31</string>
             </attr>
         </node>
         <edge to="n2" from="n1">
             <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Sharp node types can be merged</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>rem:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:A</string>
+                <string>a</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:#A</string>
+                <string>type:A1</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:C1</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:B1</string>
             </attr>
         </edge>
     </graph>
