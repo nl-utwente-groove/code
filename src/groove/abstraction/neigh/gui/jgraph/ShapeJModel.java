@@ -74,10 +74,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void loadGraph(Graph graph) {
-        assert graph instanceof Shape;
-
+    public void loadGraph(Graph<ShapeNode,ShapeEdge> graph) {
         // Prepare the object fields.
         this.setVetoFireGraphChanged(true);
         this.parentMap = new ParentMap();

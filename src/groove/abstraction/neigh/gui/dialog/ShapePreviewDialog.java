@@ -18,12 +18,10 @@ package groove.abstraction.neigh.gui.dialog;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.gui.jgraph.ShapeJGraph;
+import groove.abstraction.neigh.gui.jgraph.ShapeJModel;
 import groove.abstraction.neigh.shape.Shape;
-import groove.graph.Graph;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.layout.LayoutKind;
 import groove.gui.layout.LayouterItem;
 import groove.trans.DefaultHostGraph;
@@ -65,11 +63,10 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    protected GraphJGraph createJGraph() {
-        GraphJGraph jGraph = new ShapeJGraph(this.simulator);
-        GraphJModel<?,?> model = jGraph.newModel();
-        model.loadGraph((Graph) this.graph);
+    protected ShapeJGraph createJGraph() {
+        ShapeJGraph jGraph = new ShapeJGraph(this.simulator);
+        ShapeJModel model = jGraph.newModel();
+        model.loadGraph(((Shape) this.graph).downcast());
         jGraph.setModel(model);
         // EDUARDO says: this is some fine tuning of the layout algorithm
         // that is better suited for shapes. Should be moved to some other place.
