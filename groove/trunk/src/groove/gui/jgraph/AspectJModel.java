@@ -164,8 +164,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setProperties(graph, getProperties());
         graph.setFixed();
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
-        loadViewErrors();
         increaseModificationCount();
+        loadViewErrors();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);
