@@ -42,7 +42,7 @@ public enum EdgeRole {
     @ToolTipHeader("Binary edge")
     @ToolTipBody("Represents a binary edge between nodes")
     @ToolTipPars("the edge label")
-    BINARY("binary", ""),
+    BINARY("edge", ""),
 
     /** A node type edge, i.e., a self-loop determining the type of a node. */
     @Syntax("NODE_TYPE.COLON.label")

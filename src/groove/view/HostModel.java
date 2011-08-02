@@ -39,7 +39,6 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,9 +80,16 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     /** Returns the set of labels used in this graph. */
     @Override
     public Set<TypeLabel> getLabels() {
-        synchronise();
-        return this.labelSet == null ? Collections.<TypeLabel>emptySet()
-                : this.labelSet;
+        if (this.labelSet == null) {
+            this.labelSet = new HashSet<TypeLabel>();
+            for (AspectEdge edge : getSource().edgeSet()) {
+                TypeLabel label = edge.getTypeLabel();
+                if (label != null) {
+                    this.labelSet.add(label);
+                }
+            }
+        }
+        return this.labelSet;
     }
 
     @Override
@@ -109,12 +115,17 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
+    void notifyGrammarModified() {
+        super.notifyGrammarModified();
+        this.labelSet = null;
+    }
+
+    @Override
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
         }
-        this.labelSet = new HashSet<TypeLabel>();
         Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
             computeModel(getSource());
         HostGraph result = modelPlusMap.one();
@@ -243,7 +254,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         assert hostLabel != null && !hostLabel.isDataType() : String.format(
             "Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
-        this.labelSet.add(hostLabel);
         elementMap.putEdge(modelEdge, hostEdge);
     }
 

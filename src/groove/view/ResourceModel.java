@@ -44,22 +44,6 @@ abstract public class ResourceModel<R> {
         return this.grammar;
     }
 
-    /**
-     * Tests if the grammar has been modified since last call of this method.
-     * The method returns {@code true} on its first invocation.
-     */
-    public final boolean isGrammarModified() {
-        boolean result = false;
-        if (getGrammar() != null) {
-            int modCount = getGrammar().getModificationCount();
-            result = (modCount != this.lastModCount);
-            if (result) {
-                this.lastModCount = modCount;
-            }
-        }
-        return result;
-    }
-
     /** Returns the kind of this resource model. */
     public final ResourceKind getKind() {
         return this.kind;
@@ -139,9 +123,7 @@ abstract public class ResourceModel<R> {
      * @see #getStatus() 
      */
     final void synchronise() {
-        if (isGrammarModified()) {
-            this.status = Status.START;
-        }
+        testGrammarModified();
         if (this.status == Status.START) {
             this.errors.clear();
             try {
@@ -153,6 +135,32 @@ abstract public class ResourceModel<R> {
                 this.status = Status.ERROR;
             }
         }
+    }
+
+    /**
+     * Tests if the grammar has been modified since last call of this method.
+     * The method returns {@code true} on its first invocation.
+     */
+    private boolean testGrammarModified() {
+        boolean result = false;
+        if (getGrammar() != null) {
+            int modCount = getGrammar().getModificationCount();
+            result = (modCount != this.lastModCount);
+            if (result) {
+                this.lastModCount = modCount;
+                notifyGrammarModified();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Callback method invoked to signal that a grammar modification
+     * has been detected. This allows subclasses to reset their internal
+     * structures.
+     */
+    void notifyGrammarModified() {
+        this.status = Status.START;
     }
 
     /** Returns the status of the resource construction. */

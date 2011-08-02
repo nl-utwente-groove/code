@@ -73,7 +73,7 @@ public class TypeNode implements Node {
 
     @Override
     public String toString() {
-        return "T" + this.nr + ":" + this.type;
+        return getLabel().text();
     }
 
     @Override

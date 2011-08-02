@@ -250,8 +250,7 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     /**
      * Returns the set of supertypes of a given label. The set of supertypes is
      * reflexively defined, i.e., it includes the label itself. Returns
-     * <code>null</code> if the label is unknown. Note that this method is
-     * inefficient, as it calculates the set of supertypes on the fly.
+     * <code>null</code> if the label is unknown.
      * @param label the label to determine the supertypes for
      * @return the supertypes of <code>label</code>, or <code>null</code> if
      *         <code>label</code> is not a known label.
