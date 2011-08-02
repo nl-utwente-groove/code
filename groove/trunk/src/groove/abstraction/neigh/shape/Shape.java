@@ -31,6 +31,7 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
@@ -246,6 +247,12 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Ugly hack to circumvent typing problems. */
+    @SuppressWarnings({"cast", "unchecked", "rawtypes"})
+    public Graph<ShapeNode,ShapeEdge> downcast() {
+        return (Graph<ShapeNode,ShapeEdge>) ((Graph) this);
+    }
 
     /**
      * Creates nodes in the shape based on the equivalence relation given. 
