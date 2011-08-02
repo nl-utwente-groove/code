@@ -18,6 +18,11 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         throw new UnsupportedOperationException();
     }
 
+    /** Creates a node with a given type label. */
+    public TypeNode createNode(TypeLabel label) {
+        return new TypeNode(getNextNodeNr(), label);
+    }
+
     /** Creates a label with the given kind-prefixed text. */
     public TypeLabel createLabel(String text) {
         Pair<EdgeRole,String> parsedLabel = EdgeRole.parseLabel(text);
@@ -27,15 +32,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     /** Returns a label with the given text and label kind. */
     public TypeLabel createLabel(EdgeRole kind, String text) {
         assert text != null : "Label text of type label should not be null";
-        return newLabel(null, kind, text);
-    }
-
-    /** Returns a flag or binary edge label with the given source type, text and label kind. */
-    public TypeLabel createLabel(TypeLabel sourceType, EdgeRole kind,
-            String text) {
-        assert sourceType != null;
-        assert text != null : "Label text of type label should not be null";
-        return newLabel(sourceType, kind, text);
+        return newLabel(kind, text);
     }
 
     @Override
@@ -56,7 +53,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     @Override
     public int getMaxNodeNr() {
-        throw new UnsupportedOperationException();
+        return this.maxNodeNr;
     }
 
     /**
@@ -74,24 +71,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     /**
      * Returns a label with the given text, reusing previously created
      * labels where possible.
-     * @param sourceType type label of source nodes with this label, if any. 
-     * This is only relevant for flag and binary edge labels
      * @param text the label text being looked up
      * @return the (reused or new) label object.
      */
-    private TypeLabel newLabel(TypeLabel sourceType, EdgeRole kind, String text) {
+    private TypeLabel newLabel(EdgeRole kind, String text) {
         Map<String,TypeLabel> labelMap;
-        if (sourceType == null) {
-            labelMap = this.labelMaps.get(kind);
-        } else {
-            assert sourceType.isNodeType();
-            assert kind != EdgeRole.NODE_TYPE;
-            labelMap = this.typedLabelMaps.get(kind).get(sourceType);
-            if (labelMap == null) {
-                labelMap = new HashMap<String,TypeLabel>();
-                this.typedLabelMaps.get(kind).put(sourceType, labelMap);
-            }
-        }
+        labelMap = this.labelMaps.get(kind);
         TypeLabel result = labelMap.get(text);
         if (result == null) {
             int index = labelMap.size();
@@ -102,26 +87,26 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         return result;
     }
 
+    /** Returns the next node number according to an internal counter. */
+    private int getNextNodeNr() {
+        this.maxNodeNr++;
+        return this.maxNodeNr;
+    }
+
+    private int maxNodeNr;
     /**
-     * The internal translation table from strings to label indices,
-     * per label type.
+     * The internal translation table from strings to type labels,
+     * per edge role.
      */
     private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
         new EnumMap<EdgeRole,Map<String,TypeLabel>>(EdgeRole.class);
-    /**
-     * The internal translation table from strings to label indices,
-     * per label type and source node type.
-     */
-    private final Map<EdgeRole,Map<TypeLabel,Map<String,TypeLabel>>> typedLabelMaps =
-        new EnumMap<EdgeRole,Map<TypeLabel,Map<String,TypeLabel>>>(
-            EdgeRole.class);
     {
         for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
             this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
-            this.typedLabelMaps.put(kind,
-                new HashMap<TypeLabel,Map<String,TypeLabel>>());
         }
     }
+
+    /** The internal translation table from node type labels to created type nodes. */
 
     /** Returns the singleton instance of this class. */
     public static TypeFactory instance() {

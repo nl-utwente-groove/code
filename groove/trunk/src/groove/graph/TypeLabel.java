@@ -70,20 +70,6 @@ public final class TypeLabel extends AbstractLabel {
     /** The type of label (normal, node type or flag). */
     private final EdgeRole role;
 
-    /** 
-     * Creates a flag or binary edge type for a given source node type.
-     * @param sourceType The intended node type of the source node of an edge 
-     * labelled with this label
-     * @param role the role (flag or binary) of the new label
-     * @param text the text of the label, prefixed with the flag label kind
-     * if the edge is to be a flag
-     * @return a type label with the given source type and label text
-     */
-    public static TypeLabel createLabel(TypeLabel sourceType, EdgeRole role,
-            String text) {
-        return factory.createLabel(sourceType, role, text);
-    }
-
     /**
      * Returns a default or node type label, depending on the prefix in the
      * input string.
@@ -184,10 +170,6 @@ public final class TypeLabel extends AbstractLabel {
     /** Type label for nodes in an untyped setting. */
     static public final TypeLabel NODE =
         createLabel(EdgeRole.NODE_TYPE, "Node");
-    private final static char ALPHA_CHAR = '\u03b1';
-    /** Type label for untyped data variables. */
-    static public final TypeLabel DATA = createLabel(EdgeRole.NODE_TYPE, ""
-        + ALPHA_CHAR);
 
     /** Returns the node type label for a given data signature. */
     static public final TypeLabel getLabel(SignatureKind sigKind) {

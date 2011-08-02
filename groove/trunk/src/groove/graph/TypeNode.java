@@ -169,6 +169,4 @@ public class TypeNode implements Node {
     }
     /** Type node for non-data nodes in an untyped setting. */
     public static final TypeNode TOP_NODE = new TypeNode(0, TypeLabel.NODE);
-    /** Type node for data nodes in an untyped setting. */
-    public static final TypeNode TOP_DATA = new TypeNode(0, TypeLabel.DATA);
 }

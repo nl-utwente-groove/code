@@ -16,7 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.rel.RegExpr.Atom;
 import groove.rel.RegExpr.Choice;
 import groove.rel.RegExpr.Empty;
@@ -45,11 +45,11 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * resulting automaton and returns it.
      * It is required that all the expression labels occur in the
      * label store.
-     * @param labelStore the label store for the automaton (non-{@code null})
+     * @param typeGraph the label store for the automaton (non-{@code null})
      */
-    public RegAut compute(RegExpr expr, LabelStore labelStore) {
+    public RegAut compute(RegExpr expr, TypeGraph typeGraph) {
         this.nodeDispenser.reset();
-        this.labelStore = labelStore;
+        this.typeGraph = typeGraph;
         RegAut result = expr.apply(this);
         result.setFixed();
         return result;
@@ -173,7 +173,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
         // if this is an unknown label, don't add the edge
-        if (this.labelStore.getLabels().contains(expr.toTypeLabel())) {
+        if (this.typeGraph.getLabels().contains(expr.toTypeLabel())) {
             result.addEdge(result.getStartNode(), expr.toLabel(),
                 result.getEndNode());
         }
@@ -217,7 +217,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * identities (in the context of this calculator).
      */
     protected RegAut createAutomaton() {
-        return new MatrixAutomaton(createNode(), createNode(), this.labelStore);
+        return new MatrixAutomaton(createNode(), createNode(), this.typeGraph);
     }
 
     /**
@@ -244,7 +244,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     }
 
     /** Label store currently used to build automata. */
-    private LabelStore labelStore;
+    private TypeGraph typeGraph;
     /** the dispenser for automaton node identities. */
     private final DefaultDispenser nodeDispenser = new DefaultDispenser();
 }

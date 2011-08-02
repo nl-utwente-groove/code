@@ -66,7 +66,7 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public void execute() {
         Color initColour =
-            getGrammarModel().getLabelStore().getColor(this.label);
+            getGrammarModel().getTypeGraph().getNode(this.label).getColor();
         if (initColour != null) {
             this.chooser.setColor(initColour);
         }
@@ -161,7 +161,7 @@ public class SelectColorAction extends SimulatorAction implements
     @Override
     public void refresh() {
         super.setEnabled(this.label != null
-            && getGrammarModel().getActiveTypeModel().isEnabled());
+            && getGrammarModel().getTypeModel().isEnabled());
     }
 
     /** The label for which a colour is chosen; may be {@code null}. */

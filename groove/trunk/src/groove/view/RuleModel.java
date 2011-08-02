@@ -1146,7 +1146,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     if (edgeKind.inRHS()) {
                         this.rhs.addEdge(ruleEdge);
                         this.mid.addEdge(ruleEdge);
-                    } else if (!getType().isDegenerate()
+                    } else if (!getType().isImplicit()
                         && ruleEdge.label().isNodeType()
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
@@ -1167,7 +1167,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     this.nacEdgeSet.add(ruleEdge);
                 }
                 if (edgeKind.inRHS()) {
-                    if (!getType().isDegenerate()
+                    if (!getType().isImplicit()
                         && ruleEdge.label().isNodeType()
                         && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
@@ -1304,7 +1304,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         varEdge));
                 }
             }
-            if (!getType().isDegenerate()) {
+            if (!getType().isImplicit()) {
                 // check use of variables
                 lhsVarEdges.removeAll(this.mid.edgeSet());
                 for (RuleEdge eraserVarEdge : lhsVarEdges) {
@@ -1473,7 +1473,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.isRule = origin.isRule;
             this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             this.rhs = toTypedGraph(origin.rhs, parentTypeMap, this.typeMap);
-            if (!getType().isDegenerate()) {
+            if (!getType().isImplicit()) {
                 try {
                     checkTypeSpecialisation(this.lhs, this.rhs);
                 } catch (FormatException exc) {
@@ -1896,7 +1896,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             Condition result =
                 new Condition(this.index.getName(), this.index.getOperator(),
                     pattern, root, getSystemProperties());
-            result.setLabelStore(getGrammar().getLabelStore());
+            result.setTypeGraph(getGrammar().getTypeGraph());
             if (this.index.isPositive()) {
                 result.setPositive();
             }

@@ -271,7 +271,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
         RelabelDialog dialog =
-            new RelabelDialog(getSimulatorModel().getGrammar().getLabelStore(),
+            new RelabelDialog(getSimulatorModel().getGrammar().getTypeGraph(),
                 oldLabel);
         if (dialog.showDialog(getFrame(), null)) {
             return new Duo<TypeLabel>(dialog.getOldLabel(),

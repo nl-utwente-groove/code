@@ -28,7 +28,6 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
@@ -245,9 +244,9 @@ public class JaxbGxlIO implements GxlIO {
         }
         // add subtype edges if the graph is a type graph
         if (graph instanceof TypeGraph) {
-            LabelStore labelStore = ((TypeGraph) graph).getLabelStore();
+            TypeGraph typeGraph = (TypeGraph) graph;
             Map<TypeLabel,Set<TypeLabel>> subtypeMap =
-                labelStore.getDirectSubtypeMap();
+                typeGraph.getDirectSublabelMap();
             for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : subtypeMap.entrySet()) {
                 for (TypeLabel subtype : subtypeEntry.getValue()) {
                     for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {

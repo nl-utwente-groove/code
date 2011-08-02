@@ -17,7 +17,7 @@
 package groove.gui.dialog;
 
 import groove.graph.EdgeRole;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.io.HTMLConverter;
 import groove.view.FormatException;
@@ -53,11 +53,11 @@ public class RelabelDialog {
     /**
      * Constructs a dialog instance, given a set of existing names (that should
      * not be used) as well as a suggested value for the new rule name.
-     * @param existingLabels the set of existing labels (non-empty)
+     * @param typeGraph the type graph containing all labels and sublabels
      * @param oldLabel the label to rename; may be <code>null</code>
      */
-    public RelabelDialog(LabelStore existingLabels, TypeLabel oldLabel) {
-        this.existingLabels = existingLabels;
+    public RelabelDialog(TypeGraph typeGraph, TypeLabel oldLabel) {
+        this.typeGraph = typeGraph;
         this.suggestedLabel = oldLabel;
     }
 
@@ -129,15 +129,15 @@ public class RelabelDialog {
             int labelType = getNewTypeCombobox().getSelectedIndex();
             result = TypeLabel.createLabel(EdgeRole.getRole(labelType), text);
             TypeLabel oldLabel = getOldLabel();
-            if (this.existingLabels.getLabels().contains(result)) {
+            if (this.typeGraph.getLabels().contains(result)) {
                 if (result.equals(oldLabel)) {
                     throw new FormatException("Old and new labels coincide");
-                } else if (this.existingLabels.getSubtypes(result).contains(
+                } else if (this.typeGraph.getSublabels(result).contains(
                     oldLabel)) {
                     throw new FormatException(
                         "New label '%s' is an existing supertype of '%s'",
                         result, oldLabel);
-                } else if (this.existingLabels.getSubtypes(oldLabel).contains(
+                } else if (this.typeGraph.getSublabels(oldLabel).contains(
                     result)) {
                     throw new FormatException(
                         "New label '%s' is an existing subtype of '%s'",
@@ -251,7 +251,7 @@ public class RelabelDialog {
                     propagateSelection();
                 }
             });
-            for (TypeLabel label : this.existingLabels.getLabels()) {
+            for (TypeLabel label : this.typeGraph.getLabels()) {
                 result.addItem(label);
             }
         }
@@ -343,7 +343,7 @@ public class RelabelDialog {
     private JComboBox newTypeChoice;
 
     /** Set of existing rule names. */
-    private final LabelStore existingLabels;
+    private final TypeGraph typeGraph;
 
     /** The old label value suggested at construction time; may be {@code null}. */
     private final TypeLabel suggestedLabel;

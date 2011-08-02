@@ -156,6 +156,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         if (errors.isEmpty()) {
             // transfer graph info such as layout from model to resource
             GraphInfo.transfer(getSource(), result, this.modelMap);
+            result.setFixed();
             return result;
         } else {
             throw new FormatException(transferErrors(errors, this.modelMap));
@@ -231,7 +232,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 model.addEdge(typeSource,
                     modelEdge.getAttrAspect().getContentString(), typeNode);
         } else if (modelEdge.getKind() == SUBTYPE) {
-            model.addSubtype(typeTarget, typeSource);
+            model.addInheritance(typeTarget, typeSource);
         } else {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);

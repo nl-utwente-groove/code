@@ -24,8 +24,8 @@ import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphRole;
-import groove.graph.LabelStore;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.gui.DisplayKind;
 import groove.gui.Options;
@@ -124,7 +124,7 @@ final public class AspectJGraph extends GraphJGraph {
      * This may affect the errors in the model.
      */
     public void updateGrammar(GrammarModel grammar) {
-        this.labelStore = grammar.getLabelStore();
+        this.typeGraph = grammar.getTypeGraph();
         // retrieves type and label store from the grammar
         if (grammar.getTypeGraph() != null) {
             Map<String,Set<TypeLabel>> labelsMap =
@@ -150,7 +150,7 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * Returns a map from names to subsets of labels.
      * This can be used to filter labels.
-     * May be {@code null} even if {@link #getLabelStore()} is not.
+     * May be {@code null} even if {@link #getTypeGraph()} is not.
      */
     public final Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.labelsMap;
@@ -160,8 +160,8 @@ final public class AspectJGraph extends GraphJGraph {
      * Returns the set of labels and subtypes in the graph. May be
      * <code>null</code>.
      */
-    public final LabelStore getLabelStore() {
-        return this.labelStore;
+    public final TypeGraph getTypeGraph() {
+        return this.typeGraph;
     }
 
     /**
@@ -585,7 +585,7 @@ final public class AspectJGraph extends GraphJGraph {
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
     /** Set of all labels and subtypes in the graph. */
-    private LabelStore labelStore;
+    private TypeGraph typeGraph;
     /** Mapping from names to sub-label stores. */
     private Map<String,Set<TypeLabel>> labelsMap;
     /** Flag indicating that the graph is in the process of inserting an element. */

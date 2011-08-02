@@ -67,7 +67,7 @@ public class RelabelGrammarAction extends SimulatorAction implements
     public void refresh() {
         setEnabled(getGrammarStore() != null
             && getGrammarStore().isModifiable()
-            && !getGrammarModel().getLabelStore().getLabels().isEmpty());
+            && !getGrammarModel().getTypeGraph().getLabels().isEmpty());
     }
 
     @Override

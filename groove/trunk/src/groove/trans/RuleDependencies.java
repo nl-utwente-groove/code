@@ -19,7 +19,6 @@ package groove.trans;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.graph.Label;
-import groove.graph.LabelStore;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -51,11 +50,6 @@ public class RuleDependencies {
     /** Label for merges (merger edges and merge embargoes) */
     static private final TypeLabel MERGE_LABEL =
         TypeLabel.createBinaryLabel(MERGE_LABEL_TEXT);
-    /** Label text for merges (merger edges and merge embargoes) */
-    static private final String ALL_LABEL_TEXT = "'all labels";
-    /** Label for merges (merger edges and merge embargoes) */
-    static private final TypeLabel ALL_LABEL =
-        TypeLabel.createBinaryLabel(ALL_LABEL_TEXT);
     /** Label text indicating an isolated node. */
     static private final String ANY_NODE_TEXT = "'any node";
     /** Label to indicate that a condition or rule contains an isolated node. */
@@ -67,7 +61,8 @@ public class RuleDependencies {
      */
     public static void main(String[] args) {
         try {
-            GraphGrammar grammar = Groove.loadGrammar(args[0]).toGrammar();
+            GraphGrammar grammar =
+                Groove.loadGrammar(args[0], args.length == 1 ? null : args[1]).toGrammar();
             RuleDependencies data = new RuleDependencies(grammar);
             data.collectCharacteristics();
             for (Rule rule : grammar.getRules()) {
@@ -124,8 +119,7 @@ public class RuleDependencies {
     public RuleDependencies(GraphGrammar ruleSystem) {
         this.rules = ruleSystem.getRules();
         this.properties = ruleSystem.getProperties();
-        this.labelStore = ruleSystem.getLabelStore();
-        this.type = ruleSystem.getType();
+        this.typeGraph = ruleSystem.getTypeGraph();
     }
 
     /**
@@ -317,9 +311,7 @@ public class RuleDependencies {
                 // that this one needs
                 Set<Label> depProduces =
                     new HashSet<Label>(this.producedLabelsMap.get(depRule));
-                if (positives.contains(ALL_LABEL) && !depProduces.isEmpty()
-                    || depProduces.contains(ALL_LABEL) && !positives.isEmpty()
-                    || depProduces.removeAll(positives)) {
+                if (depProduces.removeAll(positives)) {
                     addEnabling(depRule, rule);
                 }
                 // a positive dependency exists if the other rule consumes
@@ -327,9 +319,7 @@ public class RuleDependencies {
                 // that this one forbids
                 Set<Label> depConsumes =
                     new HashSet<Label>(this.consumedLabelsMap.get(depRule));
-                if (negatives.contains(ALL_LABEL) && !depConsumes.isEmpty()
-                    || depConsumes.contains(ALL_LABEL) && !negatives.isEmpty()
-                    || depConsumes.removeAll(negatives)) {
+                if (depConsumes.removeAll(negatives)) {
                     addEnabling(depRule, rule);
                 }
                 // a positive dependency exists if the other rule has higher
@@ -345,9 +335,7 @@ public class RuleDependencies {
                 // HARMEN: what is the point with mergers?
                 depProduces =
                     new HashSet<Label>(this.producedLabelsMap.get(depRule));
-                if (negatives.contains(ALL_LABEL) && !depProduces.isEmpty()
-                    || depProduces.contains(MERGE_LABEL)
-                    || depProduces.contains(ALL_LABEL) && !negatives.isEmpty()
+                if (depProduces.contains(MERGE_LABEL)
                     || depProduces.removeAll(negatives)) {
                     addDisabling(depRule, rule);
                 }
@@ -356,9 +344,7 @@ public class RuleDependencies {
                 // that this one needs
                 depConsumes =
                     new HashSet<Label>(this.consumedLabelsMap.get(depRule));
-                if (positives.contains(ALL_LABEL) && !depConsumes.isEmpty()
-                    || depConsumes.contains(ALL_LABEL) && !positives.isEmpty()
-                    || depConsumes.removeAll(positives)) {
+                if (depConsumes.removeAll(positives)) {
                     addDisabling(depRule, rule);
                 }
                 // a positive and negative dependency exists if the other
@@ -388,8 +374,7 @@ public class RuleDependencies {
         RuleGraph rhs = rule.rhs();
         // test if a node is consumed (and there is no dangling edge check)
         Iterator<RuleNode> lhsNodeIter = lhs.nodeSet().iterator();
-        while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)
-            && !this.properties.isCheckDangling()) {
+        while (lhsNodeIter.hasNext() && !this.properties.isCheckDangling()) {
             RuleNode lhsNode = lhsNodeIter.next();
             if (!rhs.containsNode(lhsNode)) {
                 consumed.addAll(getIncidentLabels(lhs, lhsNode));
@@ -397,7 +382,7 @@ public class RuleDependencies {
         }
         // determine the set of edges consumed
         Iterator<RuleEdge> lhsEdgeIter = lhs.edgeSet().iterator();
-        while (lhsEdgeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
+        while (lhsEdgeIter.hasNext()) {
             RuleEdge lhsEdge = lhsEdgeIter.next();
             if (!rhs.containsEdge(lhsEdge)) {
                 // the only regular expressions allowed on erasers are wildcards
@@ -406,16 +391,16 @@ public class RuleDependencies {
         }
         // determine the set of edges produced
         Iterator<RuleEdge> rhsEdgeIter = rhs.edgeSet().iterator();
-        while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
+        while (rhsEdgeIter.hasNext()) {
             RuleEdge rhsEdge = rhsEdgeIter.next();
             if (!lhs.containsEdge(rhsEdge)) {
-                produced.add(getSharpLabel(rhsEdge.label()));
+                produced.addAll(getSharpLabel(rhsEdge.label()));
             }
         }
         // determine if the rule contains a merger
         if (rule.hasMergers()) {
             produced.add(MERGE_LABEL);
-            produced.add(ALL_LABEL);
+            produced.addAll(this.typeGraph.getLabels());
         }
         // determine if the rule introduces an isolated node
         for (RuleNode rhsNode : rhs.nodeSet()) {
@@ -495,7 +480,7 @@ public class RuleDependencies {
         }
         // if there is a dangling edge check, all labels are negative conditions
         if (this.properties.isCheckDangling()) {
-            negative.add(ALL_LABEL);
+            negative.addAll(this.typeGraph.getLabels());
         }
         // does the condition test for an isolated node?
         if (!isolatedNodes.isEmpty()) {
@@ -563,12 +548,12 @@ public class RuleDependencies {
         assert !label.isNeg();
         Set<TypeLabel> result = new HashSet<TypeLabel>();
         if (label.isMatchable()) {
-            RegAut labelAut = label.getAutomaton(this.labelStore);
+            RegAut labelAut = label.getAutomaton(this.typeGraph);
             for (Label autLabel : labelAut.getAlphabet()) {
                 result.add((TypeLabel) autLabel);
             }
             if (labelAut.isAcceptsEmptyWord()) {
-                result.add(ALL_LABEL);
+                result.addAll(this.typeGraph.getLabels());
             }
         }
         return result;
@@ -579,61 +564,55 @@ public class RuleDependencies {
      * condition label - such as a default label or wildcard.
      * The label may not wrap {@link groove.rel.RegExpr.Neg}.
      */
-    private TypeLabel getSharpLabel(RuleLabel label) {
+    private Set<TypeLabel> getSharpLabel(RuleLabel label) {
         assert !label.isNeg();
-        TypeLabel result;
+        Set<TypeLabel> result;
         if (label.isWildcard()) {
-            result = ALL_LABEL;
+            result = this.typeGraph.getLabels(label.getRole());
         } else if (label.isEmpty()) {
-            result = MERGE_LABEL;
+            result = Collections.singleton(MERGE_LABEL);
         } else {
             assert label.isAtom() || label.isSharp() : String.format(
                 "Label %s should be atomic", label);
-            result = label.getTypeLabel();
+            result = Collections.singleton(label.getTypeLabel());
         }
         return result;
     }
 
     /**
-     * Computes an over-approximation of the labels that will be
+     * Computes an over-approximation of the labels that may be
      * deleted if a node is deleted from a graph.
      */
     private Set<TypeLabel> getIncidentLabels(RuleGraph graph, RuleNode node) {
-        Set<TypeLabel> result;
-        if (this.type == null) {
-            result = Collections.<TypeLabel>singleton(ALL_LABEL);
-        } else {
-            result = new HashSet<TypeLabel>();
-            // the type labels that can be matched by the node
-            Set<TypeLabel> typeLabels = null;
-            for (RuleEdge incidentEdge : graph.edgeSet(node)) {
-                RuleLabel label = incidentEdge.label();
-                if (label.isNodeType() && !label.isWildcard()) {
-                    if (label.isSharp()) {
-                        typeLabels =
-                            Collections.singleton(label.getTypeLabel());
-                    } else {
-                        // since the node is an eraser, it cannot have
-                        // arbitrary regular expressions on incident edges
-                        assert label.isAtom();
-                        typeLabels =
-                            this.labelStore.getSubtypes(label.getTypeLabel());
-                    }
-                    break;
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        // the type labels that can be matched by the node
+        Set<TypeLabel> typeLabels = null;
+        for (RuleEdge incidentEdge : graph.edgeSet(node)) {
+            RuleLabel label = incidentEdge.label();
+            if (label.isNodeType() && !label.isWildcard()) {
+                if (label.isSharp()) {
+                    typeLabels = Collections.singleton(label.getTypeLabel());
+                } else {
+                    // since the node is an eraser, it cannot have
+                    // arbitrary regular expressions on incident edges
+                    assert label.isAtom();
+                    typeLabels =
+                        this.typeGraph.getSublabels(label.getTypeLabel());
                 }
+                break;
             }
-            // typeLabels could be null if we're on a lower nesting level
-            //            assert typeLabels != null : String.format("No type label among %s",
-            //                graph.edgeSet(node));
-            if (typeLabels != null) {
-                for (Label typeLabel : typeLabels) {
-                    // find the type node
-                    TypeNode typeNode =
-                        this.type.labelEdgeSet(typeLabel).iterator().next().source();
-                    // now find all incident labels of the type node
-                    for (TypeEdge typeEdge : this.type.edgeSet(typeNode)) {
-                        result.add(typeEdge.label());
-                    }
+        }
+        // typeLabels could be null if we're on a lower nesting level
+        if (typeLabels != null) {
+            for (TypeLabel typeLabel : typeLabels) {
+                // find the type node
+                TypeNode typeNode = this.typeGraph.getNode(typeLabel);
+                // now find all incident labels of the type node
+                for (TypeEdge typeEdge : this.typeGraph.edgeSet(typeNode)) {
+                    result.add(typeEdge.label());
+                }
+                if (!this.typeGraph.isImplicit()) {
+                    result.add(typeLabel);
                 }
             }
         }
@@ -652,9 +631,7 @@ public class RuleDependencies {
     /** The system properties of the rules. */
     private final SystemProperties properties;
     /** Alphabet of the rule system. */
-    private final LabelStore labelStore;
-    /** Type graph of the rule system. */
-    private final TypeGraph type;
+    private final TypeGraph typeGraph;
     /**
      * Mapping from rules to sets of enablers, i.e., rules that may increase
      * their applicability.
