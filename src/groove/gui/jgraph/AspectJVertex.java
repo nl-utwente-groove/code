@@ -10,6 +10,7 @@ import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
@@ -121,16 +122,22 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return result;
     }
 
-    /** Retrieves the (first) node type label of this JVertex, if any. */
-    TypeLabel getNodeType() {
-        TypeLabel result = null;
-        for (AspectEdge edge : getJVertexLabels()) {
-            if (edge.getRole() == EdgeRole.NODE_TYPE) {
-                result = edge.getTypeLabel();
-                break;
+    /** 
+     * Retrieves the node type corresponding to the node type label,
+     * if the type graph is not implicit. 
+     */
+    private TypeNode getNodeType() {
+        TypeNode result = null;
+        if (!getJGraph().getTypeGraph().isImplicit()) {
+            for (AspectEdge edge : getJVertexLabels()) {
+                if (edge.getRole() == EdgeRole.NODE_TYPE) {
+                    result =
+                        getJGraph().getTypeGraph().getNode(edge.getTypeLabel());
+                    break;
+                }
             }
         }
-        return result;
+        return result == null ? TypeNode.TOP_NODE : result;
     }
 
     void setNodeFixed() {
@@ -579,9 +586,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      */
     public LabelPattern getEdgeLabelPattern() {
         LabelPattern result = null;
-        if (getNode().getGraphRole() == GraphRole.HOST
-            && getJGraph().getLabelStore() != null) {
-            result = getJGraph().getLabelStore().getPattern(getNodeType());
+        if (getNode().getGraphRole() == GraphRole.HOST) {
+            result = getNodeType().getLabelPattern();
         }
         return result;
     }
@@ -593,8 +599,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (result == null && getNode().getGraphRole() != GraphRole.RULE) {
             if (getNode() != null && getNode().getColor() != null) {
                 result = (Color) getNode().getColor().getContent();
-            } else if (getJGraph().getLabelStore() != null) {
-                result = getJGraph().getLabelStore().getColor(getNodeType());
+            } else {
+                result = getNodeType().getColor();
             }
         }
         return result;

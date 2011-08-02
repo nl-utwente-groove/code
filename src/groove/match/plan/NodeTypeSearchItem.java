@@ -16,7 +16,7 @@
  */
 package groove.match.plan;
 
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostEdge;
@@ -42,9 +42,9 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a given node type edge.
      * @param edge the edge to be matched
-     * @param labelStore label store containing the subtypes of the node type
+     * @param typeGraph label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(RuleEdge edge, LabelStore labelStore) {
+    public NodeTypeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
         assert edge.label().isNodeType();
         this.edge = edge;
         this.source = edge.source();
@@ -52,7 +52,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         assert this.label.isNodeType() : String.format(
             "Label '%s' is not a node type", this.label);
         this.boundNodes = new HashSet<RuleNode>(Arrays.asList(edge.source()));
-        Set<TypeLabel> labelStoreSubtypes = labelStore.getSubtypes(this.label);
+        Set<TypeLabel> labelStoreSubtypes = typeGraph.getSublabels(this.label);
         this.subtypes =
             labelStoreSubtypes == null ? null : new HashSet<TypeLabel>(
                 labelStoreSubtypes);

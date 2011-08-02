@@ -18,7 +18,7 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
@@ -137,7 +137,7 @@ public class PlanSearchEngine extends SearchEngine {
          */
         PlanData(Condition condition) {
             this.condition = condition;
-            this.labelStore = condition.getLabelStore();
+            this.typeGraph = condition.getTypeGraph();
             if (condition.hasPattern()) {
                 RuleGraph graph = condition.getPattern();
                 // compute the set of remaining (unmatched) nodes
@@ -370,7 +370,7 @@ public class PlanSearchEngine extends SearchEngine {
             } else if (label.isSharp()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isNodeType()) {
-                result = new NodeTypeSearchItem(edge, this.labelStore);
+                result = new NodeTypeSearchItem(edge, this.typeGraph);
             } else if (label.isAtom()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isOperator()) {
@@ -378,7 +378,7 @@ public class PlanSearchEngine extends SearchEngine {
                     new OperatorEdgeSearchItem((OperatorEdge) edge,
                         this.algebraFamily);
             } else if (!label.isArgument()) {
-                result = new RegExprEdgeSearchItem(edge, this.labelStore);
+                result = new RegExprEdgeSearchItem(edge, this.typeGraph);
             }
             return result;
         }
@@ -437,7 +437,7 @@ public class PlanSearchEngine extends SearchEngine {
          */
         private final Set<LabelVar> remainingVars;
         /** The label store containing the subtype relation. */
-        private final LabelStore labelStore;
+        private final TypeGraph typeGraph;
         /** 
          * The algebra family to be used for algebraic operations.
          * If {@code null}, the default will be used.

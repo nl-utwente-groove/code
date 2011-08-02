@@ -1,7 +1,7 @@
 /* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
 package groove.match.plan;
 
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
@@ -29,10 +29,10 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     /**
      * Constructs a new search item. The item will match according to the
      * regular expression on the edge label.
-     * @param labelStore label store used to determine subtypes for 
+     * @param typeGraph label store used to determine subtypes for 
      * node type labels in the regular expression
      */
-    public RegExprEdgeSearchItem(RuleEdge edge, LabelStore labelStore) {
+    public RegExprEdgeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
         this.source = edge.source();
         this.target = edge.target();
         this.selfEdge = this.source == this.target;
@@ -41,7 +41,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.boundNodes.add(edge.target());
         RuleLabel label = edge.label();
         assert label.isMatchable();
-        this.labelAutomaton = label.getAutomaton(labelStore);
+        this.labelAutomaton = label.getAutomaton(typeGraph);
         this.edgeExpr = label.getMatchExpr();
         this.boundVars = label.getMatchExpr().boundVarSet();
         this.allVars = label.getMatchExpr().allVarSet();

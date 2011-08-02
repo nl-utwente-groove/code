@@ -21,8 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.EdgeRole;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.io.xml.DefaultGxl;
 import groove.io.xml.Xml;
 import groove.rel.LabelVar;
@@ -76,7 +77,7 @@ public class AutomatonTest {
     static HostNode nList, nC1, nC2, nC3, nC4, nI0, nI1, nI2, nI3;
     static Set<HostNode> nC12, nC34;
     static Set<Result> reflexive;
-    static LabelStore testStore;
+    static TypeGraph testStore;
 
     @BeforeClass
     public static void setUp() {
@@ -98,14 +99,15 @@ public class AutomatonTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        testStore = new LabelStore();
+        testStore = new TypeGraph("test");
+        TypeNode t = TypeNode.TOP_NODE;
         for (HostEdge testEdge : testGraph.edgeSet()) {
-            testStore.addLabel(testEdge.label());
+            testStore.addEdge(t, testEdge.label(), t);
         }
-        testStore.addLabel(TypeLabel.createBinaryLabel("A"));
-        testStore.addLabel(TypeLabel.createBinaryLabel("B"));
-        testStore.addLabel(TypeLabel.createBinaryLabel("C"));
-        testStore.addLabel(TypeLabel.createBinaryLabel("D"));
+        testStore.addEdge(t, "A", t);
+        testStore.addEdge(t, "B", t);
+        testStore.addEdge(t, "C", t);
+        testStore.addEdge(t, "D", t);
         nList = getNode("List");
         nC1 = getNode("n1");
         nC2 = getNode("n2");

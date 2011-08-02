@@ -26,7 +26,6 @@ import groove.explore.Exploration;
 import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
@@ -196,7 +195,7 @@ public class GrammarModel implements Observer {
     /**
      * Lazily creates the composite type model for this grammar.
      */
-    public CompositeTypeModel getActiveTypeModel() {
+    public CompositeTypeModel getTypeModel() {
         if (this.typeModel == null) {
             this.typeModel = new CompositeTypeModel(this);
         }
@@ -208,16 +207,7 @@ public class GrammarModel implements Observer {
      * Returns {@code null} there is no type selected, or the type model has errors.
      */
     public TypeGraph getTypeGraph() {
-        TypeGraph result = null;
-        CompositeTypeModel model = getActiveTypeModel();
-        if (model.isEnabled()) {
-            try {
-                result = model.toResource();
-            } catch (FormatException e) {
-                // the type graph is null
-            }
-        }
-        return result;
+        return getTypeModel().getTypeGraph();
     }
 
     /**
@@ -298,11 +288,6 @@ public class GrammarModel implements Observer {
     /** Indicates if this grammar model has errors. */
     public boolean hasErrors() {
         return !getErrors().isEmpty();
-    }
-
-    /** Returns the labels occurring in this grammar model. */
-    public final LabelStore getLabelStore() {
-        return getActiveTypeModel().getLabelStore();
     }
 
     /** 
@@ -396,17 +381,8 @@ public class GrammarModel implements Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // Construct the composite type graph
-        try {
-            result.setType(getActiveTypeModel().toResource(),
-                getActiveTypeModel().getTypeGraphMap());
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        // set a label store (get it from the type graph if that exists)
-        if (result.getType() == null) {
-            result.setLabelStore(getLabelStore());
-            errors.addAll(getLabelStore().getErrors());
-        }
+        result.setTypeGraph(getTypeGraph(), getTypeModel().getTypeGraphMap());
+        errors.addAll(getTypeModel().getErrors());
         // set rules
         for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {
             try {

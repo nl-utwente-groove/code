@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.control.CtrlAut;
-import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
@@ -209,7 +208,7 @@ public class GraphGrammar {
      * derivations when it is fixed.
      */
     public final boolean isFixed() {
-        assert !this.fixed || this.labelStore != null;
+        assert !this.fixed || this.typeGraph != null;
         return this.fixed;
     }
 
@@ -279,15 +278,24 @@ public class GraphGrammar {
         return this.properties;
     }
 
-    /** Sets the labels and subtypes used in this rule system. */
-    public void setLabelStore(LabelStore store) {
-        testFixed(false);
-        this.labelStore = store;
+    /** Sets the type for this grammar.
+     * @param type the combined type graph
+     * @param typeMap the constituent type subgraphs; is {@code null} if 
+     * the type graph is implicit
+     */
+    public final void setTypeGraph(TypeGraph type, Map<String,TypeGraph> typeMap) {
+        this.typeGraph = type;
+        this.typeMap = typeMap;
     }
 
     /** Returns the labels and subtypes of this rule system. */
-    public final LabelStore getLabelStore() {
-        return this.labelStore;
+    public final TypeGraph getTypeGraph() {
+        return this.typeGraph;
+    }
+
+    /** Returns the set of constituent type subgraphs of this grammar. */
+    public final Map<String,TypeGraph> getTypeMap() {
+        return this.typeMap;
     }
 
     /**
@@ -297,34 +305,12 @@ public class GraphGrammar {
     public void testConsistent() throws FormatException {
         List<String> errors = new ArrayList<String>();
         // collect the exceptions of the rules
-        if (this.labelStore == null) {
+        if (this.typeGraph == null) {
             errors.add(String.format("Labels and subtypes not initialised"));
         }
         // if any exception was encountered, throw it
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
-        }
-    }
-
-    /** Returns the type graph of this grammar. */
-    public final TypeGraph getType() {
-        return this.type;
-    }
-
-    /** Returns the set of constituent type subgraphs of this grammar. */
-    public final Map<String,TypeGraph> getTypeMap() {
-        return this.typeMap;
-    }
-
-    /** Sets the type for this grammar.
-     * @param type the combined type graph
-     * @param typeMap the constituent type subgraphs
-     */
-    public final void setType(TypeGraph type, Map<String,TypeGraph> typeMap) {
-        this.type = type;
-        this.typeMap = typeMap;
-        if (type != null) {
-            this.labelStore = type.getLabelStore();
         }
     }
 
@@ -425,16 +411,14 @@ public class GraphGrammar {
      * @see #getRules()
      */
     private Collection<Rule> ruleSet;
-    /** Set of constituent type graphs. Is {@code null} iff {@link #type} is. */
+    /** Set of constituent type graphs. Is {@code null} iff {@link #typeGraph} is implicit. */
     private Map<String,TypeGraph> typeMap;
-    /** Type graph of this rule system; possibly {@code null}. */
-    private TypeGraph type;
     /**
      * The properties bundle of this rule system.
      */
     private SystemProperties properties;
     /** The labels and subtypes occurring in this rule system. */
-    private LabelStore labelStore;
+    private TypeGraph typeGraph;
     /**
      * Flag indicating that the rule system has been fixed and is ready for use.
      */

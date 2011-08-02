@@ -155,16 +155,12 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         return this.graphInfo = (info == null ? null : createInfo(info));
     }
 
+    @Override
     public boolean isFixed() {
         return isCacheCollectable();
     }
 
-    /** 
-     * Note that, though the signature retains the throws class
-     * in order for subclasses to be able to throw exceptions,
-     * this implementation itself never does so.
-     * Hence it may be put in a try-catch context without risk.
-     */
+    @Override
     public void setFixed() {
         if (!isFixed()) {
             setCacheCollectable();

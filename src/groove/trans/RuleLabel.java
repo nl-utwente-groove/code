@@ -19,7 +19,7 @@ package groove.trans;
 import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
@@ -133,13 +133,13 @@ public class RuleLabel extends AbstractLabel {
      * Returns the regular automaton for this label., given a store
      * of existing labels. It is required that all the regular expression
      * labels occur in the label store.
-     * @param labelStore alphabet of the automaton,
+     * @param typeGraph alphabet of the automaton,
      * used to match node type labels properly; non-{@code null}
      */
-    public RegAut getAutomaton(LabelStore labelStore) {
+    public RegAut getAutomaton(TypeGraph typeGraph) {
         if (isMatchable() && this.automaton == null
-            || this.automaton.getLabelStore() != labelStore) {
-            this.automaton = calculator.compute(getMatchExpr(), labelStore);
+            || this.automaton.getTypeGraph() != typeGraph) {
+            this.automaton = calculator.compute(getMatchExpr(), typeGraph);
         }
         return this.automaton;
     }

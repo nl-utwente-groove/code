@@ -17,10 +17,11 @@
 package groove.trans;
 
 import groove.control.CtrlPar.Var;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+import groove.trans.Condition.Op;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -115,11 +116,11 @@ public class Condition implements Fixable {
     /**
      * Sets the label store of this graph condition.
      */
-    public void setLabelStore(LabelStore labelStore) {
-        assert labelStore != null;
-        this.labelStore = labelStore;
+    public void setTypeGraph(TypeGraph typeGraph) {
+        assert typeGraph != null;
+        this.typeGraph = typeGraph;
         for (Condition sub : getSubConditions()) {
-            sub.setLabelStore(labelStore);
+            sub.setTypeGraph(typeGraph);
         }
     }
 
@@ -127,8 +128,8 @@ public class Condition implements Fixable {
      * Returns the label store of this graph condition.
      * The label store must be set before the graph is fixed.
      */
-    public LabelStore getLabelStore() {
-        return this.labelStore;
+    public TypeGraph getTypeGraph() {
+        return this.typeGraph;
     }
 
     /** 
@@ -228,8 +229,8 @@ public class Condition implements Fixable {
         }
         condition.testFixed(true);
         testFixed(false);
-        if (this.labelStore != null) {
-            condition.setLabelStore(this.labelStore);
+        if (this.typeGraph != null) {
+            condition.setTypeGraph(this.typeGraph);
         }
         getSubConditions().add(condition);
         if (getRule() != null) {
@@ -602,7 +603,7 @@ public class Condition implements Fixable {
      */
     private final SystemProperties systemProperties;
     /** Subtyping relation, derived from the SystemProperties. */
-    private LabelStore labelStore;
+    private TypeGraph typeGraph;
 
     /** Node capturing the match count of this condition. */
     private VariableNode countNode;

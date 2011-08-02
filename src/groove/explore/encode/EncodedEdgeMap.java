@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -43,17 +43,17 @@ public class EncodedEdgeMap implements
     @Override
     public EncodedTypeEditor<Map<TypeLabel,Integer>,String> createEditor(
             GrammarModel grammar) {
-        return new StringEditor<Map<TypeLabel,Integer>>(
-            grammar, "label>num,[label>num]*", "", 30);
+        return new StringEditor<Map<TypeLabel,Integer>>(grammar,
+            "label>num,[label>num]*", "", 30);
     }
 
     /**
      * Parse an edge label out of a <code>String</code>. Returns a
      * <code>FormatException</code> when parsing fails.
      */
-    private TypeLabel parseLabel(LabelStore store, String source)
+    private TypeLabel parseLabel(TypeGraph typegraph, String source)
         throws FormatException {
-        for (TypeLabel label : store.getLabels()) {
+        for (TypeLabel label : typegraph.getLabels()) {
             if (label.text().equals(source)) {
                 return label;
             }
@@ -93,8 +93,8 @@ public class EncodedEdgeMap implements
         // Allocate the result map.
         Map<TypeLabel,Integer> edgeMap = new TreeMap<TypeLabel,Integer>();
 
-        // Get the LabelStore from the GTS.
-        LabelStore store = rules.getLabelStore();
+        // Get the type graph from the GTS.
+        TypeGraph typeGraph = rules.getTypeGraph();
 
         // Split the source String (assumed to be a comma separated list).
         String[] units = source.split(",");
@@ -106,7 +106,7 @@ public class EncodedEdgeMap implements
                 throw new FormatException("'" + unit
                     + "' is not a valid condition edge>num.");
             }
-            edgeMap.put(parseLabel(store, assignment[0]),
+            edgeMap.put(parseLabel(typeGraph, assignment[0]),
                 parseBound(assignment[1]));
         }
 

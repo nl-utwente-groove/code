@@ -17,8 +17,9 @@
 package groove.gui;
 
 import groove.graph.Label;
-import groove.graph.LabelStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
@@ -201,9 +202,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /** Convenience method to return the label store of the jgraph. */
-    private LabelStore getLabelStore() {
+    private TypeGraph getTypeGraph() {
         return getJGraph() instanceof AspectJGraph
-                ? ((AspectJGraph) getJGraph()).getLabelStore() : null;
+                ? ((AspectJGraph) getJGraph()).getTypeGraph() : null;
     }
 
     /** Convenience method to return the labels map of the jgraph. */
@@ -241,7 +242,7 @@ public class LabelTree extends JTree implements GraphModelListener,
             }
         }
         updateTree();
-        setDragEnabled(getLabelStore() != null && !getLabelStore().isFixed());
+        setDragEnabled(getTypeGraph() != null && !getTypeGraph().isFixed());
         setEnabled(this.jModel != null);
     }
 
@@ -382,18 +383,18 @@ public class LabelTree extends JTree implements GraphModelListener,
         // clear the list
         this.topNode.removeAllChildren();
         Set<Label> labels = new TreeSet<Label>(getLabels());
-        LabelStore labelStore = getLabelStore();
-        if (isShowsAllLabels() && labelStore != null) {
-            labels.addAll(labelStore.getLabels());
+        TypeGraph typeGraph = getTypeGraph();
+        if (isShowsAllLabels() && typeGraph != null) {
+            labels.addAll(typeGraph.getLabels());
         }
         Set<LabelTreeNode> newNodes = new HashSet<LabelTreeNode>();
         for (Label label : labels) {
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
             this.topNode.add(labelNode);
-            if (labelStore != null && labelStore.getLabels().contains(label)) {
+            if (typeGraph != null && typeGraph.getLabels().contains(label)) {
                 addRelatedTypes(labelNode,
-                    isShowsSubtypes() ? labelStore.getDirectSubtypeMap()
-                            : labelStore.getDirectSupertypeMap(), newNodes);
+                    isShowsSubtypes() ? typeGraph.getDirectSublabelMap()
+                            : typeGraph.getDirectSuperlabelMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
@@ -881,7 +882,7 @@ public class LabelTree extends JTree implements GraphModelListener,
                 super(name);
                 this.labels = new HashSet<Label>();
                 for (TypeLabel label : labels) {
-                    this.labels.addAll(getLabelStore().getSubtypes(label));
+                    this.labels.addAll(getTypeGraph().getSublabels(label));
                 }
             }
 
@@ -981,11 +982,10 @@ public class LabelTree extends JTree implements GraphModelListener,
                 if (toolTipText.length() != 0) {
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
                 }
-                if (label instanceof TypeLabel && label.isNodeType()
-                    && getLabelStore() != null) {
-                    Color color = getLabelStore().getColor((TypeLabel) label);
-                    if (color != null) {
-                        this.jLabel.setForeground(color);
+                if (label instanceof TypeLabel && label.isNodeType()) {
+                    TypeNode typeNode = getTypeGraph().getNode(label);
+                    if (typeNode != null && typeNode.getColor() != null) {
+                        this.jLabel.setForeground(typeNode.getColor());
                     }
                 }
             }

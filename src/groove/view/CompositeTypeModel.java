@@ -4,7 +4,6 @@ import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.algebra.SignatureKind;
-import groove.graph.LabelStore;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -15,7 +14,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
@@ -35,6 +36,20 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         return true;
     }
 
+    /** 
+     * Returns the constructed composite type graph, or the implicit
+     * type graph if there are either no constituent type graph models enabled,
+     * or there are errors in the constituent type graph models.
+     * @see #toResource()
+     */
+    public TypeGraph getTypeGraph() {
+        try {
+            return toResource();
+        } catch (FormatException e) {
+            return getImplicitTypeGraph();
+        }
+    }
+
     /** Returns a mapping from names to type graphs,
      * which together make up the combined type model. */
     public Map<String,TypeGraph> getTypeGraphMap() {
@@ -49,7 +64,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         Collection<FormatError> errors = createErrors();
         this.typeModelMap.clear();
         this.typeGraphMap.clear();
-        this.labelStore = null;
         for (ResourceModel<?> typeModel : getGrammar().getResourceSet(TYPE)) {
             if (typeModel.isEnabled()) {
                 this.typeModelMap.put(typeModel.getName(),
@@ -64,24 +78,10 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             throw new FormatException(errors);
         }
         // first test if there is something to be done
-        result = new TypeGraph("combined type");
         if (this.typeModelMap.isEmpty()) {
-            TypeNode top = TypeNode.TOP_NODE;
-            result.addNode(top);
-            for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-                result.addNode(TypeNode.getDataType(sigKind));
-            }
-            LabelStore labelStore = computeLabelStore();
-            for (TypeLabel label : labelStore.getLabels()) {
-                if (label.isBinary()) {
-                    for (TypeNode target : result.nodeSet()) {
-                        result.addEdge(top, label, target);
-                    }
-                } else {
-                    result.addEdge(top, label, top);
-                }
-            }
+            result = getImplicitTypeGraph();
         } else {
+            result = new TypeGraph("combined type");
             // There are no errors in each of the models, try to compose the
             // type graph.
             Map<TypeNode,TypeNode> importNodes =
@@ -124,40 +124,53 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         }
     }
 
-    /** Computes the label store or retrieves it from the type graph. */
-    public LabelStore getLabelStore() {
-        synchronise();
-        if (this.labelStore == null) {
-            // construct the label store
-            LabelStore result;
-            if (getResource() == null) {
-                result = computeLabelStore();
-            } else {
-                // get the labels from the type graph
-                result = getResource().getLabelStore();
+    /**
+     * Lazily constructs and returns the implicit type graph.
+     */
+    private TypeGraph getImplicitTypeGraph() {
+        if (this.implicitTypeGraph == null) {
+            TypeGraph result = new TypeGraph("implicit type graph");
+            TypeNode top = TypeNode.TOP_NODE;
+            result.addNode(top);
+            for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+                result.addNode(TypeNode.getDataType(sigKind));
             }
-            this.labelStore = result;
+            for (TypeLabel label : getLabels()) {
+                if (label.isBinary()) {
+                    for (TypeNode target : result.nodeSet()) {
+                        result.addEdge(top, label, target);
+                    }
+                } else {
+                    result.addEdge(top, label, top);
+                }
+            }
+            this.implicitTypeGraph = result;
         }
-        return this.labelStore;
+        return this.implicitTypeGraph;
+    }
+
+    @Override
+    void notifyGrammarModified() {
+        this.implicitTypeGraph = null;
     }
 
     /**
-     * Computes a label store by collecting the labels from all rules and host graphs.
+     * Computes the set of all labels occurring in the rules and host graph.
+     * This is used to construct the implicit type graph,
+     * if no type graphs are enabled.
      */
-    private LabelStore computeLabelStore() {
-        LabelStore result;
+    private Set<TypeLabel> getLabels() {
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
         // get the labels from the rules and host graphs
-        result = new LabelStore();
         for (ResourceKind kind : EnumSet.of(RULE, HOST)) {
             for (ResourceModel<?> model : getGrammar().getResourceSet(kind)) {
-                result.addLabels(((GraphBasedModel<?>) model).getLabels());
+                result.addAll(((GraphBasedModel<?>) model).getLabels());
             }
         }
         HostModel host = getGrammar().getStartGraphModel();
         if (host != null) {
-            result.addLabels(host.getLabels());
+            result.addAll(host.getLabels());
         }
-        result.setFixed();
         return result;
     }
 
@@ -176,9 +189,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         new HashMap<String,TypeModel>();
     private final Map<String,TypeGraph> typeGraphMap =
         new TreeMap<String,TypeGraph>();
-    /**
-     * The label store, either from the type graph
-     * or independently computed.
-     */
-    private LabelStore labelStore;
+    /** The implicit type graph. */
+    private TypeGraph implicitTypeGraph;
 }

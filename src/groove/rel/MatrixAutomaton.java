@@ -20,8 +20,8 @@ import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
-import groove.graph.LabelStore;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -54,12 +54,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * The label store indicates which labels to expect (which is used
      * to predict the matching of wildcards).
      */
-    public MatrixAutomaton(RegNode start, RegNode end, LabelStore labelStore) {
+    public MatrixAutomaton(RegNode start, RegNode end, TypeGraph typeGraph) {
         super("automaton");
         this.start = start;
         this.end = end;
-        this.labelStore = labelStore;
-        assert labelStore != null;
+        this.typeGraph = typeGraph;
+        assert typeGraph != null;
     }
 
     /** 
@@ -204,11 +204,11 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             if (label.isWildcard()) {
                 derivedLabels =
                     new HashSet<TypeLabel>(
-                        this.labelStore.getLabels(label.getWildcardKind()));
+                        this.typeGraph.getLabels(label.getWildcardKind()));
                 derivedLabels.add(DUMMY_LABELS.get(label.getWildcardKind()));
             } else if (label.isAtom()) {
                 derivedLabels =
-                    this.labelStore.getSubtypes(label.getTypeLabel());
+                    this.typeGraph.getSublabels(label.getTypeLabel());
             } else {
                 assert label.isSharp();
                 derivedLabels = Collections.singleton(label.getTypeLabel());
@@ -463,12 +463,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 label = label.getInvLabel();
             }
             if (label.isWildcard()) {
-                result.addAll(this.labelStore.getLabels(label.getWildcardKind()));
+                result.addAll(this.typeGraph.getLabels(label.getWildcardKind()));
             } else if (label.isSharp()) {
                 result.add(label.getTypeLabel());
             } else {
                 assert label.isAtom();
-                result.addAll(this.labelStore.getSubtypes(label.getTypeLabel()));
+                result.addAll(this.typeGraph.getSublabels(label.getTypeLabel()));
             }
         }
         return result;
@@ -707,12 +707,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      */
     private boolean acceptsEmptyWord;
 
-    public final LabelStore getLabelStore() {
-        return this.labelStore;
+    public final TypeGraph getTypeGraph() {
+        return this.typeGraph;
     }
 
     /** Label store to be matched against. */
-    private final LabelStore labelStore;
+    private final TypeGraph typeGraph;
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to corresponding sets of edges, where the node key is either
