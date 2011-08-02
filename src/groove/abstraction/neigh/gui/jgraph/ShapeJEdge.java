@@ -23,9 +23,17 @@ import groove.gui.jgraph.GraphJGraph;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
+ * Objects of this class can be flagged as the main edge for the source and/or
+ * target edge bundles. A main edge is the one that is used when calculating
+ * the relative position of ports on node boundaries. If a main edge is dragged,
+ * the ports move accordingly.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJEdge extends GraphJEdge {
+
+    private boolean mainSrc;
+    private boolean mainTgt;
 
     private ShapeJEdge(ShapeJGraph jGraph) {
         super(jGraph);
@@ -33,6 +41,8 @@ public class ShapeJEdge extends GraphJEdge {
 
     private ShapeJEdge(ShapeJGraph jGraph, ShapeEdge edge) {
         super(jGraph, edge);
+        this.mainSrc = false;
+        this.mainTgt = false;
     }
 
     @Override
@@ -48,6 +58,32 @@ public class ShapeJEdge extends GraphJEdge {
     public GraphJEdge newJEdge(Edge edge) {
         assert edge instanceof ShapeEdge;
         return new ShapeJEdge(getJGraph(), (ShapeEdge) edge);
+    }
+
+    /** Toggles the mainSrc flag. */
+    public void setMainSrc(boolean mainSrc) {
+        this.mainSrc = mainSrc;
+    }
+
+    /** Toggles the mainTgt flag. */
+    public void setMainTgt(boolean mainTgt) {
+        this.mainTgt = mainTgt;
+    }
+
+    /**
+     * Checks if this edge is flagged as a main edge for a bundle of source
+     * edges.
+     */
+    public boolean isMainSrc() {
+        return this.mainSrc;
+    }
+
+    /**
+     * Checks if this edge is flagged as a main edge for a bundle of target
+     * edges.
+     */
+    public boolean isMainTgt() {
+        return this.mainTgt;
     }
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */

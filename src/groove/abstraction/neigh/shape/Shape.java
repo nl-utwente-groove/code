@@ -22,6 +22,7 @@ import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static groove.graph.EdgeRole.BINARY;
 import gnu.trove.THashMap;
+import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
@@ -36,6 +37,7 @@ import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.Duo;
 
 import java.util.Set;
 
@@ -378,8 +380,26 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Basic getter method. */
+    public Set<EdgeSignature> getEdgeMultMapKeys(EdgeMultDir direction) {
+        return this.getEdgeMultMap(direction).keySet();
+    }
+
+    /** Basic getter method. */
     public EquivRelation<ShapeNode> getEquivRelation() {
         return this.equivRel;
+    }
+
+    /** Basic getter method. */
+    public ShapeEdge getShapeEdge(ShapeNode source, TypeLabel label,
+            ShapeNode target) {
+        ShapeEdge result = null;
+        for (ShapeEdge edge : this.outEdgeSet(source)) {
+            if (edge.label().equals(label) && edge.target().equals(target)) {
+                result = edge;
+                break;
+            }
+        }
+        return result;
     }
 
     /**
@@ -387,7 +407,7 @@ public final class Shape extends DefaultHostGraph {
      * that contains the given edge. If no suitable edge signature is found, a
      * new one is created and returned, but it is not stored.
      */
-    private EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
+    public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMap(direction).keySet()) {
             if (es.contains(edge, direction)) {
@@ -514,6 +534,97 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
+     * Returns a pair of strings representing the multiplicity labels that
+     * should be used in a graphical representation.
+     */
+    public Duo<String> getEdgeMultLabels(ShapeEdge edge) {
+        Duo<String> result = new Duo<String>("", "");
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            EdgeSignature es = this.getEdgeSignature(edge, direction);
+            if (es.getEquivClass().size() == 1
+                || this.isEdgeSigUnique(es, direction)
+                || edge.equals(this.getMinimumEdgeFromSig(es, direction))) {
+                String multStr = this.getEdgeSigMult(es, direction).toString();
+                switch (direction) {
+                case OUTGOING:
+                    result.setTwo(multStr);
+                    break;
+                case INCOMING:
+                    result.setOne(multStr);
+                    break;
+                default:
+                    assert false;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns true if the number of edges from the signature
+     * occurring in the shape is one.
+     */
+    private boolean isEdgeSigUnique(EdgeSignature es, EdgeMultDir direction) {
+        return this.getEdgesFromSig(es, direction).size() == 1;
+    }
+
+    private ShapeEdge getMinimumEdgeFromSig(EdgeSignature es,
+            EdgeMultDir direction) {
+        ShapeEdge result = null;
+        ShapeNode resultOpposite = null;
+        ShapeNode node = es.getNode();
+        TypeLabel label = es.getLabel();
+        for (ShapeNode ecNode : es.getEquivClass()) {
+            ShapeEdge edge = null;
+            switch (direction) {
+            case OUTGOING:
+                edge = this.getShapeEdge(node, label, ecNode);
+                break;
+            case INCOMING:
+                edge = this.getShapeEdge(ecNode, label, node);
+                break;
+            default:
+                assert false;
+            }
+            if (edge != null && !edge.isLoop()) {
+                if (resultOpposite == null
+                    || ecNode.getNumber() < resultOpposite.getNumber()) {
+                    result = edge;
+                    resultOpposite = ecNode;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the set of edges from the signature occurring in the shape.
+     */
+    private THashSet<ShapeEdge> getEdgesFromSig(EdgeSignature es,
+            EdgeMultDir direction) {
+        THashSet<ShapeEdge> result = new THashSet<ShapeEdge>();
+        ShapeNode node = es.getNode();
+        TypeLabel label = es.getLabel();
+        for (ShapeNode ecNode : es.getEquivClass()) {
+            ShapeEdge edge = null;
+            switch (direction) {
+            case OUTGOING:
+                edge = this.getShapeEdge(node, label, ecNode);
+                break;
+            case INCOMING:
+                edge = this.getShapeEdge(ecNode, label, node);
+                break;
+            default:
+                assert false;
+            }
+            if (edge != null) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Check if the shape is in a state that complies to the shape invariant.
      * See last item of Def. 7, pg. 10.
      * This check is expensive. Use it only in assertions.
@@ -552,4 +663,5 @@ public final class Shape extends DefaultHostGraph {
         }
         return result;
     }
+
 }

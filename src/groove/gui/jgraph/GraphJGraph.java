@@ -717,7 +717,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Sets (but doe snot start) the layout action for this jgraph. First stops
+     * Sets (but does not start) the layout action for this jgraph. First stops
      * the current layout action, if it is running.
      * @param prototypeLayouter prototype for the new layout action; the actual
      *        layout action is obtained by calling <tt>newInstance(this)</tt>

@@ -49,4 +49,5 @@ public final class ShapeEdge extends HostEdge {
     public ShapeNode target() {
         return (ShapeNode) super.target();
     }
+
 }

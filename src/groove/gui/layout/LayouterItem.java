@@ -85,4 +85,8 @@ public class LayouterItem implements Layouter {
         // Empty by design.
     }
 
+    /** Basic getter method. */
+    public JGraphLayout getLayout() {
+        return this.layout;
+    }
 }

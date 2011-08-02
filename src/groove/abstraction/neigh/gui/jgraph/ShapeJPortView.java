@@ -16,6 +16,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.EdgeView;
@@ -35,25 +36,26 @@ public class ShapeJPortView extends PortView {
 
     private static EdgeSigPortRenderer renderer = new EdgeSigPortRenderer();
 
-    private Shape shape;
+    private Shape geometricShape;
 
     /** Basic constructor, defers to super class. */
     public ShapeJPortView(Object cell) {
         super(cell);
-        this.getShape();
+        this.getGeometricShape();
     }
 
-    private Shape getShape() {
-        if (this.shape == null) {
-            this.shape = new Ellipse2D.Float(0.0f, 0.0f, WIDTH, HEIGHT);
+    private Shape getGeometricShape() {
+        if (this.geometricShape == null) {
+            this.geometricShape =
+                new Ellipse2D.Float(0.0f, 0.0f, WIDTH, HEIGHT);
         }
-        return this.shape;
+        return this.geometricShape;
     }
 
     /** Returns the bounds for the port view. */
     @Override
     public Rectangle2D getBounds() {
-        if (this.shape != null) {
+        if (this.geometricShape != null) {
             Point2D pt = (Point2D) getLocation().clone();
             Rectangle2D bounds = new Rectangle2D.Double();
             bounds.setFrame(pt.getX() - WIDTH / 2, pt.getY() - HEIGHT / 2,
@@ -76,11 +78,11 @@ public class ShapeJPortView extends PortView {
         if (edge != null) {
             assert edge instanceof ShapeJEdgeView;
             ShapeJEdgeView edgeView = (ShapeJEdgeView) edge;
-            ShapeJEdge jEdge = null; // edgeView.getShapeJEdge();
-            boolean srcVertex = false; // edgeView.isSrcVertex((ShapeJVertexView) vertex);
-            boolean tgtVertex = false; // edgeView.isTgtVertex((ShapeJVertexView) vertex);
+            ShapeJEdge jEdge = edgeView.getCell();
+            boolean srcVertex = edgeView.isSrcVertex((ShapeJVertexView) vertex);
+            boolean tgtVertex = edgeView.isTgtVertex((ShapeJVertexView) vertex);
             if (nearest != null
-            /*&& ((srcVertex && jEdge.isMainSrc()) || (tgtVertex && jEdge.isMainTgt()))*/) {
+                && ((srcVertex && jEdge.isMainSrc()) || (tgtVertex && jEdge.isMainTgt()))) {
                 pos = vertex.getPerimeterPoint(edge, null, nearest);
                 Point2D newOffset = this.computeNewOffset(r, pos);
                 GraphConstants.setOffset(this.allAttributes, newOffset);
@@ -112,8 +114,8 @@ public class ShapeJPortView extends PortView {
         private ShapeJPortView view;
 
         @Override
-        public Component getRendererComponent(org.jgraph.JGraph graph,
-                CellView view, boolean sel, boolean focus, boolean preview) {
+        public Component getRendererComponent(JGraph graph, CellView view,
+                boolean sel, boolean focus, boolean preview) {
             assert view instanceof ShapeJPortView;
             this.view = (ShapeJPortView) view;
             return this;
@@ -123,7 +125,7 @@ public class ShapeJPortView extends PortView {
         public void paint(Graphics g) {
             assert g instanceof Graphics2D;
             g.setColor(Color.BLACK);
-            ((Graphics2D) g).fill(this.view.getShape());
+            ((Graphics2D) g).fill(this.view.getGeometricShape());
         }
 
     }

@@ -34,4 +34,38 @@ public class ShapeJEdgeView extends JEdgeView {
         super(jEdge, jGraph);
     }
 
+    /** Basic getter method. */
+    @Override
+    public ShapeJEdge getCell() {
+        return (ShapeJEdge) super.getCell();
+    }
+
+    private ShapeJPort getSourcePort() {
+        return (ShapeJPort) this.getCell().getSource();
+    }
+
+    private ShapeJPort getTargetPort() {
+        return (ShapeJPort) this.getCell().getTarget();
+    }
+
+    /**
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the source of this edge view.
+     */
+    public boolean isSrcVertex(ShapeJVertexView vertexView) {
+        ShapeJVertex srcVertex = vertexView.getCell();
+        ShapeJPort srcPort = this.getSourcePort();
+        return srcVertex.equals(srcPort.getParent());
+    }
+
+    /**
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the target of this edge view.
+     */
+    public boolean isTgtVertex(ShapeJVertexView vertexView) {
+        ShapeJVertex tgtVertex = vertexView.getCell();
+        ShapeJPort tgtPort = this.getTargetPort();
+        return tgtVertex.equals(tgtPort.getParent());
+    }
+
 }
