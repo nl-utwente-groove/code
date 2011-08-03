@@ -983,7 +983,10 @@ public class LabelTree extends JTree implements GraphModelListener,
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
                 }
                 if (label instanceof TypeLabel && label.isNodeType()) {
-                    TypeNode typeNode = getTypeGraph().getNode(label);
+                    TypeGraph typeGraph = getTypeGraph();
+                    TypeNode typeNode =
+                        typeGraph != null ? getTypeGraph().getNode(label)
+                                : null;
                     if (typeNode != null && typeNode.getColor() != null) {
                         this.jLabel.setForeground(typeNode.getColor());
                     }
