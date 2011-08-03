@@ -21,7 +21,6 @@ import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
-import groove.trans.Condition.Op;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
