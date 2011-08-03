@@ -17,19 +17,13 @@
 package groove.gui.action;
 
 import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.gui.jgraph.ShapeJGraph;
-import groove.abstraction.neigh.gui.jgraph.ShapeJModel;
+import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.shape.Shape;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.layout.LayoutKind;
-import groove.gui.layout.LayouterItem;
 import groove.trans.HostGraph;
 
 import javax.swing.Action;
-import javax.swing.SwingConstants;
-
-import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
 
 /** Action to switch between concrete and abstract state space exploration. */
 public class ToggleExplorationStateAction extends SimulatorAction {
@@ -49,25 +43,11 @@ public class ToggleExplorationStateAction extends SimulatorAction {
             this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
 
             Multiplicity.initMultStore();
-
             HostGraph graph =
                 this.getSimulator().getModel().getGts().getStateSet().iterator().next().getGraph();
-
             Shape shape = Shape.createShape(graph);
             System.out.println(shape);
-
-            ShapeJGraph jGraph = new ShapeJGraph(this.getSimulator());
-            ShapeJModel model = jGraph.newModel();
-            model.loadGraph(shape.downcast());
-            jGraph.setModel(model);
-            LayouterItem layouter =
-                LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
-            JGraphHierarchicalLayout layout =
-                (JGraphHierarchicalLayout) layouter.getLayout();
-            layout.setOrientation(SwingConstants.WEST);
-            layout.setCompactLayout(true);
-            jGraph.setLayouter(layouter);
-            jGraph.doGraphLayout();
+            ShapePreviewDialog.showShape(this.getSimulator(), shape);
         }
     }
 
