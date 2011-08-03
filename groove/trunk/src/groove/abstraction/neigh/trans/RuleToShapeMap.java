@@ -33,6 +33,7 @@ import groove.view.FormatException;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /** Mapping from rules to shapes, used in pre-matches and matches. */
@@ -172,6 +173,21 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
             this.inverseEdgeMap = computeInverse(edgeMap());
         }
         return this.inverseEdgeMap;
+    }
+
+    /** Checks the consistency between node and edge maps. */
+    public boolean isConsistent() {
+        boolean result = true;
+        for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
+            RuleEdge edgeR = entry.getKey();
+            ShapeEdge edgeS = entry.getValue();
+            if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())
+                || !this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(

@@ -1,0 +1,76 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
+package groove.abstraction.neigh.trans;
+
+import gnu.trove.THashSet;
+import groove.abstraction.neigh.match.PreMatch;
+import groove.abstraction.neigh.shape.Shape;
+import groove.trans.RuleEvent;
+import groove.trans.SystemRecord;
+
+import java.util.Set;
+
+/**
+ * This class is only a collection of static methods for transforming shapes
+ * and therefore should not be instantiated.
+ * 
+ * @author Eduardo Zambon 
+ */
+public final class Transform {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    private Transform() {
+        // We make the constructor private to prevent the creation of objects
+        // of this class.
+    }
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns a set of transformed shapes produced by a rule match into a
+     * shape. The transformation produces a set of shapes because the
+     * materialisation of a shape is a non-deterministic step.
+     * 
+     * @param shape - the host of the transformation, must be a Shape object.
+     * @param event - the rule event that defines a pre-match on the host.
+     * @return a set of shapes produced by the transformation.
+     *         The return set is empty if the pre-match is not valid or if the
+     *         host does not admit a valid materialisation w.r.t. the rule.
+     */
+    public static Set<Shape> transform(Shape shape, RuleEvent event,
+            SystemRecord record) {
+        assert PreMatch.isValidPreMatch(shape, event);
+        Set<Shape> result = new THashSet<Shape>();
+        // Find all materialisations.
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape, event.getMatch(shape));
+        // For all materialisations.
+        for (Materialisation mat : mats) {
+            // Transform the shape.
+            /*Shape transformedShape = mat.applyMatch(record);
+            Shape normalisedShape = transformedShape.normalise();
+            result.add(normalisedShape);*/
+        }
+        return result;
+    }
+
+}

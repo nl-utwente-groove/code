@@ -134,4 +134,9 @@ public final class EdgeSignature {
         return this.equivClass;
     }
 
+    /** Returns true if this signature has the given class. */
+    public boolean hasEquivClass(EquivClass<ShapeNode> ec) {
+        return this.equivClass.equals(ec);
+    }
+
 }
