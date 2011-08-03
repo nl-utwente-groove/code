@@ -89,10 +89,13 @@ public final class EquivClass<T extends HostElement> extends THashSet<T>
     /**
      * Specialises the return type of the super method.
      * Shallow clone. Clones the equivalence class but not the elements. 
+     * The clone is not fixed, even if the original is.
      */
     @Override
     public EquivClass<T> clone() {
-        return (EquivClass<T>) super.clone();
+        EquivClass<T> result = (EquivClass<T>) super.clone();
+        result.hashCode = 0;
+        return result;
     }
 
     @Override
@@ -144,6 +147,11 @@ public final class EquivClass<T extends HostElement> extends THashSet<T>
             sum += elem.hashCode();
         }
         return prime * sum;
+    }
+
+    /** Returns true if this equivalence class has just one element. */
+    public boolean isSingleton() {
+        return this.size() == 1;
     }
 
 }

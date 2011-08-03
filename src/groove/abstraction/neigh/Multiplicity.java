@@ -342,6 +342,16 @@ public final class Multiplicity {
         return this.i == 0 && this.j == 0;
     }
 
+    /** Returns true if the multiplicity equals one; false, otherwise. */
+    public boolean isOne() {
+        return this.i == 1 && this.j == 1;
+    }
+
+    /** Returns true if the upper bound is more than one; false, otherwise. */
+    public boolean isCollector() {
+        return this.j > 1;
+    }
+
     /** Returns the addition of the two given multiplicities. */
     public Multiplicity add(Multiplicity other) {
         assert this.kind == other.kind;

@@ -31,9 +31,7 @@ import groove.util.Groove;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.SwingConstants;
-
-import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
+import com.jgraph.layout.organic.JGraphFastOrganicLayout;
 
 /**
  * Dialog for displaying shapes.
@@ -70,12 +68,18 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         jGraph.setModel(model);
         // EDUARDO says: this is some fine tuning of the layout algorithm
         // that is better suited for shapes. Should be moved to some other place.
+        /* LayouterItem layouter =
+             LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
+         JGraphHierarchicalLayout layout =
+             (JGraphHierarchicalLayout) layouter.getLayout();
+         layout.setOrientation(SwingConstants.WEST);
+         layout.setCompactLayout(true);*/
         LayouterItem layouter =
-            LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
-        JGraphHierarchicalLayout layout =
-            (JGraphHierarchicalLayout) layouter.getLayout();
-        layout.setOrientation(SwingConstants.WEST);
-        layout.setCompactLayout(true);
+            LayoutKind.getLayouterItemProto(LayoutKind.FAST_ORGANIC);
+        JGraphFastOrganicLayout layout =
+            (JGraphFastOrganicLayout) layouter.getLayout();
+        layout.setInitialTemp(500.0);
+        layout.setForceConstant(100.0);
         jGraph.setLayouter(layouter);
         jGraph.doGraphLayout();
         return jGraph;
