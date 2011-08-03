@@ -16,6 +16,7 @@
  */
 package groove.abstraction.neigh.match;
 
+import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
@@ -36,7 +37,6 @@ import groove.trans.RuleNode;
 import groove.util.Property;
 import groove.util.Visitor;
 
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -70,7 +70,7 @@ public final class PreMatch {
      * The given host must be a shape.
      */
     public static Set<Proof> getPreMatches(final Shape shape, Rule rule) {
-        Set<Proof> preMatches = new HashSet<Proof>();
+        Set<Proof> preMatches = new THashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
         rule.traverseMatches(shape, null,
             Visitor.newCollector(preMatches, new Property<Proof>() {
