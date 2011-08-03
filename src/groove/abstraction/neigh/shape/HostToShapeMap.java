@@ -1,5 +1,7 @@
 package groove.abstraction.neigh.shape;
 
+import gnu.trove.THashMap;
+import gnu.trove.THashSet;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.ElementMap;
 import groove.graph.Node;
@@ -9,8 +11,6 @@ import groove.util.Fixable;
 import groove.view.FormatException;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,12 +108,12 @@ public class HostToShapeMap extends
 
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
             Map<K,V> map) {
-        Map<V,Set<K>> result = new HashMap<V,Set<K>>();
+        Map<V,Set<K>> result = new THashMap<V,Set<K>>();
         for (Map.Entry<K,V> entry : map.entrySet()) {
             V value = entry.getValue();
             Set<K> keys = result.get(value);
             if (keys == null) {
-                result.put(value, keys = new HashSet<K>());
+                result.put(value, keys = new THashSet<K>());
             }
             keys.add(entry.getKey());
         }

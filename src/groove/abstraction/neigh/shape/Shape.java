@@ -40,6 +40,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.Duo;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -70,15 +71,15 @@ public final class Shape extends DefaultHostGraph {
     /**
      * The node multiplicity map.
      */
-    private final THashMap<ShapeNode,Multiplicity> nodeMultMap;
+    private final Map<ShapeNode,Multiplicity> nodeMultMap;
     /**
      * The outgoing edge multiplicity map.
      */
-    private final THashMap<EdgeSignature,Multiplicity> outEdgeMultMap;
+    private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
     /**
      * The incoming edge multiplicity map.
      */
-    private final THashMap<EdgeSignature,Multiplicity> inEdgeMultMap;
+    private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -370,9 +371,8 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Returns the proper multiplicity map accordingly to the given direction. */
-    private THashMap<EdgeSignature,Multiplicity> getEdgeMultMap(
-            EdgeMultDir direction) {
-        THashMap<EdgeSignature,Multiplicity> result = null;
+    private Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir direction) {
+        Map<EdgeSignature,Multiplicity> result = null;
         switch (direction) {
         case OUTGOING:
             result = this.outEdgeMultMap;
@@ -607,9 +607,9 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the set of edges from the signature occurring in the shape.
      */
-    private THashSet<ShapeEdge> getEdgesFromSig(EdgeSignature es,
+    private Set<ShapeEdge> getEdgesFromSig(EdgeSignature es,
             EdgeMultDir direction) {
-        THashSet<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
         for (ShapeNode ecNode : es.getEquivClass()) {

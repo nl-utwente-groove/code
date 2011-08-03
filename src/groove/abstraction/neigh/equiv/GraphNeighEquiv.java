@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.equiv;
 
 import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
@@ -25,6 +24,9 @@ import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class implements the neighbourhood equivalence relation on graphs.
@@ -74,8 +76,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // ------------------------------------------------------------------------
 
     /** Returns true if both given sets have the same multiplicity. */
-    private static boolean haveSameMult(THashSet<HostEdge> s0,
-            THashSet<HostEdge> s1) {
+    private static boolean haveSameMult(Set<HostEdge> s0, Set<HostEdge> s1) {
         return Multiplicity.getEdgeSetMult(s0).equals(
             Multiplicity.getEdgeSetMult(s1));
     }
@@ -108,16 +109,15 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     /** Computes the initial equivalence classes, based on node labels. */
     private void computeInitialEquivClasses() {
         // Map from node labels to equivalence classes.
-        THashMap<THashSet<TypeLabel>,EquivClass<HostNode>> labelsToClass =
-            new THashMap<THashSet<TypeLabel>,EquivClass<HostNode>>();
+        Map<Set<TypeLabel>,EquivClass<HostNode>> labelsToClass =
+            new THashMap<Set<TypeLabel>,EquivClass<HostNode>>();
         // Get the set of labels to be used in the abstraction.
-        THashSet<TypeLabel> absLabels = Parameters.getAbsLabels();
+        Set<TypeLabel> absLabels = Parameters.getAbsLabels();
 
         // Compute the equivalence classes.
         for (HostNode node : this.graph.nodeSet()) {
             // Collect node labels.
-            THashSet<TypeLabel> nodeLabels =
-                Util.getNodeLabels(this.graph, node);
+            Set<TypeLabel> nodeLabels = Util.getNodeLabels(this.graph, node);
 
             EquivClass<HostNode> ec = null;
 
@@ -285,13 +285,13 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
-                THashSet<HostEdge> n0InterEc =
+                Set<HostEdge> n0InterEc =
                     Util.getIntersectEdges(this.graph, n0, ec, label);
-                THashSet<HostEdge> n1InterEc =
+                Set<HostEdge> n1InterEc =
                     Util.getIntersectEdges(this.graph, n1, ec, label);
-                THashSet<HostEdge> ecInterN0 =
+                Set<HostEdge> ecInterN0 =
                     Util.getIntersectEdges(this.graph, ec, n0, label);
-                THashSet<HostEdge> ecInterN1 =
+                Set<HostEdge> ecInterN1 =
                     Util.getIntersectEdges(this.graph, ec, n1, label);
                 equiv =
                     equiv && haveSameMult(n0InterEc, n1InterEc)

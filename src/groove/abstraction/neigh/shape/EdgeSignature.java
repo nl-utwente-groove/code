@@ -98,7 +98,7 @@ public final class EdgeSignature {
     // ------------------------------------------------------------------------
 
     /**
-     * Returns true if the edge signature, contains the edge given as argument.
+     * Returns true if the edge signature contains the edge given as argument.
      */
     public boolean contains(ShapeEdge edge, EdgeMultDir direction) {
         ShapeNode node = null;
