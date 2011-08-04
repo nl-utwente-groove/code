@@ -61,6 +61,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt,
             GrammarModel grammar) {
         super(jVertexProt, jEdgeProt);
+        assert grammar != null;
         this.grammar = grammar;
     }
 
