@@ -104,6 +104,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         this.graph = graph;
         this.role = graph.getRole();
         this.jgraph = new AspectJGraph(getSimulator(), parent.getKind(), true);
+        this.jgraph.updateGrammar(getSimulatorModel().getGrammar());
         setFocusCycleRoot(true);
         setName(graph.getName());
     }

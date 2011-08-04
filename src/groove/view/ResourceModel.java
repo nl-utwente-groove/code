@@ -148,6 +148,7 @@ abstract public class ResourceModel<R> {
             result = (modCount != this.lastModCount);
             if (result) {
                 this.lastModCount = modCount;
+                this.status = Status.START;
                 notifyGrammarModified();
             }
         }
@@ -160,7 +161,7 @@ abstract public class ResourceModel<R> {
      * structures.
      */
     void notifyGrammarModified() {
-        this.status = Status.START;
+        // empty
     }
 
     /** Returns the status of the resource construction. */

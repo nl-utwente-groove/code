@@ -126,19 +126,17 @@ final public class AspectJGraph extends GraphJGraph {
     public void updateGrammar(GrammarModel grammar) {
         this.typeGraph = grammar.getTypeGraph();
         // retrieves type and label store from the grammar
-        if (grammar.getTypeGraph() != null) {
-            Map<String,Set<TypeLabel>> labelsMap =
-                new HashMap<String,Set<TypeLabel>>();
-            for (ResourceModel<?> typeModel : grammar.getResourceSet(ResourceKind.TYPE)) {
-                // the view may be null if type names
-                // overlap modulo upper/lowercase
-                if (typeModel != null && typeModel.isEnabled()) {
-                    labelsMap.put(typeModel.getName(),
-                        ((TypeModel) typeModel).getLabels());
-                }
+        Map<String,Set<TypeLabel>> labelsMap =
+            new HashMap<String,Set<TypeLabel>>();
+        for (ResourceModel<?> typeModel : grammar.getResourceSet(ResourceKind.TYPE)) {
+            // the view may be null if type names
+            // overlap modulo upper/lowercase
+            if (typeModel != null && typeModel.isEnabled()) {
+                labelsMap.put(typeModel.getName(),
+                    ((TypeModel) typeModel).getLabels());
             }
-            this.labelsMap = labelsMap;
         }
+        this.labelsMap = labelsMap;
         AspectJModel model = getModel();
         if (model != null) {
             model.syncGraph();
@@ -150,7 +148,6 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * Returns a map from names to subsets of labels.
      * This can be used to filter labels.
-     * May be {@code null} even if {@link #getTypeGraph()} is not.
      */
     public final Map<String,Set<TypeLabel>> getLabelsMap() {
         return this.labelsMap;
