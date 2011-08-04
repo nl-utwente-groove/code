@@ -23,13 +23,11 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
@@ -75,6 +73,11 @@ public final class Materialisation {
      */
     private Shape shape;
     /**
+     * The original shape that started the materialisation process.
+     * This is left unchanged during the materialisation.
+     */
+    private Shape originalShape;
+    /**
      * The matched rule.
      */
     private final Rule matchedRule;
@@ -98,9 +101,12 @@ public final class Materialisation {
      * pre-match of a rule into the shape. The pre-match given must be valid.
      */
     private Materialisation(Shape shape, Proof preMatch) {
-        this.shape = shape;
+        this.originalShape = shape;
+        this.shape = this.originalShape.clone();
         this.matchedRule = preMatch.getRule();
         this.originalMatch = (RuleToShapeMap) preMatch.getPatternMap();
+        // Fix the original match to prevent modification.
+        this.originalMatch.setFixed();
         this.match = this.originalMatch.clone();
     }
 
@@ -118,9 +124,8 @@ public final class Materialisation {
     public static Set<Materialisation> getMaterialisations(Shape shape,
             Proof preMatch) {
         Set<Materialisation> result = new THashSet<Materialisation>();
-        Materialisation mat = new Materialisation(shape, preMatch);
-        mat.compute();
-        result.add(mat);
+        Materialisation initialMat = new Materialisation(shape, preMatch);
+        result.addAll(initialMat.compute());
         return result;
     }
 
@@ -165,7 +170,7 @@ public final class Materialisation {
         boolean complyToEquivClass = true;
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // For all nodes in the image of the LHS.
-        for (ShapeNode nodeS : this.match.nodeMap().values()) {
+        for (ShapeNode nodeS : this.match.nodeMapValueSet()) {
             // Item 3: check that all nodes in the image of the LHS have
             // multiplicity one.
             if (!this.shape.getNodeMult(nodeS).equals(one)) {
@@ -188,9 +193,9 @@ public final class Materialisation {
             // For all binary labels.
             for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
                 // For all nodes v in the image of the LHS.
-                for (ShapeNode v : this.match.nodeMap().values()) {
+                for (ShapeNode v : this.match.nodeMapValueSet()) {
                     // For all nodes w in the image of the LHS.
-                    for (ShapeNode w : this.match.nodeMap().values()) {
+                    for (ShapeNode w : this.match.nodeMapValueSet()) {
                         EquivClass<ShapeNode> ecW =
                             this.shape.getEquivClassOf(w);
                         EdgeSignature es =
@@ -220,11 +225,13 @@ public final class Materialisation {
         return complyToNodeMult && complyToEquivClass && complyToEdgeMult;
     }
 
-    private void compute() {
+    private Set<Materialisation> compute() {
+        Set<Materialisation> result = new THashSet<Materialisation>();
+
         // Search for nodes in the original match image that have to be
         // materialised. 
-        for (ShapeNode nodeS : this.originalMatch.nodeMap().values()) {
-            if (this.shape.getNodeMult(nodeS).isCollector()) {
+        for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
+            if (this.originalShape.getNodeMult(nodeS).isCollector()) {
                 // We have a node in the rule that was matched to a collector
                 // node. We need to materialise this collector node.
                 // Check the nodes on the rule that were mapped to nodeS.
@@ -232,23 +239,31 @@ public final class Materialisation {
                 this.shape.materialiseNode(nodeS, nodesR, this.match);
             }
         }
-        // Search for edges in the original match image that have to be
-        // materialised. 
-        for (ShapeEdge edgeS : this.originalMatch.edgeMap().values()) {
-            if (edgeS.getRole() != EdgeRole.BINARY) {
-                continue;
-            }
-            if (!this.shape.isEdgeConcrete(edgeS)) {
-                // We have an edge in the rule that was matched to an edge
-                // in the shape with a collector multiplicity or that is part
-                // of an edge bundle. We need to materialise this edge.
-                // Check the edges on the rule that were mapped to edgeS.
-                Set<RuleEdge> edgesR = this.originalMatch.getPreImages(edgeS);
-                this.shape.materialiseEdge(edgeS, edgesR, this.match);
+
+        // Search for edges in the match image that have to be materialised. 
+        for (ShapeEdge edgeS : this.match.getInconsistentEdges()) {
+            Set<RuleEdge> edgesR = this.originalMatch.getPreImages(edgeS);
+            this.shape.materialiseEdge(edgeS, edgesR, this.match);
+        }
+
+        assert this.match.isConsistent();
+
+        // Make sure that all shape nodes in the image of the match are in a
+        // singleton equivalence class.
+        for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
+            if (this.originalShape.getNodeMult(nodeS).isOne()) {
+                // We have a node in the rule that was matched to a concrete 
+                // node in the shape. We need to put this shape node in its
+                // own equivalence class.
+                this.shape.singulariseNode(nodeS);
             }
         }
-        assert this.match.isConsistent();
-        ShapePreviewDialog.showShape(this.shape);
+
+        // EDUARDO: Decide on the inherited edges for the materialised nodes.
+
+        //ShapePreviewDialog.showShape(this.shape);
+
+        return result;
     }
 
     /** blah */

@@ -18,6 +18,7 @@ package groove.abstraction.neigh.trans;
 
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -29,9 +30,9 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Fixable;
-import groove.view.FormatException;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -117,7 +118,7 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     }
 
     @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         // Fixing is the same as computing the inverse map.
         getInverseNodeMap();
         getInverseEdgeMap();
@@ -153,6 +154,30 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return result;
     }
 
+    /** Returns an self edge from given node with given label. Maybe be null. */
+    // EDUARDO: this method seems quite inefficient. Try to improve?
+    public RuleEdge getSelfEdge(RuleNode node, TypeLabel label) {
+        RuleEdge result = null;
+        for (RuleEdge edge : this.edgeMap().keySet()) {
+            if (edge.label().compareTo(label) == 0
+                && edge.source().equals(node) && edge.target().equals(node)) {
+                result = edge;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a set of values for the node map. Contrary to calling
+     * nodeMap().values(), the set has no repeated values.
+     */
+    public Set<ShapeNode> nodeMapValueSet() {
+        Set<ShapeNode> result = new THashSet<ShapeNode>();
+        result.addAll(this.nodeMap().values());
+        return result;
+    }
+
     /** Returns the inverse mapping, from shape nodes to their 
      * sets of pre-images.
      */
@@ -175,6 +200,23 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return this.inverseEdgeMap;
     }
 
+    /**
+     * Return the set of inconsistent edges, i.e., with a mapping that does not
+     * conform to the node map.
+     */
+    public Set<ShapeEdge> getInconsistentEdges() {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
+            RuleEdge edgeR = entry.getKey();
+            ShapeEdge edgeS = entry.getValue();
+            if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())
+                || !this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
+                result.add(edgeS);
+            }
+        }
+        return result;
+    }
+
     /** Checks the consistency between node and edge maps. */
     public boolean isConsistent() {
         boolean result = true;
@@ -186,6 +228,23 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
                 result = false;
                 break;
             }
+        }
+        return result;
+    }
+
+    /**
+     * Checks which maps are inconsistent and returns the set of directions
+     * for the edge multiplicities that need to be adjusted in the shape.
+     */
+    public Set<EdgeMultDir> getDirectionsToAdjust(RuleEdge edgeR,
+            ShapeEdge edgeS) {
+        assert edgeR.label().compareTo(edgeS.label()) == 0;
+        Set<EdgeMultDir> result = EnumSet.noneOf(EdgeMultDir.class);
+        if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())) {
+            result.add(EdgeMultDir.INCOMING);
+        }
+        if (!this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
+            result.add(EdgeMultDir.OUTGOING);
         }
         return result;
     }
