@@ -1151,7 +1151,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
                             "Node type %s cannot be deleted", ruleEdge.label(),
-                            ruleEdge.source());
+                            modelEdge.source());
                     }
                 } else {
                     if (!edgeKind.inRHS()) {
@@ -1172,7 +1172,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
                             "Node type %s cannot be created", ruleEdge.label(),
-                            ruleEdge.source());
+                            modelEdge.source());
                     }
                     // creator edge
                     this.rhs.addEdge(ruleEdge);
@@ -1481,11 +1481,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         this.typeMap));
                 }
             }
-            for (RuleGraph nac : origin.nacs) {
-                this.nacs.add(toTypedGraph(nac, this.typeMap, null));
-            }
             if (!this.errors.isEmpty()) {
                 throw new FormatException(this.errors);
+            }
+            for (RuleGraph nac : origin.nacs) {
+                this.nacs.add(toTypedGraph(nac, this.typeMap, null));
             }
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
                 this.colorMap.put(globalTypeMap.getNode(colorEntry.getKey()),
@@ -1511,63 +1511,46 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private RuleGraph toTypedGraph(RuleGraph graph,
                 RuleGraphMorphism parentTypeMap, RuleGraphMorphism typeMap) {
-            RuleGraph result;
-            if (getType() == null) {
-                result = graph;
-                for (RuleNode node : graph.nodeSet()) {
-                    if (typeMap != null) {
-                        typeMap.putNode(node, node);
-                    }
-                    this.globalTypeMap.putNode(node, node);
+            RuleGraph result = graph.newGraph(graph.getName());
+            try {
+                RuleGraphMorphism typing =
+                    getType().analyzeRule(graph, parentTypeMap);
+                if (typeMap != null) {
+                    typeMap.putAll(typing);
                 }
-                for (RuleEdge edge : graph.edgeSet()) {
-                    if (typeMap != null) {
-                        typeMap.putEdge(edge, edge);
-                    }
-                    this.globalTypeMap.putEdge(edge, edge);
-                }
-            } else {
-                result = graph.newGraph(graph.getName());
-                try {
-                    RuleGraphMorphism typing =
-                        getType().analyzeRule(graph, parentTypeMap);
-                    if (typeMap != null) {
-                        typeMap.putAll(typing);
-                    }
-                    // create the result graph and update the global type map
-                    for (Map.Entry<RuleNode,RuleNode> nodeEntry : typing.nodeMap().entrySet()) {
-                        RuleNode key = nodeEntry.getKey();
-                        RuleNode image = nodeEntry.getValue();
-                        assert image != null;
-                        RuleNode globalImage = this.globalTypeMap.getNode(key);
-                        if (globalImage == null) {
-                            this.globalTypeMap.putNode(key, image);
-                            result.addNode(image);
-                        } else {
-                            result.addNode(globalImage);
-                            // add a type test if the global image differs
-                            if (image != globalImage) {
-                                TypeNode imageType = image.getType();
-                                assert getType().isSubtype(imageType,
-                                    globalImage.getType());
-                                result.addEdge(image,
-                                    new RuleLabel(imageType.getLabel()), image);
-                            }
+                // create the result graph and update the global type map
+                for (Map.Entry<RuleNode,RuleNode> nodeEntry : typing.nodeMap().entrySet()) {
+                    RuleNode key = nodeEntry.getKey();
+                    RuleNode image = nodeEntry.getValue();
+                    assert image != null;
+                    RuleNode globalImage = this.globalTypeMap.getNode(key);
+                    if (globalImage == null) {
+                        this.globalTypeMap.putNode(key, image);
+                        result.addNode(image);
+                    } else {
+                        result.addNode(globalImage);
+                        // add a type test if the global image differs
+                        if (image != globalImage) {
+                            TypeNode imageType = image.getType();
+                            assert getType().isSubtype(imageType,
+                                globalImage.getType());
+                            result.addEdge(image,
+                                new RuleLabel(imageType.getLabel()), image);
                         }
                     }
-                    for (Map.Entry<RuleEdge,RuleEdge> edgeEntry : typing.edgeMap().entrySet()) {
-                        RuleEdge key = edgeEntry.getKey();
-                        RuleEdge image = edgeEntry.getValue();
-                        assert image != null;
-                        RuleEdge globalImage = this.globalTypeMap.getEdge(key);
-                        if (globalImage == null) {
-                            this.globalTypeMap.putEdge(key, globalImage = image);
-                        }
-                        result.addEdge(globalImage);
-                    }
-                } catch (FormatException e) {
-                    this.errors.addAll(e.getErrors());
                 }
+                for (Map.Entry<RuleEdge,RuleEdge> edgeEntry : typing.edgeMap().entrySet()) {
+                    RuleEdge key = edgeEntry.getKey();
+                    RuleEdge image = edgeEntry.getValue();
+                    assert image != null;
+                    RuleEdge globalImage = this.globalTypeMap.getEdge(key);
+                    if (globalImage == null) {
+                        this.globalTypeMap.putEdge(key, globalImage = image);
+                    }
+                    result.addEdge(globalImage);
+                }
+            } catch (FormatException e) {
+                this.errors.addAll(e.getErrors());
             }
             return result;
         }

@@ -347,7 +347,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     if (typingLabel == null) {
                         if (parentImage == null) {
                             errors.add(new FormatError("Untyped node", node));
-                            image = node;
+                            image =
+                                ruleFactory.createNode(node.getNumber(),
+                                    TypeNode.TOP_NODE, true);
                         } else {
                             image = parentImage;
                         }
@@ -399,8 +401,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 if (edgeLabel.isEmpty()) {
                     // this is a (possibly negative) comparison of nodes
                     // which can only be correct if they have a common subtype
-                    if (!hasCommonSubtype(sourceImage.getType(),
-                        targetImage.getType())) {
+                    if (!hasCommonSubtype(sourceType, targetType)) {
                         errors.add(new FormatError(
                             "Node types %s and %s have no common subtypes",
                             sourceType, targetType, sourceKey, targetKey));
