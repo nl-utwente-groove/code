@@ -105,7 +105,7 @@ public final class PreMatch {
         // Check node multiplicities.
         boolean complyToNodeMult = true;
         // For all nodes in the image of the LHS.
-        for (ShapeNode nodeS : map.nodeMap().values()) {
+        for (ShapeNode nodeS : map.nodeMapValueSet()) {
             Multiplicity nSMult = shape.getNodeMult(nodeS);
             Set<RuleNode> nodesG = map.getPreImages(nodeS);
             if (!Multiplicity.getNodeSetMult(nodesG).le(nSMult)) {

@@ -36,6 +36,7 @@ public final class EdgeSignature {
     private final TypeLabel label;
     private final ShapeNode node;
     private final EquivClass<ShapeNode> equivClass;
+    private final int hashCode;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -49,6 +50,7 @@ public final class EdgeSignature {
         this.equivClass = equivClass;
         // Fix the equivalence class to avoid problems with hashing.
         this.equivClass.setFixed();
+        this.hashCode = this.computeHashCode();
     }
 
     // ------------------------------------------------------------------------
@@ -85,6 +87,14 @@ public final class EdgeSignature {
 
     @Override
     public int hashCode() {
+        return this.hashCode;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    private int computeHashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.node.hashCode();
@@ -92,10 +102,6 @@ public final class EdgeSignature {
         result = prime * result + this.equivClass.hashCode();
         return result;
     }
-
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
 
     /**
      * Returns true if the edge signature contains the edge given as argument.
