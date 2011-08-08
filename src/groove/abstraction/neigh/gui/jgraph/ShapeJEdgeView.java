@@ -40,11 +40,23 @@ public class ShapeJEdgeView extends JEdgeView {
         return (ShapeJEdge) super.getCell();
     }
 
-    private ShapeJPort getSourcePort() {
+    @Override
+    public String toString() {
+        return "ShapeJEdgeView for " + this.getCell().toString();
+    }
+
+    @Override
+    protected boolean isSelfEdge() {
+        return this.getCell().isLoop();
+    }
+
+    /** Basic getter method. */
+    public ShapeJPort getSourcePort() {
         return (ShapeJPort) this.getCell().getSource();
     }
 
-    private ShapeJPort getTargetPort() {
+    /** Basic getter method. */
+    public ShapeJPort getTargetPort() {
         return (ShapeJPort) this.getCell().getTarget();
     }
 

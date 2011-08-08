@@ -34,15 +34,37 @@ import org.jgraph.graph.GraphConstants;
  */
 public class ShapeJPort extends DefaultPort {
 
+    private final boolean alwaysMovable;
+
     /**
      * Constructor.
      * @param vertex the vertex to add this port to.
+     * @param es the edge signature associated with this port.
+     * @param alwaysMovable flag to indicate if the port should always be
+     *        moved or only when a main edge is involved.
      */
-    public ShapeJPort(ShapeJVertex vertex, EdgeSignature es) {
+    public ShapeJPort(ShapeJVertex vertex, EdgeSignature es,
+            boolean alwaysMovable) {
         super();
+        this.alwaysMovable = alwaysMovable;
         GraphConstants.setOffset(this.getAttributes(), new Point2D.Double(0, 0));
         vertex.add(this);
         this.setUserObject(es);
     }
 
+    /** Basic inspection method. */
+    public boolean isAlwaysMovable() {
+        return this.alwaysMovable;
+    }
+
+    @Override
+    public EdgeSignature getUserObject() {
+        return (EdgeSignature) super.getUserObject();
+    }
+
+    @Override
+    public String toString() {
+        return "ShapeJPort: " + this.getUserObject().toString()
+            + (this.isAlwaysMovable() ? " AM" : "");
+    }
 }

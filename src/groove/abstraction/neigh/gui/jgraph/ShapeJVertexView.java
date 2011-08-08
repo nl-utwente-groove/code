@@ -39,4 +39,9 @@ public class ShapeJVertexView extends JVertexView {
         return (ShapeJVertex) super.getCell();
     }
 
+    @Override
+    public String toString() {
+        return "ShapeJVertexView for " + this.getCell().toString();
+    }
+
 }

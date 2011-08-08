@@ -52,6 +52,16 @@ public class ShapeJPortView extends PortView {
         return this.geometricShape;
     }
 
+    @Override
+    public ShapeJPort getCell() {
+        return (ShapeJPort) super.getCell();
+    }
+
+    @Override
+    public String toString() {
+        return "ShapeJPortView for " + this.getCell().toString();
+    }
+
     /** Returns the bounds for the port view. */
     @Override
     public Rectangle2D getBounds() {
@@ -79,16 +89,34 @@ public class ShapeJPortView extends PortView {
             assert edge instanceof ShapeJEdgeView;
             ShapeJEdgeView edgeView = (ShapeJEdgeView) edge;
             ShapeJEdge jEdge = edgeView.getCell();
-            boolean srcVertex = edgeView.isSrcVertex((ShapeJVertexView) vertex);
-            boolean tgtVertex = edgeView.isTgtVertex((ShapeJVertexView) vertex);
-            if (nearest != null
-                && ((srcVertex && jEdge.isMainSrc()) || (tgtVertex && jEdge.isMainTgt()))) {
+            if (nearest != null && this.shouldMovePort(edgeView, jEdge, vertex)) {
                 pos = vertex.getPerimeterPoint(edge, null, nearest);
                 Point2D newOffset = this.computeNewOffset(r, pos);
                 GraphConstants.setOffset(this.allAttributes, newOffset);
             }
         }
         return pos;
+    }
+
+    private boolean shouldMovePort(ShapeJEdgeView edgeView, ShapeJEdge jEdge,
+            CellView vertex) {
+        boolean result = false;
+        if (this.getCell().equals(edgeView.getSourcePort())) {
+            boolean isSrcVertex =
+                edgeView.isSrcVertex((ShapeJVertexView) vertex);
+            if (isSrcVertex
+                && (jEdge.isMainSrc() || this.getCell().isAlwaysMovable())) {
+                result = true;
+            }
+        } else if (this.getCell().equals(edgeView.getTargetPort())) {
+            boolean isTgtVertex =
+                edgeView.isTgtVertex((ShapeJVertexView) vertex);
+            if (isTgtVertex
+                && (jEdge.isMainTgt() || this.getCell().isAlwaysMovable())) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     private Point2D getPortPosition(Rectangle2D r) {

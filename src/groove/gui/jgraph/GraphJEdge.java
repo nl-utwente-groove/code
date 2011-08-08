@@ -116,6 +116,11 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         this.edges.add(edge);
     }
 
+    /** Returns true if source and target node coincide. */
+    public boolean isLoop() {
+        return this.source == this.target;
+    }
+
     /** 
      * The cloned object is equal to this one after a reset. 
      */

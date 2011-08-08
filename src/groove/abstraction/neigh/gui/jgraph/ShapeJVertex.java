@@ -47,6 +47,11 @@ public class ShapeJVertex extends GraphJVertex {
     }
 
     @Override
+    public String toString() {
+        return "ShapeJVertex: " + this.getNode().toString();
+    }
+
+    @Override
     public ShapeJVertex newJVertex(Node node) {
         return new ShapeJVertex(getJGraph(), (ShapeNode) node);
     }
