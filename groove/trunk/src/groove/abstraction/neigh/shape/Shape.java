@@ -664,7 +664,7 @@ public final class Shape extends DefaultHostGraph {
      * Returns true if the number of edges from the signature
      * occurring in the shape is one.
      */
-    private boolean isEdgeSigUnique(EdgeSignature es, EdgeMultDir direction) {
+    public boolean isEdgeSigUnique(EdgeSignature es, EdgeMultDir direction) {
         return this.getEdgesFromSig(es, direction).size() == 1;
     }
 

@@ -96,7 +96,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         this.setVetoFireGraphChanged(false);
 
         // Call the jGraph method to perform the edit with all changes.
-        this.doInsert(true, false);
+        this.doInsert(true, true);
     }
 
     /**
@@ -169,7 +169,8 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             for (EdgeSignature es : shape.getEdgeMultMapKeys(direction)) {
                 ShapeJVertex vertex =
                     (ShapeJVertex) this.getJCellForNode(es.getNode());
-                ShapeJPort port = new ShapeJPort(vertex, es);
+                boolean alwaysMovable = shape.isEdgeSigUnique(es, direction);
+                ShapeJPort port = new ShapeJPort(vertex, es, alwaysMovable);
                 this.getEsMap(direction).put(es, port);
             }
         }

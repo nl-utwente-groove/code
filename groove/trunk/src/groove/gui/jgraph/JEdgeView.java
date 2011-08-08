@@ -112,12 +112,17 @@ public class JEdgeView extends EdgeView {
         // target could be null, if we are dealing with a temporary cache that just
         // contains a mapping for the edge
         if (this.target != null) {
-            if (this.source == this.target) {
+            if (this.isSelfEdge()) {
                 routeSelfEdge();
             } else if (getPointCount() <= 2) {
                 routeParallelEdge(mapper);
             }
         }
+    }
+
+    /** Returns true if this is a self edge. */
+    protected boolean isSelfEdge() {
+        return this.source == this.target;
     }
 
     /**
