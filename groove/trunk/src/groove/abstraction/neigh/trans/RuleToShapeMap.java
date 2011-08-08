@@ -155,7 +155,6 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     }
 
     /** Returns an self edge from given node with given label. Maybe be null. */
-    // EDUARDO: this method seems quite inefficient. Try to improve?
     public RuleEdge getSelfEdge(RuleNode node, TypeLabel label) {
         RuleEdge result = null;
         for (RuleEdge edge : this.edgeMap().keySet()) {

@@ -844,6 +844,7 @@ public final class Shape extends DefaultHostGraph {
             RuleToShapeMap match) {
         assert !this.isFixed();
         assert !match.isFixed();
+        assert match.getNode(nodeR).equals(from);
 
         for (ShapeEdge edge : this.outEdgeSet(from)) {
             if (edge.getRole() != BINARY) {
