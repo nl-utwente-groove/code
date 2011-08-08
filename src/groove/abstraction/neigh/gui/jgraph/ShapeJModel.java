@@ -183,10 +183,10 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
 
     private void createEdgeMults() {
         Shape shape = this.getGraph();
-        String labels[] = new String[2];
         for (ShapeEdge edgeS : Util.getBinaryEdges(shape)) {
             ShapeJEdge jEdge = (ShapeJEdge) this.getJCellForEdge(edgeS);
             Duo<String> duo = shape.getEdgeMultLabels(edgeS);
+            String labels[] = new String[2];
             labels[0] = duo.one();
             if (!"".equals(labels[0])) {
                 jEdge.setMainTgt(true);
