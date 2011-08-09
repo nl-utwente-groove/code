@@ -30,9 +30,11 @@ import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
+import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
@@ -189,6 +191,11 @@ public final class Shape extends DefaultHostGraph {
     }
 
     @Override
+    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
+        return (ShapeEdge) super.createEdge(source, label, target);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Nodes:\n");
@@ -197,10 +204,7 @@ public final class Shape extends DefaultHostGraph {
             sb.append(Util.getNodeLabels(this, node) + "\n");
         }
         sb.append("Edges:\n");
-        for (ShapeEdge e : edgeSet()) {
-            if (e.getRole() != BINARY) {
-                continue;
-            }
+        for (ShapeEdge e : this.binaryEdgeSet()) {
             sb.append("  " + this.getEdgeMult(e, OUTGOING) + ":" + e + ":"
                 + this.getEdgeMult(e, INCOMING) + "\n");
         }
@@ -264,10 +268,16 @@ public final class Shape extends DefaultHostGraph {
         assert this.nodeSet().contains(node);
 
         ShapeNode nodeS = (ShapeNode) node;
+
         // Remove all edges that are incident to this node.
+        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
-            this.removeEdge(edgeS);
+            toRemove.add(edgeS);
         }
+        for (ShapeEdge edgeToRemove : toRemove) {
+            this.removeEdge(edgeToRemove);
+        }
+
         // Update the equivalence relation.
         EquivClass<ShapeNode> ec = this.getEquivClassOf(nodeS);
         if (ec.isSingleton()) {
@@ -281,6 +291,7 @@ public final class Shape extends DefaultHostGraph {
             // Update all structures that used the old equivalence class class.
             this.replaceEc(ec, newEc);
         }
+
         // Remove entry from node multiplicity map.
         this.nodeMultMap.remove(nodeS);
         // Remove node from graph.
@@ -304,16 +315,18 @@ public final class Shape extends DefaultHostGraph {
         assert !this.isFixed();
         assert edge instanceof ShapeEdge;
         ShapeEdge edgeS = (ShapeEdge) edge;
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            EdgeSignature es = this.getEdgeSignature(edgeS, direction);
-            if (es.getEquivClass().isSingleton()
-                || this.isEdgeSigUnique(es, direction)) {
-                // Update multiplicity map.
-                this.getEdgeMultMap(direction).remove(es);
+        if (edgeS.getRole() == BINARY) {
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                EdgeSignature es = this.getEdgeSignature(edgeS, direction);
+                if (es.getEquivClass().isSingleton()
+                    || this.isEdgeSigUnique(es, direction)) {
+                    // Update multiplicity map.
+                    this.getEdgeMultMap(direction).remove(es);
+                }
             }
         }
         // Remove edge from graph.
-        return super.removeEdge(edge);
+        return super.removeEdge(edgeS);
     }
 
     @Override
@@ -330,6 +343,39 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Returns the set of binary edges of this shape. */
+    private Set<ShapeEdge> binaryEdgeSet() {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.edgeSet()) {
+            if (edge.getRole() == BINARY) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the set of binary edges with the given node as source. */
+    private Set<ShapeEdge> outBinaryEdgeSet(ShapeNode source) {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.outEdgeSet(source)) {
+            if (edge.getRole() == BINARY) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the set of binary edges with the given node as target. */
+    public Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.inEdgeSet(target)) {
+            if (edge.getRole() == BINARY) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
 
     /** Ugly hack to circumvent typing problems. */
     @SuppressWarnings({"cast", "unchecked", "rawtypes"})
@@ -397,7 +443,7 @@ public final class Shape extends DefaultHostGraph {
             ShapeNode srcS = map.getNode(srcG);
             ShapeNode tgtS = map.getNode(tgtG);
             TypeLabel labelS = edgeG.label();
-            ShapeEdge edgeS = (ShapeEdge) this.createEdge(srcS, labelS, tgtS);
+            ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
             // Call the super method because we will set the multiplicity maps
             // later.
             super.addEdge(edgeS);
@@ -415,7 +461,7 @@ public final class Shape extends DefaultHostGraph {
             HostGraph graph) {
         assert !this.isFixed();
         // For all binary edges of the shape.
-        for (ShapeEdge edgeS : Util.getBinaryEdges(this)) {
+        for (ShapeEdge edgeS : this.binaryEdgeSet()) {
             // For outgoing and incoming maps.
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 // Get the edge signature.
@@ -499,7 +545,7 @@ public final class Shape extends DefaultHostGraph {
     public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-            if (es.contains(edge, direction)) {
+            if (es.contains(edge, direction, true)) {
                 result = es;
                 break;
             }
@@ -726,17 +772,23 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** EDUARDO: Comment this... */
-    public void materialiseNode(ShapeNode nodeS, Set<RuleNode> nodesR,
-            RuleToShapeMap match) {
+    public void materialiseNode(Materialisation mat, ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
-        assert !nodesR.isEmpty();
 
+        // The current match to be updated.
+        RuleToShapeMap match = mat.getMatch();
+
+        // Check the nodes on the rule that were mapped to nodeS.
+        Set<RuleNode> nodesR = mat.getOriginalMatch().getPreImages(nodeS);
+        assert !nodesR.isEmpty();
         // Compute how many copies of the node we need to materialise.
         int copies = nodesR.size();
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 
-        // Create a new shape node for each rule node.  
+        // Create a new shape node for each rule node.
+        ShapeNode newNodes[] = new ShapeNode[copies];
+        int i = 0;
         for (RuleNode nodeR : nodesR) {
             ShapeNode newNode = getFactory().createNode();
             // Add the new node to the shape. Call the super method because
@@ -750,44 +802,92 @@ public final class Shape extends DefaultHostGraph {
             this.addToNewEquivClass(newNode);
             // Update the match.
             match.putNode(nodeR, newNode);
+            // Store the new node in the array.
+            newNodes[i] = newNode;
+            i++;
         }
 
         // Adjust the multiplicity of the original node.
         Multiplicity oldMult = this.getNodeMult(nodeS);
         Multiplicity newMult = oldMult.sub(Multiplicity.scale(one, copies));
         this.setNodeMult(nodeS, newMult);
+
+        // Now that we have all new nodes, duplicate all incoming and
+        // outgoing edges were the original node occurs. This list of edges
+        // is later used to decide on the final configuration of the shape.
+        Set<ShapeEdge> possibleNewEdges = mat.getPossibleNewEdgeSet();
+        for (ShapeEdge edgeS : this.outBinaryEdgeSet(nodeS)) {
+            TypeLabel label = edgeS.label();
+            for (ShapeNode newNode : newNodes) {
+                if (edgeS.isLoop()) {
+                    possibleNewEdges.add(this.createEdge(newNode, label,
+                        newNode));
+                }
+                possibleNewEdges.add(this.createEdge(newNode, label,
+                    edgeS.target()));
+            }
+        }
+        for (ShapeEdge edgeS : this.inBinaryEdgeSet(nodeS)) {
+            TypeLabel label = edgeS.label();
+            ShapeNode source = edgeS.source();
+            for (ShapeNode newNode : newNodes) {
+                ShapeEdge newEdge = this.createEdge(source, label, newNode);
+                possibleNewEdges.add(newEdge);
+            }
+        }
     }
 
     /** EDUARDO: Comment this... */
-    public void materialiseEdge(ShapeEdge edgeS, Set<RuleEdge> edgesR,
-            RuleToShapeMap match) {
+    public void materialiseEdge(Materialisation mat, ShapeEdge edgeS) {
         assert !this.isFixed();
-        assert this.edgeSet().contains(edgeS);
-        assert !edgesR.isEmpty();
 
+        // The current match to be updated.
+        RuleToShapeMap match = mat.getMatch();
+
+        // Check the edges on the rule that were mapped to edgeS.
+        Set<RuleEdge> edgesR = mat.getOriginalMatch().getPreImages(edgeS);
+        assert !edgesR.isEmpty();
+        // Compute how many copies of the edge we need to materialise.
+        int copies = edgesR.size();
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
+        Multiplicity scaledMult = Multiplicity.scale(one, copies);
         TypeLabel label = edgeS.label();
 
-        // Create a new shape edge for each rule edge.  
+        // All information for edgeS must come from the
+        // original shape because the edge may no longer be present in the
+        // current shape. This is the case, for example, when the node
+        // materialisation process leaves a collector node with multiplicity
+        // zero, thus removing the node from the shape.
+        Shape origShape = mat.getOriginalShape();
+        assert origShape.edgeSet().contains(edgeS);
+
+        // Create a new shape edge for each rule edge.
+        Set<ShapeEdge> possibleNewEdges = mat.getPossibleNewEdgeSet();
         for (RuleEdge edgeR : edgesR) {
-            // Adjust the multiplicities of the original edge.
-            for (EdgeMultDir direction : match.getDirectionsToAdjust(edgeR,
-                edgeS)) {
-                EdgeSignature es = this.getEdgeSignature(edgeS, direction);
-                Multiplicity oldMult = this.getEdgeSigMult(es, direction);
-                Multiplicity newMult = oldMult.sub(one);
-                this.setEdgeSigMult(es, direction, newMult);
-            }
             // Get the image of source and target from the match.
             ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());
             ShapeNode tgtS = (ShapeNode) match.getNode(edgeR.target());
             ShapeEdge newEdge =
                 (ShapeEdge) getFactory().createEdge(srcS, label, tgtS);
-            // Add the new edge to the shape. The multiplicity maps are
+            // Add the new edge to the shape. The edge multiplicity maps are
             // properly adjusted.
             this.addEdgeWithoutCheck(newEdge);
             // Update the match.
             match.putEdge(edgeR, newEdge);
+            // Check if this edge is one of the possible new edges listed
+            // in the node materialisation phase and if yes, remove it.
+            possibleNewEdges.remove(newEdge);
+        }
+
+        // Adjust the multiplicities of the original edge, if still present.
+        if (this.edgeSet().contains(edgeS)) {
+            for (EdgeMultDir direction : match.getDirectionsToAdjust(edgeS,
+                edgesR)) {
+                EdgeSignature es = origShape.getEdgeSignature(edgeS, direction);
+                Multiplicity oldMult = origShape.getEdgeSigMult(es, direction);
+                Multiplicity newMult = oldMult.sub(scaledMult);
+                this.setEdgeSigMult(es, direction, newMult);
+            }
         }
     }
 
@@ -795,47 +895,44 @@ public final class Shape extends DefaultHostGraph {
     public void singulariseNode(ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
+
         // Check if the node is not already in a singleton equivalence class.
-        if (!this.getEquivClassOf(nodeS).isSingleton()) {
-            // For all incident edges.
-            for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
-                if (edgeS.getRole() != BINARY) {
-                    continue;
-                }
-                // Make sure that they are concrete.
-                assert this.isEdgeConcrete(edgeS);
-            }
+        if (this.getEquivClassOf(nodeS).isSingleton()) {
+            return;
+        }
 
-            // The original equivalence class to be split.
-            EquivClass<ShapeNode> origEc = this.getEquivClassOf(nodeS);
-            // The remaining equivalence class after singularisation.
-            EquivClass<ShapeNode> remEc = origEc.clone();
-            remEc.remove(nodeS);
-            // The singular equivalence class created by the operation.
-            EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
-            singEc.add(nodeS);
-
-            // Replace the original equivalence class with the remainder of the
-            // split.
-            this.replaceEc(origEc, remEc);
-            // Add the singleton class to the equivalence relation.
-            this.equivRel.add(singEc);
-
-            // Adjust the edge multiplicities that use the singleton class.
-            ShapeNode singNode = singEc.iterator().next();
-            Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
-            for (ShapeEdge edgeS : this.outEdgeSet(singNode)) {
-                if (edgeS.getRole() != BINARY) {
-                    continue;
-                }
-                this.setEdgeMult(edgeS, INCOMING, one);
+        // For all incident edges.
+        for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
+            if (edgeS.getRole() != BINARY) {
+                continue;
             }
-            for (ShapeEdge edgeS : this.inEdgeSet(singNode)) {
-                if (edgeS.getRole() != BINARY) {
-                    continue;
-                }
-                this.setEdgeMult(edgeS, OUTGOING, one);
-            }
+            // Make sure that they are concrete.
+            assert this.isEdgeConcrete(edgeS);
+        }
+
+        // The original equivalence class to be split.
+        EquivClass<ShapeNode> origEc = this.getEquivClassOf(nodeS);
+        // The remaining equivalence class after singularisation.
+        EquivClass<ShapeNode> remEc = origEc.clone();
+        remEc.remove(nodeS);
+        // The singular equivalence class created by the operation.
+        EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
+        singEc.add(nodeS);
+
+        // Replace the original equivalence class with the remainder of the
+        // split.
+        this.replaceEc(origEc, remEc);
+        // Add the singleton class to the equivalence relation.
+        this.equivRel.add(singEc);
+
+        // Adjust the edge multiplicities that use the singleton class.
+        ShapeNode singNode = singEc.iterator().next();
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
+        for (ShapeEdge edgeS : this.outBinaryEdgeSet(singNode)) {
+            this.setEdgeMult(edgeS, INCOMING, one);
+        }
+        for (ShapeEdge edgeS : this.inBinaryEdgeSet(singNode)) {
+            this.setEdgeMult(edgeS, OUTGOING, one);
         }
     }
 
@@ -904,6 +1001,25 @@ public final class Shape extends DefaultHostGraph {
                 || !this.isEdgeSigUnique(es, direction)) {
                 result = false;
                 break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns true is its possible to insert the given edge in the shape
+     * without violating any edge multiplicities. 
+     */
+    public boolean isNewEdgePossible(ShapeEdge newEdge) {
+        boolean result = true;
+        outerLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (EdgeSignature es : this.getEdgeMultMap(direction).keySet()) {
+                if (es.contains(newEdge, direction, false)
+                    && this.getEdgeSigMult(es, direction).isOne()
+                    && this.isEdgeSigUnique(es, direction)) {
+                    result = false;
+                    break outerLoop;
+                }
             }
         }
         return result;

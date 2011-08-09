@@ -208,8 +208,8 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
             ShapeEdge edgeS = entry.getValue();
-            if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())
-                || !this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
+            if (this.isSrcInconsistent(edgeR, edgeS)
+                || this.isTgtInconsistent(edgeR, edgeS)) {
                 result.add(edgeS);
             }
         }
@@ -222,8 +222,8 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
             ShapeEdge edgeS = entry.getValue();
-            if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())
-                || !this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
+            if (this.isSrcInconsistent(edgeR, edgeS)
+                || this.isTgtInconsistent(edgeR, edgeS)) {
                 result = false;
                 break;
             }
@@ -235,17 +235,34 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
      * Checks which maps are inconsistent and returns the set of directions
      * for the edge multiplicities that need to be adjusted in the shape.
      */
-    public Set<EdgeMultDir> getDirectionsToAdjust(RuleEdge edgeR,
-            ShapeEdge edgeS) {
-        assert edgeR.label().compareTo(edgeS.label()) == 0;
+    public Set<EdgeMultDir> getDirectionsToAdjust(ShapeEdge edgeS,
+            Set<RuleEdge> edgesR) {
         Set<EdgeMultDir> result = EnumSet.noneOf(EdgeMultDir.class);
-        if (!this.nodeMap().get(edgeR.source()).equals(edgeS.source())) {
-            result.add(EdgeMultDir.INCOMING);
-        }
-        if (!this.nodeMap().get(edgeR.target()).equals(edgeS.target())) {
-            result.add(EdgeMultDir.OUTGOING);
+        for (RuleEdge edgeR : edgesR) {
+            if (this.isSrcInconsistent(edgeR, edgeS)
+                && !this.isTgtInconsistent(edgeR, edgeS)) {
+                result.add(EdgeMultDir.INCOMING);
+            }
+            if (!this.isSrcInconsistent(edgeR, edgeS)
+                && this.isTgtInconsistent(edgeR, edgeS)) {
+                result.add(EdgeMultDir.OUTGOING);
+            }
+            // If both directions are inconsistent, then we can't do much now.
+            // This case is handled later in the materialisation process.
         }
         return result;
+    }
+
+    private boolean isNodeInconsitent(RuleNode nodeR, ShapeNode expectedImage) {
+        return !this.getNode(nodeR).equals(expectedImage);
+    }
+
+    private boolean isSrcInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
+        return this.isNodeInconsitent(edgeR.source(), expectedImage.source());
+    }
+
+    private boolean isTgtInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
+        return this.isNodeInconsitent(edgeR.target(), expectedImage.target());
     }
 
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
