@@ -17,7 +17,10 @@
 package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
@@ -42,39 +45,118 @@ import org.junit.Test;
 public class TestMaterialisation {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
+    static private GrammarModel view;
+    static private GraphGrammar grammar;
 
     @BeforeClass
     public static void setUp() {
-        Multiplicity.initMultStore();
-    }
-
-    @Test
-    public void testMaterialisation0() {
         File file = new File(DIRECTORY);
         try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("materialisation-test-0").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertEquals(1, preMatches.size());
-            for (Proof preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                /*assertEquals(6, mats.size());
-                for (Materialisation mat : mats) {
-                    Shape matShape = mat.getShape();
-                    int binaryEdgeCount = getBinaryEdges(matShape).size();
-                    assertTrue((matShape.nodeSet().size() == 5 && binaryEdgeCount == 4)
-                        || (matShape.nodeSet().size() == 6 && binaryEdgeCount == 7));
-                }*/
-            }
+            view = GrammarModel.newInstance(file, false);
+            grammar = view.toGrammar();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testMaterialisation0a() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-0a").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-0a");
+
+        Parameters.setNodeMultBound(2);
+        Multiplicity.initMultStore();
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 3
+                    && binaryEdgeCount == 2);
+            }
+        }
+
+        Parameters.setNodeMultBound(1);
+        Multiplicity.initMultStore();
+
+        shape = Shape.createShape(graph);
+        preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 4
+                    && binaryEdgeCount == 3);
+            }
+        }
+    }
+
+    @Test
+    public void testMaterialisation0b() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-0b").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-0b");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 4
+                    && binaryEdgeCount == 3);
+            }
+        }
+    }
+
+    @Test
+    public void testMaterialisation0c() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-0c").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-0c");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 6
+                    && binaryEdgeCount == 3);
+            }
         }
     }
 

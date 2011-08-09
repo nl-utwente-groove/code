@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="test-mat-1">
+    <graph edgemode="directed" edgeids="false" role="graph" id="materialisation-test-0c">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -9,55 +9,52 @@
         </attr>
         <node id="n1">
             <attr name="layout">
-                <string>285 115 50 22</string>
+                <string>260 199 30 32</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>158 115 48 22</string>
+                <string>263 109 30 32</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>397 194 28 32</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>428 118 50 22</string>
+                <string>398 110 28 32</string>
             </attr>
         </node>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n1">
+            <attr name="label">
+                <string>c</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:L</string>
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n2" from="n0">
             <attr name="label">
-                <string>new:h</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 182 126 317 198 453 129 13</string>
+                <string>c</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:C</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:C</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
-            <attr name="label">
-                <string>n</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>h</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>del:</string>
+                <string>type:B</string>
             </attr>
         </edge>
     </graph>

@@ -275,7 +275,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param target the target node of the new edge
      * @return the freshly binary created edge
      */
-    final protected E createEdge(N source, Label label, N target) {
+    protected E createEdge(N source, Label label, N target) {
         return getFactory().createEdge(source, label, target);
     }
 

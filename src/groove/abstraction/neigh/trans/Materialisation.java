@@ -36,9 +36,7 @@ import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
-import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
-import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -85,12 +83,17 @@ public final class Materialisation {
      * A copy of the original match of the rule into the (partially) materialised shape.
      * This is left unchanged during the materialisation.
      */
-    final RuleToShapeMap originalMatch;
+    private final RuleToShapeMap originalMatch;
     /**
      * The concrete match of the rule into the (partially) materialised shape.
      * This is modified as part of the materialisation.
      */
-    final RuleToShapeMap match;
+    private final RuleToShapeMap match;
+    /**
+     * Auxiliary set of possible new edges that should be included in the 
+     * shape that is being materialised.
+     */
+    private final THashSet<ShapeEdge> possibleNewEdges;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -108,6 +111,25 @@ public final class Materialisation {
         // Fix the original match to prevent modification.
         this.originalMatch.setFixed();
         this.match = this.originalMatch.clone();
+        this.possibleNewEdges = new THashSet<ShapeEdge>();
+    }
+
+    /**
+     * Copying constructor. Clones the structures of the given materialisation
+     * object that can be modified. 
+     */
+    private Materialisation(Materialisation mat) {
+        // No need to clone the original objects since they are fixed.
+        this.originalShape = mat.originalShape;
+        this.originalMatch = mat.originalMatch;
+        this.matchedRule = mat.matchedRule;
+        // The match should also be fixed.
+        assert mat.match.isFixed();
+        this.match = mat.match;
+        // Clone the shape.
+        this.shape = mat.shape.clone();
+        this.possibleNewEdges =
+            (THashSet<ShapeEdge>) mat.possibleNewEdges.clone();
     }
 
     // ------------------------------------------------------------------------
@@ -123,10 +145,8 @@ public final class Materialisation {
      */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             Proof preMatch) {
-        Set<Materialisation> result = new THashSet<Materialisation>();
         Materialisation initialMat = new Materialisation(shape, preMatch);
-        result.addAll(initialMat.compute());
-        return result;
+        return initialMat.compute();
     }
 
     // ------------------------------------------------------------------------
@@ -139,9 +159,39 @@ public final class Materialisation {
             + this.match + "\n";
     }
 
+    @Override
+    public Materialisation clone() {
+        return new Materialisation(this);
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Basic getter method. */
+    public Shape getShape() {
+        return this.shape;
+    }
+
+    /** Basic getter method. */
+    public Shape getOriginalShape() {
+        return this.originalShape;
+    }
+
+    /** Basic getter method. */
+    public RuleToShapeMap getMatch() {
+        return this.match;
+    }
+
+    /** Basic getter method. */
+    public RuleToShapeMap getOriginalMatch() {
+        return this.originalMatch;
+    }
+
+    /** Basic getter method. */
+    public Set<ShapeEdge> getPossibleNewEdgeSet() {
+        return this.possibleNewEdges;
+    }
 
     /**
      * Applies the rule match defined by this materialisation and returns the
@@ -226,44 +276,71 @@ public final class Materialisation {
     }
 
     private Set<Materialisation> compute() {
-        Set<Materialisation> result = new THashSet<Materialisation>();
-
         // Search for nodes in the original match image that have to be
         // materialised. 
         for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
             if (this.originalShape.getNodeMult(nodeS).isCollector()) {
-                // We have a node in the rule that was matched to a collector
+                // We have a rule node that was matched to a collector
                 // node. We need to materialise this collector node.
-                // Check the nodes on the rule that were mapped to nodeS.
-                Set<RuleNode> nodesR = this.originalMatch.getPreImages(nodeS);
-                this.shape.materialiseNode(nodeS, nodesR, this.match);
+                this.shape.materialiseNode(this, nodeS);
             }
         }
 
         // Search for edges in the match image that have to be materialised. 
         for (ShapeEdge edgeS : this.match.getInconsistentEdges()) {
-            Set<RuleEdge> edgesR = this.originalMatch.getPreImages(edgeS);
-            this.shape.materialiseEdge(edgeS, edgesR, this.match);
+            // This edge was affected by a node materialisation.
+            // We have to materialise the edge as well.
+            this.shape.materialiseEdge(this, edgeS);
         }
 
         assert this.match.isConsistent();
+        this.match.setFixed();
 
-        // Make sure that all shape nodes in the image of the match are in a
+        // Make sure that all shape nodes in the match image are in a
         // singleton equivalence class.
-        for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
-            if (this.originalShape.getNodeMult(nodeS).isOne()) {
-                // We have a node in the rule that was matched to a concrete 
-                // node in the shape. We need to put this shape node in its
-                // own equivalence class.
+        for (ShapeNode nodeS : this.match.nodeMapValueSet()) {
+            if (!this.shape.getEquivClassOf(nodeS).isSingleton()) {
+                // We have a rule node that was mapped to a shape node that is
+                // not in its own equivalence class. We need to singularise the
+                // shape node.
                 this.shape.singulariseNode(nodeS);
             }
         }
 
-        // EDUARDO: Decide on the inherited edges for the materialised nodes.
+        // At this point there are many edges in the set that can't exist in
+        // the materialised shape.
+        this.filterImpossibleNewEdges();
 
         //ShapePreviewDialog.showShape(this.shape);
 
+        Set<Materialisation> result = new THashSet<Materialisation>();
+        if (this.isFinished()) {
+            assert this.shape.isInvariantOK();
+            result.add(this);
+        } else {
+            // We have to branch since there are choices in what edges to
+            // include in the final materialisation.
+            result.addAll(this.resolveNonDeterminism());
+        }
         return result;
+    }
+
+    private boolean isFinished() {
+        return this.possibleNewEdges.isEmpty();
+    }
+
+    private void filterImpossibleNewEdges() {
+        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
+        for (ShapeEdge edgeS : this.possibleNewEdges) {
+            if (!this.shape.isNewEdgePossible(edgeS)) {
+                toRemove.add(edgeS);
+            }
+        }
+        this.possibleNewEdges.removeAll(toRemove);
+    }
+
+    private Set<Materialisation> resolveNonDeterminism() {
+        return null;
     }
 
     /** blah */
@@ -274,10 +351,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-0").toResource();
+                view.getHostModel("materialisation-test-1").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0");
+            Rule rule = grammar.getRule("test-mat-1");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
             for (Proof preMatch : preMatches) {
