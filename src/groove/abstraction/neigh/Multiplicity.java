@@ -226,6 +226,23 @@ public final class Multiplicity {
     }
 
     /**
+     * Returns the multiplication of the two given values.
+     * Both i and j must be in \Nat^\omega.
+     */
+    public static int times(int i, int j) {
+        assert isInNOmega(i) && isInNOmega(j);
+        int result;
+        if (i == 0 || j == 0) {
+            result = 0;
+        } else if (i != OMEGA && j != OMEGA) { // i, j \in N+.
+            result = i * j;
+        } else { // otherwise
+            result = OMEGA;
+        }
+        return result;
+    }
+
+    /**
      * Approximates the interval formed by the given values to a bounded
      * multiplicity. This is the \beta operation.
      * Both i and j must be in \Nat^\omega.
@@ -347,7 +364,7 @@ public final class Multiplicity {
         return this.j > 1;
     }
 
-    /** Returns the addition of the two given multiplicities. */
+    /** Returns the bounded addition of the two given multiplicities. */
     public Multiplicity add(Multiplicity other) {
         assert this.kind == other.kind;
         return approx(add(this.i, other.i), add(this.j, other.j), this.kind);
@@ -358,6 +375,12 @@ public final class Multiplicity {
         assert this.kind == other.kind;
         return getMultiplicity(sub(this.i, other.j), sub(this.j, other.i),
             this.kind);
+    }
+
+    /** Returns the bounded multiplication of the two given multiplicities. */
+    public Multiplicity times(Multiplicity other) {
+        return approx(times(this.i, other.i), times(this.j, other.j),
+            MultKind.EDGE_MULT);
     }
 
     /** Returns true if this multiplicity is less or equal than the other. */

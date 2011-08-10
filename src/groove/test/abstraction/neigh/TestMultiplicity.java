@@ -23,6 +23,7 @@ import static groove.abstraction.neigh.Multiplicity.getMultiplicity;
 import static groove.abstraction.neigh.Multiplicity.initMultStore;
 import static groove.abstraction.neigh.Multiplicity.scale;
 import static groove.abstraction.neigh.Multiplicity.sub;
+import static groove.abstraction.neigh.Multiplicity.times;
 import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static org.junit.Assert.assertEquals;
@@ -55,6 +56,18 @@ public class TestMultiplicity {
         assertEquals(1, sub(2, 1));
         assertEquals(OMEGA, sub(OMEGA, 0));
         assertEquals(OMEGA, sub(OMEGA, 1));
+    }
+
+    @Test
+    public void testNatOmegaTimes() {
+        assertEquals(0, times(0, 0));
+        assertEquals(0, times(0, 1));
+        assertEquals(0, times(1, 0));
+        assertEquals(1, times(1, 1));
+        assertEquals(6, times(2, 3));
+        assertEquals(OMEGA, times(1, OMEGA));
+        assertEquals(0, times(OMEGA, 0));
+        assertEquals(OMEGA, times(OMEGA, OMEGA));
     }
 
     @Test
@@ -124,6 +137,26 @@ public class TestMultiplicity {
         assertEquals(zeroOne, oneTwo.sub(one));
         assertEquals(twoPlus, threePlus.sub(one));
         assertEquals(onePlus, threePlus.sub(oneTwo));
+    }
+
+    @Test
+    public void testTimes() {
+        Parameters.setNodeMultBound(1);
+        initMultStore();
+        Multiplicity zero = getMultiplicity(0, 0, EDGE_MULT);
+        Multiplicity one = getMultiplicity(1, 1, EDGE_MULT);
+        Multiplicity zeroPlus = getMultiplicity(0, OMEGA, EDGE_MULT);
+        Multiplicity twoPlus = getMultiplicity(2, OMEGA, EDGE_MULT);
+        assertEquals(zero, zero.times(zero));
+        assertEquals(zero, zero.times(one));
+        assertEquals(zero, zero.times(zeroPlus));
+        assertEquals(zero, zero.times(twoPlus));
+        assertEquals(one, one.times(one));
+        assertEquals(zeroPlus, one.times(zeroPlus));
+        assertEquals(twoPlus, one.times(twoPlus));
+        assertEquals(zeroPlus, zeroPlus.times(zeroPlus));
+        assertEquals(zeroPlus, zeroPlus.times(twoPlus));
+        assertEquals(twoPlus, twoPlus.times(twoPlus));
     }
 
     @Test

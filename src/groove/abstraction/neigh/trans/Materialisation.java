@@ -37,6 +37,7 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
+import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -307,40 +308,31 @@ public final class Materialisation {
             }
         }
 
-        // At this point there are many edges in the set that can't exist in
-        // the materialised shape.
-        this.filterImpossibleNewEdges();
-
-        //ShapePreviewDialog.showShape(this.shape);
-
-        Set<Materialisation> result = new THashSet<Materialisation>();
+        // The deterministic steps of the materialisation are done.
+        // Check if we need to resolve non-determinism.
         if (this.isFinished()) {
-            assert this.shape.isInvariantOK();
+            // No, we don't, just return this object.
+            Set<Materialisation> result = new THashSet<Materialisation>();
             result.add(this);
+            return result;
         } else {
-            // We have to branch since there are choices in what edges to
-            // include in the final materialisation.
-            result.addAll(this.resolveNonDeterminism());
+            // Yes, we do.
+            // Create a new equation system for this materialisation and return
+            // the resulting materialisations from the solution.
+            return new EquationSystem(this).solve();
         }
-        return result;
     }
 
     private boolean isFinished() {
         return this.possibleNewEdges.isEmpty();
     }
 
-    private void filterImpossibleNewEdges() {
-        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
-        for (ShapeEdge edgeS : this.possibleNewEdges) {
-            if (!this.shape.isNewEdgePossible(edgeS)) {
-                toRemove.add(edgeS);
-            }
-        }
-        this.possibleNewEdges.removeAll(toRemove);
-    }
-
-    private Set<Materialisation> resolveNonDeterminism() {
-        return null;
+    /** EDUARDO: Comment this... */
+    public ShapeNode getOriginalCollectorNode(ShapeNode matNode) {
+        Set<RuleNode> nodesR = this.match.getPreImages(matNode);
+        assert nodesR.size() == 1;
+        RuleNode nodeR = nodesR.iterator().next();
+        return this.originalMatch.getNode(nodeR);
     }
 
     /** blah */
@@ -351,10 +343,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-1").toResource();
+                view.getHostModel("materialisation-test-0c").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
+            Rule rule = grammar.getRule("test-mat-0c");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
             for (Proof preMatch : preMatches) {

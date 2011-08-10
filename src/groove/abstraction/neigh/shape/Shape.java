@@ -865,8 +865,8 @@ public final class Shape extends DefaultHostGraph {
         Set<ShapeEdge> possibleNewEdges = mat.getPossibleNewEdgeSet();
         for (RuleEdge edgeR : edgesR) {
             // Get the image of source and target from the match.
-            ShapeNode srcS = (ShapeNode) match.getNode(edgeR.source());
-            ShapeNode tgtS = (ShapeNode) match.getNode(edgeR.target());
+            ShapeNode srcS = match.getNode(edgeR.source());
+            ShapeNode tgtS = match.getNode(edgeR.target());
             ShapeEdge newEdge =
                 (ShapeEdge) getFactory().createEdge(srcS, label, tgtS);
             // Add the new edge to the shape. The edge multiplicity maps are
@@ -1001,25 +1001,6 @@ public final class Shape extends DefaultHostGraph {
                 || !this.isEdgeSigUnique(es, direction)) {
                 result = false;
                 break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns true is its possible to insert the given edge in the shape
-     * without violating any edge multiplicities. 
-     */
-    public boolean isNewEdgePossible(ShapeEdge newEdge) {
-        boolean result = true;
-        outerLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : this.getEdgeMultMap(direction).keySet()) {
-                if (es.contains(newEdge, direction, false)
-                    && this.getEdgeSigMult(es, direction).isOne()
-                    && this.isEdgeSigUnique(es, direction)) {
-                    result = false;
-                    break outerLoop;
-                }
             }
         }
         return result;
