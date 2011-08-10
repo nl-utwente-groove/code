@@ -22,6 +22,7 @@ import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
@@ -97,6 +98,12 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     public ShapeEdge removeEdge(RuleEdge key) {
         assert !isFixed();
         return (ShapeEdge) super.removeEdge(key);
+    }
+
+    /** Specialises the return type. */
+    @Override
+    public ShapeNode getNode(Node key) {
+        return (ShapeNode) super.getNode(key);
     }
 
     /** Specialises the return type. */
