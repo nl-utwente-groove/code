@@ -383,6 +383,11 @@ public final class Multiplicity {
             MultKind.EDGE_MULT);
     }
 
+    /** Returns the addition of this with one. */
+    public Multiplicity increment() {
+        return approx(add(this.i, 1), add(this.j, 1), this.kind);
+    }
+
     /** Returns true if this multiplicity is less or equal than the other. */
     public boolean le(Multiplicity other) {
         assert this.kind == other.kind;

@@ -282,36 +282,6 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return this.isNodeInconsistent(edgeR.target(), expectedImage.target());
     }
 
-    /** EDUARDO: Comment this... */
-    public ShapeNode getNodeImageFromEdge(RuleNode nodeR,
-            ShapeNode oppositeNodeImg, TypeLabel label, EdgeMultDir direction) {
-        ShapeNode result = null;
-        ShapeNode nodeImg = this.getNode(nodeR);
-        ShapeNode source = null;
-        ShapeNode target = null;
-        switch (direction) {
-        case OUTGOING:
-            source = oppositeNodeImg;
-            target = nodeImg;
-            break;
-        case INCOMING:
-            source = nodeImg;
-            target = oppositeNodeImg;
-            break;
-        default:
-            assert false;
-        }
-        // EDUARDO: This loop is very inefficient, should be improved...
-        for (ShapeEdge edge : this.edgeMapValueSet()) {
-            if (edge.label().equals(label) && edge.source().equals(source)
-                && edge.target().equals(target)) {
-                result = nodeImg;
-                break;
-            }
-        }
-        return result;
-    }
-
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
             Map<K,V> map) {
         Map<V,Set<K>> result = new THashMap<V,Set<K>>();

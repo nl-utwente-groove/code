@@ -37,7 +37,6 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -129,8 +128,9 @@ public final class Materialisation {
         this.match = mat.match;
         // Clone the shape.
         this.shape = mat.shape.clone();
-        this.possibleNewEdges =
-            (THashSet<ShapeEdge>) mat.possibleNewEdges.clone();
+        // At the point when this constructor is called we don't need the
+        // auxiliary data structures anymore.
+        this.possibleNewEdges = null;
     }
 
     // ------------------------------------------------------------------------
@@ -327,50 +327,6 @@ public final class Materialisation {
         return this.possibleNewEdges.isEmpty();
     }
 
-    /** EDUARDO: Comment this... */
-    public ShapeNode getOriginalCollectorNode(ShapeNode matNode) {
-        ShapeNode result = null;
-        Set<RuleNode> nodesR = this.match.getPreImages(matNode);
-        if (nodesR.size() > 0) {
-            assert nodesR.size() == 1;
-            RuleNode nodeR = nodesR.iterator().next();
-            result = this.originalMatch.getNode(nodeR);
-        }
-        return result;
-    }
-
-    /** EDUARDO: Comment this... */
-    public ShapeNode getMaterialisedNodeFrom(ShapeEdge edge,
-            EdgeMultDir direction) {
-        ShapeNode originalNode = null;
-        ShapeNode nodeS = null;
-        switch (direction) {
-        case OUTGOING:
-            originalNode = edge.target();
-            nodeS = edge.source();
-            break;
-        case INCOMING:
-            originalNode = edge.source();
-            nodeS = edge.target();
-            break;
-        default:
-            assert false;
-        }
-        Set<RuleNode> nodesR = this.originalMatch.getPreImages(originalNode);
-        assert nodesR.size() > 0;
-        ShapeNode result = null;
-        for (RuleNode nodeR : nodesR) {
-            result =
-                this.match.getNodeImageFromEdge(nodeR, nodeS, edge.label(),
-                    direction);
-            if (result != null) {
-                break;
-            }
-        }
-        assert result != null;
-        return result;
-    }
-
     /** blah */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
@@ -379,10 +335,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-0c").toResource();
+                view.getHostModel("materialisation-test-1").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0c");
+            Rule rule = grammar.getRule("test-mat-1");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
             for (Proof preMatch : preMatches) {

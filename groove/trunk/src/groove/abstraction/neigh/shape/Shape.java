@@ -367,12 +367,31 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Returns the set of binary edges with the given node as target. */
-    public Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
+    private Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
         Set<ShapeEdge> result = new THashSet<ShapeEdge>();
         for (ShapeEdge edge : this.inEdgeSet(target)) {
             if (edge.getRole() == BINARY) {
                 result.add(edge);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the set of binary edges with the given node as source or target
+     * accordingly to the given direction.
+     */
+    public Set<ShapeEdge> binaryEdgeSet(ShapeNode node, EdgeMultDir direction) {
+        Set<ShapeEdge> result = null;
+        switch (direction) {
+        case OUTGOING:
+            result = this.outBinaryEdgeSet(node);
+            break;
+        case INCOMING:
+            result = this.inBinaryEdgeSet(node);
+            break;
+        default:
+            assert false;
         }
         return result;
     }
