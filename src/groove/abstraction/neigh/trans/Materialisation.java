@@ -329,10 +329,46 @@ public final class Materialisation {
 
     /** EDUARDO: Comment this... */
     public ShapeNode getOriginalCollectorNode(ShapeNode matNode) {
+        ShapeNode result = null;
         Set<RuleNode> nodesR = this.match.getPreImages(matNode);
-        assert nodesR.size() == 1;
-        RuleNode nodeR = nodesR.iterator().next();
-        return this.originalMatch.getNode(nodeR);
+        if (nodesR.size() > 0) {
+            assert nodesR.size() == 1;
+            RuleNode nodeR = nodesR.iterator().next();
+            result = this.originalMatch.getNode(nodeR);
+        }
+        return result;
+    }
+
+    /** EDUARDO: Comment this... */
+    public ShapeNode getMaterialisedNodeFrom(ShapeEdge edge,
+            EdgeMultDir direction) {
+        ShapeNode originalNode = null;
+        ShapeNode nodeS = null;
+        switch (direction) {
+        case OUTGOING:
+            originalNode = edge.target();
+            nodeS = edge.source();
+            break;
+        case INCOMING:
+            originalNode = edge.source();
+            nodeS = edge.target();
+            break;
+        default:
+            assert false;
+        }
+        Set<RuleNode> nodesR = this.originalMatch.getPreImages(originalNode);
+        assert nodesR.size() > 0;
+        ShapeNode result = null;
+        for (RuleNode nodeR : nodesR) {
+            result =
+                this.match.getNodeImageFromEdge(nodeR, nodeS, edge.label(),
+                    direction);
+            if (result != null) {
+                break;
+            }
+        }
+        assert result != null;
+        return result;
     }
 
     /** blah */

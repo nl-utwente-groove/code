@@ -184,6 +184,16 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return result;
     }
 
+    /**
+     * Returns a set of values for the edge map. Contrary to calling
+     * edgeMap().values(), the set has no repeated values.
+     */
+    public Set<ShapeEdge> edgeMapValueSet() {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        result.addAll(this.edgeMap().values());
+        return result;
+    }
+
     /** Returns the inverse mapping, from shape nodes to their 
      * sets of pre-images.
      */
@@ -260,16 +270,46 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return result;
     }
 
-    private boolean isNodeInconsitent(RuleNode nodeR, ShapeNode expectedImage) {
+    private boolean isNodeInconsistent(RuleNode nodeR, ShapeNode expectedImage) {
         return !this.getNode(nodeR).equals(expectedImage);
     }
 
     private boolean isSrcInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
-        return this.isNodeInconsitent(edgeR.source(), expectedImage.source());
+        return this.isNodeInconsistent(edgeR.source(), expectedImage.source());
     }
 
     private boolean isTgtInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
-        return this.isNodeInconsitent(edgeR.target(), expectedImage.target());
+        return this.isNodeInconsistent(edgeR.target(), expectedImage.target());
+    }
+
+    /** EDUARDO: Comment this... */
+    public ShapeNode getNodeImageFromEdge(RuleNode nodeR,
+            ShapeNode oppositeNodeImg, TypeLabel label, EdgeMultDir direction) {
+        ShapeNode result = null;
+        ShapeNode nodeImg = this.getNode(nodeR);
+        ShapeNode source = null;
+        ShapeNode target = null;
+        switch (direction) {
+        case OUTGOING:
+            source = oppositeNodeImg;
+            target = nodeImg;
+            break;
+        case INCOMING:
+            source = nodeImg;
+            target = oppositeNodeImg;
+            break;
+        default:
+            assert false;
+        }
+        // EDUARDO: This loop is very inefficient, should be improved...
+        for (ShapeEdge edge : this.edgeMapValueSet()) {
+            if (edge.label().equals(label) && edge.source().equals(source)
+                && edge.target().equals(target)) {
+                result = nodeImg;
+                break;
+            }
+        }
+        return result;
     }
 
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(

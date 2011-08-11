@@ -134,23 +134,28 @@ public final class EquationSystem {
     }
 
     private EdgeSignature getEdgeSigForBundle(EdgeBundle bundle) {
-        /*ShapeNode matNode = null;
+        ShapeNode opposite = null;
         ShapeEdge edge = ((EdgeMultVar) bundle.vars.iterator().next()).edge;
         switch (bundle.direction) {
         case OUTGOING:
-            matNode = edge.target();
+            opposite = edge.target();
             break;
         case INCOMING:
-            matNode = edge.source();
+            opposite = edge.source();
             break;
         default:
             assert false;
         }
-        ShapeNode origNode = this.mat.getOriginalCollectorNode(matNode);
+        ShapeNode ecNode;
+        ShapeNode origNode = this.mat.getOriginalCollectorNode(opposite);
+        if (origNode != null) {
+            ecNode = origNode;
+        } else {
+            ecNode = this.mat.getMaterialisedNodeFrom(edge, bundle.direction);
+        }
         Shape shape = this.mat.getShape();
         return shape.getEdgeSignature(bundle.node, bundle.label,
-            shape.getEquivClassOf(origNode));*/
-        return null;
+            shape.getEquivClassOf(ecNode));
     }
 
     private Multiplicity getMatchedEdgesMult(EdgeBundle bundle) {
@@ -241,6 +246,13 @@ public final class EquationSystem {
                 result.append(iter.next());
                 break;
             case EQUALITY:
+                while (iter.hasNext()) {
+                    result.append(iter.next().toString());
+                    if (iter.hasNext()) {
+                        result.append("+");
+                    }
+                }
+                result.append("=" + this.constant);
                 break;
             case GT:
                 result.append(iter.next());
