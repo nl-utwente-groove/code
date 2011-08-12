@@ -16,11 +16,15 @@
  */
 package groove.abstraction.neigh.shape;
 
+import gnu.trove.THashSet;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Morphism between shapes.
@@ -89,4 +93,39 @@ public class ShapeMorphism extends HostGraphMorphism {
     public ShapeFactory getFactory() {
         return (ShapeFactory) super.getFactory();
     }
+
+    /** EDUARDO: Comment this... */
+    public static ShapeMorphism createIdentityMorphism(Shape from, Shape to) {
+        ShapeMorphism result = from.getFactory().createMorphism();
+        for (ShapeNode node : from.nodeSet()) {
+            assert to.nodeSet().contains(node);
+            result.putNode(node, node);
+        }
+        for (ShapeEdge edge : from.edgeSet()) {
+            assert to.edgeSet().contains(edge);
+            result.putEdge(edge, edge);
+        }
+        return result;
+    }
+
+    /** EDUARDO: Comment this... */
+    public void removeInvalidEdgeKeys(Shape from) {
+        Set<HostEdge> invalidKeys = new THashSet<HostEdge>();
+        Map<HostEdge,HostEdge> edgeMap = this.edgeMap();
+        for (HostEdge key : edgeMap.keySet()) {
+            if (!from.edgeSet().contains(key)) {
+                invalidKeys.add(key);
+            }
+        }
+        for (HostEdge invalidKey : invalidKeys) {
+            edgeMap.remove(invalidKey);
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public boolean isConsistent(Shape from, Shape to) {
+        // EDUARDO: Implement this...
+        return true;
+    }
+
 }

@@ -27,6 +27,7 @@ import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
@@ -68,25 +69,32 @@ public final class Materialisation {
 
     /**
      * The shape we are trying to materialise.
+     * The field is final but the shape is modified by the materialisation.
      */
-    private Shape shape;
+    private final Shape shape;
     /**
      * The original shape that started the materialisation process.
      * This is left unchanged during the materialisation.
      */
-    private Shape originalShape;
+    private final Shape originalShape;
+    /**
+     * The morphism from the (partially) materialised shape into the original
+     * shape.
+     * The field is final but the morphism is modified by the materialisation.
+     */
+    private final ShapeMorphism morph;
     /**
      * The matched rule.
      */
     private final Rule matchedRule;
     /**
-     * A copy of the original match of the rule into the (partially) materialised shape.
+     * A copy of the original match of the rule into the original shape.
      * This is left unchanged during the materialisation.
      */
     private final RuleToShapeMap originalMatch;
     /**
      * The concrete match of the rule into the (partially) materialised shape.
-     * This is modified as part of the materialisation.
+     * The field is final but the match is modified by the materialisation.
      */
     private final RuleToShapeMap match;
     /**
@@ -106,6 +114,8 @@ public final class Materialisation {
     private Materialisation(Shape shape, Proof preMatch) {
         this.originalShape = shape;
         this.shape = this.originalShape.clone();
+        this.morph =
+            ShapeMorphism.createIdentityMorphism(this.shape, this.originalShape);
         this.matchedRule = preMatch.getRule();
         this.originalMatch = (RuleToShapeMap) preMatch.getPatternMap();
         // Fix the original match to prevent modification.
@@ -128,6 +138,9 @@ public final class Materialisation {
         this.match = mat.match;
         // Clone the shape.
         this.shape = mat.shape.clone();
+        // Since the shape can still be modified, we also need to clone the
+        // morphism into the original shape.
+        this.morph = mat.morph.clone();
         // At the point when this constructor is called we don't need the
         // auxiliary data structures anymore.
         this.possibleNewEdges = null;
@@ -177,6 +190,11 @@ public final class Materialisation {
     /** Basic getter method. */
     public Shape getOriginalShape() {
         return this.originalShape;
+    }
+
+    /** Basic getter method. */
+    public ShapeMorphism getShapeMorphism() {
+        return this.morph;
     }
 
     /** Basic getter method. */
@@ -313,6 +331,8 @@ public final class Materialisation {
         if (this.isFinished()) {
             // No, we don't, just return this object.
             Set<Materialisation> result = new THashSet<Materialisation>();
+            assert this.isShapeMorphConsistent();
+            assert this.shape.isInvariantOK();
             result.add(this);
             return result;
         } else {
@@ -321,6 +341,11 @@ public final class Materialisation {
             // the resulting materialisations from the solution.
             return new EquationSystem(this).solve();
         }
+    }
+
+    /** EDUARDO: Comment this... */
+    public boolean isShapeMorphConsistent() {
+        return this.morph.isConsistent(this.shape, this.originalShape);
     }
 
     private boolean isFinished() {
