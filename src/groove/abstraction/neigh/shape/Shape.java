@@ -631,7 +631,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Sets the edge multiplicity. */
-    private void setEdgeMult(ShapeEdge edge, EdgeMultDir direction,
+    public void setEdgeMult(ShapeEdge edge, EdgeMultDir direction,
             Multiplicity mult) {
         assert !this.isFixed();
         EdgeSignature es = this.getEdgeSignature(edge, direction);
@@ -639,7 +639,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Sets the edge signature multiplicity. */
-    private void setEdgeSigMult(EdgeSignature es, EdgeMultDir direction,
+    public void setEdgeSigMult(EdgeSignature es, EdgeMultDir direction,
             Multiplicity mult) {
         assert !this.isFixed();
         if (!mult.isZero()) {
@@ -797,6 +797,8 @@ public final class Shape extends DefaultHostGraph {
 
         // The current match to be updated.
         RuleToShapeMap match = mat.getMatch();
+        // The morphism between this shape and the original one.
+        ShapeMorphism morph = mat.getShapeMorphism();
 
         // Check the nodes on the rule that were mapped to nodeS.
         Set<RuleNode> nodesR = mat.getOriginalMatch().getPreImages(nodeS);
@@ -821,6 +823,8 @@ public final class Shape extends DefaultHostGraph {
             this.addToNewEquivClass(newNode);
             // Update the match.
             match.putNode(nodeR, newNode);
+            // Update the morphism.
+            morph.putNode(newNode, nodeS);
             // Store the new node in the array.
             newNodes[i] = newNode;
             i++;
@@ -839,19 +843,29 @@ public final class Shape extends DefaultHostGraph {
             TypeLabel label = edgeS.label();
             for (ShapeNode newNode : newNodes) {
                 if (edgeS.isLoop()) {
-                    possibleNewEdges.add(this.createEdge(newNode, label,
-                        newNode));
+                    ShapeEdge newLoop =
+                        this.createEdge(newNode, label, newNode);
+                    possibleNewEdges.add(newLoop);
+                    // Use the shape morphism to store additional info.
+                    morph.putEdge(newLoop, edgeS);
                 }
-                possibleNewEdges.add(this.createEdge(newNode, label,
-                    edgeS.target()));
+                ShapeEdge newEdge =
+                    this.createEdge(newNode, label, edgeS.target());
+                possibleNewEdges.add(newEdge);
+                // Use the shape morphism to store additional info.
+                morph.putEdge(newEdge, edgeS);
             }
         }
         for (ShapeEdge edgeS : this.inBinaryEdgeSet(nodeS)) {
+            // We don't need to worry about self-edges, since they were handled
+            // in the previous loop.
             TypeLabel label = edgeS.label();
             ShapeNode source = edgeS.source();
             for (ShapeNode newNode : newNodes) {
                 ShapeEdge newEdge = this.createEdge(source, label, newNode);
                 possibleNewEdges.add(newEdge);
+                // Use the shape morphism to store additional info.
+                morph.putEdge(newEdge, edgeS);
             }
         }
     }

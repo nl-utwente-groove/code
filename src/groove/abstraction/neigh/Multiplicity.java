@@ -173,6 +173,11 @@ public final class Multiplicity {
         }
     }
 
+    /** EDUARDO: Comment this... */
+    public static Multiplicity[] getAllEdgeMultiplicities() {
+        return EDGE_MULT_STORE.clone();
+    }
+
     /**
      * Retrieves the multiplicity object from the store with the given
      * lower and upper bounds.
