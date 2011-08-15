@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh;
 
+import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Edge;
 import groove.graph.Node;
 
@@ -173,8 +175,9 @@ public final class Multiplicity {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /** Returns all possible values for edge multiplicities. */
     public static Multiplicity[] getAllEdgeMultiplicities() {
+        // Clone the store to avoid modifications.
         return EDGE_MULT_STORE.clone();
     }
 
@@ -292,6 +295,19 @@ public final class Multiplicity {
     public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
         int setSize = edges.size();
         return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
+    }
+
+    /**
+     * Returns the bounded sum of the node multiplicities of the given set.
+     */
+    public static Multiplicity getNodeSetMultSum(Shape shape,
+            Set<ShapeNode> nodes) {
+        Multiplicity accumulator = getMultiplicity(0, 0, MultKind.NODE_MULT);
+        for (ShapeNode node : nodes) {
+            Multiplicity nodeMult = shape.getNodeMult(node);
+            accumulator = accumulator.add(nodeMult);
+        }
+        return accumulator;
     }
 
     // ------------------------------------------------------------------------

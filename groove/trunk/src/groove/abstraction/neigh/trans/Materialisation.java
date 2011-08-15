@@ -23,6 +23,7 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -343,7 +344,10 @@ public final class Materialisation {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Returns true if the morphism from the materialised shape to the original
+     * one is consistent.
+     */
     public boolean isShapeMorphConsistent() {
         return this.morph.isConsistent(this.shape, this.originalShape);
     }
@@ -369,6 +373,9 @@ public final class Materialisation {
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    ShapePreviewDialog.showShape(mat.shape);
+                }
                 /*assertEquals(6, mats.size());
                 for (Materialisation mat : mats) {
                     Shape matShape = mat.getShape();

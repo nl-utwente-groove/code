@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh.trans;
 
-import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -30,16 +29,14 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.util.Fixable;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 /** Mapping from rules to shapes, used in pre-matches and matches. */
-public class RuleToShapeMap extends RuleToHostMap implements Fixable {
+public class RuleToShapeMap extends RuleToHostMap {
     /** Creates an empty rule-to-shape match. */
     public RuleToShapeMap(ShapeFactory factory) {
         super(factory);
@@ -125,40 +122,24 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
     }
 
     @Override
-    public void setFixed() {
-        // Fixing is the same as computing the inverse map.
-        getInverseNodeMap();
-        getInverseEdgeMap();
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.inverseNodeMap != null;
-    }
-
-    @Override
     public void testFixed(boolean fixed) {
         if (isFixed() != fixed) {
             throw new IllegalStateException("Map is not fixed as expected.");
         }
     }
 
-    /** Returns the set of rule nodes mapped to a given shape node. */
-    public Set<RuleNode> getPreImages(ShapeNode node) {
-        Set<RuleNode> result = getInverseNodeMap().get(node);
-        if (result == null) {
-            result = Collections.emptySet();
-        }
-        return result;
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleNode> getPreImages(HostNode node) {
+        assert node instanceof ShapeNode;
+        return (Set<RuleNode>) super.getPreImages(node);
     }
 
-    /** Returns the set of rule edges mapped to a given shape edge. */
-    public Set<RuleEdge> getPreImages(ShapeEdge edge) {
-        Set<RuleEdge> result = getInverseEdgeMap().get(edge);
-        if (result == null) {
-            result = Collections.emptySet();
-        }
-        return result;
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<RuleEdge> getPreImages(HostEdge edge) {
+        assert edge instanceof ShapeEdge;
+        return (Set<RuleEdge>) super.getPreImages(edge);
     }
 
     /** Returns an self edge from given node with given label. Maybe be null. */
@@ -192,28 +173,6 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         Set<ShapeEdge> result = new THashSet<ShapeEdge>();
         result.addAll(this.edgeMap().values());
         return result;
-    }
-
-    /** Returns the inverse mapping, from shape nodes to their 
-     * sets of pre-images.
-     */
-    public Map<ShapeNode,Set<RuleNode>> getInverseNodeMap() {
-        if (this.inverseNodeMap == null) {
-            this.inverseNodeMap = computeInverse(nodeMap());
-            this.inverseEdgeMap = computeInverse(edgeMap());
-        }
-        return this.inverseNodeMap;
-    }
-
-    /** Returns the inverse mapping, from shape nodes to their 
-     * sets of pre-images.
-     */
-    public Map<ShapeEdge,Set<RuleEdge>> getInverseEdgeMap() {
-        if (this.inverseEdgeMap == null) {
-            this.inverseNodeMap = computeInverse(nodeMap());
-            this.inverseEdgeMap = computeInverse(edgeMap());
-        }
-        return this.inverseEdgeMap;
     }
 
     /**
@@ -282,20 +241,4 @@ public class RuleToShapeMap extends RuleToHostMap implements Fixable {
         return this.isNodeInconsistent(edgeR.target(), expectedImage.target());
     }
 
-    private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
-            Map<K,V> map) {
-        Map<V,Set<K>> result = new THashMap<V,Set<K>>();
-        for (Map.Entry<K,V> entry : map.entrySet()) {
-            V value = entry.getValue();
-            Set<K> keys = result.get(value);
-            if (keys == null) {
-                result.put(value, keys = new THashSet<K>());
-            }
-            keys.add(entry.getKey());
-        }
-        return result;
-    }
-
-    private Map<ShapeNode,Set<RuleNode>> inverseNodeMap;
-    private Map<ShapeEdge,Set<RuleEdge>> inverseEdgeMap;
 }

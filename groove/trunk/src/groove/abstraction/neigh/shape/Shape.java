@@ -834,6 +834,11 @@ public final class Shape extends DefaultHostGraph {
         Multiplicity oldMult = this.getNodeMult(nodeS);
         Multiplicity newMult = oldMult.sub(Multiplicity.scale(one, copies));
         this.setNodeMult(nodeS, newMult);
+        if (newMult.isZero()) {
+            // The original node was removed from the shape and we have a
+            // dangling reference in the shape morphism.
+            morph.removeNode(nodeS);
+        }
 
         // Now that we have all new nodes, duplicate all incoming and
         // outgoing edges were the original node occurs. This list of edges
