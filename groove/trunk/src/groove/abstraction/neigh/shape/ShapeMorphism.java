@@ -177,7 +177,7 @@ public class ShapeMorphism extends HostGraphMorphism {
             for (ShapeNode nodeT : to.nodeSet()) {
                 Multiplicity nodeTMult = to.getNodeMult(nodeT);
                 Set<ShapeNode> nodesS = this.getPreImages(nodeT);
-                Multiplicity sum = Multiplicity.getNodeSetMultSum(from, nodesS);
+                Multiplicity sum = from.getNodeSetMultSum(nodesS);
                 if (!nodeTMult.equals(sum)) {
                     complyToNodeMult = false;
                     break;

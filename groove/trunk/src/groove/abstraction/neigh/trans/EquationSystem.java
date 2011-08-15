@@ -207,10 +207,11 @@ public final class EquationSystem {
                 bundle.vars.add(esVar);
             }
 
-            // Create the equation.
-            Equation eq = this.newEquation();
-            // The constant = (nodeMult * esMult) - matchedEdgesMult .
-            eq.setConstant(nodeMult.times(esMult).sub(matchedEdgesMult));
+            // Create the equation with
+            // constant = (nodeMult * esMult) - matchedEdgesMult .
+            Equation eq =
+                this.newEquation(bundle.vars.size(),
+                    nodeMult.times(esMult).sub(matchedEdgesMult));
             // Add all variables in the bundle to the equation.
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
@@ -250,8 +251,8 @@ public final class EquationSystem {
      * Creates and returns a new equation,
      * while storing it in the equation set.
      */
-    private Equation newEquation() {
-        Equation result = new Equation();
+    private Equation newEquation(int varsCount, Multiplicity constant) {
+        Equation result = new Equation(varsCount, constant);
         this.eqs.add(result);
         return result;
     }
@@ -373,6 +374,7 @@ public final class EquationSystem {
         return result;
     }
 
+    /** EDUARDO: Comment this... */
     private Set<Solution> iterateSolution(Solution sol) {
         // For all equations, try to fix as many variables as possible.
         for (Equation eq : this.eqs) {
@@ -390,6 +392,7 @@ public final class EquationSystem {
         return result;
     }
 
+    /** EDUARDO: Comment this... */
     private void updateMatFromSolution(Materialisation mat, Solution sol) {
         assert mat != null;
         assert sol != null;
@@ -464,12 +467,12 @@ public final class EquationSystem {
     private static class EdgeMultVar extends MultVar {
 
         /** The edge associated with this variable. */
-        private final ShapeEdge edge;
+        final ShapeEdge edge;
         /** The opposite variable. */
-        private EdgeMultVar opposite;
+        EdgeMultVar opposite;
 
         /** Basic constructor. */
-        private EdgeMultVar(int number, EdgeMultDir direction, ShapeEdge edge) {
+        EdgeMultVar(int number, EdgeMultDir direction, ShapeEdge edge) {
             super(number, direction);
             this.edge = edge;
         }
@@ -489,11 +492,10 @@ public final class EquationSystem {
     private static class EdgeSigMultVar extends MultVar {
 
         /** The edge signature associated with this variable. */
-        private final EdgeSignature es;
+        final EdgeSignature es;
 
         /** Basic constructor. */
-        private EdgeSigMultVar(int number, EdgeMultDir direction,
-                EdgeSignature es) {
+        EdgeSigMultVar(int number, EdgeMultDir direction, EdgeSignature es) {
             super(number, direction);
             this.es = es;
         }
@@ -505,20 +507,26 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Class representing equations of the form: x0 + x1 + ... xn = const.
+     * The variables can be of either type and there is no ordering of variables
+     * numbers. The constant is an edge multiplicity. 
+     */
     private static class Equation {
 
-        private final Set<MultVar> vars;
-        private Multiplicity constant;
+        /** The set of variables composing this equation. */
+        final Set<MultVar> vars;
+        /** The multiplicity constant. */
+        final Multiplicity constant;
 
-        private Equation() {
-            this.vars = new THashSet<MultVar>();
-        }
-
-        private void setConstant(Multiplicity constant) {
+        /** Basic constructor. */
+        Equation(int varsCount, Multiplicity constant) {
+            this.vars = new THashSet<MultVar>(varsCount);
             this.constant = constant;
         }
 
-        private void addVar(MultVar var) {
+        /** Basic setter method. */
+        void addVar(MultVar var) {
             this.vars.add(var);
         }
 
@@ -536,7 +544,13 @@ public final class EquationSystem {
             return result.toString();
         }
 
-        private void computeNewValues(Solution partialSol) {
+        /**
+         * Given a partial solution, tries to assign additional values to the
+         * variables when possible. (See comments on code for additional
+         * information). If no new values can be obtained from this equation
+         * the given solution remains unchanged. 
+         */
+        void computeNewValues(Solution partialSol) {
             if (!partialSol.eqsToUse.contains(this)) {
                 return;
             }
@@ -565,7 +579,11 @@ public final class EquationSystem {
 
         }
 
-        private int openVarsCount(Solution partialSol) {
+        /**
+         * Counts the number of variables of this equation that open under
+         * the given partial solution.
+         */
+        int openVarsCount(Solution partialSol) {
             int openVars = this.vars.size();
             for (MultVar var : this.vars) {
                 if (partialSol.hasValue(var)) {
@@ -575,11 +593,20 @@ public final class EquationSystem {
             return openVars;
         }
 
-        private boolean isFullyAssigned(Solution sol) {
+        /**
+         * Returns true if the number of open variables for the given solution
+         * is zero; otherwise returns false. 
+         */
+        boolean isFullyAssigned(Solution sol) {
             return this.openVarsCount(sol) == 0;
         }
 
-        private MultVar[] getOpenVars(Solution partialSol, int openVarsCount) {
+        /**
+         * Returns a newly created array of open variables for the given
+         * partial solution. The second parameter is used to avoid counting
+         * the number of variables again, when the number is already known.
+         */
+        MultVar[] getOpenVars(Solution partialSol, int openVarsCount) {
             assert openVarsCount > 0;
             MultVar result[] = new MultVar[openVarsCount];
             int i = 0;
@@ -593,13 +620,22 @@ public final class EquationSystem {
             return result;
         }
 
-        private MultVar[] getOpenVars(Solution partialSol) {
+        /**
+         * Returns a newly created array of open variables for the given
+         * partial solution.
+         */
+        MultVar[] getOpenVars(Solution partialSol) {
             return this.getOpenVars(partialSol, this.openVarsCount(partialSol));
         }
 
-        private Set<Solution> getNewSolutions(Solution sol) {
-            assert !sol.isComplete();
-            assert sol.eqsToUse.contains(this);
+        /**
+         * Branches the search for valid solutions by assigning all possible
+         * valid values to the open variables of this equation.
+         * The blow-up on the materialisation phase is now due to this method.
+         */
+        Set<Solution> getNewSolutions(Solution partialSol) {
+            assert !partialSol.isComplete();
+            assert partialSol.eqsToUse.contains(this);
 
             Set<Solution> result = new THashSet<Solution>();
 
@@ -607,7 +643,7 @@ public final class EquationSystem {
             Multiplicity mults[] = Multiplicity.getAllEdgeMultiplicities();
             int multsSize = mults.length;
             // Array of variables that need values.
-            MultVar vars[] = this.getOpenVars(sol);
+            MultVar vars[] = this.getOpenVars(partialSol);
             int varsSize = vars.length;
             // Array of current values for the variables.
             // Hold indexes of positions in the mults array.
@@ -617,16 +653,15 @@ public final class EquationSystem {
             int curr = varsSize - 1;
             int prev;
             while (currVals[0] != multsSize) {
-                this.testAndStoreValidSolution(sol, vars, currVals, mults,
-                    result);
-
-                /*System.out.print("Solution: ");
-                int i = 0;
-                for (MultVar var : vars) {
-                    System.out.print(var + "=" + mults[currVals[i]] + ", ");
-                    i++;
+                // Test and store valid solution.
+                Solution newSol = partialSol.clone();
+                // Store the current values in the new solution.
+                for (int i = 0; i < vars.length; i++) {
+                    newSol.setValue(vars[i], mults[currVals[i]]);
                 }
-                System.out.println();*/
+                if (this.isValidSolution(newSol)) {
+                    result.add(newSol);
+                }
 
                 // Update pointers and compute next solution.
                 currVals[curr]++;
@@ -646,25 +681,18 @@ public final class EquationSystem {
 
             // This equation is no longer useful for finding the remaining
             // values of this solution.
-            sol.eqsToUse.remove(this);
+            partialSol.eqsToUse.remove(this);
 
             return result;
         }
 
-        private void testAndStoreValidSolution(Solution sol,
-                MultVar openVars[], int currVals[], Multiplicity mults[],
-                Set<Solution> result) {
-            Solution newSol = sol.clone();
-            // Store the current values in the new solution.
-            for (int i = 0; i < openVars.length; i++) {
-                newSol.setValue(openVars[i], mults[currVals[i]]);
-            }
-            if (this.isValidSolution(newSol)) {
-                result.add(newSol);
-            }
-        }
-
-        private boolean isValidSolution(Solution sol) {
+        /**
+         * Calculates the bounded sum of the values provided by the given
+         * solution for the equation values and compares the sum with the
+         * equation constant.
+         * @return true if the sum is equal to the constant, false otherwise. 
+         */
+        boolean isValidSolution(Solution sol) {
             Multiplicity sum =
                 Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
             for (MultVar var : this.vars) {
@@ -674,15 +702,29 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Class that represent a collection of edges that are bundled by a single
+     * edge multiplicity. This comprises the new possible edges of the
+     * materialisation and the edge signatures already in the shape. We can't
+     * use a simple edge signature here because nodes on the opposite direction
+     * of the edges are already in distinct equivalence classes. 
+     */
     private static class EdgeBundle {
 
-        private final ShapeNode node;
-        private final TypeLabel label;
-        private final EdgeMultDir direction;
-        private final Set<MultVar> vars;
+        /**
+         * The node associated with this bundle. It can be either a source or
+         * target node, depending on the direction.
+         */
+        final ShapeNode node;
+        /** The label for all edges of the bundle. */
+        final TypeLabel label;
+        /** Defines the direction of the edges. */
+        final EdgeMultDir direction;
+        /** The variables for the possible edges that are part of the bundle. */
+        final Set<MultVar> vars;
 
-        private EdgeBundle(ShapeNode node, TypeLabel label,
-                EdgeMultDir direction) {
+        /** Basic constructor. */
+        EdgeBundle(ShapeNode node, TypeLabel label, EdgeMultDir direction) {
             this.node = node;
             this.label = label;
             this.direction = direction;
@@ -695,37 +737,76 @@ public final class EquationSystem {
                 + this.vars;
         }
 
-        private void addVar(MultVar var) {
+        /** Basic setter method. */
+        void addVar(MultVar var) {
             assert var.direction == this.direction;
             this.vars.add(var);
         }
     }
 
+    /**
+     * Class representing a possible solution for the equation system.
+     * This is the only dynamic part of the system, the remaining structures
+     * are all fixed when trying to solve the system. Objects of this class
+     * are cloned during the solution search, hence we try to keep the objects
+     * as small as possible. 
+     */
     private static class Solution {
 
-        private final Multiplicity values[];
-        private int valuesCount;
-        private THashSet<Equation> eqsToUse;
+        /**
+         * The array of values corresponding to an assignment to the variables
+         * in the system. The array is indexed by the variable number, thus,
+         * for example, the value for variable 'x3' is in value[3]. If a
+         * position in the array is null then the corresponding variable is
+         * still open in the solution.
+         */
+        final Multiplicity values[];
+        /** Number of non-null values of this solution. */
+        int valuesCount;
+        /**
+         * Set of equations that can still provide new values for variables.
+         * When an equation has no open variables it can no longer contribute
+         * to the solution search and therefore the equation is removed from
+         * this set.
+         */
+        THashSet<Equation> eqsToUse;
 
-        private Solution(int varCount, THashSet<Equation> eqsToUse) {
+        /** Basic constructor. */
+        Solution(int varCount, THashSet<Equation> eqsToUse) {
             this.values = new Multiplicity[varCount];
             this.valuesCount = 0;
             this.eqsToUse = eqsToUse;
         }
 
-        private boolean isComplete() {
+        /** Returns true if all values are non-null. */
+        boolean isComplete() {
             return this.valuesCount == this.values.length;
         }
 
-        private boolean hasValue(MultVar var) {
-            return this.getValue(var) != null;
+        /** Returns true if the given variable has a value in this solution. */
+        boolean hasValue(MultVar var) {
+            return this.values[var.number] != null;
         }
 
-        private Multiplicity getValue(MultVar var) {
+        /**
+         * Returns the non-null value associated with the given variable in
+         * this solution. Fails in an assertion if the variable has no value.
+         */
+        Multiplicity getValue(MultVar var) {
+            assert this.hasValue(var);
             return this.values[var.number];
         }
 
-        private void setValue(MultVar var, Multiplicity mult) {
+        /**
+         * Sets the value of the given variable to the given multiplicity.
+         * Fails in an assertion if the variable already has a value.
+         * This method may have two side-effects:
+         * 1) If the variable being assigned a value is of type EdgeMultVar
+         * then its opposite value also receives a value.
+         * 2) Equations that become fully assigned are removed from the set
+         * of equations to be used by this solution.
+         */
+        void setValue(MultVar var, Multiplicity mult) {
             assert !this.hasValue(var);
             assert mult != null;
             this.values[var.number] = mult;
@@ -766,7 +847,14 @@ public final class EquationSystem {
             return result;
         }
 
-        private Equation getBestBranchingEquation() {
+        /**
+         * Returns an equation from the set of equations to be used that is
+         * likely to cause the least branching during the solution search. The
+         * method uses the following heuristic:
+         * - Equations with a concrete constant are preferred.
+         * - Try to pick the equation with the smaller number of open variables.
+         */
+        Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.eqsToUse) {
                 if (result == null
