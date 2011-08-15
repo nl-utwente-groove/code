@@ -24,7 +24,7 @@ import java.util.Map;
  * @version $Revision $
  */
 public class Morphism<N extends Node,E extends Edge> extends
-        ElementMap<N,E,N,E> {
+        InversableElementMap<N,E,N,E> {
     /**
      * Creates a morphism, based on a given element factory.
      */

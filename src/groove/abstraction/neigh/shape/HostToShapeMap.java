@@ -1,16 +1,12 @@
 package groove.abstraction.neigh.shape;
 
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.graph.ElementMap;
+import groove.graph.InversableElementMap;
 import groove.graph.Node;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.util.Fixable;
-import groove.view.FormatException;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,10 +15,8 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public class HostToShapeMap extends
-        ElementMap<HostNode,HostEdge,HostNode,HostEdge> implements Fixable {
-
-    private Map<ShapeNode,Set<HostNode>> inverseNodeMap;
-    private Map<ShapeEdge,Set<HostEdge>> inverseEdgeMap;
+        InversableElementMap<HostNode,HostEdge,HostNode,HostEdge> implements
+        Fixable {
 
     /** Default constructor. */
     public HostToShapeMap() {
@@ -65,77 +59,18 @@ public class HostToShapeMap extends
         return (ShapeEdge) super.getEdge(key);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void setFixed() throws FormatException {
-        // Fixing is the same as computing the inverse map.
-        this.getInverseNodeMap();
-        this.getInverseEdgeMap();
+    public Set<HostNode> getPreImages(HostNode node) {
+        assert node instanceof ShapeNode;
+        return (Set<HostNode>) super.getPreImages(node);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean isFixed() {
-        return this.inverseNodeMap != null;
-    }
-
-    @Override
-    public void testFixed(boolean fixed) {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException("Map is not fixed as expected.");
-        }
-    }
-
-    /** Returns the inverse mapping, from shape nodes to their 
-     * sets of pre-images.
-     */
-    public Map<ShapeNode,Set<HostNode>> getInverseNodeMap() {
-        if (this.inverseNodeMap == null) {
-            this.inverseNodeMap = this.computeInverse(this.nodeMap());
-            this.inverseEdgeMap = this.computeInverse(this.edgeMap());
-        }
-        return this.inverseNodeMap;
-    }
-
-    /** Returns the inverse mapping, from shape nodes to their 
-     * sets of pre-images.
-     */
-    public Map<ShapeEdge,Set<HostEdge>> getInverseEdgeMap() {
-        if (this.inverseEdgeMap == null) {
-            this.inverseNodeMap = this.computeInverse(this.nodeMap());
-            this.inverseEdgeMap = this.computeInverse(this.edgeMap());
-        }
-        return this.inverseEdgeMap;
-    }
-
-    private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
-            Map<K,V> map) {
-        Map<V,Set<K>> result = new THashMap<V,Set<K>>();
-        for (Map.Entry<K,V> entry : map.entrySet()) {
-            V value = entry.getValue();
-            Set<K> keys = result.get(value);
-            if (keys == null) {
-                result.put(value, keys = new THashSet<K>());
-            }
-            keys.add(entry.getKey());
-        }
-        return result;
-    }
-
-    /** Returns the set of host nodes mapped to a given shape node. */
-    public Set<HostNode> getPreImages(ShapeNode node) {
-        Set<HostNode> result = this.getInverseNodeMap().get(node);
-        if (result == null) {
-            result = Collections.emptySet();
-        }
-        return result;
-    }
-
-    /** Returns the set of host edges mapped to a given shape edge. */
-    public Set<HostEdge> getPreImages(ShapeEdge edge) {
-        Set<HostEdge> result = getInverseEdgeMap().get(edge);
-        if (result == null) {
-            result = Collections.emptySet();
-        }
-        return result;
+    public Set<HostEdge> getPreImages(HostEdge edge) {
+        assert edge instanceof ShapeEdge;
+        return (Set<HostEdge>) super.getPreImages(edge);
     }
 
     /**

@@ -17,6 +17,8 @@
 package groove.abstraction.neigh.shape;
 
 import gnu.trove.THashSet;
+import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.HostEdge;
@@ -94,7 +96,25 @@ public class ShapeMorphism extends HostGraphMorphism {
         return (ShapeFactory) super.getFactory();
     }
 
-    /** EDUARDO: Comment this... */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<ShapeNode> getPreImages(HostNode node) {
+        assert node instanceof ShapeNode;
+        return (Set<ShapeNode>) super.getPreImages(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<ShapeEdge> getPreImages(HostEdge edge) {
+        assert edge instanceof ShapeEdge;
+        return (Set<ShapeEdge>) super.getPreImages(edge);
+    }
+
+    /**
+     * Creates and returns an identity shape morphism between the two given
+     * shapes. Used during the materialisation phase.
+     * Fails on an assertion if the given shapes are not identical.
+     */
     public static ShapeMorphism createIdentityMorphism(Shape from, Shape to) {
         ShapeMorphism result = from.getFactory().createMorphism();
         for (ShapeNode node : from.nodeSet()) {
@@ -108,7 +128,11 @@ public class ShapeMorphism extends HostGraphMorphism {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Remove edges from the morphism that are not part of the given shape.
+     * This happens in the materialisation phase when the morphism contains
+     * mappings of possible new edges that were not included in the final shape.
+     */
     public void removeInvalidEdgeKeys(Shape from) {
         Set<HostEdge> invalidKeys = new THashSet<HostEdge>();
         Map<HostEdge,HostEdge> edgeMap = this.edgeMap();
@@ -122,10 +146,51 @@ public class ShapeMorphism extends HostGraphMorphism {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Implements the conditions of a shape morphism given on Def. 11, page 14.
+     */
     public boolean isConsistent(Shape from, Shape to) {
-        // EDUARDO: Implement this...
-        return true;
-    }
+        // As in the paper, let shape 'from' be S and shape 'to be T.
 
+        // Check for item 1.
+        boolean complyToEquivClass = true;
+        ecLoop: for (EquivClass<ShapeNode> ecS : from.getEquivRelation()) {
+            if (ecS.size() > 1) {
+                EquivClass<ShapeNode> ecT = null;
+                for (ShapeNode nodeS : ecS) {
+                    EquivClass<ShapeNode> otherEcT =
+                        to.getEquivClassOf(this.getNode(nodeS));
+                    if (ecT == null) {
+                        ecT = otherEcT;
+                    }
+                    if (!ecT.equals(otherEcT)) {
+                        complyToEquivClass = false;
+                        break ecLoop;
+                    }
+                }
+            }
+        }
+
+        // Check for item 2.
+        boolean complyToNodeMult = true;
+        if (complyToEquivClass) {
+            for (ShapeNode nodeT : to.nodeSet()) {
+                Multiplicity nodeTMult = to.getNodeMult(nodeT);
+                Set<ShapeNode> nodesS = this.getPreImages(nodeT);
+                Multiplicity sum = Multiplicity.getNodeSetMultSum(from, nodesS);
+                if (!nodeTMult.equals(sum)) {
+                    complyToNodeMult = false;
+                    break;
+                }
+            }
+        }
+
+        // Check for item 3.
+        boolean complyToEdgeMult = true;
+        if (complyToEquivClass && complyToNodeMult) {
+            // EDUARDO: Finish this...
+        }
+
+        return complyToEquivClass && complyToNodeMult && complyToEdgeMult;
+    }
 }

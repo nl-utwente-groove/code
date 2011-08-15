@@ -38,31 +38,68 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * An equation system is the mechanism used to resolve non-determinism during
+ * the materialisation phase.
+ * The system is composed of multiplicity variables, that are associated with
+ * edges or edge signatures of the shape under materialisation.
+ * The variables are used to form equations over multiplicities values. The
+ * process of solving the equation system entails finding all possible values
+ * for the multiplicity variables that satisfy all equations.
+ * When a solution is found the materialisation object is adjusted accordingly.
+ * 
  * @author Eduardo Zambon
  */
 public final class EquationSystem {
 
+    /**
+     * The initial materialisation object for which the equation system should
+     * be built. If the system has only one solution this object is modified
+     * directly. If there are multiple solutions, this object is cloned.
+     */
     private final Materialisation mat;
+
+    /**
+     * List of all variables of the system. The object is final but the list
+     * is modified during the creation of the system. After that it no longer
+     * changes. 
+     */
     private final List<MultVar> vars;
-    private final Set<Equation> eqs;
-    private final Set<EdgeBundle> bundles;
-    private final Map<ShapeEdge,EdgeMultVar> outEdgeMultVarMap;
-    private final Map<ShapeEdge,EdgeMultVar> inEdgeMultVarMap;
-    private final Set<Solution> solutions;
+
     /** The number of multiplicity variables of the system. */
     private int varCount;
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Set of all equations that compose the system. The object is final but 
+     * the set is modified during the creation of the system. After that it
+     * no longer changes. 
+     */
+    private final THashSet<Equation> eqs;
+
+    /**
+     * Maps from possible new edges that can be in the materialised shape to
+     * their corresponding multiplicity variables.  The object are final but 
+     * are modified during the creation of the system. After that they no
+     * longer change. 
+     */
+    private final Map<ShapeEdge,EdgeMultVar> outEdgeMultVarMap;
+    private final Map<ShapeEdge,EdgeMultVar> inEdgeMultVarMap;
+
+    /** 
+     * Constructs the equation system based on the given materialisation.
+     * After the constructor finishes, a call to solve() yields all possible
+     * resulting materialisations, with the proper shapes.
+     * 
+     * Passing a materialisation that has an empty set of possible new edges
+     * gives an assertion error.
+     */
     public EquationSystem(Materialisation mat) {
         assert !mat.getPossibleNewEdgeSet().isEmpty();
         this.mat = mat;
         this.vars = new ArrayList<MultVar>();
         this.varCount = 0;
         this.eqs = new THashSet<Equation>();
-        this.bundles = new THashSet<EdgeBundle>();
         this.outEdgeMultVarMap = new THashMap<ShapeEdge,EdgeMultVar>();
         this.inEdgeMultVarMap = new THashMap<ShapeEdge,EdgeMultVar>();
-        this.solutions = new THashSet<Solution>();
         this.create();
     }
 
@@ -71,29 +108,36 @@ public final class EquationSystem {
         return "Equalities: " + this.eqs;
     }
 
+    /**
+     * Creates the equation system.
+     * See the comments in the code for more details.
+     */
     private void create() {
         Shape shape = this.mat.getShape();
 
-        // BEGIN - Create opposition relations the edge bundles.
+        // BEGIN - Create opposition relations and edge bundles.
+        Set<EdgeBundle> bundles = new THashSet<EdgeBundle>();
+        // For all possible new edges.
         for (ShapeEdge edge : this.mat.getPossibleNewEdgeSet()) {
-            // Opposition relations.
+            // Create one outgoing and one incoming multiplicity variable.
             EdgeMultVar outMultVar = this.newEdgeMultVar(edge, OUTGOING);
             EdgeMultVar inMultVar = this.newEdgeMultVar(edge, INCOMING);
+            // The variables are opposite of one another.
             outMultVar.opposite = inMultVar;
             inMultVar.opposite = outMultVar;
             // Edge bundles.
             TypeLabel label = edge.label();
             EdgeBundle outBundle =
-                this.getEdgeBundle(edge.source(), label, OUTGOING);
+                this.getEdgeBundle(bundles, edge.source(), label, OUTGOING);
             outBundle.addVar(outMultVar);
             EdgeBundle inBundle =
-                this.getEdgeBundle(edge.target(), label, INCOMING);
+                this.getEdgeBundle(bundles, edge.target(), label, INCOMING);
             inBundle.addVar(inMultVar);
-        } // END - Create opposition relations the edge bundles.
+        } // END - Create opposition relations and edge bundles.
 
         // For each edge bundle, create an equality.
         // BEGIN - Create equalities.
-        for (EdgeBundle bundle : this.bundles) {
+        for (EdgeBundle bundle : bundles) {
             EdgeMultDir direction = bundle.direction;
             // Multiplicity of the bundle node.
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
@@ -115,8 +159,9 @@ public final class EquationSystem {
                     // First check if we already have the signature.
                     if (es == null) {
                         // All edges of the bundle that are in the shape have
-                        // the same edge signature. This code is only executed
-                        // once.
+                        // the same edge signature. Just used the current edge
+                        // of the loop for getting the edge signature.
+                        // This code is only executed once.
                         es = shape.getEdgeSignature(edge, direction);
                     } // else do nothing, we may already have the signature.
 
@@ -134,6 +179,8 @@ public final class EquationSystem {
                 }
             } // END - Bundle edges loop.
 
+            // Multiplicity of the edge signature.
+            Multiplicity esMult;
             if (es == null) {
                 // All edges in the bundle are possible edges and there are no
                 // fixed edges in the shape. We need to retrieve the edge
@@ -144,7 +191,10 @@ public final class EquationSystem {
                 // Find the original edge from the shaping morphism.
                 ShapeEdge origEdge =
                     this.mat.getShapeMorphism().getEdge(bundleEdge);
-                es = shape.getEdgeSignature(origEdge, bundle.direction);
+                esMult =
+                    this.mat.getOriginalShape().getEdgeMult(origEdge, direction);
+            } else {
+                esMult = shape.getEdgeSigMult(es, direction);
             }
 
             // Check if we need to create an extra variable for the signature.
@@ -157,19 +207,23 @@ public final class EquationSystem {
                 bundle.vars.add(esVar);
             }
 
-            // Multiplicity of the edge signature.
-            Multiplicity esMult = shape.getEdgeSigMult(es, direction);
             // Create the equation.
             Equation eq = this.newEquation();
             // The constant = (nodeMult * esMult) - matchedEdgesMult .
             eq.setConstant(nodeMult.times(esMult).sub(matchedEdgesMult));
-            // Add all variables of the bundle to the equation.
+            // Add all variables in the bundle to the equation.
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
             }
         } // END - Create equalities.
     }
 
+    /**
+     * Creates and returns a new edge multiplicity variable for the given
+     * edge and direction.
+     * The map from edges to variables is properly adjusted along with the
+     * variable set and count. 
+     */
     private EdgeMultVar newEdgeMultVar(ShapeEdge edge, EdgeMultDir direction) {
         EdgeMultVar result = new EdgeMultVar(this.varCount, direction, edge);
         this.getEdgeMultVarMap(direction).put(edge, result);
@@ -178,6 +232,11 @@ public final class EquationSystem {
         return result;
     }
 
+    /**
+     * Creates and returns a new edge signature multiplicity variable for
+     * the given signature and direction.
+     * The variable set and count is properly adjusted.
+     */
     private EdgeSigMultVar newEdgeSigMultVar(EdgeSignature es,
             EdgeMultDir direction) {
         EdgeSigMultVar result =
@@ -187,16 +246,25 @@ public final class EquationSystem {
         return result;
     }
 
+    /**
+     * Creates and returns a new equation,
+     * while storing it in the equation set.
+     */
     private Equation newEquation() {
         Equation result = new Equation();
         this.eqs.add(result);
         return result;
     }
 
-    private EdgeBundle getEdgeBundle(ShapeNode node, TypeLabel label,
-            EdgeMultDir direction) {
+    /**
+     * Searches in the given bundle set for a bundle with corresponding node,
+     * label and direction. If a proper bundle is not found, a new one is
+     * created and added to the set.  
+     */
+    private EdgeBundle getEdgeBundle(Set<EdgeBundle> bundles, ShapeNode node,
+            TypeLabel label, EdgeMultDir direction) {
         EdgeBundle result = null;
-        for (EdgeBundle bundle : this.bundles) {
+        for (EdgeBundle bundle : bundles) {
             if (bundle.node.equals(node) && bundle.label.equals(label)
                 && bundle.direction == direction) {
                 result = bundle;
@@ -205,13 +273,21 @@ public final class EquationSystem {
         }
         if (result == null) {
             result = new EdgeBundle(node, label, direction);
-            this.bundles.add(result);
+            bundles.add(result);
         }
         return result;
     }
 
+    /**
+     * Returns the set of edges that are associated with given bundle. This
+     * includes the possible new edges of the materialisation that are 
+     * associated with bundle variables and also all edges that are already in
+     * the shape and have the same edge signature that is associated with the
+     * bundle.
+     */
     private Set<ShapeEdge> getEdgesForBundle(EdgeBundle bundle) {
         Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        // Include the possible edges.
         for (ShapeEdge possibleEdge : this.mat.getPossibleNewEdgeSet()) {
             MultVar var = this.getEdgeVariable(possibleEdge, bundle.direction);
             if (bundle.vars.contains(var)) {
@@ -221,7 +297,7 @@ public final class EquationSystem {
         for (ShapeEdge edgeS : this.mat.getShape().binaryEdgeSet(bundle.node,
             bundle.direction)) {
             if (edgeS.label().equals(bundle.label)) {
-                // EDUARDO: Fix this. This is wrong. If a node has more than
+                // EDUARDO: Fix this. This is wrong. If a node is in more than
                 // one bundle, all edges are mixed...
                 result.add(edgeS);
             }
@@ -229,15 +305,23 @@ public final class EquationSystem {
         return result;
     }
 
+    /**
+     * Returns true is the given edge has a variable associated in the given
+     * direction. 
+     */
     private boolean hasVariable(ShapeEdge edge, EdgeMultDir direction) {
         return this.getEdgeVariable(edge, direction) != null;
     }
 
+    /**
+     * Returns the (possible null) variable associated with the given edge
+     * and direction.
+     */
     private EdgeMultVar getEdgeVariable(ShapeEdge edge, EdgeMultDir direction) {
         return this.getEdgeMultVarMap(direction).get(edge);
     }
 
-    /** Returns the proper map accordingly to the given direction. */
+    /** Returns the proper (non-null) map accordingly to the given direction. */
     private Map<ShapeEdge,EdgeMultVar> getEdgeMultVarMap(EdgeMultDir direction) {
         Map<ShapeEdge,EdgeMultVar> result = null;
         switch (direction) {
@@ -256,7 +340,9 @@ public final class EquationSystem {
     /** EDUARDO: Comment this... */
     public Set<Materialisation> solve() {
         // Compute all solutions.
-        Solution initialSol = new Solution(this.varCount);
+        Set<Solution> solutions = new THashSet<Solution>();
+        Solution initialSol =
+            new Solution(this.varCount, (THashSet<Equation>) this.eqs.clone());
         Set<Solution> partialSols = new THashSet<Solution>();
         partialSols.add(initialSol);
         while (!partialSols.isEmpty()) {
@@ -264,7 +350,7 @@ public final class EquationSystem {
             partialSols.remove(sol);
             for (Solution newSol : this.iterateSolution(sol)) {
                 if (newSol.isComplete()) {
-                    this.solutions.add(newSol);
+                    solutions.add(newSol);
                 } else {
                     partialSols.add(newSol);
                 }
@@ -272,14 +358,13 @@ public final class EquationSystem {
         }
         // Create the return objects.
         Set<Materialisation> result = new THashSet<Materialisation>();
-        if (this.solutions.size() == 1) {
+        if (solutions.size() == 1) {
             // Only one solution, no need to clone the materialisation object.
-            this.updateMatFromSolution(this.mat,
-                this.solutions.iterator().next());
+            this.updateMatFromSolution(this.mat, solutions.iterator().next());
             result.add(this.mat);
         } else {
             // OK, we need to clone.
-            for (Solution sol : this.solutions) {
+            for (Solution sol : solutions) {
                 Materialisation mat = this.mat.clone();
                 this.updateMatFromSolution(mat, sol);
                 result.add(mat);
@@ -294,24 +379,13 @@ public final class EquationSystem {
             eq.computeNewValues(sol);
         }
         Set<Solution> result;
-        Equation branchingEq = this.getBestBranchingEquation();
+        Equation branchingEq = sol.getBestBranchingEquation();
         if (branchingEq == null) {
             // We don't need to branch in the solution search.
             result = new THashSet<Solution>();
             result.add(sol);
         } else {
             result = branchingEq.getNewSolutions(sol);
-        }
-        return result;
-    }
-
-    private Equation getBestBranchingEquation() {
-        Equation result = null;
-        for (Equation eq : this.eqs) {
-            if (eq.useful
-                && (result == null || (result.constant.isCollector() && !eq.constant.isCollector()))) {
-                result = eq;
-            }
         }
         return result;
     }
@@ -335,7 +409,7 @@ public final class EquationSystem {
                     ShapeEdge edgeS = edgeMultVar.edge;
                     if (!shape.edgeSet().contains(edgeS)) {
                         shape.addEdgeWithoutCheck(edgeS);
-                        // set the multiplicity accordingly.
+                        // Set the multiplicity accordingly.
                         shape.setEdgeMult(edgeS, edgeMultVar.direction, value);
                     }
                 }
@@ -358,11 +432,17 @@ public final class EquationSystem {
         assert shape.isInvariantOK();
     }
 
+    /**
+     * Abstract class to represent all types of multiplicity variables. 
+     */
     private static abstract class MultVar {
 
+        /** The unique variable number. */
         final int number;
+        /** The direction this variable is associated with. */
         final EdgeMultDir direction;
 
+        /** Basic constructor. */
         MultVar(int number, EdgeMultDir direction) {
             this.number = number;
             this.direction = direction;
@@ -372,32 +452,53 @@ public final class EquationSystem {
         public abstract String toString();
     }
 
+    /**
+     * Multiplicity variable associated with a possible edge.
+     * All such variables have an opposite one, representing the other end
+     * of the edge. These two opposite variables have an existential relation,
+     * i.e., if a variable is zero then its opposite must also be zero, and if
+     * a variable is positive its opposite must also be positive (but not
+     * necessarily must have the same value).
+     * EDUARDO: This is actually not true in the current implementation. Fix?
+     */
     private static class EdgeMultVar extends MultVar {
 
+        /** The edge associated with this variable. */
         private final ShapeEdge edge;
+        /** The opposite variable. */
         private EdgeMultVar opposite;
 
+        /** Basic constructor. */
         private EdgeMultVar(int number, EdgeMultDir direction, ShapeEdge edge) {
             super(number, direction);
             this.edge = edge;
         }
 
+        /** Variables of this type a prefixed with an 'x'. */
         @Override
         public String toString() {
             return "x" + this.number;
         }
     }
 
+    /**
+     * Multiplicity variable associated with an edge signature, representing
+     * the remaining value of the signature multiplicity after the
+     * materialisation is finished.
+     */
     private static class EdgeSigMultVar extends MultVar {
 
+        /** The edge signature associated with this variable. */
         private final EdgeSignature es;
 
+        /** Basic constructor. */
         private EdgeSigMultVar(int number, EdgeMultDir direction,
                 EdgeSignature es) {
             super(number, direction);
             this.es = es;
         }
 
+        /** Variables of this type a prefixed with an 'y'. */
         @Override
         public String toString() {
             return "y" + this.number;
@@ -408,11 +509,9 @@ public final class EquationSystem {
 
         private final Set<MultVar> vars;
         private Multiplicity constant;
-        private boolean useful;
 
         private Equation() {
             this.vars = new THashSet<MultVar>();
-            this.useful = true;
         }
 
         private void setConstant(Multiplicity constant) {
@@ -434,13 +533,13 @@ public final class EquationSystem {
                 }
             }
             result.append("=" + this.constant);
-            if (this.useful) {
-                result.append(" U ");
-            }
             return result.toString();
         }
 
         private void computeNewValues(Solution partialSol) {
+            if (!partialSol.eqsToUse.contains(this)) {
+                return;
+            }
             int openVarsCount = this.openVarsCount(partialSol);
             if (openVarsCount == 0) {
                 // All variables in this equation have a value assigned.
@@ -457,15 +556,13 @@ public final class EquationSystem {
                 // variables in the equation have to be zero.
                 for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
                     partialSol.setValue(var, this.constant);
-                    if (var instanceof EdgeMultVar) {
-                        partialSol.setValue(((EdgeMultVar) var).opposite,
-                            this.constant);
-                    }
+
                 }
-                // Once we set all the variables, this equation is no longer
-                // useful...
-                this.useful = false;
+                // This equation is no longer useful for finding the remaining
+                // values of this solution.
+                partialSol.eqsToUse.remove(this);
             }
+
         }
 
         private int openVarsCount(Solution partialSol) {
@@ -476,6 +573,10 @@ public final class EquationSystem {
                 }
             }
             return openVars;
+        }
+
+        private boolean isFullyAssigned(Solution sol) {
+            return this.openVarsCount(sol) == 0;
         }
 
         private MultVar[] getOpenVars(Solution partialSol, int openVarsCount) {
@@ -497,25 +598,80 @@ public final class EquationSystem {
         }
 
         private Set<Solution> getNewSolutions(Solution sol) {
-            assert this.useful;
             assert !sol.isComplete();
-            MultVar variables[] = this.getOpenVars(sol);
-            Multiplicity values[] = Multiplicity.getAllEdgeMultiplicities();
-            int varSize = variables.length;
-            int valSize = values.length;
-            int varIdx[] = new int[varSize];
-            for (int i = 0; i < varIdx.length; i++) {
-                varIdx[i] = 0;
+            assert sol.eqsToUse.contains(this);
+
+            Set<Solution> result = new THashSet<Solution>();
+
+            // Array of possible multiplicity values.
+            Multiplicity mults[] = Multiplicity.getAllEdgeMultiplicities();
+            int multsSize = mults.length;
+            // Array of variables that need values.
+            MultVar vars[] = this.getOpenVars(sol);
+            int varsSize = vars.length;
+            // Array of current values for the variables.
+            // Hold indexes of positions in the mults array.
+            int currVals[] = new int[varsSize];
+
+            // Start iterating.
+            int curr = varsSize - 1;
+            int prev;
+            while (currVals[0] != multsSize) {
+                this.testAndStoreValidSolution(sol, vars, currVals, mults,
+                    result);
+
+                /*System.out.print("Solution: ");
+                int i = 0;
+                for (MultVar var : vars) {
+                    System.out.print(var + "=" + mults[currVals[i]] + ", ");
+                    i++;
+                }
+                System.out.println();*/
+
+                // Update pointers and compute next solution.
+                currVals[curr]++;
+                if (currVals[curr] == multsSize) {
+                    prev = curr - 1;
+                    while (prev >= 0 && currVals[prev]++ == multsSize) {
+                        prev--;
+                    }
+                    if (prev >= 0) {
+                        // Zero all indices between prev + 1 and curr .
+                        for (int i = prev + 1; i <= curr; i++) {
+                            currVals[i] = 0;
+                        }
+                    }
+                }
             }
-            int curr = varSize;
-            /*while (!done(varIdx)) {
-                
-            }*/
-            // We are done with this equation.
-            this.useful = false;
-            return null;
+
+            // This equation is no longer useful for finding the remaining
+            // values of this solution.
+            sol.eqsToUse.remove(this);
+
+            return result;
         }
 
+        private void testAndStoreValidSolution(Solution sol,
+                MultVar openVars[], int currVals[], Multiplicity mults[],
+                Set<Solution> result) {
+            Solution newSol = sol.clone();
+            // Store the current values in the new solution.
+            for (int i = 0; i < openVars.length; i++) {
+                newSol.setValue(openVars[i], mults[currVals[i]]);
+            }
+            if (this.isValidSolution(newSol)) {
+                result.add(newSol);
+            }
+        }
+
+        private boolean isValidSolution(Solution sol) {
+            Multiplicity sum =
+                Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+            for (MultVar var : this.vars) {
+                sum = sum.add(sol.getValue(var));
+            }
+            return this.constant.equals(sum);
+        }
     }
 
     private static class EdgeBundle {
@@ -549,10 +705,12 @@ public final class EquationSystem {
 
         private final Multiplicity values[];
         private int valuesCount;
+        private THashSet<Equation> eqsToUse;
 
-        private Solution(int varCount) {
+        private Solution(int varCount, THashSet<Equation> eqsToUse) {
             this.values = new Multiplicity[varCount];
             this.valuesCount = 0;
+            this.eqsToUse = eqsToUse;
         }
 
         private boolean isComplete() {
@@ -572,6 +730,23 @@ public final class EquationSystem {
             assert mult != null;
             this.values[var.number] = mult;
             this.valuesCount++;
+            // Check if the variable has an opposite one. And if yes, also
+            // set its value.
+            if (var instanceof EdgeMultVar) {
+                MultVar opposite = ((EdgeMultVar) var).opposite;
+                assert !this.hasValue(opposite);
+                this.values[opposite.number] = mult;
+                this.valuesCount++;
+            }
+            // Check if any equation has become fully assigned.
+            Iterator<Equation> iter = this.eqsToUse.iterator();
+            while (iter.hasNext()) {
+                Equation eq = iter.next();
+                if (eq.isFullyAssigned(this)) {
+                    // Remove the equation.
+                    iter.remove();
+                }
+            }
         }
 
         @Override
@@ -581,11 +756,25 @@ public final class EquationSystem {
 
         @Override
         public Solution clone() {
-            Solution result = new Solution(this.values.length);
+            Solution result =
+                new Solution(this.values.length,
+                    (THashSet<Equation>) this.eqsToUse.clone());
             for (int i = 0; i < this.values.length; i++) {
                 result.values[i] = this.values[i];
             }
             result.valuesCount = this.valuesCount;
+            return result;
+        }
+
+        private Equation getBestBranchingEquation() {
+            Equation result = null;
+            for (Equation eq : this.eqsToUse) {
+                if (result == null
+                    || (result.constant.isCollector() && !eq.constant.isCollector())
+                    || (eq.openVarsCount(this) < result.openVarsCount(this))) {
+                    result = eq;
+                }
+            }
             return result;
         }
     }
