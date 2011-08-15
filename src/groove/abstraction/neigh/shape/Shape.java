@@ -25,6 +25,7 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -661,6 +662,19 @@ public final class Shape extends DefaultHostGraph {
             mult = Multiplicity.getMultiplicity(0, 0, NODE_MULT);
         }
         return mult;
+    }
+
+    /**
+     * Returns the bounded sum of the node multiplicities of the given set.
+     */
+    public Multiplicity getNodeSetMultSum(Set<ShapeNode> nodes) {
+        Multiplicity accumulator =
+            Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
+        for (ShapeNode node : nodes) {
+            Multiplicity nodeMult = this.getNodeMult(node);
+            accumulator = accumulator.add(nodeMult);
+        }
+        return accumulator;
     }
 
     /** Basic getter method. */
