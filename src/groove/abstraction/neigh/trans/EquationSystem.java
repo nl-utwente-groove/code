@@ -338,7 +338,11 @@ public final class EquationSystem {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Finds all solutions of this equation system and return all
+     * materialisation objects created from the valid solutions.
+     * This method resolves all non-determinism of the materialisation phase. 
+     */
     public Set<Materialisation> solve() {
         // Compute all solutions.
         Set<Solution> solutions = new THashSet<Solution>();
@@ -374,12 +378,27 @@ public final class EquationSystem {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Iterate the given solution over all equations of the system and try to
+     * fix more variables. This may lead to branching. In this case, an
+     * heuristic is used to decide on which equation to use that is likely
+     * to produce less branching. Returns the set of new (partial) solutions.
+     */
+    @SuppressWarnings("unchecked")
     private Set<Solution> iterateSolution(Solution sol) {
         // For all equations, try to fix as many variables as possible.
-        for (Equation eq : this.eqs) {
-            eq.computeNewValues(sol);
+        Set<Equation> currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
+        int currEqsToUseSize = currEqsToUse.size();
+        int prevEqsToUseSize = 0;
+        while (currEqsToUseSize != prevEqsToUseSize && currEqsToUseSize > 0) {
+            for (Equation eq : currEqsToUse) {
+                eq.computeNewValues(sol);
+            }
+            prevEqsToUseSize = currEqsToUseSize;
+            currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
+            currEqsToUseSize = currEqsToUse.size();
         }
+
         Set<Solution> result;
         Equation branchingEq = sol.getBestBranchingEquation();
         if (branchingEq == null) {
@@ -392,7 +411,10 @@ public final class EquationSystem {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Adjust the given materialisation object using the given solution.
+     * After this the materialisation is complete. 
+     */
     private void updateMatFromSolution(Materialisation mat, Solution sol) {
         assert mat != null;
         assert sol != null;
@@ -402,6 +424,10 @@ public final class EquationSystem {
         // Iterate over the variables and modify the shape accordingly.
         for (MultVar var : this.vars) {
             if (var instanceof EdgeMultVar) {
+                if (sol.impreciseVars.contains(var)) {
+                    // Problem: We have an imprecise value.
+                    // EDUARDO: Implement pull node...
+                }
                 // We have a variable associated with a possible edge.
                 EdgeMultVar edgeMultVar = (EdgeMultVar) var;
                 Multiplicity value = sol.getValue(edgeMultVar);
@@ -412,9 +438,9 @@ public final class EquationSystem {
                     ShapeEdge edgeS = edgeMultVar.edge;
                     if (!shape.edgeSet().contains(edgeS)) {
                         shape.addEdgeWithoutCheck(edgeS);
-                        // Set the multiplicity accordingly.
-                        shape.setEdgeMult(edgeS, edgeMultVar.direction, value);
                     }
+                    // Set the multiplicity accordingly.
+                    shape.setEdgeMult(edgeS, edgeMultVar.direction, value);
                 }
             } else if (var instanceof EdgeSigMultVar) {
                 // We have a variable associated with the remainder of an edge
@@ -462,7 +488,6 @@ public final class EquationSystem {
      * i.e., if a variable is zero then its opposite must also be zero, and if
      * a variable is positive its opposite must also be positive (but not
      * necessarily must have the same value).
-     * EDUARDO: This is actually not true in the current implementation. Fix?
      */
     private static class EdgeMultVar extends MultVar {
 
@@ -551,32 +576,95 @@ public final class EquationSystem {
          * the given solution remains unchanged. 
          */
         void computeNewValues(Solution partialSol) {
+            // EZ says: sorry for the multiple return points, but otherwise
+            // the code becomes less readable...
+
             if (!partialSol.eqsToUse.contains(this)) {
+                // This equation can't contribute in finding new values for
+                // the solution. Nothing to do.
                 return;
             }
+
             int openVarsCount = this.openVarsCount(partialSol);
             if (openVarsCount == 0) {
                 // All variables in this equation have a value assigned.
                 // Nothing to do.
+                partialSol.eqsToUse.remove(this);
                 return;
             }
-            // Check which variables can have a value set.
-            if (openVarsCount == 1 || this.constant.isZero()) {
-                // There are two cases:
-                // 1) We have only one variable without a value so we assign the
-                // equation constant to this variable.
-                // 2) The equation constant is zero.
+
+            if (this.constant.isZero()) {
+                // The equation constant is zero.
                 // Since multiplicities can't be negative, this means that all
                 // variables in the equation have to be zero.
                 for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
                     partialSol.setValue(var, this.constant);
-
                 }
                 // This equation is no longer useful for finding the remaining
                 // values of this solution.
                 partialSol.eqsToUse.remove(this);
+                return;
             }
 
+            if (openVarsCount == 1) {
+                // We have only one variable without a value so we assign the
+                // equation constant - the sum of all other variables values
+                // to the open variable.
+                Multiplicity newConst = this.constant;
+                for (Multiplicity mult : this.getFixedValues(partialSol,
+                    openVarsCount)) {
+                    newConst = newConst.sub(mult);
+                }
+                for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
+                    partialSol.setValue(var, newConst);
+                }
+                // This equation is no longer useful for finding the remaining
+                // values of this solution.
+                partialSol.eqsToUse.remove(this);
+                return;
+            }
+
+            MultVar impreciseVars[] = this.getImpreciseVars(partialSol);
+            if (impreciseVars.length == 1) {
+                if (this.constant.isOne()) {
+                    // In this case we know that the value for the imprecise
+                    // variable must be one and that all other open variables must
+                    // be zero.
+                    Multiplicity zero =
+                        Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+                    for (MultVar var : this.getOpenVars(partialSol,
+                        openVarsCount)) {
+                        if (var.equals(impreciseVars[0])) {
+                            partialSol.setValue(var, this.constant);
+                        } else {
+                            partialSol.setValue(var, zero);
+                        }
+                    }
+                    // This equation is no longer useful for finding the remaining
+                    // values of this solution.
+                    partialSol.eqsToUse.remove(this);
+                    return;
+                }
+
+                // If we reached this point it means that the constant is
+                // a positive collector multiplicity.
+                assert this.constant.isCollector();
+                // At this point we can't determine anything about the open
+                // variables except that they are positive. This means that
+                // all open variables become imprecise variables.
+                // Since all variables need a value for the solution to become
+                // complete, we set these imprecise variables to the equation
+                // constant. This value is not used anywhere, a proper value
+                // is produced when we pull out nodes at the last stage of
+                // materialisation.
+                // Also, we don't want this equation laying around because it
+                // will just cause unnecessary branching.
+                for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
+                    partialSol.setValue(var, this.constant, false);
+                    partialSol.impreciseVars.add(var);
+                }
+                partialSol.eqsToUse.remove(this);
+            }
         }
 
         /**
@@ -628,6 +716,30 @@ public final class EquationSystem {
             return this.getOpenVars(partialSol, this.openVarsCount(partialSol));
         }
 
+        MultVar[] getImpreciseVars(Solution partialSol) {
+            ArrayList<MultVar> result =
+                new ArrayList<MultVar>(partialSol.impreciseVars.size());
+            for (MultVar var : partialSol.impreciseVars) {
+                if (this.vars.contains(var)) {
+                    result.add(var);
+                }
+            }
+            return result.toArray(new MultVar[result.size()]);
+        }
+
+        Multiplicity[] getFixedValues(Solution partialSol, int openVarsCount) {
+            Multiplicity result[] =
+                new Multiplicity[this.vars.size() - openVarsCount];
+            int i = 0;
+            for (MultVar var : this.vars) {
+                if (partialSol.hasValue(var)) {
+                    result[i] = partialSol.getValue(var);
+                    i++;
+                }
+            }
+            return result;
+        }
+
         /**
          * Branches the search for valid solutions by assigning all possible
          * valid values to the open variables of this equation.
@@ -657,9 +769,10 @@ public final class EquationSystem {
                 Solution newSol = partialSol.clone();
                 // Store the current values in the new solution.
                 for (int i = 0; i < vars.length; i++) {
-                    newSol.setValue(vars[i], mults[currVals[i]]);
+                    newSol.setValue(vars[i], mults[currVals[i]], false);
                 }
                 if (this.isValidSolution(newSol)) {
+                    /*newSol.purgeImpreciseVars();*/
                     result.add(newSol);
                 }
 
@@ -696,7 +809,11 @@ public final class EquationSystem {
             Multiplicity sum =
                 Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
             for (MultVar var : this.vars) {
-                sum = sum.add(sol.getValue(var));
+                Multiplicity mult = sol.getValue(var);
+                if (mult.isZero() && sol.impreciseVars.contains(var)) {
+                    return false;
+                }
+                sum = sum.add(mult);
             }
             return this.constant.equals(sum);
         }
@@ -769,13 +886,16 @@ public final class EquationSystem {
          * to the solution search and therefore the equation is removed from
          * this set.
          */
-        THashSet<Equation> eqsToUse;
+        final THashSet<Equation> eqsToUse;
+
+        final THashSet<MultVar> impreciseVars;
 
         /** Basic constructor. */
         Solution(int varCount, THashSet<Equation> eqsToUse) {
             this.values = new Multiplicity[varCount];
             this.valuesCount = 0;
             this.eqsToUse = eqsToUse;
+            this.impreciseVars = new THashSet<MultVar>();
         }
 
         /** Returns true if all values are non-null. */
@@ -806,18 +926,33 @@ public final class EquationSystem {
          * 2) Equations that become fully assigned are removed from the set
          * of equations to be used by this solution.
          */
-        void setValue(MultVar var, Multiplicity mult) {
+        void setValue(MultVar var, Multiplicity mult, boolean removeImprecise) {
             assert !this.hasValue(var);
             assert mult != null;
             this.values[var.number] = mult;
             this.valuesCount++;
+            if (removeImprecise) {
+                this.impreciseVars.remove(var);
+            }
             // Check if the variable has an opposite one. And if yes, also
             // set its value.
             if (var instanceof EdgeMultVar) {
                 MultVar opposite = ((EdgeMultVar) var).opposite;
-                assert !this.hasValue(opposite);
-                this.values[opposite.number] = mult;
-                this.valuesCount++;
+                if (mult.isZero()) {
+                    // We are setting this variable to zero so its opposite
+                    // must also be zero.
+                    assert !this.hasValue(opposite);
+                    assert !this.impreciseVars.contains(opposite);
+                    this.values[opposite.number] = mult;
+                    this.valuesCount++;
+                } else {
+                    // The multiplicity is positive, we know that the opposite
+                    // must be positive as well, but we don't know its precise
+                    // value for now.
+                    if (!this.hasValue(opposite)) {
+                        this.impreciseVars.add(opposite);
+                    }
+                }
             }
             // Check if any equation has become fully assigned.
             Iterator<Equation> iter = this.eqsToUse.iterator();
@@ -828,6 +963,20 @@ public final class EquationSystem {
                     iter.remove();
                 }
             }
+        }
+
+        /*void purgeImpreciseVars() {
+            Iterator<MultVar> iter = this.impreciseVars.iterator();
+            while (iter.hasNext()) {
+                MultVar var = iter.next();
+                if (this.hasValue(var)) {
+                    iter.remove();
+                }
+            }
+        }*/
+
+        void setValue(MultVar var, Multiplicity mult) {
+            this.setValue(var, mult, true);
         }
 
         @Override

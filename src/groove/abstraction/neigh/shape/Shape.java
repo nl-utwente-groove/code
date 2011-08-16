@@ -694,6 +694,20 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
+     * Returns the bounded sum of the edge multiplicities of the given set.
+     */
+    public Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS,
+            EdgeMultDir direction) {
+        Multiplicity accumulator =
+            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+        for (EdgeSignature es : esS) {
+            Multiplicity edgeMult = this.getEdgeSigMult(es, direction);
+            accumulator = accumulator.add(edgeMult);
+        }
+        return accumulator;
+    }
+
+    /**
      * Returns the equivalence class of the given node. It is assumed that
      * the given node is in the shape. 
      */
