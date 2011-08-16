@@ -18,9 +18,11 @@ package groove.abstraction.neigh.shape;
 
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -147,6 +149,27 @@ public class ShapeMorphism extends HostGraphMorphism {
     }
 
     /**
+     * Returns the set of pre-images of the given edge signature in the 'from'
+     * shape. Only the pre-images of the nodes in the equivalence class of the
+     * signature are considered, the node in the source signature is taken to
+     * be the given 'nodeS'.
+     */
+    public Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
+            EdgeSignature esT) {
+        Set<EdgeSignature> result = new THashSet<EdgeSignature>();
+        TypeLabel label = esT.getLabel();
+        for (ShapeNode esEcNodeT : esT.getEquivClass()) {
+            Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
+            for (ShapeNode esEcNodeS : esEcNodesS) {
+                EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
+                EdgeSignature esS = from.getEdgeSignature(nodeS, label, ecS);
+                result.add(esS);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Implements the conditions of a shape morphism given on Def. 11, page 14.
      */
     public boolean isConsistent(Shape from, Shape to) {
@@ -188,7 +211,22 @@ public class ShapeMorphism extends HostGraphMorphism {
         // Check for item 3.
         boolean complyToEdgeMult = true;
         if (complyToEquivClass && complyToNodeMult) {
-            // EDUARDO: Finish this...
+            dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
+                for (EdgeSignature esT : to.getEdgeMultMapKeys(direction)) {
+                    Multiplicity esTMult = to.getEdgeSigMult(esT, direction);
+                    Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
+                    for (ShapeNode nodeS : nodesS) {
+                        Set<EdgeSignature> esSS =
+                            this.getPreImages(from, nodeS, esT);
+                        Multiplicity sum =
+                            from.getEdgeSigSetMultSum(esSS, direction);
+                        if (!esTMult.equals(sum)) {
+                            complyToEdgeMult = false;
+                            break dirLoop;
+                        }
+                    }
+                }
+            }
         }
 
         return complyToEquivClass && complyToNodeMult && complyToEdgeMult;
