@@ -26,6 +26,7 @@ import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 import groove.trans.RuleEdge;
@@ -114,7 +115,6 @@ public final class EquationSystem {
      */
     private void create() {
         Shape shape = this.mat.getShape();
-
         // BEGIN - Create opposition relations and edge bundles.
         Set<EdgeBundle> bundles = new THashSet<EdgeBundle>();
         // For all possible new edges.
@@ -139,14 +139,10 @@ public final class EquationSystem {
         // BEGIN - Create equalities.
         for (EdgeBundle bundle : bundles) {
             EdgeMultDir direction = bundle.direction;
-            // Multiplicity of the bundle node.
-            Multiplicity nodeMult = shape.getNodeMult(bundle.node);
+
             // Counter of bundle edges that were matched by the rule.
             Multiplicity matchedEdgesMult =
                 Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-            // Edge signature of the bundle.
-            EdgeSignature es = null;
-
             boolean hasUnmatchedEdges = false;
             // For all edges in the bundle.
             // BEGIN - Bundle edges loop.
@@ -155,17 +151,7 @@ public final class EquationSystem {
                 if (!this.hasVariable(edge, direction)) {
                     // There is no variable for the edge. This means that the
                     // edge is already in the shape.
-
-                    // First check if we already have the signature.
-                    if (es == null) {
-                        // All edges of the bundle that are in the shape have
-                        // the same edge signature. Just used the current edge
-                        // of the loop for getting the edge signature.
-                        // This code is only executed once.
-                        es = shape.getEdgeSignature(edge, direction);
-                    } // else do nothing, we may already have the signature.
-
-                    // Now, check if the shape edge is an image of a rule edge.
+                    // Check if the shape edge is an image of a rule edge.
                     Set<RuleEdge> edgesR =
                         this.mat.getMatch().getPreImages(edge);
                     if (edgesR.size() > 0) {
@@ -179,23 +165,15 @@ public final class EquationSystem {
                 }
             } // END - Bundle edges loop.
 
+            // Get the edge signature from the original shape.
+            // Take any edge from the bundle.
+            ShapeEdge bundleEdge = bundleEdges.iterator().next();
+            // Find the original edge from the shaping morphism.
+            ShapeEdge origEdge =
+                this.mat.getShapeMorphism().getEdge(bundleEdge);
+            EdgeSignature origEs = shape.getEdgeSignature(origEdge, direction);
             // Multiplicity of the edge signature.
-            Multiplicity esMult;
-            if (es == null) {
-                // All edges in the bundle are possible edges and there are no
-                // fixed edges in the shape. We need to retrieve the edge
-                // signature from the original shape so we can get the proper
-                // multiplicity.
-                // Take any edge from the bundle.
-                ShapeEdge bundleEdge = bundleEdges.iterator().next();
-                // Find the original edge from the shaping morphism.
-                ShapeEdge origEdge =
-                    this.mat.getShapeMorphism().getEdge(bundleEdge);
-                esMult =
-                    this.mat.getOriginalShape().getEdgeMult(origEdge, direction);
-            } else {
-                esMult = shape.getEdgeSigMult(es, direction);
-            }
+            Multiplicity origEsMult = shape.getEdgeSigMult(origEs, direction);
 
             // Check if we need to create an extra variable for the signature.
             if (hasUnmatchedEdges) {
@@ -203,15 +181,15 @@ public final class EquationSystem {
                 // not matched by rule edges. Create another multiplicity
                 // variable to represent the value of the remainder
                 // multiplicity for the edge signature.
-                MultVar esVar = this.newEdgeSigMultVar(es, direction);
+                MultVar esVar = this.newEdgeSigMultVar(origEs, direction);
                 bundle.vars.add(esVar);
             }
 
-            // Create the equation with
-            // constant = (nodeMult * esMult) - matchedEdgesMult .
+            // Create the equation with constant = esMult - matchedEdgesMult .
             Equation eq =
                 this.newEquation(bundle.vars.size(),
-                    nodeMult.times(esMult).sub(matchedEdgesMult));
+                    origEsMult.sub(matchedEdgesMult),
+                    this.mat.getShape().getNodeMult(bundle.node).isCollector());
             // Add all variables in the bundle to the equation.
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
@@ -251,8 +229,9 @@ public final class EquationSystem {
      * Creates and returns a new equation,
      * while storing it in the equation set.
      */
-    private Equation newEquation(int varsCount, Multiplicity constant) {
-        Equation result = new Equation(varsCount, constant);
+    private Equation newEquation(int varsCount, Multiplicity constant,
+            boolean isCollector) {
+        Equation result = new Equation(varsCount, constant, isCollector);
         this.eqs.add(result);
         return result;
     }
@@ -420,43 +399,50 @@ public final class EquationSystem {
         assert sol != null;
         assert sol.isComplete();
         Shape shape = mat.getShape();
+        ShapeMorphism morph = mat.getShapeMorphism();
         // Each variable is associated with either an edge or a signature.
         // Iterate over the variables and modify the shape accordingly.
         for (MultVar var : this.vars) {
+            if (sol.impreciseVars.contains(var)) {
+                // We'll deal with the imprecise variables in the end.
+                continue;
+            }
             if (var instanceof EdgeMultVar) {
-                if (sol.impreciseVars.contains(var)) {
-                    // Problem: We have an imprecise value.
-                    // EDUARDO: Implement pull node...
-                }
                 // We have a variable associated with a possible edge.
                 EdgeMultVar edgeMultVar = (EdgeMultVar) var;
                 Multiplicity value = sol.getValue(edgeMultVar);
+                ShapeEdge edgeS = edgeMultVar.edge;
                 if (!value.isZero()) {
                     // We have to include the edge in the shape.
                     // But first, check if it's not included, because of an
                     // opposite variable.
-                    ShapeEdge edgeS = edgeMultVar.edge;
                     if (!shape.edgeSet().contains(edgeS)) {
                         shape.addEdgeWithoutCheck(edgeS);
                     }
                     // Set the multiplicity accordingly.
                     shape.setEdgeMult(edgeS, edgeMultVar.direction, value);
+                } else {
+                    // The possible edge is not inserted in the shape.
+                    // Remove it from the shape morphism.
+                    morph.removeEdge(edgeS);
                 }
             } else if (var instanceof EdgeSigMultVar) {
                 // We have a variable associated with the remainder of an edge
                 // signature multiplicity;
                 EdgeSigMultVar edgeSigMultVar = (EdgeSigMultVar) var;
                 Multiplicity value = sol.getValue(edgeSigMultVar);
-                if (value.isZero()) {
-                    // Setting the edge signature multiplicity to zero removes
-                    // all associated edges from the shape.
-                    shape.setEdgeSigMult(edgeSigMultVar.es,
-                        edgeSigMultVar.direction, value);
-                }
+                // Setting the edge signature multiplicity.
+                shape.setEdgeSigMult(edgeSigMultVar.es,
+                    edgeSigMultVar.direction, value);
             }
         }
-        // Adjust the shape morphism accordingly.
-        mat.getShapeMorphism().removeInvalidEdgeKeys(shape);
+        // If we have imprecise variables we may have to pull nodes.
+        for (MultVar var : sol.impreciseVars) {
+            if (var instanceof EdgeMultVar) {
+                // We have an imprecise variable associated with a possible edge.
+                shape.pullNode(mat, ((EdgeMultVar) var).edge, var.direction);
+            }
+        }
         assert mat.isShapeMorphConsistent();
         assert shape.isInvariantOK();
     }
@@ -543,11 +529,14 @@ public final class EquationSystem {
         final Set<MultVar> vars;
         /** The multiplicity constant. */
         final Multiplicity constant;
+        /** Flag to indicate if the node from the edge bundle is a collector. */
+        final boolean isCollector;
 
         /** Basic constructor. */
-        Equation(int varsCount, Multiplicity constant) {
+        Equation(int varsCount, Multiplicity constant, boolean isCollector) {
             this.vars = new THashSet<MultVar>(varsCount);
             this.constant = constant;
+            this.isCollector = isCollector;
         }
 
         /** Basic setter method. */
@@ -566,6 +555,9 @@ public final class EquationSystem {
                 }
             }
             result.append("=" + this.constant);
+            if (this.isCollector) {
+                result.append("C");
+            }
             return result.toString();
         }
 
@@ -608,7 +600,7 @@ public final class EquationSystem {
 
             if (openVarsCount == 1) {
                 // We have only one variable without a value so we assign the
-                // equation constant - the sum of all other variables values
+                // equation constant minus the sum of all other variables values
                 // to the open variable.
                 Multiplicity newConst = this.constant;
                 for (Multiplicity mult : this.getFixedValues(partialSol,
@@ -626,7 +618,7 @@ public final class EquationSystem {
 
             MultVar impreciseVars[] = this.getImpreciseVars(partialSol);
             if (impreciseVars.length == 1) {
-                if (this.constant.isOne()) {
+                if (this.constant.isOne() && !this.isCollector) {
                     // In this case we know that the value for the imprecise
                     // variable must be one and that all other open variables must
                     // be zero.
@@ -648,7 +640,7 @@ public final class EquationSystem {
 
                 // If we reached this point it means that the constant is
                 // a positive collector multiplicity.
-                assert this.constant.isCollector();
+                assert this.constant.isCollector() || this.isCollector;
                 // At this point we can't determine anything about the open
                 // variables except that they are positive. This means that
                 // all open variables become imprecise variables.
@@ -1006,9 +998,9 @@ public final class EquationSystem {
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.eqsToUse) {
-                if (result == null
-                    || (result.constant.isCollector() && !eq.constant.isCollector())
-                    || (eq.openVarsCount(this) < result.openVarsCount(this))) {
+                if (!eq.isCollector
+                    && (result == null
+                        || (result.constant.isCollector() && !eq.constant.isCollector()) || (eq.openVarsCount(this) < result.openVarsCount(this)))) {
                     result = eq;
                 }
             }

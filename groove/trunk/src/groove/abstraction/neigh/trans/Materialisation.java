@@ -99,6 +99,11 @@ public final class Materialisation {
      */
     private final RuleToShapeMap match;
     /**
+     * Auxiliary set that contains all nodes that were involved in a
+     * materialisation.
+     */
+    private final THashSet<ShapeNode> matNodes;
+    /**
      * Auxiliary set of possible new edges that should be included in the 
      * shape that is being materialised.
      */
@@ -122,6 +127,7 @@ public final class Materialisation {
         // Fix the original match to prevent modification.
         this.originalMatch.setFixed();
         this.match = this.originalMatch.clone();
+        this.matNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
     }
 
@@ -144,6 +150,7 @@ public final class Materialisation {
         this.morph = mat.morph.clone();
         // At the point when this constructor is called we don't need the
         // auxiliary data structures anymore.
+        this.matNodes = null;
         this.possibleNewEdges = null;
     }
 
@@ -206,6 +213,11 @@ public final class Materialisation {
     /** Basic getter method. */
     public RuleToShapeMap getOriginalMatch() {
         return this.originalMatch;
+    }
+
+    /** Basic getter method. */
+    public Set<ShapeNode> getMatNodesSet() {
+        return this.matNodes;
     }
 
     /** Basic getter method. */
@@ -306,6 +318,9 @@ public final class Materialisation {
             }
         }
 
+        // Create the set of possible edges that can occur on the final shape.
+        this.createPossibleEdges();
+
         // Search for edges in the match image that have to be materialised. 
         for (ShapeEdge edgeS : this.match.getInconsistentEdges()) {
             // This edge was affected by a node materialisation.
@@ -356,6 +371,54 @@ public final class Materialisation {
         return this.possibleNewEdges.isEmpty();
     }
 
+    /**
+     * Duplicates all incoming and outgoing edges for the materialised nodes.
+     * These edges are not added to the shape since they may not be present
+     * in the final configuration. For now they are put in a set of possible
+     * edges and later used by the equation system to decide on the final
+     * configuration of the shape.
+     */
+    private void createPossibleEdges() {
+        // For all nodes involved in the materialisation.
+        for (ShapeNode matNode : this.matNodes) {
+            // Get the original node from the shape morphism.
+            ShapeNode origNode = this.morph.getNode(matNode);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                // Look for all edges connected to the original node in the
+                // original shape.     
+                for (ShapeEdge origEdge : this.originalShape.binaryEdgeSet(
+                    origNode, direction)) {
+                    // Check all nodes in the shape that can have a connection.
+                    for (ShapeNode oppNode : this.shape.nodeSet()) {
+                        // Get the original node from the shape morphism.
+                        ShapeNode origOppNode =
+                            this.morph.getNode(oppNode);
+                        ShapeEdge possibleEdge = null;
+                        if (direction == EdgeMultDir.OUTGOING
+                            && origEdge.target().equals(origOppNode)) {
+                            // We have a possible outgoing edge.
+                            possibleEdge =
+                                this.shape.createEdge(matNode,
+                                    origEdge.label(), oppNode);
+                        } else if (direction == EdgeMultDir.INCOMING
+                            && origEdge.source().equals(origOppNode)) {
+                            // We have a possible incoming edge.
+                            possibleEdge =
+                                this.shape.createEdge(oppNode,
+                                    origEdge.label(), matNode);
+                        }
+                        if (possibleEdge != null
+                            && !this.shape.edgeSet().contains(possibleEdge)) {
+                            this.possibleNewEdges.add(possibleEdge);
+                            // Use the shape morphism to store additional info.
+                            this.morph.putEdge(possibleEdge, origEdge);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /** blah */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
@@ -364,10 +427,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-1").toResource();
+                view.getHostModel("materialisation-test-2").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-1");
+            Rule rule = grammar.getRule("test-mat-2");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             assertEquals(1, preMatches.size());
             for (Proof preMatch : preMatches) {
