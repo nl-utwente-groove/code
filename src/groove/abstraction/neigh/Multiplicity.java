@@ -232,23 +232,6 @@ public final class Multiplicity {
     }
 
     /**
-     * Returns the multiplication of the two given values.
-     * Both i and j must be in \Nat^\omega.
-     */
-    public static int times(int i, int j) {
-        assert isInNOmega(i) && isInNOmega(j);
-        int result;
-        if (i == 0 || j == 0) {
-            result = 0;
-        } else if (i != OMEGA && j != OMEGA) { // i, j \in N+.
-            result = i * j;
-        } else { // otherwise
-            result = OMEGA;
-        }
-        return result;
-    }
-
-    /**
      * Approximates the interval formed by the given values to a bounded
      * multiplicity. This is the \beta operation.
      * Both i and j must be in \Nat^\omega.
@@ -283,7 +266,7 @@ public final class Multiplicity {
      */
     public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
         int setSize = nodes.size();
-        return Multiplicity.approx(setSize, setSize, MultKind.NODE_MULT);
+        return approx(setSize, setSize, MultKind.NODE_MULT);
     }
 
     /**
@@ -292,7 +275,16 @@ public final class Multiplicity {
      */
     public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
         int setSize = edges.size();
-        return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
+        return approx(setSize, setSize, MultKind.EDGE_MULT);
+    }
+
+    /**
+     * Converts the given edge multiplicity into an equivalent node
+     * multiplicity. 
+     */
+    public static Multiplicity convertToNodeMult(Multiplicity mult) {
+        assert mult.kind == MultKind.EDGE_MULT;
+        return getMultiplicity(mult.i, mult.j, MultKind.NODE_MULT);
     }
 
     // ------------------------------------------------------------------------
@@ -381,12 +373,6 @@ public final class Multiplicity {
         assert this.kind == other.kind;
         return getMultiplicity(sub(this.i, other.j), sub(this.j, other.i),
             this.kind);
-    }
-
-    /** Returns the bounded multiplication of the two given multiplicities. */
-    public Multiplicity times(Multiplicity other) {
-        return approx(times(this.i, other.i), times(this.j, other.j),
-            MultKind.EDGE_MULT);
     }
 
     /** Returns the addition of this with one. */

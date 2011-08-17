@@ -827,6 +827,8 @@ public final class Shape extends DefaultHostGraph {
         RuleToShapeMap match = mat.getMatch();
         // The morphism between this shape and the original one.
         ShapeMorphism morph = mat.getShapeMorphism();
+        // The set of nodes involved in this materialisation.
+        Set<ShapeNode> matNodes = mat.getMatNodesSet();
 
         // Check the nodes on the rule that were mapped to nodeS.
         Set<RuleNode> nodesR = mat.getOriginalMatch().getPreImages(nodeS);
@@ -836,8 +838,6 @@ public final class Shape extends DefaultHostGraph {
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 
         // Create a new shape node for each rule node.
-        ShapeNode newNodes[] = new ShapeNode[copies];
-        int i = 0;
         for (RuleNode nodeR : nodesR) {
             ShapeNode newNode = getFactory().createNode();
             // Add the new node to the shape. Call the super method because
@@ -853,9 +853,8 @@ public final class Shape extends DefaultHostGraph {
             match.putNode(nodeR, newNode);
             // Update the morphism.
             morph.putNode(newNode, nodeS);
-            // Store the new node in the array.
-            newNodes[i] = newNode;
-            i++;
+            // Store the new node in the set of involved nodes.
+            matNodes.add(newNode);
         }
 
         // Adjust the multiplicity of the original node.
@@ -866,44 +865,10 @@ public final class Shape extends DefaultHostGraph {
             // The original node was removed from the shape and we have a
             // dangling reference in the shape morphism.
             morph.removeNode(nodeS);
-        }
-
-        /* EDUARDO: Fix this. This is not the place to duplicate the nodes.
-         * We need to do it outside this method after all nodes have been
-         * materialised.
-         */
-        // Now that we have all new nodes, duplicate all incoming and
-        // outgoing edges were the original node occurs. This list of edges
-        // is later used to decide on the final configuration of the shape.
-        Set<ShapeEdge> possibleNewEdges = mat.getPossibleNewEdgeSet();
-        for (ShapeEdge edgeS : this.outBinaryEdgeSet(nodeS)) {
-            TypeLabel label = edgeS.label();
-            for (ShapeNode newNode : newNodes) {
-                if (edgeS.isLoop()) {
-                    ShapeEdge newLoop =
-                        this.createEdge(newNode, label, newNode);
-                    possibleNewEdges.add(newLoop);
-                    // Use the shape morphism to store additional info.
-                    morph.putEdge(newLoop, edgeS);
-                }
-                ShapeEdge newEdge =
-                    this.createEdge(newNode, label, edgeS.target());
-                possibleNewEdges.add(newEdge);
-                // Use the shape morphism to store additional info.
-                morph.putEdge(newEdge, edgeS);
-            }
-        }
-        for (ShapeEdge edgeS : this.inBinaryEdgeSet(nodeS)) {
-            // We don't need to worry about self-edges, since they were handled
-            // in the previous loop.
-            TypeLabel label = edgeS.label();
-            ShapeNode source = edgeS.source();
-            for (ShapeNode newNode : newNodes) {
-                ShapeEdge newEdge = this.createEdge(source, label, newNode);
-                possibleNewEdges.add(newEdge);
-                // Use the shape morphism to store additional info.
-                morph.putEdge(newEdge, edgeS);
-            }
+        } else {
+            // The original node is still in the shape.
+            // Add it to the set of involved nodes as well.
+            matNodes.add(nodeS);
         }
     }
 
@@ -1006,20 +971,84 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
+    /** EDUARDO: Comment this... */
+    public void pullNode(Materialisation mat, ShapeEdge pullingEdge,
+            EdgeMultDir direction) {
+        // Create a new shape node.
+        ShapeNode newNode = getFactory().createNode();
+        // Add the new node to the shape. Call the super method because
+        // we have additional information on the node to be added.
+        super.addNode(newNode);
+
+        ShapeNode pulledNode = null;
+        Multiplicity newNodeMult = null;
+        ShapeEdge newEdge = null;
+        switch (direction) {
+        case OUTGOING:
+            pulledNode = pullingEdge.source();
+            newNodeMult =
+                Multiplicity.convertToNodeMult(this.getEdgeMult(pullingEdge,
+                    INCOMING));
+            newEdge =
+                this.createEdge(newNode, pullingEdge.label(),
+                    pullingEdge.target());
+            break;
+        case INCOMING:
+            pulledNode = pullingEdge.target();
+            newNodeMult =
+                Multiplicity.convertToNodeMult(this.getEdgeMult(pullingEdge,
+                    OUTGOING));
+            newEdge =
+                this.createEdge(pullingEdge.source(), pullingEdge.label(),
+                    newNode);
+            break;
+        default:
+            assert false;
+        }
+        Multiplicity pulledNodeOldMult = this.getNodeMult(pulledNode);
+        assert pulledNodeOldMult.isCollector();
+        Multiplicity pulledNodeNewMult = pulledNodeOldMult.sub(newNodeMult);
+
+        // Set the new node multiplicity.
+        this.setNodeMult(newNode, newNodeMult);
+        // Copy the labels from the pulled node.
+        this.copyUnaryEdges(pulledNode, newNode, null, null);
+        // Add the new node to a new equivalence class.
+        this.addToNewEquivClass(newNode);
+        // Add the new edge to the shape and adjust the multiplicities.
+        this.addEdgeWithoutCheck(newEdge);
+        this.setEdgeMult(newEdge, OUTGOING,
+            this.getEdgeMult(pullingEdge, OUTGOING));
+        this.setEdgeMult(newEdge, INCOMING,
+            this.getEdgeMult(pullingEdge, INCOMING));
+        // Now remove the pulling edge from the shape.
+        this.removeEdge(pullingEdge);
+        // Update the morphism.
+        ShapeMorphism morph = mat.getShapeMorphism();
+        morph.putNode(newNode, morph.getNode(pulledNode));
+        morph.putEdge(newEdge, morph.removeEdge(pullingEdge));
+        // Adjust the multiplicity of the old node.
+        this.setNodeMult(pulledNode, pulledNodeNewMult);
+
+        // EDUARDO: To finish this:
+        // - Duplicate incident edges on the new node.
+        // - Check if the new node should go into a new equivalence class or not.
+    }
+
     /** Duplicate all unary edges occurring in the given 'from' node. */
     private void copyUnaryEdges(ShapeNode from, ShapeNode to, RuleNode nodeR,
             RuleToShapeMap match) {
         assert !this.isFixed();
-        assert !match.isFixed();
-        assert match.getNode(nodeR).equals(from);
 
         for (ShapeEdge edge : this.outEdgeSet(from)) {
             if (edge.getRole() != BINARY) {
                 TypeLabel label = edge.label();
                 ShapeEdge edgeS = (ShapeEdge) this.addEdge(to, label, to);
-                RuleEdge edgeR = match.getSelfEdge(nodeR, label);
-                if (edgeR != null) {
-                    match.putEdge(edgeR, edgeS);
+                if (match != null && nodeR != null) {
+                    RuleEdge edgeR = match.getSelfEdge(nodeR, label);
+                    if (edgeR != null) {
+                        match.putEdge(edgeR, edgeS);
+                    }
                 }
             }
         }

@@ -27,7 +27,6 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -128,24 +127,6 @@ public class ShapeMorphism extends HostGraphMorphism {
             result.putEdge(edge, edge);
         }
         return result;
-    }
-
-    /**
-     * Remove edges from the morphism that are not part of the given shape.
-     * This happens in the materialisation phase when the morphism contains
-     * mappings of possible new edges that were not included in the final shape.
-     */
-    public void removeInvalidEdgeKeys(Shape from) {
-        Set<HostEdge> invalidKeys = new THashSet<HostEdge>();
-        Map<HostEdge,HostEdge> edgeMap = this.edgeMap();
-        for (HostEdge key : edgeMap.keySet()) {
-            if (!from.edgeSet().contains(key)) {
-                invalidKeys.add(key);
-            }
-        }
-        for (HostEdge invalidKey : invalidKeys) {
-            edgeMap.remove(invalidKey);
-        }
     }
 
     /**
