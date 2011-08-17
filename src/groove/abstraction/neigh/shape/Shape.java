@@ -868,6 +868,10 @@ public final class Shape extends DefaultHostGraph {
             morph.removeNode(nodeS);
         }
 
+        /* EDUARDO: Fix this. This is not the place to duplicate the nodes.
+         * We need to do it outside this method after all nodes have been
+         * materialised.
+         */
         // Now that we have all new nodes, duplicate all incoming and
         // outgoing edges were the original node occurs. This list of edges
         // is later used to decide on the final configuration of the shape.

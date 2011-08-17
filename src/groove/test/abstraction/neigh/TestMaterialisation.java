@@ -138,11 +138,11 @@ public class TestMaterialisation {
     public void testMaterialisation0c() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-0c").toResource();
+            graph = view.getHostModel("materialisation-test-1").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
-        Rule rule = grammar.getRule("test-mat-0c");
+        Rule rule = grammar.getRule("test-mat-1");
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
