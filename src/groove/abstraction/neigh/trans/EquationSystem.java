@@ -85,6 +85,11 @@ public final class EquationSystem {
     private final Map<ShapeEdge,EdgeMultVar> outEdgeMultVarMap;
     private final Map<ShapeEdge,EdgeMultVar> inEdgeMultVarMap;
 
+    /**
+     * Special field used to indicate if this equation system was created
+     * to solve a node pull operation, which makes the system simpler.
+     * In the normal case, is set to null.
+     */
     private final ShapeNode pulledNode;
 
     /** 
@@ -257,7 +262,11 @@ public final class EquationSystem {
         }
         if (result == null) {
             result = new EdgeBundle(node, label, direction);
-            if (this.pulledNode == null || this.pulledNode.equals(node)) {
+            if (!this.isForNodePull() || this.pulledNode.equals(node)) {
+                // In a normal equation system we add all bundles to the set.
+                // In the special case that the equation system is for a node
+                // pull, we are only interested in the bundles of the pulled
+                // node.
                 bundles.add(result);
             }
         }
@@ -299,6 +308,7 @@ public final class EquationSystem {
         return this.getEdgeVariable(edge, direction) != null;
     }
 
+    /** Returns true if the pulledNode field is non-null. */
     private boolean isForNodePull() {
         return this.pulledNode != null;
     }
@@ -368,7 +378,12 @@ public final class EquationSystem {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Solves the equation system in place. This method can only be called if
+     * the equation system was created from a node pull. In this case, the
+     * solution is deterministic, there are no imprecise variables and we 
+     * accept incomplete solutions.
+     */
     public void solveInPlace() {
         assert this.isForNodePull();
         Solution sol = new Solution(this.varCount, this.eqs);
@@ -383,7 +398,6 @@ public final class EquationSystem {
      * heuristic is used to decide on which equation to use that is likely
      * to produce less branching. Returns the set of new (partial) solutions.
      */
-
     private Set<Solution> iterateSolution(Solution sol) {
         this.iterateEquations(sol);
         Set<Solution> result;
@@ -398,6 +412,10 @@ public final class EquationSystem {
         return result;
     }
 
+    /**
+     * Iterate the given solution over all equations of the system and try to
+     * fix more variables. 
+     */
     @SuppressWarnings("unchecked")
     private void iterateEquations(Solution sol) {
         // For all equations, try to fix as many variables as possible.
@@ -474,13 +492,21 @@ public final class EquationSystem {
         assert shape.isInvariantOK();
     }
 
+    /**
+     * Updates the given materialisation with the (possibly incomplete)
+     * solution. This method can only be used if the system was created for
+     * a node pull. Variables without values have their edges inserted in the
+     * shape and the multiplicities are inherited from the original edge.
+     */
     private void updateMatFromIncompleteSolution(Materialisation mat,
             Solution sol) {
+        assert this.isForNodePull();
         assert mat != null;
-        assert sol != null;
-        assert sol.impreciseVars.isEmpty();
+        assert sol != null && sol.impreciseVars.isEmpty();
+
         Shape shape = mat.getShape();
         ShapeMorphism morph = mat.getShapeMorphism();
+
         for (MultVar var : this.vars) {
             assert var instanceof EdgeMultVar;
             // We have a variable associated with a possible edge.
@@ -527,11 +553,13 @@ public final class EquationSystem {
             this.number = number;
         }
 
+        /** Basic setter method. */
         void setBundle(EdgeBundle bundle) {
             assert bundle != null && this.bundle == null;
             this.bundle = bundle;
         }
 
+        /** Basic getter method. */
         EdgeMultDir getDirection() {
             return this.bundle.direction;
         }
@@ -781,6 +809,10 @@ public final class EquationSystem {
             return this.getOpenVars(partialSol, this.openVarsCount(partialSol));
         }
 
+        /**
+         * Returns the variables of this equation that are marked as imprecise
+         * in the given solution.
+         */
         MultVar[] getImpreciseVars(Solution partialSol) {
             ArrayList<MultVar> result =
                 new ArrayList<MultVar>(partialSol.impreciseVars.size());
@@ -792,6 +824,10 @@ public final class EquationSystem {
             return result.toArray(new MultVar[result.size()]);
         }
 
+        /**
+         * Returns the variables of this equation that have a value
+         * in the given solution.
+         */
         Multiplicity[] getFixedValues(Solution partialSol, int openVarsCount) {
             Multiplicity result[] =
                 new Multiplicity[this.vars.size() - openVarsCount];
@@ -951,8 +987,10 @@ public final class EquationSystem {
          * still open in the solution.
          */
         final Multiplicity values[];
+
         /** Number of non-null values of this solution. */
         int valuesCount;
+
         /**
          * Set of equations that can still provide new values for variables.
          * When an equation has no open variables it can no longer contribute
@@ -961,6 +999,11 @@ public final class EquationSystem {
          */
         final THashSet<Equation> eqsToUse;
 
+        /**
+         * Set of variables that we know are positive but don't have a
+         * precise value yet. Sometimes an imprecise variable can become
+         * precise, if it does not, then we have to pull nodes in the shape.
+         * */
         final THashSet<MultVar> impreciseVars;
 
         /** Basic constructor. */
@@ -1038,6 +1081,7 @@ public final class EquationSystem {
             }
         }
 
+        /** See {@link #setValue(MultVar, Multiplicity, boolean)}. */
         void setValue(MultVar var, Multiplicity mult) {
             this.setValue(var, mult, true);
         }

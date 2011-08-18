@@ -762,7 +762,6 @@ public final class Shape extends DefaultHostGraph {
         return this.getEdgesFromSig(es, direction).size() == 1;
     }
 
-    // EDUARDO: Check if this is really needed.
     private ShapeEdge getMinimumEdgeFromSig(EdgeSignature es,
             EdgeMultDir direction) {
         ShapeEdge result = null;
@@ -819,7 +818,16 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Materialises the given collector node in this shape according to the
+     * given materialisation.
+     * The number of new nodes created from the collector is determined by
+     * the number of rule nodes that were mapped to the collector.
+     * All new nodes get multiplicity one and are put in a singleton equivalence
+     * class.
+     * In addition, the rule match and the shape morphism are properly
+     * adjusted. 
+     */
     public void materialiseNode(Materialisation mat, ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
@@ -873,7 +881,13 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Materialises the given collector edge in this shape according to the
+     * given materialisation.
+     * We use the rule match to determine the new edges that have to be created.
+     * The multiplicities of the original collector edge are properly adjusted
+     * and so is the rule match. 
+     */
     public void materialiseEdge(Materialisation mat, ShapeEdge edgeS) {
         assert !this.isFixed();
 
@@ -903,8 +917,7 @@ public final class Shape extends DefaultHostGraph {
             // Get the image of source and target from the match.
             ShapeNode srcS = match.getNode(edgeR.source());
             ShapeNode tgtS = match.getNode(edgeR.target());
-            ShapeEdge newEdge =
-                (ShapeEdge) getFactory().createEdge(srcS, label, tgtS);
+            ShapeEdge newEdge = this.createEdge(srcS, label, tgtS);
             // Add the new edge to the shape. The edge multiplicity maps are
             // properly adjusted.
             this.addEdgeWithoutCheck(newEdge);
@@ -927,7 +940,16 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Puts the given node in a singleton equivalence class. In order to do so
+     * it is necessary for all edges incident to the node to be concrete. This
+     * means that this method can only be called after all nodes and edges
+     * have already been materialised.
+     * Since all new materialised nodes are already put in a singleton class,
+     * this method is only useful when there is a concrete shape node that
+     * was matched by a rule node and the shape node is not already in a
+     * singleton class.
+     */
     public void singulariseNode(ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
@@ -972,7 +994,19 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Extract more new nodes from a collector node that is connected to the
+     * pulling edge, in the given direction. This is the last step of the
+     * materialisation and happens when an equation system had been solved but
+     * the precise values for some of the variables could not be determined.
+     * This method does a job that is similar to a combination of node and
+     * edge materialisation.
+     * The final step creates another equation system that will determine
+     * all the adjacent edges of the newly pulled node. This new equation system
+     * is more local and therefore simpler. It is guaranteed not to create
+     * any more systems, which ensures that the whole materialisation process
+     * terminates with at most two levels of equation systems creation.   
+     */
     public void pullNode(Materialisation mat, ShapeEdge pullingEdge,
             EdgeMultDir direction) {
         // Create a new shape node.
@@ -1039,12 +1073,8 @@ public final class Shape extends DefaultHostGraph {
         morph.putNode(newNode, morph.getNode(pulledNode));
         morph.putEdge(newEdge, morph.removeEdge(pullingEdge));
 
-        // The set of nodes involved in this materialisation.
-        Set<ShapeNode> matNodes = mat.getMatNodesSet();
-        matNodes.add(newNode);
-        //matNodes.add(pulledNode);
-
         // Duplicate incident edges.
+        mat.getMatNodesSet().add(newNode);
         mat.createPossibleEdgesForNodePull();
 
         // Decide what should be in the final shape.
