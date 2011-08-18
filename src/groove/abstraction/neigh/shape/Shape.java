@@ -31,6 +31,7 @@ import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
+import groove.abstraction.neigh.trans.EquationSystem;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Edge;
@@ -1008,31 +1009,46 @@ public final class Shape extends DefaultHostGraph {
         Multiplicity pulledNodeOldMult = this.getNodeMult(pulledNode);
         assert pulledNodeOldMult.isCollector();
         Multiplicity pulledNodeNewMult = pulledNodeOldMult.sub(newNodeMult);
+        assert !pulledNodeNewMult.isZero();
 
-        // Set the new node multiplicity.
+        // Adjust the nodes multiplicities.
+        this.setNodeMult(pulledNode, pulledNodeNewMult);
         this.setNodeMult(newNode, newNodeMult);
+
         // Copy the labels from the pulled node.
         this.copyUnaryEdges(pulledNode, newNode, null, null);
-        // Add the new node to a new equivalence class.
-        this.addToNewEquivClass(newNode);
+
+        // Clone the original equivalence class and add the node to it.
+        EquivClass<ShapeNode> oldEc = this.getEquivClassOf(pulledNode);
+        EquivClass<ShapeNode> newEc = oldEc.clone();
+        newEc.add(newNode);
+        this.replaceEc(oldEc, newEc);
+
         // Add the new edge to the shape and adjust the multiplicities.
         this.addEdgeWithoutCheck(newEdge);
         this.setEdgeMult(newEdge, OUTGOING,
             this.getEdgeMult(pullingEdge, OUTGOING));
         this.setEdgeMult(newEdge, INCOMING,
             this.getEdgeMult(pullingEdge, INCOMING));
+
         // Now remove the pulling edge from the shape.
         this.removeEdge(pullingEdge);
+
         // Update the morphism.
         ShapeMorphism morph = mat.getShapeMorphism();
         morph.putNode(newNode, morph.getNode(pulledNode));
         morph.putEdge(newEdge, morph.removeEdge(pullingEdge));
-        // Adjust the multiplicity of the old node.
-        this.setNodeMult(pulledNode, pulledNodeNewMult);
 
-        // EDUARDO: To finish this:
-        // - Duplicate incident edges on the new node.
-        // - Check if the new node should go into a new equivalence class or not.
+        // The set of nodes involved in this materialisation.
+        Set<ShapeNode> matNodes = mat.getMatNodesSet();
+        matNodes.add(newNode);
+        //matNodes.add(pulledNode);
+
+        // Duplicate incident edges.
+        mat.createPossibleEdgesForNodePull();
+
+        // Decide what should be in the final shape.
+        new EquationSystem(mat, newNode).solveInPlace();
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */

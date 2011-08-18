@@ -148,10 +148,9 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
-        // At the point when this constructor is called we don't need the
-        // auxiliary data structures anymore.
-        this.matNodes = null;
-        this.possibleNewEdges = null;
+        // Create new auxiliary structures.
+        this.matNodes = new THashSet<ShapeNode>();
+        this.possibleNewEdges = new THashSet<ShapeEdge>();
     }
 
     // ------------------------------------------------------------------------
@@ -355,7 +354,7 @@ public final class Materialisation {
             // Yes, we do.
             // Create a new equation system for this materialisation and return
             // the resulting materialisations from the solution.
-            return new EquationSystem(this).solve();
+            return new EquationSystem(this, null).solve();
         }
     }
 
@@ -371,6 +370,12 @@ public final class Materialisation {
         return this.possibleNewEdges.isEmpty();
     }
 
+    /** Prepares the materialisation object for pulling nodes. */
+    public void prepareNodePull() {
+        this.matNodes.clear();
+        this.possibleNewEdges.clear();
+    }
+
     /**
      * Duplicates all incoming and outgoing edges for the materialised nodes.
      * These edges are not added to the shape since they may not be present
@@ -378,7 +383,8 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    private void createPossibleEdges() {
+    // EDUARDO: Merge this with the method below.
+    public void createPossibleEdges() {
         // For all nodes involved in the materialisation.
         for (ShapeNode matNode : this.matNodes) {
             // Get the original node from the shape morphism.
@@ -391,8 +397,7 @@ public final class Materialisation {
                     // Check all nodes in the shape that can have a connection.
                     for (ShapeNode oppNode : this.shape.nodeSet()) {
                         // Get the original node from the shape morphism.
-                        ShapeNode origOppNode =
-                            this.morph.getNode(oppNode);
+                        ShapeNode origOppNode = this.morph.getNode(oppNode);
                         ShapeEdge possibleEdge = null;
                         if (direction == EdgeMultDir.OUTGOING
                             && origEdge.target().equals(origOppNode)) {
@@ -409,6 +414,54 @@ public final class Materialisation {
                         }
                         if (possibleEdge != null
                             && !this.shape.edgeSet().contains(possibleEdge)) {
+                            this.possibleNewEdges.add(possibleEdge);
+                            // Use the shape morphism to store additional info.
+                            this.morph.putEdge(possibleEdge, origEdge);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** EDUARDO: Unify this method with the one above... */
+    public void createPossibleEdgesForNodePull() {
+        // For all nodes involved in the materialisation.
+        for (ShapeNode matNode : this.matNodes) {
+            // Get the original node from the shape morphism.
+            ShapeNode origNode = this.morph.getNode(matNode);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                // Look for all edges connected to the original node in the
+                // original shape.     
+                for (ShapeEdge origEdge : this.shape.binaryEdgeSet(origNode,
+                    direction)) {
+                    ShapeEdge possibleEdge = null;
+                    switch (direction) {
+                    case OUTGOING:
+                        possibleEdge =
+                            this.shape.createEdge(matNode, origEdge.label(),
+                                origEdge.target());
+                        break;
+                    case INCOMING:
+                        possibleEdge =
+                            this.shape.createEdge(origEdge.source(),
+                                origEdge.label(), matNode);
+                        break;
+                    default:
+                        assert false;
+                    }
+                    if (!this.shape.edgeSet().contains(possibleEdge)) {
+                        this.possibleNewEdges.add(possibleEdge);
+                        // Use the shape morphism to store additional info.
+                        this.morph.putEdge(possibleEdge, origEdge);
+                    }
+                    if (origEdge.isLoop()) {
+                        // Special case, we have to create a new loop for
+                        // the new node.
+                        possibleEdge =
+                            this.shape.createEdge(matNode, origEdge.label(),
+                                matNode);
+                        if (!this.shape.edgeSet().contains(possibleEdge)) {
                             this.possibleNewEdges.add(possibleEdge);
                             // Use the shape morphism to store additional info.
                             this.morph.putEdge(possibleEdge, origEdge);

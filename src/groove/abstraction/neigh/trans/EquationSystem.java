@@ -85,6 +85,8 @@ public final class EquationSystem {
     private final Map<ShapeEdge,EdgeMultVar> outEdgeMultVarMap;
     private final Map<ShapeEdge,EdgeMultVar> inEdgeMultVarMap;
 
+    private final ShapeNode pulledNode;
+
     /** 
      * Constructs the equation system based on the given materialisation.
      * After the constructor finishes, a call to solve() yields all possible
@@ -93,9 +95,10 @@ public final class EquationSystem {
      * Passing a materialisation that has an empty set of possible new edges
      * gives an assertion error.
      */
-    public EquationSystem(Materialisation mat) {
+    public EquationSystem(Materialisation mat, ShapeNode pulledNode) {
         assert !mat.getPossibleNewEdgeSet().isEmpty();
         this.mat = mat;
+        this.pulledNode = pulledNode;
         this.vars = new ArrayList<MultVar>();
         this.varCount = 0;
         this.eqs = new THashSet<Equation>();
@@ -139,6 +142,8 @@ public final class EquationSystem {
         // BEGIN - Create equalities.
         for (EdgeBundle bundle : bundles) {
             EdgeMultDir direction = bundle.direction;
+            // Compute and store the set of edges for this bundle.
+            this.computeEdgesForBundle(bundle);
 
             // Counter of bundle edges that were matched by the rule.
             Multiplicity matchedEdgesMult =
@@ -146,7 +151,7 @@ public final class EquationSystem {
             boolean hasUnmatchedEdges = false;
             // For all edges in the bundle.
             // BEGIN - Bundle edges loop.
-            Set<ShapeEdge> bundleEdges = this.getEdgesForBundle(bundle);
+            Set<ShapeEdge> bundleEdges = bundle.edges;
             for (ShapeEdge edge : bundleEdges) {
                 if (!this.hasVariable(edge, direction)) {
                     // There is no variable for the edge. This means that the
@@ -154,9 +159,10 @@ public final class EquationSystem {
                     // Check if the shape edge is an image of a rule edge.
                     Set<RuleEdge> edgesR =
                         this.mat.getMatch().getPreImages(edge);
-                    if (edgesR.size() > 0) {
-                        assert edgesR.size() == 1;
-                        // Yes, we have a rule edge. Increment the counter.
+                    if (edgesR.size() > 0 || this.isForNodePull()) {
+                        assert edgesR.size() == 1 || this.isForNodePull();
+                        // Yes, we have a rule edge, or all edges in the shape
+                        // are considered to be fixed. Increment the counter.
                         matchedEdgesMult = matchedEdgesMult.increment();
                     } else {
                         // No. There is no rule edge. Adjust the flag.
@@ -181,8 +187,8 @@ public final class EquationSystem {
                 // not matched by rule edges. Create another multiplicity
                 // variable to represent the value of the remainder
                 // multiplicity for the edge signature.
-                MultVar esVar = this.newEdgeSigMultVar(origEs, direction);
-                bundle.vars.add(esVar);
+                MultVar esVar = this.newEdgeSigMultVar(origEs);
+                bundle.addVar(esVar);
             }
 
             // Create the equation with constant = esMult - matchedEdgesMult .
@@ -204,7 +210,7 @@ public final class EquationSystem {
      * variable set and count. 
      */
     private EdgeMultVar newEdgeMultVar(ShapeEdge edge, EdgeMultDir direction) {
-        EdgeMultVar result = new EdgeMultVar(this.varCount, direction, edge);
+        EdgeMultVar result = new EdgeMultVar(this.varCount, edge);
         this.getEdgeMultVarMap(direction).put(edge, result);
         this.vars.add(result);
         this.varCount++;
@@ -216,10 +222,8 @@ public final class EquationSystem {
      * the given signature and direction.
      * The variable set and count is properly adjusted.
      */
-    private EdgeSigMultVar newEdgeSigMultVar(EdgeSignature es,
-            EdgeMultDir direction) {
-        EdgeSigMultVar result =
-            new EdgeSigMultVar(this.varCount, direction, es);
+    private EdgeSigMultVar newEdgeSigMultVar(EdgeSignature es) {
+        EdgeSigMultVar result = new EdgeSigMultVar(this.varCount, es);
         this.vars.add(result);
         this.varCount++;
         return result;
@@ -253,7 +257,9 @@ public final class EquationSystem {
         }
         if (result == null) {
             result = new EdgeBundle(node, label, direction);
-            bundles.add(result);
+            if (this.pulledNode == null || this.pulledNode.equals(node)) {
+                bundles.add(result);
+            }
         }
         return result;
     }
@@ -265,13 +271,13 @@ public final class EquationSystem {
      * the shape and have the same edge signature that is associated with the
      * bundle.
      */
-    private Set<ShapeEdge> getEdgesForBundle(EdgeBundle bundle) {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+    private void computeEdgesForBundle(EdgeBundle bundle) {
+        Set<ShapeEdge> edges = new THashSet<ShapeEdge>();
         // Include the possible edges.
         for (ShapeEdge possibleEdge : this.mat.getPossibleNewEdgeSet()) {
             MultVar var = this.getEdgeVariable(possibleEdge, bundle.direction);
             if (bundle.vars.contains(var)) {
-                result.add(possibleEdge);
+                edges.add(possibleEdge);
             }
         }
         for (ShapeEdge edgeS : this.mat.getShape().binaryEdgeSet(bundle.node,
@@ -279,10 +285,10 @@ public final class EquationSystem {
             if (edgeS.label().equals(bundle.label)) {
                 // EDUARDO: Fix this. This is wrong. If a node is in more than
                 // one bundle, all edges are mixed...
-                result.add(edgeS);
+                edges.add(edgeS);
             }
         }
-        return result;
+        bundle.setEdges(edges);
     }
 
     /**
@@ -291,6 +297,10 @@ public final class EquationSystem {
      */
     private boolean hasVariable(ShapeEdge edge, EdgeMultDir direction) {
         return this.getEdgeVariable(edge, direction) != null;
+    }
+
+    private boolean isForNodePull() {
+        return this.pulledNode != null;
     }
 
     /**
@@ -323,6 +333,7 @@ public final class EquationSystem {
      * This method resolves all non-determinism of the materialisation phase. 
      */
     public Set<Materialisation> solve() {
+        assert !this.isForNodePull();
         // Compute all solutions.
         Set<Solution> solutions = new THashSet<Solution>();
         Solution initialSol =
@@ -357,14 +368,38 @@ public final class EquationSystem {
         return result;
     }
 
+    /** EDUARDO: Comment this... */
+    public void solveInPlace() {
+        assert this.isForNodePull();
+        Solution sol = new Solution(this.varCount, this.eqs);
+        this.iterateEquations(sol);
+        assert sol.impreciseVars.isEmpty();
+        this.updateMatFromIncompleteSolution(this.mat, sol);
+    }
+
     /**
      * Iterate the given solution over all equations of the system and try to
      * fix more variables. This may lead to branching. In this case, an
      * heuristic is used to decide on which equation to use that is likely
      * to produce less branching. Returns the set of new (partial) solutions.
      */
-    @SuppressWarnings("unchecked")
+
     private Set<Solution> iterateSolution(Solution sol) {
+        this.iterateEquations(sol);
+        Set<Solution> result;
+        Equation branchingEq = sol.getBestBranchingEquation();
+        if (branchingEq == null) {
+            // We don't need to branch in the solution search.
+            result = new THashSet<Solution>();
+            result.add(sol);
+        } else {
+            result = branchingEq.getNewSolutions(sol);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void iterateEquations(Solution sol) {
         // For all equations, try to fix as many variables as possible.
         Set<Equation> currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
         int currEqsToUseSize = currEqsToUse.size();
@@ -377,17 +412,6 @@ public final class EquationSystem {
             currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
             currEqsToUseSize = currEqsToUse.size();
         }
-
-        Set<Solution> result;
-        Equation branchingEq = sol.getBestBranchingEquation();
-        if (branchingEq == null) {
-            // We don't need to branch in the solution search.
-            result = new THashSet<Solution>();
-            result.add(sol);
-        } else {
-            result = branchingEq.getNewSolutions(sol);
-        }
-        return result;
     }
 
     /**
@@ -405,6 +429,7 @@ public final class EquationSystem {
         for (MultVar var : this.vars) {
             if (sol.impreciseVars.contains(var)) {
                 // We'll deal with the imprecise variables in the end.
+                assert !this.isForNodePull();
                 continue;
             }
             if (var instanceof EdgeMultVar) {
@@ -420,7 +445,7 @@ public final class EquationSystem {
                         shape.addEdgeWithoutCheck(edgeS);
                     }
                     // Set the multiplicity accordingly.
-                    shape.setEdgeMult(edgeS, edgeMultVar.direction, value);
+                    shape.setEdgeMult(edgeS, edgeMultVar.getDirection(), value);
                 } else {
                     // The possible edge is not inserted in the shape.
                     // Remove it from the shape morphism.
@@ -433,18 +458,58 @@ public final class EquationSystem {
                 Multiplicity value = sol.getValue(edgeSigMultVar);
                 // Setting the edge signature multiplicity.
                 shape.setEdgeSigMult(edgeSigMultVar.es,
-                    edgeSigMultVar.direction, value);
+                    edgeSigMultVar.getDirection(), value);
             }
         }
         // If we have imprecise variables we may have to pull nodes.
         for (MultVar var : sol.impreciseVars) {
             if (var instanceof EdgeMultVar) {
                 // We have an imprecise variable associated with a possible edge.
-                shape.pullNode(mat, ((EdgeMultVar) var).edge, var.direction);
+                this.mat.prepareNodePull();
+                shape.pullNode(mat, ((EdgeMultVar) var).edge,
+                    var.getDirection());
             }
         }
         assert mat.isShapeMorphConsistent();
         assert shape.isInvariantOK();
+    }
+
+    private void updateMatFromIncompleteSolution(Materialisation mat,
+            Solution sol) {
+        assert mat != null;
+        assert sol != null;
+        assert sol.impreciseVars.isEmpty();
+        Shape shape = mat.getShape();
+        ShapeMorphism morph = mat.getShapeMorphism();
+        for (MultVar var : this.vars) {
+            assert var instanceof EdgeMultVar;
+            // We have a variable associated with a possible edge.
+            EdgeMultVar edgeMultVar = (EdgeMultVar) var;
+            ShapeEdge edgeS = edgeMultVar.edge;
+            Multiplicity value;
+            if (sol.hasValue(edgeMultVar)) {
+                value = sol.getValue(edgeMultVar);
+            } else {
+                // We don't have a value for this variable.
+                // Get the value from the original edge.
+                ShapeEdge origEdge = morph.getEdge(edgeS);
+                value = shape.getEdgeMult(origEdge, edgeMultVar.getDirection());
+            }
+            if (!value.isZero()) {
+                // We have to include the edge in the shape.
+                // But first, check if it's not included, because of an
+                // opposite variable.
+                if (!shape.edgeSet().contains(edgeS)) {
+                    shape.addEdgeWithoutCheck(edgeS);
+                }
+                // Set the multiplicity accordingly.
+                shape.setEdgeMult(edgeS, edgeMultVar.getDirection(), value);
+            } else {
+                // The possible edge is not inserted in the shape.
+                // Remove it from the shape morphism.
+                morph.removeEdge(edgeS);
+            }
+        }
     }
 
     /**
@@ -454,13 +519,21 @@ public final class EquationSystem {
 
         /** The unique variable number. */
         final int number;
-        /** The direction this variable is associated with. */
-        final EdgeMultDir direction;
+        /** The bundle this variable is associated with. */
+        EdgeBundle bundle;
 
         /** Basic constructor. */
-        MultVar(int number, EdgeMultDir direction) {
+        MultVar(int number) {
             this.number = number;
-            this.direction = direction;
+        }
+
+        void setBundle(EdgeBundle bundle) {
+            assert bundle != null && this.bundle == null;
+            this.bundle = bundle;
+        }
+
+        EdgeMultDir getDirection() {
+            return this.bundle.direction;
         }
 
         @Override
@@ -483,8 +556,8 @@ public final class EquationSystem {
         EdgeMultVar opposite;
 
         /** Basic constructor. */
-        EdgeMultVar(int number, EdgeMultDir direction, ShapeEdge edge) {
-            super(number, direction);
+        EdgeMultVar(int number, ShapeEdge edge) {
+            super(number);
             this.edge = edge;
         }
 
@@ -506,8 +579,8 @@ public final class EquationSystem {
         final EdgeSignature es;
 
         /** Basic constructor. */
-        EdgeSigMultVar(int number, EdgeMultDir direction, EdgeSignature es) {
-            super(number, direction);
+        EdgeSigMultVar(int number, EdgeSignature es) {
+            super(number);
             this.es = es;
         }
 
@@ -831,6 +904,8 @@ public final class EquationSystem {
         final EdgeMultDir direction;
         /** The variables for the possible edges that are part of the bundle. */
         final Set<MultVar> vars;
+        /** The set of edges that form this bundle. */
+        Set<ShapeEdge> edges;
 
         /** Basic constructor. */
         EdgeBundle(ShapeNode node, TypeLabel label, EdgeMultDir direction) {
@@ -848,8 +923,14 @@ public final class EquationSystem {
 
         /** Basic setter method. */
         void addVar(MultVar var) {
-            assert var.direction == this.direction;
+            var.setBundle(this);
             this.vars.add(var);
+        }
+
+        /** Basic setter method. */
+        void setEdges(Set<ShapeEdge> edges) {
+            assert edges != null && this.edges == null;
+            this.edges = edges;
         }
     }
 
@@ -956,16 +1037,6 @@ public final class EquationSystem {
                 }
             }
         }
-
-        /*void purgeImpreciseVars() {
-            Iterator<MultVar> iter = this.impreciseVars.iterator();
-            while (iter.hasNext()) {
-                MultVar var = iter.next();
-                if (this.hasValue(var)) {
-                    iter.remove();
-                }
-            }
-        }*/
 
         void setValue(MultVar var, Multiplicity mult) {
             this.setValue(var, mult, true);
