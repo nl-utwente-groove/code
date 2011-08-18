@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.trans;
 
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
-import static org.junit.Assert.assertEquals;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
@@ -383,7 +382,6 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    // EDUARDO: Merge this with the method below.
     public void createPossibleEdges() {
         // For all nodes involved in the materialisation.
         for (ShapeNode matNode : this.matNodes) {
@@ -424,48 +422,57 @@ public final class Materialisation {
         }
     }
 
-    /** EDUARDO: Unify this method with the one above... */
+    /**
+     * Duplicates all incoming and outgoing edges for the pulled nodes.
+     * These edges are not added to the shape since they may not be present
+     * in the final configuration. For now they are put in a set of possible
+     * edges and later used by the equation system to decide on the final
+     * configuration of the shape.
+     */
     public void createPossibleEdgesForNodePull() {
-        // For all nodes involved in the materialisation.
-        for (ShapeNode matNode : this.matNodes) {
-            // Get the original node from the shape morphism.
-            ShapeNode origNode = this.morph.getNode(matNode);
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                // Look for all edges connected to the original node in the
-                // original shape.     
-                for (ShapeEdge origEdge : this.shape.binaryEdgeSet(origNode,
-                    direction)) {
-                    ShapeEdge possibleEdge = null;
-                    switch (direction) {
-                    case OUTGOING:
-                        possibleEdge =
-                            this.shape.createEdge(matNode, origEdge.label(),
-                                origEdge.target());
-                        break;
-                    case INCOMING:
-                        possibleEdge =
-                            this.shape.createEdge(origEdge.source(),
-                                origEdge.label(), matNode);
-                        break;
-                    default:
-                        assert false;
-                    }
+        // Pulling nodes is a more local operation and is done in a step-wise
+        // fashion. The code in this method is similar to the method above but
+        // it's not similar enough to entail a merge.
+
+        assert this.matNodes.size() == 1;
+        ShapeNode matNode = this.matNodes.iterator().next();
+        // Get the original node from the shape morphism.
+        ShapeNode origNode = this.morph.getNode(matNode);
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            // Look for all edges connected to the original node in the
+            // current shape.     
+            for (ShapeEdge origEdge : this.shape.binaryEdgeSet(origNode,
+                direction)) {
+                ShapeEdge possibleEdge = null;
+                switch (direction) {
+                case OUTGOING:
+                    possibleEdge =
+                        this.shape.createEdge(matNode, origEdge.label(),
+                            origEdge.target());
+                    break;
+                case INCOMING:
+                    possibleEdge =
+                        this.shape.createEdge(origEdge.source(),
+                            origEdge.label(), matNode);
+                    break;
+                default:
+                    assert false;
+                }
+                if (!this.shape.edgeSet().contains(possibleEdge)) {
+                    this.possibleNewEdges.add(possibleEdge);
+                    // Use the shape morphism to store additional info.
+                    this.morph.putEdge(possibleEdge, origEdge);
+                }
+                if (origEdge.isLoop()) {
+                    // Special case, we have to create a new loop for
+                    // the new node.
+                    possibleEdge =
+                        this.shape.createEdge(matNode, origEdge.label(),
+                            matNode);
                     if (!this.shape.edgeSet().contains(possibleEdge)) {
                         this.possibleNewEdges.add(possibleEdge);
                         // Use the shape morphism to store additional info.
                         this.morph.putEdge(possibleEdge, origEdge);
-                    }
-                    if (origEdge.isLoop()) {
-                        // Special case, we have to create a new loop for
-                        // the new node.
-                        possibleEdge =
-                            this.shape.createEdge(matNode, origEdge.label(),
-                                matNode);
-                        if (!this.shape.edgeSet().contains(possibleEdge)) {
-                            this.possibleNewEdges.add(possibleEdge);
-                            // Use the shape morphism to store additional info.
-                            this.morph.putEdge(possibleEdge, origEdge);
-                        }
                     }
                 }
             }
@@ -480,12 +487,11 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-2").toResource();
+                view.getHostModel("materialisation-test-0c").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-2");
+            Rule rule = grammar.getRule("test-mat-0c");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertEquals(1, preMatches.size());
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);

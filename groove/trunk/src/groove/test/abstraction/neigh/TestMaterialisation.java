@@ -186,4 +186,30 @@ public class TestMaterialisation {
         }
     }
 
+    @Test
+    public void testMaterialisation2() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-2").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-2");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(2, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int nodeCount = matShape.nodeSet().size();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue((nodeCount == 5 || nodeCount == 6)
+                    && (binaryEdgeCount == 4 || binaryEdgeCount == 7));
+            }
+        }
+    }
 }
