@@ -23,7 +23,6 @@ import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy.Certificate;
@@ -59,7 +58,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
      * @param strong if <code>true</code>, the checker will not returns false
      *        negatives.
      */
-    private IsoChecker(boolean strong) {
+    protected IsoChecker(boolean strong) {
         this.strong = strong;
     }
 
@@ -75,8 +74,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
      * @return <code>true</code> only if <code>dom</code> and
      *         <code>cod</code> are isomorphic
      */
-    public <L extends Label> boolean areIsomorphic(Graph<N,E> dom,
-            Graph<N,E> cod) {
+    public boolean areIsomorphic(Graph<N,E> dom, Graph<N,E> cod) {
         return areIsomorphic(dom, cod, null, null);
     }
 
@@ -637,156 +635,6 @@ public class IsoChecker<N extends Node,E extends Edge> {
         return result;
     }
 
-    //
-    // /**
-    // * Tries to construct an isomorphism between the two given graphs, using
-    // * only the edges. The result is a bijective mapping from the non-isolated
-    // * nodes and edges of the source graph to those of the target graph, or
-    // * <code>null</code> if no such mapping could be found.
-    // * @param dom the first graph to be compared
-    // * @param cod the second graph to be compared
-    // */
-    // private NodeEdgeMap computeIsomorphism(Graph dom, Graph cod) {
-    // // make sure the graphs are of the same size
-    // if (dom.nodeCount() != cod.nodeCount()
-    // || dom.edgeCount() != cod.edgeCount()) {
-    // return null;
-    // }
-    // NodeEdgeMap result = new NodeEdgeHashMap();
-    // PartitionMap<Edge> codPartitionMap =
-    // cod.getCertifier(isStrong()).getEdgePartitionMap();
-    // // the mapping has to be injective, so we remember the used cod nodes
-    // Set<Node> usedNodeImages = new HashSet<Node>();
-    // // the set of dom nodes that have an image in result, but whose incident
-    // // images possibly don't
-    // Set<Node> connectedNodes = new HashSet<Node>();
-    // Map<Edge,Collection<Edge>> edgeImageMap =
-    // new HashMap<Edge,Collection<Edge>>();
-    // Certificate<Edge>[] edgeCerts =
-    // dom.getCertifier(isStrong()).getEdgeCertificates();
-    // // construct a mapping from the domain edges
-    // // to either unique codomain edges or sets of them
-    // int edgeCount = edgeCerts.length;
-    // for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
-    // Certificate<Edge> edgeCert = edgeCerts[i];
-    // SmallCollection<Edge> images = codPartitionMap.get(edgeCert);
-    // if (images == null) {
-    // return null;
-    // } else if (images.isSingleton()) {
-    // if (!setEdge(edgeCert.getElement(), images.getSingleton(),
-    // result, connectedNodes, usedNodeImages)) {
-    // return null;
-    // }
-    // } else {
-    // edgeImageMap.put(edgeCert.getElement(), images);
-    // }
-    // }
-    // while (!edgeImageMap.isEmpty()) {
-    // if (connectedNodes.isEmpty()) {
-    // // there are no edges connected to the part of the graph that
-    // // is already mapped;
-    // Iterator<Map.Entry<Edge,Collection<Edge>>> edgeImageEntryIter =
-    // edgeImageMap.entrySet().iterator();
-    // Map.Entry<Edge,Collection<Edge>> edgeImageEntry =
-    // edgeImageEntryIter.next();
-    // edgeImageEntryIter.remove();
-    // Edge domEdge = edgeImageEntry.getKey();
-    // // search a suitable value
-    // boolean found = false;
-    // search: for (Edge codEdge : edgeImageEntry.getValue()) {
-    // for (Node valueEnd : codEdge.ends()) {
-    // if (usedNodeImages.contains(valueEnd)) {
-    // continue search;
-    // }
-    // }
-    // // this image is OK
-    // for (int i = 0; i < domEdge.endCount(); i++) {
-    // Node domNode = domEdge.end(i);
-    // connectedNodes.add(domNode);
-    // Node codNode = codEdge.end(i);
-    // usedNodeImages.add(codNode);
-    // result.putNode(domNode, codNode);
-    // }
-    // result.putEdge(domEdge, codEdge);
-    // found = true;
-    // break;
-    // }
-    // if (!found) {
-    // return null;
-    // }
-    // } else {
-    // Iterator<Node> connectedNodeIter = connectedNodes.iterator();
-    // Node connectedNode = connectedNodeIter.next();
-    // connectedNodeIter.remove();
-    // for (Edge edge : dom.edgeSet(connectedNode)) {
-    // Collection<Edge> images = edgeImageMap.remove(edge);
-    // if (images != null
-    // && !selectEdge(edge, images, result, connectedNodes,
-    // usedNodeImages)) {
-    // // the edge is unmapped, and no suitable image can be
-    // // found
-    // return null;
-    // }
-    // }
-    // }
-    // }
-    // assert checkIsomorphism(dom, cod, result);
-    // // assert dom.edgeSet().containsAll(result.edgeMap().keySet());
-    // // assert cod.edgeSet().containsAll(result.edgeMap().values());
-    // // assert result.nodeMap().keySet().equals(dom.nodeSet());
-    // // assert result.nodeMap().keySet().equals(cod.nodeSet());
-    // return result;
-    // }
-    //
-    // /**
-    // * Inserts an edge from a set of possible edges into the result mapping,
-    // if
-    // * one can be found that is consistent with the current state.
-    // * @param key the dom edge to be inserted
-    // * @param values the set of cod edges that should be tried as image of
-    // * <code>key</code>
-    // * @param result the result map
-    // * @param connectedNodes the set of dom nodes that are mapped but may have
-    // * unmapped incident edges
-    // * @param usedCodNodes the set of node values in <code>result</code>
-    // * @return <code>true</code> if the key/value-pair was successfully added
-    // * to <code>result</code>
-    // */
-    // private boolean selectEdge(Edge key, Collection<Edge> values,
-    // NodeEdgeMap result, Set<Node> connectedNodes, Set<Node> usedCodNodes) {
-    // int arity = key.endCount();
-    // Node[] nodeImages = new Node[arity];
-    // for (int i = 0; i < arity; i++) {
-    // nodeImages[i] = result.getNode(key.end(i));
-    // }
-    // for (Edge value : values) {
-    // // first test if this edge value is viable
-    // boolean correct = true;
-    // for (int i = 0; correct && i < key.endCount(); i++) {
-    // if (nodeImages[i] == null) {
-    // correct = !usedCodNodes.contains(value.end(i));
-    // } else {
-    // correct = nodeImages[i] == value.end(i);
-    // }
-    // }
-    // if (correct) {
-    // for (int i = 0; i < key.endCount(); i++) {
-    // if (nodeImages[i] == null) {
-    // Node nodeImage =
-    // result.putNode(key.end(i), value.end(i));
-    // assert nodeImage == null;
-    // connectedNodes.add(key.end(i));
-    // usedCodNodes.add(value.end(i));
-    // }
-    // }
-    // Edge edgeImage = result.putEdge(key, value);
-    // assert edgeImage == null;
-    // return true;
-    // }
-    // }
-    // return false;
-    // }
-
     /**
      * Inserts an edge into the result mapping, testing if the resulting end
      * node mapping is consistent with the current state.
@@ -988,18 +836,10 @@ public class IsoChecker<N extends Node,E extends Edge> {
     }
 
     /**
-     * Sets the checker strength.
-     * @see #isStrong()
-     */
-    public synchronized void setStrong(boolean strong) {
-        this.strong = strong;
-    }
-
-    /**
      * Flag indicating the strength of the isomorphism check. If
      * <code>true</code>, no false negatives are returned.
      */
-    private boolean strong;
+    private final boolean strong;
 
     /**
      * Returns the singleton instance of this class.
