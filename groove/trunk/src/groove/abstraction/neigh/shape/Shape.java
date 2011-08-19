@@ -400,6 +400,12 @@ public final class Shape extends DefaultHostGraph {
         return (Graph<ShapeNode,ShapeEdge>) ((Graph) this);
     }
 
+    /** Ugly hack to circumvent typing problems. */
+    @SuppressWarnings({"rawtypes"})
+    public static Shape upcast(Graph<ShapeNode,ShapeEdge> shape) {
+        return (Shape) ((Graph) shape);
+    }
+
     /**
      * Creates nodes in the shape based on the equivalence relation given.
      * Used when creating a shape from a host graph. 

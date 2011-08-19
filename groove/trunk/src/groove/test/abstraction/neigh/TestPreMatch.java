@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -42,27 +43,37 @@ import org.junit.Test;
 public class TestPreMatch {
 
     static private final String DIRECTORY = "junit/samples/abs-test.gps/";
+    static private GrammarModel view;
+    static private GraphGrammar grammar;
+
+    @BeforeClass
+    public static void setUp() {
+        File file = new File(DIRECTORY);
+        try {
+            view = GrammarModel.newInstance(file, false);
+            grammar = view.toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testPreMatch0() {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
-        File file = new File(DIRECTORY);
+        HostGraph graph = null;
         try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("shape-build-test-2").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-match-0");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.isEmpty());
-        } catch (IOException e) {
-            e.printStackTrace();
+            graph = view.getHostModel("shape-build-test-2").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
+        Rule rule = grammar.getRule("test-match-0");
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertTrue(preMatches.isEmpty());
     }
 
     @Test
@@ -70,21 +81,16 @@ public class TestPreMatch {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
-        File file = new File(DIRECTORY);
+        HostGraph graph = null;
         try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("shape-build-test-2").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-match-4");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertTrue(preMatches.isEmpty());
-        } catch (IOException e) {
-            e.printStackTrace();
+            graph = view.getHostModel("shape-build-test-2").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
+        Rule rule = grammar.getRule("test-match-4");
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertTrue(preMatches.isEmpty());
     }
 
     @Test
@@ -92,43 +98,33 @@ public class TestPreMatch {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
-        File file = new File(DIRECTORY);
+        HostGraph graph = null;
         try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("shape-build-test-8").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-match-1");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertEquals(3, preMatches.size());
-            rule = grammar.getRule("test-match-2");
-            preMatches = PreMatch.getPreMatches(shape, rule);
-            assertEquals(4, preMatches.size());
-        } catch (IOException e) {
-            e.printStackTrace();
+            graph = view.getHostModel("shape-build-test-8").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
+        Shape shape = Shape.createShape(graph);
+        Rule rule = grammar.getRule("test-match-1");
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(3, preMatches.size());
+        rule = grammar.getRule("test-match-2");
+        preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(4, preMatches.size());
     }
 
     @Test
     public void testPreMatch3() {
-        File file = new File(DIRECTORY);
+        HostGraph graph = null;
         try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("shape-build-test-9").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-match-3");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            assertEquals(16, preMatches.size());
-        } catch (IOException e) {
-            e.printStackTrace();
+            graph = view.getHostModel("shape-build-test-9").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
+        Shape shape = Shape.createShape(graph);
+        Rule rule = grammar.getRule("test-match-3");
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(16, preMatches.size());
     }
 
 }
