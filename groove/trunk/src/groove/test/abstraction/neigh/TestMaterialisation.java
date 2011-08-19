@@ -212,4 +212,35 @@ public class TestMaterialisation {
             }
         }
     }
+
+    @Test
+    public void testRuleAppAndNormalisation() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("rule-app-test-0").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("add");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                assertEquals(5, matShape.nodeSet().size());
+                assertEquals(7, Util.getBinaryEdges(matShape).size());
+                Shape result = mat.applyMatch(null);
+                assertEquals(6, result.nodeSet().size());
+                assertEquals(8, Util.getBinaryEdges(result).size());
+                Shape normalisedShape = result.normalise();
+                assertEquals(4, normalisedShape.nodeSet().size());
+                assertEquals(5, Util.getBinaryEdges(normalisedShape).size());
+            }
+        }
+    }
 }

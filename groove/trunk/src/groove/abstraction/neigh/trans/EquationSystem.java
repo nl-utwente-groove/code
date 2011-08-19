@@ -483,7 +483,6 @@ public final class EquationSystem {
         for (MultVar var : sol.impreciseVars) {
             if (var instanceof EdgeMultVar) {
                 // We have an imprecise variable associated with a possible edge.
-                this.mat.prepareNodePull();
                 shape.pullNode(mat, ((EdgeMultVar) var).edge,
                     var.getDirection());
             }

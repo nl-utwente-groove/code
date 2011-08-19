@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.equiv;
 
 import gnu.trove.THashSet;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.trans.HostElement;
 import groove.util.Fixable;
 
@@ -152,6 +153,12 @@ public final class EquivClass<T extends HostElement> extends THashSet<T>
     /** Returns true if this equivalence class has just one element. */
     public boolean isSingleton() {
         return this.size() == 1;
+    }
+
+    /** Ugly hack to circumvent typing problems. */
+    @SuppressWarnings({"cast", "unchecked", "rawtypes"})
+    public EquivClass<ShapeNode> downcast() {
+        return (EquivClass<ShapeNode>) ((EquivClass) this);
     }
 
 }
