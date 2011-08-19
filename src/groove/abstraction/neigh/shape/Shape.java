@@ -31,6 +31,7 @@ import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
+import groove.abstraction.neigh.equiv.ShapeNeighEquiv;
 import groove.abstraction.neigh.trans.EquationSystem;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
@@ -122,13 +123,8 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a shape from the given graph. */
     public static Shape createShape(HostGraph graph) {
-        return createShape(graph, new HostToShapeMap());
-    }
-
-    /** Creates a shape from the given graph. */
-    public static Shape createShape(HostGraph graph, HostToShapeMap map) {
-        assert map.isEmpty();
         Shape shape = new Shape();
+        HostToShapeMap map = new HostToShapeMap();
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on the given graph.
         GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
@@ -405,7 +401,8 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
-     * Creates nodes in the shape based on the equivalence relation given. 
+     * Creates nodes in the shape based on the equivalence relation given.
+     * Used when creating a shape from a host graph. 
      */
     private void createShapeNodes(GraphNeighEquiv gne, HostToShapeMap map) {
         assert !this.isFixed();
@@ -433,8 +430,38 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
+     * Creates nodes in the shape based on the equivalence relation given.
+     * Used when creating a shape from a shape, i.e., during normalisation. 
+     */
+    private void createShapeNodes(ShapeNeighEquiv sne, HostToShapeMap map,
+            Shape origShape) {
+        assert !this.isFixed();
+        // Each node of the shape correspond to an equivalence class.
+        for (EquivClass<HostNode> ec : sne) {
+            // We are building a shape from another shape so we can re-use
+            // nodes. Since shape morphisms are non-injective w.r.t. the
+            // equivalence relation, we can pick an arbitrary node from
+            // the equivalence class to be the representative of the class
+            // in the new shape we are creating.
+            ShapeNode nodeS = (ShapeNode) ec.iterator().next();
+            // Add a shape node to the shape.
+            // Call the super method because we have additional information on
+            // the node to be added.
+            super.addNode(nodeS);
+            // Fill the shape node multiplicity.
+            Multiplicity mult = origShape.getNodeSetMultSum(ec.downcast());
+            this.setNodeMult(nodeS, mult);
+            // Update the shape morphism.
+            for (HostNode node : ec) {
+                map.putNode(node, nodeS);
+            }
+        }
+    }
+
+    /**
      * Creates the equivalence relation between shape nodes based on the
      * equivalence relation given.
+
      */
     private void createEquivRelation(EquivRelation<HostNode> er,
             HostToShapeMap map) {
@@ -515,6 +542,44 @@ public final class Shape extends DefaultHostGraph {
                 Multiplicity mult = Multiplicity.approx(size, size, EDGE_MULT);
                 // Store the multiplicity in the proper multiplicity map.
                 this.getEdgeMultMap(direction).put(es, mult);
+            }
+        }
+    }
+
+    /**
+     * Creates the edge multiplicity maps from a shape neighbourhood relation.
+     * See item 6 of Def. 22 on page 17 of the Technical Report.
+     */
+    private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv,
+            HostToShapeMap map, Shape origShape) {
+        assert !this.isFixed();
+        // For all binary edges of the shape. (T)
+        for (ShapeEdge edgeT : this.binaryEdgeSet()) {
+            // For outgoing and incoming maps.
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                // Get the edge signature.
+                EdgeSignature esT = this.getEdgeSignature(edgeT, direction);
+                // Get an arbitrary node of the original shape (S) that was
+                // mapped to the node of the edge signature of T.
+                ShapeNode nodeS =
+                    (ShapeNode) map.getPreImages(esT.getNode()).iterator().next();
+                // Get the reverse map of ecT from the shape morphism.
+                EquivClass<HostNode> ecTonS =
+                    map.getPreImages(esT.getEquivClass());
+                // Compute the set of equivalence classes from the original
+                // shape that we need to consider.
+                EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();
+                for (EquivClass<ShapeNode> possibleK : origShape.getEquivRelation()) {
+                    if (ecTonS.containsAll(possibleK)) {
+                        kSet.add(possibleK);
+                    }
+                }
+                // Compute the bounded multiplicity sum.
+                Multiplicity mult =
+                    ShapeNeighEquiv.getEdgeSetMult(origShape, nodeS,
+                        esT.getLabel(), kSet, direction);
+                // Store the multiplicity in the proper multiplicity map.
+                this.getEdgeMultMap(direction).put(esT, mult);
             }
         }
     }
@@ -950,7 +1015,7 @@ public final class Shape extends DefaultHostGraph {
      * was matched by a rule node and the shape node is not already in a
      * singleton class.
      */
-    public void singulariseNode(ShapeNode nodeS) {
+    public void singulariseNode(Materialisation mat, ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.nodeSet().contains(nodeS);
 
@@ -960,12 +1025,22 @@ public final class Shape extends DefaultHostGraph {
         }
 
         // For all incident edges.
+        EdgeMultDir direction = null;
+        ShapeEdge pullingEdge = null;
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
             }
             // Make sure that they are concrete.
-            assert this.isEdgeConcrete(edgeS);
+            direction = this.nonConcreteEdgeDir(edgeS);
+            if (direction != null) {
+                pullingEdge = edgeS;
+                break;
+            }
+        }
+        if (pullingEdge != null) {
+            // One of the edges is not concrete, we have to pull a node.
+            this.pullNode(mat, pullingEdge, direction);
         }
 
         // The original equivalence class to be split.
@@ -1009,6 +1084,7 @@ public final class Shape extends DefaultHostGraph {
      */
     public void pullNode(Materialisation mat, ShapeEdge pullingEdge,
             EdgeMultDir direction) {
+        mat.beginNodePull();
         // Create a new shape node.
         ShapeNode newNode = getFactory().createNode();
         // Add the new node to the shape. Call the super method because
@@ -1079,6 +1155,8 @@ public final class Shape extends DefaultHostGraph {
 
         // Decide what should be in the final shape.
         new EquationSystem(mat, newNode).solveInPlace();
+
+        mat.endNodePull();
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */
@@ -1138,17 +1216,31 @@ public final class Shape extends DefaultHostGraph {
      * Returns true if both outgoing and incoming multiplicities are one and
      * the edge is not part of and edge bundle.
      */
-    public boolean isEdgeConcrete(ShapeEdge edge) {
-        boolean result = true;
+    private EdgeMultDir nonConcreteEdgeDir(ShapeEdge edge) {
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             EdgeSignature es = this.getEdgeSignature(edge, direction);
             if (!this.getEdgeSigMult(es, direction).isOne()
                 || !this.isEdgeSigUnique(es, direction)) {
-                result = false;
-                break;
+                return direction;
             }
         }
-        return result;
+        return null;
+    }
+
+    /** Normalises the shape object and returns the newly modified shape. */
+    public Shape normalise() {
+        Shape normalisedShape = new Shape();
+        HostToShapeMap map = new HostToShapeMap();
+        int radius = Parameters.getAbsRadius();
+        // Compute the equivalence relation on this shape.
+        ShapeNeighEquiv sne = new ShapeNeighEquiv(this, radius);
+        // Now build the shape.
+        normalisedShape.createShapeNodes(sne, map, this);
+        normalisedShape.createEquivRelation(sne.getPrevEquivRelation(), map);
+        normalisedShape.createShapeEdges(sne.getEdgesEquivRel(), map);
+        normalisedShape.createEdgeMultMaps(sne, map, this);
+        assert normalisedShape.isInvariantOK();
+        return normalisedShape;
     }
 
     /**

@@ -22,8 +22,6 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
-import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -31,19 +29,13 @@ import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
-import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
-import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -98,15 +90,17 @@ public final class Materialisation {
      */
     private final RuleToShapeMap match;
     /**
-     * Auxiliary set that contains all nodes that were involved in a
+     * Auxiliary sets that contains all nodes that were involved in a
      * materialisation.
      */
     private final THashSet<ShapeNode> matNodes;
+    private final THashSet<ShapeNode> prevMatNodes;
     /**
-     * Auxiliary set of possible new edges that should be included in the 
+     * Auxiliary sets of possible new edges that should be included in the 
      * shape that is being materialised.
      */
     private final THashSet<ShapeEdge> possibleNewEdges;
+    private final THashSet<ShapeEdge> prevPossibleNewEdges;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -126,8 +120,11 @@ public final class Materialisation {
         // Fix the original match to prevent modification.
         this.originalMatch.setFixed();
         this.match = this.originalMatch.clone();
+        // Create new auxiliary structures.
         this.matNodes = new THashSet<ShapeNode>();
+        this.prevMatNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
+        this.prevPossibleNewEdges = new THashSet<ShapeEdge>();
     }
 
     /**
@@ -149,7 +146,9 @@ public final class Materialisation {
         this.morph = mat.morph.clone();
         // Create new auxiliary structures.
         this.matNodes = new THashSet<ShapeNode>();
+        this.prevMatNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
+        this.prevPossibleNewEdges = new THashSet<ShapeEdge>();
     }
 
     // ------------------------------------------------------------------------
@@ -336,7 +335,7 @@ public final class Materialisation {
                 // We have a rule node that was mapped to a shape node that is
                 // not in its own equivalence class. We need to singularise the
                 // shape node.
-                this.shape.singulariseNode(nodeS);
+                this.shape.singulariseNode(this, nodeS);
             }
         }
 
@@ -370,9 +369,23 @@ public final class Materialisation {
     }
 
     /** Prepares the materialisation object for pulling nodes. */
-    public void prepareNodePull() {
+    public void beginNodePull() {
+        assert this.prevMatNodes.isEmpty();
+        this.prevMatNodes.addAll(this.matNodes);
         this.matNodes.clear();
+        assert this.prevPossibleNewEdges.isEmpty();
+        this.prevPossibleNewEdges.addAll(this.possibleNewEdges);
         this.possibleNewEdges.clear();
+    }
+
+    /** Restores the materialisation object after pulling nodes. */
+    public void endNodePull() {
+        this.matNodes.clear();
+        this.matNodes.addAll(this.prevMatNodes);
+        this.prevMatNodes.clear();
+        this.possibleNewEdges.clear();
+        this.possibleNewEdges.addAll(this.prevPossibleNewEdges);
+        this.prevPossibleNewEdges.clear();
     }
 
     /**
@@ -476,40 +489,6 @@ public final class Materialisation {
                     }
                 }
             }
-        }
-    }
-
-    /** blah */
-    public static void main(String args[]) {
-        String DIRECTORY = "junit/samples/abs-test.gps/";
-        Multiplicity.initMultStore();
-        File file = new File(DIRECTORY);
-        try {
-            GrammarModel view = GrammarModel.newInstance(file, false);
-            HostGraph graph =
-                view.getHostModel("materialisation-test-0c").toResource();
-            Shape shape = Shape.createShape(graph);
-            GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0c");
-            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-            for (Proof preMatch : preMatches) {
-                Set<Materialisation> mats =
-                    Materialisation.getMaterialisations(shape, preMatch);
-                for (Materialisation mat : mats) {
-                    ShapePreviewDialog.showShape(mat.shape);
-                }
-                /*assertEquals(6, mats.size());
-                for (Materialisation mat : mats) {
-                    Shape matShape = mat.getShape();
-                    int binaryEdgeCount = getBinaryEdges(matShape).size();
-                    assertTrue((matShape.nodeSet().size() == 5 && binaryEdgeCount == 4)
-                        || (matShape.nodeSet().size() == 6 && binaryEdgeCount == 7));
-                }*/
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
         }
     }
 
