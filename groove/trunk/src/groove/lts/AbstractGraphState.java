@@ -262,12 +262,12 @@ abstract public class AbstractGraphState extends
      * is no frozen representation.
      * @return All nodes and edges of the graph, or <code>null</code>
      */
-    HostElement[] getFrozenGraph() {
+    protected HostElement[] getFrozenGraph() {
         return this.frozenGraph;
     }
 
     /** Stores a frozen representation of the graph. */
-    void setFrozenGraph(HostElement[] frozenGraph) {
+    protected void setFrozenGraph(HostElement[] frozenGraph) {
         this.frozenGraph = frozenGraph;
         frozenGraphCount++;
     }
@@ -348,7 +348,7 @@ abstract public class AbstractGraphState extends
     }
 
     /** Returns the system record associated with this state. */
-    SystemRecord getRecord() {
+    protected SystemRecord getRecord() {
         return ((StateReference) getCacheReference()).getRecord();
     }
 

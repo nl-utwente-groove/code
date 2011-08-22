@@ -383,7 +383,9 @@ public final class Multiplicity {
     /** Returns true if this multiplicity is less or equal than the other. */
     public boolean le(Multiplicity other) {
         assert this.kind == other.kind;
-        return this.i <= other.i && this.j <= other.j;
+        //return this.i <= other.i && this.j <= other.j;
+        return (this.i <= other.i && this.j <= other.j)
+            || (this.j != OMEGA && other.j == OMEGA);
     }
 
     /** Returns true if this multiplicity subsumes the other. */
