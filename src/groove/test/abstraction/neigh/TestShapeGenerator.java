@@ -57,8 +57,24 @@ public class TestShapeGenerator {
 
     }
 
-    /*@Test
+    @Test
     public void testShapeGenerator1() {
+        final String GRAMMAR = "junit/samples/abs-tri-part-graph.gps";
+        final String START_GRAPH = "start";
+        ShapeGenerator generator;
+
+        Parameters.setEdgeMultBound(1);
+        Parameters.setAbsRadius(1);
+        Parameters.setNodeMultBound(1);
+
+        generator = new ShapeGenerator();
+        generator.generate(GRAMMAR, START_GRAPH, false);
+        assertEquals(3, generator.getStateCount());
+        assertEquals(3, generator.getTransitionCount());
+    }
+
+    @Test
+    public void testShapeGenerator2() {
         final String GRAMMAR = "junit/samples/abs-circ-buf-0.gps";
         final String START_GRAPH = "start";
         ShapeGenerator generator;
@@ -71,11 +87,11 @@ public class TestShapeGenerator {
         generator.generate(GRAMMAR, START_GRAPH, false);
         assertEquals(73, generator.getStateCount());
         assertEquals(204, generator.getTransitionCount());
-    }*/
+    }
 
     @Test
-    public void testShapeGenerator2() {
-        final String GRAMMAR = "junit/samples/abs-tri-part-graph.gps";
+    public void testShapeGenerator3() {
+        final String GRAMMAR = "junit/samples/abs-circ-buf-1.gps";
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
@@ -85,8 +101,8 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertEquals(6, generator.getStateCount());
-        assertEquals(8, generator.getTransitionCount());
+        assertEquals(37, generator.getStateCount());
+        assertEquals(98, generator.getTransitionCount());
     }
 
 }
