@@ -41,8 +41,9 @@ import com.jgraph.layout.organic.JGraphFastOrganicLayout;
 public final class ShapePreviewDialog extends GraphPreviewDialog {
 
     /** Constructs a new dialog, for a given shape. */
-    public ShapePreviewDialog(Simulator simulator, Shape shape) {
+    private ShapePreviewDialog(Simulator simulator, Shape shape) {
         super(simulator, shape);
+        this.setTitle(shape.getName());
     }
 
     /**

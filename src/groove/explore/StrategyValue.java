@@ -1,5 +1,6 @@
 package groove.explore;
 
+import groove.abstraction.neigh.explore.strategy.ShapeBFSStrategy;
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
@@ -119,7 +120,10 @@ public enum StrategyValue implements ParsableValue {
             "Pocket LTL Model Checking",
             "Nested Depth-First Search for a given LTL formula,"
                 + "using incremental bounds based on graph size or rule applications"
-                + "and optimised to avoid reexploring connected components ('pockets')");
+                + "and optimised to avoid reexploring connected components ('pockets')"),
+    /** Shape exploration strategy. */
+    SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
+            "This strategy is used for abstract state space exploration.");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -325,6 +329,14 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
 
+        case SHAPE_BFS:
+            return new MyTemplate0() {
+                @Override
+                public Strategy create() {
+                    return new ShapeBFSStrategy();
+                }
+            };
+
         default:
             // we can't come here
             throw new IllegalStateException();
@@ -340,7 +352,7 @@ public enum StrategyValue implements ParsableValue {
         LTL_BOUNDED, LTL_POCKET);
     /** Special mask for development strategies only. Treated specially. */
     public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
-        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM);
+        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, SHAPE_BFS);
 
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Strategy> {

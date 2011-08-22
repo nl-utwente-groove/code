@@ -25,6 +25,8 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 
 import java.util.Map.Entry;
 
@@ -63,6 +65,12 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
         }
         return strong ? strongInstance : weakInstance;
+    }
+
+    /** Ugly hack for stupid typing problems. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public IsoChecker<HostNode,HostEdge> downcast() {
+        return (IsoChecker) this;
     }
 
     @Override

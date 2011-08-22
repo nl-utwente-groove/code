@@ -39,7 +39,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-class StateCache {
+public class StateCache {
     /**
      * Constructs a cache for a given state.
      */

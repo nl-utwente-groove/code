@@ -328,7 +328,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     /** Callback factory method for a state set. */
     protected TreeHashSet<GraphState> createStateSet() {
-        return new StateSet(getCollapse());
+        return new StateSet(getCollapse(), null);
     }
 
     /**
@@ -634,12 +634,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Specialised set implementation for storing states. */
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        public StateSet(int collapse) {
+        public StateSet(int collapse, IsoChecker<HostNode,HostEdge> checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
-            this.checker =
-                IsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
+            if (checker == null) {
+                this.checker =
+                    IsoChecker.getInstance(collapse == COLLAPSE_ISO_STRONG);
+            } else {
+                this.checker = checker;
+            }
         }
 
         /**
