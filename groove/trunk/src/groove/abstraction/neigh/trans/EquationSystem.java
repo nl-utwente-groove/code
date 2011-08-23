@@ -23,6 +23,7 @@ import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -33,6 +34,7 @@ import groove.trans.RuleEdge;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +67,7 @@ public final class EquationSystem {
      * changes. 
      */
     private final List<MultVar> vars;
+    private boolean hasEdgeSigMultVars;
 
     /** The number of multiplicity variables of the system. */
     private int varCount;
@@ -90,7 +93,7 @@ public final class EquationSystem {
      * to solve a node pull operation, which makes the system simpler.
      * In the normal case, is set to null.
      */
-    private final ShapeNode pulledNode;
+    private final Set<ShapeNode> pulledNodes;
 
     /** 
      * Constructs the equation system based on the given materialisation.
@@ -100,10 +103,12 @@ public final class EquationSystem {
      * Passing a materialisation that has an empty set of possible new edges
      * gives an assertion error.
      */
-    public EquationSystem(Materialisation mat, ShapeNode pulledNode) {
+    public EquationSystem(Materialisation mat, Set<ShapeNode> pulledNodes) {
         assert !mat.getPossibleNewEdgeSet().isEmpty();
         this.mat = mat;
-        this.pulledNode = pulledNode;
+        this.pulledNodes =
+            pulledNodes != null ? pulledNodes
+                    : Collections.<ShapeNode>emptySet();
         this.vars = new ArrayList<MultVar>();
         this.varCount = 0;
         this.eqs = new THashSet<Equation>();
@@ -143,12 +148,16 @@ public final class EquationSystem {
             inBundle.addVar(inMultVar);
         } // END - Create opposition relations and edge bundles.
 
+        for (EdgeBundle bundle : bundles) {
+            // Compute and store the set of edges for this bundle.
+            this.computeEdgesForBundle(bundle);
+        }
+        this.filterEdgeBundles(bundles);
+
         // For each edge bundle, create an equality.
         // BEGIN - Create equalities.
         for (EdgeBundle bundle : bundles) {
             EdgeMultDir direction = bundle.direction;
-            // Compute and store the set of edges for this bundle.
-            this.computeEdgesForBundle(bundle);
 
             // Counter of bundle edges that were matched by the rule.
             Multiplicity matchedEdgesMult =
@@ -177,14 +186,18 @@ public final class EquationSystem {
             } // END - Bundle edges loop.
 
             // Get the edge signature from the original shape.
+            Shape origShape = this.mat.getOriginalShape();
             // Take any edge from the bundle.
             ShapeEdge bundleEdge = bundleEdges.iterator().next();
             // Find the original edge from the shaping morphism.
             ShapeEdge origEdge =
                 this.mat.getShapeMorphism().getEdge(bundleEdge);
-            EdgeSignature origEs = shape.getEdgeSignature(origEdge, direction);
-            // Multiplicity of the edge signature.
-            Multiplicity origEsMult = shape.getEdgeSigMult(origEs, direction);
+            Multiplicity origEsMult;
+            if (origEdge.equals(bundleEdge)) {
+                origEsMult = origShape.getEdgeMult(origEdge, direction);
+            } else {
+                origEsMult = shape.getEdgeMult(origEdge, direction);
+            }
 
             // Check if we need to create an extra variable for the signature.
             if (hasUnmatchedEdges) {
@@ -192,7 +205,8 @@ public final class EquationSystem {
                 // not matched by rule edges. Create another multiplicity
                 // variable to represent the value of the remainder
                 // multiplicity for the edge signature.
-                MultVar esVar = this.newEdgeSigMultVar(origEs);
+                EdgeSignature es = shape.getEdgeSignature(origEdge, direction);
+                MultVar esVar = this.newEdgeSigMultVar(es);
                 bundle.addVar(esVar);
             }
 
@@ -200,7 +214,7 @@ public final class EquationSystem {
             Equation eq =
                 this.newEquation(bundle.vars.size(),
                     origEsMult.sub(matchedEdgesMult),
-                    this.mat.getShape().getNodeMult(bundle.node).isCollector());
+                    shape.getNodeMult(bundle.node).isCollector());
             // Add all variables in the bundle to the equation.
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
@@ -231,6 +245,7 @@ public final class EquationSystem {
         EdgeSigMultVar result = new EdgeSigMultVar(this.varCount, es);
         this.vars.add(result);
         this.varCount++;
+        this.hasEdgeSigMultVars = true;
         return result;
     }
 
@@ -262,15 +277,22 @@ public final class EquationSystem {
         }
         if (result == null) {
             result = new EdgeBundle(node, label, direction);
-            if (!this.isForNodePull() || this.pulledNode.equals(node)) {
-                // In a normal equation system we add all bundles to the set.
-                // In the special case that the equation system is for a node
-                // pull, we are only interested in the bundles of the pulled
-                // node.
-                bundles.add(result);
-            }
+            bundles.add(result);
         }
         return result;
+    }
+
+    private void filterEdgeBundles(Set<EdgeBundle> bundles) {
+        if (this.isForNodePull()) {
+            Iterator<EdgeBundle> iter = bundles.iterator();
+            while (iter.hasNext()) {
+                EdgeBundle bundle = iter.next();
+                if (!this.pulledNodes.contains(bundle.node)
+                    && this.hasSingleOppositeEc(bundle)) {
+                    iter.remove();
+                }
+            }
+        }
     }
 
     /**
@@ -300,6 +322,25 @@ public final class EquationSystem {
         bundle.setEdges(edges);
     }
 
+    private boolean hasSingleOppositeEc(EdgeBundle bundle) {
+        boolean result = true;
+        Shape shape = this.mat.getShape();
+        EquivClass<ShapeNode> currEc;
+        EquivClass<ShapeNode> prevEc = null;
+        for (ShapeEdge edge : bundle.edges) {
+            currEc =
+                shape.getEdgeSignature(edge, bundle.direction).getEquivClass();
+            if (prevEc == null) {
+                prevEc = currEc;
+            }
+            if (!currEc.equals(prevEc)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns true is the given edge has a variable associated in the given
      * direction. 
@@ -310,7 +351,7 @@ public final class EquationSystem {
 
     /** Returns true if the pulledNode field is non-null. */
     private boolean isForNodePull() {
-        return this.pulledNode != null;
+        return !this.pulledNodes.isEmpty();
     }
 
     /**
@@ -343,7 +384,6 @@ public final class EquationSystem {
      * This method resolves all non-determinism of the materialisation phase. 
      */
     public Set<Materialisation> solve() {
-        assert !this.isForNodePull();
         // Compute all solutions.
         Set<Solution> solutions = new THashSet<Solution>();
         Solution initialSol =
@@ -363,15 +403,20 @@ public final class EquationSystem {
         }
         // Create the return objects.
         Set<Materialisation> result = new THashSet<Materialisation>();
-        if (solutions.size() == 1) {
-            // Only one solution, no need to clone the materialisation object.
-            this.updateMatFromSolution(this.mat, solutions.iterator().next());
-            result.add(this.mat);
-        } else {
-            // OK, we need to clone.
-            for (Solution sol : solutions) {
-                Materialisation mat = this.mat.clone();
-                this.updateMatFromSolution(mat, sol);
+        for (Solution sol : solutions) {
+            Materialisation mat;
+            if (solutions.size() == 1) {
+                mat = this.mat;
+            } else {
+                mat = this.mat.clone();
+            }
+            this.updateMatFromSolution(mat, sol);
+            if (sol.requiresNodePull()) {
+                assert !this.isForNodePull();
+                this.performNodePulls(mat, sol, result);
+            } else {
+                assert mat.isShapeMorphConsistent();
+                assert mat.getShape().isInvariantOK();
                 result.add(mat);
             }
         }
@@ -385,7 +430,7 @@ public final class EquationSystem {
      * accept incomplete solutions.
      */
     public void solveInPlace() {
-        assert this.isForNodePull();
+        assert this.isDeterministic();
         Solution sol = new Solution(this.varCount, this.eqs);
         this.iterateEquations(sol);
         assert sol.impreciseVars.isEmpty();
@@ -434,7 +479,6 @@ public final class EquationSystem {
 
     /**
      * Adjust the given materialisation object using the given solution.
-     * After this the materialisation is complete. 
      */
     private void updateMatFromSolution(Materialisation mat, Solution sol) {
         assert mat != null;
@@ -479,16 +523,37 @@ public final class EquationSystem {
                     edgeSigMultVar.getDirection(), value);
             }
         }
-        // If we have imprecise variables we may have to pull nodes.
+    }
+
+    private void performNodePulls(Materialisation mat, Solution sol,
+            Set<Materialisation> result) {
+        assert sol.requiresNodePull();
+        mat.beginNodePull();
+        Shape shape = mat.getShape();
+        Set<ShapeNode> newNodes = new THashSet<ShapeNode>();
         for (MultVar var : sol.impreciseVars) {
             if (var instanceof EdgeMultVar) {
                 // We have an imprecise variable associated with a possible edge.
-                shape.pullNode(mat, ((EdgeMultVar) var).edge,
-                    var.getDirection());
+                ShapeNode newNode =
+                    shape.pullNode(mat, ((EdgeMultVar) var).edge,
+                        var.getDirection());
+                newNodes.add(newNode);
             }
         }
-        assert mat.isShapeMorphConsistent();
-        assert shape.isInvariantOK();
+        mat.endNodePull();
+        EquationSystem eqSys = new EquationSystem(mat, newNodes);
+        if (eqSys.isDeterministic()) {
+            eqSys.solveInPlace();
+            assert mat.isShapeMorphConsistent();
+            assert mat.getShape().isInvariantOK();
+            result.add(mat);
+        } else {
+            result.addAll(eqSys.solve());
+        }
+    }
+
+    private boolean isDeterministic() {
+        return this.isForNodePull() && !this.hasEdgeSigMultVars;
     }
 
     /**
@@ -1120,5 +1185,17 @@ public final class EquationSystem {
             }
             return result;
         }
+
+        boolean requiresNodePull() {
+            boolean result = false;
+            for (MultVar var : this.impreciseVars) {
+                if (var instanceof EdgeMultVar) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
     }
+
 }

@@ -89,7 +89,7 @@ public class TestShapeGenerator {
         assertEquals(204, generator.getTransitionCount());
     }
 
-    @Test
+    /*@Test
     public void testShapeGenerator3() {
         final String GRAMMAR = "junit/samples/abs-circ-buf-1.gps";
         final String START_GRAPH = "start";
@@ -103,6 +103,6 @@ public class TestShapeGenerator {
         generator.generate(GRAMMAR, START_GRAPH, false);
         assertEquals(37, generator.getStateCount());
         assertEquals(98, generator.getTransitionCount());
-    }
+    }*/
 
 }

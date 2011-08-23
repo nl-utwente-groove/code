@@ -32,7 +32,6 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
 import groove.abstraction.neigh.equiv.ShapeNeighEquiv;
-import groove.abstraction.neigh.trans.EquationSystem;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Edge;
@@ -1030,23 +1029,23 @@ public final class Shape extends DefaultHostGraph {
             return;
         }
 
-        // For all incident edges.
-        EdgeMultDir direction = null;
-        ShapeEdge pullingEdge = null;
+        Set<ShapeEdge> possibleEdges = mat.getPossibleNewEdgeSet();
+        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
             }
-            // Make sure that they are concrete.
-            direction = this.nonConcreteEdgeDir(edgeS);
-            if (direction != null) {
-                pullingEdge = edgeS;
-                break;
+            if (!this.isConcreteEdge(edgeS, OUTGOING)
+                || !this.isConcreteEdge(edgeS, INCOMING)) {
+                // We have an edge that is not concrete.
+                // Add it to the list of possible edges.
+                possibleEdges.add(edgeS);
+                // Mark it to be removed.
+                toRemove.add(edgeS);
             }
         }
-        if (pullingEdge != null) {
-            // One of the edges is not concrete, we have to pull a node.
-            this.pullNode(mat, pullingEdge, direction);
+        if (!toRemove.isEmpty()) {
+            this.removeEdgeSet(toRemove);
         }
 
         // The original equivalence class to be split.
@@ -1088,9 +1087,8 @@ public final class Shape extends DefaultHostGraph {
      * any more systems, which ensures that the whole materialisation process
      * terminates with at most two levels of equation systems creation.   
      */
-    public void pullNode(Materialisation mat, ShapeEdge pullingEdge,
+    public ShapeNode pullNode(Materialisation mat, ShapeEdge pullingEdge,
             EdgeMultDir direction) {
-        mat.beginNodePull();
         // Create a new shape node.
         ShapeNode newNode = getFactory().createNode();
         // Add the new node to the shape. Call the super method because
@@ -1157,12 +1155,9 @@ public final class Shape extends DefaultHostGraph {
 
         // Duplicate incident edges.
         mat.getMatNodesSet().add(newNode);
-        mat.createPossibleEdgesForNodePull();
+        //mat.createPossibleEdgesForNodePull();
 
-        // Decide what should be in the final shape.
-        new EquationSystem(mat, newNode).solveInPlace();
-
-        mat.endNodePull();
+        return newNode;
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */
@@ -1222,15 +1217,10 @@ public final class Shape extends DefaultHostGraph {
      * Returns true if both outgoing and incoming multiplicities are one and
      * the edge is not part of and edge bundle.
      */
-    private EdgeMultDir nonConcreteEdgeDir(ShapeEdge edge) {
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            EdgeSignature es = this.getEdgeSignature(edge, direction);
-            if (!this.getEdgeSigMult(es, direction).isOne()
-                || !this.isEdgeSigUnique(es, direction)) {
-                return direction;
-            }
-        }
-        return null;
+    private boolean isConcreteEdge(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature es = this.getEdgeSignature(edge, direction);
+        return this.getEdgeSigMult(es, direction).isOne()
+            && this.isEdgeSigUnique(es, direction);
     }
 
     /** Normalises the shape object and returns the newly modified shape. */
