@@ -22,6 +22,8 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
+import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -29,13 +31,19 @@ import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
+import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
+import groove.view.FormatException;
+import groove.view.GrammarModel;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -94,13 +102,11 @@ public final class Materialisation {
      * materialisation.
      */
     private final THashSet<ShapeNode> matNodes;
-    private final THashSet<ShapeNode> prevMatNodes;
     /**
      * Auxiliary sets of possible new edges that should be included in the 
      * shape that is being materialised.
      */
     private final THashSet<ShapeEdge> possibleNewEdges;
-    private final THashSet<ShapeEdge> prevPossibleNewEdges;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -122,9 +128,7 @@ public final class Materialisation {
         this.match = this.originalMatch.clone();
         // Create new auxiliary structures.
         this.matNodes = new THashSet<ShapeNode>();
-        this.prevMatNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
-        this.prevPossibleNewEdges = new THashSet<ShapeEdge>();
     }
 
     /**
@@ -146,9 +150,7 @@ public final class Materialisation {
         this.morph = mat.morph.clone();
         // Create new auxiliary structures.
         this.matNodes = new THashSet<ShapeNode>();
-        this.prevMatNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
-        this.prevPossibleNewEdges = new THashSet<ShapeEdge>();
     }
 
     // ------------------------------------------------------------------------
@@ -370,22 +372,13 @@ public final class Materialisation {
 
     /** Prepares the materialisation object for pulling nodes. */
     public void beginNodePull() {
-        assert this.prevMatNodes.isEmpty();
-        this.prevMatNodes.addAll(this.matNodes);
         this.matNodes.clear();
-        assert this.prevPossibleNewEdges.isEmpty();
-        this.prevPossibleNewEdges.addAll(this.possibleNewEdges);
         this.possibleNewEdges.clear();
     }
 
-    /** Restores the materialisation object after pulling nodes. */
+    /** Prepares the materialisation object for pulling nodes. */
     public void endNodePull() {
-        this.matNodes.clear();
-        this.matNodes.addAll(this.prevMatNodes);
-        this.prevMatNodes.clear();
-        this.possibleNewEdges.clear();
-        this.possibleNewEdges.addAll(this.prevPossibleNewEdges);
-        this.prevPossibleNewEdges.clear();
+        this.createPossibleEdges();
     }
 
     /**
@@ -395,7 +388,7 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    public void createPossibleEdges() {
+    private void createPossibleEdges() {
         // For all nodes involved in the materialisation.
         for (ShapeNode matNode : this.matNodes) {
             // Get the original node from the shape morphism.
@@ -442,7 +435,7 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    public void createPossibleEdgesForNodePull() {
+    private void createPossibleEdgesForNodePull() {
         // Pulling nodes is a more local operation and is done in a step-wise
         // fashion. The code in this method is similar to the method above but
         // it's not similar enough to entail a merge.
@@ -489,6 +482,34 @@ public final class Materialisation {
                     }
                 }
             }
+        }
+        this.matNodes.clear();
+    }
+
+    /** blah */
+    public static void main(String args[]) {
+        String DIRECTORY = "junit/samples/abs-test.gps/";
+        Multiplicity.initMultStore();
+        File file = new File(DIRECTORY);
+        try {
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph =
+                view.getHostModel("materialisation-test-2").toResource();
+            Shape shape = Shape.createShape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-2");
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (Proof preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    ShapePreviewDialog.showShape(mat.shape);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
         }
     }
 
