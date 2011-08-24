@@ -22,7 +22,6 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -436,7 +435,7 @@ public final class Materialisation {
         }
     }
 
-    /** blah */
+    /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
         Multiplicity.initMultStore();
@@ -444,16 +443,16 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-2").toResource();
+                view.getHostModel("materialisation-test-3").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-2");
+            Rule rule = grammar.getRule("test-mat-3");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
-                    ShapePreviewDialog.showShape(mat.shape);
+                    //ShapePreviewDialog.showShape(mat.shape);
                 }
             }
         } catch (IOException e) {

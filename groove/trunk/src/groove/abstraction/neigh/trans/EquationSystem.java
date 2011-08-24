@@ -67,7 +67,6 @@ public final class EquationSystem {
      * changes. 
      */
     private final List<MultVar> vars;
-    private boolean hasEdgeSigMultVars;
 
     /** The number of multiplicity variables of the system. */
     private int varCount;
@@ -219,6 +218,8 @@ public final class EquationSystem {
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
             }
+            // Connect the bundle and its equation.
+            bundle.setEquation(eq);
         } // END - Create equalities.
     }
 
@@ -245,7 +246,6 @@ public final class EquationSystem {
         EdgeSigMultVar result = new EdgeSigMultVar(this.varCount, es);
         this.vars.add(result);
         this.varCount++;
-        this.hasEdgeSigMultVars = true;
         return result;
     }
 
@@ -288,7 +288,8 @@ public final class EquationSystem {
             while (iter.hasNext()) {
                 EdgeBundle bundle = iter.next();
                 if (!this.pulledNodes.contains(bundle.node)
-                    && this.hasSingleOppositeEc(bundle)) {
+                    && haveSingleOppositeEc(this.mat.getShape(), bundle.edges,
+                        bundle.direction)) {
                     iter.remove();
                 }
             }
@@ -322,14 +323,13 @@ public final class EquationSystem {
         bundle.setEdges(edges);
     }
 
-    private boolean hasSingleOppositeEc(EdgeBundle bundle) {
+    private static boolean haveSingleOppositeEc(Shape shape,
+            Set<ShapeEdge> edges, EdgeMultDir direction) {
         boolean result = true;
-        Shape shape = this.mat.getShape();
         EquivClass<ShapeNode> currEc;
         EquivClass<ShapeNode> prevEc = null;
-        for (ShapeEdge edge : bundle.edges) {
-            currEc =
-                shape.getEdgeSignature(edge, bundle.direction).getEquivClass();
+        for (ShapeEdge edge : edges) {
+            currEc = shape.getEdgeSignature(edge, direction).getEquivClass();
             if (prevEc == null) {
                 prevEc = currEc;
             }
@@ -414,20 +414,6 @@ public final class EquationSystem {
     }
 
     /**
-     * Solves the equation system in place. This method can only be called if
-     * the equation system was created from a node pull. In this case, the
-     * solution is deterministic, there are no imprecise variables and we 
-     * accept incomplete solutions.
-     */
-    public void solveInPlace() {
-        assert this.isDeterministic();
-        Solution sol = new Solution(this.varCount, this.eqs);
-        this.iterateEquations(sol);
-        assert sol.impreciseVars.isEmpty();
-        this.updateMatFromIncompleteSolution(this.mat, sol);
-    }
-
-    /**
      * Iterate the given solution over all equations of the system and try to
      * fix more variables. This may lead to branching. In this case, an
      * heuristic is used to decide on which equation to use that is likely
@@ -435,16 +421,11 @@ public final class EquationSystem {
      */
     private void iterateSolution(Solution sol, Set<Solution> partialSols,
             Set<Solution> finishedSols) {
-        this.iterateEquations(sol);
-        Equation branchingEq = sol.getBestBranchingEquation();
-        if (branchingEq == null) {
-            // We don't need to branch in the solution search.
-            if (sol.isComplete()) {
-                finishedSols.add(sol);
-            } else {
-                partialSols.add(sol);
-            }
+        boolean isFinished = this.iterateEquations(sol);
+        if (isFinished) {
+            finishedSols.add(sol);
         } else {
+            Equation branchingEq = sol.getBestBranchingEquation();
             branchingEq.getNewSolutions(sol, partialSols, finishedSols);
         }
     }
@@ -454,7 +435,7 @@ public final class EquationSystem {
      * fix more variables. 
      */
     @SuppressWarnings("unchecked")
-    private void iterateEquations(Solution sol) {
+    private boolean iterateEquations(Solution sol) {
         // For all equations, try to fix as many variables as possible.
         Set<Equation> currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
         int currEqsToUseSize = currEqsToUse.size();
@@ -467,14 +448,41 @@ public final class EquationSystem {
             currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
             currEqsToUseSize = currEqsToUse.size();
         }
+        return this.checkIfSolutionIsFinished(sol, currEqsToUse);
+    }
+
+    private boolean checkIfSolutionIsFinished(Solution sol,
+            Set<Equation> currEqsToUse) {
+        if (sol.isComplete()) {
+            return true;
+        }
+        if (!this.isForNodePull()) {
+            return false;
+        }
+        // This is for node pull and the solution is not complete.
+        boolean result = true;
+        Shape shape = this.mat.getShape();
+        for (Equation eq : currEqsToUse) {
+            if (eq.isStillUseful(shape, sol, eq.getOpenVars(sol))) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private void updateMatFromSolution(Materialisation mat, Solution sol) {
+        if (sol.isComplete() && !this.isForNodePull()) {
+            this.updateMatFromCompleteSolution(mat, sol);
+        } else {
+            this.updateMatFromIncompleteSolution(mat, sol);
+        }
     }
 
     /**
      * Adjust the given materialisation object using the given solution.
      */
-    private void updateMatFromSolution(Materialisation mat, Solution sol) {
-        assert mat != null;
-        assert sol != null;
+    private void updateMatFromCompleteSolution(Materialisation mat, Solution sol) {
         assert sol.isComplete();
         Shape shape = mat.getShape();
         ShapeMorphism morph = mat.getShapeMorphism();
@@ -517,35 +525,6 @@ public final class EquationSystem {
         }
     }
 
-    private void performNodePulls(Materialisation mat, Solution sol,
-            Set<Materialisation> result) {
-        assert sol.requiresNodePull();
-        mat.beginNodePull();
-        Shape shape = mat.getShape();
-        Set<ShapeNode> newNodes = new THashSet<ShapeNode>();
-        for (MultVar var : sol.impreciseVars) {
-            if (var instanceof EdgeMultVar) {
-                // We have an imprecise variable associated with a possible edge.
-                ShapeNode newNode =
-                    shape.pullNode(mat, ((EdgeMultVar) var).edge,
-                        var.getDirection());
-                newNodes.add(newNode);
-            }
-        }
-        mat.endNodePull();
-        EquationSystem eqSys = new EquationSystem(mat, newNodes);
-        if (eqSys.isDeterministic()) {
-            eqSys.solveInPlace();
-            result.add(mat);
-        } else {
-            eqSys.solve(result);
-        }
-    }
-
-    private boolean isDeterministic() {
-        return this.isForNodePull() && !this.hasEdgeSigMultVars;
-    }
-
     /**
      * Updates the given materialisation with the (possibly incomplete)
      * solution. This method can only be used if the system was created for
@@ -555,10 +534,9 @@ public final class EquationSystem {
     private void updateMatFromIncompleteSolution(Materialisation mat,
             Solution sol) {
         assert this.isForNodePull();
-        assert mat != null;
-        assert sol != null && sol.impreciseVars.isEmpty();
 
         Shape shape = mat.getShape();
+        Shape origShape = mat.getOriginalShape();
         ShapeMorphism morph = mat.getShapeMorphism();
 
         for (MultVar var : this.vars) {
@@ -573,7 +551,8 @@ public final class EquationSystem {
                 // We don't have a value for this variable.
                 // Get the value from the original edge.
                 ShapeEdge origEdge = morph.getEdge(edgeS);
-                value = shape.getEdgeMult(origEdge, edgeMultVar.getDirection());
+                value =
+                    origShape.getEdgeMult(origEdge, edgeMultVar.getDirection());
             }
             if (!value.isZero()) {
                 // We have to include the edge in the shape.
@@ -590,6 +569,28 @@ public final class EquationSystem {
                 morph.removeEdge(edgeS);
             }
         }
+        // Make sure we don't trigger another equation system.
+        sol.impreciseVars.clear();
+    }
+
+    private void performNodePulls(Materialisation mat, Solution sol,
+            Set<Materialisation> result) {
+        mat.beginNodePull();
+        Shape shape = mat.getShape();
+        Set<ShapeNode> newNodes = new THashSet<ShapeNode>();
+        for (MultVar var : sol.impreciseVars) {
+            if (var instanceof EdgeMultVar) {
+                // We have an imprecise variable associated with a possible edge.
+                ShapeNode newNode =
+                    shape.pullNode(mat, ((EdgeMultVar) var).edge,
+                        var.getDirection());
+                newNodes.add(newNode);
+            }
+        }
+        mat.endNodePull();
+        new EquationSystem(mat, newNodes).solve(result);
+        // EDUARDO: Need to clone the mat object, otherwise the shape morph
+        // is wrong...
     }
 
     /**
@@ -616,6 +617,11 @@ public final class EquationSystem {
         /** Basic getter method. */
         EdgeMultDir getDirection() {
             return this.bundle.direction;
+        }
+
+        /** Basic inspection method. */
+        boolean isUsed() {
+            return this.bundle.hasEquation();
         }
 
         @Override
@@ -647,6 +653,11 @@ public final class EquationSystem {
         @Override
         public String toString() {
             return "x" + this.number;
+        }
+
+        /** Basic inspection method. */
+        boolean isOppositeUsed() {
+            return this.opposite.isUsed();
         }
     }
 
@@ -937,7 +948,7 @@ public final class EquationSystem {
                 currVals[curr]++;
                 if (currVals[curr] == multsSize) {
                     prev = curr - 1;
-                    while (prev >= 0 && currVals[prev]++ == multsSize) {
+                    while (prev >= 0 && ++currVals[prev] == multsSize) {
                         prev--;
                     }
                     if (prev >= 0) {
@@ -972,6 +983,27 @@ public final class EquationSystem {
             }
             return this.constant.equals(sum);
         }
+
+        boolean isStillUseful(Shape shape, Solution sol, MultVar openVars[]) {
+            EdgeBundle bundle = null;
+            Set<ShapeEdge> edges = new THashSet<ShapeEdge>();
+            for (MultVar var : openVars) {
+                if (var instanceof EdgeMultVar) {
+                    EdgeMultVar edgeMultVar = (EdgeMultVar) var;
+                    if (!edgeMultVar.isOppositeUsed()) {
+                        bundle = edgeMultVar.bundle;
+                        edges.add(edgeMultVar.edge);
+                    }
+                } else {
+                    return true;
+                }
+            }
+            if (bundle != null) {
+                return !haveSingleOppositeEc(shape, edges, bundle.direction);
+            } else {
+                return true;
+            }
+        }
     }
 
     /**
@@ -996,6 +1028,8 @@ public final class EquationSystem {
         final Set<MultVar> vars;
         /** The set of edges that form this bundle. */
         Set<ShapeEdge> edges;
+        /** The equation associated with this bundle. */
+        Equation eq;
 
         /** Basic constructor. */
         EdgeBundle(ShapeNode node, TypeLabel label, EdgeMultDir direction) {
@@ -1021,6 +1055,17 @@ public final class EquationSystem {
         void setEdges(Set<ShapeEdge> edges) {
             assert edges != null && this.edges == null;
             this.edges = edges;
+        }
+
+        /** Basic setter method. */
+        void setEquation(Equation eq) {
+            assert eq != null;
+            this.eq = eq;
+        }
+
+        /** Basic inspection method. */
+        boolean hasEquation() {
+            return this.eq != null;
         }
     }
 
@@ -1070,7 +1115,8 @@ public final class EquationSystem {
 
         /** Returns true if all values are non-null. */
         boolean isComplete() {
-            return this.valuesCount == this.values.length;
+            return this.valuesCount == this.values.length
+                || this.eqsToUse.isEmpty();
         }
 
         /** Returns true if the given variable has a value in this solution. */
