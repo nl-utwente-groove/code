@@ -342,20 +342,19 @@ public final class Materialisation {
         }
 
         // The deterministic steps of the materialisation are done.
+        ResultSet result = new ResultSet();
         // Check if we need to resolve non-determinism.
         if (this.isFinished()) {
             // No, we don't, just return this object.
-            Set<Materialisation> result = new THashSet<Materialisation>();
-            assert this.isShapeMorphConsistent();
-            assert this.shape.isInvariantOK();
             result.add(this);
-            return result;
         } else {
             // Yes, we do.
             // Create a new equation system for this materialisation and return
             // the resulting materialisations from the solution.
-            return new EquationSystem(this, null).solve();
+            new EquationSystem(this, null).solve(result);
         }
+
+        return result;
     }
 
     /**
@@ -428,62 +427,13 @@ public final class Materialisation {
         }
     }
 
-    /**
-     * Duplicates all incoming and outgoing edges for the pulled nodes.
-     * These edges are not added to the shape since they may not be present
-     * in the final configuration. For now they are put in a set of possible
-     * edges and later used by the equation system to decide on the final
-     * configuration of the shape.
-     */
-    private void createPossibleEdgesForNodePull() {
-        // Pulling nodes is a more local operation and is done in a step-wise
-        // fashion. The code in this method is similar to the method above but
-        // it's not similar enough to entail a merge.
-
-        assert this.matNodes.size() == 1;
-        ShapeNode matNode = this.matNodes.iterator().next();
-        // Get the original node from the shape morphism.
-        ShapeNode origNode = this.morph.getNode(matNode);
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            // Look for all edges connected to the original node in the
-            // current shape.     
-            for (ShapeEdge origEdge : this.shape.binaryEdgeSet(origNode,
-                direction)) {
-                ShapeEdge possibleEdge = null;
-                switch (direction) {
-                case OUTGOING:
-                    possibleEdge =
-                        this.shape.createEdge(matNode, origEdge.label(),
-                            origEdge.target());
-                    break;
-                case INCOMING:
-                    possibleEdge =
-                        this.shape.createEdge(origEdge.source(),
-                            origEdge.label(), matNode);
-                    break;
-                default:
-                    assert false;
-                }
-                if (!this.shape.edgeSet().contains(possibleEdge)) {
-                    this.possibleNewEdges.add(possibleEdge);
-                    // Use the shape morphism to store additional info.
-                    this.morph.putEdge(possibleEdge, origEdge);
-                }
-                if (origEdge.isLoop()) {
-                    // Special case, we have to create a new loop for
-                    // the new node.
-                    possibleEdge =
-                        this.shape.createEdge(matNode, origEdge.label(),
-                            matNode);
-                    if (!this.shape.edgeSet().contains(possibleEdge)) {
-                        this.possibleNewEdges.add(possibleEdge);
-                        // Use the shape morphism to store additional info.
-                        this.morph.putEdge(possibleEdge, origEdge);
-                    }
-                }
-            }
+    private static class ResultSet extends THashSet<Materialisation> {
+        @Override
+        public boolean add(Materialisation mat) {
+            assert mat.isShapeMorphConsistent();
+            assert mat.getShape().isInvariantOK();
+            return super.add(mat);
         }
-        this.matNodes.clear();
     }
 
     /** blah */

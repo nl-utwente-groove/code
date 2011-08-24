@@ -383,9 +383,9 @@ public final class EquationSystem {
      * materialisation objects created from the valid solutions.
      * This method resolves all non-determinism of the materialisation phase. 
      */
-    public Set<Materialisation> solve() {
+    public void solve(Set<Materialisation> result) {
         // Compute all solutions.
-        Set<Solution> solutions = new THashSet<Solution>();
+        Set<Solution> finishedSols = new THashSet<Solution>();
         Solution initialSol =
             new Solution(this.varCount, (THashSet<Equation>) this.eqs.clone());
         Set<Solution> partialSols = new THashSet<Solution>();
@@ -393,19 +393,12 @@ public final class EquationSystem {
         while (!partialSols.isEmpty()) {
             Solution sol = partialSols.iterator().next();
             partialSols.remove(sol);
-            for (Solution newSol : this.iterateSolution(sol)) {
-                if (newSol.isComplete()) {
-                    solutions.add(newSol);
-                } else {
-                    partialSols.add(newSol);
-                }
-            }
+            this.iterateSolution(sol, partialSols, finishedSols);
         }
         // Create the return objects.
-        Set<Materialisation> result = new THashSet<Materialisation>();
-        for (Solution sol : solutions) {
+        for (Solution sol : finishedSols) {
             Materialisation mat;
-            if (solutions.size() == 1) {
+            if (finishedSols.size() == 1) {
                 mat = this.mat;
             } else {
                 mat = this.mat.clone();
@@ -415,12 +408,9 @@ public final class EquationSystem {
                 assert !this.isForNodePull();
                 this.performNodePulls(mat, sol, result);
             } else {
-                assert mat.isShapeMorphConsistent();
-                assert mat.getShape().isInvariantOK();
                 result.add(mat);
             }
         }
-        return result;
     }
 
     /**
@@ -443,18 +433,20 @@ public final class EquationSystem {
      * heuristic is used to decide on which equation to use that is likely
      * to produce less branching. Returns the set of new (partial) solutions.
      */
-    private Set<Solution> iterateSolution(Solution sol) {
+    private void iterateSolution(Solution sol, Set<Solution> partialSols,
+            Set<Solution> finishedSols) {
         this.iterateEquations(sol);
-        Set<Solution> result;
         Equation branchingEq = sol.getBestBranchingEquation();
         if (branchingEq == null) {
             // We don't need to branch in the solution search.
-            result = new THashSet<Solution>();
-            result.add(sol);
+            if (sol.isComplete()) {
+                finishedSols.add(sol);
+            } else {
+                partialSols.add(sol);
+            }
         } else {
-            result = branchingEq.getNewSolutions(sol);
+            branchingEq.getNewSolutions(sol, partialSols, finishedSols);
         }
-        return result;
     }
 
     /**
@@ -544,11 +536,9 @@ public final class EquationSystem {
         EquationSystem eqSys = new EquationSystem(mat, newNodes);
         if (eqSys.isDeterministic()) {
             eqSys.solveInPlace();
-            assert mat.isShapeMorphConsistent();
-            assert mat.getShape().isInvariantOK();
             result.add(mat);
         } else {
-            result.addAll(eqSys.solve());
+            eqSys.solve(result);
         }
     }
 
@@ -910,11 +900,10 @@ public final class EquationSystem {
          * valid values to the open variables of this equation.
          * The blow-up on the materialisation phase is now due to this method.
          */
-        Set<Solution> getNewSolutions(Solution partialSol) {
+        void getNewSolutions(Solution partialSol, Set<Solution> partialSols,
+                Set<Solution> finishedSols) {
             assert !partialSol.isComplete();
             assert partialSol.eqsToUse.contains(this);
-
-            Set<Solution> result = new THashSet<Solution>();
 
             // Array of possible multiplicity values.
             Multiplicity mults[] = Multiplicity.getAllEdgeMultiplicities();
@@ -937,8 +926,11 @@ public final class EquationSystem {
                     newSol.setValue(vars[i], mults[currVals[i]], false);
                 }
                 if (this.isValidSolution(newSol)) {
-                    /*newSol.purgeImpreciseVars();*/
-                    result.add(newSol);
+                    if (newSol.isComplete()) {
+                        finishedSols.add(newSol);
+                    } else {
+                        partialSols.add(newSol);
+                    }
                 }
 
                 // Update pointers and compute next solution.
@@ -960,8 +952,6 @@ public final class EquationSystem {
             // This equation is no longer useful for finding the remaining
             // values of this solution.
             partialSol.eqsToUse.remove(this);
-
-            return result;
         }
 
         /**
