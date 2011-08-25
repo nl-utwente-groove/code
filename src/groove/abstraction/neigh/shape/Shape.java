@@ -1091,6 +1091,7 @@ public final class Shape extends DefaultHostGraph {
      * any more systems, which ensures that the whole materialisation process
      * terminates with at most two levels of equation systems creation.   
      */
+    // EDUARDO: Check this method...
     public ShapeNode pullNode(Materialisation mat, ShapeEdge pullingEdge,
             EdgeMultDir direction) {
         // Create a new shape node.

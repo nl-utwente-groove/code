@@ -380,6 +380,7 @@ public final class Materialisation {
     }
 
     /** Prepares the materialisation object for pulling nodes. */
+    // EDUARDO: Check this method...
     public void beginNodePull() {
         this.matNodes.clear();
         this.possibleNewEdges.clear();
@@ -388,6 +389,7 @@ public final class Materialisation {
     }
 
     /** Prepares the materialisation object for pulling nodes. */
+    // EDUARDO: Check this method...
     public void endNodePull() {
         this.createPossibleEdges(true);
     }
@@ -399,6 +401,7 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
+    // EDUARDO: Check this method...
     private void createPossibleEdges(boolean forNodePull) {
         // Clone the morphism because we need pre-images and this fixes
         // the object.
