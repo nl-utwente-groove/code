@@ -94,8 +94,8 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
 
     /** Private default constructor. Creates an empty shape. */
-    private Shape() {
-        super("shape", ShapeFactory.instance());
+    private Shape(ShapeFactory factory) {
+        super("shape", factory);
         this.equivRel = new EquivRelation<ShapeNode>();
         this.nodeMultMap = new THashMap<ShapeNode,Multiplicity>();
         this.outEdgeMultMap = new THashMap<EdgeSignature,Multiplicity>();
@@ -122,8 +122,8 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a shape from the given graph. */
     public static Shape createShape(HostGraph graph) {
-        Shape shape = new Shape();
-        HostToShapeMap map = new HostToShapeMap();
+        Shape shape = new Shape(ShapeFactory.newInstance());
+        HostToShapeMap map = new HostToShapeMap(shape.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on the given graph.
         GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
@@ -340,6 +340,20 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Creates an edge accordingly to the given direction. */
+    public ShapeEdge createEdge(HostNode node0, HostNode node1, Label label,
+            EdgeMultDir direction) {
+        switch (direction) {
+        case OUTGOING:
+            return this.createEdge(node0, label, node1);
+        case INCOMING:
+            return this.createEdge(node1, label, node0);
+        default:
+            assert false;
+            return null;
+        }
+    }
 
     /** Returns the set of binary edges of this shape. */
     private Set<ShapeEdge> binaryEdgeSet() {
@@ -628,6 +642,20 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
+    /** Basic getter method. */
+    public ShapeEdge getShapeEdge(ShapeNode node0, ShapeNode node1,
+            TypeLabel label, EdgeMultDir direction) {
+        switch (direction) {
+        case OUTGOING:
+            return this.getShapeEdge(node0, label, node1);
+        case INCOMING:
+            return this.getShapeEdge(node1, label, node0);
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     /**
      * Looks at the keys of the edge multiplicity maps for an edge signature
      * that contains the given edge. If no suitable edge signature is found, a
@@ -839,17 +867,7 @@ public final class Shape extends DefaultHostGraph {
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
         for (ShapeNode ecNode : es.getEquivClass()) {
-            ShapeEdge edge = null;
-            switch (direction) {
-            case OUTGOING:
-                edge = this.getShapeEdge(node, label, ecNode);
-                break;
-            case INCOMING:
-                edge = this.getShapeEdge(ecNode, label, node);
-                break;
-            default:
-                assert false;
-            }
+            ShapeEdge edge = this.getShapeEdge(node, ecNode, label, direction);
             if (edge != null && !edge.isLoop()) {
                 if (resultOpposite == null
                     || ecNode.getNumber() < resultOpposite.getNumber()) {
@@ -870,17 +888,7 @@ public final class Shape extends DefaultHostGraph {
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
         for (ShapeNode ecNode : es.getEquivClass()) {
-            ShapeEdge edge = null;
-            switch (direction) {
-            case OUTGOING:
-                edge = this.getShapeEdge(node, label, ecNode);
-                break;
-            case INCOMING:
-                edge = this.getShapeEdge(ecNode, label, node);
-                break;
-            default:
-                assert false;
-            }
+            ShapeEdge edge = this.getShapeEdge(node, ecNode, label, direction);
             if (edge != null) {
                 result.add(edge);
             }
@@ -944,10 +952,6 @@ public final class Shape extends DefaultHostGraph {
             // The original node was removed from the shape and we have a
             // dangling reference in the shape morphism.
             morph.removeNode(nodeS);
-        } else {
-            // The original node is still in the shape.
-            // Add it to the set of involved nodes as well.
-            matNodes.add(nodeS);
         }
     }
 
@@ -1148,14 +1152,16 @@ public final class Shape extends DefaultHostGraph {
         // Now remove the pulling edge from the shape.
         this.removeEdge(pullingEdge);
 
-        // Update the morphism.
+        // Update the morphisms.
         ShapeMorphism morph = mat.getShapeMorphism();
+        ShapeMorphism pullMorph = mat.getPullNodeMorphism();
         morph.putNode(newNode, morph.getNode(pulledNode));
+        pullMorph.putNode(newNode, pullMorph.getNode(pulledNode));
         morph.putEdge(newEdge, morph.removeEdge(pullingEdge));
+        pullMorph.putEdge(newEdge, pullMorph.removeEdge(pullingEdge));
 
         // Duplicate incident edges.
         mat.getMatNodesSet().add(newNode);
-        //mat.createPossibleEdgesForNodePull();
 
         return newNode;
     }
@@ -1225,8 +1231,8 @@ public final class Shape extends DefaultHostGraph {
 
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
-        Shape normalisedShape = new Shape();
-        HostToShapeMap map = new HostToShapeMap();
+        Shape normalisedShape = new Shape(this.getFactory());
+        HostToShapeMap map = new HostToShapeMap(this.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on this shape.
         ShapeNeighEquiv sne = new ShapeNeighEquiv(this, radius);

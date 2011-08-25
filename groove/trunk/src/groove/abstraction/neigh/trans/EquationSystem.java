@@ -192,10 +192,11 @@ public final class EquationSystem {
             ShapeEdge origEdge =
                 this.mat.getShapeMorphism().getEdge(bundleEdge);
             Multiplicity origEsMult;
-            if (origEdge.equals(bundleEdge)) {
-                origEsMult = origShape.getEdgeMult(origEdge, direction);
-            } else {
+            if (shape.containsEdge(origEdge)) {
                 origEsMult = shape.getEdgeMult(origEdge, direction);
+            } else {
+                assert origShape.containsEdge(origEdge);
+                origEsMult = origShape.getEdgeMult(origEdge, direction);
             }
 
             // Check if we need to create an extra variable for the signature.
@@ -588,9 +589,14 @@ public final class EquationSystem {
             }
         }
         mat.endNodePull();
-        new EquationSystem(mat, newNodes).solve(result);
-        // EDUARDO: Need to clone the mat object, otherwise the shape morph
-        // is wrong...
+        // Check if we need to resolve non-determinism.
+        if (mat.isFinished()) {
+            // No, we don't, just return the materialisation object.
+            result.add(mat);
+        } else {
+            // Yes, we do. Create a new equation system.
+            new EquationSystem(mat, newNodes).solve(result);
+        }
     }
 
     /**

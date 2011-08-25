@@ -19,8 +19,8 @@ public class HostToShapeMap extends
         Fixable {
 
     /** Default constructor. */
-    public HostToShapeMap() {
-        super(ShapeFactory.instance());
+    public HostToShapeMap(ShapeFactory factory) {
+        super(factory);
     }
 
     /** Specialises the return type. */
