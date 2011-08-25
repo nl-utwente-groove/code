@@ -459,8 +459,8 @@ public final class EquationSystem {
         }
         if (!this.isForNodePull()) {
             return false;
-        }
-        // This is for node pull and the solution is not complete.
+        }// else
+         // This is for node pull and the solution is not complete.
         boolean result = true;
         Shape shape = this.mat.getShape();
         for (Equation eq : currEqsToUse) {
@@ -574,6 +574,7 @@ public final class EquationSystem {
         sol.impreciseVars.clear();
     }
 
+    // EDUARDO: Check this method...
     private void performNodePulls(Materialisation mat, Solution sol,
             Set<Materialisation> result) {
         mat.beginNodePull();
