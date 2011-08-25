@@ -16,6 +16,7 @@
  */
 package groove.abstraction.neigh.shape;
 
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 
@@ -48,6 +49,25 @@ public final class ShapeEdge extends HostEdge {
     @Override
     public ShapeNode target() {
         return (ShapeNode) super.target();
+    }
+
+    /**
+     * If the given direction is OUTGOING, returns the target of this edge.
+     * If the given direction is INCOMING, returns the source of this edge.
+     */
+    public ShapeNode opposite(EdgeMultDir direction) {
+        ShapeNode opposite = null;
+        switch (direction) {
+        case OUTGOING:
+            opposite = this.target();
+            break;
+        case INCOMING:
+            opposite = this.source();
+            break;
+        default:
+            assert false;
+        }
+        return opposite;
     }
 
 }

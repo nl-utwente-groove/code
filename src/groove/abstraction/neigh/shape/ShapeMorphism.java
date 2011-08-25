@@ -20,6 +20,7 @@ import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -34,6 +35,8 @@ import java.util.Set;
  * @author Arend Rensink
  */
 public class ShapeMorphism extends HostGraphMorphism {
+
+    private static final boolean DEBUG = false;
 
     /**
      * Creates a shape morphism with a given element factory.
@@ -212,6 +215,15 @@ public class ShapeMorphism extends HostGraphMorphism {
                     }
                 }
             }
+        }
+
+        if (DEBUG
+            && !(complyToEquivClass && complyToNodeMult && complyToEdgeMult)) {
+            from.setName("from");
+            ShapePreviewDialog.showShape(from);
+            to.setName("to");
+            ShapePreviewDialog.showShape(to);
+            System.out.println(this);
         }
 
         return complyToEquivClass && complyToNodeMult && complyToEdgeMult;
