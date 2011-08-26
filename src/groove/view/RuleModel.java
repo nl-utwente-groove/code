@@ -140,7 +140,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
         }
-        AspectGraph normalSource = getSource().normalise();
+        AspectGraph normalSource = getNormalSource();
         if (normalSource.hasErrors()) {
             throw new FormatException(normalSource.getErrors());
         }
@@ -161,7 +161,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
             this.labelSet = new HashSet<TypeLabel>();
-            for (AspectEdge edge : getSource().edgeSet()) {
+            for (AspectEdge edge : getNormalSource().edgeSet()) {
                 RuleLabel label = edge.getRuleLabel();
                 if (label != null) {
                     RegExpr labelExpr = label.getMatchExpr();
@@ -323,12 +323,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return new RuleGraph(name);
     }
 
+    private AspectGraph getNormalSource() {
+        if (this.normalSource == null) {
+            this.normalSource = getSource().normalise();
+        }
+        return this.normalSource;
+    }
+
     /**
      * Mapping from the elements of the aspect graph representation to the
      * corresponding elements of the rule.
      */
     private final RuleModelMap modelMap = new RuleModelMap();
 
+    /** The normalised source model. */
+    private AspectGraph normalSource;
     /** Set of all labels occurring in the rule. */
     private Set<TypeLabel> labelSet;
     static private final RuleFactory ruleFactory = RuleFactory.instance();

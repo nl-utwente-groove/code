@@ -82,7 +82,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
             this.labelSet = new HashSet<TypeLabel>();
-            for (AspectEdge edge : getSource().edgeSet()) {
+            for (AspectEdge edge : getNormalSource().edgeSet()) {
                 TypeLabel label = edge.getTypeLabel();
                 if (label != null) {
                     this.labelSet.add(label);
@@ -114,6 +114,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return result;
     }
 
+    private AspectGraph getNormalSource() {
+        if (this.normalSource == null) {
+            this.normalSource = getSource().normalise();
+        }
+        return this.normalSource;
+    }
+
     @Override
     void notifyGrammarModified() {
         super.notifyGrammarModified();
@@ -141,7 +148,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
      * from the aspect graph's node to the (fresh) graph nodes.
      */
     private Pair<DefaultHostGraph,HostModelMap> computeModel(AspectGraph source) {
-        AspectGraph normalSource = source.normalise();
+        AspectGraph normalSource = getNormalSource();
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
@@ -266,6 +273,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     /** Map from model to resource nodes. */
     private HostModelMap hostModelMap;
+    /** The normalised source model. */
+    private AspectGraph normalSource;
     /** Set of labels occurring in this graph. */
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */
