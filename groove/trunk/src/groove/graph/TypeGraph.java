@@ -493,13 +493,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
             HostNode sourceImage = morphism.getNode(edge.source());
             HostNode targetImage = morphism.getNode(edge.target());
-            if (sourceImage == null || targetImage == null) {
+            TypeNode sourceType = sourceImage.getType();
+            TypeNode targetType = targetImage.getType();
+            if (sourceType == null || targetType == null) {
                 // this must be due to an untyped node
                 // which was already reported as an error
                 continue;
             }
-            TypeNode sourceType = sourceImage.getType();
-            TypeNode targetType = targetImage.getType();
             TypeEdge typeEdge = getTypeEdge(sourceType, edgeType, targetType);
             if (typeEdge == null) {
                 errors.add(new FormatError("%s-node has unknown %s-%s",

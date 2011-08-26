@@ -186,7 +186,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                         (HostNode) resourceModel.getMap().getNode(
                             getTargetNode()));
             } catch (FormatException e) {
-                assert false;
+                // assert false;
             }
         } else if (isNodeEdgeOut()) {
             result = "";
