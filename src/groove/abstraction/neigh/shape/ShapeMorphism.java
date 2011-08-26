@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public class ShapeMorphism extends HostGraphMorphism {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     /**
      * Creates a shape morphism with a given element factory.
