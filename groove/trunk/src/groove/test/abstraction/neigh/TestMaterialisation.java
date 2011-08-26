@@ -18,16 +18,22 @@ package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.trans.Materialisation;
+import groove.graph.EdgeRole;
+import groove.graph.TypeLabel;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
+import groove.trans.RuleNode;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -203,13 +209,22 @@ public class TestMaterialisation {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
+            boolean gotFive = false;
+            boolean gotSix = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 5) {
+                    gotFive = true;
+                } else if (nodeCount == 6) {
+                    gotSix = true;
+                } else {
+                    fail();
+                }
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue((nodeCount == 5 || nodeCount == 6)
-                    && (binaryEdgeCount == 4 || binaryEdgeCount == 7));
+                assertTrue(binaryEdgeCount == 4 || binaryEdgeCount == 7);
             }
+            assertTrue(gotFive && gotSix);
         }
     }
 
@@ -237,6 +252,70 @@ public class TestMaterialisation {
                     && binaryEdgeCount == 8);
             }
         }
+    }
+
+    @Test
+    public void testMaterialisation4() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-4").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-4");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+
+        // Ugly hack to create a shape that otherwise can't exist until
+        // later in a transformation.
+        // BEGIN HACK
+        Proof preMatch = preMatches.iterator().next();
+        RuleNode nodeR = null;
+        for (RuleNode node : preMatch.getPatternMap().nodeMap().keySet()) {
+            if (node.getNumber() == 1) {
+                nodeR = node;
+            }
+        }
+        ShapeNode source =
+            (ShapeNode) preMatch.getPatternMap().nodeMap().get(nodeR);
+        ShapeNode target = null;
+        for (ShapeNode node : shape.getEquivClassOf(source)) {
+            if (!node.equals(source) && shape.getNodeMult(node).isOne()) {
+                target = node;
+            }
+        }
+        TypeLabel label = null;
+        for (ShapeEdge edge : shape.inEdgeSet(target)) {
+            if (edge.getRole() != EdgeRole.BINARY) {
+                continue;
+            }
+            label = edge.label();
+        }
+        ShapeEdge newEdge = shape.createEdge(source, label, target);
+        shape.addEdgeWithoutCheck(newEdge);
+        // END HACK
+
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape, preMatch);
+        assertEquals(2, mats.size());
+        boolean gotFour = false;
+        boolean gotFive = false;
+        for (Materialisation mat : mats) {
+            Shape matShape = mat.getShape();
+            int nodeCount = matShape.nodeSet().size();
+            if (nodeCount == 4) {
+                gotFour = true;
+            } else if (nodeCount == 5) {
+                gotFive = true;
+            } else {
+                fail();
+            }
+            int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+            assertTrue(binaryEdgeCount == 3 || binaryEdgeCount == 6);
+        }
+        assertTrue(gotFour && gotFive);
     }
 
     @Test

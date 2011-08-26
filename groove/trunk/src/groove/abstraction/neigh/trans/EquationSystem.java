@@ -161,7 +161,6 @@ public final class EquationSystem {
             // Counter of bundle edges that were matched by the rule.
             Multiplicity matchedEdgesMult =
                 Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-            boolean hasUnmatchedEdges = false;
             // For all edges in the bundle.
             // BEGIN - Bundle edges loop.
             Set<ShapeEdge> bundleEdges = bundle.edges;
@@ -178,8 +177,13 @@ public final class EquationSystem {
                         // are considered to be fixed. Increment the counter.
                         matchedEdgesMult = matchedEdgesMult.increment();
                     } else {
-                        // No. There is no rule edge. Adjust the flag.
-                        hasUnmatchedEdges = true;
+                        // There are some edges of the shape in the bundle that were
+                        // not matched by rule edges. Create another multiplicity
+                        // variable to represent the value of the remainder
+                        // multiplicity for the edge signature.
+                        EdgeSignature remEs =
+                            shape.getEdgeSignature(edge, direction);
+                        this.newEdgeSigMultVar(bundle, remEs);
                     }
                 }
             } // END - Bundle edges loop.
@@ -197,17 +201,6 @@ public final class EquationSystem {
             } else {
                 assert origShape.containsEdge(origEdge);
                 origEsMult = origShape.getEdgeMult(origEdge, direction);
-            }
-
-            // Check if we need to create an extra variable for the signature.
-            if (hasUnmatchedEdges) {
-                // There are some edges of the shape in the bundle that were
-                // not matched by rule edges. Create another multiplicity
-                // variable to represent the value of the remainder
-                // multiplicity for the edge signature.
-                EdgeSignature es = shape.getEdgeSignature(origEdge, direction);
-                MultVar esVar = this.newEdgeSigMultVar(es);
-                bundle.addVar(esVar);
             }
 
             // Create the equation with constant = esMult - matchedEdgesMult .
@@ -243,11 +236,17 @@ public final class EquationSystem {
      * the given signature and direction.
      * The variable set and count is properly adjusted.
      */
-    private EdgeSigMultVar newEdgeSigMultVar(EdgeSignature es) {
+    private void newEdgeSigMultVar(EdgeBundle bundle, EdgeSignature es) {
+        for (MultVar var : bundle.vars) {
+            if (var instanceof EdgeSigMultVar
+                && ((EdgeSigMultVar) var).es.equals(es)) {
+                return;
+            }
+        }
         EdgeSigMultVar result = new EdgeSigMultVar(this.varCount, es);
         this.vars.add(result);
         this.varCount++;
-        return result;
+        bundle.addVar(result);
     }
 
     /**
@@ -537,9 +536,11 @@ public final class EquationSystem {
                 // signature multiplicity;
                 EdgeSigMultVar edgeSigMultVar = (EdgeSigMultVar) var;
                 Multiplicity value = sol.getValue(edgeSigMultVar);
-                // Setting the edge signature multiplicity.
-                shape.setEdgeSigMult(edgeSigMultVar.es,
-                    edgeSigMultVar.getDirection(), value);
+                if (value.isZero()) {
+                    // Setting the edge signature multiplicity.
+                    shape.setEdgeSigMult(edgeSigMultVar.es,
+                        edgeSigMultVar.getDirection(), value);
+                }
             }
         }
     }
@@ -1237,9 +1238,15 @@ public final class EquationSystem {
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.eqsToUse) {
-                if (!eq.isCollector
+                /*if (!eq.isCollector
                     && (result == null
                         || (result.constant.isCollector() && !eq.constant.isCollector()) || (eq.openVarsCount(this) < result.openVarsCount(this)))) {
+                    result = eq;
+                }*/
+                if (result == null
+                    || (result.isCollector && !eq.isCollector)
+                    || (result.constant.isCollector() && !eq.constant.isCollector())
+                    || (eq.openVarsCount(this) < result.openVarsCount(this))) {
                     result = eq;
                 }
             }
