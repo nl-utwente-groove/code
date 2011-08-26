@@ -288,9 +288,7 @@ public final class EquationSystem {
             Iterator<EdgeBundle> iter = bundles.iterator();
             while (iter.hasNext()) {
                 EdgeBundle bundle = iter.next();
-                if (!this.pulledNodes.contains(bundle.node)
-                    && haveSingleOppositeEc(this.mat.getShape(), bundle.edges,
-                        bundle.direction)) {
+                if (!this.shouldKeepBundle(bundle)) {
                     iter.remove();
                 }
             }
@@ -340,6 +338,26 @@ public final class EquationSystem {
             }
         }
         return result;
+    }
+
+    private boolean shouldKeepBundle(EdgeBundle bundle) {
+        assert this.isForNodePull();
+        if (this.pulledNodes.contains(bundle.node)) {
+            // Pulled nodes always retain they bundles.
+            return true;
+        }
+        if (!haveSingleOppositeEc(this.mat.getShape(), bundle.edges,
+            bundle.direction)) {
+            // This bundle is important because it crosses equivalence classes.
+            return true;
+        }
+        Shape origShape = this.mat.getPullNodeOrigShape();
+        for (ShapeEdge edge : bundle.edges) {
+            if (origShape.containsEdge(edge)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -574,7 +592,6 @@ public final class EquationSystem {
         sol.impreciseVars.clear();
     }
 
-    // EDUARDO: Check this method...
     private void performNodePulls(Materialisation mat, Solution sol,
             Set<Materialisation> result) {
         mat.beginNodePull();

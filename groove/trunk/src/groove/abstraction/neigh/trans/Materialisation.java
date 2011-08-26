@@ -110,6 +110,8 @@ public final class Materialisation {
 
     private ShapeMorphism pullNodeMorph;
 
+    private Shape pullNodeOrigShape;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -132,6 +134,7 @@ public final class Materialisation {
         this.matNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
         this.pullNodeMorph = null;
+        this.pullNodeOrigShape = null;
     }
 
     /**
@@ -155,6 +158,7 @@ public final class Materialisation {
         this.matNodes = new THashSet<ShapeNode>();
         this.possibleNewEdges = new THashSet<ShapeEdge>();
         this.pullNodeMorph = null;
+        this.pullNodeOrigShape = null;
     }
 
     // ------------------------------------------------------------------------
@@ -231,6 +235,11 @@ public final class Materialisation {
     /** Basic getter method. */
     public ShapeMorphism getPullNodeMorphism() {
         return this.pullNodeMorph;
+    }
+
+    /** Basic getter method. */
+    public Shape getPullNodeOrigShape() {
+        return this.pullNodeOrigShape;
     }
 
     /**
@@ -380,16 +389,15 @@ public final class Materialisation {
     }
 
     /** Prepares the materialisation object for pulling nodes. */
-    // EDUARDO: Check this method...
     public void beginNodePull() {
         this.matNodes.clear();
         this.possibleNewEdges.clear();
         this.pullNodeMorph =
             ShapeMorphism.createIdentityMorphism(this.shape, this.shape);
+        this.pullNodeOrigShape = this.shape.clone();
     }
 
     /** Prepares the materialisation object for pulling nodes. */
-    // EDUARDO: Check this method...
     public void endNodePull() {
         this.createPossibleEdges(true);
     }
@@ -401,14 +409,16 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    // EDUARDO: Check this method...
     private void createPossibleEdges(boolean forNodePull) {
         // Clone the morphism because we need pre-images and this fixes
         // the object.
+        Shape origShape;
         ShapeMorphism clonedMorph;
         if (forNodePull) {
+            origShape = this.pullNodeOrigShape;
             clonedMorph = this.pullNodeMorph;
         } else {
+            origShape = this.originalShape;
             clonedMorph = this.morph.clone();
         }
         clonedMorph.setFixed();
@@ -419,8 +429,8 @@ public final class Materialisation {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 // Look for all edges connected to the original node in the
                 // original shape.     
-                for (ShapeEdge origEdge : this.originalShape.binaryEdgeSet(
-                    origNode, direction)) {
+                for (ShapeEdge origEdge : origShape.binaryEdgeSet(origNode,
+                    direction)) {
                     ShapeNode origOppNode = origEdge.opposite(direction);
                     for (ShapeNode oppNode : clonedMorph.getPreImages(origOppNode)) {
                         ShapeEdge possibleEdge =
@@ -454,10 +464,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-2").toResource();
+                view.getHostModel("materialisation-test-3").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-2");
+            Rule rule = grammar.getRule("test-mat-3");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
