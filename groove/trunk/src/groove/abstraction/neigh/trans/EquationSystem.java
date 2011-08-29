@@ -127,8 +127,6 @@ public final class EquationSystem {
      */
     private void create() {
         Shape shape = this.mat.getShape();
-        Shape origShape = this.mat.getOriginalShape();
-        ShapeMorphism morph = this.mat.getShapeMorphism();
 
         // BEGIN - Create opposition relations and edge bundles.
         Set<EdgeBundle> bundles = new THashSet<EdgeBundle>();
@@ -143,20 +141,14 @@ public final class EquationSystem {
             // Edge bundles.
             TypeLabel label = edge.label();
             // Outgoing.
-            EdgeSignature origOutEs =
-                morph.getEdgeSignature(origShape,
-                    shape.getEdgeSignature(edge, OUTGOING));
             EdgeBundle outBundle =
-                this.getEdgeBundle(bundles, origOutEs, edge.source(), label,
-                    OUTGOING);
+                this.getEdgeBundle(bundles, edge.source(), label, OUTGOING,
+                    edge);
             outBundle.addVar(outMultVar);
             // Incoming.
-            EdgeSignature origInEs =
-                morph.getEdgeSignature(origShape,
-                    shape.getEdgeSignature(edge, INCOMING));
             EdgeBundle inBundle =
-                this.getEdgeBundle(bundles, origInEs, edge.target(), label,
-                    INCOMING);
+                this.getEdgeBundle(bundles, edge.target(), label, INCOMING,
+                    edge);
             inBundle.addVar(inMultVar);
         } // END - Create opposition relations and edge bundles.
 
@@ -197,19 +189,10 @@ public final class EquationSystem {
                 }
             } // END - Bundle edges loop.
 
-            // Take any edge from the bundle.
-            ShapeEdge bundleEdge = bundleEdges.iterator().next();
-            // Find the original edge from the shaping morphism.
-            ShapeEdge origEdge = morph.getEdge(bundleEdge);
-            Multiplicity origEsMult;
-            if (shape.containsEdge(origEdge)) {
-                origEsMult = shape.getEdgeMult(origEdge, direction);
-            } else {
-                assert origShape.containsEdge(origEdge);
-                origEsMult = origShape.getEdgeMult(origEdge, direction);
-            }
-
-            // Create the equation with constant = esMult - matchedEdgesMult .
+            Multiplicity origEsMult =
+                this.mat.getOriginalShape().getEdgeSigMult(bundle.origEs,
+                    direction);
+            // Create the equation with constant = origEsMult - matchedEdgesMult .
             Equation eq =
                 this.newEquation(bundle.vars.size(),
                     origEsMult.sub(matchedEdgesMult),
@@ -271,10 +254,16 @@ public final class EquationSystem {
      * label and direction. If a proper bundle is not found, a new one is
      * created and added to the set.  
      */
-    private EdgeBundle getEdgeBundle(Set<EdgeBundle> bundles,
-            EdgeSignature origEs, ShapeNode node, TypeLabel label,
-            EdgeMultDir direction) {
+    private EdgeBundle getEdgeBundle(Set<EdgeBundle> bundles, ShapeNode node,
+            TypeLabel label, EdgeMultDir direction, ShapeEdge edge) {
         EdgeBundle result = null;
+        Shape shape = this.mat.getShape();
+        Shape origShape = this.mat.getOriginalShape();
+        ShapeMorphism morph = this.mat.getShapeMorphism();
+        EdgeSignature origEs =
+            morph.getEdgeSignature(origShape,
+                shape.getEdgeSignature(edge, direction));
+
         for (EdgeBundle bundle : bundles) {
             if (bundle.node.equals(node) && bundle.label.equals(label)
                 && bundle.direction == direction
@@ -283,18 +272,16 @@ public final class EquationSystem {
                 break;
             }
         }
+
         if (result == null) {
             Set<ShapeEdge> edges = new THashSet<ShapeEdge>();
-            Shape shape = this.mat.getShape();
-            Shape origShape = this.mat.getOriginalShape();
-            ShapeMorphism morph = this.mat.getShapeMorphism();
-            for (ShapeEdge edge : shape.binaryEdgeSet(node, direction)) {
-                if (edge.label().equals(label)) {
-                    EdgeSignature es = shape.getEdgeSignature(edge, direction);
+            for (ShapeEdge edgeS : shape.binaryEdgeSet(node, direction)) {
+                if (edgeS.label().equals(label)) {
+                    EdgeSignature es = shape.getEdgeSignature(edgeS, direction);
                     EdgeSignature otherOrigEs =
                         morph.getEdgeSignature(origShape, es);
                     if (otherOrigEs.equals(origEs)) {
-                        edges.add(edge);
+                        edges.add(edgeS);
                     }
                 }
             }
@@ -1235,11 +1222,6 @@ public final class EquationSystem {
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.eqsToUse) {
-                /*if (!eq.isCollector
-                    && (result == null
-                        || (result.constant.isCollector() && !eq.constant.isCollector()) || (eq.openVarsCount(this) < result.openVarsCount(this)))) {
-                    result = eq;
-                }*/
                 if (result == null
                     || (result.isCollector && !eq.isCollector)
                     || (result.constant.isCollector() && !eq.constant.isCollector())
