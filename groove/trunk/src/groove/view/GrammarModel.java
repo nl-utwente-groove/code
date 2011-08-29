@@ -444,6 +444,8 @@ public class GrammarModel implements Observer {
                     getStartGraphModel().getSource()));
             }
         }
+        // Set the Prolog environment.
+        result.setPrologEnvironment(this.getPrologEnvironment());
         try {
             result.setFixed();
         } catch (FormatException exc) {
