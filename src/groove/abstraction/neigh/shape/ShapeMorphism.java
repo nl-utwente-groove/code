@@ -153,7 +153,7 @@ public class ShapeMorphism extends HostGraphMorphism {
         return result;
     }
 
-    /** */
+    /** Returns an edge signature in the given target shape. */
     public EdgeSignature getEdgeSignature(Shape to, EdgeSignature esFrom) {
         return to.getEdgeSignature(
             this.getNode(esFrom.getNode()),
