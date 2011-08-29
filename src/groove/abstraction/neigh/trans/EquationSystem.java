@@ -847,14 +847,6 @@ public final class EquationSystem {
         }
 
         /**
-         * Returns true if the number of open variables for the given solution
-         * is zero; otherwise returns false. 
-         */
-        boolean isFullyAssigned(Solution sol) {
-            return this.openVarsCount(sol) == 0;
-        }
-
-        /**
          * Returns a newly created array of open variables for the given
          * partial solution. The second parameter is used to avoid counting
          * the number of variables again, when the number is already known.
@@ -1179,15 +1171,6 @@ public final class EquationSystem {
                     }
                 }
             }
-            // Check if any equation has become fully assigned.
-            Iterator<Equation> iter = this.eqsToUse.iterator();
-            while (iter.hasNext()) {
-                Equation eq = iter.next();
-                if (eq.isFullyAssigned(this)) {
-                    // Remove the equation.
-                    iter.remove();
-                }
-            }
         }
 
         /** See {@link #setValue(MultVar, Multiplicity, boolean)}. */
@@ -1209,6 +1192,7 @@ public final class EquationSystem {
                 result.values[i] = this.values[i];
             }
             result.valuesCount = this.valuesCount;
+            result.impreciseVars.addAll(this.impreciseVars);
             return result;
         }
 
