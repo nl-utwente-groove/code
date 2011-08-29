@@ -153,6 +153,14 @@ public class ShapeMorphism extends HostGraphMorphism {
         return result;
     }
 
+    /** */
+    public EdgeSignature getEdgeSignature(Shape to, EdgeSignature esFrom) {
+        return to.getEdgeSignature(
+            this.getNode(esFrom.getNode()),
+            esFrom.getLabel(),
+            to.getEquivClassOf(this.getNode(esFrom.getEquivClass().iterator().next())));
+    }
+
     /**
      * Implements the conditions of a shape morphism given on Def. 11, page 14.
      */
