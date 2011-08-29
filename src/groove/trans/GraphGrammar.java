@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.control.CtrlAut;
 import groove.graph.TypeGraph;
+import groove.prolog.GrooveEnvironment;
 import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
@@ -361,6 +362,25 @@ public class GraphGrammar {
         return this.ctrlAut;
     }
 
+    /**
+     * Sets a Prolog environment for this grammar. This is only allowed if the
+     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @throws IllegalStateException if the grammar is already fixed
+     * @see #isFixed()
+     */
+    public void setPrologEnvironment(GrooveEnvironment prologEnvironment) {
+        testFixed(false);
+        this.prologEnvironment = prologEnvironment;
+    }
+
+    /**
+     * Returns the Prolog environment of this grammar, or <code>null</code> if
+     * there is none.
+     */
+    public GrooveEnvironment getPrologEnvironment() {
+        return this.prologEnvironment;
+    }
+
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
@@ -437,4 +457,6 @@ public class GraphGrammar {
      * none.
      */
     private CtrlAut ctrlAut;
+    /** The prolog environment derived from the system store. */
+    private GrooveEnvironment prologEnvironment;
 }
