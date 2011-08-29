@@ -57,7 +57,7 @@ public class TestShapeGenerator {
 
     }
 
-    /*@Test
+    @Test
     public void testShapeGenerator1() {
         final String GRAMMAR = "junit/samples/abs-tri-part-graph.gps";
         final String START_GRAPH = "start";
@@ -71,7 +71,7 @@ public class TestShapeGenerator {
         generator.generate(GRAMMAR, START_GRAPH, false);
         assertEquals(3, generator.getStateCount());
         assertEquals(3, generator.getTransitionCount());
-    }*/
+    }
 
     /*@Test
     public void testShapeGenerator2() {

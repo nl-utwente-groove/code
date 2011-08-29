@@ -127,6 +127,9 @@ public final class EquationSystem {
      */
     private void create() {
         Shape shape = this.mat.getShape();
+        Shape origShape = this.mat.getOriginalShape();
+        ShapeMorphism morph = this.mat.getShapeMorphism();
+
         // BEGIN - Create opposition relations and edge bundles.
         Set<EdgeBundle> bundles = new THashSet<EdgeBundle>();
         // For all possible new edges.
@@ -139,18 +142,24 @@ public final class EquationSystem {
             inMultVar.opposite = outMultVar;
             // Edge bundles.
             TypeLabel label = edge.label();
+            // Outgoing.
+            EdgeSignature origOutEs =
+                morph.getEdgeSignature(origShape,
+                    shape.getEdgeSignature(edge, OUTGOING));
             EdgeBundle outBundle =
-                this.getEdgeBundle(bundles, edge.source(), label, OUTGOING);
+                this.getEdgeBundle(bundles, origOutEs, edge.source(), label,
+                    OUTGOING);
             outBundle.addVar(outMultVar);
+            // Incoming.
+            EdgeSignature origInEs =
+                morph.getEdgeSignature(origShape,
+                    shape.getEdgeSignature(edge, INCOMING));
             EdgeBundle inBundle =
-                this.getEdgeBundle(bundles, edge.target(), label, INCOMING);
+                this.getEdgeBundle(bundles, origInEs, edge.target(), label,
+                    INCOMING);
             inBundle.addVar(inMultVar);
         } // END - Create opposition relations and edge bundles.
 
-        for (EdgeBundle bundle : bundles) {
-            // Compute and store the set of edges for this bundle.
-            this.computeEdgesForBundle(bundle);
-        }
         this.filterEdgeBundles(bundles);
 
         // For each edge bundle, create an equality.
@@ -188,13 +197,10 @@ public final class EquationSystem {
                 }
             } // END - Bundle edges loop.
 
-            // Get the edge signature from the original shape.
-            Shape origShape = this.mat.getOriginalShape();
             // Take any edge from the bundle.
             ShapeEdge bundleEdge = bundleEdges.iterator().next();
             // Find the original edge from the shaping morphism.
-            ShapeEdge origEdge =
-                this.mat.getShapeMorphism().getEdge(bundleEdge);
+            ShapeEdge origEdge = morph.getEdge(bundleEdge);
             Multiplicity origEsMult;
             if (shape.containsEdge(origEdge)) {
                 origEsMult = shape.getEdgeMult(origEdge, direction);
@@ -265,18 +271,34 @@ public final class EquationSystem {
      * label and direction. If a proper bundle is not found, a new one is
      * created and added to the set.  
      */
-    private EdgeBundle getEdgeBundle(Set<EdgeBundle> bundles, ShapeNode node,
-            TypeLabel label, EdgeMultDir direction) {
+    private EdgeBundle getEdgeBundle(Set<EdgeBundle> bundles,
+            EdgeSignature origEs, ShapeNode node, TypeLabel label,
+            EdgeMultDir direction) {
         EdgeBundle result = null;
         for (EdgeBundle bundle : bundles) {
             if (bundle.node.equals(node) && bundle.label.equals(label)
-                && bundle.direction == direction) {
+                && bundle.direction == direction
+                && bundle.origEs.equals(origEs)) {
                 result = bundle;
                 break;
             }
         }
         if (result == null) {
-            result = new EdgeBundle(node, label, direction);
+            Set<ShapeEdge> edges = new THashSet<ShapeEdge>();
+            Shape shape = this.mat.getShape();
+            Shape origShape = this.mat.getOriginalShape();
+            ShapeMorphism morph = this.mat.getShapeMorphism();
+            for (ShapeEdge edge : shape.binaryEdgeSet(node, direction)) {
+                if (edge.label().equals(label)) {
+                    EdgeSignature es = shape.getEdgeSignature(edge, direction);
+                    EdgeSignature otherOrigEs =
+                        morph.getEdgeSignature(origShape, es);
+                    if (otherOrigEs.equals(origEs)) {
+                        edges.add(edge);
+                    }
+                }
+            }
+            result = new EdgeBundle(origEs, node, label, direction, edges);
             bundles.add(result);
         }
         return result;
@@ -292,33 +314,6 @@ public final class EquationSystem {
                 }
             }
         }
-    }
-
-    /**
-     * Returns the set of edges that are associated with given bundle. This
-     * includes the possible new edges of the materialisation that are 
-     * associated with bundle variables and also all edges that are already in
-     * the shape and have the same edge signature that is associated with the
-     * bundle.
-     */
-    private void computeEdgesForBundle(EdgeBundle bundle) {
-        Set<ShapeEdge> edges = new THashSet<ShapeEdge>();
-        // Include the possible edges.
-        for (ShapeEdge possibleEdge : this.mat.getPossibleNewEdgeSet()) {
-            MultVar var = this.getEdgeVariable(possibleEdge, bundle.direction);
-            if (bundle.vars.contains(var)) {
-                edges.add(possibleEdge);
-            }
-        }
-        for (ShapeEdge edgeS : this.mat.getShape().binaryEdgeSet(bundle.node,
-            bundle.direction)) {
-            if (edgeS.label().equals(bundle.label)) {
-                // EDUARDO: Fix this. This is wrong. If a node is in more than
-                // one bundle, all edges are mixed...
-                edges.add(edgeS);
-            }
-        }
-        bundle.setEdges(edges);
     }
 
     private static boolean haveSingleOppositeEc(Shape shape,
@@ -1040,6 +1035,7 @@ public final class EquationSystem {
      */
     private static class EdgeBundle {
 
+        final EdgeSignature origEs;
         /**
          * The node associated with this bundle. It can be either a source or
          * target node, depending on the direction.
@@ -1049,18 +1045,21 @@ public final class EquationSystem {
         final TypeLabel label;
         /** Defines the direction of the edges. */
         final EdgeMultDir direction;
+        /** The set of edges that form this bundle. */
+        final Set<ShapeEdge> edges;
         /** The variables for the possible edges that are part of the bundle. */
         final Set<MultVar> vars;
-        /** The set of edges that form this bundle. */
-        Set<ShapeEdge> edges;
         /** The equation associated with this bundle. */
         Equation eq;
 
         /** Basic constructor. */
-        EdgeBundle(ShapeNode node, TypeLabel label, EdgeMultDir direction) {
+        EdgeBundle(EdgeSignature origEs, ShapeNode node, TypeLabel label,
+                EdgeMultDir direction, Set<ShapeEdge> edges) {
+            this.origEs = origEs;
             this.node = node;
             this.label = label;
             this.direction = direction;
+            this.edges = edges;
             this.vars = new THashSet<MultVar>();
         }
 
@@ -1074,12 +1073,10 @@ public final class EquationSystem {
         void addVar(MultVar var) {
             var.setBundle(this);
             this.vars.add(var);
-        }
-
-        /** Basic setter method. */
-        void setEdges(Set<ShapeEdge> edges) {
-            assert edges != null && this.edges == null;
-            this.edges = edges;
+            if (var instanceof EdgeMultVar) {
+                ShapeEdge edge = ((EdgeMultVar) var).edge;
+                this.edges.add(edge);
+            }
         }
 
         /** Basic setter method. */
