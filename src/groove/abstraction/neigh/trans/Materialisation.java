@@ -369,7 +369,7 @@ public final class Materialisation {
             // Yes, we do.
             // Create a new equation system for this materialisation and return
             // the resulting materialisations from the solution.
-            new EquationSystem(this, null).solve(result);
+            new EquationSystem(this, null, null).solve(result);
         }
 
         return result;

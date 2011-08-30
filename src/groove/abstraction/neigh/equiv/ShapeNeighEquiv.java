@@ -66,8 +66,8 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         for (EquivClass<ShapeNode> k : kSet) {
             EdgeSignature es = shape.getEdgeSignature(node, label, k);
             Multiplicity mult = shape.getEdgeSigMult(es, direction);
-            i += mult.getLowerBound();
-            j += mult.getUpperBound();
+            i = Multiplicity.add(i, mult.getLowerBound());
+            j = Multiplicity.add(j, mult.getUpperBound());
         }
         return Multiplicity.approx(i, j, MultKind.EDGE_MULT);
     }
