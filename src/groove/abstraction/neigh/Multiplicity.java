@@ -362,6 +362,11 @@ public final class Multiplicity {
         return this.j > 1;
     }
 
+    /** Returns true if the lower bound is zero; false, otherwise. */
+    public boolean startsInZero() {
+        return this.i == 0;
+    }
+
     /** Returns the bounded addition of the two given multiplicities. */
     public Multiplicity add(Multiplicity other) {
         assert this.kind == other.kind;
