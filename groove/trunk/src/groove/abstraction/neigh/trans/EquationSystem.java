@@ -93,6 +93,7 @@ public final class EquationSystem {
      * In the normal case, is set to null.
      */
     private final Set<ShapeNode> pulledNodes;
+    private final Set<ShapeEdge> ignoreEdges;
 
     /** 
      * Constructs the equation system based on the given materialisation.
@@ -102,12 +103,16 @@ public final class EquationSystem {
      * Passing a materialisation that has an empty set of possible new edges
      * gives an assertion error.
      */
-    public EquationSystem(Materialisation mat, Set<ShapeNode> pulledNodes) {
+    public EquationSystem(Materialisation mat, Set<ShapeNode> pulledNodes,
+            Set<ShapeEdge> ignoreEdges) {
         assert !mat.getPossibleNewEdgeSet().isEmpty();
         this.mat = mat;
         this.pulledNodes =
             pulledNodes != null ? pulledNodes
                     : Collections.<ShapeNode>emptySet();
+        this.ignoreEdges =
+            ignoreEdges != null ? ignoreEdges
+                    : Collections.<ShapeEdge>emptySet();
         this.vars = new ArrayList<MultVar>();
         this.varCount = 0;
         this.eqs = new THashSet<Equation>();
@@ -162,11 +167,14 @@ public final class EquationSystem {
             // Counter of bundle edges that were matched by the rule.
             Multiplicity matchedEdgesMult =
                 Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+            boolean isBundleNodeCollector =
+                shape.getNodeMult(bundle.node).isCollector();
             // For all edges in the bundle.
             // BEGIN - Bundle edges loop.
             Set<ShapeEdge> bundleEdges = bundle.edges;
             for (ShapeEdge edge : bundleEdges) {
-                if (!this.hasVariable(edge, direction)) {
+                MultVar var = this.getEdgeVariable(edge, direction);
+                if (var == null) {
                     // There is no variable for the edge. This means that the
                     // edge is already in the shape.
                     // Check if the shape edge is an image of a rule edge.
@@ -186,6 +194,16 @@ public final class EquationSystem {
                             shape.getEdgeSignature(edge, direction);
                         this.newEdgeSigMultVar(bundle, remEs);
                     }
+                } else if (!isBundleNodeCollector) {
+                    // The edge has a variable so we can compute an upper bound.
+                    ShapeNode opposite = edge.opposite(direction);
+                    Multiplicity upperBound =
+                        Multiplicity.convertToEdgeMult(shape.getNodeSetMultSum(shape.getEquivClassOf(opposite)));
+                    if (!upperBound.isUnbounded()) {
+                        Equation eq =
+                            this.newEquation(1, upperBound, false, true);
+                        eq.addVar(var);
+                    }
                 }
             } // END - Bundle edges loop.
 
@@ -195,8 +213,8 @@ public final class EquationSystem {
             // Create the equation with constant = origEsMult - matchedEdgesMult .
             Equation eq =
                 this.newEquation(bundle.vars.size(),
-                    origEsMult.sub(matchedEdgesMult),
-                    shape.getNodeMult(bundle.node).isCollector());
+                    origEsMult.sub(matchedEdgesMult), isBundleNodeCollector,
+                    false);
             // Add all variables in the bundle to the equation.
             for (MultVar var : bundle.vars) {
                 eq.addVar(var);
@@ -243,8 +261,9 @@ public final class EquationSystem {
      * while storing it in the equation set.
      */
     private Equation newEquation(int varsCount, Multiplicity constant,
-            boolean isCollector) {
-        Equation result = new Equation(varsCount, constant, isCollector);
+            boolean isCollector, boolean isUpperBound) {
+        Equation result =
+            new Equation(varsCount, constant, isCollector, isUpperBound);
         this.eqs.add(result);
         return result;
     }
@@ -280,7 +299,8 @@ public final class EquationSystem {
                     EdgeSignature es = shape.getEdgeSignature(edgeS, direction);
                     EdgeSignature otherOrigEs =
                         morph.getEdgeSignature(origShape, es);
-                    if (otherOrigEs.equals(origEs)) {
+                    if (otherOrigEs.equals(origEs)
+                        && !this.ignoreEdges.contains(edgeS)) {
                         edges.add(edgeS);
                     }
                 }
@@ -339,14 +359,6 @@ public final class EquationSystem {
             }
         }
         return true;
-    }
-
-    /**
-     * Returns true is the given edge has a variable associated in the given
-     * direction. 
-     */
-    private boolean hasVariable(ShapeEdge edge, EdgeMultDir direction) {
-        return this.getEdgeVariable(edge, direction) != null;
     }
 
     /** Returns true if the pulledNode field is non-null. */
@@ -518,11 +530,9 @@ public final class EquationSystem {
                 // signature multiplicity;
                 EdgeSigMultVar edgeSigMultVar = (EdgeSigMultVar) var;
                 Multiplicity value = sol.getValue(edgeSigMultVar);
-                if (value.isZero()) {
-                    // Setting the edge signature multiplicity.
-                    shape.setEdgeSigMult(edgeSigMultVar.es,
-                        edgeSigMultVar.getDirection(), value);
-                }
+                // Setting the edge signature multiplicity.
+                shape.setEdgeSigMult(edgeSigMultVar.es,
+                    edgeSigMultVar.getDirection(), value);
             }
         }
     }
@@ -562,9 +572,9 @@ public final class EquationSystem {
                 // opposite variable.
                 if (!shape.edgeSet().contains(edgeS)) {
                     shape.addEdgeWithoutCheck(edgeS);
+                    // Set the multiplicity accordingly.
+                    shape.setEdgeMult(edgeS, edgeMultVar.getDirection(), value);
                 }
-                // Set the multiplicity accordingly.
-                shape.setEdgeMult(edgeS, edgeMultVar.getDirection(), value);
             } else {
                 // The possible edge is not inserted in the shape.
                 // Remove it from the shape morphism.
@@ -596,7 +606,17 @@ public final class EquationSystem {
             result.add(mat);
         } else {
             // Yes, we do. Create a new equation system.
-            new EquationSystem(mat, newNodes).solve(result);
+            Set<ShapeEdge> ignoreEdges = new THashSet<ShapeEdge>();
+            for (ShapeEdge edge : this.outEdgeMultVarMap.keySet()) {
+                MultVar outVar = this.outEdgeMultVarMap.get(edge);
+                if (sol.getValue(outVar).isOne()) {
+                    MultVar inVar = ((EdgeMultVar) outVar).opposite;
+                    if (sol.getValue(inVar).isOne()) {
+                        ignoreEdges.add(edge);
+                    }
+                }
+            }
+            new EquationSystem(mat, newNodes, ignoreEdges).solve(result);
         }
     }
 
@@ -705,15 +725,20 @@ public final class EquationSystem {
         /** Flag to indicate if the node from the edge bundle is a collector. */
         final boolean isCollector;
 
+        final boolean isUpperBound;
+
         /** Basic constructor. */
-        Equation(int varsCount, Multiplicity constant, boolean isCollector) {
+        Equation(int varsCount, Multiplicity constant, boolean isCollector,
+                boolean isUpperBound) {
             this.vars = new THashSet<MultVar>(varsCount);
             this.constant = constant;
             this.isCollector = isCollector;
+            this.isUpperBound = isUpperBound;
         }
 
         /** Basic setter method. */
         void addVar(MultVar var) {
+            assert this.isUpperBound ? this.vars.size() == 0 : true;
             this.vars.add(var);
         }
 
@@ -727,7 +752,7 @@ public final class EquationSystem {
                     result.append("+");
                 }
             }
-            result.append("=" + this.constant);
+            result.append((this.isUpperBound ? "<" : "") + "=" + this.constant);
             if (this.isCollector) {
                 result.append("C");
             }
@@ -759,6 +784,7 @@ public final class EquationSystem {
             }
 
             if (this.constant.isZero()) {
+                assert !this.isUpperBound;
                 // The equation constant is zero.
                 // Since multiplicities can't be negative, this means that all
                 // variables in the equation have to be zero.
@@ -771,7 +797,7 @@ public final class EquationSystem {
                 return;
             }
 
-            if (openVarsCount == 1) {
+            if (!this.isUpperBound && openVarsCount == 1) {
                 // We have only one variable without a value so we assign the
                 // equation constant minus the sum of all other variables values
                 // to the open variable.
@@ -783,14 +809,21 @@ public final class EquationSystem {
                 for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
                     partialSol.setValue(var, newConst);
                 }
-                // This equation is no longer useful for finding the remaining
-                // values of this solution.
                 partialSol.eqsToUse.remove(this);
                 return;
             }
 
             MultVar impreciseVars[] = this.getImpreciseVars(partialSol);
             if (impreciseVars.length == 1) {
+                if (this.isUpperBound && this.constant.isOne()) {
+                    // Let x = impreciseVars[0].
+                    // We know that x > 0, since it is imprecise.
+                    // We also know that x <= 1. Thus, x = 1. 
+                    partialSol.setValue(impreciseVars[0], this.constant);
+                    partialSol.eqsToUse.remove(this);
+                    return;
+                }
+
                 if (this.constant.isOne() && !this.isCollector) {
                     // In this case we know that the value for the imprecise
                     // variable must be one and that all other open variables must
@@ -805,8 +838,6 @@ public final class EquationSystem {
                             partialSol.setValue(var, zero);
                         }
                     }
-                    // This equation is no longer useful for finding the remaining
-                    // values of this solution.
                     partialSol.eqsToUse.remove(this);
                     return;
                 }
@@ -918,6 +949,9 @@ public final class EquationSystem {
          */
         void getNewSolutions(Solution partialSol, Set<Solution> partialSols,
                 Set<Solution> finishedSols) {
+            // EDUARDO: to be done: ensure that the most general solution
+            // is computed when possible, to avoid redundant solutions...
+
             assert !partialSol.isComplete();
             assert partialSol.eqsToUse.contains(this);
 
@@ -1216,10 +1250,10 @@ public final class EquationSystem {
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.eqsToUse) {
-                if (result == null
-                    || (result.isCollector && !eq.isCollector)
-                    || (result.constant.isCollector() && !eq.constant.isCollector())
-                    || (eq.openVarsCount(this) < result.openVarsCount(this))) {
+                if (!eq.isUpperBound
+                    && (result == null
+                        || (result.isCollector && !eq.isCollector)
+                        || (result.constant.isCollector() && !eq.constant.isCollector()) || (eq.openVarsCount(this) < result.openVarsCount(this)))) {
                     result = eq;
                 }
             }

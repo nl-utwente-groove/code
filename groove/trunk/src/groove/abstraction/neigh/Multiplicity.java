@@ -284,7 +284,16 @@ public final class Multiplicity {
      */
     public static Multiplicity convertToNodeMult(Multiplicity mult) {
         assert mult.kind == MultKind.EDGE_MULT;
-        return getMultiplicity(mult.i, mult.j, MultKind.NODE_MULT);
+        return approx(mult.i, mult.j, MultKind.NODE_MULT);
+    }
+
+    /**
+     * Converts the given node multiplicity into an equivalent edge
+     * multiplicity. 
+     */
+    public static Multiplicity convertToEdgeMult(Multiplicity mult) {
+        assert mult.kind == MultKind.NODE_MULT;
+        return approx(mult.i, mult.j, MultKind.EDGE_MULT);
     }
 
     // ------------------------------------------------------------------------
@@ -365,6 +374,11 @@ public final class Multiplicity {
     /** Returns true if the lower bound is zero; false, otherwise. */
     public boolean startsInZero() {
         return this.i == 0;
+    }
+
+    /** Returns true if the upper bound is omega; false, otherwise. */
+    public boolean isUnbounded() {
+        return this.j == OMEGA;
     }
 
     /** Returns the bounded addition of the two given multiplicities. */
