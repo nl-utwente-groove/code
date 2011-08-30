@@ -410,6 +410,9 @@ public final class Materialisation {
      * configuration of the shape.
      */
     private void createPossibleEdges(boolean forNodePull) {
+        if (this.matNodes.isEmpty()) {
+            return;
+        }
         // Clone the morphism because we need pre-images and this fixes
         // the object.
         Shape origShape;

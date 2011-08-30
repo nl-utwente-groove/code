@@ -811,24 +811,29 @@ public final class EquationSystem {
                     return;
                 }
 
-                // If we reached this point it means that the constant is
-                // a positive collector multiplicity.
-                assert this.constant.isCollector() || this.isCollector;
-                // At this point we can't determine anything about the open
-                // variables except that they are positive. This means that
-                // all open variables become imprecise variables.
-                // Since all variables need a value for the solution to become
-                // complete, we set these imprecise variables to the equation
-                // constant. This value is not used anywhere, a proper value
-                // is produced when we pull out nodes at the last stage of
-                // materialisation.
-                // Also, we don't want this equation laying around because it
-                // will just cause unnecessary branching.
-                for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
-                    partialSol.setValue(var, this.constant, false);
-                    partialSol.impreciseVars.add(var);
+                if (this.isCollector) {
+                    // At this point we can't determine anything about the open
+                    // variables except that they are positive. This means that
+                    // all open variables become imprecise variables.
+                    // Since all variables need a value for the solution to become
+                    // complete, we set these imprecise variables to the equation
+                    // constant. This value is not used anywhere, a proper value
+                    // is produced when we pull out nodes at the last stage of
+                    // materialisation.
+                    // Also, we don't want this equation laying around because it
+                    // will just cause unnecessary branching.
+                    for (MultVar var : this.getOpenVars(partialSol,
+                        openVarsCount)) {
+                        partialSol.setValue(var, this.constant);
+                        partialSol.impreciseVars.add(var);
+                    }
+                    partialSol.eqsToUse.remove(this);
+                    return;
                 }
-                partialSol.eqsToUse.remove(this);
+
+                // If we reached this point it means that the constant is
+                // a positive collector multiplicity. Nothing to do.
+                assert this.constant.isCollector();
             }
         }
 
@@ -908,7 +913,8 @@ public final class EquationSystem {
         /**
          * Branches the search for valid solutions by assigning all possible
          * valid values to the open variables of this equation.
-         * The blow-up on the materialisation phase is now due to this method.
+         * The blow-up on the materialisation phase is now due to this method,
+         * so we should try to avoid it like the plague...
          */
         void getNewSolutions(Solution partialSol, Set<Solution> partialSols,
                 Set<Solution> finishedSols) {
@@ -921,6 +927,9 @@ public final class EquationSystem {
             // Array of variables that need values.
             MultVar vars[] = this.getOpenVars(partialSol);
             int varsSize = vars.length;
+            @SuppressWarnings("unchecked")
+            Set<MultVar> impreciseVars =
+                (Set<MultVar>) partialSol.impreciseVars.clone();
             // Array of current values for the variables.
             // Hold indexes of positions in the mults array.
             int currVals[] = new int[varsSize];
@@ -931,11 +940,18 @@ public final class EquationSystem {
             while (currVals[0] != multsSize) {
                 // Test and store valid solution.
                 Solution newSol = partialSol.clone();
+                boolean aborted = false;
                 // Store the current values in the new solution.
                 for (int i = 0; i < vars.length; i++) {
-                    newSol.setValue(vars[i], mults[currVals[i]], false);
+                    MultVar var = vars[i];
+                    Multiplicity mult = mults[currVals[i]];
+                    if (mult.startsInZero() && impreciseVars.contains(var)) {
+                        aborted = true;
+                        break;
+                    }
+                    newSol.setValue(var, mult);
                 }
-                if (this.isValidSolution(newSol)) {
+                if (!aborted && this.isValidSolution(newSol)) {
                     if (newSol.isComplete()) {
                         finishedSols.add(newSol);
                     } else {
@@ -1143,14 +1159,13 @@ public final class EquationSystem {
          * 2) Equations that become fully assigned are removed from the set
          * of equations to be used by this solution.
          */
-        void setValue(MultVar var, Multiplicity mult, boolean removeImprecise) {
+        void setValue(MultVar var, Multiplicity mult) {
             assert !this.hasValue(var);
             assert mult != null;
             this.values[var.number] = mult;
             this.valuesCount++;
-            if (removeImprecise) {
-                this.impreciseVars.remove(var);
-            }
+            this.impreciseVars.remove(var);
+
             // Check if the variable has an opposite one. And if yes, also
             // set its value.
             if (var instanceof EdgeMultVar) {
@@ -1171,11 +1186,6 @@ public final class EquationSystem {
                     }
                 }
             }
-        }
-
-        /** See {@link #setValue(MultVar, Multiplicity, boolean)}. */
-        void setValue(MultVar var, Multiplicity mult) {
-            this.setValue(var, mult, true);
         }
 
         @Override
