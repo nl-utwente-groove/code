@@ -23,7 +23,9 @@ import static groove.abstraction.neigh.Multiplicity.getMultiplicity;
 import static groove.abstraction.neigh.Multiplicity.initMultStore;
 import static groove.abstraction.neigh.Multiplicity.scale;
 import static groove.abstraction.neigh.Multiplicity.sub;
+import static groove.abstraction.neigh.Multiplicity.times;
 import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.neigh.Multiplicity.MultKind.EQSYS_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -55,6 +57,18 @@ public class TestMultiplicity {
         assertEquals(1, sub(2, 1));
         assertEquals(OMEGA, sub(OMEGA, 0));
         assertEquals(OMEGA, sub(OMEGA, 1));
+    }
+
+    @Test
+    public void testNatOmegaTimes() {
+        assertEquals(0, times(0, 0));
+        assertEquals(0, times(0, 1));
+        assertEquals(0, times(1, 0));
+        assertEquals(1, times(1, 1));
+        assertEquals(6, times(2, 3));
+        assertEquals(OMEGA, times(1, OMEGA));
+        assertEquals(0, times(OMEGA, 0));
+        assertEquals(OMEGA, times(OMEGA, OMEGA));
     }
 
     @Test
@@ -124,6 +138,27 @@ public class TestMultiplicity {
         assertEquals(zeroOne, oneTwo.sub(one));
         assertEquals(twoPlus, threePlus.sub(one));
         assertEquals(onePlus, threePlus.sub(oneTwo));
+    }
+
+    @Test
+    public void testTimes() {
+        Parameters.setNodeMultBound(1);
+        initMultStore();
+        Multiplicity zeroN = getMultiplicity(0, 0, NODE_MULT);
+        Multiplicity oneN = getMultiplicity(1, 1, NODE_MULT);
+        Multiplicity twoPlusN = getMultiplicity(2, OMEGA, NODE_MULT);
+        Multiplicity oneE = getMultiplicity(1, 1, EDGE_MULT);
+        Multiplicity twoPlusE = getMultiplicity(2, OMEGA, EDGE_MULT);
+        Multiplicity zeroS = getMultiplicity(0, 0, EQSYS_MULT);
+        Multiplicity oneS = getMultiplicity(1, 1, EQSYS_MULT);
+        Multiplicity twoPlusS = getMultiplicity(2, OMEGA, EQSYS_MULT);
+        Multiplicity fourPlusS = getMultiplicity(4, OMEGA, EQSYS_MULT);
+        assertEquals(zeroS, zeroN.times(oneE));
+        assertEquals(zeroS, zeroN.times(twoPlusE));
+        assertEquals(oneS, oneN.times(oneE));
+        assertEquals(twoPlusS, oneN.times(twoPlusE));
+        assertEquals(twoPlusS, twoPlusN.times(oneE));
+        assertEquals(fourPlusS, twoPlusN.times(twoPlusE));
     }
 
     @Test
