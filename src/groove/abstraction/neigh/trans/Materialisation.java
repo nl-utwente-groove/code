@@ -37,13 +37,16 @@ import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
+import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
+import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -98,19 +101,18 @@ public final class Materialisation {
      */
     private final RuleToShapeMap match;
     /**
-     * Auxiliary sets that contains all nodes that were involved in a
-     * materialisation.
+     * Auxiliary set that contains all newly materialised nodes.
      */
     private final THashSet<ShapeNode> matNodes;
     /**
-     * Auxiliary sets of possible new edges that should be included in the 
+     * Auxiliary set that contains all newly materialised edges.
+     */
+    private final THashSet<ShapeEdge> matEdges;
+    /**
+     * Auxiliary set of possible new edges that should be included in the 
      * shape that is being materialised.
      */
-    private final THashSet<ShapeEdge> possibleNewEdges;
-
-    private ShapeMorphism pullNodeMorph;
-
-    private Shape pullNodeOrigShape;
+    private final THashSet<ShapeEdge> possibleEdges;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -132,9 +134,8 @@ public final class Materialisation {
         this.match = this.originalMatch.clone();
         // Create new auxiliary structures.
         this.matNodes = new THashSet<ShapeNode>();
-        this.possibleNewEdges = new THashSet<ShapeEdge>();
-        this.pullNodeMorph = null;
-        this.pullNodeOrigShape = null;
+        this.matEdges = new THashSet<ShapeEdge>();
+        this.possibleEdges = new THashSet<ShapeEdge>();
     }
 
     /**
@@ -154,11 +155,10 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
-        // Create new auxiliary structures.
-        this.matNodes = new THashSet<ShapeNode>();
-        this.possibleNewEdges = new THashSet<ShapeEdge>();
-        this.pullNodeMorph = null;
-        this.pullNodeOrigShape = null;
+        // No need for the auxiliary structures at this point.
+        this.matNodes = null;
+        this.matEdges = null;
+        this.possibleEdges = null;
     }
 
     // ------------------------------------------------------------------------
@@ -208,11 +208,6 @@ public final class Materialisation {
     }
 
     /** Basic getter method. */
-    public ShapeMorphism getShapeMorphism() {
-        return this.morph;
-    }
-
-    /** Basic getter method. */
     public RuleToShapeMap getMatch() {
         return this.match;
     }
@@ -223,23 +218,85 @@ public final class Materialisation {
     }
 
     /** Basic getter method. */
-    public Set<ShapeNode> getMatNodesSet() {
-        return this.matNodes;
+    public ShapeMorphism getShapeMorphism() {
+        return this.morph;
     }
 
-    /** Basic getter method. */
-    public Set<ShapeEdge> getPossibleNewEdgeSet() {
-        return this.possibleNewEdges;
+    /** Returns the set of nodes involved in the materialisation. */
+    public Set<ShapeNode> getAffectedNodes() {
+        Set<ShapeNode> result = new THashSet<ShapeNode>();
+        result.addAll(this.matNodes);
+        for (ShapeEdge matEdge : this.matEdges) {
+            result.add(matEdge.source());
+            result.add(matEdge.target());
+        }
+        for (ShapeEdge possibleEdge : this.possibleEdges) {
+            result.add(possibleEdge.source());
+            result.add(possibleEdge.target());
+        }
+        return Collections.unmodifiableSet(result);
     }
 
-    /** Basic getter method. */
-    public ShapeMorphism getPullNodeMorphism() {
-        return this.pullNodeMorph;
+    /** Returns the set of edges involved in the materialisation. */
+    public Set<ShapeEdge> getAffectedEdges() {
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        result.addAll(this.matEdges);
+        result.addAll(this.possibleEdges);
+        return Collections.unmodifiableSet(result);
     }
 
-    /** Basic getter method. */
-    public Shape getPullNodeOrigShape() {
-        return this.pullNodeOrigShape;
+    /** EDUARDO: Comment this... */
+    public void addMatNode(ShapeNode newNode, ShapeNode collectorNode,
+            RuleNode nodeR) {
+        assert this.shape.containsNode(newNode);
+        this.match.putNode(nodeR, newNode);
+        this.morph.putNode(newNode, collectorNode);
+        this.matNodes.add(newNode);
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addMatEdge(ShapeEdge newEdge, ShapeEdge inconsistentEdge,
+            RuleEdge edgeR) {
+        assert this.shape.containsEdge(newEdge);
+        this.match.putEdge(edgeR, newEdge);
+        this.morph.putEdge(newEdge, inconsistentEdge);
+        this.matEdges.add(newEdge);
+    }
+
+    /** EDUARDO: Comment this... */
+    public void handleCollectorNode(ShapeNode collectorNode) {
+        if (!this.shape.containsNode(collectorNode)) {
+            // The collector node was removed from the shape and we have a
+            // dangling reference in the shape morphism.
+            this.morph.removeNode(collectorNode);
+        } else {
+            this.matNodes.add(collectorNode);
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public void handleInconsistentEdge(ShapeEdge inconsistentEdge) {
+        if (!this.shape.containsEdge(inconsistentEdge)) {
+            // The edge was removed from the shape and we have a
+            // dangling reference in the shape morphism.
+            this.morph.removeEdge(inconsistentEdge);
+        } else {
+            this.matEdges.add(inconsistentEdge);
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addPossibleEdge(ShapeEdge possibleEdge, ShapeEdge origEdge) {
+        assert !this.shape.containsEdge(possibleEdge);
+        this.possibleEdges.add(possibleEdge);
+        // Use the shape morphism to store additional info.
+        this.morph.putEdge(possibleEdge, origEdge);
+    }
+
+    /** EDUARDO: Comment this... */
+    public boolean isFixed(ShapeEdge edge) {
+        assert this.shape.containsEdge(edge);
+        return !this.match.getPreImages(edge).isEmpty();
     }
 
     /**
@@ -335,9 +392,6 @@ public final class Materialisation {
             }
         }
 
-        // Create the set of possible edges that can occur on the final shape.
-        this.createPossibleEdges(false);
-
         // Search for edges in the match image that have to be materialised. 
         for (ShapeEdge edgeS : this.match.getInconsistentEdges()) {
             // This edge was affected by a node materialisation.
@@ -347,6 +401,9 @@ public final class Materialisation {
 
         assert this.match.isConsistent();
         this.match.setFixed();
+
+        // Create the set of possible edges that can occur on the final shape.
+        this.createPossibleEdges();
 
         // Make sure that all shape nodes in the match image are in a
         // singleton equivalence class.
@@ -360,17 +417,10 @@ public final class Materialisation {
         }
 
         // The deterministic steps of the materialisation are done.
+        // Create a new equation system for this materialisation and return
+        // the resulting materialisations from the solution.
         ResultSet result = new ResultSet();
-        // Check if we need to resolve non-determinism.
-        if (this.isFinished()) {
-            // No, we don't, just return this object.
-            result.add(this);
-        } else {
-            // Yes, we do.
-            // Create a new equation system for this materialisation and return
-            // the resulting materialisations from the solution.
-            new EquationSystem(this, null, null).solve(result);
-        }
+        new EquationSystem(this).solve(result);
 
         return result;
     }
@@ -385,21 +435,7 @@ public final class Materialisation {
 
     /** Returns true if the materialisation is complete. */
     public boolean isFinished() {
-        return this.possibleNewEdges.isEmpty();
-    }
-
-    /** Prepares the materialisation object for pulling nodes. */
-    public void beginNodePull() {
-        this.matNodes.clear();
-        this.possibleNewEdges.clear();
-        this.pullNodeMorph =
-            ShapeMorphism.createIdentityMorphism(this.shape, this.shape);
-        this.pullNodeOrigShape = this.shape.clone();
-    }
-
-    /** Prepares the materialisation object for pulling nodes. */
-    public void endNodePull() {
-        this.createPossibleEdges(true);
+        return this.possibleEdges.isEmpty();
     }
 
     /**
@@ -409,40 +445,30 @@ public final class Materialisation {
      * edges and later used by the equation system to decide on the final
      * configuration of the shape.
      */
-    private void createPossibleEdges(boolean forNodePull) {
+    private void createPossibleEdges() {
         if (this.matNodes.isEmpty()) {
             return;
         }
         // Clone the morphism because we need pre-images and this fixes
         // the object.
-        Shape origShape;
-        ShapeMorphism clonedMorph;
-        if (forNodePull) {
-            origShape = this.pullNodeOrigShape;
-            clonedMorph = this.pullNodeMorph;
-        } else {
-            origShape = this.originalShape;
-            clonedMorph = this.morph.clone();
-        }
+        ShapeMorphism clonedMorph = this.morph.clone();
         clonedMorph.setFixed();
         // For all nodes involved in the materialisation.
         for (ShapeNode matNode : this.matNodes) {
             // Get the original node from the shape morphism.
-            ShapeNode origNode = this.morph.getNode(matNode);
+            ShapeNode origNode = clonedMorph.getNode(matNode);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 // Look for all edges connected to the original node in the
                 // original shape.     
-                for (ShapeEdge origEdge : origShape.binaryEdgeSet(origNode,
-                    direction)) {
+                for (ShapeEdge origEdge : this.originalShape.binaryEdgeSet(
+                    origNode, direction)) {
                     ShapeNode origOppNode = origEdge.opposite(direction);
                     for (ShapeNode oppNode : clonedMorph.getPreImages(origOppNode)) {
                         ShapeEdge possibleEdge =
                             this.shape.createEdge(matNode, oppNode,
                                 origEdge.label(), direction);
-                        if (!this.shape.edgeSet().contains(possibleEdge)) {
-                            this.possibleNewEdges.add(possibleEdge);
-                            // Use the shape morphism to store additional info.
-                            this.morph.putEdge(possibleEdge, origEdge);
+                        if (!this.shape.containsEdge(possibleEdge)) {
+                            this.addPossibleEdge(possibleEdge, origEdge);
                         }
                     }
                 }
@@ -467,10 +493,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-5").toResource();
+                view.getHostModel("materialisation-test-0a").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-5");
+            Rule rule = grammar.getRule("test-mat-0a");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =

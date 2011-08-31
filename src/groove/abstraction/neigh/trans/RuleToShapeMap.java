@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.trans;
 
 import gnu.trove.THashSet;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -30,7 +29,6 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -203,28 +201,6 @@ public class RuleToShapeMap extends RuleToHostMap {
                 result = false;
                 break;
             }
-        }
-        return result;
-    }
-
-    /**
-     * Checks which maps are inconsistent and returns the set of directions
-     * for the edge multiplicities that need to be adjusted in the shape.
-     */
-    public Set<EdgeMultDir> getDirectionsToAdjust(ShapeEdge edgeS,
-            Set<RuleEdge> edgesR) {
-        Set<EdgeMultDir> result = EnumSet.noneOf(EdgeMultDir.class);
-        for (RuleEdge edgeR : edgesR) {
-            if (this.isSrcInconsistent(edgeR, edgeS)
-                && !this.isTgtInconsistent(edgeR, edgeS)) {
-                result.add(EdgeMultDir.INCOMING);
-            }
-            if (!this.isSrcInconsistent(edgeR, edgeS)
-                && this.isTgtInconsistent(edgeR, edgeS)) {
-                result.add(EdgeMultDir.OUTGOING);
-            }
-            // If both directions are inconsistent, then we can't do much now.
-            // This case is handled later in the materialisation process.
         }
         return result;
     }

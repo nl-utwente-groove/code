@@ -127,7 +127,6 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public Collection<ShapeState> getNextStateSet() {
-        // EDUARDO: Make this efficient?
         THashSet<ShapeState> result = new THashSet<ShapeState>();
         for (GraphTransition transition : this.transitions) {
             result.add((ShapeState) transition.target());

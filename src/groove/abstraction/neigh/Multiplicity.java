@@ -39,6 +39,8 @@ public final class Multiplicity {
     private static Multiplicity NODE_MULT_STORE[];
     /** The edge multiplicity store. */
     private static Multiplicity EDGE_MULT_STORE[];
+    /** The equation system multiplicity store. */
+    private static Multiplicity EQSYS_MULT_STORE[];
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -89,6 +91,10 @@ public final class Multiplicity {
         case EDGE_MULT:
             bound = Parameters.getEdgeMultBound();
             break;
+        case EQSYS_MULT:
+            bound =
+                ((Parameters.getNodeMultBound() + 1) * (Parameters.getEdgeMultBound() + 1)) - 1;
+            break;
         default:
             assert false;
         }
@@ -105,6 +111,9 @@ public final class Multiplicity {
         case EDGE_MULT:
             store = EDGE_MULT_STORE;
             break;
+        case EQSYS_MULT:
+            store = EQSYS_MULT_STORE;
+            break;
         default:
             assert false;
         }
@@ -119,6 +128,9 @@ public final class Multiplicity {
             break;
         case EDGE_MULT:
             EDGE_MULT_STORE = store;
+            break;
+        case EQSYS_MULT:
+            EQSYS_MULT_STORE = store;
             break;
         default:
             assert false;
@@ -171,12 +183,6 @@ public final class Multiplicity {
             assert index == getCardinality(b);
             setStore(store, kind);
         }
-    }
-
-    /** Returns all possible values for edge multiplicities. */
-    public static Multiplicity[] getAllEdgeMultiplicities() {
-        // Clone the store to avoid modifications.
-        return EDGE_MULT_STORE.clone();
     }
 
     /**
@@ -232,6 +238,23 @@ public final class Multiplicity {
     }
 
     /**
+     * Returns the multiplication of the two given values.
+     * Both i and j must be in \Nat^\omega.
+     */
+    public static int times(int i, int j) {
+        assert isInNOmega(i) && isInNOmega(j);
+        int result;
+        if (i == 0 || j == 0) {
+            result = 0;
+        } else if (i != OMEGA && j != OMEGA) { // i, j \in N+.
+            result = i * j;
+        } else { // otherwise
+            result = OMEGA;
+        }
+        return result;
+    }
+
+    /**
      * Approximates the interval formed by the given values to a bounded
      * multiplicity. This is the \beta operation.
      * Both i and j must be in \Nat^\omega.
@@ -278,24 +301,6 @@ public final class Multiplicity {
         return approx(setSize, setSize, MultKind.EDGE_MULT);
     }
 
-    /**
-     * Converts the given edge multiplicity into an equivalent node
-     * multiplicity. 
-     */
-    public static Multiplicity convertToNodeMult(Multiplicity mult) {
-        assert mult.kind == MultKind.EDGE_MULT;
-        return approx(mult.i, mult.j, MultKind.NODE_MULT);
-    }
-
-    /**
-     * Converts the given node multiplicity into an equivalent edge
-     * multiplicity. 
-     */
-    public static Multiplicity convertToEdgeMult(Multiplicity mult) {
-        assert mult.kind == MultKind.NODE_MULT;
-        return approx(mult.i, mult.j, MultKind.EDGE_MULT);
-    }
-
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
@@ -323,8 +328,10 @@ public final class Multiplicity {
             prime = 31;
             break;
         case EDGE_MULT:
-            prime = 57;
+            prime = 53;
             break;
+        case EQSYS_MULT:
+            prime = 79;
         }
         return prime * this.index;
     }
@@ -371,14 +378,24 @@ public final class Multiplicity {
         return this.j > 1;
     }
 
-    /** Returns true if the lower bound is zero; false, otherwise. */
-    public boolean startsInZero() {
-        return this.i == 0;
+    /** Returns true if the lower and upper bound are equal; false, otherwise. */
+    public boolean isSingleton() {
+        return this.i == this.j;
     }
 
-    /** Returns true if the upper bound is omega; false, otherwise. */
-    public boolean isUnbounded() {
-        return this.j == OMEGA;
+    /** Basic inspection method. */
+    public boolean isNodeKind() {
+        return this.kind == MultKind.NODE_MULT;
+    }
+
+    /** Basic inspection method. */
+    public boolean isEdgeKind() {
+        return this.kind == MultKind.EDGE_MULT;
+    }
+
+    /** Basic inspection method. */
+    public boolean isEqSysKind() {
+        return this.kind == MultKind.EQSYS_MULT;
     }
 
     /** Returns the bounded addition of the two given multiplicities. */
@@ -394,9 +411,11 @@ public final class Multiplicity {
             this.kind);
     }
 
-    /** Returns the addition of this with one. */
-    public Multiplicity increment() {
-        return approx(add(this.i, 1), add(this.j, 1), this.kind);
+    /** Returns the bounded multiplication of the two given multiplicities. */
+    public Multiplicity times(Multiplicity other) {
+        assert this.isNodeKind() && other.isEdgeKind();
+        return getMultiplicity(times(this.i, other.i), times(this.j, other.j),
+            MultKind.EQSYS_MULT);
     }
 
     /** Returns true if this multiplicity is less or equal than the other. */
@@ -421,7 +440,9 @@ public final class Multiplicity {
         /** Node multiplicity kind. */
         NODE_MULT,
         /** Edge multiplicity kind. */
-        EDGE_MULT
+        EDGE_MULT,
+        /** Multiplicity used in equation systems. */
+        EQSYS_MULT
     }
 
     /** Enumeration of edge multiplicity directions. */
