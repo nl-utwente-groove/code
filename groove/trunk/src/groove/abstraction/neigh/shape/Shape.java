@@ -719,7 +719,8 @@ public final class Shape extends DefaultHostGraph {
      */
     private void setNodeMult(ShapeNode node, Multiplicity mult) {
         assert !this.isFixed();
-        assert this.nodeSet().contains(node) : "Node " + node
+        assert mult.isNodeKind();
+        assert this.containsNode(node) : "Node " + node
             + " is not in the shape!";
         if (!mult.isZero()) {
             this.nodeMultMap.put(node, mult);
@@ -742,6 +743,7 @@ public final class Shape extends DefaultHostGraph {
     public void setEdgeSigMult(EdgeSignature es, EdgeMultDir direction,
             Multiplicity mult) {
         assert !this.isFixed();
+        assert mult.isEdgeKind();
         if (!mult.isZero()) {
             this.getEdgeMultMap(direction).put(es, mult);
         } else {
@@ -906,19 +908,15 @@ public final class Shape extends DefaultHostGraph {
      * In addition, the rule match and the shape morphism are properly
      * adjusted. 
      */
-    public void materialiseNode(Materialisation mat, ShapeNode nodeS) {
+    public void materialiseNode(Materialisation mat, ShapeNode collectorNode) {
         assert !this.isFixed();
-        assert this.nodeSet().contains(nodeS);
+        assert this.containsNode(collectorNode);
 
         // The current match to be updated.
         RuleToShapeMap match = mat.getMatch();
-        // The morphism between this shape and the original one.
-        ShapeMorphism morph = mat.getShapeMorphism();
-        // The set of nodes involved in this materialisation.
-        Set<ShapeNode> matNodes = mat.getMatNodesSet();
-
         // Check the nodes on the rule that were mapped to nodeS.
-        Set<RuleNode> nodesR = mat.getOriginalMatch().getPreImages(nodeS);
+        Set<RuleNode> nodesR =
+            mat.getOriginalMatch().getPreImages(collectorNode);
         assert !nodesR.isEmpty();
         // Compute how many copies of the node we need to materialise.
         int copies = nodesR.size();
@@ -926,33 +924,27 @@ public final class Shape extends DefaultHostGraph {
 
         // Create a new shape node for each rule node.
         for (RuleNode nodeR : nodesR) {
-            ShapeNode newNode = getFactory().createNode();
+            ShapeNode newNode = this.getFactory().createNode();
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
             super.addNode(newNode);
             // The new node is concrete so set its multiplicity to one.
             this.setNodeMult(newNode, one);
             // Copy the labels from the original node.
-            this.copyUnaryEdges(nodeS, newNode, nodeR, match);
+            this.copyUnaryEdges(collectorNode, newNode, nodeR, match);
             // Add the new node to a new equivalence class.
             this.addToNewEquivClass(newNode);
-            // Update the match.
-            match.putNode(nodeR, newNode);
-            // Update the morphism.
-            morph.putNode(newNode, nodeS);
-            // Store the new node in the set of involved nodes.
-            matNodes.add(newNode);
+            // Add the new node to the materialisation.
+            mat.addMatNode(newNode, collectorNode, nodeR);
         }
 
         // Adjust the multiplicity of the original node.
-        Multiplicity oldMult = this.getNodeMult(nodeS);
+        Multiplicity oldMult = this.getNodeMult(collectorNode);
         Multiplicity newMult = oldMult.sub(Multiplicity.scale(one, copies));
-        this.setNodeMult(nodeS, newMult);
-        if (newMult.isZero()) {
-            // The original node was removed from the shape and we have a
-            // dangling reference in the shape morphism.
-            morph.removeNode(nodeS);
-        }
+        this.setNodeMult(collectorNode, newMult);
+
+        // Final update of the materialisation regarding the collector node.
+        mat.handleCollectorNode(collectorNode);
     }
 
     /**
@@ -962,31 +954,23 @@ public final class Shape extends DefaultHostGraph {
      * The multiplicities of the original collector edge are properly adjusted
      * and so is the rule match. 
      */
-    public void materialiseEdge(Materialisation mat, ShapeEdge edgeS) {
+    public void materialiseEdge(Materialisation mat, ShapeEdge inconsistentEdge) {
         assert !this.isFixed();
-
-        // The current match to be updated.
-        RuleToShapeMap match = mat.getMatch();
-
-        // Check the edges on the rule that were mapped to edgeS.
-        Set<RuleEdge> edgesR = mat.getOriginalMatch().getPreImages(edgeS);
-        assert !edgesR.isEmpty();
-        // Compute how many copies of the edge we need to materialise.
-        int copies = edgesR.size();
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
-        Multiplicity scaledMult = Multiplicity.scale(one, copies);
-        TypeLabel label = edgeS.label();
-
-        // All information for edgeS must come from the
+        // All information for inconsistentEdge must come from the
         // original shape because the edge may no longer be present in the
         // current shape. This is the case, for example, when the node
         // materialisation process leaves a collector node with multiplicity
         // zero, thus removing the node from the shape.
-        Shape origShape = mat.getOriginalShape();
-        assert origShape.edgeSet().contains(edgeS);
+        assert mat.getOriginalShape().containsEdge(inconsistentEdge);
 
-        // Create a new shape edge for each rule edge.
-        Set<ShapeEdge> possibleNewEdges = mat.getPossibleNewEdgeSet();
+        // The current match to be updated.
+        RuleToShapeMap match = mat.getMatch();
+        // Check the edges on the rule that were mapped to edgeS.
+        Set<RuleEdge> edgesR =
+            mat.getOriginalMatch().getPreImages(inconsistentEdge);
+        assert !edgesR.isEmpty();
+        TypeLabel label = inconsistentEdge.label();
+
         for (RuleEdge edgeR : edgesR) {
             // Get the image of source and target from the match.
             ShapeNode srcS = match.getNode(edgeR.source());
@@ -995,23 +979,12 @@ public final class Shape extends DefaultHostGraph {
             // Add the new edge to the shape. The edge multiplicity maps are
             // properly adjusted.
             this.addEdgeWithoutCheck(newEdge);
-            // Update the match.
-            match.putEdge(edgeR, newEdge);
-            // Check if this edge is one of the possible new edges listed
-            // in the node materialisation phase and if yes, remove it.
-            possibleNewEdges.remove(newEdge);
+            // Add the new edge to the materialisation.
+            mat.addMatEdge(newEdge, inconsistentEdge, edgeR);
         }
 
-        // Adjust the multiplicities of the original edge, if still present.
-        if (this.edgeSet().contains(edgeS)) {
-            for (EdgeMultDir direction : match.getDirectionsToAdjust(edgeS,
-                edgesR)) {
-                EdgeSignature es = origShape.getEdgeSignature(edgeS, direction);
-                Multiplicity oldMult = origShape.getEdgeSigMult(es, direction);
-                Multiplicity newMult = oldMult.sub(scaledMult);
-                this.setEdgeSigMult(es, direction, newMult);
-            }
-        }
+        // Final update of the materialisation regarding the inconsistent edge.
+        mat.handleInconsistentEdge(inconsistentEdge);
     }
 
     /**
@@ -1026,15 +999,14 @@ public final class Shape extends DefaultHostGraph {
      */
     public void singulariseNode(Materialisation mat, ShapeNode nodeS) {
         assert !this.isFixed();
-        assert this.nodeSet().contains(nodeS);
+        assert this.containsNode(nodeS);
 
         // Check if the node is not already in a singleton equivalence class.
         if (this.getEquivClassOf(nodeS).isSingleton()) {
             return;
         }
 
-        Set<ShapeEdge> possibleEdges = mat.getPossibleNewEdgeSet();
-        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> possibleEdges = new THashSet<ShapeEdge>();
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
@@ -1044,12 +1016,12 @@ public final class Shape extends DefaultHostGraph {
                 // We have an edge that is not concrete.
                 // Add it to the list of possible edges.
                 possibleEdges.add(edgeS);
-                // Mark it to be removed.
-                toRemove.add(edgeS);
             }
         }
-        if (!toRemove.isEmpty()) {
-            this.removeEdgeSet(toRemove);
+        // Now remove all possible edges from the shape.
+        for (ShapeEdge possibleEdge : possibleEdges) {
+            this.removeEdge(possibleEdge);
+            mat.addPossibleEdge(possibleEdge, possibleEdge);
         }
 
         // The original equivalence class to be split.
@@ -1060,117 +1032,23 @@ public final class Shape extends DefaultHostGraph {
         // The singular equivalence class created by the operation.
         EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
         singEc.add(nodeS);
-
         // Replace the original equivalence class with the remainder of the
         // split.
         this.replaceEc(origEc, remEc);
         // Add the singleton class to the equivalence relation.
         this.equivRel.add(singEc);
-
-        // Adjust the edge multiplicities that use the singleton class.
-        ShapeNode singNode = singEc.iterator().next();
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
-        for (ShapeEdge edgeS : this.outBinaryEdgeSet(singNode)) {
-            this.setEdgeMult(edgeS, INCOMING, one);
-        }
-        for (ShapeEdge edgeS : this.inBinaryEdgeSet(singNode)) {
-            this.setEdgeMult(edgeS, OUTGOING, one);
-        }
     }
 
-    /**
-     * Extract more new nodes from a collector node that is connected to the
-     * pulling edge, in the given direction. This is the last step of the
-     * materialisation and happens when an equation system had been solved but
-     * the precise values for some of the variables could not be determined.
-     * This method does a job that is similar to a combination of node and
-     * edge materialisation.
-     * The final step creates another equation system that will determine
-     * all the adjacent edges of the newly pulled node. This new equation system
-     * is more local and therefore simpler. It is guaranteed not to create
-     * any more systems, which ensures that the whole materialisation process
-     * terminates with at most two levels of equation systems creation.   
-     */
+    /** EDUARDO: rewrite this... */
     public ShapeNode pullNode(Materialisation mat, ShapeEdge pullingEdge,
             EdgeMultDir direction) {
-        // Create a new shape node.
-        ShapeNode newNode = getFactory().createNode();
-        // Add the new node to the shape. Call the super method because
-        // we have additional information on the node to be added.
-        super.addNode(newNode);
-
-        ShapeNode pulledNode = null;
-        Multiplicity newNodeMult = null;
-        ShapeEdge newEdge = null;
-        switch (direction) {
-        case OUTGOING:
-            pulledNode = pullingEdge.source();
-            newNodeMult =
-                Multiplicity.convertToNodeMult(this.getEdgeMult(pullingEdge,
-                    INCOMING));
-            newEdge =
-                this.createEdge(newNode, pullingEdge.label(),
-                    pullingEdge.target());
-            break;
-        case INCOMING:
-            pulledNode = pullingEdge.target();
-            newNodeMult =
-                Multiplicity.convertToNodeMult(this.getEdgeMult(pullingEdge,
-                    OUTGOING));
-            newEdge =
-                this.createEdge(pullingEdge.source(), pullingEdge.label(),
-                    newNode);
-            break;
-        default:
-            assert false;
-        }
-        Multiplicity pulledNodeOldMult = this.getNodeMult(pulledNode);
-        assert pulledNodeOldMult.isCollector();
-        Multiplicity pulledNodeNewMult = pulledNodeOldMult.sub(newNodeMult);
-        assert !pulledNodeNewMult.isZero();
-
-        // Adjust the nodes multiplicities.
-        this.setNodeMult(pulledNode, pulledNodeNewMult);
-        this.setNodeMult(newNode, newNodeMult);
-
-        // Copy the labels from the pulled node.
-        this.copyUnaryEdges(pulledNode, newNode, null, null);
-
-        // Clone the original equivalence class and add the node to it.
-        EquivClass<ShapeNode> oldEc = this.getEquivClassOf(pulledNode);
-        EquivClass<ShapeNode> newEc = oldEc.clone();
-        newEc.add(newNode);
-        this.replaceEc(oldEc, newEc);
-
-        // Add the new edge to the shape and adjust the multiplicities.
-        this.addEdgeWithoutCheck(newEdge);
-        this.setEdgeMult(newEdge, OUTGOING,
-            this.getEdgeMult(pullingEdge, OUTGOING));
-        this.setEdgeMult(newEdge, INCOMING,
-            this.getEdgeMult(pullingEdge, INCOMING));
-
-        // Now remove the pulling edge from the shape.
-        this.removeEdge(pullingEdge);
-
-        // Update the morphisms.
-        ShapeMorphism morph = mat.getShapeMorphism();
-        ShapeMorphism pullMorph = mat.getPullNodeMorphism();
-        morph.putNode(newNode, morph.getNode(pulledNode));
-        pullMorph.putNode(newNode, pullMorph.getNode(pulledNode));
-        morph.putEdge(newEdge, morph.removeEdge(pullingEdge));
-        pullMorph.putEdge(newEdge, pullMorph.removeEdge(pullingEdge));
-
-        // Duplicate incident edges.
-        mat.getMatNodesSet().add(newNode);
-
-        return newNode;
+        return null;
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */
     private void copyUnaryEdges(ShapeNode from, ShapeNode to, RuleNode nodeR,
             RuleToShapeMap match) {
         assert !this.isFixed();
-
         for (ShapeEdge edge : this.outEdgeSet(from)) {
             if (edge.getRole() != BINARY) {
                 TypeLabel label = edge.label();
