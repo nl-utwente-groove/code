@@ -255,6 +255,30 @@ public final class Multiplicity {
     }
 
     /**
+     * Returns the division of the two given values.
+     * Both i and j must be in \Nat^\omega but  but \omega / \omega is undefined.
+     */
+    public static int div(int i, int j) {
+        assert isInNOmega(i) && isInNOmega(j);
+        int result;
+        if (i == 0) {
+            result = 0;
+        } else if (i != OMEGA) { // i \in N+
+            if (j == 0) {
+                result = OMEGA;
+            } else if (j != OMEGA) { // j \in N+
+                result = (int) Math.ceil(i / j);
+            } else { // j = \omega
+                result = 1;
+            }
+        } else { // i = \omega
+            assert isInN(j) : "Division undefined.";
+            result = OMEGA;
+        }
+        return result;
+    }
+
+    /**
      * Approximates the interval formed by the given values to a bounded
      * multiplicity. This is the \beta operation.
      * Both i and j must be in \Nat^\omega.
@@ -418,6 +442,19 @@ public final class Multiplicity {
             MultKind.EQSYS_MULT);
     }
 
+    /** Returns the bounded division of the two given multiplicities. */
+    public Multiplicity div(Multiplicity other) {
+        assert this.isEqSysKind() && (other.isNodeKind() || other.isEdgeKind());
+        MultKind returnKind = null;
+        if (other.isNodeKind()) {
+            returnKind = MultKind.EDGE_MULT;
+        } else if (other.isEdgeKind()) {
+            returnKind = MultKind.NODE_MULT;
+        }
+        return getMultiplicity(div(this.i, other.j), div(this.j, other.i),
+            returnKind);
+    }
+
     /** Returns true if this multiplicity is less or equal than the other. */
     public boolean le(Multiplicity other) {
         assert this.kind == other.kind;
@@ -429,6 +466,12 @@ public final class Multiplicity {
     public boolean subsumes(Multiplicity other) {
         assert this.kind == other.kind;
         return other.i >= this.i && other.j <= this.j;
+    }
+
+    /** Returns true if this multiplicity strictly subsumes the other. */
+    public boolean strictSubsumes(Multiplicity other) {
+        assert this.kind == other.kind;
+        return other.i > this.i && other.j <= this.j;
     }
 
     // ------------------------------------------------------------------------
