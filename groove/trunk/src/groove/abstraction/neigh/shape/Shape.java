@@ -717,7 +717,7 @@ public final class Shape extends DefaultHostGraph {
      * Sets the node multiplicity. If the multiplicity given is zero, then
      * the node is removed from the shape.
      */
-    private void setNodeMult(ShapeNode node, Multiplicity mult) {
+    public void setNodeMult(ShapeNode node, Multiplicity mult) {
         assert !this.isFixed();
         assert mult.isNodeKind();
         assert this.containsNode(node) : "Node " + node

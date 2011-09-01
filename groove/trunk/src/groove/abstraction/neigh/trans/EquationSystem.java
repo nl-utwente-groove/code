@@ -26,6 +26,7 @@ import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 
@@ -287,6 +288,68 @@ public final class EquationSystem {
      */
     private void updateMatFromSolution(Materialisation mat, Solution sol) {
         assert sol.isComplete();
+        // Split the sets of variables into zero and non-zero.
+        Set<NodeVar> zeroNodeVars = new THashSet<NodeVar>();
+        Map<NodeVar,Multiplicity> positiveNodeVars =
+            new THashMap<NodeVar,Multiplicity>();
+        for (NodeVar nodeVar : this.nodeVars) {
+            Multiplicity value = sol.getValue(nodeVar);
+            if (value.isZero()) {
+                zeroNodeVars.add(nodeVar);
+            } else {
+                positiveNodeVars.put(nodeVar, value);
+            }
+        }
+        Set<EdgeVar> zeroEdgeVars = new THashSet<EdgeVar>();
+        Map<EdgeVar,Multiplicity> positiveEdgeVars =
+            new THashMap<EdgeVar,Multiplicity>();
+        for (EdgeVar edgeVar : this.edgeVars) {
+            Multiplicity value = sol.getValue(edgeVar);
+            if (value.isZero()) {
+                zeroEdgeVars.add(edgeVar);
+            } else {
+                positiveEdgeVars.put(edgeVar, value);
+            }
+        }
+
+        Shape shape = this.mat.getShape();
+        ShapeMorphism morph = this.mat.getShapeMorphism();
+
+        // First set the zero multiplicities to remove the elements of the shape.
+        Multiplicity zeroN =
+            Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
+        for (NodeVar nodeVar : zeroNodeVars) {
+            ShapeNode node = nodeVar.node;
+            shape.setNodeMult(node, zeroN);
+            morph.removeNode(node);
+        }
+        Multiplicity zeroE =
+            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+        for (EdgeVar edgeVar : zeroEdgeVars) {
+            ShapeEdge edge = edgeVar.edge;
+            if (shape.containsEdge(edge)) {
+                shape.setEdgeMult(edge, OUTGOING, zeroE);
+                shape.setEdgeMult(edge, INCOMING, zeroE);
+            }
+            morph.removeEdge(edge);
+        }
+
+        // Now set the positive values.
+        for (NodeVar nodeVar : positiveNodeVars.keySet()) {
+            Multiplicity mult = positiveNodeVars.get(nodeVar);
+            shape.setNodeMult(nodeVar.node, mult);
+        }
+        for (EdgeVar edgeVar : positiveEdgeVars.keySet()) {
+            Multiplicity value = positiveEdgeVars.get(edgeVar);
+            ShapeEdge edge = edgeVar.edge;
+            Multiplicity srcNodeMult = shape.getNodeMult(edge.source());
+            Multiplicity tgtNodeMult = shape.getNodeMult(edge.target());
+            Multiplicity srcMult = value.div(srcNodeMult);
+            Multiplicity tgtMult = value.div(tgtNodeMult);
+            assert srcMult != null && tgtMult != null;
+            shape.setEdgeMult(edge, OUTGOING, srcMult);
+            shape.setEdgeMult(edge, INCOMING, tgtMult);
+        }
     }
 
     /**
@@ -445,7 +508,7 @@ public final class EquationSystem {
         }
 
         void solveTrivial(Solution partialSol) {
-            assert this.edgeVars.size() == 1;
+            assert this.isTrivial() && this.edgeVars.size() == 1;
             EdgeVar edgeVar = this.edgeVars.iterator().next();
             Multiplicity one =
                 Multiplicity.getMultiplicity(1, 1, MultKind.NODE_MULT);
@@ -468,6 +531,29 @@ public final class EquationSystem {
             Multiplicity nodeVarValue = null;
             if (nodeVarHasValue) {
                 nodeVarValue = partialSol.getValue(this.nodeVar);
+            }
+
+            if (openVarsCount == 0) {
+                // There are no open variables. So we may compute the value
+                // for the node variable.
+                Multiplicity lhs =
+                    Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
+                for (Multiplicity mult : this.getFixedValues(partialSol,
+                    openVarsCount)) {
+                    lhs = lhs.add(mult);
+                }
+                Multiplicity newNodeVarValue = lhs.div(this.constant);
+                if (newNodeVarValue != null
+                    && (!nodeVarHasValue || nodeVarValue.strictSubsumes(newNodeVarValue))) {
+                    partialSol.setValue(this.nodeVar, newNodeVarValue);
+                    partialSol.eqsToUse.remove(this);
+                    return true;
+                } else {
+                    // It's not possible to compute the node variable value
+                    // using this equation.
+                    partialSol.eqsToUse.remove(this);
+                    return false;
+                }
             }
 
             if (openVarsCount == 1 && nodeVarHasValue) {
@@ -682,7 +768,7 @@ public final class EquationSystem {
             assert mult != null;
             assert var.isValueOfRightKind(mult);
             if (this.hasValue(var)) {
-                assert this.getValue(var).subsumes(mult);
+                assert this.getValue(var).strictSubsumes(mult);
             } else {
                 this.valuesCount++;
             }
