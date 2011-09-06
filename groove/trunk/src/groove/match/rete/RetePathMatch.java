@@ -167,9 +167,7 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     public int compareTo(AbstractReteMatch o) {
-        // TODO ARASH. Eduardo says:
-        // Is this correct? It seems an infinite recursive loop...
-        return (o instanceof RetePathMatch) ? compareTo(o) : -1;
+        return (o instanceof RetePathMatch) ? compareTo((RetePathMatch) o) : -1;
     }
 
     /**
