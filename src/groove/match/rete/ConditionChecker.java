@@ -502,9 +502,9 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        // TODO ARASH. Eduardo says:
-        // Is this correct? It seems an infinite recursive loop...
-        return (node instanceof ConditionChecker) && this.equals(node);
+        return (node instanceof ConditionChecker)
+            && this.getCondition().equals(
+                ((ConditionChecker) node).getCondition());
     }
 
     @Override

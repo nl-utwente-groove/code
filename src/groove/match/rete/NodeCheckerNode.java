@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
+import groove.trans.DefaultRuleNode;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
@@ -66,8 +67,8 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      * 
      * @return the node object associated with this checker
      */
-    public DefaultNode getNode() {
-        return (DefaultNode) this.pattern[0];
+    public DefaultRuleNode getNode() {
+        return (DefaultRuleNode) this.pattern[0];
     }
 
     /**

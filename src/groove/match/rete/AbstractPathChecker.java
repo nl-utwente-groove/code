@@ -150,7 +150,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
 
     @Override
     public String toString() {
-        return "- Checker Path for: " + this.getExpression().toString();
+        return "- Path-checker for: " + this.getExpression().toString();
     }
 
 }
