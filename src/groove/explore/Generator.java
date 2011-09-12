@@ -519,7 +519,10 @@ public class Generator extends CommandLineTool {
             println();
             println();
         }
-        println(this.explorationStats.getReport());
+        String report = this.explorationStats.getReport();
+        if (report.length() > 0) {
+            println(report);
+        }
 
         if (getVerbosity() > LOW_VERBOSITY) {
             if (getOutputFileName() != null) {
