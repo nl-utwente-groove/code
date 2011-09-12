@@ -29,6 +29,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     /**
      * Constructs a control view from a given control program.
      * @param grammar the grammar view to which this control view belongs.
+     * Must be non-{@code null} in order to compute the control automation
      * @param name the name of the control program
      * @param program the control program; non-null
      */
