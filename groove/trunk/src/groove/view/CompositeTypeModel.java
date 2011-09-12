@@ -21,6 +21,10 @@ import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
+    /**
+     * Constructs a composite type model
+     * @param grammar the underlying graph grammar; non-{@code null}
+     */
     CompositeTypeModel(GrammarModel grammar) {
         super(grammar, ResourceKind.TYPE, "Composed type for "
             + grammar.getName());

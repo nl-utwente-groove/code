@@ -31,7 +31,13 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 abstract public class ResourceModel<R> {
-    /** Creates a named resource model of a given kind. */
+    /** 
+     * Creates a named resource model of a given kind.
+     * @param grammar the grammar to which this resource belongs; may be {@code null}
+     * if the resource is being considered outside the context of a grammar
+     * @param kind the kind of resource
+     * @param name the name of the resource; must be unique for the resource kind
+     */
     public ResourceModel(GrammarModel grammar, ResourceKind kind, String name) {
         this.grammar = grammar;
         this.kind = kind;

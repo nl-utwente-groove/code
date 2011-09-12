@@ -54,6 +54,8 @@ import java.util.TreeSet;
 public class HostModel extends GraphBasedModel<HostGraph> {
     /**
      * Constructs an instance from a given aspect graph.
+     * @param grammar the grammar to which the host graph belongs; may be {@code null} if
+     * there is no enclosing grammar
      */
     public HostModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
@@ -187,7 +189,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             }
         }
         // test against the type graph, if any
-        TypeGraph type = getGrammar().getTypeGraph();
+        TypeGraph type =
+            getGrammar() == null ? null : getGrammar().getTypeGraph();
         if (type != null) {
             try {
                 type.analyzeHost(result);

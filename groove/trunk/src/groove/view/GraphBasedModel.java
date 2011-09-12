@@ -40,7 +40,12 @@ import java.util.Set;
  * @version $Revision $
  */
 abstract public class GraphBasedModel<R> extends ResourceModel<R> {
-    /** Creates a graph-based resource model from a given source. */
+    /** 
+     * Creates a graph-based resource model from a given source.
+     * @param grammar the grammar to which this resource belongs; may be {@code null}
+     * if the resource is being considered outside the context of a grammar
+     * @param source the aspect graph from which the resource is derived
+     */
     protected GraphBasedModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, ResourceKind.toResource(source.getRole()),
             source.getName());

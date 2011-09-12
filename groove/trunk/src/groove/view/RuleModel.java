@@ -96,10 +96,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /**
      * Constructs a rule model from an aspect graph. The rule properties are
      * explicitly given.
+     * @param grammar the (non-{@code null}) grammar to which the rule belongs
      * @param graph the graph to be converted (non-null)
      */
     public RuleModel(GrammarModel grammar, AspectGraph graph) {
         super(grammar, graph);
+        assert grammar != null;
         graph.testFixed(true);
     }
 
