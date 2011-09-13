@@ -295,7 +295,6 @@ public final class Materialisation {
 
     /** EDUARDO: Comment this... */
     public boolean isFixed(ShapeEdge edge) {
-        assert this.shape.containsEdge(edge);
         return !this.match.getPreImages(edge).isEmpty();
     }
 
@@ -420,7 +419,7 @@ public final class Materialisation {
         // Create a new equation system for this materialisation and return
         // the resulting materialisations from the solution.
         ResultSet result = new ResultSet();
-        new EquationSystem(this).solve(result);
+        EquationSystem.newEqSys(this).solve(result);
 
         return result;
     }
@@ -493,10 +492,10 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-0a").toResource();
+                view.getHostModel("materialisation-test-5").toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-0a");
+            Rule rule = grammar.getRule("test-mat-5");
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =

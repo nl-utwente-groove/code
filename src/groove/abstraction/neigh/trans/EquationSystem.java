@@ -16,59 +16,57 @@
  */
 package groove.abstraction.neigh.trans;
 
+import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
+import gnu.trove.TIntArrayList;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
-import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
+import groove.util.Duo;
+import groove.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * 
  * @author Eduardo Zambon
  */
 public final class EquationSystem {
 
-    /**
-     * The initial materialisation object for which the equation system should
-     * be built. If the system has only one solution this object is modified
-     * directly. If there are multiple solutions, this object is cloned.
-     */
+    /** EDUARDO: Comment this... */
+    public final static EquationSystem newEqSys(Materialisation mat) {
+        return new EquationSystem(mat, 1);
+    }
+
     private final Materialisation mat;
-    private final Set<NodeVar> nodeVars;
-    private final Set<EdgeVar> edgeVars;
+    private final int stage;
     private final Set<Equation> trivialEqs;
-    private final THashSet<Equation> nonTrivialEqs;
-    private final Map<ShapeNode,NodeVar> nodeVarMap;
-    private final Map<ShapeEdge,EdgeVar> edgeVarMap;
+    private final Set<Equation> nonTrivialEqs;
+    private final Map<ShapeEdge,Duo<BoundVar>> edgeVarsMap;
+    private final TIntArrayList lowerBoundRange;
+    private final TIntArrayList upperBoundRange;
     private int varsCount;
 
-    /** 
-     * Constructs the equation system based on the given materialisation.
-     * After the constructor finishes, a call to solve() yields all possible
-     * resulting materialisations, with the proper shapes.
-     */
-    public EquationSystem(Materialisation mat) {
+    private EquationSystem(Materialisation mat, int stage) {
+        assert mat != null;
+        assert stage >= 1 && stage <= 3;
         this.mat = mat;
-        this.nodeVars = new THashSet<NodeVar>();
-        this.edgeVars = new THashSet<EdgeVar>();
+        this.stage = stage;
         this.trivialEqs = new THashSet<Equation>();
         this.nonTrivialEqs = new THashSet<Equation>();
-        this.nodeVarMap = new THashMap<ShapeNode,NodeVar>();
-        this.edgeVarMap = new THashMap<ShapeEdge,EdgeVar>();
+        this.edgeVarsMap = new THashMap<ShapeEdge,Duo<BoundVar>>();
+        this.lowerBoundRange = new TIntArrayList();
+        this.upperBoundRange = new TIntArrayList();
         this.varsCount = 0;
         this.create();
     }
@@ -88,21 +86,52 @@ public final class EquationSystem {
         return sb.toString();
     }
 
-    /**
-     * Creates the equation system.
-     * See the comments in the code for more details.
-     */
     private void create() {
-        Shape shape = this.mat.getShape();
-
-        // Create one node variable for each node involved in the materialisation.
-        for (ShapeNode node : this.mat.getAffectedNodes()) {
-            NodeVar nodeVar = this.newNodeVar(node);
-            // Create one constraint for each node variable.
-            Constraint constraint =
-                new Constraint(nodeVar, shape.getNodeMult(node));
-            this.storeEquation(constraint);
+        this.fillBoundRanges();
+        switch (this.stage) {
+        case 1:
+            this.createFirstStage();
+            break;
+        case 2:
+            this.createSecondStage();
+            break;
+        case 3:
+            this.createThirdStage();
+            break;
+        default:
+            assert false;
         }
+    }
+
+    private void fillBoundRanges() {
+        MultKind kind = null;
+        switch (this.stage) {
+        case 1:
+            kind = MultKind.EQSYS_MULT;
+            break;
+        case 2:
+            kind = MultKind.EDGE_MULT;
+            break;
+        case 3:
+            kind = MultKind.NODE_MULT;
+            break;
+        default:
+            assert false;
+        }
+        int b = Multiplicity.getBound(kind);
+        for (int i = 0; i <= b + 1; i++) {
+            this.lowerBoundRange.add(i);
+            if (i == b + 1) {
+                this.upperBoundRange.add(OMEGA);
+            } else {
+                this.upperBoundRange.add(i);
+            }
+        }
+    }
+
+    private void createFirstStage() {
+        assert this.stage == 1;
+        Shape shape = this.mat.getShape();
 
         // Create the edge bundles.
         Set<EdgeBundle> bundles = new THashSet<EdgeBundle>();
@@ -111,78 +140,45 @@ public final class EquationSystem {
             this.addToEdgeBundle(bundles, edge.target(), edge, INCOMING);
         }
 
-        // Create one edge variable for each edge in the bundle.
-        Multiplicity one =
-            Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
+        // For each bundle...
         for (EdgeBundle bundle : bundles) {
-            bundle.computeAdditionalEdges();
-            Equality equality =
-                new Equality(bundle.origEsMult, this.getNodeVar(bundle.node),
-                    bundle.edges.size());
+            bundle.computeAdditionalEdges(this.mat);
+            int varsCount = bundle.edges.size();
+            Multiplicity nodeMult = shape.getNodeMult(bundle.node);
+            Multiplicity edgeMult = bundle.origEsMult;
+            Multiplicity constMult = nodeMult.times(edgeMult);
+            // ... create one lower bound and one upper bound equation.
+            Equation lbEq =
+                new Equation(BoundType.LB, Relation.GE,
+                    constMult.getLowerBound(), varsCount);
+            Equation ubEq =
+                new Equation(BoundType.UB, Relation.LE,
+                    constMult.getUpperBound(), varsCount);
+
+            // For each edge in the bundle...
             for (ShapeEdge edge : bundle.edges) {
-                EdgeVar edgeVar = this.getOrNewEdgeVar(edge);
-                equality.addVar(edgeVar);
-                // Create one additional equation for the fixed edges.
+                // ... create two bound variables.
+                Pair<BoundVar,BoundVar> varPair = retrieveBoundVars(edge);
+                BoundVar lbVar = varPair.one();
+                BoundVar ubVar = varPair.two();
+                lbEq.addVar(lbVar);
+                ubEq.addVar(ubVar);
+
+                // Create one additional equations for the fixed edges.
                 if (bundle.direction == OUTGOING && this.mat.isFixed(edge)) {
-                    Equality trivialEq = new Equality(one, null, 1);
-                    trivialEq.addVar(edgeVar);
-                    this.storeEquation(trivialEq);
+                    Equation trivialLbEq =
+                        new Equation(BoundType.LB, Relation.GE, 1, 1);
+                    Equation trivialUbEq =
+                        new Equation(BoundType.UB, Relation.LE, 1, 1);
+                    trivialLbEq.addVar(lbVar);
+                    trivialUbEq.addVar(ubVar);
+                    this.storeEquations(trivialLbEq, trivialUbEq);
                 }
             }
-            this.storeEquation(equality);
-        }
-
-    }
-
-    private NodeVar newNodeVar(ShapeNode node) {
-        NodeVar nodeVar = new NodeVar(this.varsCount, node);
-        this.nodeVars.add(nodeVar);
-        this.varsCount++;
-        this.nodeVarMap.put(node, nodeVar);
-        return nodeVar;
-    }
-
-    private NodeVar getNodeVar(ShapeNode node) {
-        NodeVar nodeVar = this.nodeVarMap.get(node);
-        assert nodeVar != null;
-        return nodeVar;
-    }
-
-    private EdgeVar newEdgeVar(ShapeEdge edge) {
-        EdgeVar edgeVar = new EdgeVar(this.varsCount, edge);
-        this.edgeVars.add(edgeVar);
-        this.varsCount++;
-        this.edgeVarMap.put(edge, edgeVar);
-        return edgeVar;
-    }
-
-    private EdgeVar getEdgeVar(ShapeEdge edge) {
-        EdgeVar edgeVar = this.edgeVarMap.get(edge);
-        assert edgeVar != null;
-        return edgeVar;
-    }
-
-    private EdgeVar getOrNewEdgeVar(ShapeEdge edge) {
-        EdgeVar edgeVar = this.edgeVarMap.get(edge);
-        if (edgeVar == null) {
-            edgeVar = newEdgeVar(edge);
-        }
-        return edgeVar;
-    }
-
-    private void storeEquation(Equation eq) {
-        if (eq.isTrivial()) {
-            this.trivialEqs.add(eq);
-        } else {
-            this.nonTrivialEqs.add(eq);
+            this.storeEquations(lbEq, ubEq);
         }
     }
 
-    /**
-     * Searches in the given bundle set for a bundle with corresponding node,
-     * label and direction. If a proper bundle is not found, a new one is
-     * created and added to the set.  
-     */
     private void addToEdgeBundle(Set<EdgeBundle> bundles, ShapeNode node,
             ShapeEdge edge, EdgeMultDir direction) {
         EdgeBundle result = null;
@@ -212,469 +208,52 @@ public final class EquationSystem {
         result.edges.add(edge);
     }
 
-    /**
-     * Finds all solutions of this equation system and return all
-     * materialisation objects created from the valid solutions.
-     * This method resolves all non-determinism of the materialisation phase. 
-     */
+    private Duo<BoundVar> retrieveBoundVars(ShapeEdge edge) {
+        Duo<BoundVar> vars = this.edgeVarsMap.get(edge);
+        if (vars == null) {
+            BoundVar lbVar = new BoundVar(this.varsCount, BoundType.LB);
+            BoundVar ubVar = new BoundVar(this.varsCount, BoundType.UB);
+            vars = new Duo<BoundVar>(lbVar, ubVar);
+            this.edgeVarsMap.put(edge, vars);
+            this.varsCount++;
+        }
+        return vars;
+    }
+
+    private void storeEquations(Equation lbEq, Equation ubEq) {
+        // Fill the duality relation first, before we store the equations.
+        lbEq.setDual(ubEq);
+        ubEq.setDual(lbEq);
+        // Now store.
+        if (lbEq.isUseful()) {
+            if (lbEq.isTrivial()) {
+                this.trivialEqs.add(lbEq);
+            } else {
+                this.nonTrivialEqs.add(lbEq);
+            }
+        }
+        if (ubEq.isUseful()) {
+            if (ubEq.isTrivial()) {
+                this.trivialEqs.add(ubEq);
+            } else {
+                this.nonTrivialEqs.add(ubEq);
+            }
+        }
+    }
+
+    private void createSecondStage() {
+        // todo
+    }
+
+    private void createThirdStage() {
+        // todo
+    }
+
+    /** EDUARDO: Comment this... */
     public void solve(Set<Materialisation> result) {
-        // Compute all solutions.
-        Solution initialSol =
-            new Solution(this.varsCount,
-                (THashSet<Equation>) this.nonTrivialEqs.clone());
-        // First iterate once over the trivial solutions.
-        for (Equation eq : this.trivialEqs) {
-            boolean solChanged = eq.computeNewValues(initialSol);
-            assert solChanged;
-        }
-        Set<Solution> finishedSols = new THashSet<Solution>();
-        Set<Solution> partialSols = new THashSet<Solution>();
-        partialSols.add(initialSol);
-        while (!partialSols.isEmpty()) {
-            Solution sol = partialSols.iterator().next();
-            partialSols.remove(sol);
-            this.iterateSolution(sol, partialSols, finishedSols);
-        }
-        // Create the return objects.
-        for (Solution sol : finishedSols) {
-            Materialisation mat;
-            if (finishedSols.size() == 1) {
-                mat = this.mat;
-            } else {
-                mat = this.mat.clone();
-            }
-            this.updateMatFromSolution(mat, sol);
-            result.add(mat);
-        }
+        // todo
     }
 
-    /**
-     * Iterate the given solution over all equations of the system and try to
-     * fix more variables. This may lead to branching. In this case, an
-     * heuristic is used to decide on which equation to use that is likely
-     * to produce less branching. Returns the set of new (partial) solutions.
-     */
-    private void iterateSolution(Solution sol, Set<Solution> partialSols,
-            Set<Solution> finishedSols) {
-        boolean isFinished = this.iterateEquations(sol);
-        if (isFinished) {
-            finishedSols.add(sol);
-        } else {
-            Equation branchingEq = sol.getBestBranchingEquation();
-            branchingEq.getNewSolutions(sol, partialSols, finishedSols);
-        }
-    }
-
-    /**
-     * Iterate the given solution over all equations of the system and try to
-     * fix more variables. 
-     */
-    @SuppressWarnings("unchecked")
-    private boolean iterateEquations(Solution sol) {
-        // For all equations, try to fix as many variables as possible.
-        boolean solutionModified = true;
-        while (solutionModified) {
-            Set<Equation> currEqsToUse = (Set<Equation>) sol.eqsToUse.clone();
-            solutionModified = false;
-            for (Equation eq : currEqsToUse) {
-                solutionModified = eq.computeNewValues(sol);
-            }
-        }
-        return sol.isComplete();
-    }
-
-    /**
-     * Adjust the given materialisation object using the given solution.
-     */
-    private void updateMatFromSolution(Materialisation mat, Solution sol) {
-        assert sol.isComplete();
-        // Split the sets of variables into zero and non-zero.
-        Set<NodeVar> zeroNodeVars = new THashSet<NodeVar>();
-        Map<NodeVar,Multiplicity> positiveNodeVars =
-            new THashMap<NodeVar,Multiplicity>();
-        for (NodeVar nodeVar : this.nodeVars) {
-            Multiplicity value = sol.getValue(nodeVar);
-            if (value.isZero()) {
-                zeroNodeVars.add(nodeVar);
-            } else {
-                positiveNodeVars.put(nodeVar, value);
-            }
-        }
-        Set<EdgeVar> zeroEdgeVars = new THashSet<EdgeVar>();
-        Map<EdgeVar,Multiplicity> positiveEdgeVars =
-            new THashMap<EdgeVar,Multiplicity>();
-        for (EdgeVar edgeVar : this.edgeVars) {
-            Multiplicity value = sol.getValue(edgeVar);
-            if (value.isZero()) {
-                zeroEdgeVars.add(edgeVar);
-            } else {
-                positiveEdgeVars.put(edgeVar, value);
-            }
-        }
-
-        Shape shape = this.mat.getShape();
-        ShapeMorphism morph = this.mat.getShapeMorphism();
-
-        // First set the zero multiplicities to remove the elements of the shape.
-        Multiplicity zeroN =
-            Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
-        for (NodeVar nodeVar : zeroNodeVars) {
-            ShapeNode node = nodeVar.node;
-            shape.setNodeMult(node, zeroN);
-            morph.removeNode(node);
-        }
-        Multiplicity zeroE =
-            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-        for (EdgeVar edgeVar : zeroEdgeVars) {
-            ShapeEdge edge = edgeVar.edge;
-            if (shape.containsEdge(edge)) {
-                shape.setEdgeMult(edge, OUTGOING, zeroE);
-                shape.setEdgeMult(edge, INCOMING, zeroE);
-            }
-            morph.removeEdge(edge);
-        }
-
-        // Now set the positive values.
-        for (NodeVar nodeVar : positiveNodeVars.keySet()) {
-            Multiplicity mult = positiveNodeVars.get(nodeVar);
-            shape.setNodeMult(nodeVar.node, mult);
-        }
-        for (EdgeVar edgeVar : positiveEdgeVars.keySet()) {
-            Multiplicity value = positiveEdgeVars.get(edgeVar);
-            ShapeEdge edge = edgeVar.edge;
-            Multiplicity srcNodeMult = shape.getNodeMult(edge.source());
-            Multiplicity tgtNodeMult = shape.getNodeMult(edge.target());
-            Multiplicity srcMult = value.div(srcNodeMult);
-            Multiplicity tgtMult = value.div(tgtNodeMult);
-            assert srcMult != null && tgtMult != null;
-            shape.setEdgeMult(edge, OUTGOING, srcMult);
-            shape.setEdgeMult(edge, INCOMING, tgtMult);
-        }
-    }
-
-    /**
-     * Abstract class to represent all types of multiplicity variables. 
-     */
-    private static abstract class MultVar {
-
-        /** The unique variable number. */
-        final int number;
-
-        /** Basic constructor. */
-        MultVar(int number) {
-            this.number = number;
-        }
-
-        @Override
-        public abstract String toString();
-
-        abstract boolean isValueOfRightKind(Multiplicity value);
-    }
-
-    private static class NodeVar extends MultVar {
-
-        final ShapeNode node;
-
-        /** Basic constructor. */
-        NodeVar(int number, ShapeNode node) {
-            super(number);
-            this.node = node;
-        }
-
-        @Override
-        public String toString() {
-            return "y" + this.number;
-        }
-
-        @Override
-        boolean isValueOfRightKind(Multiplicity value) {
-            return value.isNodeKind();
-        }
-    }
-
-    private static class EdgeVar extends MultVar {
-
-        final ShapeEdge edge;
-
-        /** Basic constructor. */
-        EdgeVar(int number, ShapeEdge edge) {
-            super(number);
-            this.edge = edge;
-        }
-
-        @Override
-        public String toString() {
-            return "x" + this.number;
-        }
-
-        @Override
-        boolean isValueOfRightKind(Multiplicity value) {
-            return value.isEqSysKind();
-        }
-    }
-
-    private static abstract class Equation {
-
-        abstract boolean isTrivial();
-
-        abstract boolean computeNewValues(Solution partialSol);
-
-        abstract void getNewSolutions(Solution partialSol,
-                Set<Solution> partialSols, Set<Solution> finishedSols);
-
-        abstract boolean canBranch();
-
-        abstract boolean isCollector();
-
-        abstract int openVarsCount(Solution partialSol);
-    }
-
-    private static class Equality extends Equation {
-
-        private final Multiplicity constant;
-        private final NodeVar nodeVar;
-        private final ArrayList<EdgeVar> edgeVars;
-
-        Equality(Multiplicity constant, NodeVar nodeVar, int edgeVarsCount) {
-            this.constant = constant;
-            this.nodeVar = nodeVar;
-            this.edgeVars = new ArrayList<EdgeVar>(edgeVarsCount);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder result = new StringBuilder();
-            Iterator<EdgeVar> iter = this.edgeVars.iterator();
-            while (iter.hasNext()) {
-                result.append(iter.next().toString());
-                if (iter.hasNext()) {
-                    result.append(" + ");
-                }
-            }
-            result.append(" = " + this.constant);
-            if (!this.isTrivial()) {
-                result.append("*" + this.nodeVar);
-            }
-            return result.toString();
-        }
-
-        @Override
-        boolean isTrivial() {
-            return this.nodeVar == null;
-        }
-
-        @Override
-        boolean computeNewValues(Solution partialSol) {
-            boolean result;
-            if (this.isTrivial()) {
-                this.solveTrivial(partialSol);
-                result = true;
-            } else {
-                result = this.tryToSolve(partialSol);
-            }
-            return result;
-        }
-
-        @Override
-        void getNewSolutions(Solution partialSol, Set<Solution> partialSols,
-                Set<Solution> finishedSols) {
-
-        }
-
-        @Override
-        boolean canBranch() {
-            return true;
-        }
-
-        @Override
-        boolean isCollector() {
-            return this.constant.isCollector();
-        }
-
-        @Override
-        int openVarsCount(Solution partialSol) {
-            int openVars = this.edgeVars.size();
-            for (MultVar var : this.edgeVars) {
-                if (partialSol.hasValue(var)) {
-                    openVars--;
-                }
-            }
-            return openVars;
-        }
-
-        void addVar(EdgeVar edgeVar) {
-            assert edgeVar != null;
-            this.edgeVars.add(edgeVar);
-        }
-
-        void solveTrivial(Solution partialSol) {
-            assert this.isTrivial() && this.edgeVars.size() == 1;
-            EdgeVar edgeVar = this.edgeVars.iterator().next();
-            Multiplicity one =
-                Multiplicity.getMultiplicity(1, 1, MultKind.NODE_MULT);
-            partialSol.setValue(edgeVar, one.times(this.constant));
-        }
-
-        /**
-         * Given a partial solution, tries to assign additional values to the
-         * variables when possible. (See comments on code for additional
-         * information). If no new values can be obtained from this equation
-         * the given solution remains unchanged. 
-         */
-        boolean tryToSolve(Solution partialSol) {
-            assert partialSol.eqsToUse.contains(this);
-            // EZ says: sorry for the multiple return points, but otherwise
-            // the code becomes less readable...
-
-            int openVarsCount = this.openVarsCount(partialSol);
-            boolean nodeVarHasValue = partialSol.hasValue(this.nodeVar);
-            Multiplicity nodeVarValue = null;
-            if (nodeVarHasValue) {
-                nodeVarValue = partialSol.getValue(this.nodeVar);
-            }
-
-            if (openVarsCount == 0) {
-                // There are no open variables. So we may compute the value
-                // for the node variable.
-                Multiplicity lhs =
-                    Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
-                for (Multiplicity mult : this.getFixedValues(partialSol,
-                    openVarsCount)) {
-                    lhs = lhs.add(mult);
-                }
-                Multiplicity newNodeVarValue = lhs.div(this.constant);
-                if (newNodeVarValue != null
-                    && (!nodeVarHasValue || nodeVarValue.strictSubsumes(newNodeVarValue))) {
-                    partialSol.setValue(this.nodeVar, newNodeVarValue);
-                    partialSol.eqsToUse.remove(this);
-                    return true;
-                } else {
-                    // It's not possible to compute the node variable value
-                    // using this equation.
-                    partialSol.eqsToUse.remove(this);
-                    return false;
-                }
-            }
-
-            if (openVarsCount == 1 && nodeVarHasValue) {
-                // We have only one variable without a value so we assign the
-                // equation constant minus the sum of all other variables values
-                // to the open variable.
-                Multiplicity newConst = nodeVarValue.times(this.constant);
-                for (Multiplicity mult : this.getFixedValues(partialSol,
-                    openVarsCount)) {
-                    newConst = newConst.sub(mult);
-                }
-                for (MultVar var : this.getOpenVars(partialSol, openVarsCount)) {
-                    partialSol.setValue(var, newConst);
-                }
-                partialSol.eqsToUse.remove(this);
-                return true;
-            }
-
-            return false;
-        }
-
-        /**
-         * Returns the variables of this equation that have a value
-         * in the given solution.
-         */
-        Multiplicity[] getFixedValues(Solution partialSol, int openVarsCount) {
-            Multiplicity result[] =
-                new Multiplicity[this.edgeVars.size() - openVarsCount];
-            int i = 0;
-            for (MultVar var : this.edgeVars) {
-                if (partialSol.hasValue(var)) {
-                    result[i] = partialSol.getValue(var);
-                    i++;
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Returns a newly created array of open variables for the given
-         * partial solution. The second parameter is used to avoid counting
-         * the number of variables again, when the number is already known.
-         */
-        MultVar[] getOpenVars(Solution partialSol, int openVarsCount) {
-            assert openVarsCount > 0;
-            MultVar result[] = new MultVar[openVarsCount];
-            int i = 0;
-            for (MultVar var : this.edgeVars) {
-                if (!partialSol.hasValue(var)) {
-                    result[i] = var;
-                    i++;
-                }
-            }
-            assert i == openVarsCount;
-            return result;
-        }
-    }
-
-    private static class Constraint extends Equation {
-
-        private final NodeVar nodeVar;
-        private final Multiplicity constant;
-
-        Constraint(NodeVar nodeVar, Multiplicity constant) {
-            this.nodeVar = nodeVar;
-            this.constant = constant;
-        }
-
-        @Override
-        public String toString() {
-            return this.nodeVar + " <= " + this.constant;
-        }
-
-        @Override
-        boolean isTrivial() {
-            return this.constant.isSingleton();
-        }
-
-        @Override
-        boolean computeNewValues(Solution partialSol) {
-            boolean result;
-            if (this.isTrivial()) {
-                partialSol.setValue(this.nodeVar, this.constant);
-                result = true;
-            } else {
-                result = false;
-            }
-            return result;
-        }
-
-        @Override
-        void getNewSolutions(Solution partialSol, Set<Solution> partialSols,
-                Set<Solution> finishedSols) {
-            assert false;
-        }
-
-        @Override
-        boolean canBranch() {
-            return false;
-        }
-
-        @Override
-        boolean isCollector() {
-            assert false;
-            return false;
-        }
-
-        @Override
-        int openVarsCount(Solution partialSol) {
-            assert false;
-            return Integer.MAX_VALUE;
-        }
-    }
-
-    /**
-     * Class that represent a collection of edges that are bundled by a single
-     * edge multiplicity. This comprises the new possible edges of the
-     * materialisation and the edge signatures already in the shape. We can't
-     * use a simple edge signature here because nodes on the opposite direction
-     * of the edges are already in distinct equivalence classes. 
-     */
     private static class EdgeBundle {
 
         final EdgeSignature origEs;
@@ -684,7 +263,6 @@ public final class EquationSystem {
         final EdgeMultDir direction;
         final Set<ShapeEdge> edges;
 
-        /** Basic constructor. */
         EdgeBundle(EdgeSignature origEs, Multiplicity origEsMult,
                 ShapeNode node, TypeLabel label, EdgeMultDir direction) {
             this.origEs = origEs;
@@ -701,114 +279,186 @@ public final class EquationSystem {
                 + this.edges;
         }
 
-        void computeAdditionalEdges() {
-
+        void computeAdditionalEdges(Materialisation mat) {
+            Shape shape = mat.getShape();
+            for (ShapeEdge edgeS : shape.binaryEdgeSet(this.node,
+                this.direction)) {
+                if (edgeS.label().equals(this.label)) {
+                    EdgeSignature es =
+                        shape.getEdgeSignature(edgeS, this.direction);
+                    EdgeSignature otherOrigEs =
+                        mat.getShapeMorphism().getEdgeSignature(
+                            mat.getOriginalShape(), es);
+                    if (otherOrigEs.equals(this.origEs)) {
+                        this.edges.add(edgeS);
+                    }
+                }
+            }
         }
 
     }
 
-    /**
-     * Class representing a possible solution for the equation system.
-     * This is the only dynamic part of the system, the remaining structures
-     * are all fixed when trying to solve the system. Objects of this class
-     * are cloned during the solution search, hence we try to keep the objects
-     * as small as possible. 
-     */
-    private static class Solution {
+    private enum BoundType {
+        LB, UB
+    }
 
-        /**
-         * The array of values corresponding to an assignment to the variables
-         * in the system. The array is indexed by the variable number, thus,
-         * for example, the value for variable 'x3' is in value[3]. If a
-         * position in the array is null then the corresponding variable is
-         * still open in the solution.
-         */
-        final Multiplicity values[];
+    private static class BoundVar {
 
-        /** Number of non-null values of this solution. */
-        int valuesCount;
+        final int number;
+        final BoundType type;
 
-        /**
-         * Set of equations that can still provide new values for variables.
-         * When an equation has no open variables it can no longer contribute
-         * to the solution search and therefore the equation is removed from
-         * this set.
-         */
-        final THashSet<Equation> eqsToUse;
-
-        Solution(int varsCount, THashSet<Equation> eqsToUse) {
-            this.values = new Multiplicity[varsCount];
-            this.valuesCount = 0;
-            this.eqsToUse = eqsToUse;
-        }
-
-        /** Returns true if all values are non-null. */
-        boolean isComplete() {
-            return this.valuesCount == this.values.length;
-        }
-
-        /** Returns true if the given variable has a value in this solution. */
-        boolean hasValue(MultVar var) {
-            return this.values[var.number] != null;
-        }
-
-        /**
-         * Returns the non-null value associated with the given variable in
-         * this solution. Fails in an assertion if the variable has no value.
-         */
-        Multiplicity getValue(MultVar var) {
-            assert this.hasValue(var);
-            return this.values[var.number];
-        }
-
-        /**
-         * Sets the value of the given variable to the given multiplicity.
-         */
-        void setValue(MultVar var, Multiplicity mult) {
-            assert mult != null;
-            assert var.isValueOfRightKind(mult);
-            if (this.hasValue(var)) {
-                assert this.getValue(var).strictSubsumes(mult);
-            } else {
-                this.valuesCount++;
-            }
-            this.values[var.number] = mult;
+        BoundVar(int number, BoundType type) {
+            this.number = number;
+            this.type = type;
         }
 
         @Override
         public String toString() {
-            return Arrays.toString(this.values);
+            String prefix = "";
+            switch (this.type) {
+            case LB:
+                prefix = "x_";
+                break;
+            case UB:
+                prefix = "x^";
+                break;
+            default:
+                assert false;
+            }
+            return prefix + this.number;
+        }
+    }
+
+    private enum Relation {
+        LE, GE
+    }
+
+    private class Equation {
+
+        final BoundType type;
+        final ArrayList<BoundVar> vars;
+        final Relation relation;
+        final int constant;
+        Equation dual;
+
+        Equation(BoundType type, Relation relation, int constant, int varsCount) {
+            this.type = type;
+            this.vars = new ArrayList<BoundVar>(varsCount);
+            this.relation = relation;
+            this.constant = constant;
         }
 
         @Override
-        public Solution clone() {
-            Solution result =
-                new Solution(this.values.length,
-                    (THashSet<Equation>) this.eqsToUse.clone());
-            for (int i = 0; i < this.values.length; i++) {
-                result.values[i] = this.values[i];
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            Iterator<BoundVar> iter = this.vars.iterator();
+            while (iter.hasNext()) {
+                result.append(iter.next().toString());
+                if (iter.hasNext()) {
+                    result.append(" + ");
+                }
             }
-            result.valuesCount = this.valuesCount;
+            switch (this.relation) {
+            case LE:
+                result.append(" <= ");
+                break;
+            case GE:
+                result.append(" >= ");
+                break;
+            default:
+                assert false;
+            }
+            if (this.constant == OMEGA) {
+                result.append("w");
+            } else {
+                result.append(this.constant);
+            }
+            return result.toString();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.constant;
+            result = prime * result + this.relation.hashCode();
+            result = prime * result + this.type.hashCode();
+            for (BoundVar var : this.vars) {
+                result = prime * result + var.number;
+            }
             return result;
         }
 
-        /**
-         * Returns an equation from the set of equations to be used that is
-         * likely to cause the least branching during the solution search. The
-         * method uses the following heuristic:
-         * - Equations with a concrete constant are preferred.
-         * - Try to pick the equation with the smaller number of open variables.
-         */
-        Equation getBestBranchingEquation() {
-            Equation result = null;
-            for (Equation eq : this.eqsToUse) {
-                if (eq.canBranch()
-                    && (result == null
-                        || (result.isCollector() && !eq.isCollector()) || (eq.openVarsCount(this) < result.openVarsCount(this)))) {
-                    result = eq;
-                }
+        @Override
+        public boolean equals(Object o) {
+            boolean result;
+            if (!(o instanceof Equation)) {
+                result = false;
+            } else {
+                Equation eq = (Equation) o;
+                result =
+                    this.constant == eq.constant && this.type == eq.type
+                        && this.relation == eq.relation
+                        && this.vars.containsAll(eq.vars)
+                        && eq.vars.containsAll(this.vars);
             }
             return result;
+        }
+
+        boolean isTrivial() {
+            return this.vars.size() == 1;
+        }
+
+        void addVar(BoundVar var) {
+            assert var.type == this.type;
+            this.vars.add(var);
+        }
+
+        void setDual(Equation dual) {
+            assert (this.type == BoundType.LB && dual.type == BoundType.UB)
+                || (this.type == BoundType.UB && dual.type == BoundType.LB);
+            if (dual.isUseful()) {
+                this.dual = dual;
+            }
+        }
+
+        boolean isUseful() {
+            boolean result = false;
+            switch (this.relation) {
+            case LE:
+                result = this.constant < this.getMaxRangeValue();
+                break;
+            case GE:
+                result = this.constant > this.getMinRangeValue();
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
+
+        TIntArrayList getBoundRange() {
+            TIntArrayList result = null;
+            switch (this.type) {
+            case LB:
+                result = EquationSystem.this.lowerBoundRange;
+                break;
+            case UB:
+                result = EquationSystem.this.upperBoundRange;
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
+
+        int getMaxRangeValue() {
+            TIntArrayList boundRange = this.getBoundRange();
+            return boundRange.get(boundRange.size() - 1);
+        }
+
+        int getMinRangeValue() {
+            return this.getBoundRange().get(0);
         }
     }
 
