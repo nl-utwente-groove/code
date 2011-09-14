@@ -20,9 +20,10 @@ import groove.gui.jgraph.GraphJGraph;
 
 import java.util.Map;
 
+import javax.swing.JPanel;
+
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
-import com.jgraph.layout.simple.SimpleGridLayout;
 
 /** Class representing elements of the layout menu. */
 public class LayouterItem implements Layouter {
@@ -31,6 +32,7 @@ public class LayouterItem implements Layouter {
     private final JGraphLayout layout;
     private final GraphJGraph jGraph;
     private final JGraphFacade facade;
+    private final JPanel panel;
 
     /** Builds a prototype instance based on the given layout kind. */
     public LayouterItem(LayoutKind kind) {
@@ -38,10 +40,7 @@ public class LayouterItem implements Layouter {
         this.layout = kind.getLayout();
         this.jGraph = null;
         this.facade = null;
-        // We have to set an option for the Grid.
-        if (kind == LayoutKind.SIMPLE_GRID) {
-            ((SimpleGridLayout) this.layout).setActOnUnconnectedVerticesOnly(false);
-        }
+        this.panel = null;
     }
 
     private LayouterItem(String actionName, JGraphLayout layout,
@@ -50,6 +49,7 @@ public class LayouterItem implements Layouter {
         this.layout = layout;
         this.jGraph = jGraph;
         this.facade = facade;
+        this.panel = LayoutKind.createLayoutPanel(this);
     }
 
     @Override
@@ -88,5 +88,10 @@ public class LayouterItem implements Layouter {
     /** Basic getter method. */
     public JGraphLayout getLayout() {
         return this.layout;
+    }
+
+    /** Basic getter method. */
+    public JPanel getPanel() {
+        return this.panel;
     }
 }

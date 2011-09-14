@@ -16,8 +16,31 @@
  */
 package groove.gui.layout;
 
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.jgraph.layout.JGraphLayout;
 import com.jgraph.layout.graph.JGraphSimpleLayout;
@@ -92,4 +115,388 @@ public enum LayoutKind {
 
     private static Map<LayoutKind,LayouterItem> map =
         new HashMap<LayoutKind,LayouterItem>();
+
+    /** Creates the panel with the options of the given layouter. */
+    public static JPanel createLayoutPanel(LayouterItem item) {
+        JGraphLayout layout = item.getLayout();
+        if (layout instanceof JGraphSimpleLayout) {
+            return createLayoutPanel(item, (JGraphSimpleLayout) layout);
+        } else if (layout instanceof SimpleGridLayout) {
+            return createLayoutPanel(item, (SimpleGridLayout) layout);
+        } else if (layout instanceof JGraphCompactTreeLayout) {
+            return createLayoutPanel(item, (JGraphCompactTreeLayout) layout);
+        } else if (layout instanceof JGraphRadialTreeLayout) {
+            return createLayoutPanel(item, (JGraphRadialTreeLayout) layout);
+        } else if (layout instanceof JGraphTreeLayout) {
+            return createLayoutPanel(item, (JGraphTreeLayout) layout);
+        } else if (layout instanceof OrganizationalChart) {
+            return createLayoutPanel(item, (OrganizationalChart) layout);
+        } else if (layout instanceof JGraphOrganicLayout) {
+            return createLayoutPanel(item, (JGraphOrganicLayout) layout);
+        } else if (layout instanceof JGraphFastOrganicLayout) {
+            return createLayoutPanel(item, (JGraphFastOrganicLayout) layout);
+        } else if (layout instanceof JGraphSelfOrganizingOrganicLayout) {
+            return createLayoutPanel(item,
+                (JGraphSelfOrganizingOrganicLayout) layout);
+        } else if (layout instanceof JGraphHierarchicalLayout) {
+            return createLayoutPanel(item, (JGraphHierarchicalLayout) layout);
+        } else {
+            return null;
+        }
+
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphSimpleLayout layout) {
+        LayoutPanel panel = new LayoutPanel(layout, item);
+        panel.createSlider(getMethod(layout, "setMaxx", Integer.TYPE), 0, 500,
+            20, "Maximum X");
+        panel.createSlider(getMethod(layout, "setMaxy", Integer.TYPE), 0, 500,
+            20, "Maximum Y");
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return panel;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            SimpleGridLayout layout) {
+        LayoutPanel panel = new LayoutPanel(layout, item);
+        panel.createSlider(
+            getMethod(layout, "setNumCellsPerRow", Integer.TYPE), 0, 20, 0,
+            "Nodes per row");
+        panel.createSlider(getMethod(layout, "setHeightSpacing", Integer.TYPE),
+            0, 100, 20, "Height space between nodes");
+        panel.createSlider(getMethod(layout, "setWidthSpacing", Integer.TYPE),
+            0, 100, 20, "Width space between nodes");
+        panel.createCheckBox(
+            getMethod(layout, "setActOnUnconnectedVerticesOnly", Boolean.TYPE),
+            "Act on unconnected vertices only", true);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return panel;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphCompactTreeLayout layout) {
+        LayoutPanel panel = new LayoutPanel(layout, item);
+        String labels[] = {"North", "West"};
+        int values[] = {SwingConstants.NORTH, SwingConstants.WEST};
+        panel.createRadioButtonGroup(
+            getMethod(layout, "setOrientation", Integer.TYPE), labels, values,
+            "Orientation");
+        panel.createSpinner(getMethod(layout, "setLevelDistance", Double.TYPE),
+            30.0, 1.0, 100.0, 1.0, "Level distance");
+        panel.createSpinner(getMethod(layout, "setNodeBorder", Double.TYPE),
+            5.0, 1.0, 100.0, 1.0, "Node distance");
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return panel;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphRadialTreeLayout layout) {
+        // EDUARDO: Pending...
+        return null;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphTreeLayout layout) {
+        LayoutPanel panel = new LayoutPanel(layout, item);
+        String labels[] = {"Top", "Center", "Bottom"};
+        int values[] =
+            {SwingConstants.TOP, SwingConstants.CENTER, SwingConstants.BOTTOM};
+        panel.createRadioButtonGroup(
+            getMethod(layout, "setAlignment", Integer.TYPE), labels, values,
+            "Alignment");
+        panel.createCheckBox(
+            getMethod(layout, "setCombineLevelNodes", Boolean.TYPE),
+            "Combine level nodes", true);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return panel;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            OrganizationalChart layout) {
+        // EDUARDO: Pending...
+        return null;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphOrganicLayout layout) {
+        // EDUARDO: Pending...
+        return null;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphFastOrganicLayout layout) {
+        LayoutPanel panel = new LayoutPanel(layout, item);
+        panel.createSpinner(getMethod(layout, "setForceConstant", Double.TYPE),
+            50.0, 0.001, 500.0, 1.0, "Force constant");
+        panel.createSpinner(getMethod(layout, "setInitialTemp", Double.TYPE),
+            200.0, 1, 1000.0, 1.0, "Initial temperature");
+        panel.createSlider(getMethod(layout, "setMaxIterations", Integer.TYPE),
+            0, 500, 100, "Maximum number of interations");
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return panel;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphSelfOrganizingOrganicLayout layout) {
+        // EDUARDO: Pending...
+        return null;
+    }
+
+    private static JPanel createLayoutPanel(LayouterItem item,
+            JGraphHierarchicalLayout layout) {
+        // EDUARDO: Pending...
+        return null;
+    }
+
+    private static Method getMethod(JGraphLayout layout, String name,
+            Class<?>... parameterTypes) {
+        Method method = null;
+        try {
+            method = layout.getClass().getMethod(name, parameterTypes);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return method;
+    }
+
+    private static class LayoutPanel extends JPanel implements ChangeListener,
+            ItemListener, ActionListener {
+
+        final JGraphLayout layout;
+        final LayouterItem item;
+
+        LayoutPanel(JGraphLayout layout, LayouterItem item) {
+            this.layout = layout;
+            this.item = item;
+            this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+        }
+
+        void createSlider(Method methodToCall, int min, int max, int init,
+                String label) {
+            JSlider slider =
+                new MyJSlider(methodToCall, min, max, init, this.layout,
+                    this.item);
+            slider.addChangeListener(this);
+            //Create the label.
+            JLabel sliderLabel = new JLabel(label, JLabel.LEFT);
+            this.add(sliderLabel);
+            this.add(slider);
+        }
+
+        void createCheckBox(Method methodToCall, String label, boolean selected) {
+            JCheckBox checkBox =
+                new MyCheckBox(methodToCall, this.layout, this.item, label,
+                    selected);
+            checkBox.addItemListener(this);
+            this.add(checkBox);
+        }
+
+        void createRadioButtonGroup(Method methodToCall, String[] label,
+                int[] value, String title) {
+            ButtonGroup group = new ButtonGroup();
+            JPanel radioPanel = new JPanel(new GridLayout(0, 4));
+            assert label.length == value.length;
+            for (int i = 0; i < label.length; i++) {
+                JRadioButton button =
+                    new MyRadioButton(methodToCall, this.layout, this.item,
+                        label[i], value[i]);
+                button.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 4));
+                button.addActionListener(this);
+                group.add(button);
+                radioPanel.add(button);
+                if (i == 0) {
+                    group.setSelected(button.getModel(), true);
+                }
+            }
+            radioPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), title));
+            add(radioPanel, BorderLayout.LINE_START);
+        }
+
+        void createSpinner(Method methodToCall, double value, double min,
+                double max, double step, String label) {
+            JSpinner spinner =
+                new MySpinner(methodToCall, this.layout, this.item, value, min,
+                    max, step);
+            spinner.addChangeListener(this);
+            JLabel l = new JLabel(label);
+            this.add(l);
+            l.setLabelFor(spinner);
+            this.add(spinner);
+        }
+    }
+
+    private interface ReflectiveComponent {
+        void setLayoutParamenter();
+    }
+
+    private static class MyJSlider extends JSlider implements
+            ReflectiveComponent {
+
+        final Method methodToCall;
+        final JGraphLayout layout;
+        final LayouterItem item;
+
+        MyJSlider(Method methodToCall, int min, int max, int init,
+                JGraphLayout layout, LayouterItem item) {
+            super(JSlider.HORIZONTAL, min, max, init);
+            this.methodToCall = methodToCall;
+            this.layout = layout;
+            this.item = item;
+            // Turn on labels at major tick marks.
+            this.setMajorTickSpacing((max - min) / 5);
+            this.setMinorTickSpacing((max - min) / 50);
+            this.setPaintTicks(true);
+            this.setPaintLabels(true);
+            this.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+            Font font = new Font("Serif", Font.ITALIC, 10);
+            this.setFont(font);
+        }
+
+        public void setLayoutParamenter() {
+            if (!this.getValueIsAdjusting()) {
+                this.invoke();
+                this.item.start(true);
+            }
+        }
+
+        void invoke() {
+            try {
+                this.methodToCall.invoke(this.layout, this.getValue());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class MyCheckBox extends JCheckBox implements
+            ReflectiveComponent {
+
+        final Method methodToCall;
+        final JGraphLayout layout;
+        final LayouterItem item;
+
+        MyCheckBox(Method methodToCall, JGraphLayout layout, LayouterItem item,
+                String label, boolean selected) {
+            super(label);
+            this.methodToCall = methodToCall;
+            this.layout = layout;
+            this.item = item;
+            this.setSelected(selected);
+        }
+
+        public void setLayoutParamenter() {
+            this.invoke();
+            this.item.start(true);
+
+        }
+
+        void invoke() {
+            try {
+                this.methodToCall.invoke(this.layout, this.isSelected());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class MyRadioButton extends JRadioButton implements
+            ReflectiveComponent {
+
+        final Method methodToCall;
+        final JGraphLayout layout;
+        final LayouterItem item;
+        final int value;
+
+        MyRadioButton(Method methodToCall, JGraphLayout layout,
+                LayouterItem item, String label, int value) {
+            super(label);
+            this.methodToCall = methodToCall;
+            this.layout = layout;
+            this.item = item;
+            this.value = value;
+        }
+
+        public void setLayoutParamenter() {
+            this.invoke();
+            this.item.start(true);
+        }
+
+        void invoke() {
+            try {
+                this.methodToCall.invoke(this.layout, this.value);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class MySpinner extends JSpinner implements
+            ReflectiveComponent {
+
+        final Method methodToCall;
+        final JGraphLayout layout;
+        final LayouterItem item;
+
+        MySpinner(Method methodToCall, JGraphLayout layout, LayouterItem item,
+                double value, double min, double max, double step) {
+            super(new SpinnerNumberModel(value, min, max, step));
+            this.methodToCall = methodToCall;
+            this.layout = layout;
+            this.item = item;
+        }
+
+        public void setLayoutParamenter() {
+            this.invoke();
+            this.item.start(true);
+        }
+
+        @Override
+        public SpinnerNumberModel getModel() {
+            return (SpinnerNumberModel) super.getModel();
+        }
+
+        void invoke() {
+            try {
+                this.methodToCall.invoke(this.layout,
+                    this.getModel().getNumber().doubleValue());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
