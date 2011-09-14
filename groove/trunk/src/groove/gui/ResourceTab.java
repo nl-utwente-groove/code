@@ -99,7 +99,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
     final protected ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             this.errorPanel =
-                new ErrorListPanel(String.format("Format errors in %s",
+                new ErrorListPanel(String.format("Errors in %s",
                     getResourceKind().getDescription()));
             this.errorPanel.addSelectionListener(createErrorListener());
         }

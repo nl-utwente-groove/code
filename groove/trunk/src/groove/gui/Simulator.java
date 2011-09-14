@@ -277,8 +277,7 @@ public class Simulator implements SimulatorListener {
     private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             final ErrorListPanel result =
-                this.errorPanel =
-                    new ErrorListPanel("Format errors in grammar");
+                this.errorPanel = new ErrorListPanel("Errors in grammar");
             result.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
