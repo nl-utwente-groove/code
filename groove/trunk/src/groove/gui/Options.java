@@ -471,6 +471,9 @@ public class Options implements Cloneable {
     /** Exploration statistics dialog action name */
     public static final String EXPLORATION_STATS_DIALOG_ACTION_NAME =
         "Last Exploration Statistics ...";
+    /** Layout dialog action name */
+    public static final String LAYOUT_DIALOG_ACTION_NAME =
+        "Customize Layout ...";
     /** Explore single state action name */
     public static final String EXPLORE_STATE_ACTION_NAME =
         "Explore current state";

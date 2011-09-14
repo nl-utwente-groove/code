@@ -856,4 +856,20 @@ public class ActionStore implements SimulatorListener {
      * The undo action permanently associated with this simulator.
      */
     private UndoSimulatorAction undoAction;
+
+    /**
+     * The layout dialog action permanently associated with this simulator.
+     */
+    private LayoutDialogAction layoutDialogAction;
+
+    /**
+     * Returns the layout dialog action permanently associated with this simulator.
+     */
+    public LayoutDialogAction getLayoutDialogAction() {
+        // lazily create the action
+        if (this.layoutDialogAction == null) {
+            this.layoutDialogAction = new LayoutDialogAction(this.simulator);
+        }
+        return this.layoutDialogAction;
+    }
 }

@@ -1054,6 +1054,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         JMenu result = new JMenu("Layout");
         result.add(getSetLayoutMenu().getCurrentLayoutItem());
         result.add(getSetLayoutMenu());
+        result.add(getShowLayoutDialogAction());
         return result;
     }
 
@@ -1074,6 +1075,10 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Creates and returns a fresh layout setting menu upon this j-graph. */
     public SetLayoutMenu createSetLayoutMenu() {
         return new SetLayoutMenu(this);
+    }
+
+    private Action getShowLayoutDialogAction() {
+        return this.getActions().getLayoutDialogAction();
     }
 
     /**

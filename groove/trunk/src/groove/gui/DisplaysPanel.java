@@ -312,6 +312,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 ((ResourceDisplay) display).getTabPane().getSelectedComponent();
             if (selectedComponent instanceof GraphEditorTab) {
                 result = ((GraphEditorTab) selectedComponent).getEditArea();
+            } else if (selectedComponent instanceof GraphTab) {
+                result = ((GraphTab) selectedComponent).getEditArea();
             } else if (selectedComponent instanceof JGraphPanel<?>) {
                 result = (JGraphPanel<?>) selectedComponent;
             }
