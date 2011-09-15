@@ -1032,11 +1032,11 @@ public final class Shape extends DefaultHostGraph {
         // The singular equivalence class created by the operation.
         EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
         singEc.add(nodeS);
+        // Update the multiplicities of the new singleton class.
+        this.addNewSingletonEc(origEc, singEc);
         // Replace the original equivalence class with the remainder of the
         // split.
         this.replaceEc(origEc, remEc);
-        // Add the singleton class to the equivalence relation.
-        this.equivRel.add(singEc);
     }
 
     /** EDUARDO: rewrite this... */
@@ -1073,6 +1073,26 @@ public final class Shape extends DefaultHostGraph {
             }
         }
         return result;
+    }
+
+    private void addNewSingletonEc(EquivClass<ShapeNode> oldEc,
+            EquivClass<ShapeNode> newEc) {
+        // Update all maps that use edge signatures that contained the old
+        // equivalence class.
+        for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
+            EdgeSignature newEs =
+                this.getEdgeSignature(oldEs.getNode(), oldEs.getLabel(), newEc);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                Multiplicity mult = this.getEdgeSigMult(oldEs, direction);
+                if (!mult.isZero()) {
+                    if (this.getEdgesFromSig(newEs, direction).size() > 0) {
+                        this.setEdgeSigMult(newEs, direction, mult);
+                    }
+                }
+            }
+        }
+        // Update the equivalence relation.
+        this.equivRel.add(newEc);
     }
 
     private void replaceEc(EquivClass<ShapeNode> oldEc,

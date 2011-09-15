@@ -487,15 +487,18 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
+        /*Parameters.setNodeMultBound(2);
+        Parameters.setEdgeMultBound(2);*/
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
+            String number = "2";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
-                view.getHostModel("materialisation-test-5").toResource();
+                view.getHostModel("materialisation-test-" + number).toResource();
             Shape shape = Shape.createShape(graph);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("test-mat-5");
+            Rule rule = grammar.getRule("test-mat-" + number);
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
@@ -510,5 +513,4 @@ public final class Materialisation {
             e.printStackTrace();
         }
     }
-
 }
