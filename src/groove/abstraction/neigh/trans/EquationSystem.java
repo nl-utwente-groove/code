@@ -21,7 +21,6 @@ import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
-import gnu.trove.TIntArrayList;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
@@ -34,6 +33,7 @@ import groove.util.Duo;
 import groove.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -51,10 +51,11 @@ public final class EquationSystem {
     private final Materialisation mat;
     private final int stage;
     private final Set<Equation> trivialEqs;
-    private final Set<Equation> nonTrivialEqs;
+    private final THashSet<Equation> lbEqs;
+    private final THashSet<Equation> ubEqs;
     private final Map<ShapeEdge,Duo<BoundVar>> edgeVarsMap;
-    private final TIntArrayList lowerBoundRange;
-    private final TIntArrayList upperBoundRange;
+    private int lbRange[];
+    private int ubRange[];
     private int varsCount;
 
     private EquationSystem(Materialisation mat, int stage) {
@@ -63,10 +64,13 @@ public final class EquationSystem {
         this.mat = mat;
         this.stage = stage;
         this.trivialEqs = new THashSet<Equation>();
-        this.nonTrivialEqs = new THashSet<Equation>();
-        this.edgeVarsMap = new THashMap<ShapeEdge,Duo<BoundVar>>();
-        this.lowerBoundRange = new TIntArrayList();
-        this.upperBoundRange = new TIntArrayList();
+        this.lbEqs = new THashSet<Equation>();
+        this.ubEqs = new THashSet<Equation>();
+        if (this.stage == 1) {
+            this.edgeVarsMap = new THashMap<ShapeEdge,Duo<BoundVar>>();
+        } else {
+            this.edgeVarsMap = null;
+        }
         this.varsCount = 0;
         this.create();
     }
@@ -80,7 +84,10 @@ public final class EquationSystem {
             sb.append(eq + "\n");
         }
         sb.append("Non-trivial Equations:\n");
-        for (Equation eq : this.nonTrivialEqs) {
+        for (Equation eq : this.lbEqs) {
+            sb.append(eq + "\n");
+        }
+        for (Equation eq : this.ubEqs) {
             sb.append(eq + "\n");
         }
         return sb.toString();
@@ -119,14 +126,32 @@ public final class EquationSystem {
             assert false;
         }
         int b = Multiplicity.getBound(kind);
+        this.lbRange = new int[b + 2];
+        this.ubRange = new int[b + 2];
         for (int i = 0; i <= b + 1; i++) {
-            this.lowerBoundRange.add(i);
+            this.lbRange[i] = i;
             if (i == b + 1) {
-                this.upperBoundRange.add(OMEGA);
+                this.ubRange[i] = OMEGA;
             } else {
-                this.upperBoundRange.add(i);
+                this.ubRange[i] = i;
             }
         }
+    }
+
+    private MultKind finalMultKind() {
+        MultKind kind = null;
+        switch (this.stage) {
+        case 1:
+        case 2:
+            kind = MultKind.EDGE_MULT;
+            break;
+        case 3:
+            kind = MultKind.NODE_MULT;
+            break;
+        default:
+            assert false;
+        }
+        return kind;
     }
 
     private void createFirstStage() {
@@ -229,14 +254,14 @@ public final class EquationSystem {
             if (lbEq.isTrivial()) {
                 this.trivialEqs.add(lbEq);
             } else {
-                this.nonTrivialEqs.add(lbEq);
+                this.lbEqs.add(lbEq);
             }
         }
         if (ubEq.isUseful()) {
             if (ubEq.isTrivial()) {
                 this.trivialEqs.add(ubEq);
             } else {
-                this.nonTrivialEqs.add(ubEq);
+                this.ubEqs.add(ubEq);
             }
         }
     }
@@ -251,7 +276,99 @@ public final class EquationSystem {
 
     /** EDUARDO: Comment this... */
     public void solve(Set<Materialisation> result) {
+        this.solveFirstStage(result);
+    }
+
+    private void solveFirstStage(Set<Materialisation> result) {
+        assert this.stage == 1;
+        // Compute all solutions.
+        Solution initialSol =
+            new Solution(this.varsCount, this.lbRange, this.ubRange,
+                this.lbEqs, this.ubEqs);
+        // First iterate once over the trivial solutions.
+        for (Equation eq : this.trivialEqs) {
+            eq.nonRecComputeNewValues(initialSol);
+        }
+        Set<Solution> finishedSols = new THashSet<Solution>();
+        Set<Solution> partialSols = new THashSet<Solution>();
+        partialSols.add(initialSol);
+        while (!partialSols.isEmpty()) {
+            Solution sol = partialSols.iterator().next();
+            partialSols.remove(sol);
+            this.iterateSolution(sol, partialSols, finishedSols);
+        }
+        // Create the return objects.
+        for (Solution sol : finishedSols) {
+            Materialisation mat;
+            if (finishedSols.size() == 1) {
+                mat = this.mat;
+            } else {
+                mat = this.mat.clone();
+            }
+            this.updateMatFromSolution(mat, sol);
+            if (this.requiresSecondStage(mat, sol)) {
+                new EquationSystem(mat, 2).solveSecondStage(result);
+            } else {
+                result.add(mat);
+            }
+        }
+    }
+
+    private void solveSecondStage(Set<Materialisation> result) {
         // todo
+    }
+
+    private void solveThirdStage(Set<Materialisation> result) {
+        // todo
+    }
+
+    private boolean shouldStopEarly(Solution sol) {
+        return this.stage == 1 && sol.ubEqs.isEmpty();
+    }
+
+    private void iterateSolution(Solution sol, Set<Solution> partialSols,
+            Set<Solution> finishedSols) {
+        this.iterateEquations(sol);
+        if (sol.isFinished() || this.shouldStopEarly(sol)) {
+            finishedSols.add(sol);
+        } else {
+            Equation branchingEq = sol.getBestBranchingEquation();
+            branchingEq.getNewSolutions(sol, partialSols, finishedSols);
+        }
+    }
+
+    /**
+     * Iterate the given solution over all equations of the system and try to
+     * fix more variables. 
+     */
+    private void iterateEquations(Solution sol) {
+        // For all equations, try to fix as many variables as possible.
+        for (BoundType type : BoundType.values()) {
+            boolean solutionModified = true;
+            while (!sol.getEqs(type).isEmpty() && solutionModified) {
+                THashSet<Equation> copyEqs =
+                    (THashSet<Equation>) sol.getEqs(type).clone();
+                solutionModified = false;
+                for (Equation eq : copyEqs) {
+                    solutionModified = eq.computeNewValues(sol);
+                    if (solutionModified) {
+                        sol.getEqs(type).remove(eq);
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateMatFromSolution(Materialisation mat, Solution sol) {
+        MultKind kind = this.finalMultKind();
+        for (int i = 0; i < this.varsCount; i++) {
+            Multiplicity mult = sol.getMultValue(i, kind);
+            // Need the edge bundles here...
+        }
+    }
+
+    private boolean requiresSecondStage(Materialisation mat, Solution sol) {
+        return false;
     }
 
     private static class EdgeBundle {
@@ -299,7 +416,7 @@ public final class EquationSystem {
     }
 
     private enum BoundType {
-        LB, UB
+        UB, LB
     }
 
     private static class BoundVar {
@@ -422,6 +539,10 @@ public final class EquationSystem {
             }
         }
 
+        boolean hasDual() {
+            return this.dual != null;
+        }
+
         boolean isUseful() {
             boolean result = false;
             switch (this.relation) {
@@ -437,14 +558,14 @@ public final class EquationSystem {
             return result;
         }
 
-        TIntArrayList getBoundRange() {
-            TIntArrayList result = null;
+        int[] getBoundRange() {
+            int result[] = null;
             switch (this.type) {
             case LB:
-                result = EquationSystem.this.lowerBoundRange;
+                result = EquationSystem.this.lbRange;
                 break;
             case UB:
-                result = EquationSystem.this.upperBoundRange;
+                result = EquationSystem.this.ubRange;
                 break;
             default:
                 assert false;
@@ -453,13 +574,494 @@ public final class EquationSystem {
         }
 
         int getMaxRangeValue() {
-            TIntArrayList boundRange = this.getBoundRange();
-            return boundRange.get(boundRange.size() - 1);
+            int boundRange[] = this.getBoundRange();
+            return boundRange[boundRange.length - 1];
         }
 
         int getMinRangeValue() {
-            return this.getBoundRange().get(0);
+            return this.getBoundRange()[0];
         }
+
+        boolean computeNewValues(Solution sol) {
+            boolean result = this.nonRecComputeNewValues(sol);
+            if (result && this.hasDual()) {
+                this.dual.nonRecComputeNewValues(sol);
+            }
+            return result;
+        }
+
+        boolean nonRecComputeNewValues(Solution sol) {
+            // EZ says: sorry for the multiple return points, but otherwise
+            // the code becomes less readable...
+
+            if (!this.hasOpenVars(sol)) {
+                return true;
+            }
+
+            ArrayList<BoundVar> openVars = this.getOpenVars(sol);
+            int sum = this.getFixedVarsSum(sol);
+            int newConst = Multiplicity.sub(this.constant, sum);
+
+            if (this.type == BoundType.LB && this.relation == Relation.GE) {
+                if (openVars.size() == 1) {
+                    // Set the lower bound to the new constant.
+                    sol.cutLow(openVars.get(0), newConst);
+                    return true;
+                }
+            }
+
+            if (this.type == BoundType.UB && this.relation == Relation.LE) {
+                if (newConst == 0) {
+                    // All open variables are zero.
+                    for (BoundVar openVar : openVars) {
+                        sol.cutHigh(openVar, newConst);
+                    }
+                    return true;
+                }
+                if (openVars.size() == 1) {
+                    // Set the upper bound to the new constant.
+                    sol.cutHigh(openVars.get(0), newConst);
+                    return true;
+                }
+                // At this point we can at least trim the upper bounds.
+                for (BoundVar openVar : openVars) {
+                    sol.cutHigh(openVar, newConst);
+                }
+                return false;
+            }
+
+            return false;
+        }
+
+        boolean hasOpenVars(Solution sol) {
+            boolean result = false;
+            for (BoundVar var : this.vars) {
+                if (!sol.isSingleton(var)) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        ArrayList<BoundVar> getOpenVars(Solution sol) {
+            ArrayList<BoundVar> result =
+                new ArrayList<BoundVar>(this.vars.size());
+            for (BoundVar var : this.vars) {
+                if (!sol.isSingleton(var)) {
+                    result.add(var);
+                }
+            }
+            return result;
+        }
+
+        int getFixedVarsSum(Solution sol) {
+            int result = 0;
+            for (BoundVar var : this.vars) {
+                if (sol.isSingleton(var)) {
+                    result = Multiplicity.add(result, sol.getValue(var));
+                }
+            }
+            return result;
+        }
+
+        boolean isSatisfied(Solution sol) {
+            assert !this.hasOpenVars(sol);
+            int sum = this.getFixedVarsSum(sol);
+            boolean result = false;
+            switch (this.relation) {
+            case GE:
+                result = sum >= this.constant;
+                break;
+            case LE:
+                result = sum <= this.constant;
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
+
+        boolean isValidSolution(Solution sol) {
+            boolean result = this.isSatisfied(sol);
+            if (result && this.hasDual()) {
+                result = this.dual.isSatisfied(sol);
+            }
+            return result;
+        }
+
+        void getNewSolutions(Solution sol, Set<Solution> partialSols,
+                Set<Solution> finishedSols) {
+            assert !sol.isFinished();
+            assert sol.getEqs(this.type).contains(this);
+            sol.getEqs(this.type).remove(this);
+            ArrayList<BoundVar> openVars = this.getOpenVars(sol);
+            BranchSolsIterator iter = new BranchSolsIterator(sol, openVars);
+            while (iter.hasNext()) {
+                Solution newSol = iter.next();
+                if (this.hasDual()) {
+                    this.dual.nonRecComputeNewValues(newSol);
+                }
+                if (this.isValidSolution(newSol)) {
+                    if (newSol.isFinished()) {
+                        finishedSols.add(newSol);
+                    } else {
+                        partialSols.add(newSol);
+                    }
+                }
+            }
+        }
+    }
+
+    private static class ValueRange implements Iterable<Integer> {
+
+        final int range[];
+        int i;
+        int j;
+        ValueRange dual;
+
+        ValueRange(int range[]) {
+            this.range = range;
+            this.i = 0;
+            this.j = range.length - 1;
+        }
+
+        ValueRange(ValueRange original) {
+            this.range = original.range;
+            this.i = original.i;
+            this.j = original.j;
+            this.dual = original.dual;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for (int k = this.i; k <= this.j; k++) {
+                int value = this.range[k];
+                if (value == OMEGA) {
+                    sb.append("w");
+                } else {
+                    sb.append(value);
+                }
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public ValueRange clone() {
+            return new ValueRange(this);
+        }
+
+        boolean isSingleton() {
+            return this.i == this.j;
+        }
+
+        int getValue() {
+            assert this.isSingleton();
+            return this.range[this.i];
+        }
+
+        int getMin() {
+            return this.range[this.i];
+        }
+
+        int getMax() {
+            return this.range[this.j];
+        }
+
+        void setDual(ValueRange dual) {
+            this.dual = dual;
+        }
+
+        void nonRecCutLow(int limit) {
+            while (this.getMin() < limit && this.i < this.j) {
+                this.i++;
+            }
+        }
+
+        void cutLow(int limit) {
+            this.nonRecCutLow(limit);
+            this.dual.nonRecCutLow(limit);
+        }
+
+        void nonRecCutHigh(int limit) {
+            while (this.getMax() > limit && this.i < this.j) {
+                this.j--;
+            }
+        }
+
+        void cutHigh(int limit) {
+            this.nonRecCutHigh(limit);
+            this.dual.nonRecCutHigh(limit);
+        }
+
+        void nonRecFix(int i) {
+            this.i = i;
+            this.j = i;
+        }
+
+        void fix(int i) {
+            assert i >= 0 && i < this.range.length;
+            this.nonRecFix(i);
+            this.dual.nonRecFix(i);
+        }
+
+        public ValueRangeIterator iterator() {
+            return new ValueRangeIterator(this);
+        }
+    }
+
+    private static class Solution {
+
+        final ValueRange lbValues[];
+        final ValueRange ubValues[];
+        final THashSet<Equation> lbEqs;
+        final THashSet<Equation> ubEqs;
+
+        Solution(int varsCount, int lbRange[], int ubRange[],
+                THashSet<Equation> lbEqs, THashSet<Equation> ubEqs) {
+            this.lbValues = new ValueRange[varsCount];
+            this.ubValues = new ValueRange[varsCount];
+            for (int i = 0; i < varsCount; i++) {
+                this.lbValues[i] = new ValueRange(lbRange);
+                this.ubValues[i] = new ValueRange(ubRange);
+                this.lbValues[i].setDual(this.ubValues[i]);
+                this.ubValues[i].setDual(this.lbValues[i]);
+            }
+            this.lbEqs = (THashSet<Equation>) lbEqs.clone();
+            this.ubEqs = (THashSet<Equation>) ubEqs.clone();
+        }
+
+        Solution(Solution original) {
+            int varsCount = original.size();
+            this.lbValues = new ValueRange[varsCount];
+            this.ubValues = new ValueRange[varsCount];
+            for (int i = 0; i < varsCount; i++) {
+                this.lbValues[i] = original.lbValues[i].clone();
+                this.ubValues[i] = original.ubValues[i].clone();
+                this.lbValues[i].setDual(this.ubValues[i]);
+                this.ubValues[i].setDual(this.lbValues[i]);
+            }
+            this.lbEqs = (THashSet<Equation>) original.lbEqs.clone();
+            this.ubEqs = (THashSet<Equation>) original.ubEqs.clone();
+        }
+
+        ValueRange[] getValueRangeArray(BoundType type) {
+            ValueRange result[] = null;
+            switch (type) {
+            case LB:
+                result = this.lbValues;
+                break;
+            case UB:
+                result = this.ubValues;
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
+
+        THashSet<Equation> getEqs(BoundType type) {
+            THashSet<Equation> result = null;
+            switch (type) {
+            case LB:
+                result = this.lbEqs;
+                break;
+            case UB:
+                result = this.ubEqs;
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (int i = 0; i < this.size(); i++) {
+                sb.append("(" + this.lbValues[i].toString() + ","
+                    + this.ubValues[i].toString() + "), ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("]");
+            return sb.toString();
+        }
+
+        @Override
+        public Solution clone() {
+            return new Solution(this);
+        }
+
+        int size() {
+            return this.lbValues.length;
+        }
+
+        ValueRange getValueRange(BoundVar var) {
+            return this.getValueRangeArray(var.type)[var.number];
+        }
+
+        boolean isSingleton(BoundVar var) {
+            return this.getValueRange(var).isSingleton();
+        }
+
+        int getValue(BoundVar var) {
+            assert this.isSingleton(var);
+            return this.getValueRange(var).getValue();
+        }
+
+        void cutLow(BoundVar var, int limit) {
+            this.getValueRange(var).cutLow(limit);
+        }
+
+        void cutHigh(BoundVar var, int limit) {
+            this.getValueRange(var).cutHigh(limit);
+        }
+
+        void fix(BoundVar var, int i) {
+            this.getValueRange(var).fix(i);
+        }
+
+        boolean isFinished() {
+            return this.lbEqs.isEmpty() && this.ubEqs.isEmpty();
+        }
+
+        Equation getBestBranchingEquation() {
+            Equation result = null;
+            for (Equation eq : this.ubEqs) {
+                if (result == null
+                    || (eq.getOpenVars(this).size() < result.getOpenVars(this).size())) {
+                    result = eq;
+                }
+            }
+            if (result == null) {
+                for (Equation eq : this.lbEqs) {
+                    if (result == null
+                        || (eq.getOpenVars(this).size() < result.getOpenVars(
+                            this).size())) {
+                        result = eq;
+                    }
+                }
+            }
+            return result;
+        }
+
+        Multiplicity getMultValue(int varNum, MultKind kind) {
+            int i = this.lbValues[varNum].getMin();
+            int j = this.ubValues[varNum].getMax();
+            return Multiplicity.getMultiplicity(i, j, kind);
+        }
+
+    }
+
+    private static class ValueRangeIterator implements Iterator<Integer> {
+
+        ValueRange value;
+        int i;
+
+        ValueRangeIterator(ValueRange value) {
+            this.value = value;
+            this.i = value.i;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return this.i <= this.value.j;
+        }
+
+        @Override
+        public Integer next() {
+            assert this.hasNext();
+            return ++this.i;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return this.value.range[this.i] + "";
+        }
+
+        public Integer current() {
+            assert this.hasNext();
+            return this.i;
+        }
+
+        void reset() {
+            this.i = this.value.i;
+        }
+
+    }
+
+    private static class BranchSolsIterator implements Iterator<Solution> {
+
+        final Solution sol;
+        final ArrayList<BoundVar> openVars;
+        final ValueRangeIterator iters[];
+
+        BranchSolsIterator(Solution sol, ArrayList<BoundVar> openVars) {
+            assert openVars.size() > 0;
+            this.sol = sol;
+            this.openVars = openVars;
+            this.iters = new ValueRangeIterator[openVars.size()];
+            int i = 0;
+            for (BoundVar var : this.openVars) {
+                this.iters[i] = sol.getValueRange(var).iterator();
+                i++;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return Arrays.toString(this.iters);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return this.iters[0].hasNext();
+        }
+
+        @Override
+        public Solution next() {
+            // Create a new solution.
+            Solution newSolution = this.sol.clone();
+            int i = 0;
+            for (ValueRangeIterator iter : this.iters) {
+                newSolution.fix(this.openVars.get(i), iter.current());
+                i++;
+            }
+            // Update iterators and compute next solution.
+            int curr = this.iters.length - 1;
+            this.iters[curr].next();
+            if (!this.iters[curr].hasNext()) {
+                int prev = curr - 1;
+                while (prev >= 0) {
+                    this.iters[prev].next();
+                    if (this.iters[prev].hasNext()) {
+                        break;
+                    }
+                    prev--;
+                }
+                if (prev >= 0) {
+                    // Reset all iterators between prev + 1 and curr .
+                    for (i = prev + 1; i <= curr; i++) {
+                        this.iters[i].reset();
+                    }
+                }
+            }
+            return newSolution;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
     }
 
 }
