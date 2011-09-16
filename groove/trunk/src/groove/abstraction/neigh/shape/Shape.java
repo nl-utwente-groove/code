@@ -911,6 +911,7 @@ public final class Shape extends DefaultHostGraph {
     public void materialiseNode(Materialisation mat, ShapeNode collectorNode) {
         assert !this.isFixed();
         assert this.containsNode(collectorNode);
+        assert mat.getStage() == 1;
 
         // The current match to be updated.
         RuleToShapeMap match = mat.getMatch();
@@ -956,6 +957,7 @@ public final class Shape extends DefaultHostGraph {
      */
     public void materialiseEdge(Materialisation mat, ShapeEdge inconsistentEdge) {
         assert !this.isFixed();
+        assert mat.getStage() == 1;
         // All information for inconsistentEdge must come from the
         // original shape because the edge may no longer be present in the
         // current shape. This is the case, for example, when the node
@@ -1000,6 +1002,7 @@ public final class Shape extends DefaultHostGraph {
     public void singulariseNode(Materialisation mat, ShapeNode nodeS) {
         assert !this.isFixed();
         assert this.containsNode(nodeS);
+        assert mat.getStage() == 1;
 
         // Check if the node is not already in a singleton equivalence class.
         if (this.getEquivClassOf(nodeS).isSingleton()) {
@@ -1039,10 +1042,26 @@ public final class Shape extends DefaultHostGraph {
         this.replaceEc(origEc, remEc);
     }
 
-    /** EDUARDO: rewrite this... */
-    public ShapeNode pullNode(Materialisation mat, ShapeEdge pullingEdge,
-            EdgeMultDir direction) {
-        return null;
+    /** EDUARDO: Comment this... */
+    public void splitNode(Materialisation mat, ShapeNode nodeS, int copies) {
+        assert !this.isFixed();
+        assert this.containsNode(nodeS);
+        assert mat.getStage() == 2;
+
+        EquivClass<ShapeNode> oldEc = this.getEquivClassOf(nodeS);
+        EquivClass<ShapeNode> newEc = oldEc.clone();
+        for (int i = 0; i < copies - 1; i++) {
+            // Create a new shape node.
+            ShapeNode newNode = getFactory().createNode();
+            // Add the new node to the shape. Call the super method because
+            // we have additional information on the node to be added.
+            super.addNode(newNode);
+            // Copy the labels from the pulled node.
+            this.copyUnaryEdges(nodeS, newNode, null, null);
+            newEc.add(newNode);
+            mat.addSplitNode(newNode, nodeS);
+        }
+        this.replaceEc(oldEc, newEc);
     }
 
     /** Duplicate all unary edges occurring in the given 'from' node. */

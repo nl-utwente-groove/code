@@ -17,9 +17,11 @@
 package groove.abstraction.neigh.trans;
 
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
@@ -29,6 +31,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.abstraction.neigh.trans.EquationSystem.EdgeBundle;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
@@ -47,6 +50,8 @@ import groove.view.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -69,6 +74,8 @@ public final class Materialisation {
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
+
+    private int stage;
 
     /**
      * The shape we are trying to materialise.
@@ -100,19 +107,31 @@ public final class Materialisation {
      * The field is final but the match is modified by the materialisation.
      */
     private final RuleToShapeMap match;
+
+    // ------------------------------------------------------------------------
+    // Used in first stage.
+    // ------------------------------------------------------------------------
+
     /**
      * Auxiliary set that contains all newly materialised nodes.
      */
-    private final THashSet<ShapeNode> matNodes;
+    private THashSet<ShapeNode> matNodes;
     /**
      * Auxiliary set that contains all newly materialised edges.
      */
-    private final THashSet<ShapeEdge> matEdges;
+    private THashSet<ShapeEdge> matEdges;
     /**
      * Auxiliary set of possible new edges that should be included in the 
      * shape that is being materialised.
      */
-    private final THashSet<ShapeEdge> possibleEdges;
+    private THashSet<ShapeEdge> possibleEdges;
+
+    // ------------------------------------------------------------------------
+    // Used in second stage.
+    // ------------------------------------------------------------------------
+
+    private THashSet<EdgeBundle> nonSingBundles;
+    private Map<ShapeNode,Set<ShapeNode>> nodeSplitMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -123,6 +142,7 @@ public final class Materialisation {
      * pre-match of a rule into the shape. The pre-match given must be valid.
      */
     private Materialisation(Shape shape, Proof preMatch) {
+        this.stage = 1;
         this.originalShape = shape;
         this.shape = this.originalShape.clone();
         this.morph =
@@ -143,6 +163,7 @@ public final class Materialisation {
      * object that can be modified. 
      */
     private Materialisation(Materialisation mat) {
+        this.stage = mat.stage;
         // No need to clone the original objects since they are fixed.
         this.originalShape = mat.originalShape;
         this.originalMatch = mat.originalMatch;
@@ -155,10 +176,6 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
-        // No need for the auxiliary structures at this point.
-        this.matNodes = null;
-        this.matEdges = null;
-        this.possibleEdges = null;
     }
 
     // ------------------------------------------------------------------------
@@ -197,6 +214,15 @@ public final class Materialisation {
     // Other methods
     // ------------------------------------------------------------------------
 
+    // ------------------------------------------------------------------------
+    // Common methods to all stages.
+    // ------------------------------------------------------------------------
+
+    /** Basic getter method. */
+    public int getStage() {
+        return this.stage;
+    }
+
     /** Basic getter method. */
     public Shape getShape() {
         return this.shape;
@@ -222,80 +248,18 @@ public final class Materialisation {
         return this.morph;
     }
 
-    /** Returns the set of nodes involved in the materialisation. */
-    public Set<ShapeNode> getAffectedNodes() {
-        Set<ShapeNode> result = new THashSet<ShapeNode>();
-        result.addAll(this.matNodes);
-        for (ShapeEdge matEdge : this.matEdges) {
-            result.add(matEdge.source());
-            result.add(matEdge.target());
-        }
-        for (ShapeEdge possibleEdge : this.possibleEdges) {
-            result.add(possibleEdge.source());
-            result.add(possibleEdge.target());
-        }
-        return Collections.unmodifiableSet(result);
-    }
-
-    /** Returns the set of edges involved in the materialisation. */
-    public Set<ShapeEdge> getAffectedEdges() {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
-        result.addAll(this.matEdges);
-        result.addAll(this.possibleEdges);
-        return Collections.unmodifiableSet(result);
-    }
-
-    /** EDUARDO: Comment this... */
-    public void addMatNode(ShapeNode newNode, ShapeNode collectorNode,
-            RuleNode nodeR) {
-        assert this.shape.containsNode(newNode);
-        this.match.putNode(nodeR, newNode);
-        this.morph.putNode(newNode, collectorNode);
-        this.matNodes.add(newNode);
-    }
-
-    /** EDUARDO: Comment this... */
-    public void addMatEdge(ShapeEdge newEdge, ShapeEdge inconsistentEdge,
-            RuleEdge edgeR) {
-        assert this.shape.containsEdge(newEdge);
-        this.match.putEdge(edgeR, newEdge);
-        this.morph.putEdge(newEdge, inconsistentEdge);
-        this.matEdges.add(newEdge);
-    }
-
-    /** EDUARDO: Comment this... */
-    public void handleCollectorNode(ShapeNode collectorNode) {
-        if (!this.shape.containsNode(collectorNode)) {
-            // The collector node was removed from the shape and we have a
-            // dangling reference in the shape morphism.
-            this.morph.removeNode(collectorNode);
-        } else {
-            this.matNodes.add(collectorNode);
-        }
-    }
-
-    /** EDUARDO: Comment this... */
-    public void handleInconsistentEdge(ShapeEdge inconsistentEdge) {
-        if (!this.shape.containsEdge(inconsistentEdge)) {
-            // The edge was removed from the shape and we have a
-            // dangling reference in the shape morphism.
-            this.morph.removeEdge(inconsistentEdge);
-        } else {
-            this.matEdges.add(inconsistentEdge);
-        }
-    }
-
-    /** EDUARDO: Comment this... */
-    public void addPossibleEdge(ShapeEdge possibleEdge, ShapeEdge origEdge) {
-        assert !this.shape.containsEdge(possibleEdge);
-        this.possibleEdges.add(possibleEdge);
-        // Use the shape morphism to store additional info.
-        this.morph.putEdge(possibleEdge, origEdge);
-    }
-
     /** EDUARDO: Comment this... */
     public boolean isFixed(ShapeEdge edge) {
         return !this.match.getPreImages(edge).isEmpty();
+    }
+
+    /**
+     * Returns true if the morphism from the materialised shape to the original
+     * one is consistent.
+     */
+    public boolean isShapeMorphConsistent() {
+        return this.morph.isValid(this.shape, this.originalShape)
+            && this.morph.isConsistent(this.shape, this.originalShape);
     }
 
     /**
@@ -380,7 +344,90 @@ public final class Materialisation {
         return complyToNodeMult && complyToEquivClass && complyToEdgeMult;
     }
 
+    // ------------------------------------------------------------------------
+    // Methods for first stage.
+    // ------------------------------------------------------------------------
+
+    /** Returns the set of nodes involved in the materialisation. */
+    public Set<ShapeNode> getAffectedNodes() {
+        assert this.stage == 1;
+        Set<ShapeNode> result = new THashSet<ShapeNode>();
+        result.addAll(this.matNodes);
+        for (ShapeEdge matEdge : this.matEdges) {
+            result.add(matEdge.source());
+            result.add(matEdge.target());
+        }
+        for (ShapeEdge possibleEdge : this.possibleEdges) {
+            result.add(possibleEdge.source());
+            result.add(possibleEdge.target());
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
+    /** Returns the set of edges involved in the materialisation. */
+    public Set<ShapeEdge> getAffectedEdges() {
+        assert this.stage == 1;
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        result.addAll(this.matEdges);
+        result.addAll(this.possibleEdges);
+        return Collections.unmodifiableSet(result);
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addMatNode(ShapeNode newNode, ShapeNode collectorNode,
+            RuleNode nodeR) {
+        assert this.stage == 1;
+        assert this.shape.containsNode(newNode);
+        this.match.putNode(nodeR, newNode);
+        this.morph.putNode(newNode, collectorNode);
+        this.matNodes.add(newNode);
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addMatEdge(ShapeEdge newEdge, ShapeEdge inconsistentEdge,
+            RuleEdge edgeR) {
+        assert this.stage == 1;
+        assert this.shape.containsEdge(newEdge);
+        this.match.putEdge(edgeR, newEdge);
+        this.morph.putEdge(newEdge, inconsistentEdge);
+        this.matEdges.add(newEdge);
+    }
+
+    /** EDUARDO: Comment this... */
+    public void handleCollectorNode(ShapeNode collectorNode) {
+        assert this.stage == 1;
+        if (!this.shape.containsNode(collectorNode)) {
+            // The collector node was removed from the shape and we have a
+            // dangling reference in the shape morphism.
+            this.morph.removeNode(collectorNode);
+        } else {
+            this.matNodes.add(collectorNode);
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public void handleInconsistentEdge(ShapeEdge inconsistentEdge) {
+        assert this.stage == 1;
+        if (!this.shape.containsEdge(inconsistentEdge)) {
+            // The edge was removed from the shape and we have a
+            // dangling reference in the shape morphism.
+            this.morph.removeEdge(inconsistentEdge);
+        } else {
+            this.matEdges.add(inconsistentEdge);
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addPossibleEdge(ShapeEdge possibleEdge, ShapeEdge origEdge) {
+        assert this.stage == 1;
+        assert !this.shape.containsEdge(possibleEdge);
+        this.possibleEdges.add(possibleEdge);
+        // Use the shape morphism to store additional info.
+        this.morph.putEdge(possibleEdge, origEdge);
+    }
+
     private Set<Materialisation> compute() {
+        assert this.stage == 1;
         // Search for nodes in the original match image that have to be
         // materialised. 
         for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
@@ -424,16 +471,9 @@ public final class Materialisation {
         return result;
     }
 
-    /**
-     * Returns true if the morphism from the materialised shape to the original
-     * one is consistent.
-     */
-    public boolean isShapeMorphConsistent() {
-        return this.morph.isConsistent(this.shape, this.originalShape);
-    }
-
     /** Returns true if the materialisation is complete. */
     public boolean isFinished() {
+        assert this.stage == 1;
         return this.possibleEdges.isEmpty();
     }
 
@@ -445,6 +485,7 @@ public final class Materialisation {
      * configuration of the shape.
      */
     private void createPossibleEdges() {
+        assert this.stage == 1;
         if (this.matNodes.isEmpty()) {
             return;
         }
@@ -475,6 +516,121 @@ public final class Materialisation {
         }
     }
 
+    /** EDUARDO: Comment this... */
+    public void setNonSingBundles(THashSet<EdgeBundle> nonSingBundles) {
+        assert this.stage == 1;
+        assert this.nonSingBundles == null;
+        this.nonSingBundles = nonSingBundles;
+    }
+
+    // ------------------------------------------------------------------------
+    // Methods for second stage.
+    // ------------------------------------------------------------------------
+
+    /** EDUARDO: Comment this... */
+    public void moveToSecondStage() {
+        assert this.stage == 1;
+        assert this.nonSingBundles != null;
+
+        this.stage++;
+        this.nodeSplitMap = new THashMap<ShapeNode,Set<ShapeNode>>();
+        Shape shape = this.getShape();
+
+        // Compute the set of nodes that need splitting.
+        Map<ShapeNode,Set<EdgeBundle>> nodeToBundles =
+            new THashMap<ShapeNode,Set<EdgeBundle>>();
+        for (EdgeBundle bundle : this.nonSingBundles) {
+            Set<EdgeBundle> bundleSet = nodeToBundles.get(bundle.node);
+            if (bundleSet == null) {
+                bundleSet = new THashSet<EdgeBundle>();
+                nodeToBundles.put(bundle.node, bundleSet);
+            }
+            bundleSet.add(bundle);
+        }
+
+        // Now split the nodes.
+        for (ShapeNode nodeS : nodeToBundles.keySet()) {
+            int copies = 1;
+            for (EdgeBundle bundle : nodeToBundles.get(nodeS)) {
+                copies =
+                    (int) (copies * Math.pow(2,
+                        bundle.positivePossibleEdges.size()));
+            }
+            shape.splitNode(this, nodeS, copies);
+        }
+
+        // Create all edge permutations.
+        Set<ShapeEdge> fixedEdges = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> flexEdges = new THashSet<ShapeEdge>();
+        for (ShapeNode nodeS : nodeToBundles.keySet()) {
+            for (EdgeBundle bundle : nodeToBundles.get(nodeS)) {
+                bundle.updateEdgeSets(this);
+                fixedEdges.addAll(bundle.edgesInShape);
+                flexEdges.addAll(bundle.positivePossibleEdges);
+            }
+            Iterator<Set<ShapeEdge>> iter =
+                new PowerSetIterator<ShapeEdge>(flexEdges, true);
+            this.addEdges(nodeS, nodeS, fixedEdges, null);
+            for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
+                this.addEdges(splitNode, nodeS, fixedEdges, iter.next());
+            }
+            assert !iter.hasNext();
+            fixedEdges.clear();
+            flexEdges.clear();
+        }
+    }
+
+    /** EDUARDO: Comment this... */
+    public void addSplitNode(ShapeNode newNode, ShapeNode origNode) {
+        assert this.stage == 2;
+        assert this.shape.containsNode(origNode);
+        assert this.shape.containsNode(newNode);
+        this.morph.putNode(newNode, origNode);
+        Set<ShapeNode> copiesSet = this.nodeSplitMap.get(origNode);
+        if (copiesSet == null) {
+            copiesSet = new THashSet<ShapeNode>();
+            this.nodeSplitMap.put(origNode, copiesSet);
+        }
+        copiesSet.add(newNode);
+    }
+
+    private void addEdges(ShapeNode newNode, ShapeNode origNode,
+            Set<ShapeEdge> fixedEdges, Set<ShapeEdge> flexEdges) {
+        Shape shape = this.getShape();
+        Set<ShapeEdge> allEdges;
+        if (flexEdges == null) {
+            allEdges = fixedEdges;
+        } else {
+            flexEdges.addAll(fixedEdges);
+            allEdges = flexEdges;
+        }
+        for (ShapeEdge edge : allEdges) {
+            ShapeNode source;
+            ShapeNode target;
+            TypeLabel label = edge.label();
+            if (edge.source().equals(origNode)) {
+                source = newNode;
+                target = edge.target();
+            } else {
+                assert edge.target().equals(origNode);
+                source = edge.source();
+                target = newNode;
+            }
+            shape.createEdge(source, label, target);
+            if (!shape.containsEdge(edge)) {
+                shape.addEdgeWithoutCheck(edge);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner Classes
+    // ------------------------------------------------------------------------
+
+    // ---------
+    // ResultSet
+    // ---------
+
     private static class ResultSet extends THashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {
@@ -492,7 +648,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "2";
+            String number = "1b";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
