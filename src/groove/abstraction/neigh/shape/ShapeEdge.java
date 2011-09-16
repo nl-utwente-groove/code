@@ -52,6 +52,25 @@ public final class ShapeEdge extends HostEdge {
     }
 
     /**
+     * If the given direction is OUTGOING, returns the source of this edge.
+     * If the given direction is INCOMING, returns the target of this edge.
+     */
+    public ShapeNode incident(EdgeMultDir direction) {
+        ShapeNode incident = null;
+        switch (direction) {
+        case OUTGOING:
+            incident = this.source();
+            break;
+        case INCOMING:
+            incident = this.target();
+            break;
+        default:
+            assert false;
+        }
+        return incident;
+    }
+
+    /**
      * If the given direction is OUTGOING, returns the target of this edge.
      * If the given direction is INCOMING, returns the source of this edge.
      */

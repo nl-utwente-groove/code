@@ -27,6 +27,8 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -84,6 +86,13 @@ public class ShapeMorphism extends HostGraphMorphism {
 
     @Override
     public ShapeNode removeNode(HostNode key) {
+        Iterator<HostEdge> iter = this.edgeMap().keySet().iterator();
+        while (iter.hasNext()) {
+            HostEdge edge = iter.next();
+            if (edge.source().equals(key) || edge.target().equals(key)) {
+                iter.remove();
+            }
+        }
         return (ShapeNode) super.removeNode(key);
     }
 
@@ -156,6 +165,23 @@ public class ShapeMorphism extends HostGraphMorphism {
             this.getNode(esFrom.getNode()),
             esFrom.getLabel(),
             to.getEquivClassOf(this.getNode(esFrom.getEquivClass().iterator().next())));
+    }
+
+    /** Returns true if all keys are in 'from' and all values in 'to'.*/
+    public boolean isValid(Shape from, Shape to) {
+        for (Entry<HostNode,HostNode> entry : this.nodeMap().entrySet()) {
+            if (!from.containsNode(entry.getKey())
+                || !to.containsNode(entry.getValue())) {
+                return false;
+            }
+        }
+        for (Entry<HostEdge,HostEdge> entry : this.edgeMap().entrySet()) {
+            if (!from.containsEdge(entry.getKey())
+                || !to.containsEdge(entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
