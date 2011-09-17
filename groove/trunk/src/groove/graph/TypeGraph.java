@@ -346,10 +346,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                                 : parentTyping.getNode(node);
                     if (typingLabel == null) {
                         if (parentImage == null) {
-                            errors.add(new FormatError("Untyped node", node));
-                            image =
-                                ruleFactory.createNode(node.getNumber(),
-                                    TypeNode.TOP_NODE, true);
+                            throw new FormatException("Untyped node", node);
                         } else {
                             image = parentImage;
                         }
@@ -362,9 +359,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         } else {
                             TypeNode parentType = parentImage.getType();
                             if (!isSubtype(type, parentType)) {
-                                errors.add(new FormatError(
+                                throw new FormatException(
                                     "Node type %s should specialise %s", type,
-                                    parentType, node));
+                                    parentType, node);
                             }
                             image = parentImage;
                         }
@@ -622,7 +619,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         // check for common subtypes
         Set<TypeLabel> sub1 =
             new HashSet<TypeLabel>(getLabelStore().getSubtypes(label1));
-        return sub1.removeAll(getLabelStore().getSubtypes(label2));
+        Set<TypeLabel> sub2 = getLabelStore().getSubtypes(label2);
+        assert sub2 != null;
+        return sub1.removeAll(sub2);
     }
 
     /**

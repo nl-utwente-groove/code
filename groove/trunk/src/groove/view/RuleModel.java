@@ -1498,6 +1498,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             for (RuleGraph nac : origin.nacs) {
                 this.nacs.add(toTypedGraph(nac, this.typeMap, null));
             }
+            if (!this.errors.isEmpty()) {
+                throw new FormatException(this.errors);
+            }
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
                 this.colorMap.put(globalTypeMap.getNode(colorEntry.getKey()),
                     colorEntry.getValue());
