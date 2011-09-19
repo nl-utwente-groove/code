@@ -884,7 +884,7 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the set of edges from the signature occurring in the shape.
      */
-    private Set<ShapeEdge> getEdgesFromSig(EdgeSignature es,
+    public Set<ShapeEdge> getEdgesFromSig(EdgeSignature es,
             EdgeMultDir direction) {
         Set<ShapeEdge> result = new THashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
