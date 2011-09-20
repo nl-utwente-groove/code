@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="materialisation-test-1">
+    <graph edgemode="directed" edgeids="false" role="graph" id="materialisation-test-1a">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -62,14 +62,14 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
         <edge to="n4" from="n3">
             <attr name="label">
                 <string>c</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:A</string>
             </attr>
         </edge>
         <edge to="n5" from="n3">

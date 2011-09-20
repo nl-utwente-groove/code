@@ -30,6 +30,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -44,6 +45,9 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public final class EquationSystem {
+
+    private static final boolean WARN_BLOWUP = true;
+    private static final int MAX_SOLUTION_COUNT = 4;
 
     /** EDUARDO: Comment this... */
     public final static EquationSystem newEqSys(Materialisation mat) {
@@ -68,7 +72,8 @@ public final class EquationSystem {
     // ------------------------------------------------------------------------
     // Used in second stage.
     // ------------------------------------------------------------------------
-    private Map<EdgeSignature,Duo<BoundVar>> esVarsMap;
+    private Map<EdgeSignature,Duo<BoundVar>> outEsVarsMap;
+    private Map<EdgeSignature,Duo<BoundVar>> inEsVarsMap;
     private ArrayList<Pair<EdgeSignature,EdgeMultDir>> varEsMap;
     // ------------------------------------------------------------------------
     // Used in third stage.
@@ -90,7 +95,7 @@ public final class EquationSystem {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Equation System:\n");
+        sb.append("Equation System - Stage " + this.stage + "\n");
         sb.append("Trivial Equations:\n");
         for (Equation eq : this.trivialEqs) {
             sb.append(eq + "\n");
@@ -201,13 +206,20 @@ public final class EquationSystem {
         for (Equation eq : this.trivialEqs) {
             eq.nonRecComputeNewValues(initialSol);
         }
-        Set<Solution> finishedSols = new THashSet<Solution>();
-        Set<Solution> partialSols = new THashSet<Solution>();
+        SolutionSet finishedSols = new SolutionSet();
+        SolutionSet partialSols = new SolutionSet();
         partialSols.add(initialSol);
         while (!partialSols.isEmpty()) {
             Solution sol = partialSols.iterator().next();
             partialSols.remove(sol);
             this.iterateSolution(sol, partialSols, finishedSols);
+        }
+        int finishedSolsSize = finishedSols.size();
+        if (WARN_BLOWUP && finishedSolsSize > MAX_SOLUTION_COUNT) {
+            System.out.println("Warning! Blowup while solving equation system: "
+                + finishedSolsSize + " solutions.");
+            System.out.println(this);
+            System.out.println(this.mat);
         }
         // Create the return objects.
         for (Solution sol : finishedSols) {
@@ -231,8 +243,8 @@ public final class EquationSystem {
         return this.stage == 1 && sol.ubEqs.isEmpty();
     }
 
-    private void iterateSolution(Solution sol, Set<Solution> partialSols,
-            Set<Solution> finishedSols) {
+    private void iterateSolution(Solution sol, SolutionSet partialSols,
+            SolutionSet finishedSols) {
         this.iterateEquations(sol);
         if (sol.isFinished() || this.shouldStopEarly(sol)) {
             finishedSols.add(sol);
@@ -309,11 +321,9 @@ public final class EquationSystem {
             Multiplicity constMult = nodeMult.times(edgeMult);
             // ... create one lower bound and one upper bound equation.
             Equation lbEq =
-                new Equation(BoundType.LB, Relation.GE,
-                    constMult.getLowerBound(), varsCount);
+                new Equation(BoundType.LB, constMult.getLowerBound(), varsCount);
             Equation ubEq =
-                new Equation(BoundType.UB, Relation.LE,
-                    constMult.getUpperBound(), varsCount);
+                new Equation(BoundType.UB, constMult.getUpperBound(), varsCount);
 
             // For each edge in the bundle...
             for (ShapeEdge edge : bundle.edges) {
@@ -326,10 +336,8 @@ public final class EquationSystem {
 
                 // Create one additional equations for the fixed edges.
                 if (bundle.direction == OUTGOING && this.mat.isFixed(edge)) {
-                    Equation trivialLbEq =
-                        new Equation(BoundType.LB, Relation.GE, 1, 1);
-                    Equation trivialUbEq =
-                        new Equation(BoundType.UB, Relation.LE, 1, 1);
+                    Equation trivialLbEq = new Equation(BoundType.LB, 1, 1);
+                    Equation trivialUbEq = new Equation(BoundType.UB, 1, 1);
                     trivialLbEq.addVar(lbVar);
                     trivialUbEq.addVar(ubVar);
                     this.storeEquations(trivialLbEq, trivialUbEq);
@@ -456,10 +464,13 @@ public final class EquationSystem {
     private void createSecondStage() {
         assert this.stage == 2;
 
-        this.esVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
+        this.outEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
+        this.inEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
         this.varEsMap = new ArrayList<Pair<EdgeSignature,EdgeMultDir>>();
         Multiplicity one =
             Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
+
+        //ShapePreviewDialog.showShape(this.mat.getShape());
 
         // For each bundle...
         for (EdgeBundle bundle : this.mat.getSplitBundles()) {
@@ -471,10 +482,10 @@ public final class EquationSystem {
             int esCount = bundle.splitEs.size();
             if (esCount > 1) {
                 lbEq =
-                    new Equation(BoundType.LB, Relation.GE,
+                    new Equation(BoundType.LB,
                         bundle.origEsMult.getLowerBound(), esCount);
                 ubEq =
-                    new Equation(BoundType.UB, Relation.LE,
+                    new Equation(BoundType.UB,
                         bundle.origEsMult.getUpperBound(), esCount);
             }
             // For each edge signature...
@@ -497,11 +508,9 @@ public final class EquationSystem {
                     }
                     // Create one lower bound and one upper bound trivial equation.
                     Equation trivialLbEq =
-                        new Equation(BoundType.LB, Relation.GE,
-                            constMult.getLowerBound(), 1);
+                        new Equation(BoundType.LB, constMult.getLowerBound(), 1);
                     Equation trivialUbEq =
-                        new Equation(BoundType.UB, Relation.LE,
-                            constMult.getUpperBound(), 1);
+                        new Equation(BoundType.UB, constMult.getUpperBound(), 1);
                     trivialLbEq.addVar(lbVar);
                     trivialUbEq.addVar(ubVar);
                     this.storeEquations(trivialLbEq, trivialUbEq);
@@ -523,14 +532,12 @@ public final class EquationSystem {
                 // Check if the opposite is a concrete node.
                 ShapeNode opp = edge.opposite(direction);
                 if (shape.getNodeMult(opp).isOne()) {
-                    Duo<BoundVar> varPair = this.esVarsMap.get(es);
+                    Duo<BoundVar> varPair = this.getEsMap(direction).get(es);
                     BoundVar lbVar = varPair.one();
                     BoundVar ubVar = varPair.two();
                     // We have another trivial equation.
-                    Equation oppLbEq =
-                        new Equation(BoundType.LB, Relation.GE, 1, 1);
-                    Equation oppUbEq =
-                        new Equation(BoundType.UB, Relation.LE, 1, 1);
+                    Equation oppLbEq = new Equation(BoundType.LB, 1, 1);
+                    Equation oppUbEq = new Equation(BoundType.UB, 1, 1);
                     oppLbEq.addVar(lbVar);
                     oppUbEq.addVar(ubVar);
                     this.storeEquations(oppLbEq, oppUbEq);
@@ -540,15 +547,31 @@ public final class EquationSystem {
         }
     }
 
+    private Map<EdgeSignature,Duo<BoundVar>> getEsMap(EdgeMultDir direction) {
+        assert this.stage == 2;
+        Map<EdgeSignature,Duo<BoundVar>> result = null;
+        switch (direction) {
+        case OUTGOING:
+            result = this.outEsVarsMap;
+            break;
+        case INCOMING:
+            result = this.inEsVarsMap;
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
     private Duo<BoundVar> retrieveBoundVars(EdgeSignature es,
             EdgeMultDir direction) {
         assert this.stage == 2;
-        Duo<BoundVar> vars = this.esVarsMap.get(es);
+        Duo<BoundVar> vars = this.getEsMap(direction).get(es);
         if (vars == null) {
             BoundVar lbVar = new BoundVar(this.varsCount, BoundType.LB);
             BoundVar ubVar = new BoundVar(this.varsCount, BoundType.UB);
             vars = new Duo<BoundVar>(lbVar, ubVar);
-            this.esVarsMap.put(es, vars);
+            this.getEsMap(direction).put(es, vars);
             this.varEsMap.add(this.varsCount,
                 new Pair<EdgeSignature,EdgeMultDir>(es, direction));
             this.varsCount++;
@@ -596,11 +619,9 @@ public final class EquationSystem {
             int varsCount = splitNodes.size() + 1;
             // ... create one lower bound and one upper bound equation.
             Equation lbEq =
-                new Equation(BoundType.LB, Relation.GE,
-                    origMult.getLowerBound(), varsCount);
+                new Equation(BoundType.LB, origMult.getLowerBound(), varsCount);
             Equation ubEq =
-                new Equation(BoundType.UB, Relation.LE,
-                    origMult.getUpperBound(), varsCount);
+                new Equation(BoundType.UB, origMult.getUpperBound(), varsCount);
             // ... create two bound variables.
             Duo<BoundVar> varPair = retrieveBoundVars(origNode);
             BoundVar lbVar = varPair.one();
@@ -619,8 +640,7 @@ public final class EquationSystem {
         }
 
         // For each concrete node in the shape...
-        // EDUARDO : Continue here...
-        /*for (ShapeNode node : shape.nodeSet()) {
+        for (ShapeNode node : shape.nodeSet()) {
             if (!shape.getNodeMult(node).isOne()) {
                 continue;
             }
@@ -628,11 +648,39 @@ public final class EquationSystem {
             for (EdgeBundle splitBundle : splitBundles) {
                 EdgeMultDir direction = splitBundle.direction;
                 for (EdgeSignature splitEs : splitBundle.splitEs) {
-                    shape.getEdgesFromSig(splitEs, direction);
-                }
+                    // We may have another equation.
+                    Multiplicity constMult =
+                        shape.getEdgeSigMult(splitEs, direction);
+                    int maxEdgesCount = splitBundle.edges.size();
+                    Equation oppLbEq =
+                        new Equation(BoundType.LB, constMult.getLowerBound(),
+                            maxEdgesCount);
+                    Equation oppUbEq =
+                        new Equation(BoundType.UB, constMult.getUpperBound(),
+                            maxEdgesCount);
+                    for (ShapeEdge edge : shape.getEdgesFromSig(splitEs,
+                        direction)) {
+                        ShapeNode opposite = edge.opposite(direction);
+                        Duo<BoundVar> varPair = this.nodeVarsMap.get(opposite);
+                        if (varPair != null) {
+                            EdgeSignature oppEs =
+                                shape.getEdgeSignature(opposite, edge.label(),
+                                    shape.getEquivClassOf(node));
+                            if (shape.isEdgeSigUnique(oppEs,
+                                direction.reverse())) {
+                                BoundVar lbVar = varPair.one();
+                                BoundVar ubVar = varPair.two();
+                                oppLbEq.addVar(lbVar);
+                                oppUbEq.addVar(ubVar);
                             }
-        }*/
-
+                        }
+                    }
+                    if (oppLbEq.vars.size() > 0) {
+                        this.storeEquations(oppLbEq, oppUbEq);
+                    }
+                }
+            }
+        }
     }
 
     private Duo<BoundVar> retrieveBoundVars(ShapeNode node) {
@@ -739,10 +787,15 @@ public final class EquationSystem {
             }
             if (er.size() > 1 && this.splitEs == null) {
                 this.splitEs = new THashSet<EdgeSignature>();
+                // Now add all other edges adjacent to this bundle node...
+                for (ShapeEdge edge : shape.edgeSet(this.node)) {
+                    if (edge.getRole() == EdgeRole.BINARY) {
+                        this.edgesInShape.add(edge);
+                    }
+                }
             }
             return er.size() > 1;
         }
-
     }
 
     // ---------
@@ -785,14 +838,6 @@ public final class EquationSystem {
     }
 
     // --------
-    // Relation
-    // --------
-
-    private enum Relation {
-        LE, GE
-    }
-
-    // --------
     // Equation
     // --------
 
@@ -800,14 +845,12 @@ public final class EquationSystem {
 
         final BoundType type;
         final ArrayList<BoundVar> vars;
-        final Relation relation;
         final int constant;
         Equation dual;
 
-        Equation(BoundType type, Relation relation, int constant, int varsCount) {
+        Equation(BoundType type, int constant, int varsCount) {
             this.type = type;
             this.vars = new ArrayList<BoundVar>(varsCount);
-            this.relation = relation;
             this.constant = constant;
         }
 
@@ -821,11 +864,11 @@ public final class EquationSystem {
                     result.append(" + ");
                 }
             }
-            switch (this.relation) {
-            case LE:
+            switch (this.type) {
+            case UB:
                 result.append(" <= ");
                 break;
-            case GE:
+            case LB:
                 result.append(" >= ");
                 break;
             default:
@@ -844,7 +887,6 @@ public final class EquationSystem {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.constant;
-            result = prime * result + this.relation.hashCode();
             result = prime * result + this.type.hashCode();
             for (BoundVar var : this.vars) {
                 result = prime * result + var.number;
@@ -861,7 +903,6 @@ public final class EquationSystem {
                 Equation eq = (Equation) o;
                 result =
                     this.constant == eq.constant && this.type == eq.type
-                        && this.relation == eq.relation
                         && this.vars.containsAll(eq.vars)
                         && eq.vars.containsAll(this.vars);
             }
@@ -891,11 +932,11 @@ public final class EquationSystem {
 
         boolean isUseful() {
             boolean result = false;
-            switch (this.relation) {
-            case LE:
+            switch (this.type) {
+            case UB:
                 result = this.constant < this.getMaxRangeValue();
                 break;
-            case GE:
+            case LB:
                 result = this.constant > this.getMinRangeValue();
                 break;
             default:
@@ -948,7 +989,7 @@ public final class EquationSystem {
             int sum = this.getFixedVarsSum(sol);
             int newConst = Multiplicity.sub(this.constant, sum);
 
-            if (this.type == BoundType.LB && this.relation == Relation.GE) {
+            if (this.type == BoundType.LB) {
                 if (openVars.size() == 1) {
                     // Set the lower bound to the new constant.
                     sol.cutLow(openVars.get(0), newConst);
@@ -956,7 +997,7 @@ public final class EquationSystem {
                 }
             }
 
-            if (this.type == BoundType.UB && this.relation == Relation.LE) {
+            if (this.type == BoundType.UB) {
                 if (newConst == 0) {
                     // All open variables are zero.
                     for (BoundVar openVar : openVars) {
@@ -1001,6 +1042,14 @@ public final class EquationSystem {
             return result;
         }
 
+        int getVarsSum(Solution sol) {
+            int result = 0;
+            for (BoundVar var : this.vars) {
+                result = Multiplicity.add(result, sol.getValue(var));
+            }
+            return result;
+        }
+
         int getFixedVarsSum(Solution sol) {
             int result = 0;
             for (BoundVar var : this.vars) {
@@ -1012,14 +1061,13 @@ public final class EquationSystem {
         }
 
         boolean isSatisfied(Solution sol) {
-            assert !this.hasOpenVars(sol);
-            int sum = this.getFixedVarsSum(sol);
+            int sum = this.getVarsSum(sol);
             boolean result = false;
-            switch (this.relation) {
-            case GE:
+            switch (this.type) {
+            case LB:
                 result = sum >= this.constant;
                 break;
-            case LE:
+            case UB:
                 result = sum <= this.constant;
                 break;
             default:
@@ -1036,19 +1084,27 @@ public final class EquationSystem {
             return result;
         }
 
-        void getNewSolutions(Solution sol, Set<Solution> partialSols,
-                Set<Solution> finishedSols) {
+        void getNewSolutions(Solution sol, SolutionSet partialSols,
+                SolutionSet finishedSols) {
             assert !sol.isFinished();
             assert sol.getEqs(this.type).contains(this);
+
             sol.getEqs(this.type).remove(this);
-            ArrayList<BoundVar> openVars = this.getOpenVars(sol);
-            BranchSolsIterator iter = new BranchSolsIterator(sol, openVars);
-            while (iter.hasNext()) {
-                Solution newSol = iter.next();
-                if (this.hasDual()) {
-                    this.dual.nonRecComputeNewValues(newSol);
+
+            if (this.isSatisfied(sol)) {
+                // Nothing to do.
+                if (sol.isFinished()) {
+                    finishedSols.add(sol);
+                } else {
+                    partialSols.add(sol);
                 }
-                if (this.isValidSolution(newSol)) {
+            } else {
+                // Iterate the solutions.
+                ArrayList<BoundVar> openVars = this.getOpenVars(sol);
+                BranchSolsIterator iter =
+                    new BranchSolsIterator(this, sol, openVars);
+                while (iter.hasNext()) {
+                    Solution newSol = iter.next();
                     if (newSol.isFinished()) {
                         finishedSols.add(newSol);
                     } else {
@@ -1106,11 +1162,6 @@ public final class EquationSystem {
             return this.i == this.j;
         }
 
-        int getValue() {
-            assert this.isSingleton();
-            return this.range[this.i];
-        }
-
         int getMin() {
             return this.range[this.i];
         }
@@ -1143,17 +1194,6 @@ public final class EquationSystem {
         void cutHigh(int limit) {
             this.nonRecCutHigh(limit);
             this.dual.nonRecCutHigh(limit);
-        }
-
-        void nonRecFix(int i) {
-            this.i = i;
-            this.j = i;
-        }
-
-        void fix(int i) {
-            assert i >= 0 && i < this.range.length;
-            this.nonRecFix(i);
-            this.dual.nonRecFix(i);
         }
 
         public ValueRangeIterator iterator() {
@@ -1262,8 +1302,18 @@ public final class EquationSystem {
         }
 
         int getValue(BoundVar var) {
-            assert this.isSingleton(var);
-            return this.getValueRange(var).getValue();
+            int result = 0;
+            switch (var.type) {
+            case UB:
+                result = this.getValueRange(var).getMax();
+                break;
+            case LB:
+                result = this.getValueRange(var).getMin();
+                break;
+            default:
+                assert false;
+            }
+            return result;
         }
 
         void cutLow(BoundVar var, int limit) {
@@ -1274,8 +1324,17 @@ public final class EquationSystem {
             this.getValueRange(var).cutHigh(limit);
         }
 
-        void fix(BoundVar var, int i) {
-            this.getValueRange(var).fix(i);
+        void cut(BoundVar var, int limit) {
+            switch (var.type) {
+            case UB:
+                this.cutHigh(var, limit);
+                break;
+            case LB:
+                this.cutLow(var, limit);
+                break;
+            default:
+                assert false;
+            }
         }
 
         boolean isFinished() {
@@ -1305,7 +1364,19 @@ public final class EquationSystem {
         Multiplicity getMultValue(int varNum, MultKind kind) {
             int i = this.lbValues[varNum].getMin();
             int j = this.ubValues[varNum].getMax();
-            return Multiplicity.getMultiplicity(i, j, kind);
+            return Multiplicity.approx(i, j, kind);
+        }
+
+        boolean subsumes(Solution other) {
+            boolean result = true;
+            for (int varNum = 0; varNum < this.size(); varNum++) {
+                if (this.lbValues[varNum].getMin() > other.lbValues[varNum].getMin()
+                    || this.ubValues[varNum].getMax() < other.ubValues[varNum].getMax()) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
         }
 
     }
@@ -1362,12 +1433,17 @@ public final class EquationSystem {
 
     private static class BranchSolsIterator implements Iterator<Solution> {
 
+        final Equation eq;
         final Solution sol;
         final ArrayList<BoundVar> openVars;
         final ValueRangeIterator iters[];
+        final ArrayList<Solution> validSolutions;
+        int next;
 
-        BranchSolsIterator(Solution sol, ArrayList<BoundVar> openVars) {
+        BranchSolsIterator(Equation eq, Solution sol,
+                ArrayList<BoundVar> openVars) {
             assert openVars.size() > 0;
+            this.eq = eq;
             this.sol = sol;
             this.openVars = openVars;
             this.iters = new ValueRangeIterator[openVars.size()];
@@ -1376,6 +1452,9 @@ public final class EquationSystem {
                 this.iters[i] = sol.getValueRange(var).iterator();
                 i++;
             }
+            this.validSolutions = new ArrayList<Solution>();
+            this.next = 0;
+            this.computeAllSolutions();
         }
 
         @Override
@@ -1385,38 +1464,13 @@ public final class EquationSystem {
 
         @Override
         public boolean hasNext() {
-            return this.iters[0].hasNext();
+            return this.next < this.validSolutions.size();
         }
 
         @Override
         public Solution next() {
-            // Create a new solution.
-            Solution newSolution = this.sol.clone();
-            int i = 0;
-            for (ValueRangeIterator iter : this.iters) {
-                newSolution.fix(this.openVars.get(i), iter.current());
-                i++;
-            }
-            // Update iterators and compute next solution.
-            int curr = this.iters.length - 1;
-            this.iters[curr].next();
-            if (!this.iters[curr].hasNext()) {
-                int prev = curr - 1;
-                while (prev >= 0) {
-                    this.iters[prev].next();
-                    if (this.iters[prev].hasNext()) {
-                        break;
-                    }
-                    prev--;
-                }
-                if (prev >= 0) {
-                    // Reset all iterators between prev + 1 and curr .
-                    for (i = prev + 1; i <= curr; i++) {
-                        this.iters[i].reset();
-                    }
-                }
-            }
-            return newSolution;
+            assert this.hasNext();
+            return this.validSolutions.get(this.next++);
         }
 
         @Override
@@ -1424,6 +1478,65 @@ public final class EquationSystem {
             throw new UnsupportedOperationException();
         }
 
+        void computeAllSolutions() {
+            while (this.iters[0].hasNext()) {
+                // Create a new solution.
+                Solution newSol = this.sol.clone();
+                int i = 0;
+                for (ValueRangeIterator iter : this.iters) {
+                    newSol.cut(this.openVars.get(i), iter.current());
+                    i++;
+                }
+                if (this.eq.hasDual()) {
+                    this.eq.dual.nonRecComputeNewValues(newSol);
+                }
+                if (this.eq.isValidSolution(newSol)) {
+                    this.validSolutions.add(newSol);
+                }
+
+                // Update iterators and compute next solution.
+                int curr = this.iters.length - 1;
+                this.iters[curr].next();
+                if (!this.iters[curr].hasNext()) {
+                    int prev = curr - 1;
+                    while (prev >= 0) {
+                        this.iters[prev].next();
+                        if (this.iters[prev].hasNext()) {
+                            break;
+                        }
+                        prev--;
+                    }
+                    if (prev >= 0) {
+                        // Reset all iterators between prev + 1 and curr .
+                        for (i = prev + 1; i <= curr; i++) {
+                            this.iters[i].reset();
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    // -----------
+    // SolutionSet
+    // -----------
+
+    private static class SolutionSet extends THashSet<Solution> {
+        @Override
+        public boolean add(Solution newSol) {
+            boolean store = true;
+            for (Solution oldSol : this) {
+                if (oldSol.subsumes(newSol)) {
+                    store = false;
+                    break;
+                }
+            }
+            if (store) {
+                super.add(newSol);
+            }
+            return store;
+        }
     }
 
 }

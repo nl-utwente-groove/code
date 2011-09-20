@@ -648,6 +648,23 @@ public final class Materialisation {
                 this.addEdgeSigsToBundles(origEdge, newEdge);
             }
             opposites.clear();
+            // Special case for loops.
+            if (edge.isLoop()) {
+                incident = origNode;
+                direction = OUTGOING;
+                opposites.addAll(splitNodes);
+                for (ShapeNode newOpposite : opposites) {
+                    ShapeEdge newEdge =
+                        this.shape.createEdge(incident, newOpposite, label,
+                            direction);
+                    if (!this.shape.containsEdge(newEdge)) {
+                        this.shape.addEdgeWithoutCheck(newEdge);
+                        this.morph.putEdge(newEdge, origEdge);
+                    }
+                    this.addEdgeSigsToBundles(origEdge, newEdge);
+                }
+                opposites.clear();
+            }
         }
     }
 
@@ -708,6 +725,18 @@ public final class Materialisation {
         return this.nodeSplitMap;
     }
 
+    /** EDUARDO: Comment this... */
+    THashSet<EdgeBundle> getSplitBundles(ShapeNode node) {
+        assert this.stage == 3;
+        THashSet<EdgeBundle> result = new THashSet<EdgeBundle>();
+        for (EdgeBundle splitBundle : this.splitBundles) {
+            if (splitBundle.node.equals(node)) {
+                result.add(splitBundle);
+            }
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Inner Classes
     // ------------------------------------------------------------------------
@@ -734,7 +763,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "1b";
+            String number = "6";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
