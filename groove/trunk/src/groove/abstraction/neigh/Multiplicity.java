@@ -450,7 +450,23 @@ public final class Multiplicity {
         /** Outgoing edge multiplicity. */
         OUTGOING,
         /** Incoming edge multiplicity. */
-        INCOMING
+        INCOMING;
+
+        /** Returns the reverse direction. */
+        public EdgeMultDir reverse() {
+            EdgeMultDir result = null;
+            switch (this) {
+            case OUTGOING:
+                result = INCOMING;
+                break;
+            case INCOMING:
+                result = OUTGOING;
+                break;
+            default:
+                assert false;
+            }
+            return result;
+        }
     }
 
 }

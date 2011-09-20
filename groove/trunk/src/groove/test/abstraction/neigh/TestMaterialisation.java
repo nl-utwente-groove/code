@@ -167,14 +167,14 @@ public class TestMaterialisation {
     }
 
     @Test
-    public void testMaterialisation1() {
+    public void testMaterialisation1a() {
         HostGraph graph = null;
         try {
-            graph = view.getHostModel("materialisation-test-1").toResource();
+            graph = view.getHostModel("materialisation-test-1a").toResource();
         } catch (FormatException e) {
             e.printStackTrace();
         }
-        Rule rule = grammar.getRule("test-mat-1");
+        Rule rule = grammar.getRule("test-mat-1a");
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -188,6 +188,33 @@ public class TestMaterialisation {
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
                 assertTrue(matShape.nodeSet().size() == 6
                     && binaryEdgeCount == 4);
+            }
+        }
+    }
+
+    @Test
+    public void testMaterialisation1b() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-1b").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-1b");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(2, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 9
+                    && binaryEdgeCount == 15
+                    && matShape.getEquivRelation().size() == 5);
             }
         }
     }
@@ -244,13 +271,23 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(1, mats.size());
+            assertEquals(2, mats.size());
+            boolean gotFour = false;
+            boolean gotFive = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
+                int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 4) {
+                    gotFour = true;
+                } else if (nodeCount == 5) {
+                    gotFive = true;
+                } else {
+                    fail();
+                }
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 5
-                    && binaryEdgeCount == 8);
+                assertTrue(binaryEdgeCount == 5 || binaryEdgeCount == 8);
             }
+            assertTrue(gotFour && gotFive);
         }
     }
 
@@ -334,13 +371,23 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(1, mats.size());
+            assertEquals(2, mats.size());
+            boolean gotFive = false;
+            boolean gotSix = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
+                int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 5) {
+                    gotFive = true;
+                } else if (nodeCount == 6) {
+                    gotSix = true;
+                } else {
+                    fail();
+                }
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 6
-                    && binaryEdgeCount == 14);
+                assertTrue(binaryEdgeCount == 10 || binaryEdgeCount == 14);
             }
+            assertTrue(gotFive && gotSix);
         }
     }
 
