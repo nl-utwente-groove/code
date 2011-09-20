@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -1369,9 +1370,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         }
 
         /**
-         * Completely reloads all roots from the model in the order returned by
-         * DefaultGraphModel.getAll. This uses the current visibleSet and
-         * mapping to fetch the cell views for the cells.
+         * Overwritten to reduce refreshing
          */
         @Override
         protected void reloadRoots() {
@@ -1381,6 +1380,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             for (Object element : orderedCells) {
                 CellView view = getMapping(element, true);
                 if (view != null) {
+                    // the following line is commented out wrt the super implementation
+                    // to prevent over-enthousiastic refreshing
                     // view.refresh(this, this, true);
                     if (view.getParentView() == null) {
                         newRoots.add(view);
@@ -1388,6 +1389,41 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 }
             }
             this.roots = newRoots;
+        }
+
+        /**
+         * Overwritten to prevent NPE in case some roots have no view.
+         */
+        @Override
+        public synchronized void reload() {
+            List<CellView> newRoots = new ArrayList<CellView>();
+            @SuppressWarnings("unchecked")
+            Map<?,?> oldMapping = new Hashtable<Object,Object>(this.mapping);
+            this.mapping.clear();
+            @SuppressWarnings("unchecked")
+            Set<Object> rootsSet = new HashSet<Object>(this.roots);
+            for (Map.Entry<?,?> entry : oldMapping.entrySet()) {
+                Object cell = entry.getKey();
+                CellView oldView = (CellView) entry.getValue();
+                CellView newView = getMapping(cell, true);
+                // thr following test is the only change wrt the super-implementation
+                if (newView != null) {
+                    newView.changeAttributes(this, oldView.getAttributes());
+                    // newView.refresh(getModel(), this, false);
+                    if (rootsSet.contains(oldView)) {
+                        newRoots.add(newView);
+                    }
+                }
+            }
+            // replace hidden
+            this.hiddenMapping.clear();
+            this.roots = newRoots;
+        }
+
+        @Override
+        public CellView getMapping(Object cell, boolean create) {
+            CellView result = super.getMapping(cell, create);
+            return result;
         }
     }
 
