@@ -1146,6 +1146,15 @@ public final class Shape extends DefaultHostGraph {
             && this.isEdgeSigUnique(es, direction);
     }
 
+    /**
+     * Returns true if both source and target of given edge have multiplicity
+     * one. 
+     */
+    public boolean areNodesConcrete(ShapeEdge edge) {
+        return this.getNodeMult(edge.source()).isOne()
+            && this.getNodeMult(edge.target()).isOne();
+    }
+
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
         Shape normalisedShape = new Shape(this.getFactory());

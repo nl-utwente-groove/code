@@ -334,9 +334,17 @@ public final class EquationSystem {
                 lbEq.addVar(lbVar);
                 ubEq.addVar(ubVar);
 
-                // Create one additional equations for the fixed edges.
                 if (bundle.direction == OUTGOING && this.mat.isFixed(edge)) {
+                    // Create additional equations for the fixed edges.
                     Equation trivialLbEq = new Equation(BoundType.LB, 1, 1);
+                    Equation trivialUbEq = new Equation(BoundType.UB, 1, 1);
+                    trivialLbEq.addVar(lbVar);
+                    trivialUbEq.addVar(ubVar);
+                    this.storeEquations(trivialLbEq, trivialUbEq);
+                } else if (bundle.direction == OUTGOING
+                    && shape.areNodesConcrete(edge)) {
+                    // Create additional equations for edges with concrete nodes.
+                    Equation trivialLbEq = new Equation(BoundType.LB, 0, 1);
                     Equation trivialUbEq = new Equation(BoundType.UB, 1, 1);
                     trivialLbEq.addVar(lbVar);
                     trivialUbEq.addVar(ubVar);
@@ -435,6 +443,7 @@ public final class EquationSystem {
             if (!shape.containsEdge(edge)) {
                 shape.addEdge(edge);
             }
+            boolean fixed = true;
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 boolean nodeMultIsOne =
                     shape.getNodeMult(edge.incident(direction)).isOne();
@@ -444,8 +453,12 @@ public final class EquationSystem {
                 } else {
                     edgeMult =
                         origShape.getEdgeMult(morph.getEdge(edge), direction);
+                    fixed = false;
                 }
                 shape.setEdgeMult(edge, direction, edgeMult);
+            }
+            if (fixed && mult.isOne()) {
+                this.mat.setFixedOnFirstStage(edge);
             }
         }
 
@@ -469,8 +482,6 @@ public final class EquationSystem {
         this.varEsMap = new ArrayList<Pair<EdgeSignature,EdgeMultDir>>();
         Multiplicity one =
             Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
-
-        //ShapePreviewDialog.showShape(this.mat.getShape());
 
         // For each bundle...
         for (EdgeBundle bundle : this.mat.getSplitBundles()) {
@@ -502,7 +513,8 @@ public final class EquationSystem {
                     // We have just a trivial equation.
                     Multiplicity constMult = bundle.origEsMult;
                     for (ShapeEdge edge : bundle.edges) {
-                        if (this.mat.isFixed(edge)) {
+                        //if (this.mat.isFixed(edge)) {
+                        if (this.mat.isFixedOnFirstStage(edge)) {
                             constMult = constMult.sub(one);
                         }
                     }
