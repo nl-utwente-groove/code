@@ -220,6 +220,33 @@ public class TestMaterialisation {
     }
 
     @Test
+    public void testMaterialisation1c() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-1c").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-1c");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(8, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 14
+                    && binaryEdgeCount == 32
+                    && matShape.getEquivRelation().size() == 6);
+            }
+        }
+    }
+
+    @Test
     public void testMaterialisation2() {
         HostGraph graph = null;
         try {

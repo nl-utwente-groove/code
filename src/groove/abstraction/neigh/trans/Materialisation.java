@@ -127,6 +127,10 @@ public final class Materialisation {
      * shape that is being materialised.
      */
     private THashSet<ShapeEdge> possibleEdges;
+    /**
+     * Auxiliary set of edges that were fixed at the end of second stage.
+     */
+    private THashSet<ShapeEdge> fixedOnFirstStage;
 
     // ------------------------------------------------------------------------
     // Used in second stage.
@@ -159,6 +163,7 @@ public final class Materialisation {
         this.matNodes = new THashSet<ShapeNode>();
         this.matEdges = new THashSet<ShapeEdge>();
         this.possibleEdges = new THashSet<ShapeEdge>();
+        this.fixedOnFirstStage = new THashSet<ShapeEdge>();
     }
 
     /**
@@ -179,6 +184,9 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
+        if (mat.stage == 1) {
+            this.fixedOnFirstStage = mat.fixedOnFirstStage;
+        }
         if (mat.stage == 2) {
             this.splitBundles = mat.splitBundles;
             this.nodeSplitMap = mat.nodeSplitMap;
@@ -530,6 +538,11 @@ public final class Materialisation {
         this.nonSingBundles = nonSingBundles;
     }
 
+    void setFixedOnFirstStage(ShapeEdge edge) {
+        assert this.stage == 1;
+        this.fixedOnFirstStage.add(edge);
+    }
+
     // ------------------------------------------------------------------------
     // Methods for second stage.
     // ------------------------------------------------------------------------
@@ -708,6 +721,11 @@ public final class Materialisation {
         return this.splitBundles;
     }
 
+    boolean isFixedOnFirstStage(ShapeEdge edge) {
+        assert this.stage == 2;
+        return this.fixedOnFirstStage.contains(edge);
+    }
+
     // ------------------------------------------------------------------------
     // Methods for third stage.
     // ------------------------------------------------------------------------
@@ -758,8 +776,6 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        /*Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);*/
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
