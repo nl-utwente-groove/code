@@ -792,6 +792,8 @@ public final class Materialisation {
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
                     ShapePreviewDialog.showShape(mat.shape);
+                    System.out.println(mat.shape);
+                    System.out.println(mat.shape.edgeSet().size());
                 }
             }
         } catch (IOException e) {
