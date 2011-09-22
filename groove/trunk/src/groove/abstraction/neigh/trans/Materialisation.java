@@ -779,7 +779,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "6";
+            String number = "1a";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
@@ -792,8 +792,6 @@ public final class Materialisation {
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
                     ShapePreviewDialog.showShape(mat.shape);
-                    System.out.println(mat.shape);
-                    System.out.println(mat.shape.edgeSet().size());
                 }
             }
         } catch (IOException e) {
