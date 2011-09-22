@@ -1014,8 +1014,8 @@ public final class Shape extends DefaultHostGraph {
             if (edgeS.getRole() != BINARY) {
                 continue;
             }
-            if (!this.isConcreteEdge(edgeS, OUTGOING)
-                || !this.isConcreteEdge(edgeS, INCOMING)) {
+            if (!this.isEdgeConcrete(edgeS, OUTGOING)
+                || !this.isEdgeConcrete(edgeS, INCOMING)) {
                 // We have an edge that is not concrete.
                 // Add it to the list of possible edges.
                 possibleEdges.add(edgeS);
@@ -1136,12 +1136,14 @@ public final class Shape extends DefaultHostGraph {
         this.equivRel.add(newEc);
     }
 
-    /**
-     * Returns true if both outgoing and incoming multiplicities are one and
-     * the edge is not part of and edge bundle.
-     */
-    private boolean isConcreteEdge(ShapeEdge edge, EdgeMultDir direction) {
+    /** EDUARDO: Comment this... */
+    private boolean isEdgeConcrete(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
+        return this.isEdgeSigConcrete(es, direction);
+    }
+
+    /** EDUARDO: Comment this... */
+    public boolean isEdgeSigConcrete(EdgeSignature es, EdgeMultDir direction) {
         return this.getEdgeSigMult(es, direction).isOne()
             && this.isEdgeSigUnique(es, direction);
     }
