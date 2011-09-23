@@ -16,8 +16,6 @@
  */
 package groove.abstraction.neigh.lts;
 
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;
@@ -27,11 +25,12 @@ import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.lts.StateCache;
 import groove.trans.HostElement;
+import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -51,10 +50,8 @@ public class ShapeState extends AbstractGraphState {
 
     private final Shape shape;
     private boolean closed;
-    /** The outgoing transitions from this state. */
-    final Set<GraphTransition> transitions;
-    /** The outgoing transitions from this state. */
-    final Map<RuleEvent,GraphTransition> transitionMap;
+    /** Set of outgoing transitions from this state. */
+    final ArrayList<GraphTransition> transitions;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -72,10 +69,8 @@ public class ShapeState extends AbstractGraphState {
         setCtrlState(ctrlState);
         this.shape = shape;
         this.shape.setName(toString());
-        //this.shape.setFixed();
         this.closed = false;
-        this.transitions = new THashSet<GraphTransition>();
-        this.transitionMap = new THashMap<RuleEvent,GraphTransition>();
+        this.transitions = new ArrayList<GraphTransition>();
     }
 
     // ------------------------------------------------------------------------
@@ -98,40 +93,11 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Iterator<GraphTransition> getTransitionIter() {
-        return this.transitions.iterator();
-    }
-
-    @Override
-    public Set<GraphTransition> getTransitionSet() {
-        return Collections.unmodifiableSet(this.transitions);
-    }
-
-    @Override
-    public Map<RuleEvent,GraphTransition> getTransitionMap() {
-        return Collections.unmodifiableMap(this.transitionMap);
-    }
-
-    @Override
-    public boolean containsTransition(GraphTransition transition) {
-        return this.transitions.contains(transition);
-    }
-
-    @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeState : "Invalid transition type.";
-        this.transitionMap.put(transition.getEvent(), transition);
-        return this.transitions.add(transition);
-    }
-
-    @Override
-    public Collection<ShapeState> getNextStateSet() {
-        THashSet<ShapeState> result = new THashSet<ShapeState>();
-        for (GraphTransition transition : this.transitions) {
-            result.add((ShapeState) transition.target());
-        }
-        return Collections.unmodifiableSet(result);
+        this.transitions.add(transition);
+        return true;
     }
 
     @Override
@@ -144,26 +110,6 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean isClosed() {
         return this.closed;
-    }
-
-    @Override
-    public Iterator<GraphState> getNextStateIter() {
-        return new Iterator<GraphState>() {
-            Iterator<GraphTransition> it = ShapeState.this.getTransitionIter();
-
-            public boolean hasNext() {
-                return this.it.hasNext();
-            }
-
-            public GraphState next() {
-                return this.it.next().target();
-            }
-
-            public void remove() {
-                this.it.remove();
-            }
-
-        };
     }
 
     /** Returns the system record associated with this state. */
@@ -203,6 +149,75 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public void clearCache() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected GraphTransitionStub createTransitionStub(RuleEvent event,
+            HostNode[] addedNodes, GraphState target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected GraphTransitionStub createInTransitionStub(GraphState source,
+            RuleEvent event, HostNode[] addedNodes) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<GraphTransition> getTransitionIter() {
+        /*return this.transitionMap.values().iterator();*/
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<GraphTransition> getTransitionSet() {
+        /*Set<GraphTransition> result = new THashSet<GraphTransition>();
+        result.addAll(this.transitionMap.values());
+        return Collections.unmodifiableSet(result);*/
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<RuleEvent,GraphTransition> getTransitionMap() {
+        /*return Collections.unmodifiableMap(this.transitionMap);*/
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean containsTransition(GraphTransition transition) {
+        /*return this.transitionMap.containsValue(transition);*/
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<ShapeState> getNextStateSet() {
+        /*THashSet<ShapeState> result = new THashSet<ShapeState>();
+        for (GraphTransition transition : this.transitionMap.values()) {
+            result.add((ShapeState) transition.target());
+        }
+        return Collections.unmodifiableSet(result);*/
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<GraphState> getNextStateIter() {
+        /*return new Iterator<GraphState>() {
+            Iterator<GraphTransition> it = ShapeState.this.getTransitionIter();
+
+            public boolean hasNext() {
+                return this.it.hasNext();
+            }
+
+            public GraphState next() {
+                return this.it.next().target();
+            }
+
+            public void remove() {
+                this.it.remove();
+            }
+
+        };*/
         throw new UnsupportedOperationException();
     }
 

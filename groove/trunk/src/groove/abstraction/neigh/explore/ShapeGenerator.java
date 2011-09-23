@@ -81,7 +81,8 @@ public final class ShapeGenerator {
             }
             if (fromMain) {
                 System.out.println("States: " + this.getStateCount());
-                System.out.println("Transitions: " + this.getTransitionCount());
+                System.out.println("Transitions: " + this.getTransitionCount()
+                    + " " + AGTS.getSpuriousTransitionCount() + " spurious");
                 System.out.println("Final states: "
                     + this.getFinalStatesCount());
                 for (GraphState finalState : this.gts.getResultStates()) {
@@ -109,7 +110,7 @@ public final class ShapeGenerator {
 
     /** Basic getter method. */
     public int getTransitionCount() {
-        return this.gts.edgeCount();
+        return this.gts.getTransitionCount();
     }
 
     /** Basic getter method. */

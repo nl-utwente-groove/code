@@ -478,7 +478,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * @return Returns the transitionCount.
      */
-    final int getTransitionCount() {
+    public final int getTransitionCount() {
         return this.transitionCount;
     }
 

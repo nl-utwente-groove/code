@@ -47,6 +47,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
+import groove.util.Pair;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -303,15 +304,12 @@ public final class Materialisation {
      * Applies the rule match defined by this materialisation and returns the
      * transformed shape, which is not yet normalised.
      */
-    public Shape applyMatch(SystemRecord record) {
+    public Pair<Shape,RuleEvent> applyMatch(SystemRecord record) {
         assert this.hasConcreteMatch();
-        RuleEvent event = new BasicEvent(this.matchedRule, this.match, true);
-        if (record != null) {
-            event = record.normaliseEvent(event);
-        }
+        RuleEvent event = new BasicEvent(this.matchedRule, this.match, false);
         RuleApplication app = new RuleApplication(event, this.shape);
         Shape result = (Shape) app.getTarget();
-        return result;
+        return new Pair<Shape,RuleEvent>(result, event);
     }
 
     /**

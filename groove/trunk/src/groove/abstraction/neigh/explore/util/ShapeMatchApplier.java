@@ -29,6 +29,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.trans.RuleEvent;
+import groove.util.Pair;
 
 import java.util.Set;
 
@@ -70,7 +71,7 @@ public final class ShapeMatchApplier extends MatchApplier {
     public GraphTransition apply(GraphState source, MatchResult match) {
         assert source instanceof ShapeState;
         GraphTransition result = null;
-        RuleEvent event = match.getEvent();
+        RuleEvent origEvent = match.getEvent();
         Shape host = (Shape) source.getGraph();
 
         if (USE_GUI && source.getNumber() == 0) {
@@ -78,25 +79,28 @@ public final class ShapeMatchApplier extends MatchApplier {
         }
 
         // Transform the source state.
-        assert PreMatch.isValidPreMatch(host, event);
+        assert PreMatch.isValidPreMatch(host, origEvent);
         // Find all materialisations.
         Set<Materialisation> mats =
-            Materialisation.getMaterialisations(host, event.getMatch(host));
+            Materialisation.getMaterialisations(host, origEvent.getMatch(host));
         // For all materialisations.
         for (Materialisation mat : mats) {
             // Transform and normalise the shape.
-            Shape transformedShape = mat.applyMatch(getGTS().getRecord());
+            Pair<Shape,RuleEvent> pair = mat.applyMatch(getGTS().getRecord());
+            Shape transformedShape = pair.one();
+            RuleEvent realEvent = pair.two();
             Shape target = transformedShape.normalise();
 
             GraphTransition trans;
             ShapeNextState newState =
                 new ShapeNextState(getGTS().nodeCount(), target,
-                    (ShapeState) source, event);
+                    (ShapeState) source, realEvent);
             ShapeState oldState = (ShapeState) getGTS().addState(newState);
             if (oldState != null) {
                 // The state was not added as an equivalent state existed.
                 trans =
-                    new ShapeTransition((ShapeState) source, event, oldState);
+                    new ShapeTransition((ShapeState) source, realEvent,
+                        oldState);
                 this.println("New transition: " + trans);
             } else {
                 // The state was added as a next-state.
