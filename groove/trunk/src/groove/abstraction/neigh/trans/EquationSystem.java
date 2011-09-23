@@ -57,7 +57,7 @@ public final class EquationSystem {
 
     private final Materialisation mat;
     private final int stage;
-    private final Set<Equation> trivialEqs;
+    private final THashSet<Equation> trivialEqs;
     private final THashSet<Equation> lbEqs;
     private final THashSet<Equation> ubEqs;
     private int lbRange[];
@@ -95,7 +95,8 @@ public final class EquationSystem {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Equation System - Stage " + this.stage + "\n");
+        sb.append("Equation System - Stage " + this.stage + " - "
+            + this.varsCount + " variables\n");
         sb.append("Trivial Equations:\n");
         for (Equation eq : this.trivialEqs) {
             sb.append(eq + "\n");
@@ -176,7 +177,6 @@ public final class EquationSystem {
     }
 
     private void storeEquations(Duo<Equation> eqs) {
-        // EDUARDO: handle null cases...
         Equation lbEq = eqs.one();
         Equation ubEq = eqs.two();
         assert lbEq.vars.size() == ubEq.vars.size();
@@ -312,35 +312,6 @@ public final class EquationSystem {
             int ubConst) {
         Equation lbEq = new Equation(BoundType.LB, varsCount, lbConst);
         Equation ubEq = new Equation(BoundType.UB, varsCount, ubConst);
-        return new Duo<Equation>(lbEq, ubEq);
-    }
-
-    private Duo<Equation> createEquations(Equation trivialEq, int varsCount) {
-        Equation lbEq = null;
-        Equation ubEq = null;
-        int dualConstant;
-        switch (trivialEq.type) {
-        case LB:
-            lbEq = new Equation(trivialEq.type, varsCount, trivialEq.constant);
-            if (trivialEq.hasDual()) {
-                dualConstant = trivialEq.dual.constant;
-            } else {
-                dualConstant = OMEGA;
-            }
-            ubEq = new Equation(BoundType.UB, varsCount, dualConstant);
-            break;
-        case UB:
-            ubEq = new Equation(trivialEq.type, varsCount, trivialEq.constant);
-            if (trivialEq.hasDual()) {
-                dualConstant = trivialEq.dual.constant;
-            } else {
-                dualConstant = 0;
-            }
-            lbEq = new Equation(BoundType.LB, varsCount, dualConstant);
-            break;
-        default:
-            assert false;
-        }
         return new Duo<Equation>(lbEq, ubEq);
     }
 
@@ -558,58 +529,74 @@ public final class EquationSystem {
 
         Shape shape = this.mat.getShape();
 
-        // For each trivial equation...
-        Set<Equation> handledEqs = new THashSet<Equation>();
-        for (Equation trivialEq : this.trivialEqs) {
-            if (handledEqs.contains(trivialEq)) {
+        // Optimization: sum of opposite variables.
+        for (EdgeBundle bundle : this.mat.getSplitBundles()) {
+            if (bundle.splitEs.size() > 1
+                || !shape.getNodeMult(bundle.node).isOne()) {
                 continue;
             }
-            int varNum = trivialEq.vars.iterator().next().number;
-            Pair<EdgeSignature,EdgeMultDir> pair = this.varEsMap.get(varNum);
-            EdgeSignature es = pair.one();
-            EdgeMultDir direction = pair.two();
+            EdgeMultDir direction = bundle.direction;
+            EdgeMultDir reverse = direction.reverse();
+            EdgeSignature es = bundle.splitEs.iterator().next();
             Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es, direction);
-            // ... create one or two additional equations.
-            Duo<Equation> newEqs =
-                this.createEquations(trivialEq, esEdges.size());
+            if (!esEdges.containsAll(bundle.edges)) {
+                continue;
+            }
+            Duo<Equation> oppVarsSum =
+                this.createEquations(esEdges.size(),
+                    bundle.origEsMult.getLowerBound(),
+                    bundle.origEsMult.getUpperBound());
             for (ShapeEdge edge : esEdges) {
-                EdgeSignature oppEs =
-                    shape.getEdgeSignature(edge, direction.reverse());
-                Duo<BoundVar> oppVars =
-                    this.getEsMap(direction.reverse()).get(oppEs);
-                addVars(newEqs, oppVars);
+                EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
+                if (shape.isEdgeSigUnique(oppEs, reverse)) {
+                    Duo<BoundVar> oppVars = this.getEsMap(reverse).get(oppEs);
+                    addVars(oppVarsSum, oppVars);
+                }
             }
-            // Handle this equation.
-            handledEqs.add(trivialEq);
-            if (trivialEq.hasDual()) {
-                handledEqs.add(trivialEq.dual);
-            }
+            this.storeEquations(oppVarsSum);
         }
 
-        /*for (int i = 0; i < this.varsCount; i++) {
+        // Optimization: opposite nodes are concrete.
+        for (int i = 0; i < this.varsCount; i++) {
             Pair<EdgeSignature,EdgeMultDir> pair = this.varEsMap.get(i);
             EdgeSignature es = pair.one();
             EdgeMultDir direction = pair.two();
+            EdgeMultDir reverse = direction.reverse();
             Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es, direction);
             if (esEdges.size() == 1) {
                 ShapeEdge edge = esEdges.iterator().next();
                 // Check if the opposite is a concrete node.
                 ShapeNode opp = edge.opposite(direction);
-                if (shape.getNodeMult(opp).isOne()
-                    && !this.hasUbOne(es, direction)) {
-                    Duo<BoundVar> varPair = this.getEsMap(direction).get(es);
-                    BoundVar lbVar = varPair.one();
-                    BoundVar ubVar = varPair.two();
-                    // We have another trivial equation.
-                    Equation oppLbEq = new Equation(BoundType.LB, 1, 1);
-                    Equation oppUbEq = new Equation(BoundType.UB, 1, 1);
-                    oppLbEq.addVar(lbVar);
-                    oppUbEq.addVar(ubVar);
-                    this.storeEquations(oppLbEq, oppUbEq);
+                if (shape.getNodeMult(opp).isOne()) {
+                    // We have trivial equations.
+                    int lb;
+                    EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
+                    BoundVar ubOppVar = this.getEsMap(reverse).get(oppEs).two();
+                    if (!this.occursInTrivialUbEq(ubOppVar)) {
+                        lb = 1;
+                    } else {
+                        lb = 0;
+                    }
+                    Duo<Equation> trivialEqs = this.createEquations(1, lb, 1);
+                    Duo<BoundVar> vars = this.getEsMap(direction).get(es);
+                    addVars(trivialEqs, vars);
+                    this.storeEquations(trivialEqs);
                 }
-
             }
-        }*/
+        }
+    }
+
+    private boolean occursInTrivialUbEq(BoundVar ubVar) {
+        assert this.stage == 2;
+        assert ubVar.type == BoundType.UB;
+        boolean result = false;
+        for (Equation eq : this.trivialEqs) {
+            if (eq.vars.contains(ubVar)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private Map<EdgeSignature,Duo<BoundVar>> getEsMap(EdgeMultDir direction) {
