@@ -97,7 +97,7 @@ public class TestShapeIso {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape2, preMatch);
             for (Materialisation mat : mats) {
-                Shape result = mat.applyMatch(null);
+                Shape result = mat.applyMatch(null).one();
                 // The shape after rule application is different.
                 assertFalse(checker.areIsomorphic(shape2, result));
                 Shape normalisedShape = result.normalise();
