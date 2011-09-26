@@ -254,6 +254,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /** Normalises this (non-fixed) aspect graph. */
     private void doNormalise() {
         assert !isFixed();
+        // identify and remove let- and test-edges
         Set<AspectEdge> letEdges = new HashSet<AspectEdge>();
         Set<AspectEdge> predEdges = new HashSet<AspectEdge>();
         for (AspectEdge edge : edgeSet()) {
@@ -266,6 +267,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         removeEdgeSet(letEdges);
         removeEdgeSet(predEdges);
+        // add assignments for the let-edges
         List<FormatError> errors = new ArrayList<FormatError>();
         for (AspectEdge edge : letEdges) {
             try {
@@ -274,6 +276,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 errors.addAll(e.getErrors());
             }
         }
+        // add conditions for the pred-edges
         for (AspectEdge edge : predEdges) {
             try {
                 AspectNode source = edge.source();
@@ -403,7 +406,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         AspectKind sigKind = AspectKind.toAspectKind(field.getType());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
-            result = addNestedNode(source);
+            result = addNestedNode(owner);
             result.setAspects(createLabel(sigKind));
         } else {
             if (result.getAttrKind() != sigKind) {
