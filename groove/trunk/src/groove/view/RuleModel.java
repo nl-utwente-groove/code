@@ -35,6 +35,7 @@ import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+import groove.gui.dialog.GraphPreviewDialog;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.VarSupport;
@@ -328,6 +329,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
             this.normalSource = getSource().normalise();
+            if (NORMALISE_DEBUG) {
+                GraphPreviewDialog.showGraph(this.normalSource);
+            }
         }
         return this.normalSource;
     }
@@ -345,6 +349,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     static private final RuleFactory ruleFactory = RuleFactory.instance();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
+    /** Debug flag for the attribute syntax normalisation. */
+    static private final boolean NORMALISE_DEBUG = false;
     /** Flag for switching on new type system. */
     static private final boolean NEW_TYPING = false;
 
