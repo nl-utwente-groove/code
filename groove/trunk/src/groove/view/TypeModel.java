@@ -20,6 +20,7 @@ import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.SUBTYPE;
+import groove.algebra.SignatureKind;
 import groove.graph.GraphInfo;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
@@ -176,7 +177,13 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             throw new FormatException("Duplicate types '%s' and '%s'",
                 typeLabel.text(), oldTypeNode.getLabel().text(), modelNode);
         }
-        TypeNode typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
+        TypeNode typeNode;
+        SignatureKind signature = modelNode.getAttrKind().getSignature();
+        if (signature == null) {
+            typeNode = getTypeNode(modelNode.getNumber(), typeLabel);
+        } else {
+            typeNode = TypeNode.getDataType(signature);
+        }
         if (modelNode.getKind() == ABSTRACT) {
             typeNode.setAbstract(true);
         }
