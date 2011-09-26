@@ -49,12 +49,18 @@ public final class ShapeGenerator {
 
     /** Basic constructor. */
     public ShapeGenerator() {
-        Multiplicity.initMultStore();
+        this.reset();
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Resets the generator. */
+    public void reset() {
+        Multiplicity.initMultStore();
+        this.gts = null;
+    }
 
     /** Loads a grammar from a given grammar location and a start graph. */
     private void loadGrammar(String grammarFile, String startGraph) {
@@ -68,7 +74,8 @@ public final class ShapeGenerator {
         }
     }
 
-    private void exploreGrammar(boolean fromMain) {
+    /** Runs the state space exploration. */
+    public void exploreGrammar(boolean fromMain) {
         this.gts = new AGTS(this.grammar);
 
         Exploration exploration =

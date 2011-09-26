@@ -58,10 +58,10 @@ public final class AGTS extends GTS {
 
     /** The given state must be of type ShapeState. */
     @Override
-    public GraphState addState(GraphState newState) {
+    public ShapeState addState(GraphState newState) {
         assert newState instanceof ShapeState : "Type error : " + newState
             + " is not of type ShapeState.";
-        return super.addState(newState);
+        return (ShapeState) super.addState(newState);
     }
 
     /**
