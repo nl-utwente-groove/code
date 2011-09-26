@@ -23,6 +23,7 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -631,6 +632,7 @@ public final class Materialisation {
         Set<ShapeNode> opposites = new THashSet<ShapeNode>();
         for (ShapeEdge edge : allEdges) {
             ShapeEdge origEdge = this.morph.getEdge(edge);
+            assert origEdge != null;
             TypeLabel label = edge.label();
             ShapeNode incident = newNode;
             EdgeMultDir direction;
@@ -776,8 +778,8 @@ public final class Materialisation {
         String DIRECTORY = "junit/samples/abs-test.gps/";
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
-        try {
-            String number = "5";
+        /*try {
+            String number = "7";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
@@ -790,7 +792,44 @@ public final class Materialisation {
                     Materialisation.getMaterialisations(shape, preMatch);
                 for (Materialisation mat : mats) {
                     ShapePreviewDialog.showShape(mat.shape);
-                    System.out.println(mat.shape.edgeSet().size());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }*/
+        try {
+            String number = "7";
+            GrammarModel view = GrammarModel.newInstance(file, false);
+            HostGraph graph =
+                view.getHostModel("materialisation-test-" + number).toResource();
+            Shape shape = Shape.createShape(graph);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-" + number);
+            Proof preMatch =
+                PreMatch.getPreMatches(shape, rule).iterator().next();
+            Materialisation mat =
+                Materialisation.getMaterialisations(shape, preMatch).iterator().next();
+            Shape transShape = mat.applyMatch(null).one();
+            Shape normShape = transShape.normalise();
+            // BEGIN - HACK HACK HACK
+            Multiplicity zeroPlus =
+                Multiplicity.getMultiplicity(0, Multiplicity.OMEGA,
+                    MultKind.NODE_MULT);
+            for (ShapeNode node : normShape.nodeSet()) {
+                if (normShape.getNodeMult(node).isCollector()) {
+                    normShape.setNodeMult(node, zeroPlus);
+                    break;
+                }
+            }
+            // END - HACK HACK HACK
+            Set<Proof> preMatches = PreMatch.getPreMatches(normShape, rule);
+            for (Proof preMatche : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(normShape, preMatche);
+                for (Materialisation mate : mats) {
+                    ShapePreviewDialog.showShape(mate.shape);
                 }
             }
         } catch (IOException e) {

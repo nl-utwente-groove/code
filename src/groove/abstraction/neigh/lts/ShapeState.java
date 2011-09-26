@@ -95,8 +95,16 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
-            || transition instanceof ShapeState : "Invalid transition type.";
+            || transition instanceof ShapeNextState : "Invalid transition type.";
+        int index = this.transitions.size();
+        if (transition instanceof ShapeNextState) {
+            ((ShapeNextState) transition).setIndex(index);
+        }
+        if (transition instanceof ShapeTransition) {
+            ((ShapeTransition) transition).setIndex(index);
+        }
         this.transitions.add(transition);
+
         return true;
     }
 

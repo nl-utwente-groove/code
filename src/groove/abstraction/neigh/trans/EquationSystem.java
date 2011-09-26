@@ -696,13 +696,13 @@ public final class EquationSystem {
             return;
         }
 
+        // Optimization: sum of opposite nodes for concrete nodes.
         // For each concrete node in the shape...
         outerLoop: for (ShapeNode node : shape.nodeSet()) {
             if (!shape.getNodeMult(node).isOne()) {
                 continue outerLoop;
             }
-            Set<EdgeBundle> splitBundles = this.mat.getSplitBundles(node);
-            for (EdgeBundle splitBundle : splitBundles) {
+            for (EdgeBundle splitBundle : this.mat.getSplitBundles(node)) {
                 EdgeMultDir direction = splitBundle.direction;
                 for (EdgeSignature splitEs : splitBundle.splitEs) {
                     // We may have another equation.

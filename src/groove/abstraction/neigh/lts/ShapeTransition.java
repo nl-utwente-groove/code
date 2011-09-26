@@ -26,6 +26,8 @@ import groove.trans.RuleEvent;
  */
 public final class ShapeTransition extends DefaultGraphTransition {
 
+    private int index;
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -33,6 +35,22 @@ public final class ShapeTransition extends DefaultGraphTransition {
     /** Default constructor, delegates to super class. */
     public ShapeTransition(ShapeState source, RuleEvent event, ShapeState target) {
         super(event, source, target);
+    }
+
+    /** Sets the index of the transition in the state transition set. */
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    /** Gets the index of the transition in the state transition set. */
+    public int getIndex() {
+        return this.index;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ShapeTransition
+            && this.index == ((ShapeTransition) obj).index;
     }
 
 }
