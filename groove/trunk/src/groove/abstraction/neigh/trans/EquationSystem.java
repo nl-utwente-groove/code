@@ -268,17 +268,19 @@ public final class EquationSystem {
      */
     private void iterateEquations(Solution sol) {
         // For all equations, try to fix as many variables as possible.
-        for (BoundType type : BoundType.values()) {
-            boolean solutionModified = true;
-            while (!sol.getEqs(type).isEmpty() && solutionModified) {
+        boolean solutionModified = true;
+        boolean removeEq;
+        while (solutionModified) {
+            solutionModified = false;
+            for (BoundType type : BoundType.values()) {
                 THashSet<Equation> copyEqs =
                     (THashSet<Equation>) sol.getEqs(type).clone();
-                solutionModified = false;
                 for (Equation eq : copyEqs) {
-                    solutionModified = eq.computeNewValues(sol);
-                    if (solutionModified) {
+                    removeEq = eq.computeNewValues(sol);
+                    if (removeEq) {
                         sol.getEqs(type).remove(eq);
                     }
+                    solutionModified = solutionModified || removeEq;
                 }
             }
         }
@@ -1042,8 +1044,8 @@ public final class EquationSystem {
             }
 
             ArrayList<BoundVar> openVars = this.getOpenVars(sol);
-            int sum = this.getFixedVarsSum(sol);
-            int newConst = Multiplicity.sub(this.constant, sum);
+            int fixedVarsSum = this.getFixedVarsSum(sol);
+            int newConst = Multiplicity.sub(this.constant, fixedVarsSum);
 
             if (this.type == BoundType.LB) {
                 if (openVars.size() == 1) {
@@ -1051,6 +1053,15 @@ public final class EquationSystem {
                     sol.cutLow(openVars.get(0), newConst);
                     return true;
                 }
+                // Check if the max sum equals the constant.
+                int openVarsMaxSum = this.getOpenVarsMaxSum(sol);
+                if (openVarsMaxSum == this.constant) {
+                    // We can set all the open variables to their maximum.
+                    for (BoundVar openVar : openVars) {
+                        sol.cutLow(openVar, sol.getMaxValue(openVar));
+                    }
+                }
+                return false;
             }
 
             if (this.type == BoundType.UB) {
@@ -1111,6 +1122,16 @@ public final class EquationSystem {
             for (BoundVar var : this.vars) {
                 if (sol.isSingleton(var)) {
                     result = Multiplicity.add(result, sol.getValue(var));
+                }
+            }
+            return result;
+        }
+
+        int getOpenVarsMaxSum(Solution sol) {
+            int result = 0;
+            for (BoundVar var : this.vars) {
+                if (!sol.isSingleton(var)) {
+                    result += sol.getMaxValue(var);
                 }
             }
             return result;
@@ -1372,6 +1393,10 @@ public final class EquationSystem {
             return result;
         }
 
+        int getMaxValue(BoundVar var) {
+            return this.getValueRange(var).getMax();
+        }
+
         void cutLow(BoundVar var, int limit) {
             this.getValueRange(var).cutLow(limit);
         }
@@ -1581,17 +1606,26 @@ public final class EquationSystem {
     private static class SolutionSet extends THashSet<Solution> {
         @Override
         public boolean add(Solution newSol) {
-            boolean store = true;
+            boolean storeNew = true;
+            THashSet<Solution> toRemove = null;
             for (Solution oldSol : this) {
                 if (oldSol.subsumes(newSol)) {
-                    store = false;
+                    storeNew = false;
                     break;
+                } else if (newSol.subsumes(oldSol)) {
+                    if (toRemove == null) {
+                        toRemove = new THashSet<Solution>(this.size());
+                    }
+                    toRemove.add(oldSol);
                 }
             }
-            if (store) {
+            if (toRemove != null) {
+                this.removeAll(toRemove);
+            }
+            if (storeNew) {
                 super.add(newSol);
             }
-            return store;
+            return storeNew;
         }
     }
 

@@ -34,9 +34,9 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
+        Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Parameters.setAbsRadius(1);
-        Parameters.setNodeMultBound(1);
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
@@ -44,14 +44,14 @@ public class TestShapeGenerator {
         assertEquals(20, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
-        generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.reset();
+        generator.exploreGrammar(false);
         assertEquals(16, generator.getStateCount());
         assertEquals(32, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(3);
-        generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.reset();
+        generator.exploreGrammar(false);
         assertEquals(22, generator.getStateCount());
         assertEquals(44, generator.getTransitionCount());
     }

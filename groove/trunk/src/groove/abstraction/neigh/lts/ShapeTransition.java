@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.lts;
 
 import groove.lts.DefaultGraphTransition;
-import groove.lts.GraphTransition;
 import groove.trans.RuleEvent;
 
 /**
@@ -36,28 +35,4 @@ public final class ShapeTransition extends DefaultGraphTransition {
         super(event, source, target);
     }
 
-    /**
-     * This implementation combines the hash codes of the rule and the anchor
-     * images.
-     */
-    @Override
-    protected int computeHashCode() {
-        // EDUARDO: Check if needed...
-        return System.identityHashCode(this.source())
-            + System.identityHashCode(this.target())
-            + System.identityHashCode(this.getEvent());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        // EDUARDO: Check if needed...
-        if (!(obj instanceof GraphTransition)) {
-            return false;
-        } else {
-            GraphTransition other = (GraphTransition) obj;
-            return this.source().equals(other.source())
-                && this.target().equals(other.target())
-                && this.getEvent().equals(other.getEvent());
-        }
-    }
 }

@@ -68,11 +68,13 @@ public final class ShapeMatchApplier extends MatchApplier {
     }
 
     @Override
-    public GraphTransition apply(GraphState source, MatchResult match) {
-        assert source instanceof ShapeState;
+    public GraphTransition apply(GraphState sourceGS, MatchResult match) {
+        assert sourceGS instanceof ShapeState;
+        ShapeState source = (ShapeState) sourceGS;
         GraphTransition result = null;
         RuleEvent origEvent = match.getEvent();
-        Shape host = (Shape) source.getGraph();
+        Shape host = source.getGraph();
+        AGTS agts = this.getGTS();
 
         if (USE_GUI && source.getNumber() == 0) {
             ShapePreviewDialog.showShape(host);
@@ -86,21 +88,18 @@ public final class ShapeMatchApplier extends MatchApplier {
         // For all materialisations.
         for (Materialisation mat : mats) {
             // Transform and normalise the shape.
-            Pair<Shape,RuleEvent> pair = mat.applyMatch(getGTS().getRecord());
+            Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
             Shape transformedShape = pair.one();
             RuleEvent realEvent = pair.two();
             Shape target = transformedShape.normalise();
 
             GraphTransition trans;
             ShapeNextState newState =
-                new ShapeNextState(getGTS().nodeCount(), target,
-                    (ShapeState) source, realEvent);
-            ShapeState oldState = (ShapeState) getGTS().addState(newState);
+                new ShapeNextState(agts.nodeCount(), target, source, realEvent);
+            ShapeState oldState = agts.addState(newState);
             if (oldState != null) {
                 // The state was not added as an equivalent state existed.
-                trans =
-                    new ShapeTransition((ShapeState) source, realEvent,
-                        oldState);
+                trans = new ShapeTransition(source, realEvent, oldState);
                 this.println("New transition: " + trans);
             } else {
                 // The state was added as a next-state.
@@ -111,7 +110,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                     ShapePreviewDialog.showShape(newState.getGraph());
                 }
             }
-            getGTS().addTransition(trans);
+            agts.addTransition(trans);
             result = trans;
         }
 

@@ -198,8 +198,8 @@ public class MatchApplier implements RuleEventApplier {
         return sourceEvent != matchEvent;
     }
 
-    private HostNode[] computeBoundNodes(GraphState source,
-            RuleEvent event, CtrlTransition ctrlTrans, RuleEffect record) {
+    private HostNode[] computeBoundNodes(GraphState source, RuleEvent event,
+            CtrlTransition ctrlTrans, RuleEffect record) {
         HostNode[] result;
         int[] varBinding = ctrlTrans.getTargetVarBinding();
         int valueCount = varBinding.length;
