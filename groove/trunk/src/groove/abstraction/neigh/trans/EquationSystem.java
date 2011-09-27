@@ -46,7 +46,7 @@ import java.util.Set;
  */
 public final class EquationSystem {
 
-    private static final boolean WARN_BLOWUP = false;
+    private static final boolean WARN_BLOWUP = true;
     private static final int MAX_SOLUTION_COUNT = 4;
 
     /** EDUARDO: Comment this... */
@@ -687,9 +687,36 @@ public final class EquationSystem {
         }
 
         assert !this.hasTrivialEqs();
+
+        // Optimization: sum of concrete opposite nodes and edges.
+        for (ShapeNode splitNode : this.nodeVarsMap.keySet()) {
+            bundleLoop: for (EdgeBundle splitBundle : this.mat.getSplitBundles(splitNode)) {
+                EdgeMultDir direction = splitBundle.direction;
+                int concreteEdgeCount = 0;
+                edgeLoop: for (ShapeEdge edge : splitBundle.edges) {
+                    if (!shape.containsEdge(edge)) {
+                        continue edgeLoop;
+                    }
+                    ShapeNode opp = edge.opposite(direction);
+                    if (shape.getNodeMult(opp).isOne()
+                        && shape.isEdgeConcrete(edge)) {
+                        concreteEdgeCount++;
+                    }
+                }
+                if (concreteEdgeCount == 1) {
+                    Duo<Equation> trivialEqs = this.createEquations(1, 1, 1);
+                    Duo<BoundVar> vars = this.nodeVarsMap.get(splitNode);
+                    addVars(trivialEqs, vars);
+                    this.storeEquations(trivialEqs);
+                    // We're done with this node.
+                    break bundleLoop;
+                }
+            }
+        }
+
         if (!this.hasNonTrivialEqs()) {
-            // There are no equations. There's nothing left to do. All
-            // variables will receive the most general multiplicity value.
+            // There are no non-trivial equations. There's nothing left to do.
+            // All variables will receive the most general multiplicity value.
             // The extra steps below are optimizations that only make sense
             // when we already have equations. Otherwise, the optimizations
             // only cause unnecessary branching in the equation system.

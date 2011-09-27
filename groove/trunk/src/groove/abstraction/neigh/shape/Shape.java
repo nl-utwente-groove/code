@@ -1137,6 +1137,12 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** EDUARDO: Comment this... */
+    public boolean isEdgeConcrete(ShapeEdge edge) {
+        return this.isEdgeConcrete(edge, OUTGOING)
+            && this.isEdgeConcrete(edge, INCOMING);
+    }
+
+    /** EDUARDO: Comment this... */
     private boolean isEdgeConcrete(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
         return this.isEdgeSigConcrete(es, direction);
