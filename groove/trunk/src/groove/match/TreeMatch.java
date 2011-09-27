@@ -43,27 +43,36 @@ import java.util.Map;
  */
 public class TreeMatch implements Fixable {
     /**
-     * Constructs an initially empty match for a given condition, based on
-     * an optional pattern map for that condition.
+     * Constructs an match for a given condition. If the condition has a 
+     * pattern, a pattern map is also given. The submatches are initially empty.
      */
     public TreeMatch(Condition condition, RuleToHostMap patternMap) {
-        this(condition.getOp(), condition, patternMap);
+        assert patternMap != null;
+        this.condition = condition;
+        this.op = condition.getOp();
+        this.subMatches = createSubMatches(condition.getOp());
+        this.patternMap = patternMap;
+        this.collector = new ProofWrapperCollector(null);
+        assert condition.hasPattern() == (patternMap != null);
     }
 
     /**
-     * Constructs an initially empty match for a given condition, based on
-     * a given top-level operator and an optional pattern map for that condition.
+     * Constructs an initially empty match for a given non-pattern
+     * operator. The operator can be virtual, e.g. a conjunction or
+     * disjunction for a given condition.
+     * @param op the top-level operator of the new match
+     * @param condition the condition of the match; either {@link #op} is
+     * this condition's operator, or it is a virtual operator just above it,
+     * viz. a disjunction if the condition is existential or a conjunction
+     * if the condition is universal
      */
-    public TreeMatch(Condition.Op op, Condition condition,
-            RuleToHostMap patternMap) {
+    public TreeMatch(Condition.Op op, Condition condition) {
+        assert !op.hasPattern();
         this.condition = condition;
         this.op = op;
         this.subMatches = createSubMatches(op);
-        this.patternMap = patternMap;
-        this.collector =
-            op.hasPattern() ? new ProofWrapperCollector(null)
-                    : Visitor.<Proof,List<Proof>>newCollector();
-        assert op.hasPattern() == (patternMap != null && condition.getOp() == op);
+        this.patternMap = null;
+        this.collector = Visitor.<Proof,List<Proof>>newCollector();
     }
 
     /** Returns the condition of this match. */
@@ -116,24 +125,32 @@ public class TreeMatch implements Fixable {
     }
 
     /** 
-     * Traverses the rule matches based on this tree match.
-     * Each visited rule match consists of the pattern map of this
+     * Traverses the proofs based on this tree match.
+     * Each visited proof consists of the pattern map of this
      * tree match, together with a choice among the submatches of
      * all universal sub-conditions.
      * This operation is only allowed if the match condition is a rule.
-     * @throws UnsupportedOperationException if the condition of this
-     * tree match is not of the correct type.
      */
     public <R> R traverseProofs(Visitor<Proof,R> visitor) {
         setFixed();
+        assert getOp().hasPattern();
+        traverseProofs(null, visitor);
+        return visitor.getResult();
+    }
+
+    private void traverseProofs(TreeMatch parent, Visitor<Proof,?> visitor) {
         switch (this.op) {
         case FORALL:
+            traverseOrProofs(this, visitor);
+            break;
         case OR:
-            traverseOrProofs(visitor);
+            traverseOrProofs(parent, visitor);
             break;
         case EXISTS:
+            traverseAndProofs(this, visitor);
+            break;
         case AND:
-            traverseAndProofs(visitor);
+            traverseAndProofs(parent, visitor);
             break;
         case TRUE:
             visitor.visit(Proof.TrueProof);
@@ -142,24 +159,22 @@ public class TreeMatch implements Fixable {
             break;
         default:
             assert false;
-            return null;
         }
-        return visitor.getResult();
     }
 
     /** Traverses the matches for a conjunctive tree match. */
-    private void traverseAndProofs(Visitor<Proof,?> visitor) {
+    private void traverseAndProofs(TreeMatch parent, Visitor<Proof,?> visitor) {
         int subMatchCount = getSubMatches().size();
         if (subMatchCount == 0) {
             assert this.op == Op.EXISTS;
-            visitor.visit(createProof());
+            visitor.visit(parent.createProof());
         } else {
             @SuppressWarnings("unchecked")
             List<Proof>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
-            int resultSize = computeProofMatrix(matrix, rowSize);
+            int resultSize = computeProofMatrix(parent, matrix, rowSize);
             if (resultSize > 0) {
-                traverseMatrix(matrix, rowSize, visitor);
+                traverseMatrix(parent, matrix, rowSize, visitor);
             }
         }
     }
@@ -169,7 +184,7 @@ public class TreeMatch implements Fixable {
      * if the operator of this tree match is disjunctive.
      */
     @SuppressWarnings("unchecked")
-    private void traverseOrProofs(Visitor<Proof,?> visitor) {
+    private void traverseOrProofs(TreeMatch parent, Visitor<Proof,?> visitor) {
         Visitor<Proof,?> subVisitor;
         if (getOp().hasPattern()) {
             // this tree match is for an existential or universal condition
@@ -178,7 +193,7 @@ public class TreeMatch implements Fixable {
             subVisitor = visitor;
         }
         for (TreeMatch subMatch : this.subMatches) {
-            subMatch.traverseProofs(subVisitor);
+            subMatch.traverseProofs(this, subVisitor);
             if (!subVisitor.isContinue()) {
                 break;
             }
@@ -196,13 +211,19 @@ public class TreeMatch implements Fixable {
      */
     public List<Proof> toProofSet() {
         setFixed();
+        return toProofSet(null);
+    }
+
+    private List<Proof> toProofSet(TreeMatch parent) {
         switch (this.op) {
         case FORALL:
+            return toOrProofSet(this);
         case OR:
-            return toOrProofSet();
+            return toOrProofSet(parent);
         case EXISTS:
+            return toAndProofSet(this);
         case AND:
-            return toAndProofSet();
+            return toAndProofSet(parent);
         case TRUE:
             return Collections.singletonList(Proof.TrueProof);
         case FALSE:
@@ -217,23 +238,23 @@ public class TreeMatch implements Fixable {
      * Constructs the list of proofs from this tree match.
      * if the operator of this tree match is conjunctive.
      */
-    private List<Proof> toAndProofSet() {
+    private List<Proof> toAndProofSet(TreeMatch parent) {
         List<Proof> result;
         int subMatchCount = getSubMatches().size();
         if (subMatchCount == 0) {
             result = new ArrayList<Proof>(1);
-            result.add(createProof());
+            result.add(parent.createProof());
         } else {
             @SuppressWarnings("unchecked")
             List<Proof>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
-            int resultSize = computeProofMatrix(matrix, rowSize);
+            int resultSize = computeProofMatrix(parent, matrix, rowSize);
             if (resultSize == 0) {
                 result = Collections.emptyList();
             } else {
                 result = new ArrayList<Proof>(resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
-                traverseMatrix(matrix, rowSize, collector);
+                traverseMatrix(parent, matrix, rowSize, collector);
                 collector.dispose();
             }
         }
@@ -241,14 +262,14 @@ public class TreeMatch implements Fixable {
     }
 
     /**
-     * Constructs the proofs constructed from this tree match,
+     * Collects the proofs constructed from this tree match,
      * if the operator of this tree match is disjunctive.
      */
-    private List<Proof> toOrProofSet() {
+    private List<Proof> toOrProofSet(TreeMatch parent) {
         List<Proof> result = new ArrayList<Proof>();
         Visitor<Proof,?> collector = this.collector.newInstance(result);
         for (TreeMatch subMatch : this.subMatches) {
-            subMatch.traverseProofs(collector);
+            subMatch.traverseProofs(parent, collector);
         }
         collector.dispose();
         return result;
@@ -258,12 +279,12 @@ public class TreeMatch implements Fixable {
      * Computes and traverses all rule matches
      * consisting of one sub-match from each row of a given matrix.
      */
-    private void traverseMatrix(List<Proof>[] matrix, int[] rowSize,
-            Visitor<Proof,?> visitor) {
+    private void traverseMatrix(TreeMatch parent, List<Proof>[] matrix,
+            int[] rowSize, Visitor<Proof,?> visitor) {
         int rowCount = rowSize.length;
         int index[] = new int[rowCount];
         do {
-            Proof proof = createProof();
+            Proof proof = parent.createProof();
             Collection<Proof> subMatches = proof.getSubProofs();
             for (int row = 0; row < rowCount; row++) {
                 Proof subProof = matrix[row].get(index[row]);
@@ -281,7 +302,7 @@ public class TreeMatch implements Fixable {
     }
 
     /**
-     * Computes the matrix of which the rows are the {@link #toProofSet()}
+     * Computes the matrix of which the rows are the {@link #toProofSet(TreeMatch)}
      * arrays of the submatches.
      * The construction stops prematurely if an empty row is found.
      * @param matrix the matrix of submatches. Should be initialised to 
@@ -290,11 +311,12 @@ public class TreeMatch implements Fixable {
      * be initialised to an array of the correct length (the number of submatches)
      * @return the product of the row sizes
      */
-    private int computeProofMatrix(List<Proof>[] matrix, int[] rowSize) {
+    private int computeProofMatrix(TreeMatch parent, List<Proof>[] matrix,
+            int[] rowSize) {
         int resultSize = 1;
         int i = 0;
         for (TreeMatch subMatch : getSubMatches()) {
-            List<Proof> row = subMatch.toProofSet();
+            List<Proof> row = subMatch.toProofSet(parent);
             matrix[i] = row;
             resultSize *= row.size();
             if (resultSize == 0) {
@@ -306,7 +328,7 @@ public class TreeMatch implements Fixable {
         return resultSize;
     }
 
-    /** Callback factory method for proofs base don this tree match. */
+    /** Callback factory method for proofs based on this tree match. */
     private Proof createProof() {
         return new Proof(getCondition(), getPatternMap());
     }

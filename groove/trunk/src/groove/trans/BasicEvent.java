@@ -53,6 +53,8 @@ final public class BasicEvent extends
      */
     public BasicEvent(Rule rule, RuleToHostMap anchorMap, boolean reuse) {
         super(reference, rule, reuse);
+        assert anchorMap != null : String.format(
+            "Can't produce event for %s with null anchor map", rule.getName());
         rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();

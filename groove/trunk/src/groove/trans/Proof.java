@@ -163,12 +163,12 @@ public class Proof {
      * {@link SystemRecord#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private RuleEvent createCompositeEvent(SystemRecord nodeFactory,
+    private RuleEvent createCompositeEvent(SystemRecord record,
             Collection<BasicEvent> eventSet) {
-        if (nodeFactory == null) {
+        if (record == null) {
             return new CompositeEvent(getRule(), eventSet, false);
         } else {
-            return nodeFactory.createCompositeEvent(getRule(), eventSet);
+            return record.createCompositeEvent(getRule(), eventSet);
         }
     }
 
@@ -185,7 +185,11 @@ public class Proof {
         if (!other.getCondition().equals(getCondition())) {
             return false;
         }
-        if (!other.getPatternMap().equals(getPatternMap())) {
+        if (getPatternMap() == null) {
+            if (other.getPatternMap() != null) {
+                return false;
+            }
+        } else if (!getPatternMap().equals(other.getPatternMap())) {
             return false;
         }
         if (getSubProofs() == null) {
@@ -219,10 +223,15 @@ public class Proof {
 
     @Override
     public String toString() {
-        StringBuilder result =
-            new StringBuilder(String.format("Match of %s: Nodes %s, edges %s",
+        StringBuilder result = new StringBuilder();
+        if (getPatternMap() == null) {
+            result.append(String.format("Combined match of %s",
+                getCondition().getName()));
+        } else {
+            result.append(String.format("Match of %s: Nodes %s, edges %s",
                 getCondition().getName(), getPatternMap().nodeMap(),
                 getPatternMap().edgeMap()));
+        }
         if (!getSubProofs().isEmpty()) {
             result.append(String.format("%n--- Submatches of %s ---%n",
                 getCondition().getName()));

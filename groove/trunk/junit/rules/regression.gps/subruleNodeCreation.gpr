@@ -4,11 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>120 71 28 31</string>
-            </attr>
-        </node>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>237 72 27 31</string>
@@ -19,14 +17,19 @@
                 <string>113 148 42 36</string>
             </attr>
         </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>120 71 28 31</string>
+            </attr>
+        </node>
         <edge to="n0" from="n1">
             <attr name="label">
                 <string>a</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>forallx:</string>
+                <string>A</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -39,14 +42,14 @@
                 <string>B</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>A</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n1">
             <attr name="label">
                 <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>forallx:</string>
             </attr>
         </edge>
     </graph>
