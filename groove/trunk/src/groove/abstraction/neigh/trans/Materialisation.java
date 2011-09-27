@@ -586,8 +586,9 @@ public final class Materialisation {
         Set<ShapeEdge> fixedEdges = new THashSet<ShapeEdge>();
         Set<ShapeEdge> flexEdges = new THashSet<ShapeEdge>();
         for (ShapeNode nodeS : nodeToBundles.keySet()) {
+            fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, OUTGOING));
+            fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, INCOMING));
             for (EdgeBundle bundle : nodeToBundles.get(nodeS)) {
-                fixedEdges.addAll(bundle.edgesInShape);
                 flexEdges.addAll(bundle.positivePossibleEdges);
             }
             Iterator<Set<ShapeEdge>> iter =

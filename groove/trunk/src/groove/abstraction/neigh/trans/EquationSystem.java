@@ -30,7 +30,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -46,7 +45,7 @@ import java.util.Set;
  */
 public final class EquationSystem {
 
-    private static final boolean WARN_BLOWUP = true;
+    private static final boolean WARN_BLOWUP = false;
     private static final int MAX_SOLUTION_COUNT = 4;
 
     /** EDUARDO: Comment this... */
@@ -802,7 +801,6 @@ public final class EquationSystem {
         final TypeLabel label;
         final EdgeMultDir direction;
         final Set<ShapeEdge> edges;
-        Set<ShapeEdge> edgesInShape;
         Set<ShapeEdge> positivePossibleEdges;
         Set<EdgeSignature> splitEs;
 
@@ -845,7 +843,6 @@ public final class EquationSystem {
 
         boolean isNonSingular(EquationSystem eqSys, Shape shape, MultKind kind,
                 Solution sol) {
-            this.edgesInShape = new THashSet<ShapeEdge>();
             this.positivePossibleEdges = new THashSet<ShapeEdge>();
             EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
             if (shape.getNodeMult(this.node).isCollector()) {
@@ -854,20 +851,9 @@ public final class EquationSystem {
                     boolean positive = !sol.getMultValue(varNum, kind).isZero();
                     if (positive) {
                         er.add(shape.getEquivClassOf(edge.opposite(this.direction)));
-                        if (shape.containsEdge(edge)) {
-                            this.edgesInShape.add(edge);
-                        } else {
+                        if (!shape.containsEdge(edge)) {
                             this.positivePossibleEdges.add(edge);
                         }
-                    }
-                }
-            }
-            if (er.size() > 1 && this.splitEs == null) {
-                this.splitEs = new THashSet<EdgeSignature>();
-                // Now add all other edges adjacent to this bundle node...
-                for (ShapeEdge edge : shape.edgeSet(this.node)) {
-                    if (edge.getRole() == EdgeRole.BINARY) {
-                        this.edgesInShape.add(edge);
                     }
                 }
             }

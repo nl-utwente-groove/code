@@ -100,8 +100,9 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertEquals(37, generator.getStateCount());
-        assertEquals(98, generator.getTransitionCount());
+        // EDUARDO: Check this...
+        assertEquals(36, generator.getStateCount());
+        assertEquals(165, generator.getTransitionCount());
     }
 
 }
