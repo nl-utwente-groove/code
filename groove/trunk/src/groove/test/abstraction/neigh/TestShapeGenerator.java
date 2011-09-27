@@ -85,8 +85,7 @@ public class TestShapeGenerator {
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
         assertEquals(54, generator.getStateCount());
-        // EDUARDO: Check this...
-        // assertEquals(116, generator.getTransitionCount());
+        assertEquals(144, generator.getTransitionCount());
     }
 
     @Test

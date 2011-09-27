@@ -82,7 +82,7 @@ public final class Parameters {
 
     /** Basic setter method. The radius given must be positive. */
     public static void setAbsRadius(int absRadius) {
-        assert absRadius > 0 : "Invalid abstraction radius.";
+        assert absRadius == 1 : "Invalid abstraction radius. Current implementation only allows radius 1.";
         Parameters.absRadius = absRadius;
     }
 

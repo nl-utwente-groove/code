@@ -1163,20 +1163,66 @@ public final class Shape extends DefaultHostGraph {
             && this.getNodeMult(edge.target()).isOne();
     }
 
+    private boolean isEdgeUnique(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature es = this.getEdgeSignature(edge, direction);
+        return this.isEdgeSigUnique(es, direction);
+    }
+
+    private boolean isEdgeUnique(ShapeEdge edge) {
+        return this.isEdgeUnique(edge, OUTGOING)
+            && this.isEdgeUnique(edge, INCOMING);
+    }
+
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
-        Shape normalisedShape = new Shape(this.getFactory());
+        Shape newShape = new Shape(this.getFactory());
         HostToShapeMap map = new HostToShapeMap(this.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on this shape.
         ShapeNeighEquiv sne = new ShapeNeighEquiv(this, radius);
         // Now build the shape.
-        normalisedShape.createShapeNodes(sne, map, this);
-        normalisedShape.createEquivRelation(sne.getPrevEquivRelation(), map);
-        normalisedShape.createShapeEdges(sne.getEdgesEquivRel(), map);
-        normalisedShape.createEdgeMultMaps(sne, map, this);
-        assert normalisedShape.isInvariantOK();
-        return normalisedShape;
+        newShape.createShapeNodes(sne, map, this);
+        newShape.createEquivRelation(sne.getPrevEquivRelation(), map);
+        newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
+        newShape.createEdgeMultMaps(sne, map, this);
+
+        // Optimization: making node and edges multiplicities more precise, when possible.
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        for (ShapeNode node : newShape.nodeSet()) {
+            Multiplicity nodeMult = newShape.getNodeMult(node);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                EdgeMultDir reverse = direction.reverse();
+                for (ShapeEdge edge : newShape.binaryEdgeSet(node, direction)) {
+                    ShapeNode opp = edge.opposite(direction);
+                    Multiplicity oppMult = newShape.getNodeMult(opp);
+                    if (nodeMult.isCollector() && oppMult.isOne()
+                        && newShape.isEdgeConcrete(edge)) {
+                        // The node can only be concrete.
+                        newShape.setNodeMult(node, one);
+                    } else if (nodeMult.isOne() && oppMult.isCollector()
+                        && newShape.isEdgeUnique(edge)) {
+                        EdgeSignature oppEs =
+                            newShape.getEdgeSignature(edge, reverse);
+                        if (newShape.getEdgeSigMult(oppEs, reverse).isOne()) {
+                            // We can set the edge multiplicity to the opposite
+                            // node multiplicity.
+                            EdgeSignature es =
+                                newShape.getEdgeSignature(edge, direction);
+                            Multiplicity oldEsMult =
+                                newShape.getEdgeSigMult(es, direction);
+                            Multiplicity newEsMult = oppMult.toEdgeKind();
+                            if (oldEsMult.subsumes(newEsMult)) {
+                                newShape.setEdgeSigMult(es, direction,
+                                    newEsMult);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        assert newShape.isInvariantOK();
+        return newShape;
     }
 
     /**
