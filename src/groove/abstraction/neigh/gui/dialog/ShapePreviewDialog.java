@@ -79,8 +79,8 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
             LayoutKind.getLayouterItemProto(LayoutKind.FAST_ORGANIC);
         JGraphFastOrganicLayout layout =
             (JGraphFastOrganicLayout) layouter.getLayout();
-        layout.setInitialTemp(500.0);
-        layout.setForceConstant(200.0);
+        layout.setInitialTemp(200.0);
+        layout.setForceConstant(500.0);
         jGraph.setLayouter(layouter);
         jGraph.doGraphLayout();
         return jGraph;
