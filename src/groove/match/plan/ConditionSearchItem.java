@@ -338,7 +338,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 throw new IllegalStateException();
             }
             TreeMatch result =
-                new TreeMatch(op, ConditionSearchItem.this.condition, null);
+                new TreeMatch(op, ConditionSearchItem.this.condition);
             if (!noMatches) {
                 result.addSubMatches(matches);
             }

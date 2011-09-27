@@ -117,8 +117,7 @@ public class ReteSearchStrategy implements SearchStrategy {
                     assert false;
                     op = null;
                 }
-                final TreeMatch subResult =
-                    new TreeMatch(op, subCondition, null);
+                final TreeMatch subResult = new TreeMatch(op, subCondition);
                 // add matches for the subconditions
                 Collector<TreeMatch,?> collector =
                     Visitor.newCollector(subResult.getSubMatches());

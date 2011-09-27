@@ -67,7 +67,7 @@ import java.util.TreeSet;
  * <ul>
  * <li> A <i>context map</i>: Mapping from the root to a host graph
  * <li> A <i>seed map</i>: Mapping from the seed to a host graph. This is
- * derived from a context map using the condition's root map
+ * essentially a context map restricted to the condition's root
  * <li> A <i>pattern map</i>: Mapping from the pattern to the host graph. This
  * is determined by searching for an extension to a seed map.
  * </ul>
@@ -716,7 +716,7 @@ public class Condition implements Fixable {
 
         /** 
          * Indicates if this is a conjunctive operator,
-         * meaning that all operands (i.e., subconditions) should all be satisfied.
+         * meaning that its operands (i.e., subconditions) should all be satisfied.
          */
         public boolean isConjunctive() {
             return this == EXISTS || this == AND;
