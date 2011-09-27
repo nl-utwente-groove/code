@@ -40,20 +40,20 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, false);
-        assertEquals(10, generator.getStateCount());
-        assertEquals(20, generator.getTransitionCount());
+        assertEquals(9, generator.getStateCount());
+        assertEquals(17, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
         generator.reset();
         generator.exploreGrammar(false);
-        assertEquals(16, generator.getStateCount());
-        assertEquals(32, generator.getTransitionCount());
+        assertEquals(15, generator.getStateCount());
+        assertEquals(29, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(3);
         generator.reset();
         generator.exploreGrammar(false);
-        assertEquals(22, generator.getStateCount());
-        assertEquals(44, generator.getTransitionCount());
+        assertEquals(21, generator.getStateCount());
+        assertEquals(41, generator.getTransitionCount());
     }
 
     @Test
