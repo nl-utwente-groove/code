@@ -232,7 +232,8 @@ public class RuleApplication implements DeltaApplier {
             // either merge or erase the LHS nodes
             if (record.hasMergeMap()) {
                 mergeNodes(record, target);
-            } else {
+            }
+            if (record.hasErasedNodes()) {
                 eraseNodes(record, target);
             }
             createNodes(record, target);
