@@ -208,7 +208,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * at least one non-filtered list label, and all end nodes are visible.
      */
     @Override
-    final public boolean isVisible() {
+    public boolean isVisible() {
         if (getSourceVertex() == null || !getSourceVertex().isVisible()) {
             return false;
         }

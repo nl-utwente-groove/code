@@ -26,7 +26,7 @@ public class ImportAction extends SimulatorAction {
         Importer importer = Importer.getInstance();
         int approve = importer.showDialog(getFrame(), true);
         // now load, if so required
-        if (approve == JFileChooser.APPROVE_OPTION && confirmStopSimulation()) {
+        if (approve == JFileChooser.APPROVE_OPTION) {
             try {
                 AspectGraph graph = null;
                 Duo<String> text = null;

@@ -23,7 +23,7 @@ public class RenameAction extends SimulatorAction {
         String oldName = getSimulatorModel().getSelected(resource);
         boolean resourceEnabled =
             getGrammarModel().getResource(resource, oldName).isEnabled();
-        boolean proceed = (!resourceEnabled || confirmStopSimulation());
+        boolean proceed = (!resourceEnabled);
         if (proceed && getDisplay().cancelEditResource(oldName, true)) {
             String newName = askNewName(oldName, false);
             if (newName != null && !newName.equals(oldName)) {

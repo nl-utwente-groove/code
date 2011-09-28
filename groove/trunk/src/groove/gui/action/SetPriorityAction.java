@@ -38,7 +38,7 @@ public class SetPriorityAction extends SimulatorAction {
             for (String name : getSimulatorModel().getSelectSet(RULE)) {
                 priorityMap.put(name, dialog.getResult());
             }
-            if (!priorityMap.isEmpty() && confirmStopSimulation()) {
+            if (!priorityMap.isEmpty()) {
                 try {
                     getSimulatorModel().doSetPriority(priorityMap);
                 } catch (IOException exc) {

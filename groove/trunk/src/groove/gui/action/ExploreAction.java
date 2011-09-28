@@ -237,6 +237,9 @@ public class ExploreAction extends SimulatorAction {
                     @Override
                     public void run() {
                         getSimulatorModel().setState(state);
+                        //Relayouting after each rule application in the animation mode
+                        //                        getSimulator().getDisplaysPanel().getLtsDisplay().getStateTab().getJGraph().getLayouter().start(
+                        //                            true);
                     }
                 });
                 Thread.sleep(getPause());

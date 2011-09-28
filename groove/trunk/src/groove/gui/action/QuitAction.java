@@ -1,6 +1,5 @@
 package groove.gui.action;
 
-import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.gui.Options;
 import groove.gui.Simulator;
 
@@ -23,20 +22,14 @@ public class QuitAction extends SimulatorAction {
         if (quit) {
             groove.gui.UserSettings.synchSettings(getFrame());
             // Saves the current user settings.
-            if (getSimulatorModel().getGts() != null) {
-                quit = confirmBehaviourOption(STOP_SIMULATION_OPTION);
-            } else {
-                quit = true;
+            getFrame().dispose();
+            // try to persist the user preferences
+            try {
+                Preferences.userRoot().flush();
+            } catch (BackingStoreException e) {
+                // do nothing if the backing store is inaccessible
             }
-            if (quit) {
-                getFrame().dispose();
-                // try to persist the user preferences
-                try {
-                    Preferences.userRoot().flush();
-                } catch (BackingStoreException e) {
-                    // do nothing if the backing store is inaccessible
-                }
-            }
+
         }
     }
 }

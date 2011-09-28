@@ -86,8 +86,6 @@ public class Options implements Cloneable {
         }
         addBehaviour(REPLACE_RULE_OPTION, 3);
         addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
-        addBehaviour(STOP_SIMULATION_OPTION, 2);
-        addBehaviour(START_SIMULATION_OPTION, 3);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
 
@@ -504,6 +502,8 @@ public class Options implements Cloneable {
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
+    /** Hide LTS */
+    public static final String HIDE_LTS_NAME = "Hide Show Final States";
     /** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME =
         "List Atom. Prop.";
@@ -903,12 +903,12 @@ public class Options implements Cloneable {
     /** Always replace edited rules. */
     static public final String REPLACE_START_GRAPH_OPTION =
         "Replace start graph?";
-    /** Always start simulation after changes. */
-    static public final String START_SIMULATION_OPTION =
-        "Start new simulation?";
-    /** Automatically stop simulation at changes to the rule system. */
-    static public final String STOP_SIMULATION_OPTION =
-        "Stop current simulation?";
+    //    /** Always start simulation after changes. */
+    //    static public final String START_SIMULATION_OPTION =
+    //        "Start new simulation?";
+    //    /** Automatically stop simulation at changes to the rule system. */
+    //    static public final String STOP_SIMULATION_OPTION =
+    //        "Stop current simulation?";
     /** Always replace edited rules. */
     static public final String VERIFY_ALL_STATES_OPTION = "Verify all states?";
 
@@ -937,8 +937,6 @@ public class Options implements Cloneable {
         }
         intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
-        intOptionDefaults.put(STOP_SIMULATION_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 

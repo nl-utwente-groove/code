@@ -103,11 +103,13 @@ public class LTSDisplay extends Display {
         result.addSeparator();
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
+        result.addSeparator();
         if (getTabPane().getSelectedComponent() == getLTSTab()) {
             result.addSeparator();
             result.add(getLtsJGraph().getModeButton(JGraphMode.SELECT_MODE));
             result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
         }
+        result.add(getActions().getHideLTSAction());
     }
 
     /**

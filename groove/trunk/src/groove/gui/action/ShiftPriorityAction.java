@@ -128,7 +128,7 @@ public class ShiftPriorityAction extends SimulatorAction {
                 }
             }
         }
-        if (!priorityMap.isEmpty() && confirmStopSimulation()) {
+        if (!priorityMap.isEmpty()) {
             try {
                 getSimulatorModel().doSetPriority(priorityMap);
             } catch (IOException exc) {
