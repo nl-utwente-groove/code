@@ -16,8 +16,8 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Label;
-import groove.view.aspect.AspectKind;
+import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -26,10 +26,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.EnumSet;
 import java.util.EventObject;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -100,14 +97,12 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 Object value, boolean isSelected) {
             AspectJCell jCell = (AspectJCell) value;
             this.labels.clear();
-            GraphJModel<?,?> jmodel = (GraphJModel<?,?>) graph.getModel();
-            for (int i = 0; i < jmodel.getRootCount(); i++) {
-                GraphJCell cell = (GraphJCell) jmodel.getRootAt(i);
-                for (Label listLabel : cell.getListLabels()) {
-                    this.labels.add(stripPrefixes(listLabel.text()));
-                }
+            AspectJModel jmodel = (AspectJModel) graph.getModel();
+            TypeGraph type =
+                jmodel.getResourceModel().getGrammar().getTypeGraph();
+            for (TypeLabel label : type.getLabels()) {
+                this.labels.add(label.text());
             }
-            this.labels.addAll(this.prefixes);
             JTextArea result = getEditorComponent();
             // scale with the jGraph
             Font font = GraphConstants.getFont(jCell.getAttributes());
@@ -219,16 +214,16 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             // Find where the word starts in content
             int w;
             for (w = pos; w >= 0; w--) {
-                if (Character.isWhitespace(content.charAt(w))) {
+                if (!Character.isLetterOrDigit(content.charAt(w))) {
                     break;
                 }
             }
             // Identify the root of the word to be completed
             String root = content.substring(w + 1);
-            int rootLength = root.length();
-            root = stripPrefixes(root);
-            int shift = rootLength - root.length();
-            w += shift;
+            //            int rootLength = root.length();
+            //            root = stripPrefixes(root);
+            //            int shift = rootLength - root.length();
+            //            w += shift;
             if (pos - w < 2) {
                 // Too few chars
                 return;
@@ -248,22 +243,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
         }
 
-        /** Strips all aspect prefixes from the root. */
-        private String stripPrefixes(String root) {
-            boolean strip = true;
-            while (strip) {
-                strip = false;
-                for (String prefix : this.prefixes) {
-                    if (root.startsWith(prefix)) {
-                        root = root.substring(prefix.length());
-                        strip = true;
-                        break;
-                    }
-                }
-            }
-            return root;
-        }
-
         /** Adds the cell editor as listener to the editor component's document. */
         private void addDocumentListener() {
             this.editorComponent.getDocument().addDocumentListener(this);
@@ -281,16 +260,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         private JTextArea editorComponent;
         /** The existing labels of the current graph. */
         private final SortedSet<String> labels = new TreeSet<String>();
-        /** The existing aspect prefixes. */
-        private final List<String> prefixes = new LinkedList<String>();
-        {
-            for (AspectKind aspectKind : EnumSet.allOf(AspectKind.class)) {
-                String prefix = aspectKind.getPrefix();
-                if (prefix.length() > 0) {
-                    this.prefixes.add(prefix);
-                }
-            }
-        }
 
         private class CompletionTask implements Runnable {
             CompletionTask(String completion, int position) {
