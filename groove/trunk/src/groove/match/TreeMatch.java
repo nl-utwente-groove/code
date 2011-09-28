@@ -135,14 +135,10 @@ public class TreeMatch implements Fixable {
         setFixed();
         switch (this.op) {
         case FORALL:
-            traverseOrProofs(visitor);
-            break;
         case OR:
             traverseOrProofs(visitor);
             break;
         case EXISTS:
-            traverseAndProofs(visitor);
-            break;
         case AND:
             traverseAndProofs(visitor);
             break;
@@ -208,11 +204,9 @@ public class TreeMatch implements Fixable {
         setFixed();
         switch (this.op) {
         case FORALL:
-            return toOrProofSet();
         case OR:
             return toOrProofSet();
         case EXISTS:
-            return toAndProofSet();
         case AND:
             return toAndProofSet();
         case TRUE:
