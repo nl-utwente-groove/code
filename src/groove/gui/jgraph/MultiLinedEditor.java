@@ -46,8 +46,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -97,7 +95,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
     /** Internal editor implementation. */
     private static class RealCellEditor extends AbstractCellEditor implements
-            GraphCellEditor, DocumentListener, CaretListener {
+            GraphCellEditor, CaretListener {
         /**
          * Initialises the editor component with the edit string of the user
          * object of <tt>value</tt> (which is required to be a {@link GraphJCell}).
@@ -184,23 +182,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         }
 
         @Override
-        public void insertUpdate(DocumentEvent e) {
-            resetAutocomplete();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            resetAutocomplete();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            resetAutocomplete();
-        }
-
-        @Override
         public void caretUpdate(CaretEvent e) {
-            System.out.printf("Caret changed: %s%n", e);
             resetAutocomplete();
         }
 
