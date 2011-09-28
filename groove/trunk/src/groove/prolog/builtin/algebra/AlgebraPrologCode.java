@@ -39,7 +39,7 @@ public abstract class AlgebraPrologCode extends GraphPrologCode {
     /**
      * Gets a valuenode from a term
      * @param term      A term representing a valuenode
-     * @returns         A valuenode
+     * @return          A valuenode
      */
     public static final ValueNode getValueNode(Term term)
         throws PrologException {

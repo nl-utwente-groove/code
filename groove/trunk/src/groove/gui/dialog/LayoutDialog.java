@@ -25,6 +25,8 @@ import groove.gui.layout.LayouterItem;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -38,7 +40,8 @@ import javax.swing.SwingConstants;
  * @author Eduardo Zambon
  * @version $Revision $
  */
-public class LayoutDialog extends JDialog implements ActionListener {
+public class LayoutDialog extends JDialog implements ActionListener,
+        WindowFocusListener {
 
     private static LayoutDialog INSTANCE;
 
@@ -75,7 +78,17 @@ public class LayoutDialog extends JDialog implements ActionListener {
         this.panel = new JPanel();
         this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
         this.add(this.panel);
-        this.replacePanel(null);
+        this.addWindowFocusListener(this);
+    }
+
+    @Override
+    public void windowGainedFocus(WindowEvent e) {
+        this.refresh();
+    }
+
+    @Override
+    public void windowLostFocus(WindowEvent e) {
+        // Empty by design.
     }
 
     /** Makes the dialog visible. */
@@ -86,13 +99,17 @@ public class LayoutDialog extends JDialog implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (this.layoutBox.equals(e.getSource())) {
-            int index = this.layoutBox.getSelectedIndex();
-            this.getLayoutMenu().selectLayoutAction(
-                this.protoLayouterItems[index]).actionPerformed(null);
-            LayouterItem layouterItem =
-                (LayouterItem) this.getJGraph().getLayouter();
-            this.replacePanel(layouterItem.getPanel());
+            this.refresh();
         }
+    }
+
+    private void refresh() {
+        int index = this.layoutBox.getSelectedIndex();
+        this.getLayoutMenu().selectLayoutAction(this.protoLayouterItems[index]).actionPerformed(
+            null);
+        LayouterItem layouterItem =
+            (LayouterItem) this.getJGraph().getLayouter();
+        this.replacePanel(layouterItem.getPanel());
     }
 
     private void replacePanel(JPanel panel) {
