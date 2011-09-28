@@ -346,17 +346,17 @@ public enum LayoutKind {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+            ((ReflectiveComponent) e.getSource()).setLayoutParameter();
         }
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+            ((ReflectiveComponent) e.getSource()).setLayoutParameter();
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            ((ReflectiveComponent) e.getSource()).setLayoutParamenter();
+            ((ReflectiveComponent) e.getSource()).setLayoutParameter();
         }
 
         void createSlider(Method methodToCall, int min, int max, int init,
@@ -414,7 +414,7 @@ public enum LayoutKind {
     }
 
     private interface ReflectiveComponent {
-        void setLayoutParamenter();
+        void setLayoutParameter();
     }
 
     private static class MyJSlider extends JSlider implements
@@ -440,7 +440,7 @@ public enum LayoutKind {
             this.setFont(font);
         }
 
-        public void setLayoutParamenter() {
+        public void setLayoutParameter() {
             if (!this.getValueIsAdjusting()) {
                 this.invoke();
                 this.item.start(true);
@@ -476,10 +476,9 @@ public enum LayoutKind {
             this.setSelected(selected);
         }
 
-        public void setLayoutParamenter() {
+        public void setLayoutParameter() {
             this.invoke();
             this.item.start(true);
-
         }
 
         void invoke() {
@@ -512,7 +511,7 @@ public enum LayoutKind {
             this.value = value;
         }
 
-        public void setLayoutParamenter() {
+        public void setLayoutParameter() {
             this.invoke();
             this.item.start(true);
         }
@@ -545,7 +544,7 @@ public enum LayoutKind {
             this.item = item;
         }
 
-        public void setLayoutParamenter() {
+        public void setLayoutParameter() {
             this.invoke();
             this.item.start(true);
         }

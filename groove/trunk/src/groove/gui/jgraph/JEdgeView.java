@@ -32,6 +32,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -187,6 +188,14 @@ public class JEdgeView extends EdgeView {
             && (getSource() != getTarget() || points.size() > 3)) {
             points.remove(1);
         }
+        return points;
+    }
+
+    /** Return a list with the two extreme points of this edge. */
+    public List<Object> getExtremePoints() {
+        List<Object> points = new ArrayList<Object>(2);
+        points.add(0, getViewPoints().get(0));
+        points.add(1, getViewPoints().get(this.points.size() - 1));
         return points;
     }
 

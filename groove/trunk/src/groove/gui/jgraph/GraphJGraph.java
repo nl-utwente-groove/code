@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -1167,6 +1168,24 @@ public class GraphJGraph extends org.jgraph.JGraph {
             this.cancelListener = new CancelEditListener();
         }
         return this.cancelListener;
+    }
+
+    /** Clear all intermediate points from all edges. */
+    public void clearAllEdgePoints() {
+        Map<GraphJCell,AttributeMap> change =
+            new HashMap<GraphJCell,AttributeMap>();
+        for (GraphJCell jCell : getModel().getRoots()) {
+            if (jCell instanceof GraphJEdge) {
+                GraphJEdge jEdge = (GraphJEdge) jCell;
+                JEdgeView jEdgeView =
+                    (JEdgeView) getGraphLayoutCache().getMapping(jCell, false);
+                AttributeMap jEdgeAttr = new AttributeMap();
+                List<?> points = jEdgeView.getExtremePoints();
+                GraphConstants.setPoints(jEdgeAttr, points);
+                change.put(jEdge, jEdgeAttr);
+            }
+        }
+        getModel().edit(change, null, null, null);
     }
 
     private Map<JGraphMode,Action> modeActionMap;

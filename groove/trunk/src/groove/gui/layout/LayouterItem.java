@@ -75,6 +75,7 @@ public class LayouterItem implements Layouter {
 
     @Override
     public void start(boolean complete) {
+        this.jGraph.clearAllEdgePoints();
         this.layout.run(this.facade);
         Map<?,?> nested = this.facade.createNestedMap(true, true);
         this.jGraph.getGraphLayoutCache().edit(nested);
@@ -94,4 +95,5 @@ public class LayouterItem implements Layouter {
     public JPanel getPanel() {
         return this.panel;
     }
+
 }

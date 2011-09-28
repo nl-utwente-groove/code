@@ -60,6 +60,11 @@ public enum DisplayKind {
         return GraphRole.valueOf(name());
     }
 
+    /** Returns true if this display kind is used for showing graphs. */
+    public final boolean isGraphBased() {
+        return this == HOST || this == RULE || this == LTS || this == TYPE;
+    }
+
     private final ResourceKind resource;
     private final ImageIcon tabIcon;
     private final String title;
