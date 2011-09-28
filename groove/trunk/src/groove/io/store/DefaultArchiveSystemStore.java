@@ -280,9 +280,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                     }
                 } else if (kind == null) {
                     // must be a layout file
-                    assert restName.endsWith(LAYOUT_FILTER.getExtension());
-                    String objectName = LAYOUT_FILTER.stripExtension(restName);
-                    this.layoutEntryMap.put(objectName, entry);
+                    if (restName.endsWith(LAYOUT_FILTER.getExtension())) {
+                        String objectName =
+                            LAYOUT_FILTER.stripExtension(restName);
+                        this.layoutEntryMap.put(objectName, entry);
+                    }
                 } else if (kind == RULE
                     || new File(restName).getParent() == null) {
                     // only look at lower directories in case of rules
