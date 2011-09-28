@@ -92,8 +92,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         } else if (!file.isDirectory() && ZIP_FILTER.accept(file)) {
             extendedName = ZIP_FILTER.stripExtension(file.getName());
         } else {
-            throw new IllegalArgumentException(String.format(
-                "File '%s' is not a JAR or ZIP file", file));
+            throw new IllegalArgumentException(String.format("File '%s' "
+                + NO_JAR_OR_ZIP_SUFFIX, file));
         }
         this.location = file.toString();
         this.file = file;
@@ -546,6 +546,10 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     /** Name of the JAR protocol and file extension. */
     static private final String JAR_PROTOCOL = FileType.JAR.getExtensionName();
+    /** Suffix of 'no JAR or no ZIP' error message. Allows error to be
+     * recognized from the outside. */
+    public static final String NO_JAR_OR_ZIP_SUFFIX =
+        "is not a JAR or ZIP file";
 
     private static class MyEdit extends AbstractUndoableEdit implements Edit {
         public MyEdit(Set<ResourceKind> change) {

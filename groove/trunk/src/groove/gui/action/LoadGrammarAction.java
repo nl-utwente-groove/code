@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
+import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.SystemProperties;
@@ -38,6 +39,13 @@ public class LoadGrammarAction extends SimulatorAction {
                 try {
                     load(selectedFile, null);
                 } catch (IOException exc) {
+                    String msg = exc.getMessage();
+                    if (msg.endsWith(DefaultArchiveSystemStore.NO_JAR_OR_ZIP_SUFFIX)) {
+                        // Can only happen if trying to open a directory.
+                        // Don't throw exception, open selector dialog again.
+                        execute();
+                        return;
+                    }
                     showErrorDialog(exc, exc.getMessage());
                 }
             }
