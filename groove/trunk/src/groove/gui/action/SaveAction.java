@@ -131,12 +131,17 @@ public final class SaveAction extends SimulatorAction {
      */
     public boolean doSaveText(String name, String text) {
         boolean result = false;
-        try {
-            getSimulatorModel().doAddText(getResourceKind(), name, text);
-            result = true;
-        } catch (IOException exc) {
-            showErrorDialog(exc, "Error saving %s '%s'",
-                getResourceKind().getDescription(), name);
+        if (isForPrologProgram() && endsInGarbage(text)) {
+            showErrorDialog(null,
+                "The last non-empty characted of a Prolog program must be a dot: '.'");
+        } else {
+            try {
+                getSimulatorModel().doAddText(getResourceKind(), name, text);
+                result = true;
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error saving %s '%s'",
+                    getResourceKind().getDescription(), name);
+            }
         }
         return result;
     }
@@ -196,6 +201,23 @@ public final class SaveAction extends SimulatorAction {
 
     private boolean isForState() {
         return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay();
+    }
+
+    private boolean isForPrologProgram() {
+        return getDisplaysPanel().getSelectedDisplay() == getPrologDisplay();
+    }
+
+    private boolean endsInGarbage(String text) {
+        int lastDotIndex = text.lastIndexOf(".");
+        boolean result = false;
+        for (int i = lastDotIndex + 1; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (!(c == ' ' || c == '\n' || c == '\r')) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private final boolean saveAs;
