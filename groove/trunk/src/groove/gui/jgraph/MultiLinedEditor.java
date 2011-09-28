@@ -16,8 +16,10 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.view.aspect.AspectKind;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -26,7 +28,11 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.EnumSet;
 import java.util.EventObject;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -96,7 +102,9 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         public Component getGraphCellEditorComponent(JGraph graph,
                 Object value, boolean isSelected) {
             AspectJCell jCell = (AspectJCell) value;
+            // fill the set of labels for autocompletion
             this.labels.clear();
+            this.labels.addAll(prefixes);
             AspectJModel jmodel = (AspectJModel) graph.getModel();
             TypeGraph type =
                 jmodel.getResourceModel().getGrammar().getTypeGraph();
@@ -123,6 +131,11 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             return result;
         }
 
+        /** Returns the document of the editor component. */
+        private Document getDocument() {
+            return getEditorComponent().getDocument();
+        }
+
         /** Lazily creates the actual editor component. */
         private JTextArea getEditorComponent() {
             if (this.editorComponent == null) {
@@ -141,36 +154,15 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             // stop an edit.
             InputMap focusedInputMap =
                 result.getInputMap(JComponent.WHEN_FOCUSED);
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-                "enter");
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                "enter");
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0),
-                "tab");
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-                InputEvent.SHIFT_DOWN_MASK), "shiftEnter");
-            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-                InputEvent.CTRL_DOWN_MASK), "metaEnter");
-            result.getActionMap().put("enter", new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    stopCellEditing();
-                }
-            });
-            // make the reaction to SHIFT+ENTER and META+ENTER so a newline is
-            // added
-            AbstractAction newLineAction = new AbstractAction() {
-                /** Inserts a newline into the edited text. */
-                public void actionPerformed(ActionEvent e) {
-                    Document doc = result.getDocument();
-                    try {
-                        doc.insertString(result.getCaretPosition(), "\n", null);
-                    } catch (BadLocationException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            };
-            result.getActionMap().put("shiftEnter", newLineAction);
-            result.getActionMap().put("metaEnter", newLineAction);
+            focusedInputMap.put(STOP_EDIT_KEY_1, STOP_EDIT_STRING);
+            focusedInputMap.put(STOP_EDIT_KEY_2, STOP_EDIT_STRING);
+            focusedInputMap.put(NEWLINE_KEY_1, NEWLINE_STRING);
+            focusedInputMap.put(NEWLINE_KEY_2, NEWLINE_STRING);
+            focusedInputMap.put(AUTOCOMPLETE_KEY, AUTOCOMPLETE_STRING);
+            result.getActionMap().put(STOP_EDIT_STRING, new StopEditAction());
+            result.getActionMap().put(NEWLINE_STRING, new NewlineAction());
+            result.getActionMap().put(AUTOCOMPLETE_STRING,
+                new AutocompleteAction());
             result.getDocument().addDocumentListener(this);
             return result;
         }
@@ -185,102 +177,165 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             return super.shouldSelectCell(event);
         }
 
-        public void changedUpdate(DocumentEvent ev) {
-            // no action
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            resetAutocomplete();
         }
 
-        public void removeUpdate(DocumentEvent ev) {
-            // no action
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            resetAutocomplete();
         }
 
-        public void insertUpdate(DocumentEvent ev) {
-            int pos = ev.getOffset();
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            resetAutocomplete();
+        }
+
+        private String getNextCompletion() {
+            if (this.completions == null) {
+                this.completions = computeCompletions();
+            }
+            String result = this.completions.poll();
+            if (result != null) {
+                this.completions.add(result);
+            }
+            return result;
+        }
+
+        private LinkedList<String> computeCompletions() {
+            LinkedList<String> result = new LinkedList<String>();
+            int currPos = getEditorComponent().getCaretPosition();
             String content = null;
 
             try {
                 // only do completion if we're at the end of a label
-                Document document = this.editorComponent.getDocument();
-                if (pos + 1 < document.getLength()
-                    && !Character.isWhitespace(document.getText(pos + 1, 1).charAt(
+                Document document = getDocument();
+                if (currPos + 1 < document.getLength()
+                    && !Character.isWhitespace(document.getText(currPos, 1).charAt(
                         0))) {
-                    return;
+                    return result;
                 }
-                content = document.getText(0, pos + 1);
-            } catch (BadLocationException e) {
+                content = document.getText(0, currPos);
+            } catch (BadLocationException exc) {
                 throw new IllegalStateException(String.format(
-                    "Impossible error: %s", e));
+                    "Impossible error: %s", exc));
             }
 
             // Find where the word starts in content
-            int w;
-            for (w = pos; w >= 0; w--) {
-                if (!Character.isLetterOrDigit(content.charAt(w))) {
+            int startPos;
+            for (startPos = currPos; startPos > 0; startPos--) {
+                if (!Character.isLetterOrDigit(content.charAt(startPos - 1))) {
                     break;
                 }
             }
-            // Identify the root of the word to be completed
-            String root = content.substring(w + 1);
-            //            int rootLength = root.length();
-            //            root = stripPrefixes(root);
-            //            int shift = rootLength - root.length();
-            //            w += shift;
-            if (pos - w < 2) {
+            if (currPos == startPos) {
                 // Too few chars
-                return;
+                return result;
             }
+            // Identify the root of the word to be completed
+            String root = content.substring(startPos);
             SortedSet<String> tailSet =
                 RealCellEditor.this.labels.tailSet(root);
             if (!tailSet.isEmpty()) {
-                String match = tailSet.first();
-                if (match.startsWith(root)) {
-                    // A completion is found
-                    String completion = match.substring(pos - w);
-                    // We cannot modify Document from within notification,
-                    // so we submit a task that does the change later
-                    SwingUtilities.invokeLater(new CompletionTask(completion,
-                        pos + 1));
-                }
+                Iterator<String> iter = tailSet.iterator();
+                String nextCompletion = iter.next();
+                do {
+                    result.add(nextCompletion.substring(currPos - startPos));
+                    nextCompletion = iter.next();
+                } while (nextCompletion.startsWith(root));
             }
+            return result;
         }
 
-        /** Adds the cell editor as listener to the editor component's document. */
-        private void addDocumentListener() {
-            this.editorComponent.getDocument().addDocumentListener(this);
+        private void resetAutocomplete() {
+            this.completions = null;
         }
 
-        /**
-         * Removes the cell editor as listener from the editor component's
-         * document.
-         */
-        private void removeDocumentListener() {
-            this.editorComponent.getDocument().removeDocumentListener(this);
+        private void doAutocomplete() {
+            String completion = getNextCompletion();
+            if (completion != null) {
+                SwingUtilities.invokeLater(new CompletionTask(completion));
+            }
         }
 
         /** The component actually doing the editing. */
         private JTextArea editorComponent;
         /** The existing labels of the current graph. */
         private final SortedSet<String> labels = new TreeSet<String>();
+        /** List of autocompletions. */
+        private LinkedList<String> completions = null;
+
+        private final static String AUTOCOMPLETE_STRING = "autocomplete";
+        private final static String NEWLINE_STRING = "newline";
+        private final static String STOP_EDIT_STRING = "stop";
+        private final static KeyStroke AUTOCOMPLETE_KEY =
+            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_1 = KeyStroke.getKeyStroke(
+            KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+        private final static KeyStroke NEWLINE_KEY_2 = KeyStroke.getKeyStroke(
+            KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+        private final static KeyStroke STOP_EDIT_KEY_1 =
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        private final static KeyStroke STOP_EDIT_KEY_2 =
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+
+        /** The existing aspect prefixes. */
+        private final static List<String> prefixes = new LinkedList<String>();
+        static {
+            for (AspectKind aspectKind : EnumSet.allOf(AspectKind.class)) {
+                String prefix = aspectKind.getPrefix();
+                if (prefix.length() > 1) {
+                    prefixes.add(prefix);
+                }
+            }
+            for (EdgeRole edgeRole : EnumSet.allOf(EdgeRole.class)) {
+                String prefix = edgeRole.getPrefix();
+                if (prefix.length() > 1) {
+                    prefixes.add(prefix);
+                }
+            }
+        }
 
         private class CompletionTask implements Runnable {
-            CompletionTask(String completion, int position) {
+            CompletionTask(String completion) {
                 this.completion = completion;
-                this.position = position;
             }
 
             public void run() {
-                // temporarily disable document listener to avoid
-                // this insertion triggering another completion
-                removeDocumentListener();
-                RealCellEditor.this.editorComponent.insert(this.completion,
-                    this.position);
-                RealCellEditor.this.editorComponent.setCaretPosition(this.position
-                    + this.completion.length());
-                RealCellEditor.this.editorComponent.moveCaretPosition(this.position);
-                addDocumentListener();
+                getDocument().removeDocumentListener(RealCellEditor.this);
+                int pos = getEditorComponent().getCaretPosition();
+                getEditorComponent().replaceSelection(this.completion);
+                getEditorComponent().moveCaretPosition(pos);
+                getDocument().addDocumentListener(RealCellEditor.this);
             }
 
             private final String completion;
-            private final int position;
+        }
+
+        private class StopEditAction extends AbstractAction {
+            public void actionPerformed(ActionEvent e) {
+                stopCellEditing();
+            }
+        }
+
+        private class NewlineAction extends AbstractAction {
+            /** Inserts a newline into the edited text. */
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    getDocument().insertString(
+                        getEditorComponent().getCaretPosition(), "\n", null);
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+
+        private class AutocompleteAction extends AbstractAction {
+            /** Inserts a newline into the edited text. */
+            public void actionPerformed(ActionEvent evt) {
+                doAutocomplete();
+            }
         }
     }
 
