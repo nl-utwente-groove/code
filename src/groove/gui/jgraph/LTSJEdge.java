@@ -18,6 +18,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
      */
     LTSJEdge(LTSJGraph jGraph) {
         super(jGraph);
+        this.visible = true;
     }
 
     /**
@@ -26,6 +27,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
      */
     LTSJEdge(LTSJGraph jGraph, GraphTransition edge) {
         super(jGraph, edge);
+        this.visible = true;
     }
 
     @Override
@@ -88,6 +90,12 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         return this.active;
     }
 
+    @Override
+    public boolean isVisible() {
+        boolean result = super.isVisible();
+        return result && this.visible;
+    }
+
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
@@ -111,8 +119,15 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     private boolean active;
 
+    private boolean visible;
+
     /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
     public static LTSJEdge getPrototype(LTSJGraph jGraph) {
         return new LTSJEdge(jGraph);
     }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
 }

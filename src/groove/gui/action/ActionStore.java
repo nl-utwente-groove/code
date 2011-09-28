@@ -295,9 +295,24 @@ public class ActionStore implements SimulatorListener {
     }
 
     /**
+     * Returns the 'default exploration' action that is associated with the
+     * simulator.
+     */
+    public HideLTSAction getHideLTSAction() {
+        // lazily create the action
+        if (this.hideLTSAction == null) {
+            this.hideLTSAction = new HideLTSAction(this.simulator, false);
+        }
+
+        return this.hideLTSAction;
+    }
+
+    /**
      * The 'default exploration' action (variable).
      */
     private ExploreAction exploreAction;
+
+    private HideLTSAction hideLTSAction;
 
     /**
      * Returns the exploration dialog action permanently associated with this

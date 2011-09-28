@@ -25,6 +25,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      */
     LTSJVertex(LTSJGraph jGraph, GraphState node) {
         super(jGraph, node);
+        this.visible = true;
     }
 
     @Override
@@ -45,7 +46,11 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /** A state is also visible if it is open, final, or the start state. */
     @Override
     public boolean isVisible() {
-        return isSpecialNode() || hasVisibleIncidentEdge();
+        return isSpecialNode() || hasVisibleIncidentEdge() && this.visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     /**
@@ -175,6 +180,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     private boolean active;
+
+    private boolean visible;
 
     /** Returns a prototype {@link LTSJVertex} for a given {@link LTSJGraph}. */
     public static LTSJVertex getPrototype(LTSJGraph jGraph) {

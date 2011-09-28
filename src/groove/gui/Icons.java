@@ -270,6 +270,8 @@ public final class Icons {
     /** Icon in the shape of a closed hand. */
     public static final ImageIcon HAND_CLOSED_ICON =
         createIcon("hand-closed.gif");
+    /** Icon for hiding lts. */
+    public static final ImageIcon HIDE_LTS_ICON = createIcon("hide-lts.gif");
     /** Import action icon. */
     public static final ImageIcon IMPORT_ICON = createIcon("import.gif");
     /** Icon for the layout action. */

@@ -28,8 +28,6 @@ import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static groove.gui.Options.START_SIMULATION_OPTION;
-import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
@@ -674,8 +672,6 @@ public class Simulator implements SimulatorListener {
         for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
             result.add(getOptions().getItem(Options.getDeleteOption(resource)));
         }
-        result.add(getOptions().getItem(START_SIMULATION_OPTION));
-        result.add(getOptions().getItem(STOP_SIMULATION_OPTION));
         result.add(getOptions().getItem(REPLACE_RULE_OPTION));
         result.add(getOptions().getItem(REPLACE_START_GRAPH_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
@@ -701,6 +697,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
         result.add(getActions().getGotoStartStateAction());
         result.add(getActions().getGotoFinalStateAction());
+        result.add(getActions().getHideLTSAction());
         result.addSeparator();
         result.add(getActions().getExplorationDialogAction());
         result.add(getActions().getExplorationStatsDialogAction());

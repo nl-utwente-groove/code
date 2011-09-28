@@ -1,6 +1,5 @@
 package groove.gui.action;
 
-import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
@@ -288,22 +287,6 @@ public abstract class SimulatorAction extends AbstractAction implements
     final protected void showErrorDialog(Throwable exc, String message,
             Object... args) {
         new ErrorDialog(getFrame(), String.format(message, args), exc).setVisible(true);
-    }
-
-    /**
-     * If a simulation is active, asks through a dialog whether it may be
-     * abandoned.
-     * @return <tt>true</tt> if the current grammar may be abandoned
-     */
-    final protected boolean confirmStopSimulation() {
-        boolean result;
-        if (getSimulatorModel().getGts() != null
-            && getSimulatorModel().getGts().size() > 1) {
-            result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
-        } else {
-            result = true;
-        }
-        return result;
     }
 
     /**

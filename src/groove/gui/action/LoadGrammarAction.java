@@ -31,7 +31,7 @@ public class LoadGrammarAction extends SimulatorAction {
         JFileChooser fileChooser = getGrammarFileChooser(true);
         int approve = fileChooser.showOpenDialog(getFrame());
         // now load, if so required
-        if (approve == JFileChooser.APPROVE_OPTION && confirmStopSimulation()) {
+        if (approve == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile == null) {
                 showErrorDialog(null, "No file selected");

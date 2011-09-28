@@ -46,7 +46,7 @@ public final class SaveAction extends SimulatorAction {
     public void execute() {
         if (isForState()) {
             this.saveStateAction.execute();
-        } else if (confirmBehaviourOption(Options.STOP_SIMULATION_OPTION)) {
+        } else {
             boolean saved = false;
             ResourceKind resourceKind = getResourceKind();
             ResourceTab editor = getEditor();

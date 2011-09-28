@@ -16,15 +16,20 @@
  */
 package groove.gui.jgraph;
 
+import java.io.Serializable;
+
 /**
  * Supertype of {@link LTSJVertex} and {@link LTSJEdge}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface LTSJCell extends GraphJCell {
+public interface LTSJCell extends GraphJCell, Serializable {
     /** 
      * Sets this cell to active. This will result in 
      * special display attributes.
      */
     boolean setActive(boolean active);
+
+    public void setVisible(boolean visible);
+
 }
