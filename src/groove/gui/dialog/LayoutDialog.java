@@ -57,6 +57,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
     private final LayouterItem protoLayouterItems[];
     private final JComboBox layoutBox;
     private final JPanel panel;
+    private GraphJGraph jGraph;
 
     private LayoutDialog(Simulator simulator) {
         super(simulator.getFrame());
@@ -83,7 +84,8 @@ public class LayoutDialog extends JDialog implements ActionListener,
 
     @Override
     public void windowGainedFocus(WindowEvent e) {
-        this.refresh();
+        this.refreshJGraph();
+        this.refreshPanel(this.layoutBox.getSelectedIndex());
     }
 
     @Override
@@ -99,14 +101,16 @@ public class LayoutDialog extends JDialog implements ActionListener,
 
     public void actionPerformed(ActionEvent e) {
         if (this.layoutBox.equals(e.getSource())) {
-            this.refresh();
+            this.refreshPanel(this.layoutBox.getSelectedIndex());
         }
     }
 
-    private void refresh() {
-        int index = this.layoutBox.getSelectedIndex();
-        this.getLayoutMenu().selectLayoutAction(this.protoLayouterItems[index]).actionPerformed(
-            null);
+    private void refreshPanel(int index) {
+        this.refreshPanel(this.protoLayouterItems[index]);
+    }
+
+    private void refreshPanel(LayouterItem item) {
+        this.getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
         LayouterItem layouterItem =
             (LayouterItem) this.getJGraph().getLayouter();
         this.replacePanel(layouterItem.getPanel());
@@ -127,14 +131,16 @@ public class LayoutDialog extends JDialog implements ActionListener,
         return this.getJGraph().getSetLayoutMenu();
     }
 
-    private GraphJGraph getJGraph() {
-        GraphJGraph result = null;
+    private void refreshJGraph() {
         DisplayKind display = this.simulator.getModel().getDisplay();
-        if (display.getResource().isGraphBased()) {
-            result =
+        if (display.isGraphBased()) {
+            this.jGraph =
                 this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
         }
-        return result;
+    }
+
+    private GraphJGraph getJGraph() {
+        return this.jGraph;
     }
 
 }
