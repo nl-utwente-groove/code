@@ -89,9 +89,11 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
                 while (!stateQueue.isEmpty()) {
                     for (GraphTransition edge : lts.inEdgeSet(state)) {
                         GraphState gstate = edge.source();
-                        if (gstate != lts.startState() && visited.add(gstate)) {
+                        if (visited.add(gstate)) {
                             ((LTSJCell) getJCellForNode(gstate)).setVisible(true);
-                            stateQueue.add(gstate);
+                            if (gstate != lts.startState()) {
+                                stateQueue.add(gstate);
+                            }
                         }
                     }
                     stateQueue.remove();
