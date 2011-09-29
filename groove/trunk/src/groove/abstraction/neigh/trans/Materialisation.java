@@ -270,6 +270,28 @@ public final class Materialisation {
     }
 
     /** EDUARDO: Comment this... */
+    void garbageCollectNodes() {
+        Multiplicity zero = Multiplicity.getMultiplicity(0, 0, NODE_MULT);
+        // We need to check for nodes that got disconnected...
+        int nodeCount = this.shape.nodeSet().size();
+        ShapeNode nodes[] = new ShapeNode[nodeCount];
+        this.shape.nodeSet().toArray(nodes);
+        for (ShapeNode node : nodes) {
+            Multiplicity mult = this.shape.getNodeMult(node);
+            if (mult.getLowerBound() == 0 && this.shape.isUnconnected(node)) {
+                // Get the original node.
+                ShapeNode origNode = this.morph.getNode(node);
+                assert origNode != null;
+                if (!this.originalShape.isUnconnected(origNode)) {
+                    // The node multiplicity can only be zero.
+                    // That is, it is not in the shape.
+                    this.shape.setNodeMult(node, zero);
+                }
+            }
+        }
+    }
+
+    /** EDUARDO: Comment this... */
     void updateShapeMorphism() {
         Set<HostNode> nodesToRemove = new THashSet<HostNode>();
         for (HostNode key : this.morph.nodeMap().keySet()) {
@@ -766,6 +788,7 @@ public final class Materialisation {
     private static class ResultSet extends THashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {
+            mat.garbageCollectNodes();
             mat.updateShapeMorphism();
             assert mat.isShapeMorphConsistent();
             assert mat.getShape().isInvariantOK();
@@ -779,7 +802,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "5";
+            String number = "7";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
