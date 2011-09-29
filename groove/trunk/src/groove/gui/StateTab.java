@@ -382,10 +382,10 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     /** Copies layout from a parent state. */
     private void copyNextStateLayout(GraphNextState state) {
         HostToAspectMap aspectMap = getAspectMap(state);
-        GraphState oldState = state.source();
-        HostGraphMorphism morphism = state.getMorphism();
         // mapping from host nodes to colours
         Map<HostNode,Color> colorMap = extractColors(state);
+        GraphState oldState = state.source();
+        HostGraphMorphism morphism = state.getMorphism();
         // walk back along the derivation chain to find one for
         // which we have a state model (and hence layout information)
         while (!this.stateToAspectMap.containsKey(oldState)
@@ -393,13 +393,15 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             GraphNextState oldNextState = (GraphNextState) oldState;
             Map<HostNode,Color> oldColorMap = extractColors(oldNextState);
             // only retain colours for nodes that are preserved by the morphism
-            oldColorMap.keySet().retainAll(morphism.nodeMap().keySet());
-            // let new colour overwrite old ones
-            oldColorMap.putAll(colorMap);
-            colorMap = oldColorMap;
-            colorMap.putAll(oldColorMap);
-            morphism = oldNextState.getMorphism().then(morphism);
+            // and that are not overwritten by newer colours
+            for (Map.Entry<HostNode,Color> oldColorEntry : oldColorMap.entrySet()) {
+                HostNode newNode = morphism.getNode(oldColorEntry.getKey());
+                if (!colorMap.containsKey(newNode)) {
+                    colorMap.put(newNode, oldColorEntry.getValue());
+                }
+            }
             oldState = oldNextState.source();
+            morphism = oldNextState.getMorphism().then(morphism);
         }
         // the following call will make sure the start state
         // is actually loaded
