@@ -1225,6 +1225,13 @@ public final class Shape extends DefaultHostGraph {
         return newShape;
     }
 
+    /** Returns true if the given node has no incident binary edges. */
+    public boolean isUnconnected(ShapeNode node) {
+        assert this.containsNode(node);
+        return this.binaryEdgeSet(node, OUTGOING).isEmpty()
+            && this.binaryEdgeSet(node, INCOMING).isEmpty();
+    }
+
     /**
      * Check if the shape is in a state that complies to the shape invariant.
      * See last item of Def. 7, pg. 10.
