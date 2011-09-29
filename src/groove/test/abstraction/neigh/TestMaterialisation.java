@@ -20,9 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.match.PreMatch;
+import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -450,6 +452,35 @@ public class TestMaterialisation {
                 assertTrue(matShape.nodeSet().size() == 5
                     && binaryEdgeCount == 3
                     && matShape.getEquivRelation().size() == 3);
+            }
+        }
+    }
+
+    @Test
+    public void testMaterialisation8() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-8").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-8");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(3, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                assertEquals(5, matShape.getEquivRelation().size());
+                for (EdgeMultDir direction : EdgeMultDir.values()) {
+                    for (EdgeSignature es : matShape.getEdgeMultMapKeys(direction)) {
+                        assertTrue(matShape.getEdgeSigMult(es, direction).isOne());
+                    }
+                }
             }
         }
     }
