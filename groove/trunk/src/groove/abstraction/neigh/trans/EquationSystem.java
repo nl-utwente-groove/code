@@ -347,8 +347,12 @@ public final class EquationSystem {
             this.addToEdgeBundle(edge.target(), edge, INCOMING);
         }
 
+        Set<ShapeNode> involvedNodes = new THashSet<ShapeNode>();
+        Set<ShapeNode> bundleNodes = new THashSet<ShapeNode>();
+
         // For each bundle...
         for (EdgeBundle bundle : this.bundles) {
+            bundleNodes.add(bundle.node);
             bundle.computeAdditionalEdges(this.mat);
             int varsCount = bundle.edges.size();
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
@@ -360,25 +364,51 @@ public final class EquationSystem {
                     constMult.getUpperBound());
             // For each edge in the bundle...
             for (ShapeEdge edge : bundle.edges) {
+                involvedNodes.add(edge.opposite(bundle.direction));
                 // ... create two bound variables.
                 Duo<BoundVar> vars = retrieveBoundVars(edge);
                 addVars(eqs, vars);
-                if (bundle.direction == OUTGOING) {
-                    Duo<Equation> trivialEqs = null;
-                    if (this.mat.isFixed(edge)) {
-                        // Create additional equations for the fixed edges.
-                        trivialEqs = this.createEquations(1, 1, 1);
-                    } else if (shape.areNodesConcrete(edge)) {
-                        // Create additional equations for edges with concrete nodes.
-                        trivialEqs = this.createEquations(1, 0, 1);
-                    }
-                    if (trivialEqs != null) {
-                        addVars(trivialEqs, vars);
-                        this.storeEquations(trivialEqs);
-                    }
+                // Create additional trivial equations.
+                Duo<Equation> trivialEqs = null;
+                if (this.mat.isFixed(edge)) {
+                    // Create additional equations for the fixed edges.
+                    trivialEqs = this.createEquations(1, 1, 1);
+                } else if (shape.areNodesConcrete(edge)) {
+                    // Create additional equations for edges with concrete nodes.
+                    trivialEqs = this.createEquations(1, 0, 1);
+                }
+                if (trivialEqs != null) {
+                    addVars(trivialEqs, vars);
+                    this.storeEquations(trivialEqs);
                 }
             }
             this.storeEquations(eqs);
+        }
+
+        involvedNodes.removeAll(bundleNodes);
+        for (ShapeNode node : involvedNodes) {
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                for (ShapeEdge edge : shape.binaryEdgeSet(node, direction)) {
+                    Duo<BoundVar> vars = this.edgeVarsMap.get(edge);
+                    if (vars != null) {
+                        // Maybe there is a limit on the number of edges.
+                        EdgeSignature es =
+                            shape.getEdgeSignature(edge, direction);
+                        if (shape.isEdgeSigUnique(es, direction)) {
+                            Multiplicity nodeMult = shape.getNodeMult(node);
+                            Multiplicity edgeMult =
+                                shape.getEdgeSigMult(es, direction);
+                            Multiplicity constMult = nodeMult.times(edgeMult);
+                            Duo<Equation> trivialEqs =
+                                this.createEquations(1,
+                                    constMult.getLowerBound(),
+                                    constMult.getUpperBound());
+                            addVars(trivialEqs, vars);
+                            this.storeEquations(trivialEqs);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -441,6 +471,7 @@ public final class EquationSystem {
         for (EdgeBundle bundle : this.bundles) {
             if (bundle.isNonSingular(this, shape, kind, sol)) {
                 nonSingBundles.add(bundle);
+                edgesNotToInclude.addAll(bundle.edgesInShape);
                 edgesNotToInclude.addAll(bundle.positivePossibleEdges);
                 requiresSecondStage = true;
             }
@@ -801,6 +832,7 @@ public final class EquationSystem {
         final TypeLabel label;
         final EdgeMultDir direction;
         final Set<ShapeEdge> edges;
+        Set<ShapeEdge> edgesInShape;
         Set<ShapeEdge> positivePossibleEdges;
         Set<EdgeSignature> splitEs;
 
@@ -843,6 +875,7 @@ public final class EquationSystem {
 
         boolean isNonSingular(EquationSystem eqSys, Shape shape, MultKind kind,
                 Solution sol) {
+            this.edgesInShape = new THashSet<ShapeEdge>();
             this.positivePossibleEdges = new THashSet<ShapeEdge>();
             EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
             if (shape.getNodeMult(this.node).isCollector()) {
@@ -851,7 +884,9 @@ public final class EquationSystem {
                     boolean positive = !sol.getMultValue(varNum, kind).isZero();
                     if (positive) {
                         er.add(shape.getEquivClassOf(edge.opposite(this.direction)));
-                        if (!shape.containsEdge(edge)) {
+                        if (shape.containsEdge(edge)) {
+                            this.edgesInShape.add(edge);
+                        } else {
                             this.positivePossibleEdges.add(edge);
                         }
                     }
