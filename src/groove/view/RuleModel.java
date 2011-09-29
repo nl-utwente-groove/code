@@ -1673,7 +1673,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private class Level4 {
         /**
          * Creates a new level, with a given index and parent level.
-         * @param origin the level 3 object from which this level 4 object is created
+         * @param origin the level 2 object from which this level 4 object is created
          * @param parent the parent level; may be {@code null} if this is the
          *        top level.
          */
@@ -1686,6 +1686,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.nacs = origin.nacs;
             this.rhs = origin.rhs;
             this.matchCountImage = origin.matchCountImage;
+            this.colorMap = origin.colorMap;
         }
 
         /**
@@ -1703,6 +1704,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.nacs = origin.nacs;
             this.rhs = origin.rhs;
             this.matchCountImage = origin.matchCountImage;
+            this.colorMap = origin.colorMap;
         }
 
         /**
@@ -1927,8 +1929,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** The rule node registering the match count. */
         private final VariableNode matchCountImage;
         /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap =
-            new HashMap<RuleNode,Color>();
+        private final Map<RuleNode,Color> colorMap;
         /** Flag indicating that modifiers have been found at this level. */
         private final boolean isRule;
         /** The left hand side graph of the rule. */
