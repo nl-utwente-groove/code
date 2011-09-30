@@ -254,7 +254,7 @@ public class JGraphUI extends BasicGraphUI {
             getJGraph().requestFocus();
             stopEditing(getJGraph());
             // determine the drag mode (although dragging does not yet start)
-            DragMode newDragMode = SELECT;
+            DragMode newDragMode;
             GraphJCell jVertex = getJVertexAt(e.getPoint());
             GraphJCell jEdge = getJEdgeAt(e.getPoint());
             if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
@@ -553,7 +553,8 @@ public class JGraphUI extends BasicGraphUI {
         private final RubberBand selectHandler;
         /** Edge preview renderer on the JGraph. */
         private final EdgePreview edgeHandler;
-        private DragMode dragMode;
+        /** The current drag mode of the cursor. */
+        private DragMode dragMode = MOVE;
         /** Mouse pressed event that (with hindsight) started the dragging. */
         private MouseEvent dragStart;
         /** Flag indicating that we are adding an edge. */
@@ -822,6 +823,13 @@ public class JGraphUI extends BasicGraphUI {
 
     /** Drag modes of the {@link MouseHandler}. */
     static enum DragMode {
-        MOVE, PAN, EDGE, SELECT;
+        /** Moving a selected set of nodes and edges. */
+        MOVE,
+        /** Panning the entire graph. */
+        PAN,
+        /** Adding an edge. */
+        EDGE,
+        /** Drawing a selection marquee. */
+        SELECT;
     }
 }
