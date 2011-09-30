@@ -184,7 +184,7 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(1, mats.size());
+            assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
@@ -481,6 +481,33 @@ public class TestMaterialisation {
                         assertTrue(matShape.getEdgeSigMult(es, direction).isOne());
                     }
                 }
+            }
+        }
+    }
+
+    @Test
+    public void testMaterialisation9() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-9").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-9");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(2, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(3, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(matShape.nodeSet().size() == 5
+                    && binaryEdgeCount == 3
+                    && matShape.getEquivRelation().size() == 3);
             }
         }
     }
