@@ -541,21 +541,22 @@ public final class EquationSystem {
             // ... create one pair of equations.
             int esCount = bundle.splitEs.size();
             Duo<Equation> eqs = this.createEquations(esCount);
+            Multiplicity constMult = bundle.origEsMult;
             // For each edge signature...
             for (EdgeSignature es : bundle.splitEs) {
                 // ... create a pair of variables.
                 Duo<BoundVar> vars = retrieveBoundVars(es, direction);
                 addVars(eqs, vars);
-                Multiplicity constMult = bundle.origEsMult;
                 for (ShapeEdge edge : bundle.edges) {
                     // Adjust the constant according to the fixed edges.
-                    if (this.mat.isFixedOnFirstStage(edge)) {
+                    if (this.mat.isFixedOnFirstStage(edge)
+                        && !es.contains(edge, direction, true)) {
                         constMult = constMult.sub(one);
                     }
                 }
-                eqs.one().setConstant(constMult.getLowerBound());
-                eqs.two().setConstant(constMult.getUpperBound());
             }
+            eqs.one().setConstant(constMult.getLowerBound());
+            eqs.two().setConstant(constMult.getUpperBound());
             this.storeEquations(eqs);
         }
 
@@ -563,7 +564,7 @@ public final class EquationSystem {
 
         // Optimization: sum of opposite variables.
         for (EdgeBundle bundle : this.mat.getSplitBundles()) {
-            if (bundle.splitEs.size() > 1
+            if (bundle.splitEs.size() > 1 || !bundle.origEsMult.isOne()
                 || !shape.getNodeMult(bundle.node).isOne()) {
                 continue;
             }
@@ -593,36 +594,60 @@ public final class EquationSystem {
             Pair<EdgeSignature,EdgeMultDir> pair = this.varEsMap.get(i);
             EdgeSignature es = pair.one();
             EdgeMultDir direction = pair.two();
+            BoundVar ubVar = this.getEsMap(direction).get(es).two();
+            if (this.occursInNonTrivialUbEq(ubVar)) {
+                // This node has more than one split signature with a concrete
+                // upper bound. Nothing to do.
+                continue;
+            }
             EdgeMultDir reverse = direction.reverse();
             Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es, direction);
-            if (esEdges.size() == 1) {
-                ShapeEdge edge = esEdges.iterator().next();
-                // Check if the opposite is a concrete node.
-                ShapeNode opp = edge.opposite(direction);
-                if (shape.getNodeMult(opp).isOne()) {
-                    // We have trivial equations.
-                    int lb;
-                    EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
-                    BoundVar ubOppVar = this.getEsMap(reverse).get(oppEs).two();
-                    if (!this.occursInTrivialUbEq(ubOppVar)) {
-                        lb = 1;
-                    } else {
-                        lb = 0;
-                    }
-                    Duo<Equation> trivialEqs = this.createEquations(1, lb, 1);
-                    Duo<BoundVar> vars = this.getEsMap(direction).get(es);
-                    addVars(trivialEqs, vars);
-                    this.storeEquations(trivialEqs);
-                }
+            if (esEdges.size() != 1) {
+                // This edge signature is shared. Nothing to do.
+                continue;
             }
+            ShapeEdge edge = esEdges.iterator().next();
+            ShapeNode opp = edge.opposite(direction);
+            if (!shape.getNodeMult(opp).isOne()) {
+                // The opposite node is not concrete. Nothing to do.
+                continue;
+            }
+            // We have trivial equations.
+            int lb;
+            EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
+            BoundVar lbOppVar = this.getEsMap(reverse).get(oppEs).one();
+            if (this.occursInTrivialLbEq(lbOppVar)) {
+                // We know that the opposite variable is at least one, so
+                // this variable has to be precisely one.
+                lb = 1;
+            } else {
+                lb = 0;
+            }
+            Duo<Equation> trivialEqs = this.createEquations(1, lb, 1);
+            Duo<BoundVar> vars = this.getEsMap(direction).get(es);
+            addVars(trivialEqs, vars);
+            this.storeEquations(trivialEqs);
         }
     }
 
-    private boolean occursInTrivialUbEq(BoundVar ubVar) {
+    private boolean occursInTrivialLbEq(BoundVar lbVar) {
+        assert this.stage == 2;
+        assert lbVar.type == BoundType.LB;
+        boolean result = false;
+        for (Equation eq : this.trivialEqs) {
+            if (eq.vars.contains(lbVar)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean occursInNonTrivialUbEq(BoundVar ubVar) {
         assert this.stage == 2;
         assert ubVar.type == BoundType.UB;
         boolean result = false;
-        for (Equation eq : this.trivialEqs) {
+        for (Equation eq : this.ubEqs) {
             if (eq.vars.contains(ubVar)) {
                 result = true;
                 break;
@@ -669,6 +694,7 @@ public final class EquationSystem {
         MultKind kind = this.finalMultKind();
         for (int i = 0; i < this.varsCount; i++) {
             Multiplicity mult = sol.getMultValue(i, kind);
+            assert mult.isSingleton() || mult.isCollector();
             Pair<EdgeSignature,EdgeMultDir> pair = this.varEsMap.get(i);
             EdgeSignature es = pair.one();
             EdgeMultDir direction = pair.two();
@@ -1324,6 +1350,10 @@ public final class EquationSystem {
         public ValueRangeIterator iterator() {
             return new ValueRangeIterator(this);
         }
+
+        boolean isZeroOne() {
+            return this.getMin() == 0 && this.getMax() == 1;
+        }
     }
 
     // --------
@@ -1508,6 +1538,12 @@ public final class EquationSystem {
             return result;
         }
 
+        void projectToZeroWhenNeeded(BoundVar var) {
+            ValueRange range = this.getValueRange(var);
+            if (range.isZeroOne()) {
+                range.cutHigh(0);
+            }
+        }
     }
 
     // ------------------
@@ -1618,6 +1654,12 @@ public final class EquationSystem {
                 }
                 if (this.eq.hasDual()) {
                     this.eq.dual.nonRecComputeNewValues(newSol);
+                } else if (this.eq.type == BoundType.LB) {
+                    // Variables with zero or one values have to be handled
+                    // in a special way.
+                    for (BoundVar openVar : this.openVars) {
+                        newSol.projectToZeroWhenNeeded(openVar);
+                    }
                 }
                 if (this.eq.isValidSolution(newSol)) {
                     this.validSolutions.add(newSol);
@@ -1644,7 +1686,6 @@ public final class EquationSystem {
                 }
             }
         }
-
     }
 
     // -----------

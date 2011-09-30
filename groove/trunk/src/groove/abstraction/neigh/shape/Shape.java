@@ -630,7 +630,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /** Basic getter method. */
-    public ShapeEdge getShapeEdge(ShapeNode source, TypeLabel label,
+    private ShapeEdge getShapeEdge(ShapeNode source, TypeLabel label,
             ShapeNode target) {
         ShapeEdge result = null;
         for (ShapeEdge edge : this.outEdgeSet(source)) {
@@ -1010,12 +1010,25 @@ public final class Shape extends DefaultHostGraph {
         }
 
         Set<ShapeEdge> possibleEdges = new THashSet<ShapeEdge>();
+        for (EdgeSignature es : this.getEdgeSignatures(this.getEquivClassOf(nodeS))) {
+            if (es.isSelfReferencing()) {
+                continue;
+            }
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                for (ShapeEdge edgeS : this.getEdgesFromSig(es, direction)) {
+                    if (!this.isEdgeConcrete(edgeS)) {
+                        // We have an edge that is not concrete.
+                        // Add it to the list of possible edges.
+                        possibleEdges.add(edgeS);
+                    }
+                }
+            }
+        }
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
             }
-            if (!this.isEdgeConcrete(edgeS, OUTGOING)
-                || !this.isEdgeConcrete(edgeS, INCOMING)) {
+            if (!this.isEdgeConcrete(edgeS)) {
                 // We have an edge that is not concrete.
                 // Add it to the list of possible edges.
                 possibleEdges.add(edgeS);

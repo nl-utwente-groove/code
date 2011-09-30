@@ -146,4 +146,9 @@ public final class EdgeSignature {
         return this.equivClass.equals(ec);
     }
 
+    /** Returns true if the signature node is in the equivalence class. */
+    public boolean isSelfReferencing() {
+        return this.equivClass.contains(this.node);
+    }
+
 }
