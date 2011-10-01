@@ -234,12 +234,10 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Sets the start graph to a given graph, or to <code>null</code>. This
+     * Sets the start graph to a given graph. This
      * implies the start graph is not one of the graphs stored in the rule
-     * system; correspondingly, the start graph name is set to <code>null</code>
-     * .
-     * @param startGraph the new start graph; if <code>null</code>, the start
-     *        graph is unset
+     * system; correspondingly, the start graph name is set to <code>null</code>.
+     * @param startGraph the new start graph; may not be {@code null}
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
      * @see #setStartGraph(String)
@@ -256,15 +254,7 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Sets the start graph to a given graph, or to <code>null</code>. This
-     * implies the start graph is not one of the graphs stored in the rule
-     * system; correspondingly, the start graph name is set to <code>null</code>
-     * .
-     * @param name the new start graph; if <code>null</code>, the start
-     *        graph is unset
-     * @throws IllegalArgumentException if <code>startGraph</code> does not have
-     *         a graph role
-     * @see #setStartGraph(String)
+     * Sets the start graph to one of the graphs in the grammar, with a given name.
      */
     public void setStartGraph(String name) {
         assert name != null;
