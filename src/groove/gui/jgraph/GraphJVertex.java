@@ -318,9 +318,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     @Override
     public void refreshAttributes() {
         AttributeMap result = createAttributes();
-        if (!getJGraph().isShowBackground()) {
-            GraphConstants.setBackground(result, Color.WHITE);
-        }
         if (isGrayedOut()) {
             result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
         }

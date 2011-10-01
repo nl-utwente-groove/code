@@ -44,7 +44,7 @@ public class DeleteAction extends SimulatorAction {
                 String.format("Delete these %d %ss%s?", names.size(),
                     resource.getDescription(), addendum);
         }
-        if (confirmBehaviour(Options.getDeleteOption(resource), question)) {
+        if (confirmBehaviour(Options.DELETE_RESOURCE_OPTION, question)) {
             // we do not ask for editor cancellation,
             // as deleting the resources makes saving edits superfluous anyway
             try {

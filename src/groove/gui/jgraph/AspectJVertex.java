@@ -12,7 +12,6 @@ import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
-import groove.gui.Options;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
@@ -498,14 +497,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return result;
     }
 
-    /**
-     * This implementation makes remark edges invisible as demanded by the
-     * {@link Options#SHOW_REMARKS_OPTION}.
-     */
     @Override
     public boolean isFiltered() {
         if (this.aspect == REMARK) {
-            return !getJGraph().isShowRemarks();
+            return false;
         }
         if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
             return false;

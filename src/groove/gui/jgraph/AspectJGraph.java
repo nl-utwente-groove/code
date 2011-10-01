@@ -164,13 +164,6 @@ final public class AspectJGraph extends GraphJGraph {
     /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
-    public final boolean isShowRemarks() {
-        return getOptionValue(Options.SHOW_REMARKS_OPTION);
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
     public final boolean isShowAspects() {
         return getOptionValue(Options.SHOW_ASPECTS_OPTION);
     }

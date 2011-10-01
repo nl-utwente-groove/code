@@ -24,7 +24,6 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.gui.Options;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJEdge;
@@ -746,10 +745,6 @@ public final class GraphToTikz {
             styles.add(colorStyle);
         }
 
-        if (!this.isShowBackground()) {
-            styles.add(WHITE_FILL);
-        }
-
         this.result.append(styles.toString());
     }
 
@@ -781,10 +776,6 @@ public final class GraphToTikz {
         } else if (!node.isClosed()) {
             styles.add(OPEN_NODE_STYLE);
         }
-    }
-
-    private boolean isShowBackground() {
-        return this.jGraph.getOptionValue(Options.SHOW_BACKGROUND_OPTION);
     }
 
     /** Appends the node name to the result string. */
@@ -1513,7 +1504,6 @@ public final class GraphToTikz {
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";
-    private static final String WHITE_FILL = "whitefill";
     private static final String BOLD_LINE = "bold";
     private static final String ULTRA_BOLD_LINE = "ultrabold";
     private static final String DOUBLE_DASH = "--";

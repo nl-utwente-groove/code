@@ -76,16 +76,10 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_NODE_IDS_OPTION);
         addCheckbox(SHOW_ANCHORS_OPTION);
         addCheckbox(SHOW_ASPECTS_OPTION);
-        addCheckbox(SHOW_REMARKS_OPTION);
-        addCheckbox(SHOW_BACKGROUND_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
-        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
-            addBehaviour(getDeleteOption(resource), 2);
-        }
-        addBehaviour(REPLACE_RULE_OPTION, 3);
-        addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
+        addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
 
@@ -833,19 +827,6 @@ public class Options implements Cloneable {
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
 
-    /** Returns the delete option text for a given resource kind. */
-    public static String getDeleteOption(ResourceKind kind) {
-        String result = deleteOptionMap.get(kind);
-        if (result == null) {
-            deleteOptionMap.put(kind,
-                result = String.format("Delete %s?", kind.getDescription()));
-        }
-        return result;
-    }
-
-    private static final Map<ResourceKind,String> deleteOptionMap =
-        new EnumMap<ResourceKind,String>(ResourceKind.class);
-
     /** Returns the tab show option text for a given resource kind. */
     public static String getShowTabOption(ResourceKind kind) {
         String result = showTabOptionMap.get(kind);
@@ -872,9 +853,6 @@ public class Options implements Cloneable {
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
-    /** Show background colour for nodes. */
-    static public final String SHOW_BACKGROUND_OPTION =
-        "Show node background colour";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show the tab for control programs. */
@@ -885,8 +863,6 @@ public class Options implements Cloneable {
         "Show prolog program tab";
     /** Show the tab for type graphs. */
     static public final String SHOW_TYPE_TAB_OPTION = "Show type graph tab";
-    /** Show remark nodes and edges. */
-    static public final String SHOW_REMARKS_OPTION = "Show remarks";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show unfiltered edges to filtered nodes. */
@@ -895,22 +871,12 @@ public class Options implements Cloneable {
     /** Show data values as nodes rather than assignments. */
     static public final String SHOW_VALUE_NODES_OPTION =
         "Show data values as nodes";
-    /** Always delete rules without confirmation. */
-    static public final String CANCEL_CONTROL_EDIT_OPTION =
-        "Abandon edited control program?";
-    /** Always replace edited rules. */
-    static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
-    /** Always replace edited rules. */
-    static public final String REPLACE_START_GRAPH_OPTION =
-        "Replace start graph?";
-    //    /** Always start simulation after changes. */
-    //    static public final String START_SIMULATION_OPTION =
-    //        "Start new simulation?";
-    //    /** Automatically stop simulation at changes to the rule system. */
-    //    static public final String STOP_SIMULATION_OPTION =
-    //        "Stop current simulation?";
-    /** Always replace edited rules. */
-    static public final String VERIFY_ALL_STATES_OPTION = "Verify all states?";
+    /** Always delete resources without confirmation. */
+    static public final String DELETE_RESOURCE_OPTION =
+        "Delete seletected resource?";
+    /** Always check CTL properties on all states, rather than the initial state. */
+    static public final String VERIFY_ALL_STATES_OPTION =
+        "Check CTL on all states?";
 
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults =
@@ -927,16 +893,9 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
-        boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
-        boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
-        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
-            intOptionDefaults.put(getDeleteOption(resource),
-                BehaviourOption.ASK);
-        }
-        intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
+        intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 

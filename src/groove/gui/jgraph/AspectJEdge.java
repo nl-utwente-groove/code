@@ -2,7 +2,6 @@ package groove.gui.jgraph;
 
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.DEFAULT;
-import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
@@ -271,10 +270,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Recomputes the set of node lines for this aspect node. */
     private List<StringBuilder> computeLines() {
-        if (isSourceLabel() || this.aspect == REMARK
-            && !getJGraph().isShowRemarks()) {
-            return Collections.emptyList();
-        } else if (hasError() || getJGraph().isShowAspects()) {
+        if (hasError() || getJGraph().isShowAspects()) {
             return getUserObject().toLines();
         } else {
             return super.getLines();
