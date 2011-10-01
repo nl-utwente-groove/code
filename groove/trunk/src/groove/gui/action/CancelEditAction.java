@@ -18,8 +18,8 @@ public class CancelEditAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getDisplay().cancelEditResource(
-            getSimulatorModel().getSelected(getResourceKind()), true);
+        getDisplay().saveEditor(
+            getSimulatorModel().getSelected(getResourceKind()), true, true);
     }
 
     @Override

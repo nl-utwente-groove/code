@@ -18,7 +18,7 @@ public class QuitAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        boolean quit = getDisplaysPanel().disposeAllEditors();
+        boolean quit = getDisplaysPanel().saveAllEditors(true);
         if (quit) {
             groove.gui.UserSettings.synchSettings(getFrame());
             // Saves the current user settings.

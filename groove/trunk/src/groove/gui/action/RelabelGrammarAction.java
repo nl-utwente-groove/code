@@ -72,15 +72,17 @@ public class RelabelGrammarAction extends SimulatorAction implements
 
     @Override
     public void execute() {
-        Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
-        if (relabelling != null) {
-            try {
-                getSimulatorModel().doRelabel(relabelling.one(),
-                    relabelling.two());
-            } catch (IOException exc) {
-                showErrorDialog(exc, String.format(
-                    "Error while renaming '%s' into '%s':", relabelling.one(),
-                    relabelling.two()));
+        if (getDisplaysPanel().saveAllEditors(false)) {
+            Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
+            if (relabelling != null) {
+                try {
+                    getSimulatorModel().doRelabel(relabelling.one(),
+                        relabelling.two());
+                } catch (IOException exc) {
+                    showErrorDialog(exc, String.format(
+                        "Error while renaming '%s' into '%s':",
+                        relabelling.one(), relabelling.two()));
+                }
             }
         }
     }

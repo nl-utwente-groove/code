@@ -47,7 +47,7 @@ public class NewGrammarAction extends SimulatorAction {
                         }
                     }
                     ok = response != JOptionPane.NO_OPTION;
-                } else if (getDisplaysPanel().disposeAllEditors()) {
+                } else if (getDisplaysPanel().saveAllEditors(true)) {
                     try {
                         getSimulatorModel().doNewGrammar(selectedFile);
                     } catch (IOException exc) {
