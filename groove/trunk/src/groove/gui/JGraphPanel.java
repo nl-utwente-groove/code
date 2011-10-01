@@ -93,7 +93,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
 
     /** Callback method that adds the required listeners to this panel. */
     protected void installListeners() {
-        addRefreshListener(Options.SHOW_BACKGROUND_OPTION);
         getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
             @Override
             public void valueChanged(GraphSelectionEvent e) {

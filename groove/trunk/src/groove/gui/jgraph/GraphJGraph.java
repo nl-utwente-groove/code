@@ -166,11 +166,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
             && getOptions().isSelected(option);
     }
 
-    /** Indicates if nodes should determine their own background colour. */
-    public boolean isShowBackground() {
-        return getOptionValue(Options.SHOW_BACKGROUND_OPTION);
-    }
-
     /**
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */

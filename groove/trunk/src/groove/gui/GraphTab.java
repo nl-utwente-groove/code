@@ -3,7 +3,6 @@ package groove.gui;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.GraphPreviewDialog;
@@ -175,7 +174,6 @@ final public class GraphTab extends ResourceTab implements MainTab {
             addRefreshListener(SHOW_ANCHORS_OPTION);
             addRefreshListener(SHOW_ASPECTS_OPTION);
             addRefreshListener(SHOW_NODE_IDS_OPTION);
-            addRefreshListener(SHOW_REMARKS_OPTION);
             addRefreshListener(SHOW_VALUE_NODES_OPTION);
         }
     }
