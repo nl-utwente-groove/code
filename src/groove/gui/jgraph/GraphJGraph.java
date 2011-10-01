@@ -81,7 +81,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
@@ -377,28 +376,23 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     grayedOutCells.add(jCell);
                 }
             }
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    GraphJGraph.this.modelRefreshing = true;
-                    // make sure refreshed cells are not selected
-                    boolean selectsInsertedCells =
-                        getGraphLayoutCache().isSelectsLocalInsertedCells();
-                    getGraphLayoutCache().setSelectsLocalInsertedCells(false);
-                    getGraphLayoutCache().setVisible(visibleCells.toArray(),
-                        invisibleCells.toArray());
-                    getGraphLayoutCache().setSelectsLocalInsertedCells(
-                        selectsInsertedCells);
-                    if (getSelectionCount() > 0) {
-                        Rectangle2D scope =
-                            (Rectangle2D) getCellBounds(getSelectionCells()).clone();
-                        if (scope != null) {
-                            scrollRectToVisible(toScreen(scope).getBounds());
-                        }
-                    }
-                    GraphJGraph.this.modelRefreshing = false;
+            GraphJGraph.this.modelRefreshing = true;
+            // make sure refreshed cells are not selected
+            boolean selectsInsertedCells =
+                getGraphLayoutCache().isSelectsLocalInsertedCells();
+            getGraphLayoutCache().setSelectsLocalInsertedCells(false);
+            getGraphLayoutCache().setVisible(visibleCells.toArray(),
+                invisibleCells.toArray());
+            getGraphLayoutCache().setSelectsLocalInsertedCells(
+                selectsInsertedCells);
+            if (getSelectionCount() > 0) {
+                Rectangle2D scope =
+                    (Rectangle2D) getCellBounds(getSelectionCells()).clone();
+                if (scope != null) {
+                    scrollRectToVisible(toScreen(scope).getBounds());
                 }
-            });
+            }
+            GraphJGraph.this.modelRefreshing = false;
         }
     }
 
@@ -892,8 +886,10 @@ public class GraphJGraph extends org.jgraph.JGraph {
         GraphLayoutCache result = super.getGraphLayoutCache();
         if (!(result instanceof MyGraphLayoutCache)) {
             result = createGraphLayoutCache();
+            if (getModel() != null) {
+                result.setModel(getModel());
+            }
             setGraphLayoutCache(result);
-            result.setModel(getModel());
         }
         return result;
     }
