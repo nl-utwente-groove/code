@@ -133,7 +133,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     private TypeGraph getImplicitTypeGraph() {
         if (this.implicitTypeGraph == null) {
-            TypeGraph result = new TypeGraph("implicit type graph");
+            TypeGraph result = new TypeGraph("implicit type graph", true);
             TypeNode top = TypeNode.TOP_NODE;
             result.addNode(top);
             for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {

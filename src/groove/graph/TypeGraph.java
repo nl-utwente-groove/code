@@ -57,7 +57,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @param name the (non-{@code null}) name of the type graph 
      */
     public TypeGraph(String name) {
+        this(name, false);
+    }
+
+    /** Constructs a fresh type graph. 
+     * @param name the (non-{@code null}) name of the type graph 
+     */
+    public TypeGraph(String name, boolean implicit) {
         super(name);
+        this.implicit = implicit;
     }
 
     @Override
@@ -101,6 +109,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     @Override
     public boolean addNode(TypeNode node) {
+        assert isImplicit() || node != TypeNode.TOP_NODE;
         boolean result = super.addNode(node);
         if (result) {
             assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
@@ -305,7 +314,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * i.e. one without true node types  
      */
     public boolean isImplicit() {
-        return containsNode(TypeNode.TOP_NODE);
+        return this.implicit;
     }
 
     /** Tests if one type node is a subtype of another. */
@@ -403,7 +412,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                             "Node types %s and %s have no common subtypes",
                             sourceType, targetType, sourceKey, targetKey));
                     }
-                } else if (edgeLabel.getMatchExpr() != null) {
+                } else if (edgeLabel.getMatchExpr() != null && !isImplicit()) {
                     // this is a regular expression, which is matched against
                     // the saturated type graph
                     Set<HostNode> startNodes =
@@ -578,6 +587,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     }
                 }
             }
+        }
+        if (result == null && isImplicit()) {
+            // this must be due to the fact that we are still editing the graph being analysed
+            // return an edge that is not in the type graph
+            result = createEdge(sourceType, label, targetType);
         }
         return result;
     }
@@ -764,4 +778,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Set of imported nodes. */
     private final Set<TypeNode> imports = new HashSet<TypeNode>();
+    /**
+     * Flag indicating that this is an implicit type graph.
+     * This affects the type analysis: an implicit type graph cannot
+     * give rise to typing errors.
+     */
+    private final boolean implicit;
 }
