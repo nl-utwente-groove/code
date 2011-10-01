@@ -3,7 +3,6 @@
 	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
 	<classpathentry excluding="**/.svn/*" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jgraph-5_13_0"/>
 	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4_8_2.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
