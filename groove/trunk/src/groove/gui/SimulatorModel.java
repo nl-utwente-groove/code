@@ -76,15 +76,10 @@ public class SimulatorModel implements Cloneable {
                 getStore().deleteTexts(ResourceKind.PROLOG, names);
                 break;
             case RULE:
-                for (AspectGraph oldRule : getStore().deleteGraphs(
-                    ResourceKind.RULE, names)) {
-                    result |= GraphProperties.isEnabled(oldRule);
-                }
-                break;
             case TYPE:
-                for (AspectGraph oldType : getStore().deleteGraphs(
-                    ResourceKind.TYPE, names)) {
-                    result |= GraphProperties.isEnabled(oldType);
+                for (AspectGraph oldGraph : getStore().deleteGraphs(
+                    ResourceKind.RULE, names)) {
+                    result |= isEnabled(oldGraph);
                 }
                 break;
             case PROPERTIES:
@@ -153,66 +148,72 @@ public class SimulatorModel implements Cloneable {
         start();
         boolean result = true;
         try {
-            String name = names.iterator().next();
-            SystemProperties oldProperties = getGrammar().getProperties();
-            SystemProperties newProperties = oldProperties.clone();
-            switch (resource) {
-            case CONTROL:
-                if (name.equals(oldProperties.getControlName())) {
-                    name = "";
-                }
-                newProperties.setControlName(name);
-                getStore().putProperties(newProperties);
-                break;
-            case HOST:
-                getGrammar().setStartGraph(name);
-                break;
-            case RULE:
-                Collection<AspectGraph> newRules =
-                    new ArrayList<AspectGraph>(names.size());
-                for (String ruleName : names) {
-                    AspectGraph oldRule =
-                        getStore().getGraphs(ResourceKind.RULE).get(ruleName);
-                    GraphProperties properties =
-                        GraphInfo.getProperties(oldRule, true).clone();
-                    properties.setEnabled(!properties.isEnabled());
-                    AspectGraph newRule = oldRule.clone();
-                    GraphInfo.setProperties(newRule, properties);
-                    newRule.setFixed();
-                    newRules.add(newRule);
-                }
-                getStore().putGraphs(ResourceKind.RULE, newRules);
-                break;
-            case TYPE:
-            case PROLOG:
-                List<String> actives = new ArrayList<String>();
-                if (resource == ResourceKind.TYPE) {
-                    actives.addAll(newProperties.getTypeNames());
-                } else {
-                    actives.addAll(newProperties.getPrologNames());
-                }
-                for (String typeName : names) {
-                    if (!actives.remove(typeName)) {
-                        actives.add(typeName);
-                    }
-                }
-                if (resource == ResourceKind.TYPE) {
-                    newProperties.setTypeNames(actives);
-                } else {
-                    newProperties.setPrologNames(actives);
-                }
-                getStore().putProperties(newProperties);
-                break;
-            case PROPERTIES:
-            default:
-                assert false;
-            }
+            setEnabled(resource, names);
             changeDisplay(DisplayKind.toDisplay(resource));
             changeGrammar(result);
         } finally {
             finish();
         }
         return result;
+    }
+
+    /** Enables a collection of named resources of a given kind. */
+    private void setEnabled(ResourceKind kind, Set<String> names)
+        throws IOException {
+        String name = names.iterator().next();
+        SystemProperties oldProperties = getGrammar().getProperties();
+        SystemProperties newProperties = oldProperties.clone();
+        switch (kind) {
+        case CONTROL:
+            if (name.equals(oldProperties.getControlName())) {
+                name = "";
+            }
+            newProperties.setControlName(name);
+            getStore().putProperties(newProperties);
+            break;
+        case HOST:
+            getGrammar().setStartGraph(name);
+            break;
+        case RULE:
+            Collection<AspectGraph> newRules =
+                new ArrayList<AspectGraph>(names.size());
+            for (String ruleName : names) {
+                AspectGraph oldRule =
+                    getStore().getGraphs(ResourceKind.RULE).get(ruleName);
+                GraphProperties properties =
+                    GraphInfo.getProperties(oldRule, true).clone();
+                properties.setEnabled(!properties.isEnabled());
+                AspectGraph newRule = oldRule.clone();
+                GraphInfo.setProperties(newRule, properties);
+                newRule.setFixed();
+                newRules.add(newRule);
+            }
+            getStore().putGraphs(ResourceKind.RULE, newRules);
+            break;
+        case TYPE:
+        case PROLOG:
+            List<String> actives = new ArrayList<String>();
+            if (kind == ResourceKind.TYPE) {
+                actives.addAll(newProperties.getTypeNames());
+            } else {
+                actives.addAll(newProperties.getPrologNames());
+            }
+            for (String typeName : names) {
+                if (!actives.remove(typeName)) {
+                    actives.add(typeName);
+                }
+            }
+            if (kind == ResourceKind.TYPE) {
+                newProperties.setTypeNames(actives);
+            } else {
+                newProperties.setPrologNames(actives);
+            }
+            getStore().putProperties(newProperties);
+            break;
+        case PROPERTIES:
+        default:
+            assert false;
+        }
     }
 
     /**
@@ -225,11 +226,11 @@ public class SimulatorModel implements Cloneable {
         throws IOException {
         start();
         try {
-            boolean result = GraphProperties.isEnabled(newGraph);
+            boolean result = isEnabled(newGraph);
             Collection<AspectGraph> oldGraphs =
                 getStore().putGraphs(kind, Collections.singleton(newGraph));
             for (AspectGraph oldGraph : oldGraphs) {
-                result |= GraphProperties.isEnabled(oldGraph);
+                result |= isEnabled(oldGraph);
             }
             changeGrammar(result);
             changeSelected(kind, newGraph.getName());
@@ -238,6 +239,27 @@ public class SimulatorModel implements Cloneable {
         } finally {
             finish();
         }
+    }
+
+    /** Tests if a given aspect graph corresponds to an enabled resource. */
+    private boolean isEnabled(AspectGraph graph) {
+        boolean result = false;
+        String name = graph.getName();
+        SystemProperties properties = getGrammar().getProperties();
+        switch (graph.getRole()) {
+        case HOST:
+            result = name.equals(getGrammar().getStartGraphName());
+            break;
+        case RULE:
+            result = GraphProperties.isEnabled(graph);
+            break;
+        case TYPE:
+            result = properties.getTypeNames().contains(name);
+            break;
+        default:
+            assert false;
+        }
+        return result;
     }
 
     /**
