@@ -230,7 +230,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
      * Callback method to create a tab component for this panel,
      * in case it is used in a {@link JTabbedPane}.
      */
-    protected TabLabel createTabLabel() {
+    private TabLabel createTabLabel() {
         return new TabLabel(this, getIcon(), getName());
     }
 
