@@ -249,7 +249,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                     && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else if (evt.isControlDown()) {
-                    getSimulatorModel().setDisplay(DisplayKind.HOST);
+                    getDisplay().selectStateTab();
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
