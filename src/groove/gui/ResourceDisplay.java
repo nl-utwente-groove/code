@@ -244,9 +244,8 @@ public abstract class ResourceDisplay extends Display implements
             AspectGraph graph =
                 getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
                     name);
-            final GraphEditorTab result = new GraphEditorTab(this, graph);
-            // start the editor only after it has been added
-            result.start();
+            GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
+            result.setGraph(graph);
             return result;
         } else {
             String program =
@@ -256,16 +255,19 @@ public abstract class ResourceDisplay extends Display implements
         }
     }
 
-    /** Attempts to cancel an edit action for a given named resource.
+    /**
+     * Attempts to save and optionally dispose the editor for a given named resource.
      * @param name the name of the editor to be cancelled
      * @param confirm if {@code true}, the user should explicitly confirm
-     * @return {@code true} if the editing was cancelled
+     * @param dispose if {@code true}, the editor is disposed afterwards
+     * (unless the action is cancelled)
+     * @return {@code true} if the action was not cancelled
      */
-    public boolean cancelEditResource(String name, boolean confirm) {
+    public boolean saveEditor(String name, boolean confirm, boolean dispose) {
         boolean result = true;
         ResourceTab editor = getEditors().get(name);
         if (editor != null) {
-            result = editor.cancelEditing(confirm);
+            result = editor.saveEditor(confirm, dispose);
         }
         return result;
     }
@@ -276,16 +278,18 @@ public abstract class ResourceDisplay extends Display implements
     }
 
     /**
-     * Attempts to close all editors on this display, asking permission 
-     * for the dirty ones and possibly saving them.
+     * Attempts to save all dirty editors on this display, 
+     * after asking permission from the user.
      * This is done in preparation to changing the grammar.
-     * @return {@code true} if all editors were disposed.
+     * @param dispose if {@code true}, the editors are disposed
+     * (unless the action is cancelled)
+     * @return {@code true} if the action was not cancelled.
      */
-    public boolean cancelAllEdits() {
+    public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
         for (ResourceTab editor : new ArrayList<ResourceTab>(
             getEditors().values())) {
-            result = editor.cancelEditing(true);
+            result = editor.saveEditor(true, dispose);
             if (!result) {
                 break;
             }
@@ -332,20 +336,14 @@ public abstract class ResourceDisplay extends Display implements
      */
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {
         int tabCount = getTabPane().getTabCount();
-        boolean mainTabUpdated = false;
+        getMainTab().updateGrammar(grammar);
         for (int i = tabCount - 1; i >= 0; i--) {
             Tab tab = (Tab) getTabPane().getComponentAt(i);
             if (tab.isEditor() && fresh) {
                 ((ResourceTab) tab).dispose();
-            } else {
+            } else if (tab != getMainTab()) {
                 tab.updateGrammar(grammar);
-                if (tab == getMainTab()) {
-                    mainTabUpdated = true;
-                }
             }
-        }
-        if (!mainTabUpdated) {
-            getMainTab().updateGrammar(grammar);
         }
         if (getMainTab().getName() == null) {
             removeMainTab();
@@ -575,6 +573,7 @@ public abstract class ResourceDisplay extends Display implements
             boolean isIndexSelected = getSelectedIndex() == index;
             Component panel = getComponentAt(index);
             super.removeTabAt(index);
+            // set this resource as the main tab
             String name = panel.getName();
             if (getEditors().remove(name) != null && isIndexSelected) {
                 selectMainTab(name);

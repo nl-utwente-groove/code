@@ -54,7 +54,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
             new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
                 true);
 
-        if (getRuleDisplay().cancelEditResource(rule.getName(), true)
+        if (getRuleDisplay().saveEditor(rule.getName(), true, false)
             && dialog.showDialog(getFrame())) {
             // We go through the results of the dialog.
             GraphProperties editedProperties =

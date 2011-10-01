@@ -167,7 +167,7 @@ public class TabLabel extends JPanel {
     protected void doButtonAction() {
         switch (this.kind) {
         case RESOURCE:
-            ((ResourceTab) this.tab).cancelEditing(true);
+            ((ResourceTab) this.tab).saveEditor(true, true);
             break;
         case DISPLAY:
             this.parent.detach(this.display);

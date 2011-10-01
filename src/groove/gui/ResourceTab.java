@@ -177,11 +177,18 @@ abstract public class ResourceTab extends JPanel implements Tab {
     /** Sets the status of the editor to clean. */
     abstract public void setClean();
 
-    /** Calls {@link CancelEditAction#execute()}. */
-    public boolean cancelEditing(boolean confirm) {
+    /** 
+     * Saves and optionally disposes the editor, after an optional confirmation dialog.
+     * @param confirm if {@code true}, the user is asked for confirmation if the editor is dirty 
+     * @param dispose if {@code true}, the editor is disposed (unless the action is cancelled)
+     * @return {@code true} if the user did not cancel the action
+     */
+    public boolean saveEditor(boolean confirm, boolean dispose) {
         boolean result = false;
         if (!confirm || confirmCancel()) {
-            dispose();
+            if (dispose) {
+                dispose();
+            }
             result = true;
         }
         return result;
@@ -190,6 +197,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
     /**
      * Creates and shows a confirmation dialog for abandoning the currently
      * edited graph.
+     * @return {@code true} if the user did not cancel the action
      */
     public boolean confirmCancel() {
         boolean result = true;

@@ -92,37 +92,48 @@ import org.jgraph.graph.GraphUndoManager;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphEditorTab extends ResourceTab implements GraphModelListener,
-        PropertyChangeListener {
+final public class GraphEditorTab extends ResourceTab implements
+        GraphModelListener, PropertyChangeListener {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param parent the component on which this panel is placed
-     * @param graph the input graph for the editor
+     * @param role the input graph for the editor
      */
-    public GraphEditorTab(ResourceDisplay parent, final AspectGraph graph) {
+    public GraphEditorTab(ResourceDisplay parent, final GraphRole role) {
         super(parent);
-        this.graph = graph;
-        this.role = graph.getRole();
+        this.role = role;
         this.jgraph = new AspectJGraph(getSimulator(), parent.getKind(), true);
         this.jgraph.updateGrammar(getSimulatorModel().getGrammar());
         setFocusCycleRoot(true);
-        setName(graph.getName());
+        // start is called from the constructor;
+        // this may go wrong in case of subclassing
+        setSnapToGrid();
+        initListeners();
+        start();
     }
 
-    /** Starts the editor with the graph passed in at construction time. */
-    @Override
-    protected void start() {
-        super.start();
+    /** Sets a given graph as the model to be edited. */
+    public void setGraph(AspectGraph graph) {
+        AspectJModel oldModel = getModel();
+        if (oldModel != null) {
+            oldModel.addUndoableEditListener(getUndoManager());
+            oldModel.addGraphModelListener(this);
+        }
+        setName(graph.getName());
         AspectJModel newModel = getJGraph().newModel();
-        newModel.loadGraph(getGraph());
+        newModel.loadGraph(graph);
         getJGraph().setModel(newModel);
+        newModel.addUndoableEditListener(getUndoManager());
+        newModel.addGraphModelListener(this);
         setDirty(false);
         getUndoManager().discardAllEdits();
         updateHistoryButtons();
         updateGrammar(getSimulatorModel().getGrammar());
-        setSnapToGrid();
-        initListeners();
-        this.graph = null;
+    }
+
+    /** Returns the graph being edited. */
+    public AspectGraph getGraph() {
+        return getModel().getGraph();
     }
 
     @Override
@@ -190,11 +201,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         return this.role;
     }
 
-    /** Returns the graph being edited. */
-    public AspectGraph getGraph() {
-        return this.graph == null ? getModel().getGraph() : this.graph;
-    }
-
     @Override
     public void updateGrammar(GrammarModel grammar) {
         // test if the graph being edited is still in the grammar;
@@ -202,7 +208,9 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
         GraphBasedModel<?> graphModel =
             (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
                 getName());
-        if (graphModel != null) {
+        if (graphModel == null) {
+            dispose();
+        } else if (getGraph() == graphModel.getSource()) {
             getJGraph().updateGrammar(grammar);
             // check if the properties have changed
             GraphProperties properties =
@@ -216,7 +224,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
             }
             updateStatus();
         } else {
-            dispose();
+            setGraph(graphModel.getSource());
         }
     }
 
@@ -277,6 +285,7 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
     @Override
     protected void saveResource() {
         getSaveAction().doSaveGraph(getGraph());
+        setDirty(false);
     }
 
     /** Returns the jgraph component of this editor. */
@@ -344,8 +353,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
                 }
             });
         getJGraph().addJGraphModeListener(this);
-        getModel().addUndoableEditListener(getUndoManager());
-        getModel().addGraphModelListener(this);
         getSnapToGridAction().addSnapListener(this);
     }
 
@@ -640,13 +647,6 @@ public class GraphEditorTab extends ResourceTab implements GraphModelListener,
 
     /** The role of the graph being edited. */
     private final GraphRole role;
-    /** Graph being edited.
-     * This holds the graph as long as the editor is not yet initialised,
-     * and then is set to {@code null}.
-     * Use {@link #getGraph()} to access the graph.
-     */
-    private AspectGraph graph;
-
     /**
      * Flag shared between all Editor instances indicating that
      * the clipboard was filled by a cut or copy action.

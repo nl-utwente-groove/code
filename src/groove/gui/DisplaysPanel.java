@@ -480,14 +480,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /**
-     * Makes an attempt to dispose all editors from all displays.
-     * @return {@code true} if all editors were disposed.
+     * Makes an attempt to save all dirty editors from all displays.
+     * The user is asked for confirmation.
+     * @param dispose if {@code true}, the editors are disposed after saving
+     * @return {@code true} if the action was not cancelled.
      */
-    public boolean disposeAllEditors() {
+    public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
         for (Display display : this.displaysMap.values()) {
             if (display instanceof ResourceDisplay) {
-                result = ((ResourceDisplay) display).cancelAllEdits();
+                result = ((ResourceDisplay) display).saveAllEditors(dispose);
                 if (!result) {
                     break;
                 }

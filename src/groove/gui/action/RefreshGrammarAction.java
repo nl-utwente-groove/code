@@ -19,11 +19,13 @@ public class RefreshGrammarAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        try {
-            getSimulatorModel().doRefreshGrammar();
-        } catch (IOException exc) {
-            showErrorDialog(exc, "Error while refreshing grammar from "
-                + getGrammarStore().getLocation());
+        if (getDisplaysPanel().saveAllEditors(false)) {
+            try {
+                getSimulatorModel().doRefreshGrammar();
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error while refreshing grammar from "
+                    + getGrammarStore().getLocation());
+            }
         }
     }
 

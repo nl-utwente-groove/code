@@ -21,7 +21,7 @@ public class RenameAction extends SimulatorAction {
     public void execute() {
         ResourceKind resource = getResourceKind();
         String oldName = getSimulatorModel().getSelected(resource);
-        if (getDisplay().cancelEditResource(oldName, true)) {
+        if (getDisplay().saveEditor(oldName, true, true)) {
             String newName = askNewName(oldName, false);
             if (newName != null && !newName.equals(oldName)) {
                 try {

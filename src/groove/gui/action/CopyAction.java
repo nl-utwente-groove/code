@@ -19,7 +19,7 @@ public class CopyAction extends SimulatorAction {
     @Override
     public void execute() {
         String oldName = getSimulatorModel().getSelected(getResourceKind());
-        if (getDisplay().cancelEditResource(oldName, true)) {
+        if (getDisplay().saveEditor(oldName, true, false)) {
             String newName = askNewName(oldName, true);
             if (newName != null) {
                 doCopy(oldName, newName);
