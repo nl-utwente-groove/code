@@ -29,11 +29,15 @@ import groove.view.aspect.AspectGraph;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -357,7 +361,54 @@ public abstract class ResourceDisplay extends Display implements
     protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR,
             Change.toChange(getResourceKind()));
+        // adds a mouse listener that offers a popup menu with a detach action
+        getDisplayPanel().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    int index =
+                        getTabPane().indexAtLocation(e.getX(), e.getY());
+                    if (index >= 0) {
+                        ResourceTab tab =
+                            (ResourceTab) getTabPane().getComponentAt(index);
+                        if (tab != getMainTab()) {
+                            createDetachMenu(tab).show(getDisplayPanel(),
+                                e.getX(), e.getY());
+                        }
+                    }
+                }
+            }
+        });
         activateListening();
+    }
+
+    /** Creates a popup menu with a detach action for a given component. */
+    private JPopupMenu createDetachMenu(final ResourceTab tab) {
+        JPopupMenu result = new JPopupMenu();
+        result.add(new AbstractAction(Options.CLOSE_THIS_ACTION_NAME) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tab.saveEditor(true, true);
+            }
+        });
+        result.add(new AbstractAction(Options.CLOSE_OTHER_ACTION_NAME) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (ResourceTab editor : new ArrayList<ResourceTab>(
+                    getEditors().values())) {
+                    if (editor != tab && !editor.saveEditor(true, true)) {
+                        break;
+                    }
+                }
+            }
+        });
+        result.add(new AbstractAction(Options.CLOSE_ALL_ACTION_NAME) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveAllEditors(true);
+            }
+        });
+        return result;
     }
 
     /** Tests if listening is currently activated. */

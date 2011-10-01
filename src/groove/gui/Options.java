@@ -439,6 +439,12 @@ public class Options implements Cloneable {
         "Check LTL property (optimised bounded pocket strategy)";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
+    /** Close all editors action name */
+    public static final String CLOSE_ALL_ACTION_NAME = "Close All Editors";
+    /** Close this editor action name */
+    public static final String CLOSE_THIS_ACTION_NAME = "Close This Editor";
+    /** Close other editors action name */
+    public static final String CLOSE_OTHER_ACTION_NAME = "Close Other Editors";
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
     /** Cut action name */
