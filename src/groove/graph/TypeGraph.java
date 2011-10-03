@@ -109,7 +109,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     @Override
     public boolean addNode(TypeNode node) {
-        assert isImplicit() || node != TypeNode.TOP_NODE;
         boolean result = super.addNode(node);
         if (result) {
             assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
