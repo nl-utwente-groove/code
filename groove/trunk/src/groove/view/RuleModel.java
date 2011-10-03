@@ -1492,7 +1492,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.rhs = toTypedGraph(origin.rhs, parentTypeMap, this.typeMap);
             if (!getType().isImplicit()) {
                 try {
-                    checkTypeSpecialisation(this.lhs, this.rhs);
+                    Set<RuleNode> parentNodes = new HashSet<RuleNode>();
+                    if (parentTypeMap != null) {
+                        for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
+                            parentNodes.add(this.typeMap.getNode(origParentNode));
+                        }
+                    }
+                    checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
                 } catch (FormatException exc) {
                     this.errors.addAll(transferErrors(exc.getErrors(),
                         this.typeMap));
@@ -1578,10 +1584,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /**
          * If the RHS type for a reader node is changed w.r.t. the LHS type,
          * the LHS type has to be sharp and the RHS type a subtype of it.
+         * @param parentNodes nodes from a higher quantification level
          * @throws FormatException if there are typing errors
          */
-        private void checkTypeSpecialisation(RuleGraph lhs, RuleGraph rhs)
-            throws FormatException {
+        private void checkTypeSpecialisation(Set<RuleNode> parentNodes,
+                RuleGraph lhs, RuleGraph rhs) throws FormatException {
             Collection<FormatError> errors = createErrors();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
@@ -1593,35 +1600,33 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
             }
             // check for ambiguous mergers
+            Set<RuleNode> mergedNodes = new HashSet<RuleNode>();
             for (RuleEdge edge : this.rhs.edgeSet()) {
                 if (isMerger(edge)) {
                     RuleNode source = edge.source();
                     TypeNode sourceType = source.getType();
                     RuleNode target = edge.target();
                     TypeNode targetType = target.getType();
-                    if (sourceType.equals(targetType)) {
-                        if (!source.isSharp() && !target.isSharp()) {
+                    if (!source.isSharp()) {
+                        errors.add(new FormatError(
+                            "Merged %s-node must be sharply typed",
+                            sourceType.getLabel().text(), source));
+                    } else if (parentNodes.contains(source)
+                        && !target.isSharp()) {
+                        errors.add(new FormatError(
+                            "Merged %s-node must be on same quantification level as merge target",
+                            sourceType.getLabel().text(), source));
+                    } else if (!getType().isSubtype(targetType, sourceType)) {
+                        errors.add(new FormatError(
+                            "Merged %s-node must be supertype of %s",
+                            sourceType.getLabel().text(),
+                            targetType.getLabel().text(), source));
+                    } else if (!target.isSharp()) {
+                        if (!mergedNodes.add(edge.source())) {
                             errors.add(new FormatError(
-                                "One of merged %s-nodes must be sharply typed",
-                                targetType.getLabel().text(), target));
-                        }
-                    } else if (getType().isSubtype(sourceType, targetType)) {
-                        if (!target.isSharp()) {
-                            errors.add(new FormatError(
-                                "Merged type %s must be sharp",
-                                targetType.getLabel().text(), target));
-                        }
-                    } else if (getType().isSubtype(targetType, sourceType)) {
-                        if (!source.isSharp()) {
-                            errors.add(new FormatError(
-                                "Merged type %s must be sharp",
+                                "%s-node is merged with two distinct non-sharp nodes",
                                 sourceType.getLabel().text(), source));
                         }
-                    } else {
-                        errors.add(new FormatError(
-                            "One of merged types %s and %s must be subtype of the other",
-                            sourceType.getLabel().text(),
-                            targetType.getLabel().text(), source, target));
                     }
                 } else {
                     TypeEdge edgeType = edge.getType();
