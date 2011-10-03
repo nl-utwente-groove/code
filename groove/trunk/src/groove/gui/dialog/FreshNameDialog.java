@@ -128,6 +128,7 @@ abstract public class FreshNameDialog<Name> {
         }
         getErrorLabel().setText(errorText);
         getOkButton().setEnabled(enabled);
+        getNameFieldListener().setEnabled(enabled);
     }
 
     /**
@@ -187,13 +188,24 @@ abstract public class FreshNameDialog<Name> {
             this.nameField = new JTextField();
             this.nameField.getDocument().addDocumentListener(
                 new OverlapListener());
-            this.nameField.addActionListener(new CloseListener());
+            this.nameField.addActionListener(getNameFieldListener());
         }
         return this.nameField;
     }
 
+    /** Returns the close listener for the name field. */
+    private CloseListener getNameFieldListener() {
+        if (this.nameFieldListener == null) {
+            this.nameFieldListener = new CloseListener();
+        }
+        return this.nameFieldListener;
+    }
+
     /** The text field where the rule name is entered. */
     private JTextField nameField;
+
+    /** Close listener for the name field. */
+    private CloseListener nameFieldListener;
 
     private JLabel getErrorLabel() {
         if (this.errorLabel == null) {
@@ -242,13 +254,22 @@ abstract public class FreshNameDialog<Name> {
     private class CloseListener implements ActionListener {
         /** Empty constructor with the right visibility. */
         CloseListener() {
-            // empty
+            this.enabled = true;
+        }
+
+        /** Enables or disables the close listened. */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public void actionPerformed(ActionEvent e) {
-            getOptionPane().setValue(e.getSource());
-            getOptionPane().setVisible(false);
+            if (this.enabled) {
+                getOptionPane().setValue(e.getSource());
+                getOptionPane().setVisible(false);
+            }
         }
+
+        private boolean enabled;
     }
 
     /**

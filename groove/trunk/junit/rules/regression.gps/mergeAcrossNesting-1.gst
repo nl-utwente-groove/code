@@ -1,40 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="type" id="type">
-        <attr name="$version">
-            <string>curly</string>
-        </attr>
+    <graph edgemode="directed" edgeids="false" role="graph" id="mergeAcrossNesting-1">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <node id="n1">
             <attr name="layout">
-                <string>121 159 34 46</string>
+                <string>232 72 34 61</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>149 76 34 46</string>
+                <string>127 93 34 46</string>
             </attr>
         </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>181 159 34 46</string>
-            </attr>
-        </node>
-        <edge to="n0" from="n2">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>sub:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:C</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n1">
-            <attr name="label">
-                <string>sub:</string>
+                <string>flag:b1</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">

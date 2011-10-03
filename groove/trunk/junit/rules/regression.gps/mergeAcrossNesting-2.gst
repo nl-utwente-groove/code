@@ -1,55 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="ERR-generaliseType">
+    <graph edgemode="directed" edgeids="false" role="graph" id="mergeAcrossNesting-2">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>44 52 242 31</string>
-            </attr>
-        </node>
         <node id="n3">
             <attr name="layout">
-                <string>189 109 34 46</string>
+                <string>128 188 34 46</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>127 85 34 61</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>93 109 37 46</string>
+                <string>229 173 34 61</string>
             </attr>
         </node>
-        <edge to="n3" from="n3">
+        <node id="n1">
+            <attr name="layout">
+                <string>232 72 34 61</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>flag:a</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:A</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:#B</string>
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n3" from="n3">
             <attr name="label">
-                <string>new:</string>
+                <string>type:C</string>
             </attr>
         </edge>
-        <edge to="n3" from="n2">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>=</string>
+                <string>flag:b2</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n0">
+            <attr name="label">
+                <string>c</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>rem:</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>Type generalisation should be disallowed</string>
+                <string>flag:b1</string>
             </attr>
         </edge>
     </graph>
