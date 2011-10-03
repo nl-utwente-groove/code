@@ -348,7 +348,10 @@ public class RuleApplication implements DeltaApplier {
                     if (!record.isErasedEdge(sourceEdge)) {
                         target.removeEdge(sourceEdge);
                         registerErasure(sourceEdge);
-                        if (!sourceEdge.label().isNodeType()) {
+                        // TODO the following becomes superfluous as soon as 
+                        // we truly start working with typed nodes
+                        if (!getRule().isTyped()
+                            || !sourceEdge.label().isNodeType()) {
                             // we register this as an edge to be added later
                             // at that point the merge map is taken into account
                             record.addCreatedEdge(sourceEdge);

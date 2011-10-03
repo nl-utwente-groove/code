@@ -103,6 +103,14 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
+     * Indicates if the rule is explicitly typed.
+     * TODO eventually this test should not be necessary
+     */
+    boolean isTyped() {
+        return !getSystemProperties().getTypeNames().isEmpty();
+    }
+
+    /**
      * Returns the priority of this object. A higher number means higher
      * priority, with {@link #DEFAULT_PRIORITY} the lowest.
      */

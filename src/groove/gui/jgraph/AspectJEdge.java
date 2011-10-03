@@ -369,7 +369,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         AspectEdge edge = getEdge();
         RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
         if (ruleModelLabel != null) {
-            if (ruleModelLabel.isEmpty() || ruleModelLabel.isNeg()
+            if (ruleModelLabel.isEmpty() && this.aspect != AspectKind.CREATOR
+                || ruleModelLabel.isNeg()
                 && ruleModelLabel.getNegOperand().isEmpty()) {
                 // remove edge arrow
                 GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
