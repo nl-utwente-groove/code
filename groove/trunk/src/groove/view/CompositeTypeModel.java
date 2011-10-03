@@ -119,8 +119,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                         origModel.getSource()));
                 }
             }
+            result.setFixed();
         }
-        result.setFixed();
         if (errors.isEmpty()) {
             return result;
         } else {
@@ -133,24 +133,29 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     private TypeGraph getImplicitTypeGraph() {
         if (this.implicitTypeGraph == null) {
-            TypeGraph result = new TypeGraph("implicit type graph", true);
-            TypeNode top = TypeNode.TOP_NODE;
-            result.addNode(top);
-            for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-                result.addNode(TypeNode.getDataType(sigKind));
-            }
-            for (TypeLabel label : getLabels()) {
-                if (label.isBinary()) {
-                    for (TypeNode target : result.nodeSet()) {
-                        result.addEdge(top, label, target);
-                    }
-                } else {
-                    result.addEdge(top, label, top);
-                }
-            }
-            this.implicitTypeGraph = result;
+            this.implicitTypeGraph = computeImplicitType();
         }
         return this.implicitTypeGraph;
+    }
+
+    private TypeGraph computeImplicitType() {
+        TypeGraph result = new TypeGraph("implicit type graph", true);
+        TypeNode top = TypeNode.TOP_NODE;
+        result.addNode(top);
+        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+            result.addNode(TypeNode.getDataType(sigKind));
+        }
+        for (TypeLabel label : getLabels()) {
+            if (label.isBinary()) {
+                for (TypeNode target : result.nodeSet()) {
+                    result.addEdge(top, label, target);
+                }
+            } else {
+                result.addEdge(top, label, top);
+            }
+        }
+        result.setFixed();
+        return result;
     }
 
     @Override

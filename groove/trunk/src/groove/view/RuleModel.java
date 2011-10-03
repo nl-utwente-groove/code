@@ -199,7 +199,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return String.format("Rule model on '%s'", getName());
     }
 
-    /** Returns the (possibly {@code null}) type graph of this rule. */
+    /** Returns the (implicit or explicit) type graph of this grammar. */
     final TypeGraph getType() {
         return getGrammar().getTypeGraph();
     }
