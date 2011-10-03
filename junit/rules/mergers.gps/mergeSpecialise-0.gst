@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n1">
             <attr name="layout">
                 <string>198 89 29 31</string>
