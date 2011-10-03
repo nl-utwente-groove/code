@@ -270,7 +270,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Recomputes the set of node lines for this aspect node. */
     private List<StringBuilder> computeLines() {
-        if (hasError() || getJGraph().isShowAspects()) {
+        if (isSourceLabel()) {
+            return Collections.emptyList();
+        } else if (hasError() || getJGraph().isShowAspects()) {
             return getUserObject().toLines();
         } else {
             return super.getLines();
