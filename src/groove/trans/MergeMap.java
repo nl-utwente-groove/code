@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.graph.ElementMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
@@ -81,6 +82,17 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
             }
         }
         return keyImage;
+    }
+
+    @Override
+    public void putAll(ElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
+        // override to make sure putNode is called
+        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
+            putNode(nodeEntry.getKey(), nodeEntry.getValue());
+        }
+        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap().entrySet()) {
+            putEdge(edgeEntry.getKey(), edgeEntry.getValue());
+        }
     }
 
     /**
