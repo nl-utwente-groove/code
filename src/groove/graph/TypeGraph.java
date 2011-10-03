@@ -402,7 +402,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeNode sourceType = sourceImage.getType();
             TypeNode targetType = targetImage.getType();
             TypeEdge typeEdge = null;
-            if (!edgeLabel.isAtom()) {
+            if (edgeLabel.isAtom()) {
+                typeEdge =
+                    getTypeEdge(sourceType, edgeLabel.getTypeLabel(),
+                        targetType);
+                if (typeEdge == null) {
+                    errors.add(new FormatError("%s-node has unknown %s-%s",
+                        sourceType, edgeLabel, edge.getRole().getDescription(
+                            false), edge.source()));
+                } else {
+                    morphism.putEdge(edge, ruleFactory.createEdge(sourceImage,
+                        typeEdge, targetImage));
+                }
+            } else {
                 if (edgeLabel.isEmpty()) {
                     // this is a (possibly negative) comparison of nodes
                     // which can only be correct if they have a common subtype
@@ -429,18 +441,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
                 morphism.putEdge(edge,
                     ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
-            } else {
-                typeEdge =
-                    getTypeEdge(sourceType, edgeLabel.getTypeLabel(),
-                        targetType);
-                if (typeEdge == null) {
-                    errors.add(new FormatError("%s-node has unknown %s-%s",
-                        sourceType, edgeLabel, edge.getRole().getDescription(
-                            false), edge.source()));
-                } else {
-                    morphism.putEdge(edge, ruleFactory.createEdge(sourceImage,
-                        typeEdge, targetImage));
-                }
             }
         }
         if (!errors.isEmpty()) {

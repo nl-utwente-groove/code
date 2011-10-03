@@ -81,7 +81,12 @@ public class FormatError implements Comparable<FormatError> {
 
     /** Constructs an error from an existing error, by adding extra information. */
     public FormatError(FormatError prior, Object... pars) {
-        this(prior.toString(), pars);
+        // don't call this(String,Object...) as the prior string may contain %'s
+        // which give rise to exceptions in String.format()
+        this(prior.toString());
+        for (Object par : pars) {
+            addContext(par);
+        }
         this.elements.addAll(prior.getElements());
         if (this.graph == null) {
             this.graph = prior.getGraph();

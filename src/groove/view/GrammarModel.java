@@ -204,7 +204,7 @@ public class GrammarModel implements Observer {
 
     /**
      * Lazily creates the type graph for this grammar.
-     * Returns {@code null} there is no type selected, or the type model has errors.
+     * @return the explicit or implicit type graph of the grammar
      */
     public TypeGraph getTypeGraph() {
         return getTypeModel().getTypeGraph();
