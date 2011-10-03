@@ -139,7 +139,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         for (AspectEdge modelEdge : getSource().edgeSet()) {
             // do not process the node type edges again
             TypeLabel typeLabel = modelEdge.getTypeLabel();
-            if (typeLabel == null || !typeLabel.isNodeType()) {
+            if (!modelEdge.getKind().isMeta()
+                && (typeLabel == null || !typeLabel.isNodeType())) {
                 try {
                     processModelEdge(result, this.modelMap, modelEdge);
                 } catch (FormatException exc) {
