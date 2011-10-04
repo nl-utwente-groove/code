@@ -300,20 +300,22 @@ public class JGraphUI extends BasicGraphUI {
                 }
                 return;
             case MOVE:
-                if (this.dragStart != null) {
-                    // there is a focused cell, or we wouldn't be in move mode
-                    // select it if currently not selected
-                    GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
-                    if (cell == null) {
-                        cell = getJCellAt(this.dragStart.getPoint());
-                        getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
+                if (getHandle() != null) {
+                    if (this.dragStart != null) {
+                        // there is a focused cell, or we wouldn't be in move mode
+                        // select it if currently not selected
+                        GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
+                        if (cell == null) {
+                            cell = getJCellAt(this.dragStart.getPoint());
+                            getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
+                        }
+                        if (!getJGraph().isCellSelected(cell)) {
+                            getJGraph().setSelectionCell(cell);
+                        }
+                        getHandle().mousePressed(this.dragStart);
                     }
-                    if (!getJGraph().isCellSelected(cell)) {
-                        getJGraph().setSelectionCell(cell);
-                    }
-                    JGraphUI.this.handle.mousePressed(this.dragStart);
+                    getHandle().mouseDragged(e);
                 }
-                JGraphUI.this.handle.mouseDragged(e);
                 break;
             case EDGE:
                 if (this.dragStart != null) {
@@ -342,7 +344,9 @@ public class JGraphUI extends BasicGraphUI {
                     finishEdgeAdding(e);
                     break;
                 case MOVE:
-                    JGraphUI.this.handle.mouseReleased(e);
+                    if (getHandle() != null) {
+                        getHandle().mouseReleased(e);
+                    }
                     break;
                 case SELECT:
                     completeSelect(e);
@@ -367,8 +371,8 @@ public class JGraphUI extends BasicGraphUI {
                 } else {
                     continueEdgeAdding(e);
                 }
-            } else if (JGraphUI.this.handle != null) {
-                JGraphUI.this.handle.mouseMoved(e);
+            } else if (getHandle() != null) {
+                getHandle().mouseMoved(e);
                 if (!e.isConsumed()) {
                     getJGraph().setCursor(getJGraph().getMode().getCursor());
                 }
