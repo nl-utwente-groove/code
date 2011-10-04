@@ -300,20 +300,20 @@ public class JGraphUI extends BasicGraphUI {
                 }
                 return;
             case MOVE:
-                if (getHandle() != null) {
-                    if (this.dragStart != null) {
-                        // there is a focused cell, or we wouldn't be in move mode
-                        // select it if currently not selected
-                        GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
-                        if (cell == null) {
-                            cell = getJCellAt(this.dragStart.getPoint());
-                            getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
-                        }
-                        if (!getJGraph().isCellSelected(cell)) {
-                            getJGraph().setSelectionCell(cell);
-                        }
-                        getHandle().mousePressed(this.dragStart);
+                if (this.dragStart != null) {
+                    // there is a focused cell, or we wouldn't be in move mode
+                    // select it if currently not selected
+                    GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
+                    if (cell == null) {
+                        cell = getJCellAt(this.dragStart.getPoint());
+                        getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
                     }
+                    if (!getJGraph().isCellSelected(cell)) {
+                        getJGraph().setSelectionCell(cell);
+                    }
+                    getHandle().mousePressed(this.dragStart);
+                }
+                if (getHandle() != null) {
                     getHandle().mouseDragged(e);
                 }
                 break;
