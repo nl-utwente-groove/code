@@ -9,7 +9,7 @@ import groove.view.ResourceModel;
 import java.io.IOException;
 import java.util.Set;
 
-/** Action to enable the currently displayed control program. */
+/** Action to enable or disable resources. */
 public class EnableAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
     public EnableAction(Simulator simulator, ResourceKind resource) {
@@ -24,11 +24,20 @@ public class EnableAction extends SimulatorAction {
     public void execute() {
         ResourceKind resource = getResourceKind();
         Set<String> names = getSimulatorModel().getSelectSet(resource);
-        try {
-            getSimulatorModel().doEnable(resource, names);
-        } catch (IOException exc) {
-            showErrorDialog(exc, "Error during %s enabling",
-                getResourceKind().getDescription());
+        boolean proceed = true;
+        for (String name : names) {
+            if (!getDisplay().saveEditor(name, true, false)) {
+                proceed = false;
+                break;
+            }
+        }
+        if (proceed) {
+            try {
+                getSimulatorModel().doEnable(resource, names);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error during %s enabling",
+                    getResourceKind().getDescription());
+            }
         }
     }
 
