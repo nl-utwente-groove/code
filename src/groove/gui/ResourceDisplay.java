@@ -316,14 +316,15 @@ public abstract class ResourceDisplay extends Display implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (changes.contains(Change.GRAMMAR)) {
-            updateGrammar(source.getGrammar(),
-                source.getGrammar() != oldModel.getGrammar());
-        }
-        ResourceModel<?> resourceModel = source.getResource(getResourceKind());
-        getEnableButton().setSelected(
-            resourceModel != null && resourceModel.isEnabled());
         if (suspendListening()) {
+            if (changes.contains(Change.GRAMMAR)) {
+                updateGrammar(source.getGrammar(),
+                    source.getGrammar() != oldModel.getGrammar());
+            }
+            ResourceModel<?> resourceModel =
+                source.getResource(getResourceKind());
+            getEnableButton().setSelected(
+                resourceModel != null && resourceModel.isEnabled());
             selectResource(source.getSelected(getResourceKind()));
             activateListening();
         }
