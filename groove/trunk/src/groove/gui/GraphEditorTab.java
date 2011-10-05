@@ -210,7 +210,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 getName());
         if (graphModel == null) {
             dispose();
-        } else if (getGraph() == graphModel.getSource()) {
+        } else if (isDirty() || getGraph() == graphModel.getSource()) {
             getJGraph().updateGrammar(grammar);
             // check if the properties have changed
             GraphProperties properties =
