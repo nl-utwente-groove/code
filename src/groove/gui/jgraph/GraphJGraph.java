@@ -1170,10 +1170,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 GraphJEdge jEdge = (GraphJEdge) jCell;
                 JEdgeView jEdgeView =
                     (JEdgeView) getGraphLayoutCache().getMapping(jCell, false);
-                AttributeMap jEdgeAttr = new AttributeMap();
-                List<?> points = jEdgeView.getExtremePoints();
-                GraphConstants.setPoints(jEdgeAttr, points);
-                change.put(jEdge, jEdgeAttr);
+                if (jEdgeView != null) {
+                    AttributeMap jEdgeAttr = new AttributeMap();
+                    List<?> points = jEdgeView.getExtremePoints();
+                    GraphConstants.setPoints(jEdgeAttr, points);
+                    change.put(jEdge, jEdgeAttr);
+                }
             }
         }
         getModel().edit(change, null, null, null);
