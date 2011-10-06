@@ -56,7 +56,7 @@ public class PrologModel extends TextBasedModel<String> {
         if (this.externalErrors.isEmpty()) {
             return getProgram();
         } else {
-            throw new FormatException(getErrors());
+            throw new FormatException(this.externalErrors);
         }
     }
 
