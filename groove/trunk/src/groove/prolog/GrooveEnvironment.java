@@ -194,7 +194,11 @@ public class GrooveEnvironment extends Environment {
         };
         DefinitionListener listener = new DefinitionListener();
         getModule().addPredicateListener(listener);
-        new PrologTextLoader(loaderState, new StringReader(program), null);
+        try {
+            new PrologTextLoader(loaderState, new StringReader(program), null);
+        } catch (Exception e) {
+            throw new FormatException(e.getMessage());
+        }
         getModule().removePredicateListener(listener);
         this.userTags.addAll(listener.getPredicates());
         if (!loaderState.getErrors().isEmpty()) {
