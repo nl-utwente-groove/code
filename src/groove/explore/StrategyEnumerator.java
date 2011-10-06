@@ -48,9 +48,9 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
         }
     }
 
-    /** Returns the singleton instance of this class. */
-    public static StrategyEnumerator getInstance() {
-        return INSTANCE;
+    /** Returns a fresh instance of this class. */
+    public static StrategyEnumerator newInstance() {
+        return new StrategyEnumerator();
     }
 
     /**
@@ -60,7 +60,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      */
     public static Strategy parseStrategy(GraphGrammar rules, Serialized source)
         throws FormatException {
-        return getInstance().parse(rules, source);
+        return INSTANCE.parse(rules, source);
     }
 
     /** The singleton instance of this class. */

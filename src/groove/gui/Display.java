@@ -66,7 +66,7 @@ abstract public class Display {
      * Returns the panel holding all display tabs.
      * This may or may not be the same as #getDisplayPanel().
      */
-    final protected JTabbedPane getTabPane() {
+    final public JTabbedPane getTabPane() {
         if (this.tabPane == null) {
             this.tabPane = createTabPane();
         }

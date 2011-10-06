@@ -122,6 +122,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         this.visibility = visibility;
     }
 
+    @Override
+    public String toString() {
+        return "Template for " + this.value.toString();
+    }
+
     /** Creates a serialized object based on this template,
      * in which the template arguments are instantiated by the
      * string representation of values passed in as parameters.

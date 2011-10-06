@@ -298,7 +298,9 @@ abstract public class AbstractLayouter implements Layouter {
             public void run() {
                 if (change.size() != 0) {
                     AbstractLayouter.this.jmodel.edit(change, null, null, null);
-                    AbstractLayouter.this.jgraph.refresh();
+                    // taking out the refresh as probably superfluous and 
+                    // certainly performance impacting
+                    //                    AbstractLayouter.this.jgraph.refresh();
                 }
             }
         });

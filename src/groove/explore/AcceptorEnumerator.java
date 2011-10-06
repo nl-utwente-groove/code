@@ -49,8 +49,8 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
     }
 
     /** Returns the singleton instance of this class. */
-    public static AcceptorEnumerator getInstance() {
-        return INSTANCE;
+    public static AcceptorEnumerator newInstance() {
+        return new AcceptorEnumerator();
     }
 
     /**
@@ -60,7 +60,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      */
     public static Acceptor parseAcceptor(GraphGrammar rules, Serialized source)
         throws FormatException {
-        return getInstance().parse(rules, source);
+        return INSTANCE.parse(rules, source);
     }
 
     /** Singleton instance of this class. */

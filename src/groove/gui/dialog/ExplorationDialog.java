@@ -148,7 +148,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
 
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
-            StrategyEnumerator.getInstance();
+            StrategyEnumerator.newInstance();
         Set<StrategyValue> strategyMask =
             new HashSet<StrategyValue>(EnumSet.allOf(StrategyValue.class));
         strategyMask.removeAll(StrategyValue.LTL_STRATEGIES);
@@ -159,7 +159,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
 
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator =
-            AcceptorEnumerator.getInstance();
+            AcceptorEnumerator.newInstance();
         Set<AcceptorValue> acceptorMask =
             new HashSet<AcceptorValue>(EnumSet.allOf(AcceptorValue.class));
         acceptorMask.remove(AcceptorValue.CYCLE);
@@ -190,6 +190,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         add(dialogContent);
         pack();
         setLocationRelativeTo(owner);
+        refreshButtons();
         setVisible(true);
     }
 
@@ -293,9 +294,16 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
      */
     @Override
     public void selectionChanged() {
+        refreshButtons();
+    }
+
+    private void refreshButtons() {
         Serialized strategy = this.strategyEditor.getCurrentValue();
         Serialized acceptor = this.acceptorEditor.getCurrentValue();
-        getExploreButton().setEnabled(strategy != null && acceptor != null);
+        boolean enabled = strategy != null && acceptor != null;
+        getDefaultButton().setEnabled(enabled);
+        getStartButton().setEnabled(enabled);
+        getExploreButton().setEnabled(enabled);
     }
 
     /** Initialises and returns the start button. */

@@ -130,10 +130,10 @@ public class Generator extends CommandLineTool {
 
         this.strategyOption =
             new TemplatedOption<Strategy>("s", "str",
-                StrategyEnumerator.getInstance());
+                StrategyEnumerator.newInstance());
         this.acceptorOption =
             new TemplatedOption<Acceptor>("a", "acc",
-                AcceptorEnumerator.getInstance());
+                AcceptorEnumerator.newInstance());
         this.resultOption = new ResultOption();
         this.scenarioOption = new ScenarioOption();
 
