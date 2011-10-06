@@ -52,11 +52,7 @@ public class LtlStrategy extends AbstractStrategy {
     /** This implementation initialises the product automaton as well. */
     @Override
     public void prepare(GTS gts, GraphState state) {
-        if (state != gts.startState()) {
-            throw new IllegalArgumentException(
-                "Model checking should start at initial state");
-        }
-        super.prepare(gts, state);
+        super.prepare(gts, gts.startState());
         this.productGTS = new ProductStateSet();
         this.productGTS.addListener(this.collector); // currentPath = new Stack<GraphTransition>();
         this.searchStack = new Stack<ProductState>();
