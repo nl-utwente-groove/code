@@ -158,6 +158,11 @@ public class LTSDisplay extends Display {
         }
     }
 
+    /** Indicates if the state tab is currently showing. */
+    public boolean isStateTabSelected() {
+        return getTabPane().getSelectedComponent() == getStateTab();
+    }
+
     /** Attaches the state tab to this display. */
     public void attachStateTab() {
         int index = 0;

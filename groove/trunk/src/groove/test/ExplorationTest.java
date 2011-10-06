@@ -266,7 +266,7 @@ public class ExplorationTest {
                 exploration = new Exploration();
             } else {
                 Serialized strategy =
-                    StrategyEnumerator.getInstance().parseCommandline(
+                    StrategyEnumerator.newInstance().parseCommandline(
                         strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploration = new Exploration(strategy, acceptor, 0);

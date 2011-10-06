@@ -300,9 +300,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
 
         @Override
         public Serialized getCurrentValue() {
+            Serialized result = null;
             int selectedIndex = this.nameSelector.getSelectedIndex();
-            String selectedKeyword = this.templateKeywords.get(selectedIndex);
-            return this.editors.get(selectedKeyword).getCurrentValue();
+            if (selectedIndex >= 0) {
+                String selectedKeyword =
+                    this.templateKeywords.get(selectedIndex);
+                result = this.editors.get(selectedKeyword).getCurrentValue();
+            }
+            return result;
         }
 
         @Override
