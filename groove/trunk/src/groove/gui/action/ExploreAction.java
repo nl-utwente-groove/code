@@ -98,14 +98,18 @@ public class ExploreAction extends SimulatorAction {
         if (setResult) {
             gts.setResult(exploration.getLastResult());
         }
+        GraphState lastState = exploration.getLastState();
+        if (lastState != null) {
+            getSimulatorModel().setState(lastState);
+        }
         // emphasise the result states, if required
+        getSimulatorModel().setGts(gts, true);
         if (emphasise) {
             Collection<GraphState> result =
                 exploration.getLastResult().getValue();
             getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result),
                 true);
         }
-        getSimulatorModel().setGts(gts, true);
         if (isAnimated() && exploration.getLastState() != null) {
             getSimulatorModel().setState(exploration.getLastState());
         }
@@ -313,24 +317,16 @@ public class ExploreAction extends SimulatorAction {
             final Exploration exploration = simulatorModel.getExploration();
             try {
                 exploration.play(gts, state);
-                gts.removeLTSListener(this.progressListener);
                 disposeCancelDialog();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        GraphState lastState = exploration.getLastState();
-                        if (lastState != null) {
-                            simulatorModel.setState(lastState);
-                        }
-                    }
-                });
             } catch (FormatException exc) {
                 // this should not occur, as the exploration and the
                 // grammar in the simulator model should always be compatible
+                disposeCancelDialog();
                 showErrorDialog(exc,
                     "Exploration strategy %s incompatible with grammar",
                     exploration.getIdentifier());
             }
+            gts.removeLTSListener(this.progressListener);
         }
 
         private void disposeCancelDialog() {
