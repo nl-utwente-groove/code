@@ -77,8 +77,8 @@ public class SimulatorModel implements Cloneable {
                 break;
             case RULE:
             case TYPE:
-                for (AspectGraph oldGraph : getStore().deleteGraphs(
-                    ResourceKind.RULE, names)) {
+                for (AspectGraph oldGraph : getStore().deleteGraphs(resource,
+                    names)) {
                     result |= isEnabled(oldGraph);
                 }
                 break;
