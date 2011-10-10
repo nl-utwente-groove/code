@@ -30,6 +30,7 @@ public interface LTSJCell extends GraphJCell, Serializable {
      */
     boolean setActive(boolean active);
 
+    /** Sets the visibility of the cell to the given value. */
     public void setVisible(boolean visible);
 
 }
