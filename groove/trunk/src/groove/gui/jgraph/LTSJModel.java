@@ -73,9 +73,10 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         }
     }
 
+    /** Toggles the visibility of the GTS. */
     public void hideGTS() {
-        this.isHiden = !this.isHiden;
-        if (this.isHiden) {
+        this.isHidden = !this.isHidden;
+        if (this.isHidden) {
             GTS lts = getGraph();
             for (GraphState state : lts.getStateSet()) {
                 ((LTSJCell) getJCellForNode(state)).setVisible(false);
@@ -147,7 +148,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
 
     private boolean listening = true;
 
-    private boolean isHiden = false;
+    private boolean isHidden = false;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";
