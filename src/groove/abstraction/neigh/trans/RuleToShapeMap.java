@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.trans;
 
-import gnu.trove.THashSet;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -158,7 +158,7 @@ public class RuleToShapeMap extends RuleToHostMap {
      * nodeMap().values(), the set has no repeated values.
      */
     public Set<ShapeNode> nodeMapValueSet() {
-        Set<ShapeNode> result = new THashSet<ShapeNode>();
+        Set<ShapeNode> result = new MyHashSet<ShapeNode>();
         result.addAll(this.nodeMap().values());
         return result;
     }
@@ -168,7 +168,7 @@ public class RuleToShapeMap extends RuleToHostMap {
      * edgeMap().values(), the set has no repeated values.
      */
     public Set<ShapeEdge> edgeMapValueSet() {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         result.addAll(this.edgeMap().values());
         return result;
     }
@@ -178,7 +178,7 @@ public class RuleToShapeMap extends RuleToHostMap {
      * conform to the node map.
      */
     public Set<ShapeEdge> getInconsistentEdges() {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
             ShapeEdge edgeS = entry.getValue();

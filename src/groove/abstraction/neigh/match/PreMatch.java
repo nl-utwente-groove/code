@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.match;
 
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -70,7 +70,7 @@ public final class PreMatch {
      * The given host must be a shape.
      */
     public static Set<Proof> getPreMatches(final Shape shape, Rule rule) {
-        Set<Proof> preMatches = new THashSet<Proof>();
+        Set<Proof> preMatches = new MyHashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
         rule.traverseMatches(shape, null,
             Visitor.newCollector(preMatches, new Property<Proof>() {
@@ -176,9 +176,9 @@ public final class PreMatch {
 
                         EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
                         EdgeSignature es =
-                            shape.getEdgeSignature(pV, label, ecW);
-                        Multiplicity rightMult =
-                            shape.getEdgeSigMult(es, EdgeMultDir.OUTGOING);
+                            shape.getEdgeSignature(EdgeMultDir.OUTGOING, pV,
+                                label, ecW);
+                        Multiplicity rightMult = shape.getEdgeSigMult(es);
 
                         if (!leftMult.le(rightMult)) {
                             complyToEdgeMult = false;
@@ -201,9 +201,9 @@ public final class PreMatch {
 
                         EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
                         EdgeSignature es =
-                            shape.getEdgeSignature(pV, label, ecW);
-                        Multiplicity rightMult =
-                            shape.getEdgeSigMult(es, EdgeMultDir.INCOMING);
+                            shape.getEdgeSignature(EdgeMultDir.INCOMING, pV,
+                                label, ecW);
+                        Multiplicity rightMult = shape.getEdgeSigMult(es);
 
                         if (!leftMult.le(rightMult)) {
                             complyToEdgeMult = false;

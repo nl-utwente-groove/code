@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import gnu.trove.THashSet;
+import groove.abstraction.neigh.MyHashSet;
 import groove.trans.HostElement;
 import groove.util.Fixable;
 
@@ -28,7 +28,7 @@ import groove.util.Fixable;
  * @author Eduardo Zambon
  */
 public class EquivRelation<T extends HostElement> extends
-        THashSet<EquivClass<T>> implements Fixable {
+        MyHashSet<EquivClass<T>> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields

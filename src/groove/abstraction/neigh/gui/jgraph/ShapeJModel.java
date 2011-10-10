@@ -169,7 +169,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             for (EdgeSignature es : shape.getEdgeMultMapKeys(direction)) {
                 ShapeJVertex vertex =
                     (ShapeJVertex) this.getJCellForNode(es.getNode());
-                boolean alwaysMovable = shape.isEdgeSigUnique(es, direction);
+                boolean alwaysMovable = shape.isEdgeSigUnique(es);
                 ShapeJPort port = new ShapeJPort(vertex, es, alwaysMovable);
                 this.getEsMap(direction).put(es, port);
             }

@@ -22,10 +22,10 @@ import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static groove.graph.EdgeRole.BINARY;
 import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -249,9 +249,9 @@ public final class Shape extends DefaultHostGraph {
             Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 EdgeSignature es = this.getEdgeSignature(edgeS, direction);
-                Multiplicity mult = this.getEdgeSigMult(es, direction);
+                Multiplicity mult = this.getEdgeSigMult(es);
                 if (mult.isZero()) {
-                    this.setEdgeSigMult(es, direction, one);
+                    this.setEdgeSigMult(es, one);
                 }
             }
         }
@@ -267,7 +267,7 @@ public final class Shape extends DefaultHostGraph {
         ShapeNode nodeS = (ShapeNode) node;
 
         // Remove all edges that are incident to this node.
-        Set<ShapeEdge> toRemove = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> toRemove = new MyHashSet<ShapeEdge>();
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             toRemove.add(edgeS);
         }
@@ -316,7 +316,7 @@ public final class Shape extends DefaultHostGraph {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 EdgeSignature es = this.getEdgeSignature(edgeS, direction);
                 if (es.getEquivClass().isSingleton()
-                    || this.isEdgeSigUnique(es, direction)) {
+                    || this.isEdgeSigUnique(es)) {
                     // Update multiplicity map.
                     this.getEdgeMultMap(direction).remove(es);
                 }
@@ -357,7 +357,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Returns the set of binary edges of this shape. */
     private Set<ShapeEdge> binaryEdgeSet() {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         for (ShapeEdge edge : this.edgeSet()) {
             if (edge.getRole() == BINARY) {
                 result.add(edge);
@@ -368,7 +368,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Returns the set of binary edges with the given node as source. */
     private Set<ShapeEdge> outBinaryEdgeSet(ShapeNode source) {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         for (ShapeEdge edge : this.outEdgeSet(source)) {
             if (edge.getRole() == BINARY) {
                 result.add(edge);
@@ -379,7 +379,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Returns the set of binary edges with the given node as target. */
     private Set<ShapeEdge> inBinaryEdgeSet(ShapeNode target) {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         for (ShapeEdge edge : this.inEdgeSet(target)) {
             if (edge.getRole() == BINARY) {
                 result.add(edge);
@@ -560,7 +560,7 @@ public final class Shape extends DefaultHostGraph {
                 // Approximate the cardinality of the set of intersecting edges.
                 Multiplicity mult = Multiplicity.approx(size, size, EDGE_MULT);
                 // Store the multiplicity in the proper multiplicity map.
-                this.getEdgeMultMap(direction).put(es, mult);
+                this.setEdgeSigMult(es, mult);
             }
         }
     }
@@ -598,7 +598,7 @@ public final class Shape extends DefaultHostGraph {
                     ShapeNeighEquiv.getEdgeSetMult(origShape, nodeS,
                         esT.getLabel(), kSet, direction);
                 // Store the multiplicity in the proper multiplicity map.
-                this.getEdgeMultMap(direction).put(esT, mult);
+                this.setEdgeSigMult(esT, mult);
             }
         }
     }
@@ -664,7 +664,7 @@ public final class Shape extends DefaultHostGraph {
     public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-            if (es.contains(edge, direction, true)) {
+            if (es.contains(edge, true)) {
                 result = es;
                 break;
             }
@@ -685,7 +685,7 @@ public final class Shape extends DefaultHostGraph {
             default:
                 assert false;
             }
-            result = new EdgeSignature(node, label, ec);
+            result = new EdgeSignature(direction, node, label, ec);
         }
         return result;
     }
@@ -695,20 +695,18 @@ public final class Shape extends DefaultHostGraph {
      * with the given fields. If no suitable edge signature is found, a new
      * one is created and returned, but it is not stored.
      */
-    public EdgeSignature getEdgeSignature(ShapeNode node, TypeLabel label,
-            EquivClass<ShapeNode> ec) {
+    public EdgeSignature getEdgeSignature(EdgeMultDir direction,
+            ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
         EdgeSignature result = null;
-        dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-                if (es.getNode().equals(node) && es.getLabel().equals(label)
-                    && es.getEquivClass().equals(ec)) {
-                    result = es;
-                    break dirLoop;
-                }
+        for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
+            if (es.getNode().equals(node) && es.getLabel().equals(label)
+                && es.getEquivClass().equals(ec)) {
+                result = es;
+                break;
             }
         }
         if (result == null) {
-            result = new EdgeSignature(node, label, ec);
+            result = new EdgeSignature(direction, node, label, ec);
         }
         return result;
     }
@@ -736,20 +734,20 @@ public final class Shape extends DefaultHostGraph {
             Multiplicity mult) {
         assert !this.isFixed();
         EdgeSignature es = this.getEdgeSignature(edge, direction);
-        this.setEdgeSigMult(es, direction, mult);
+        this.setEdgeSigMult(es, mult);
     }
 
     /** Sets the edge signature multiplicity. */
-    public void setEdgeSigMult(EdgeSignature es, EdgeMultDir direction,
-            Multiplicity mult) {
+    public void setEdgeSigMult(EdgeSignature es, Multiplicity mult) {
         assert !this.isFixed();
         assert mult.isEdgeKind();
+        EdgeMultDir direction = es.getDirection();
         if (!mult.isZero()) {
             this.getEdgeMultMap(direction).put(es, mult);
         } else {
             // Setting a multiplicity to zero is equivalent to
             // removing all edges in the signature from the shape.
-            for (ShapeEdge edge : this.getEdgesFromSig(es, direction)) {
+            for (ShapeEdge edge : this.getEdgesFromSig(es)) {
                 this.removeEdge(edge);
             }
             this.getEdgeMultMap(direction).remove(es);
@@ -781,13 +779,13 @@ public final class Shape extends DefaultHostGraph {
     /** Basic getter method. */
     public Multiplicity getEdgeMult(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
-        Multiplicity mult = this.getEdgeSigMult(es, direction);
+        Multiplicity mult = this.getEdgeSigMult(es);
         return mult;
     }
 
     /** Basic getter method. */
-    public Multiplicity getEdgeSigMult(EdgeSignature es, EdgeMultDir direction) {
-        Multiplicity mult = this.getEdgeMultMap(direction).get(es);
+    public Multiplicity getEdgeSigMult(EdgeSignature es) {
+        Multiplicity mult = this.getEdgeMultMap(es.getDirection()).get(es);
         if (mult == null) {
             mult = Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
         }
@@ -797,12 +795,11 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the bounded sum of the edge multiplicities of the given set.
      */
-    public Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS,
-            EdgeMultDir direction) {
+    public Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS) {
         Multiplicity accumulator =
             Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
         for (EdgeSignature es : esS) {
-            Multiplicity edgeMult = this.getEdgeSigMult(es, direction);
+            Multiplicity edgeMult = this.getEdgeSigMult(es);
             accumulator = accumulator.add(edgeMult);
         }
         return accumulator;
@@ -835,10 +832,9 @@ public final class Shape extends DefaultHostGraph {
         Duo<String> result = new Duo<String>("", "");
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             EdgeSignature es = this.getEdgeSignature(edge, direction);
-            if (es.getEquivClass().isSingleton()
-                || this.isEdgeSigUnique(es, direction)
-                || edge.equals(this.getMinimumEdgeFromSig(es, direction))) {
-                String multStr = this.getEdgeSigMult(es, direction).toString();
+            if (es.getEquivClass().isSingleton() || this.isEdgeSigUnique(es)
+                || edge.equals(this.getMinimumEdgeFromSig(es))) {
+                String multStr = this.getEdgeSigMult(es).toString();
                 switch (direction) {
                 case OUTGOING:
                     result.setTwo(multStr);
@@ -858,16 +854,16 @@ public final class Shape extends DefaultHostGraph {
      * Returns true if the number of edges from the signature
      * occurring in the shape is one.
      */
-    public boolean isEdgeSigUnique(EdgeSignature es, EdgeMultDir direction) {
-        return this.getEdgesFromSig(es, direction).size() == 1;
+    public boolean isEdgeSigUnique(EdgeSignature es) {
+        return this.getEdgesFromSig(es).size() == 1;
     }
 
-    private ShapeEdge getMinimumEdgeFromSig(EdgeSignature es,
-            EdgeMultDir direction) {
+    private ShapeEdge getMinimumEdgeFromSig(EdgeSignature es) {
         ShapeEdge result = null;
         ShapeNode resultOpposite = null;
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
+        EdgeMultDir direction = es.getDirection();
         for (ShapeNode ecNode : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(node, ecNode, label, direction);
             if (edge != null && !edge.isLoop()) {
@@ -884,11 +880,11 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the set of edges from the signature occurring in the shape.
      */
-    public Set<ShapeEdge> getEdgesFromSig(EdgeSignature es,
-            EdgeMultDir direction) {
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+    public Set<ShapeEdge> getEdgesFromSig(EdgeSignature es) {
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
+        EdgeMultDir direction = es.getDirection();
         for (ShapeNode ecNode : es.getEquivClass()) {
             ShapeEdge edge = this.getShapeEdge(node, ecNode, label, direction);
             if (edge != null) {
@@ -1009,18 +1005,16 @@ public final class Shape extends DefaultHostGraph {
             return;
         }
 
-        Set<ShapeEdge> possibleEdges = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> possibleEdges = new MyHashSet<ShapeEdge>();
         for (EdgeSignature es : this.getEdgeSignatures(this.getEquivClassOf(nodeS))) {
             if (es.isSelfReferencing()) {
                 continue;
             }
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                for (ShapeEdge edgeS : this.getEdgesFromSig(es, direction)) {
-                    if (!this.isEdgeConcrete(edgeS)) {
-                        // We have an edge that is not concrete.
-                        // Add it to the list of possible edges.
-                        possibleEdges.add(edgeS);
-                    }
+            for (ShapeEdge edgeS : this.getEdgesFromSig(es)) {
+                if (!this.isEdgeConcrete(edgeS)) {
+                    // We have an edge that is not concrete.
+                    // Add it to the list of possible edges.
+                    possibleEdges.add(edgeS);
                 }
             }
         }
@@ -1055,7 +1049,14 @@ public final class Shape extends DefaultHostGraph {
         this.replaceEc(origEc, remEc);
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Splits the given shape node into the given number of copies. The original
+     * node is kept and counts as one of the copies. All the structures of the
+     * shape are properly updated but note that:
+     * - The new split nodes are not assigned a multiplicity at this point.
+     * - The new split nodes are unconnected, i.e., the incident binary edges
+     *   are not duplicated.
+     */
     public void splitNode(Materialisation mat, ShapeNode nodeS, int copies) {
         assert !this.isFixed();
         assert this.containsNode(nodeS);
@@ -1096,7 +1097,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     private Set<EdgeSignature> getEdgeSignatures(EquivClass<ShapeNode> ec) {
-        Set<EdgeSignature> result = new THashSet<EdgeSignature>();
+        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
                 if (es.hasEquivClass(ec)) {
@@ -1113,13 +1114,12 @@ public final class Shape extends DefaultHostGraph {
         // equivalence class.
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
             EdgeSignature newEs =
-                this.getEdgeSignature(oldEs.getNode(), oldEs.getLabel(), newEc);
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                Multiplicity mult = this.getEdgeSigMult(oldEs, direction);
-                if (!mult.isZero()) {
-                    if (this.getEdgesFromSig(newEs, direction).size() > 0) {
-                        this.setEdgeSigMult(newEs, direction, mult);
-                    }
+                this.getEdgeSignature(oldEs.getDirection(), oldEs.getNode(),
+                    oldEs.getLabel(), newEc);
+            Multiplicity mult = this.getEdgeSigMult(oldEs);
+            if (!mult.isZero()) {
+                if (this.getEdgesFromSig(newEs).size() > 0) {
+                    this.setEdgeSigMult(newEs, mult);
                 }
             }
         }
@@ -1132,15 +1132,15 @@ public final class Shape extends DefaultHostGraph {
         // Update all maps that use edge signatures that contained the old
         // equivalence class.
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
+            EdgeMultDir direction = oldEs.getDirection();
             EdgeSignature newEs =
-                this.getEdgeSignature(oldEs.getNode(), oldEs.getLabel(), newEc);
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                Multiplicity mult = this.getEdgeSigMult(oldEs, direction);
-                if (!mult.isZero()) {
-                    this.getEdgeMultMap(direction).remove(oldEs);
-                    if (this.getEdgesFromSig(newEs, direction).size() > 0) {
-                        this.setEdgeSigMult(newEs, direction, mult);
-                    }
+                this.getEdgeSignature(direction, oldEs.getNode(),
+                    oldEs.getLabel(), newEc);
+            Multiplicity mult = this.getEdgeSigMult(oldEs);
+            if (!mult.isZero()) {
+                this.getEdgeMultMap(direction).remove(oldEs);
+                if (this.getEdgesFromSig(newEs).size() > 0) {
+                    this.setEdgeSigMult(newEs, mult);
                 }
             }
         }
@@ -1149,22 +1149,27 @@ public final class Shape extends DefaultHostGraph {
         this.equivRel.add(newEc);
     }
 
-    /** EDUARDO: Comment this... */
+    /** Returns true if both end points of the edge are concrete. */
     public boolean isEdgeConcrete(ShapeEdge edge) {
         return this.isEdgeConcrete(edge, OUTGOING)
             && this.isEdgeConcrete(edge, INCOMING);
     }
 
-    /** EDUARDO: Comment this... */
+    /**
+     * Returns true if the edge signature for the given edge and direction is
+     * concrete.
+     */
     private boolean isEdgeConcrete(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
-        return this.isEdgeSigConcrete(es, direction);
+        return this.isEdgeSigConcrete(es);
     }
 
-    /** EDUARDO: Comment this... */
-    public boolean isEdgeSigConcrete(EdgeSignature es, EdgeMultDir direction) {
-        return this.getEdgeSigMult(es, direction).isOne()
-            && this.isEdgeSigUnique(es, direction);
+    /**
+     * Returns true if the given signature has multiplicity one and is unique,
+     * i.e., has only one edge.
+     */
+    public boolean isEdgeSigConcrete(EdgeSignature es) {
+        return this.getEdgeSigMult(es).isOne() && this.isEdgeSigUnique(es);
     }
 
     /**
@@ -1174,16 +1179,6 @@ public final class Shape extends DefaultHostGraph {
     public boolean areNodesConcrete(ShapeEdge edge) {
         return this.getNodeMult(edge.source()).isOne()
             && this.getNodeMult(edge.target()).isOne();
-    }
-
-    private boolean isEdgeUnique(ShapeEdge edge, EdgeMultDir direction) {
-        EdgeSignature es = this.getEdgeSignature(edge, direction);
-        return this.isEdgeSigUnique(es, direction);
-    }
-
-    private boolean isEdgeUnique(ShapeEdge edge) {
-        return this.isEdgeUnique(edge, OUTGOING)
-            && this.isEdgeUnique(edge, INCOMING);
     }
 
     /** Normalises the shape object and returns the newly modified shape. */
@@ -1200,7 +1195,8 @@ public final class Shape extends DefaultHostGraph {
         newShape.createEdgeMultMaps(sne, map, this);
 
         // Optimization: making node and edges multiplicities more precise, when possible.
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        // EDUARDO: Re-enable this?
+        /*Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
@@ -1216,23 +1212,22 @@ public final class Shape extends DefaultHostGraph {
                         && newShape.isEdgeUnique(edge)) {
                         EdgeSignature oppEs =
                             newShape.getEdgeSignature(edge, reverse);
-                        if (newShape.getEdgeSigMult(oppEs, reverse).isOne()) {
+                        if (newShape.getEdgeSigMult(oppEs).isOne()) {
                             // We can set the edge multiplicity to the opposite
                             // node multiplicity.
                             EdgeSignature es =
                                 newShape.getEdgeSignature(edge, direction);
                             Multiplicity oldEsMult =
-                                newShape.getEdgeSigMult(es, direction);
+                                newShape.getEdgeSigMult(es);
                             Multiplicity newEsMult = oppMult.toEdgeKind();
                             if (oldEsMult.subsumes(newEsMult)) {
-                                newShape.setEdgeSigMult(es, direction,
-                                    newEsMult);
+                                newShape.setEdgeSigMult(es, newEsMult);
                             }
                         }
                     }
                 }
             }
-        }
+        }*/
 
         assert newShape.isInvariantOK();
         return newShape;
@@ -1262,8 +1257,8 @@ public final class Shape extends DefaultHostGraph {
                     // Check outgoing multiplicities.
                     if (Util.getIntersectEdges(this, node, ec, label).isEmpty()) {
                         EdgeSignature es =
-                            this.getEdgeSignature(node, label, ec);
-                        Multiplicity mult = this.getEdgeSigMult(es, OUTGOING);
+                            this.getEdgeSignature(OUTGOING, node, label, ec);
+                        Multiplicity mult = this.getEdgeSigMult(es);
                         if (!mult.isZero()) {
                             result = false;
                             break labelLoop;
@@ -1272,8 +1267,8 @@ public final class Shape extends DefaultHostGraph {
                     // Check incoming multiplicities.
                     if (Util.getIntersectEdges(this, ec, node, label).isEmpty()) {
                         EdgeSignature es =
-                            this.getEdgeSignature(node, label, ec);
-                        Multiplicity mult = this.getEdgeSigMult(es, INCOMING);
+                            this.getEdgeSignature(INCOMING, node, label, ec);
+                        Multiplicity mult = this.getEdgeSigMult(es);
                         if (!mult.isZero()) {
                             result = false;
                             break labelLoop;

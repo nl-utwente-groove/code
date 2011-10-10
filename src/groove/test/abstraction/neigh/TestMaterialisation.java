@@ -479,7 +479,7 @@ public class TestMaterialisation {
                 assertEquals(5, matShape.getEquivRelation().size());
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
                     for (EdgeSignature es : matShape.getEdgeMultMapKeys(direction)) {
-                        assertTrue(matShape.getEdgeSigMult(es, direction).isOne());
+                        assertTrue(matShape.getEdgeSigMult(es).isOne());
                     }
                 }
             }

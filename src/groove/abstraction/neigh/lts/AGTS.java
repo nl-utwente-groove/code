@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.lts;
 
-import gnu.trove.THashSet;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
@@ -110,7 +110,7 @@ public final class AGTS extends GTS {
 
     /** Store the abstraction labels in the parameters, if any. */
     private void storeAbsLabels() {
-        Set<TypeLabel> unaryLabels = new THashSet<TypeLabel>();
+        Set<TypeLabel> unaryLabels = new MyHashSet<TypeLabel>();
         unaryLabels.addAll(this.getGrammar().getTypeGraph().getLabels(
             EdgeRole.NODE_TYPE));
         unaryLabels.addAll(this.getGrammar().getTypeGraph().getLabels(
@@ -118,7 +118,7 @@ public final class AGTS extends GTS {
 
         List<String> absLabelsStr =
             this.getGrammar().getProperties().getAbstractionLabels();
-        Set<TypeLabel> absLabels = new THashSet<TypeLabel>();
+        Set<TypeLabel> absLabels = new MyHashSet<TypeLabel>();
 
         for (TypeLabel unaryLabel : unaryLabels) {
             if (absLabelsStr.contains(unaryLabel.text())) {
