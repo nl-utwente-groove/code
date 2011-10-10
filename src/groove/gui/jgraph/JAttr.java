@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.gui.Options;
 import groove.util.Colors;
 
 import java.awt.BasicStroke;
@@ -171,6 +172,10 @@ public class JAttr {
         return result;
     }
 
+    static {
+        Options.initLookAndFeel();
+    }
+
     /** Line style that always makes right edges. */
     public static final int STYLE_MANHATTAN = 14;
 
@@ -222,7 +227,7 @@ public class JAttr {
     public static final int STRONG_ARC_SIZE = 20;
 
     /** The default font used in the j-graphs. */
-    static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
+    static public final Font DEFAULT_FONT = Options.DEFAULT_FONT;
     /**
      * The default foreground colour used for edges and nodes.
      */

@@ -1029,20 +1029,29 @@ public class Options implements Cloneable {
 
     /** Sets the look-and-feel. */
     public static void initLookAndFeel() {
-        try {
-            // LAF specific options that should be done before setting the LAF
-            // go here
-            MetalLookAndFeel.setCurrentTheme(new DesertBlue());
-            // set default font to LAF font
-            Options.DEFAULT_FONT =
-                MetalLookAndFeel.getCurrentTheme().getUserTextFont();
-            // Set the look and feel
-            UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
-        } catch (Exception e) {
-            // nothing to do here except not crash on the exception
-            System.out.println("Exception");
-            e.printStackTrace();
+        if (!lookAndFeelInit) {
+            lookAndFeelInit = true;
+            try {
+                // LAF specific options that should be done before setting the LAF
+                // go here
+                MetalLookAndFeel.setCurrentTheme(new DesertBlue());
+                // set default font to LAF font
+                Options.DEFAULT_FONT =
+                    MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+                // Set the look and feel
+                UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
+            } catch (Exception e) {
+                // nothing to do here except not crash on the exception
+                System.out.println("Exception");
+                e.printStackTrace();
+            }
         }
     }
 
+    static {
+        initLookAndFeel();
+    }
+
+    /** Flag indicating if {@link #initLookAndFeel()} has already been invoked. */
+    private static boolean lookAndFeelInit;
 }
