@@ -129,7 +129,7 @@ public final class Materialisation {
      */
     private THashSet<ShapeEdge> possibleEdges;
     /**
-     * Auxiliary set of edges that were fixed at the end of second stage.
+     * Auxiliary set of edges that were fixed at the end of first stage.
      */
     private THashSet<ShapeEdge> fixedOnFirstStage;
 
@@ -140,6 +140,7 @@ public final class Materialisation {
     private THashSet<EdgeBundle> nonSingBundles;
     private THashSet<EdgeBundle> splitBundles;
     private Map<ShapeNode,Set<ShapeNode>> nodeSplitMap;
+    private THashSet<ShapeEdge> fixedOnSecondStage;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -578,6 +579,7 @@ public final class Materialisation {
         this.possibleEdges = null;
         this.nodeSplitMap = new THashMap<ShapeNode,Set<ShapeNode>>();
         this.splitBundles = new THashSet<EdgeBundle>();
+        this.fixedOnSecondStage = new THashSet<ShapeEdge>();
 
         Shape shape = this.getShape();
 
@@ -610,20 +612,39 @@ public final class Materialisation {
         for (ShapeNode nodeS : nodeToBundles.keySet()) {
             fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, OUTGOING));
             fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, INCOMING));
-            for (EdgeBundle bundle : nodeToBundles.get(nodeS)) {
+            Set<EdgeBundle> bundles = nodeToBundles.get(nodeS);
+            for (EdgeBundle bundle : bundles) {
                 flexEdges.addAll(bundle.positivePossibleEdges);
             }
             Iterator<Set<ShapeEdge>> iter =
-                new PowerSetIterator<ShapeEdge>(flexEdges, true);
-            for (ShapeEdge fixedEdge : fixedEdges) {
-                this.addEdgeSigsToBundles(fixedEdge, fixedEdge);
-            }
+                new PowerSetIterator(this, fixedEdges, flexEdges, bundles);
+            this.addEdges(nodeS, nodeS, iter.next());
             for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
-                this.addEdges(splitNode, nodeS, fixedEdges, iter.next());
+                this.addEdges(splitNode, nodeS, iter.next());
             }
             assert !iter.hasNext();
             fixedEdges.clear();
             flexEdges.clear();
+        }
+
+        // Clear unconnected nodes.
+        Set<ShapeNode> toRemove = new THashSet<ShapeNode>();
+        for (ShapeNode nodeS : nodeToBundles.keySet()) {
+            for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
+                if (this.shape.isUnconnected(splitNode)) {
+                    toRemove.add(splitNode);
+                }
+            }
+        }
+        for (ShapeNode node : toRemove) {
+            this.shape.removeNode(node);
+            ShapeNode origNode = this.morph.getNode(node);
+            this.morph.removeNode(node);
+            Set<ShapeNode> splitNodes = this.nodeSplitMap.get(origNode);
+            splitNodes.remove(node);
+            if (splitNodes.isEmpty()) {
+                this.nodeSplitMap.remove(origNode);
+            }
         }
     }
 
@@ -642,15 +663,8 @@ public final class Materialisation {
     }
 
     private void addEdges(ShapeNode newNode, ShapeNode origNode,
-            Set<ShapeEdge> fixedEdges, Set<ShapeEdge> flexEdges) {
+            Set<ShapeEdge> allEdges) {
         assert this.stage == 2;
-        Set<ShapeEdge> allEdges;
-        if (flexEdges == null) {
-            allEdges = fixedEdges;
-        } else {
-            flexEdges.addAll(fixedEdges);
-            allEdges = flexEdges;
-        }
         Set<ShapeNode> opposites = new THashSet<ShapeNode>();
         for (ShapeEdge edge : allEdges) {
             ShapeEdge origEdge = this.morph.getEdge(edge);
@@ -679,6 +693,10 @@ public final class Materialisation {
                 if (!this.shape.containsEdge(newEdge)) {
                     this.shape.addEdgeWithoutCheck(newEdge);
                     this.morph.putEdge(newEdge, origEdge);
+                }
+                if (this.isFixedOnSecondStage(edge)) {
+                    this.fixedOnSecondStage.remove(edge);
+                    this.setFixedOnSecondStage(newEdge);
                 }
                 this.addEdgeSigsToBundles(origEdge, newEdge);
             }
@@ -748,6 +766,17 @@ public final class Materialisation {
         return this.fixedOnFirstStage.contains(edge);
     }
 
+    /** EDUARDO: Comment this... */
+    public void setFixedOnSecondStage(ShapeEdge edge) {
+        assert this.stage == 2;
+        this.fixedOnSecondStage.add(edge);
+    }
+
+    boolean isFixedOnSecondStage(ShapeEdge edge) {
+        assert this.stage == 2;
+        return this.fixedOnSecondStage.contains(edge);
+    }
+
     // ------------------------------------------------------------------------
     // Methods for third stage.
     // ------------------------------------------------------------------------
@@ -757,6 +786,8 @@ public final class Materialisation {
         assert this.stage == 2;
         this.stage++;
         this.nonSingBundles = null;
+        this.fixedOnFirstStage = null;
+        this.fixedOnSecondStage = null;
     }
 
     /** EDUARDO: Comment this... */
@@ -802,7 +833,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "9";
+            String number = "2";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

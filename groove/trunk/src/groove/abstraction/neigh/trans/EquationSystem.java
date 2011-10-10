@@ -613,7 +613,7 @@ public final class EquationSystem {
                 continue;
             }
             // We have trivial equations.
-            int lb;
+            /*int lb;
             EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
             BoundVar lbOppVar = this.getEsMap(reverse).get(oppEs).one();
             if (this.occursInTrivialLbEq(lbOppVar)) {
@@ -623,7 +623,8 @@ public final class EquationSystem {
             } else {
                 lb = 0;
             }
-            Duo<Equation> trivialEqs = this.createEquations(1, lb, 1);
+            Duo<Equation> trivialEqs = this.createEquations(1, lb, 1);*/
+            Duo<Equation> trivialEqs = this.createEquations(1, 1, 1);
             Duo<BoundVar> vars = this.getEsMap(direction).get(es);
             addVars(trivialEqs, vars);
             this.storeEquations(trivialEqs);
@@ -919,6 +920,15 @@ public final class EquationSystem {
                 }
             }
             return er.size() > 1;
+        }
+
+        public Multiplicity getOrigMult() {
+            return this.origEsMult;
+        }
+
+        public boolean containsEdge(ShapeEdge edge) {
+            return this.edgesInShape.contains(edge)
+                || this.positivePossibleEdges.contains(edge);
         }
     }
 

@@ -383,6 +383,11 @@ public final class Multiplicity {
         return this.i == this.j;
     }
 
+    /** Returns true if the upper bound is omega. */
+    public boolean isUnbounded() {
+        return this.j == OMEGA;
+    }
+
     /** Basic inspection method. */
     public boolean isNodeKind() {
         return this.kind == MultKind.NODE_MULT;
