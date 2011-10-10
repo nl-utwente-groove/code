@@ -110,11 +110,11 @@ public final class EdgeSignature {
     /**
      * Returns true if the edge signature contains the edge given as argument.
      */
-    public boolean contains(ShapeEdge edge, boolean checkEc) {
+    public boolean contains(ShapeEdge edge) {
         ShapeNode incident = edge.incident(this.direction);
         ShapeNode opposite = edge.opposite(this.direction);
         return this.node.equals(incident) && this.label.equals(edge.label())
-            && (checkEc ? this.equivClass.contains(opposite) : true);
+            && this.equivClass.contains(opposite);
     }
 
     /** Basic getter method. */

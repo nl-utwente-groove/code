@@ -664,7 +664,7 @@ public final class Shape extends DefaultHostGraph {
     public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-            if (es.contains(edge, true)) {
+            if (es.contains(edge)) {
                 result = es;
                 break;
             }
@@ -1005,6 +1005,30 @@ public final class Shape extends DefaultHostGraph {
             return;
         }
 
+        // First make sure we are not deleting any edges with this operation.
+        this.handleCrossingEdges(mat, nodeS);
+
+        // The original equivalence class to be split.
+        EquivClass<ShapeNode> origEc = this.getEquivClassOf(nodeS);
+        // The remaining equivalence class after singularisation.
+        EquivClass<ShapeNode> remEc = origEc.clone();
+        remEc.remove(nodeS);
+        // The singular equivalence class created by the operation.
+        EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
+        singEc.add(nodeS);
+        // Update the multiplicities of the new singleton class.
+        this.addNewSingletonEc(origEc, singEc);
+        // Replace the original equivalence class with the remainder of the
+        // split.
+        this.replaceEc(origEc, remEc);
+    }
+
+    /**
+     * Removes all edges from the shape that cross equivalence classes and that
+     * will be affected during the materialisation process. Those edges are
+     * stored as possible edges in the materialisation object.
+     */
+    private void handleCrossingEdges(Materialisation mat, ShapeNode nodeS) {
         Set<ShapeEdge> possibleEdges = new MyHashSet<ShapeEdge>();
         for (EdgeSignature es : this.getEdgeSignatures(this.getEquivClassOf(nodeS))) {
             if (es.isSelfReferencing()) {
@@ -1031,22 +1055,8 @@ public final class Shape extends DefaultHostGraph {
         // Now remove all possible edges from the shape.
         for (ShapeEdge possibleEdge : possibleEdges) {
             this.removeEdge(possibleEdge);
-            mat.addPossibleEdge(possibleEdge, possibleEdge);
+            mat.addPossibleEdge(possibleEdge, possibleEdge, true);
         }
-
-        // The original equivalence class to be split.
-        EquivClass<ShapeNode> origEc = this.getEquivClassOf(nodeS);
-        // The remaining equivalence class after singularisation.
-        EquivClass<ShapeNode> remEc = origEc.clone();
-        remEc.remove(nodeS);
-        // The singular equivalence class created by the operation.
-        EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
-        singEc.add(nodeS);
-        // Update the multiplicities of the new singleton class.
-        this.addNewSingletonEc(origEc, singEc);
-        // Replace the original equivalence class with the remainder of the
-        // split.
-        this.replaceEc(origEc, remEc);
     }
 
     /**
@@ -1181,6 +1191,16 @@ public final class Shape extends DefaultHostGraph {
             && this.getNodeMult(edge.target()).isOne();
     }
 
+    private boolean isEdgeUnique(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature es = this.getEdgeSignature(edge, direction);
+        return this.isEdgeSigUnique(es);
+    }
+
+    private boolean isEdgeUnique(ShapeEdge edge) {
+        return this.isEdgeUnique(edge, OUTGOING)
+            && this.isEdgeUnique(edge, INCOMING);
+    }
+
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
         Shape newShape = new Shape(this.getFactory());
@@ -1195,8 +1215,7 @@ public final class Shape extends DefaultHostGraph {
         newShape.createEdgeMultMaps(sne, map, this);
 
         // Optimization: making node and edges multiplicities more precise, when possible.
-        // EDUARDO: Re-enable this?
-        /*Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
@@ -1227,7 +1246,7 @@ public final class Shape extends DefaultHostGraph {
                     }
                 }
             }
-        }*/
+        }
 
         assert newShape.isInvariantOK();
         return newShape;
