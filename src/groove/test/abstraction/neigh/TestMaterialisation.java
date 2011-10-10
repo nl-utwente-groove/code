@@ -184,12 +184,13 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(2, mats.size());
+            assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
                 assertTrue(matShape.nodeSet().size() == 6
-                    && binaryEdgeCount == 4);
+                    && binaryEdgeCount == 4
+                    && matShape.getEquivRelation().size() == 5);
             }
         }
     }

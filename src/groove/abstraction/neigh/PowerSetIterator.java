@@ -17,6 +17,9 @@
 package groove.abstraction.neigh;
 
 import gnu.trove.THashSet;
+import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.trans.EquationSystem.EdgeBundle;
+import groove.abstraction.neigh.trans.Materialisation;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -25,46 +28,46 @@ import java.util.Set;
  * EDUARDO: Comment this... 
  * @author Eduardo Zambon
  */
-public class PowerSetIterator<T> implements Iterator<Set<T>> {
+public class PowerSetIterator implements Iterator<Set<ShapeEdge>> {
 
-    final T elems[];
+    final Materialisation mat;
+    final Set<EdgeBundle> bundles;
+    final Set<ShapeEdge> fixedEdges;
+    final ShapeEdge flexEdges[];
     final int masks[];
-    final int total;
     int curr;
+    Set<ShapeEdge> next;
+    boolean areAllBundlesUnbounded;
 
     /** EDUARDO: Comment this... */
-    @SuppressWarnings("unchecked")
-    public PowerSetIterator(Set<T> elemSet, boolean skipEmpty) {
-        this.elems = (T[]) new Object[elemSet.size()];
-        this.masks = new int[elemSet.size()];
+    public PowerSetIterator(Materialisation mat, Set<ShapeEdge> fixedEdges,
+            Set<ShapeEdge> flexEdges, Set<EdgeBundle> bundles) {
+        this.mat = mat;
+        this.bundles = bundles;
+        this.fixedEdges = fixedEdges;
+        this.flexEdges = new ShapeEdge[flexEdges.size()];
+        this.masks = new int[flexEdges.size()];
         int i = 0;
-        for (T elem : elemSet) {
-            this.elems[i] = elem;
+        for (ShapeEdge elem : flexEdges) {
+            this.flexEdges[i] = elem;
             this.masks[i] = 1 << i;
             i++;
         }
-        this.total = (int) Math.pow(2, this.elems.length);
-        if (skipEmpty) {
-            this.curr = 1;
-        } else {
-            this.curr = 0;
-        }
+        this.curr = 0;
+        this.checkBundles();
+        this.computeFirst();
     }
 
     @Override
     public boolean hasNext() {
-        return this.curr < this.total;
+        return this.next != null;
     }
 
     @Override
-    public Set<T> next() {
-        Set<T> result = new THashSet<T>();
-        for (int i = 0; i < this.elems.length; i++) {
-            if ((this.curr & this.masks[i]) == this.masks[i]) {
-                result.add(this.elems[i]);
-            }
-        }
-        this.curr++;
+    public Set<ShapeEdge> next() {
+        assert this.hasNext();
+        Set<ShapeEdge> result = this.next;
+        this.computeNext();
         return result;
     }
 
@@ -73,4 +76,88 @@ public class PowerSetIterator<T> implements Iterator<Set<T>> {
         throw new UnsupportedOperationException();
     }
 
+    private void checkBundles() {
+        boolean allUnbounded = true;
+        for (EdgeBundle bundle : this.bundles) {
+            if (!bundle.getOrigMult().isUnbounded()) {
+                allUnbounded = false;
+                break;
+            }
+        }
+        this.areAllBundlesUnbounded = allUnbounded;
+    }
+
+    private void computeFirst() {
+        assert this.curr == 0;
+        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        result.addAll(this.fixedEdges);
+        this.curr++;
+        this.next = result;
+    }
+
+    private void computeNext() {
+        Set<ShapeEdge> intResult = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> finalResult = new THashSet<ShapeEdge>();
+        boolean finished = false;
+        while (!finished) {
+            for (int i = 0; i < this.flexEdges.length; i++) {
+                if ((this.curr & this.masks[i]) == this.masks[i]) {
+                    intResult.add(this.flexEdges[i]);
+                }
+            }
+            if (!intResult.isEmpty()) {
+                if (this.isValid(intResult)) {
+                    finalResult.addAll(intResult);
+                    finalResult.addAll(this.fixedEdges);
+                    /*if (!this.isValid(finalResult)) {
+                        finalResult = intResult;
+                    }*/
+                    this.fixOnSecondStage(intResult);
+                    finished = true;
+                } else {
+                    intResult.clear();
+                    finalResult.clear();
+                }
+                this.curr++;
+            } else {
+                finished = true;
+                finalResult = null;
+            }
+        }
+        this.next = finalResult;
+    }
+
+    private void fixOnSecondStage(Set<ShapeEdge> edges) {
+        for (EdgeBundle bundle : this.bundles) {
+            if (bundle.getOrigMult().isUnbounded()) {
+                for (ShapeEdge edge : edges) {
+                    if (bundle.containsEdge(edge)) {
+                        this.mat.setFixedOnSecondStage(edge);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isValid(Set<ShapeEdge> edges) {
+        if (this.areAllBundlesUnbounded) {
+            return true;
+        }
+        boolean valid = true;
+        Set<ShapeEdge> bundleEdges = new THashSet<ShapeEdge>();
+        for (EdgeBundle bundle : this.bundles) {
+            for (ShapeEdge edge : edges) {
+                if (bundle.containsEdge(edge)) {
+                    bundleEdges.add(edge);
+                }
+            }
+            if (!Multiplicity.getEdgeSetMult(bundleEdges).le(
+                bundle.getOrigMult())) {
+                valid = false;
+                break;
+            }
+            bundleEdges.clear();
+        }
+        return valid;
+    }
 }
