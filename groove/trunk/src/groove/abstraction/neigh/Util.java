@@ -17,7 +17,6 @@
 package groove.abstraction.neigh;
 
 import static groove.graph.EdgeRole.BINARY;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.graph.Edge;
@@ -55,7 +54,7 @@ public final class Util {
 
     /** Returns the set of labels used as node labels. */
     public static Set<TypeLabel> getNodeLabels(HostGraph graph, HostNode node) {
-        Set<TypeLabel> nodeLabels = new THashSet<TypeLabel>();
+        Set<TypeLabel> nodeLabels = new MyHashSet<TypeLabel>();
         for (HostEdge edge : graph.outEdgeSet(node)) {
             if (edge.getRole() != BINARY) {
                 nodeLabels.add(edge.label());
@@ -66,7 +65,7 @@ public final class Util {
 
     /** Returns the label set of binary edges of the given graph */
     public static Set<TypeLabel> getBinaryLabels(HostGraph graph) {
-        Set<TypeLabel> result = new THashSet<TypeLabel>();
+        Set<TypeLabel> result = new MyHashSet<TypeLabel>();
         for (HostEdge edge : graph.edgeSet()) {
             if (edge.getRole() == BINARY) {
                 result.add(edge.label());
@@ -78,7 +77,7 @@ public final class Util {
     /** Returns the set of binary edges of the given graph. */
     @SuppressWarnings("unchecked")
     public static <E extends HostEdge> Set<E> getBinaryEdges(HostGraph graph) {
-        Set<E> result = new THashSet<E>();
+        Set<E> result = new MyHashSet<E>();
         for (HostEdge edge : graph.edgeSet()) {
             if (edge.getRole() == EdgeRole.BINARY) {
                 result.add((E) edge);
@@ -96,7 +95,7 @@ public final class Util {
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
             Graph<?,?> graph, N src, N tgt, Label label) {
-        Set<E> result = new THashSet<E>();
+        Set<E> result = new MyHashSet<E>();
         for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label) && outEdge.target().equals(tgt)) {
                 result.add((E) outEdge);
@@ -109,7 +108,7 @@ public final class Util {
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
             Graph<?,?> graph, Set<N> srcs, N tgt, Label label) {
-        Set<E> result = new THashSet<E>();
+        Set<E> result = new MyHashSet<E>();
         for (Edge inEdge : graph.inEdgeSet(tgt)) {
             if (inEdge.label().equals(label) && srcs.contains(inEdge.source())) {
                 result.add((E) inEdge);
@@ -122,7 +121,7 @@ public final class Util {
     @SuppressWarnings("unchecked")
     public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
             Graph<?,?> graph, N src, Set<N> tgts, Label label) {
-        Set<E> result = new THashSet<E>();
+        Set<E> result = new MyHashSet<E>();
         for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label)
                 && tgts.contains(outEdge.target())) {

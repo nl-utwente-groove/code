@@ -20,9 +20,9 @@ import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -118,29 +118,29 @@ public final class Materialisation {
     /**
      * Auxiliary set that contains all newly materialised nodes.
      */
-    private THashSet<ShapeNode> matNodes;
+    private MyHashSet<ShapeNode> matNodes;
     /**
      * Auxiliary set that contains all newly materialised edges.
      */
-    private THashSet<ShapeEdge> matEdges;
+    private MyHashSet<ShapeEdge> matEdges;
     /**
      * Auxiliary set of possible new edges that should be included in the 
      * shape that is being materialised.
      */
-    private THashSet<ShapeEdge> possibleEdges;
+    private MyHashSet<ShapeEdge> possibleEdges;
     /**
      * Auxiliary set of edges that were fixed at the end of first stage.
      */
-    private THashSet<ShapeEdge> fixedOnFirstStage;
+    private MyHashSet<ShapeEdge> fixedOnFirstStage;
 
     // ------------------------------------------------------------------------
     // Used in second stage.
     // ------------------------------------------------------------------------
 
-    private THashSet<EdgeBundle> nonSingBundles;
-    private THashSet<EdgeBundle> splitBundles;
+    private MyHashSet<EdgeBundle> nonSingBundles;
+    private MyHashSet<EdgeBundle> splitBundles;
     private Map<ShapeNode,Set<ShapeNode>> nodeSplitMap;
-    private THashSet<ShapeEdge> fixedOnSecondStage;
+    private MyHashSet<ShapeEdge> fixedOnSecondStage;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -162,10 +162,10 @@ public final class Materialisation {
         this.originalMatch.setFixed();
         this.match = this.originalMatch.clone();
         // Create new auxiliary structures.
-        this.matNodes = new THashSet<ShapeNode>();
-        this.matEdges = new THashSet<ShapeEdge>();
-        this.possibleEdges = new THashSet<ShapeEdge>();
-        this.fixedOnFirstStage = new THashSet<ShapeEdge>();
+        this.matNodes = new MyHashSet<ShapeNode>();
+        this.matEdges = new MyHashSet<ShapeEdge>();
+        this.possibleEdges = new MyHashSet<ShapeEdge>();
+        this.fixedOnFirstStage = new MyHashSet<ShapeEdge>();
     }
 
     /**
@@ -294,7 +294,7 @@ public final class Materialisation {
 
     /** EDUARDO: Comment this... */
     void updateShapeMorphism() {
-        Set<HostNode> nodesToRemove = new THashSet<HostNode>();
+        Set<HostNode> nodesToRemove = new MyHashSet<HostNode>();
         for (HostNode key : this.morph.nodeMap().keySet()) {
             if (!this.shape.containsNode(key)) {
                 nodesToRemove.add(key);
@@ -303,7 +303,7 @@ public final class Materialisation {
         for (HostNode nodeToRemove : nodesToRemove) {
             this.morph.removeNode(nodeToRemove);
         }
-        Set<HostEdge> edgesToRemove = new THashSet<HostEdge>();
+        Set<HostEdge> edgesToRemove = new MyHashSet<HostEdge>();
         for (HostEdge key : this.morph.edgeMap().keySet()) {
             if (!this.shape.containsEdge(key)) {
                 edgesToRemove.add(key);
@@ -375,12 +375,14 @@ public final class Materialisation {
                     for (ShapeNode w : this.match.nodeMapValueSet()) {
                         EquivClass<ShapeNode> ecW =
                             this.shape.getEquivClassOf(w);
-                        EdgeSignature es =
-                            this.shape.getEdgeSignature(v, label, ecW);
-                        Multiplicity outMult =
-                            this.shape.getEdgeSigMult(es, EdgeMultDir.OUTGOING);
-                        Multiplicity inMult =
-                            this.shape.getEdgeSigMult(es, EdgeMultDir.INCOMING);
+                        EdgeSignature outEs =
+                            this.shape.getEdgeSignature(EdgeMultDir.OUTGOING,
+                                v, label, ecW);
+                        Multiplicity outMult = this.shape.getEdgeSigMult(outEs);
+                        EdgeSignature inEs =
+                            this.shape.getEdgeSignature(EdgeMultDir.INCOMING,
+                                v, label, ecW);
+                        Multiplicity inMult = this.shape.getEdgeSigMult(inEs);
                         Set<HostEdge> vInterW =
                             Util.getIntersectEdges(this.shape, v, w, label);
                         Multiplicity vInterWMult =
@@ -409,7 +411,7 @@ public final class Materialisation {
     /** Returns the set of edges involved in the materialisation. */
     Set<ShapeEdge> getAffectedEdges() {
         assert this.stage == 1;
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         result.addAll(this.matEdges);
         result.addAll(this.possibleEdges);
         return result;
@@ -553,7 +555,7 @@ public final class Materialisation {
     }
 
     /** EDUARDO: Comment this... */
-    void setNonSingBundles(THashSet<EdgeBundle> nonSingBundles) {
+    void setNonSingBundles(MyHashSet<EdgeBundle> nonSingBundles) {
         assert this.stage == 1;
         assert this.nonSingBundles == null;
         this.nonSingBundles = nonSingBundles;
@@ -578,8 +580,8 @@ public final class Materialisation {
         this.matEdges = null;
         this.possibleEdges = null;
         this.nodeSplitMap = new THashMap<ShapeNode,Set<ShapeNode>>();
-        this.splitBundles = new THashSet<EdgeBundle>();
-        this.fixedOnSecondStage = new THashSet<ShapeEdge>();
+        this.splitBundles = new MyHashSet<EdgeBundle>();
+        this.fixedOnSecondStage = new MyHashSet<ShapeEdge>();
 
         Shape shape = this.getShape();
 
@@ -589,7 +591,7 @@ public final class Materialisation {
         for (EdgeBundle bundle : this.nonSingBundles) {
             Set<EdgeBundle> bundleSet = nodeToBundles.get(bundle.node);
             if (bundleSet == null) {
-                bundleSet = new THashSet<EdgeBundle>();
+                bundleSet = new MyHashSet<EdgeBundle>();
                 nodeToBundles.put(bundle.node, bundleSet);
             }
             bundleSet.add(bundle);
@@ -607,8 +609,8 @@ public final class Materialisation {
         }
 
         // Create all edge permutations.
-        Set<ShapeEdge> fixedEdges = new THashSet<ShapeEdge>();
-        Set<ShapeEdge> flexEdges = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> fixedEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> flexEdges = new MyHashSet<ShapeEdge>();
         for (ShapeNode nodeS : nodeToBundles.keySet()) {
             fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, OUTGOING));
             fixedEdges.addAll(this.shape.binaryEdgeSet(nodeS, INCOMING));
@@ -628,7 +630,7 @@ public final class Materialisation {
         }
 
         // Clear unconnected nodes.
-        Set<ShapeNode> toRemove = new THashSet<ShapeNode>();
+        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
         for (ShapeNode nodeS : nodeToBundles.keySet()) {
             for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
                 if (this.shape.isUnconnected(splitNode)) {
@@ -656,7 +658,7 @@ public final class Materialisation {
         this.morph.putNode(newNode, origNode);
         Set<ShapeNode> copiesSet = this.nodeSplitMap.get(origNode);
         if (copiesSet == null) {
-            copiesSet = new THashSet<ShapeNode>();
+            copiesSet = new MyHashSet<ShapeNode>();
             this.nodeSplitMap.put(origNode, copiesSet);
         }
         copiesSet.add(newNode);
@@ -665,7 +667,7 @@ public final class Materialisation {
     private void addEdges(ShapeNode newNode, ShapeNode origNode,
             Set<ShapeEdge> allEdges) {
         assert this.stage == 2;
-        Set<ShapeNode> opposites = new THashSet<ShapeNode>();
+        Set<ShapeNode> opposites = new MyHashSet<ShapeNode>();
         for (ShapeEdge edge : allEdges) {
             ShapeEdge origEdge = this.morph.getEdge(edge);
             assert origEdge != null;
@@ -743,8 +745,7 @@ public final class Materialisation {
                 }
             }
             if (result == null) {
-                Multiplicity origEsMult =
-                    origShape.getEdgeSigMult(origEs, direction);
+                Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
                 result =
                     new EdgeBundle(origEs, origEsMult, node, label, direction,
                         true);
@@ -755,7 +756,7 @@ public final class Materialisation {
     }
 
     /** EDUARDO: Comment this... */
-    THashSet<EdgeBundle> getSplitBundles() {
+    MyHashSet<EdgeBundle> getSplitBundles() {
         assert this.stage == 2;
         assert this.splitBundles != null;
         return this.splitBundles;
@@ -797,9 +798,9 @@ public final class Materialisation {
     }
 
     /** EDUARDO: Comment this... */
-    THashSet<EdgeBundle> getSplitBundles(ShapeNode node) {
+    MyHashSet<EdgeBundle> getSplitBundles(ShapeNode node) {
         assert this.stage == 3;
-        THashSet<EdgeBundle> result = new THashSet<EdgeBundle>();
+        MyHashSet<EdgeBundle> result = new MyHashSet<EdgeBundle>();
         for (EdgeBundle splitBundle : this.splitBundles) {
             if (splitBundle.node.equals(node)) {
                 result.add(splitBundle);
@@ -816,7 +817,7 @@ public final class Materialisation {
     // ResultSet
     // ---------
 
-    private static class ResultSet extends THashSet<Materialisation> {
+    private static class ResultSet extends MyHashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {
             mat.garbageCollectNodes();

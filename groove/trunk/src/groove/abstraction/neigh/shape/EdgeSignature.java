@@ -21,9 +21,9 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.TypeLabel;
 
 /**
- * An edge signature is composed by a node (n), a label (l), and an equivalence
- * class (C) and is used as the key for the outgoing and incoming edge
- * multiplicity mappings.
+ * An edge signature is composed by a direction, a node (n), a label (l),
+ * and an equivalence class (C) and is used as the key for the outgoing and
+ * incoming edge multiplicity mappings.
  * 
  * @author Eduardo Zambon
  */
@@ -33,6 +33,7 @@ public final class EdgeSignature {
     // Object Fields
     // ------------------------------------------------------------------------
 
+    private final EdgeMultDir direction;
     private final TypeLabel label;
     private final ShapeNode node;
     private final EquivClass<ShapeNode> equivClass;
@@ -43,8 +44,9 @@ public final class EdgeSignature {
     // ------------------------------------------------------------------------
 
     /** Standard constructor that just fills in the object fields. */
-    public EdgeSignature(ShapeNode node, TypeLabel label,
-            EquivClass<ShapeNode> equivClass) {
+    public EdgeSignature(EdgeMultDir direction, ShapeNode node,
+            TypeLabel label, EquivClass<ShapeNode> equivClass) {
+        this.direction = direction;
         this.label = label;
         this.node = node;
         this.equivClass = equivClass;
@@ -59,8 +61,8 @@ public final class EdgeSignature {
 
     @Override
     public String toString() {
-        return "(" + this.node + ", " + this.label + ", " + this.equivClass
-            + ")";
+        return this.direction + ":(" + this.node + ", " + this.label + ", "
+            + this.equivClass + ")";
     }
 
     /** 
@@ -77,7 +79,8 @@ public final class EdgeSignature {
         } else {
             EdgeSignature es = (EdgeSignature) o;
             result =
-                this.node.equals(es.node) && this.label.equals(es.label)
+                this.direction.equals(es.direction)
+                    && this.node.equals(es.node) && this.label.equals(es.label)
                     && this.equivClass.equals(es.equivClass);
         }
         // Check for consistency between equals and hashCode.
@@ -97,6 +100,7 @@ public final class EdgeSignature {
     private int computeHashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + this.direction.hashCode();
         result = prime * result + this.node.hashCode();
         result = prime * result + this.label.hashCode();
         result = prime * result + this.equivClass.hashCode();
@@ -106,24 +110,16 @@ public final class EdgeSignature {
     /**
      * Returns true if the edge signature contains the edge given as argument.
      */
-    public boolean contains(ShapeEdge edge, EdgeMultDir direction,
-            boolean checkEc) {
-        ShapeNode node = null;
-        ShapeNode opposite = null;
-        switch (direction) {
-        case OUTGOING:
-            node = edge.source();
-            opposite = edge.target();
-            break;
-        case INCOMING:
-            node = edge.target();
-            opposite = edge.source();
-            break;
-        default:
-            assert false;
-        }
-        return this.node.equals(node) && this.label.equals(edge.label())
+    public boolean contains(ShapeEdge edge, boolean checkEc) {
+        ShapeNode incident = edge.incident(this.direction);
+        ShapeNode opposite = edge.opposite(this.direction);
+        return this.node.equals(incident) && this.label.equals(edge.label())
             && (checkEc ? this.equivClass.contains(opposite) : true);
+    }
+
+    /** Basic getter method. */
+    public EdgeMultDir getDirection() {
+        return this.direction;
     }
 
     /** Basic getter method. */

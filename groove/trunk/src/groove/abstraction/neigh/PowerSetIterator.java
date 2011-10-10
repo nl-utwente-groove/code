@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh;
 
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.trans.EquationSystem.EdgeBundle;
 import groove.abstraction.neigh.trans.Materialisation;
@@ -89,15 +88,15 @@ public class PowerSetIterator implements Iterator<Set<ShapeEdge>> {
 
     private void computeFirst() {
         assert this.curr == 0;
-        Set<ShapeEdge> result = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         result.addAll(this.fixedEdges);
         this.curr++;
         this.next = result;
     }
 
     private void computeNext() {
-        Set<ShapeEdge> intResult = new THashSet<ShapeEdge>();
-        Set<ShapeEdge> finalResult = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> intResult = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> finalResult = new MyHashSet<ShapeEdge>();
         boolean finished = false;
         while (!finished) {
             for (int i = 0; i < this.flexEdges.length; i++) {
@@ -144,7 +143,7 @@ public class PowerSetIterator implements Iterator<Set<ShapeEdge>> {
             return true;
         }
         boolean valid = true;
-        Set<ShapeEdge> bundleEdges = new THashSet<ShapeEdge>();
+        Set<ShapeEdge> bundleEdges = new MyHashSet<ShapeEdge>();
         for (EdgeBundle bundle : this.bundles) {
             for (ShapeEdge edge : edges) {
                 if (bundle.containsEdge(edge)) {

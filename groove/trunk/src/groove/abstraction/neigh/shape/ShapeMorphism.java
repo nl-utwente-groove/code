@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.shape;
 
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.graph.Morphism;
@@ -147,13 +147,15 @@ public class ShapeMorphism extends HostGraphMorphism {
      */
     private Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
             EdgeSignature esT) {
-        Set<EdgeSignature> result = new THashSet<EdgeSignature>();
+        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
+        EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
         for (ShapeNode esEcNodeT : esT.getEquivClass()) {
             Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
             for (ShapeNode esEcNodeS : esEcNodesS) {
                 EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
-                EdgeSignature esS = from.getEdgeSignature(nodeS, label, ecS);
+                EdgeSignature esS =
+                    from.getEdgeSignature(direction, nodeS, label, ecS);
                 result.add(esS);
             }
         }
@@ -163,6 +165,7 @@ public class ShapeMorphism extends HostGraphMorphism {
     /** Returns an edge signature in the given target shape. */
     public EdgeSignature getEdgeSignature(Shape to, EdgeSignature esFrom) {
         return to.getEdgeSignature(
+            esFrom.getDirection(),
             this.getNode(esFrom.getNode()),
             esFrom.getLabel(),
             to.getEquivClassOf(this.getNode(esFrom.getEquivClass().iterator().next())));
@@ -231,13 +234,12 @@ public class ShapeMorphism extends HostGraphMorphism {
         if (complyToEquivClass && complyToNodeMult) {
             dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
                 for (EdgeSignature esT : to.getEdgeMultMapKeys(direction)) {
-                    Multiplicity esTMult = to.getEdgeSigMult(esT, direction);
+                    Multiplicity esTMult = to.getEdgeSigMult(esT);
                     Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
                     for (ShapeNode nodeS : nodesS) {
                         Set<EdgeSignature> esSS =
                             this.getPreImages(from, nodeS, esT);
-                        Multiplicity sum =
-                            from.getEdgeSigSetMultSum(esSS, direction);
+                        Multiplicity sum = from.getEdgeSigSetMultSum(esSS);
                         // EZ says: we need subsumption, not equality.
                         //if (!esTMult.equals(sum)) {
                         if (!esTMult.subsumes(sum)) {

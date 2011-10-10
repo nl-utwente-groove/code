@@ -20,10 +20,10 @@ import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -56,9 +56,9 @@ public final class EquationSystem {
 
     private final Materialisation mat;
     private final int stage;
-    private final THashSet<Equation> trivialEqs;
-    private final THashSet<Equation> lbEqs;
-    private final THashSet<Equation> ubEqs;
+    private final MyHashSet<Equation> trivialEqs;
+    private final MyHashSet<Equation> lbEqs;
+    private final MyHashSet<Equation> ubEqs;
     private int lbRange[];
     private int ubRange[];
     private int varsCount;
@@ -84,9 +84,9 @@ public final class EquationSystem {
         assert mat != null;
         this.mat = mat;
         this.stage = mat.getStage();
-        this.trivialEqs = new THashSet<Equation>();
-        this.lbEqs = new THashSet<Equation>();
-        this.ubEqs = new THashSet<Equation>();
+        this.trivialEqs = new MyHashSet<Equation>();
+        this.lbEqs = new MyHashSet<Equation>();
+        this.ubEqs = new MyHashSet<Equation>();
         this.varsCount = 0;
         this.create();
     }
@@ -272,8 +272,7 @@ public final class EquationSystem {
         while (solutionModified) {
             solutionModified = false;
             for (BoundType type : BoundType.values()) {
-                THashSet<Equation> copyEqs =
-                    (THashSet<Equation>) sol.getEqs(type).clone();
+                MyHashSet<Equation> copyEqs = sol.getEqs(type).clone();
                 for (Equation eq : copyEqs) {
                     removeEq = eq.computeNewValues(sol);
                     if (removeEq) {
@@ -338,7 +337,7 @@ public final class EquationSystem {
 
         this.edgeVarsMap = new THashMap<ShapeEdge,Duo<BoundVar>>();
         this.varEdgeMap = new ArrayList<ShapeEdge>();
-        this.bundles = new THashSet<EdgeBundle>();
+        this.bundles = new MyHashSet<EdgeBundle>();
         Shape shape = this.mat.getShape();
 
         // Create the edge bundles.
@@ -347,8 +346,8 @@ public final class EquationSystem {
             this.addToEdgeBundle(edge.target(), edge, INCOMING);
         }
 
-        Set<ShapeNode> involvedNodes = new THashSet<ShapeNode>();
-        Set<ShapeNode> bundleNodes = new THashSet<ShapeNode>();
+        Set<ShapeNode> involvedNodes = new MyHashSet<ShapeNode>();
+        Set<ShapeNode> bundleNodes = new MyHashSet<ShapeNode>();
 
         // For each bundle...
         for (EdgeBundle bundle : this.bundles) {
@@ -394,10 +393,9 @@ public final class EquationSystem {
                         // Maybe there is a limit on the number of edges.
                         EdgeSignature es =
                             shape.getEdgeSignature(edge, direction);
-                        if (shape.isEdgeSigUnique(es, direction)) {
+                        if (shape.isEdgeSigUnique(es)) {
                             Multiplicity nodeMult = shape.getNodeMult(node);
-                            Multiplicity edgeMult =
-                                shape.getEdgeSigMult(es, direction);
+                            Multiplicity edgeMult = shape.getEdgeSigMult(es);
                             Multiplicity constMult = nodeMult.times(edgeMult);
                             Duo<Equation> trivialEqs =
                                 this.createEquations(1,
@@ -433,8 +431,7 @@ public final class EquationSystem {
         }
 
         if (result == null) {
-            Multiplicity origEsMult =
-                origShape.getEdgeSigMult(origEs, direction);
+            Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
             result =
                 new EdgeBundle(origEs, origEsMult, node, label, direction,
                     false);
@@ -466,8 +463,8 @@ public final class EquationSystem {
         MultKind kind = this.finalMultKind();
 
         // First, check if we need to split nodes.
-        THashSet<EdgeBundle> nonSingBundles = new THashSet<EdgeBundle>();
-        Set<ShapeEdge> edgesNotToInclude = new THashSet<ShapeEdge>();
+        MyHashSet<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
+        Set<ShapeEdge> edgesNotToInclude = new MyHashSet<ShapeEdge>();
         for (EdgeBundle bundle : this.bundles) {
             if (bundle.isNonSingular(this, shape, kind, sol)) {
                 nonSingBundles.add(bundle);
@@ -550,7 +547,7 @@ public final class EquationSystem {
                 for (ShapeEdge edge : bundle.edges) {
                     // Adjust the constant according to the fixed edges.
                     if (this.mat.isFixedOnFirstStage(edge)
-                        && !es.contains(edge, direction, true)) {
+                        && !es.contains(edge, true)) {
                         constMult = constMult.sub(one);
                     }
                 }
@@ -571,7 +568,7 @@ public final class EquationSystem {
             EdgeMultDir direction = bundle.direction;
             EdgeMultDir reverse = direction.reverse();
             EdgeSignature es = bundle.splitEs.iterator().next();
-            Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es, direction);
+            Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es);
             if (!esEdges.containsAll(bundle.edges)) {
                 continue;
             }
@@ -581,7 +578,7 @@ public final class EquationSystem {
                     bundle.origEsMult.getUpperBound());
             for (ShapeEdge edge : esEdges) {
                 EdgeSignature oppEs = shape.getEdgeSignature(edge, reverse);
-                if (shape.isEdgeSigUnique(oppEs, reverse)) {
+                if (shape.isEdgeSigUnique(oppEs)) {
                     Duo<BoundVar> oppVars = this.getEsMap(reverse).get(oppEs);
                     addVars(oppVarsSum, oppVars);
                 }
@@ -601,7 +598,7 @@ public final class EquationSystem {
                 continue;
             }
             EdgeMultDir reverse = direction.reverse();
-            Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es, direction);
+            Set<ShapeEdge> esEdges = shape.getEdgesFromSig(es);
             if (esEdges.size() != 1) {
                 // This edge signature is shared. Nothing to do.
                 continue;
@@ -700,7 +697,7 @@ public final class EquationSystem {
             EdgeSignature es = pair.one();
             EdgeMultDir direction = pair.two();
             if (shape.getEdgeMultMapKeys(direction).contains(es)) {
-                shape.setEdgeSigMult(es, direction, mult);
+                shape.setEdgeSigMult(es, mult);
             } // else, the signature was removed from the shape because the
               // opposite variable is zero. Don't set the multiplicity here
               // otherwise we would end up with a spurious entry in the
@@ -790,24 +787,23 @@ public final class EquationSystem {
                 EdgeMultDir direction = splitBundle.direction;
                 for (EdgeSignature splitEs : splitBundle.splitEs) {
                     // We may have another equation.
-                    Multiplicity constMult =
-                        shape.getEdgeSigMult(splitEs, direction);
+                    Multiplicity constMult = shape.getEdgeSigMult(splitEs);
                     int maxEdgesCount = splitBundle.edges.size();
                     Duo<Equation> oppEqs =
                         this.createEquations(maxEdgesCount,
                             constMult.getLowerBound(),
                             constMult.getUpperBound());
-                    innerLoop: for (ShapeEdge edge : shape.getEdgesFromSig(
-                        splitEs, direction)) {
+                    innerLoop: for (ShapeEdge edge : shape.getEdgesFromSig(splitEs)) {
                         ShapeNode opposite = edge.opposite(direction);
                         Duo<BoundVar> vars = this.nodeVarsMap.get(opposite);
                         if (vars == null) {
                             continue innerLoop;
                         } // else vars != null.
                         EdgeSignature oppEs =
-                            shape.getEdgeSignature(opposite, edge.label(),
+                            shape.getEdgeSignature(direction.reverse(),
+                                opposite, edge.label(),
                                 shape.getEquivClassOf(node));
-                        if (shape.isEdgeSigConcrete(oppEs, direction.reverse())) {
+                        if (shape.isEdgeSigConcrete(oppEs)) {
                             addVars(oppEqs, vars);
                         }
                     }
@@ -871,9 +867,9 @@ public final class EquationSystem {
             this.node = node;
             this.label = label;
             this.direction = direction;
-            this.edges = new THashSet<ShapeEdge>();
+            this.edges = new MyHashSet<ShapeEdge>();
             if (forSecondStage) {
-                this.splitEs = new THashSet<EdgeSignature>();
+                this.splitEs = new MyHashSet<EdgeSignature>();
             }
         }
 
@@ -902,8 +898,8 @@ public final class EquationSystem {
 
         boolean isNonSingular(EquationSystem eqSys, Shape shape, MultKind kind,
                 Solution sol) {
-            this.edgesInShape = new THashSet<ShapeEdge>();
-            this.positivePossibleEdges = new THashSet<ShapeEdge>();
+            this.edgesInShape = new MyHashSet<ShapeEdge>();
+            this.positivePossibleEdges = new MyHashSet<ShapeEdge>();
             EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
             if (shape.getNodeMult(this.node).isCollector()) {
                 for (ShapeEdge edge : this.edges) {
@@ -1374,11 +1370,11 @@ public final class EquationSystem {
 
         final ValueRange lbValues[];
         final ValueRange ubValues[];
-        final THashSet<Equation> lbEqs;
-        final THashSet<Equation> ubEqs;
+        final MyHashSet<Equation> lbEqs;
+        final MyHashSet<Equation> ubEqs;
 
         Solution(int varsCount, int lbRange[], int ubRange[],
-                THashSet<Equation> lbEqs, THashSet<Equation> ubEqs) {
+                MyHashSet<Equation> lbEqs, MyHashSet<Equation> ubEqs) {
             this.lbValues = new ValueRange[varsCount];
             this.ubValues = new ValueRange[varsCount];
             for (int i = 0; i < varsCount; i++) {
@@ -1387,8 +1383,8 @@ public final class EquationSystem {
                 this.lbValues[i].setDual(this.ubValues[i]);
                 this.ubValues[i].setDual(this.lbValues[i]);
             }
-            this.lbEqs = (THashSet<Equation>) lbEqs.clone();
-            this.ubEqs = (THashSet<Equation>) ubEqs.clone();
+            this.lbEqs = lbEqs.clone();
+            this.ubEqs = ubEqs.clone();
         }
 
         Solution(Solution original) {
@@ -1401,8 +1397,8 @@ public final class EquationSystem {
                 this.lbValues[i].setDual(this.ubValues[i]);
                 this.ubValues[i].setDual(this.lbValues[i]);
             }
-            this.lbEqs = (THashSet<Equation>) original.lbEqs.clone();
-            this.ubEqs = (THashSet<Equation>) original.ubEqs.clone();
+            this.lbEqs = original.lbEqs.clone();
+            this.ubEqs = original.ubEqs.clone();
         }
 
         ValueRange[] getValueRangeArray(BoundType type) {
@@ -1420,8 +1416,8 @@ public final class EquationSystem {
             return result;
         }
 
-        THashSet<Equation> getEqs(BoundType type) {
-            THashSet<Equation> result = null;
+        MyHashSet<Equation> getEqs(BoundType type) {
+            MyHashSet<Equation> result = null;
             switch (type) {
             case LB:
                 result = this.lbEqs;
@@ -1702,18 +1698,18 @@ public final class EquationSystem {
     // SolutionSet
     // -----------
 
-    private static class SolutionSet extends THashSet<Solution> {
+    private static class SolutionSet extends MyHashSet<Solution> {
         @Override
         public boolean add(Solution newSol) {
             boolean storeNew = true;
-            THashSet<Solution> toRemove = null;
+            MyHashSet<Solution> toRemove = null;
             for (Solution oldSol : this) {
                 if (oldSol.subsumes(newSol)) {
                     storeNew = false;
                     break;
                 } else if (newSol.subsumes(oldSol)) {
                     if (toRemove == null) {
-                        toRemove = new THashSet<Solution>(this.size());
+                        toRemove = new MyHashSet<Solution>(this.size());
                     }
                     toRemove.add(oldSol);
                 }
