@@ -16,11 +16,11 @@
  */
 package groove.graph;
 
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import groove.util.Fixable;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,12 +90,12 @@ public class InversableElementMap<SN extends Node,SE extends Edge,TN extends Nod
 
     private <K extends Object,V extends Object> Map<V,Set<K>> computeInverse(
             Map<K,V> map) {
-        Map<V,Set<K>> result = new THashMap<V,Set<K>>();
+        Map<V,Set<K>> result = new HashMap<V,Set<K>>();
         for (Map.Entry<K,V> entry : map.entrySet()) {
             V value = entry.getValue();
             Set<K> keys = result.get(value);
             if (keys == null) {
-                result.put(value, keys = new THashSet<K>());
+                result.put(value, keys = new LinkedHashSet<K>());
             }
             keys.add(entry.getKey());
         }
