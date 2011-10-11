@@ -302,12 +302,6 @@ public final class EquationSystem {
         return result;
     }
 
-    private Duo<Equation> createEquations(int varsCount) {
-        Equation lbEq = new Equation(BoundType.LB, varsCount);
-        Equation ubEq = new Equation(BoundType.UB, varsCount);
-        return new Duo<Equation>(lbEq, ubEq);
-    }
-
     private Duo<Equation> createEquations(int varsCount, int lbConst,
             int ubConst) {
         Equation lbEq = new Equation(BoundType.LB, varsCount, lbConst);
@@ -318,6 +312,14 @@ public final class EquationSystem {
     private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
         eqs.one().addVar(vars.one());
         eqs.two().addVar(vars.two());
+    }
+
+    private boolean hasTrivialEqs() {
+        return this.trivialEqs.size() > 0;
+    }
+
+    private boolean hasNonTrivialEqs() {
+        return this.lbEqs.size() > 0 || this.ubEqs.size() > 0;
     }
 
     // ------------------------------------------------------------------------
@@ -338,6 +340,7 @@ public final class EquationSystem {
             this.addToEdgeBundle(edge.target(), edge, INCOMING);
         }
 
+        // General case:
         // For each bundle...
         for (EdgeBundle bundle : this.bundles) {
             bundle.computeAdditionalEdges(this.mat);
@@ -372,8 +375,6 @@ public final class EquationSystem {
             }
             this.storeEquations(eqs);
         }
-
-        // EDUARDO: Restore optimization...
     }
 
     private void addToEdgeBundle(ShapeNode node, ShapeEdge edge,
@@ -490,36 +491,67 @@ public final class EquationSystem {
         this.outEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
         this.inEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
         this.varEsMap = new ArrayList<EdgeSignature>();
-        Multiplicity one =
-            Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
 
-        // For each split bundle...
-        for (EdgeBundle bundle : this.mat.getSplitBundles()) {
-            bundle.computeAdditionalEdges(this.mat);
-            EdgeMultDir direction = bundle.direction;
-            // ... create one pair of equations.
-            int esCount = bundle.splitEs.size();
-            Duo<Equation> eqs = this.createEquations(esCount);
-            Multiplicity constMult = bundle.origEsMult;
-            // For each edge signature...
-            for (EdgeSignature es : bundle.splitEs) {
-                // ... create a pair of variables.
-                Duo<BoundVar> vars = retrieveBoundVars(es, direction);
-                addVars(eqs, vars);
-                for (ShapeEdge edge : bundle.edges) {
-                    // Adjust the constant according to the fixed edges.
-                    if (this.mat.isFixedOnFirstStage(edge)
-                        && !es.contains(edge)) {
-                        constMult = constMult.sub(one);
+        // General case:
+        // For each affected node...
+        for (ShapeNode affectedNode : this.mat.getAffectedNodes()) {
+            // For each split bundle...
+            for (EdgeBundle bundle : this.mat.getSplitBundles(affectedNode)) {
+                bundle.computeAdditionalEdges(this.mat);
+                bundle.computeAdditionalSignatures(this.mat);
+                // ... create one pair of equations.
+                int esCount = bundle.splitEs.size();
+                Duo<Equation> eqs =
+                    this.createEquations(esCount,
+                        bundle.origEsMult.getLowerBound(),
+                        bundle.origEsMult.getUpperBound());
+                // For each edge signature...
+                for (EdgeSignature es : bundle.splitEs) {
+                    // ... create a pair of variables.
+                    Duo<BoundVar> vars =
+                        retrieveBoundVars(es, bundle.direction);
+                    addVars(eqs, vars);
+                }
+                this.storeEquations(eqs);
+            }
+        }
+
+        Shape shape = this.mat.getShape();
+
+        // Optimization 1:
+        // Create additional trivial equations for the fixed edges.
+        for (ShapeEdge fixedEdge : this.mat.getEdgesFixedOnFirstStage()) {
+            assert shape.isEdgeConcrete(fixedEdge);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                Duo<Equation> trivialEqs = this.createEquations(1, 1, 1);
+                EdgeSignature es = shape.getEdgeSignature(fixedEdge, direction);
+                Duo<BoundVar> vars = this.getEsMap(direction).get(es);
+                if (vars != null) {
+                    addVars(trivialEqs, vars);
+                }
+                this.storeEquations(trivialEqs);
+            }
+        }
+
+        // Optimization 2:
+        // Opposite nodes are concrete.
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            Map<EdgeSignature,Duo<BoundVar>> esMap = this.getEsMap(direction);
+            for (EdgeSignature es : esMap.keySet()) {
+                if (shape.isEdgeSigUnique(es)) {
+                    ShapeEdge edge =
+                        shape.getEdgesFromSig(es).iterator().next();
+                    ShapeNode opposite = edge.opposite(direction);
+                    if (shape.getNodeMult(opposite).isOne()) {
+                        Duo<Equation> trivialEqs =
+                            this.createEquations(1, 1, 1);
+                        Duo<BoundVar> vars = esMap.get(es);
+                        addVars(trivialEqs, vars);
+                        this.storeEquations(trivialEqs);
                     }
                 }
             }
-            eqs.one().setConstant(constMult.getLowerBound());
-            eqs.two().setConstant(constMult.getUpperBound());
-            this.storeEquations(eqs);
         }
-
-        // EDUARDO: Restore this...
     }
 
     private Map<EdgeSignature,Duo<BoundVar>> getEsMap(EdgeMultDir direction) {
@@ -578,8 +610,9 @@ public final class EquationSystem {
         this.varNodeMap = new ArrayList<ShapeNode>();
 
         Shape shape = this.mat.getShape();
-
         Map<ShapeNode,Set<ShapeNode>> nodeSplitMap = this.mat.getNodeSplitMap();
+
+        // General case:
         // For each split node...
         for (ShapeNode origNode : nodeSplitMap.keySet()) {
             Multiplicity origMult = shape.getNodeMult(origNode);
@@ -600,7 +633,72 @@ public final class EquationSystem {
             this.storeEquations(eqs);
         }
 
-        // EDUARDO: Restore optimization...
+        assert !this.hasTrivialEqs();
+
+        // Optimization 1:
+        // Opposite concrete node with incident concrete edge.
+        nodeLoop: for (ShapeNode splitNode : this.nodeVarsMap.keySet()) {
+            // Check all incident edges.
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                for (ShapeEdge edge : shape.binaryEdgeSet(splitNode, direction)) {
+                    if (shape.isEdgeConcrete(edge)) {
+                        ShapeNode opp = edge.opposite(direction);
+                        assert shape.getNodeMult(opp).isOne();
+                        // The split node has to be concrete.
+                        Duo<Equation> trivialEqs =
+                            this.createEquations(1, 1, 1);
+                        Duo<BoundVar> vars = this.nodeVarsMap.get(splitNode);
+                        addVars(trivialEqs, vars);
+                        this.storeEquations(trivialEqs);
+                        // We're done with this node.
+                        continue nodeLoop;
+                    }
+                }
+            }
+        }
+
+        if (!this.hasNonTrivialEqs()) {
+            // There are no non-trivial equations. There's nothing left to do.
+            // All variables will receive the most general multiplicity value.
+            // The extra steps below are optimizations that only make sense
+            // when we already have equations. Otherwise, the optimizations
+            // only cause unnecessary branching in the equation system.
+            return;
+        }
+
+        // Optimization 2:
+        // Sum of opposite nodes for concrete nodes.
+        outerLoop: for (ShapeNode node : shape.nodeSet()) {
+            if (!shape.getNodeMult(node).isOne()) {
+                continue outerLoop;
+            }
+            for (EdgeBundle splitBundle : this.mat.getSplitBundles(node)) {
+                EdgeMultDir direction = splitBundle.direction;
+                for (EdgeSignature splitEs : splitBundle.splitEs) {
+                    // We may have another equation.
+                    Multiplicity constMult = shape.getEdgeSigMult(splitEs);
+                    int maxEdgesCount = splitBundle.edges.size();
+                    Duo<Equation> oppEqs =
+                        this.createEquations(maxEdgesCount,
+                            constMult.getLowerBound(),
+                            constMult.getUpperBound());
+                    innerLoop: for (ShapeEdge edge : shape.getEdgesFromSig(splitEs)) {
+                        ShapeNode opposite = edge.opposite(direction);
+                        Duo<BoundVar> vars = this.nodeVarsMap.get(opposite);
+                        if (vars == null) {
+                            continue innerLoop;
+                        } // else vars != null.
+                        EdgeSignature oppEs =
+                            shape.getEdgeSignature(edge, direction.reverse());
+                        if (shape.isEdgeSigConcrete(oppEs)) {
+                            addVars(oppEqs, vars);
+                        }
+                    }
+                    this.storeEquations(oppEqs);
+                }
+            }
+        }
+
     }
 
     private Duo<BoundVar> retrieveBoundVars(ShapeNode node) {
@@ -664,7 +762,7 @@ public final class EquationSystem {
         @Override
         public String toString() {
             return this.direction + ":" + this.node + "-" + this.label + "-"
-                + this.edges;
+                + this.edges + "|" + this.splitEs;
         }
 
         void computeAdditionalEdges(Materialisation mat) {
@@ -706,6 +804,20 @@ public final class EquationSystem {
         boolean isEqual(ShapeNode node, EdgeSignature origEs) {
             return this.node.equals(node) && this.origEs.equals(origEs);
         }
+
+        void computeAdditionalSignatures(Materialisation mat) {
+            Shape shape = mat.getShape();
+            Shape origShape = mat.getOriginalShape();
+            ShapeMorphism morph = mat.getShapeMorphism();
+            for (EdgeSignature es : shape.getEdgeMultMapKeys(this.direction)) {
+                if (es.getNode().equals(this.node)
+                    && es.getLabel().equals(this.label)
+                    && morph.getEdgeSignature(origShape, es).equals(this.origEs)) {
+                    this.splitEs.add(es);
+                }
+            }
+        }
+
     }
 
     // ---------
@@ -755,16 +867,12 @@ public final class EquationSystem {
 
         final BoundType type;
         final ArrayList<BoundVar> vars;
-        int constant;
+        final int constant;
         Equation dual;
 
-        Equation(BoundType type, int varsCount) {
+        Equation(BoundType type, int varsCount, int constant) {
             this.type = type;
             this.vars = new ArrayList<BoundVar>(varsCount);
-        }
-
-        Equation(BoundType type, int varsCount, int constant) {
-            this(type, varsCount);
             this.constant = constant;
         }
 
@@ -830,10 +938,6 @@ public final class EquationSystem {
         void addVar(BoundVar var) {
             assert var.type == this.type;
             this.vars.add(var);
-        }
-
-        void setConstant(int constant) {
-            this.constant = constant;
         }
 
         void setDual(Equation dual) {
