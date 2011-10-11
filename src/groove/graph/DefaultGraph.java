@@ -19,9 +19,9 @@ package groove.graph;
 import static groove.graph.GraphRole.NONE;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,8 +61,8 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
     protected DefaultGraph(DefaultGraph graph) {
         super(graph.getName());
         for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(), new HashSet<DefaultEdge>(
-                edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(),
+                new LinkedHashSet<DefaultEdge>(edgeEntry.getValue()));
         }
     }
 
@@ -78,7 +78,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
     }
 
     public Set<? extends DefaultEdge> edgeSet() {
-        Set<DefaultEdge> result = new HashSet<DefaultEdge>();
+        Set<DefaultEdge> result = new LinkedHashSet<DefaultEdge>();
         for (Map.Entry<DefaultNode,Set<DefaultEdge>> edgeEntry : this.edgeMap.entrySet()) {
             result.addAll(edgeEntry.getValue());
         }
@@ -115,7 +115,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsNode(node);
         if (added) {
-            this.edgeMap.put(node, new HashSet<DefaultEdge>());
+            this.edgeMap.put(node, new LinkedHashSet<DefaultEdge>());
             fireAddNode(node);
         }
         return added;
@@ -208,7 +208,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
      * @invariant <tt>edgeMap: DefaultNode -> 2^DefaultEdge</tt>
      */
     private final Map<DefaultNode,Set<DefaultEdge>> edgeMap =
-        new HashMap<DefaultNode,Set<DefaultEdge>>();
+        new LinkedHashMap<DefaultNode,Set<DefaultEdge>>();
 
     /** The role of this default graph. */
     private GraphRole role = NONE;
