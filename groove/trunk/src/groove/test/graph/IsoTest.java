@@ -51,6 +51,9 @@ public class IsoTest {
         ExtensionFilter stateFilter = FileType.getFilter(FileType.STATE);
         this.graphMap = new HashMap<String,List<DefaultGraph>>();
         for (File stateFile : new File(INPUT_DIR).listFiles(stateFilter)) {
+            if (stateFile.isDirectory()) {
+                continue;
+            }
             String name = stateFilter.stripExtension(stateFile.getName());
             try {
                 addGraph(name, Groove.loadGraph(stateFile));
