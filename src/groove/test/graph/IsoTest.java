@@ -82,7 +82,7 @@ public class IsoTest {
         }
     }
 
-    /** Tests the rules in the creators grammar. */
+    /** Tests Euler's walk. */
     @Test
     public void testBridges() {
         test("bridges", true);
