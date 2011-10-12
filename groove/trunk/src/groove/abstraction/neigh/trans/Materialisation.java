@@ -640,12 +640,18 @@ public final class Materialisation {
         }
 
         // Remove the nodes that could not be connected.
-        for (ShapeNode nodeToRemove : toRemove) {
+        toRemoveLoop: for (ShapeNode nodeToRemove : toRemove) {
             assert shape.isUnconnected(nodeToRemove);
             assert shape.getNodeMult(nodeToRemove).isZero();
             auxMorph.removeNode(nodeToRemove);
             this.matNodes.remove(nodeToRemove);
             shape.removeNode(nodeToRemove);
+            for (Set<ShapeNode> splitSet : this.nodeSplitMap.values()) {
+                if (splitSet.contains(nodeToRemove)) {
+                    splitSet.remove(nodeToRemove);
+                    continue toRemoveLoop;
+                }
+            }
         }
 
         // Now add the remaining edges created by the node split that still
@@ -913,7 +919,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "3";
+            String number = "10";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

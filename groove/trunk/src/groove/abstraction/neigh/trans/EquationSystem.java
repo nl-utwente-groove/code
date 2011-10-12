@@ -747,6 +747,16 @@ public final class EquationSystem {
             Shape shape = mat.getShape();
             Shape origShape = mat.getOriginalShape();
             ShapeMorphism morph = mat.getShapeMorphism();
+            // First remove signatures that are no longer present in the shape.
+            // This may happen when we garbage collect nodes.
+            Iterator<EdgeSignature> iter = this.splitEs.iterator();
+            while (iter.hasNext()) {
+                EdgeSignature es = iter.next();
+                if (!shape.hasEdgeSignature(es)) {
+                    iter.remove();
+                }
+            }
+            // Now search for the additional signatures.
             for (EdgeSignature es : shape.getEdgeMultMapKeys(this.direction)) {
                 if (es.getNode().equals(this.node)
                     && es.getLabel().equals(this.label)
