@@ -394,13 +394,23 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(6, mats.size());
+            assertEquals(2, mats.size());
+            boolean gotFive = false;
+            boolean gotSix = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                assertEquals(7, matShape.nodeSet().size());
-                assertEquals(20, Util.getBinaryEdges(matShape).size());
-                assertEquals(4, matShape.getEquivRelation().size());
+                int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 5) {
+                    gotFive = true;
+                } else if (nodeCount == 6) {
+                    gotSix = true;
+                } else {
+                    fail();
+                }
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(binaryEdgeCount == 10 || binaryEdgeCount == 14);
             }
+            assertTrue(gotFive && gotSix);
         }
     }
 
@@ -501,11 +511,11 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(3, mats.size());
+            assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                assertEquals(5, matShape.nodeSet().size());
-                assertEquals(3, Util.getBinaryEdges(matShape).size());
+                assertEquals(4, matShape.nodeSet().size());
+                assertEquals(2, Util.getBinaryEdges(matShape).size());
                 assertEquals(3, matShape.getEquivRelation().size());
             }
         }

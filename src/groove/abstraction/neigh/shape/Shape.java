@@ -850,6 +850,11 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
+    /** Returns true if the given signature occurs in the multiplicity map. */
+    public boolean hasEdgeSignature(EdgeSignature es) {
+        return this.getEdgeMultMapKeys(es.getDirection()).contains(es);
+    }
+
     /**
      * Returns true if the number of edges from the signature
      * occurring in the shape is one.
