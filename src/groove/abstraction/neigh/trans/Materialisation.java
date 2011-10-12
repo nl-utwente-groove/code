@@ -617,8 +617,10 @@ public final class Materialisation {
         }
 
         // Create all edge permutations.
-        this.createPossibleEdges(auxMorph, shape, to, this.matNodes, true);
+        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
         Set<ShapeEdge> flexEdges = new MyHashSet<ShapeEdge>();
+        Map<Pair<ShapeNode,EdgeBundle>,Set<ShapeEdge>> bundleToEdgesMap =
+            new MyHashMap<Pair<ShapeNode,EdgeBundle>,Set<ShapeEdge>>();
         for (ShapeNode nodeS : nodeToBundles.keySet()) {
             Set<EdgeBundle> bundles = nodeToBundles.get(nodeS);
             for (EdgeBundle bundle : bundles) {
@@ -628,10 +630,43 @@ public final class Materialisation {
                 new PowerSetIterator<ShapeEdge>(flexEdges, true);
             for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
                 // Add the result of the iterator to the split node.
-                this.addEdges(splitNode, nodeS, iter.next(), bundles);
+                if (!this.addEdges(splitNode, nodeS, iter.next(), bundles,
+                    bundleToEdgesMap)) {
+                    toRemove.add(splitNode);
+                }
             }
             assert !iter.hasNext();
             flexEdges.clear();
+        }
+
+        // Remove the nodes that could not be connected.
+        for (ShapeNode nodeToRemove : toRemove) {
+            assert shape.isUnconnected(nodeToRemove);
+            assert shape.getNodeMult(nodeToRemove).isZero();
+            auxMorph.removeNode(nodeToRemove);
+            this.matNodes.remove(nodeToRemove);
+            shape.removeNode(nodeToRemove);
+        }
+
+        // Now add the remaining edges created by the node split that still
+        // give rise to admissible configurations.
+        this.createPossibleEdges(auxMorph, shape, to, this.matNodes, true);
+        Set<ShapeEdge> edgesToAdd = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> vetoedEdges = new MyHashSet<ShapeEdge>();
+        for (ShapeNode nodeS : nodeToBundles.keySet()) {
+            Set<EdgeBundle> bundles = nodeToBundles.get(nodeS);
+            for (ShapeNode splitNode : this.nodeSplitMap.get(nodeS)) {
+                if (!toRemove.contains(splitNode)) {
+                    this.collectEdgesToAdd(splitNode, bundles, edgesToAdd,
+                        vetoedEdges, bundleToEdgesMap);
+                }
+            }
+        }
+        // Finally, add the edges we had left.
+        edgesToAdd.removeAll(vetoedEdges);
+        for (ShapeEdge edgeToAdd : edgesToAdd) {
+            assert !shape.containsEdge(edgeToAdd);
+            shape.addEdgeWithoutCheck(edgeToAdd);
         }
     }
 
@@ -679,62 +714,84 @@ public final class Materialisation {
         return result;
     }
 
-    private void addEdges(ShapeNode newNode, ShapeNode origNode,
-            Set<ShapeEdge> oldFlexEdges, Set<EdgeBundle> bundles) {
+    private void collectEdgesToAdd(ShapeNode newNode, Set<EdgeBundle> bundles,
+            Set<ShapeEdge> edgesToAdd, Set<ShapeEdge> vetoedEdges,
+            Map<Pair<ShapeNode,EdgeBundle>,Set<ShapeEdge>> bundleToEdgesMap) {
+        Set<ShapeEdge> fixedIncidentEdges = this.getFixedIncidentEdges(newNode);
+
+        Set<ShapeEdge> fixEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> allBundleEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> usedEdges = new MyHashSet<ShapeEdge>();
+        for (EdgeBundle bundle : bundles) {
+            Set<ShapeEdge> flexEdges =
+                bundleToEdgesMap.get(new Pair<ShapeNode,EdgeBundle>(newNode,
+                    bundle));
+            // Collect the fixed edges.
+            for (ShapeEdge edge : fixedIncidentEdges) {
+                if (edge.incident(bundle.direction).equals(newNode)
+                    && bundle.edges.contains(this.morph.getEdge(edge))) {
+                    fixEdges.add(edge);
+                }
+            }
+            if (flexEdges.isEmpty()) {
+                // Just add the fixed edges.
+                edgesToAdd.addAll(fixEdges);
+            } else {
+                // Check the multiplicity.
+                allBundleEdges.addAll(fixEdges);
+                allBundleEdges.addAll(flexEdges);
+                Multiplicity mult = bundle.origEsMult;
+                if (!mult.isUnbounded()
+                    && !Multiplicity.getEdgeSetMult(allBundleEdges).le(mult)) {
+                    vetoedEdges.addAll(fixEdges);
+                } else {
+                    edgesToAdd.addAll(fixEdges);
+                }
+            }
+            usedEdges.addAll(fixEdges);
+            fixEdges.clear();
+            allBundleEdges.clear();
+        }
+        // Maybe we have some edges left...
+        fixedIncidentEdges.removeAll(usedEdges);
+        edgesToAdd.addAll(fixedIncidentEdges);
+    }
+
+    private boolean addEdges(ShapeNode newNode, ShapeNode origNode,
+            Set<ShapeEdge> oldFlexEdges, Set<EdgeBundle> bundles,
+            Map<Pair<ShapeNode,EdgeBundle>,Set<ShapeEdge>> bundleToEdgesMap) {
         assert this.stage == 2;
 
-        Set<ShapeEdge> fixedEdges = this.getFixedIncidentEdges(newNode);
         Set<ShapeEdge> flexEdges =
             this.routeNewEdges(newNode, origNode, oldFlexEdges);
-        Set<ShapeEdge> allEdges = new MyHashSet<ShapeEdge>();
-        allEdges.addAll(fixedEdges);
-        allEdges.addAll(flexEdges);
 
         for (EdgeBundle bundle : bundles) {
             assert bundle.node.equals(origNode);
             Set<ShapeEdge> bundleEdges = new MyHashSet<ShapeEdge>();
             // Collect all edges associated with the bundle.
-            for (ShapeEdge edge : allEdges) {
+            for (ShapeEdge edge : flexEdges) {
                 if (edge.incident(bundle.direction).equals(newNode)
                     && bundle.edges.contains(this.morph.getEdge(edge))) {
                     bundleEdges.add(edge);
                 }
             }
             // Check the multiplicity.
-            boolean includeFixedEdges = true;
             Multiplicity mult = bundle.origEsMult;
-            if (!mult.isUnbounded()) {
-                // Check if the can do something...
-                if (!Multiplicity.getEdgeSetMult(flexEdges).le(mult)) {
-                    // We can't have this many incident edges on this node.
-                    // Nothing to do. The new node will remain unconnected and
-                    // will be garbage collected later...
-                    return;
-                }
-                if (!Multiplicity.getEdgeSetMult(bundleEdges).le(mult)) {
-                    // We can't include the fixed edges because they'll go over
-                    // the multiplicity.
-                    includeFixedEdges = false;
-                }
+            if (!mult.isUnbounded()
+                && !Multiplicity.getEdgeSetMult(bundleEdges).le(mult)) {
+                // We can't have this many incident edges on this node.
+                // Nothing to do. The new node will remain unconnected and
+                // will be garbage collected later...
+                return false;
             }
             // Now add the bundle edges.
             for (ShapeEdge bundleEdge : bundleEdges) {
-                if (includeFixedEdges && fixedEdges.contains(bundleEdge)) {
-                    if (!this.shape.containsEdge(bundleEdge)) {
-                        this.shape.addEdgeWithoutCheck(bundleEdge);
-                    }
-                } else if (flexEdges.contains(bundleEdge)) {
-                    this.addEdge(bundleEdge);
-                }
+                this.addEdge(bundleEdge);
             }
-            // Maybe we have fixed edges that don't belong to any bundle...
-            fixedEdges.removeAll(bundleEdges);
-            for (ShapeEdge extraEdge : fixedEdges) {
-                if (!this.shape.containsEdge(extraEdge)) {
-                    this.shape.addEdgeWithoutCheck(extraEdge);
-                }
-            }
+            bundleToEdgesMap.put(
+                new Pair<ShapeNode,EdgeBundle>(newNode, bundle), bundleEdges);
         }
+        return true;
     }
 
     private Set<ShapeEdge> routeNewEdges(ShapeNode newNode, ShapeNode origNode,
@@ -856,7 +913,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "2";
+            String number = "3";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

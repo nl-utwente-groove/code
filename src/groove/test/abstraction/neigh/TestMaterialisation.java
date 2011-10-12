@@ -294,13 +294,23 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(6, mats.size());
+            assertEquals(2, mats.size());
+            boolean gotFour = false;
+            boolean gotFive = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                assertEquals(6, matShape.nodeSet().size());
-                assertEquals(13, Util.getBinaryEdges(matShape).size());
-                assertEquals(3, matShape.getEquivRelation().size());
+                int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 4) {
+                    gotFour = true;
+                } else if (nodeCount == 5) {
+                    gotFive = true;
+                } else {
+                    fail();
+                }
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(binaryEdgeCount == 5 || binaryEdgeCount == 8);
             }
+            assertTrue(gotFour && gotFive);
         }
     }
 
