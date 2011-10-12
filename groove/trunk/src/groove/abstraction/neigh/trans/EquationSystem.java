@@ -19,10 +19,10 @@ package groove.abstraction.neigh.trans;
 import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
-import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -329,7 +329,7 @@ public final class EquationSystem {
     private void createFirstStage() {
         assert this.stage == 1;
 
-        this.edgeVarsMap = new THashMap<ShapeEdge,Duo<BoundVar>>();
+        this.edgeVarsMap = new MyHashMap<ShapeEdge,Duo<BoundVar>>();
         this.varEdgeMap = new ArrayList<ShapeEdge>();
         this.bundles = new MyHashSet<EdgeBundle>();
         Shape shape = this.mat.getShape();
@@ -460,16 +460,10 @@ public final class EquationSystem {
             if (!shape.containsEdge(edge)) {
                 shape.addEdge(edge);
             }
-            boolean fixed = true;
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 if (shape.getNodeMult(edge.incident(direction)).isOne()) {
                     shape.setEdgeMult(edge, direction, mult);
-                } else {
-                    fixed = false;
                 }
-            }
-            if (fixed && mult.isOne()) {
-                this.mat.setFixedOnFirstStage(edge);
             }
         }
 
@@ -488,8 +482,8 @@ public final class EquationSystem {
     private void createSecondStage() {
         assert this.stage == 2;
 
-        this.outEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
-        this.inEsVarsMap = new THashMap<EdgeSignature,Duo<BoundVar>>();
+        this.outEsVarsMap = new MyHashMap<EdgeSignature,Duo<BoundVar>>();
+        this.inEsVarsMap = new MyHashMap<EdgeSignature,Duo<BoundVar>>();
         this.varEsMap = new ArrayList<EdgeSignature>();
 
         // General case:
@@ -519,21 +513,6 @@ public final class EquationSystem {
         Shape shape = this.mat.getShape();
 
         // Optimization 1:
-        // Create additional trivial equations for the fixed edges.
-        for (ShapeEdge fixedEdge : this.mat.getEdgesFixedOnFirstStage()) {
-            assert shape.isEdgeConcrete(fixedEdge);
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                Duo<Equation> trivialEqs = this.createEquations(1, 1, 1);
-                EdgeSignature es = shape.getEdgeSignature(fixedEdge, direction);
-                Duo<BoundVar> vars = this.getEsMap(direction).get(es);
-                if (vars != null) {
-                    addVars(trivialEqs, vars);
-                }
-                this.storeEquations(trivialEqs);
-            }
-        }
-
-        // Optimization 2:
         // Opposite nodes are concrete.
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             Map<EdgeSignature,Duo<BoundVar>> esMap = this.getEsMap(direction);
@@ -606,7 +585,7 @@ public final class EquationSystem {
     private void createThirdStage() {
         assert this.stage == 3;
 
-        this.nodeVarsMap = new THashMap<ShapeNode,Duo<BoundVar>>();
+        this.nodeVarsMap = new MyHashMap<ShapeNode,Duo<BoundVar>>();
         this.varNodeMap = new ArrayList<ShapeNode>();
 
         Shape shape = this.mat.getShape();

@@ -91,9 +91,8 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 3
-                    && binaryEdgeCount == 2);
+                assertEquals(3, matShape.nodeSet().size());
+                assertEquals(2, Util.getBinaryEdges(matShape).size());
             }
         }
 
@@ -109,9 +108,8 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 4
-                    && binaryEdgeCount == 3);
+                assertEquals(4, matShape.nodeSet().size());
+                assertEquals(3, Util.getBinaryEdges(matShape).size());
             }
         }
     }
@@ -135,9 +133,8 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 4
-                    && binaryEdgeCount == 3);
+                assertEquals(4, matShape.nodeSet().size());
+                assertEquals(3, Util.getBinaryEdges(matShape).size());
             }
         }
     }
@@ -161,9 +158,8 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 6
-                    && binaryEdgeCount == 3);
+                assertEquals(6, matShape.nodeSet().size());
+                assertEquals(3, Util.getBinaryEdges(matShape).size());
             }
         }
     }
@@ -187,10 +183,9 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 6
-                    && binaryEdgeCount == 4
-                    && matShape.getEquivRelation().size() == 5);
+                assertEquals(6, matShape.nodeSet().size());
+                assertEquals(4, Util.getBinaryEdges(matShape).size());
+                assertEquals(5, matShape.getEquivRelation().size());
             }
         }
     }
@@ -214,10 +209,9 @@ public class TestMaterialisation {
             assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 9
-                    && binaryEdgeCount == 15
-                    && matShape.getEquivRelation().size() == 5);
+                assertEquals(9, matShape.nodeSet().size());
+                assertEquals(15, Util.getBinaryEdges(matShape).size());
+                assertEquals(5, matShape.getEquivRelation().size());
             }
         }
     }
@@ -241,10 +235,9 @@ public class TestMaterialisation {
             assertEquals(8, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 14
-                    && binaryEdgeCount == 32
-                    && matShape.getEquivRelation().size() == 6);
+                assertEquals(14, matShape.nodeSet().size());
+                assertEquals(32, Util.getBinaryEdges(matShape).size());
+                assertEquals(6, matShape.getEquivRelation().size());
             }
         }
     }
@@ -304,10 +297,9 @@ public class TestMaterialisation {
             assertEquals(6, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 6
-                    && binaryEdgeCount == 13
-                    && matShape.getEquivRelation().size() == 3);
+                assertEquals(6, matShape.nodeSet().size());
+                assertEquals(13, Util.getBinaryEdges(matShape).size());
+                assertEquals(3, matShape.getEquivRelation().size());
             }
         }
     }
@@ -395,10 +387,9 @@ public class TestMaterialisation {
             assertEquals(6, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 7
-                    && binaryEdgeCount == 20
-                    && matShape.getEquivRelation().size() == 4);
+                assertEquals(7, matShape.nodeSet().size());
+                assertEquals(20, Util.getBinaryEdges(matShape).size());
+                assertEquals(4, matShape.getEquivRelation().size());
             }
         }
     }
@@ -422,10 +413,9 @@ public class TestMaterialisation {
             assertEquals(1, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 18
-                    && binaryEdgeCount == 292
-                    && matShape.getEquivRelation().size() == 3);
+                assertEquals(18, matShape.nodeSet().size());
+                assertEquals(292, Util.getBinaryEdges(matShape).size());
+                assertEquals(3, matShape.getEquivRelation().size());
             }
         }
     }
@@ -449,10 +439,9 @@ public class TestMaterialisation {
             assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 5
-                    && binaryEdgeCount == 3
-                    && matShape.getEquivRelation().size() == 3);
+                assertEquals(5, matShape.nodeSet().size());
+                assertEquals(3, Util.getBinaryEdges(matShape).size());
+                assertEquals(3, matShape.getEquivRelation().size());
             }
         }
     }
@@ -505,10 +494,9 @@ public class TestMaterialisation {
             assertEquals(3, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
-                assertTrue(matShape.nodeSet().size() == 5
-                    && binaryEdgeCount == 3
-                    && matShape.getEquivRelation().size() == 3);
+                assertEquals(5, matShape.nodeSet().size());
+                assertEquals(3, Util.getBinaryEdges(matShape).size());
+                assertEquals(3, matShape.getEquivRelation().size());
             }
         }
     }

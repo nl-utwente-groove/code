@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.graph.TypeLabel;
@@ -110,7 +110,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     private void computeInitialEquivClasses() {
         // Map from node labels to equivalence classes.
         Map<Set<TypeLabel>,EquivClass<HostNode>> labelsToClass =
-            new THashMap<Set<TypeLabel>,EquivClass<HostNode>>();
+            new MyHashMap<Set<TypeLabel>,EquivClass<HostNode>>();
         // Get the set of labels to be used in the abstraction.
         Set<TypeLabel> absLabels = Parameters.getAbsLabels();
 
