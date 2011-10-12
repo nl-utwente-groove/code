@@ -314,14 +314,6 @@ public final class EquationSystem {
         eqs.two().addVar(vars.two());
     }
 
-    private boolean hasTrivialEqs() {
-        return this.trivialEqs.size() > 0;
-    }
-
-    private boolean hasNonTrivialEqs() {
-        return this.lbEqs.size() > 0 || this.ubEqs.size() > 0;
-    }
-
     // ------------------------------------------------------------------------
     // Methods for first stage.
     // ------------------------------------------------------------------------
@@ -612,40 +604,7 @@ public final class EquationSystem {
             this.storeEquations(eqs);
         }
 
-        assert !this.hasTrivialEqs();
-
         // Optimization 1:
-        // Opposite concrete node with incident concrete edge.
-        nodeLoop: for (ShapeNode splitNode : this.nodeVarsMap.keySet()) {
-            // Check all incident edges.
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                for (ShapeEdge edge : shape.binaryEdgeSet(splitNode, direction)) {
-                    if (shape.isEdgeConcrete(edge)) {
-                        ShapeNode opp = edge.opposite(direction);
-                        assert shape.getNodeMult(opp).isOne();
-                        // The split node has to be concrete.
-                        Duo<Equation> trivialEqs =
-                            this.createEquations(1, 1, 1);
-                        Duo<BoundVar> vars = this.nodeVarsMap.get(splitNode);
-                        addVars(trivialEqs, vars);
-                        this.storeEquations(trivialEqs);
-                        // We're done with this node.
-                        continue nodeLoop;
-                    }
-                }
-            }
-        }
-
-        if (!this.hasNonTrivialEqs()) {
-            // There are no non-trivial equations. There's nothing left to do.
-            // All variables will receive the most general multiplicity value.
-            // The extra steps below are optimizations that only make sense
-            // when we already have equations. Otherwise, the optimizations
-            // only cause unnecessary branching in the equation system.
-            return;
-        }
-
-        // Optimization 2:
         // Sum of opposite nodes for concrete nodes.
         outerLoop: for (ShapeNode node : shape.nodeSet()) {
             if (!shape.getNodeMult(node).isOne()) {
