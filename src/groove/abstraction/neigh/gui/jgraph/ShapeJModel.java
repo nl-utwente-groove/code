@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
@@ -31,6 +31,7 @@ import groove.gui.jgraph.GraphJModel;
 import groove.util.Duo;
 
 import java.awt.geom.Point2D;
+import java.util.Map;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -55,17 +56,17 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     /** Prototype for creating new equivalence classes JCells. */
     private final EquivClassJCell ecJCellProt;
     /** Map from edge signatures to outgoing ports. */
-    private final THashMap<EdgeSignature,ShapeJPort> outEsMap;
+    private final Map<EdgeSignature,ShapeJPort> outEsMap;
     /** Map from edge signatures to incoming ports. */
-    private final THashMap<EdgeSignature,ShapeJPort> inEsMap;
+    private final Map<EdgeSignature,ShapeJPort> inEsMap;
 
     /** Creates a new jModel with the given prototypes. */
     ShapeJModel(ShapeJVertex jVertexProt, ShapeJEdge jEdgeProt,
             EquivClassJCell ecJCellProt) {
         super(jVertexProt, jEdgeProt);
         this.ecJCellProt = ecJCellProt;
-        this.outEsMap = new THashMap<EdgeSignature,ShapeJPort>();
-        this.inEsMap = new THashMap<EdgeSignature,ShapeJPort>();
+        this.outEsMap = new MyHashMap<EdgeSignature,ShapeJPort>();
+        this.inEsMap = new MyHashMap<EdgeSignature,ShapeJPort>();
     }
 
     @Override
@@ -135,8 +136,8 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     /** Returns the proper port map accordingly to the given direction. */
-    private THashMap<EdgeSignature,ShapeJPort> getEsMap(EdgeMultDir direction) {
-        THashMap<EdgeSignature,ShapeJPort> result = null;
+    private Map<EdgeSignature,ShapeJPort> getEsMap(EdgeMultDir direction) {
+        Map<EdgeSignature,ShapeJPort> result = null;
         switch (direction) {
         case OUTGOING:
             result = this.outEsMap;

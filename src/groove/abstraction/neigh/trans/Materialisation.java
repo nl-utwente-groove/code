@@ -19,9 +19,9 @@ package groove.abstraction.neigh.trans;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
-import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
@@ -53,6 +53,7 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -128,10 +129,6 @@ public final class Materialisation {
      * shape that is being materialised.
      */
     private Set<ShapeEdge> possibleEdges;
-    /**
-     * Auxiliary set of edges that were fixed at the end of first stage.
-     */
-    private Set<ShapeEdge> fixedOnFirstStage;
 
     // ------------------------------------------------------------------------
     // Used in second stage.
@@ -173,7 +170,6 @@ public final class Materialisation {
         this.matNodes = new MyHashSet<ShapeNode>();
         this.matEdges = new MyHashSet<ShapeEdge>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
-        this.fixedOnFirstStage = new MyHashSet<ShapeEdge>();
     }
 
     /**
@@ -194,9 +190,6 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
-        if (mat.stage == 1) {
-            this.fixedOnFirstStage = mat.fixedOnFirstStage;
-        }
         if (mat.stage == 2) {
             this.nodeSplitMap = mat.nodeSplitMap;
             this.bundleSplitMap = mat.bundleSplitMap;
@@ -577,12 +570,6 @@ public final class Materialisation {
         this.nonSingBundles = nonSingBundles;
     }
 
-    /** Basic setter method. */
-    void setFixedOnFirstStage(ShapeEdge edge) {
-        assert this.stage == 1;
-        this.fixedOnFirstStage.add(edge);
-    }
-
     // ------------------------------------------------------------------------
     // Methods for second stage.
     // ------------------------------------------------------------------------
@@ -595,12 +582,12 @@ public final class Materialisation {
         this.matEdges = null;
         this.matNodes = new MyHashSet<ShapeNode>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
-        this.nodeSplitMap = new THashMap<ShapeNode,Set<ShapeNode>>();
-        this.bundleSplitMap = new THashMap<ShapeNode,Set<EdgeBundle>>();
+        this.nodeSplitMap = new MyHashMap<ShapeNode,Set<ShapeNode>>();
+        this.bundleSplitMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
 
         // Compute the set of nodes that need splitting.
         Map<ShapeNode,Set<EdgeBundle>> nodeToBundles =
-            new THashMap<ShapeNode,Set<EdgeBundle>>();
+            new MyHashMap<ShapeNode,Set<EdgeBundle>>();
         for (EdgeBundle bundle : this.nonSingBundles) {
             Set<EdgeBundle> bundleSet = nodeToBundles.get(bundle.node);
             if (bundleSet == null) {
@@ -674,13 +661,10 @@ public final class Materialisation {
     Set<EdgeBundle> getSplitBundles(ShapeNode node) {
         assert this.stage == 2 || this.stage == 3;
         Set<EdgeBundle> result = this.bundleSplitMap.get(node);
-        assert result != null;
+        if (result == null) {
+            result = Collections.emptySet();
+        }
         return result;
-    }
-
-    Set<ShapeEdge> getEdgesFixedOnFirstStage() {
-        assert this.stage == 2;
-        return this.fixedOnFirstStage;
     }
 
     private Set<ShapeEdge> getFixedIncidentEdges(ShapeNode splitNode) {
@@ -839,7 +823,6 @@ public final class Materialisation {
         assert this.stage == 2;
         this.stage++;
         this.nonSingBundles = null;
-        this.fixedOnFirstStage = null;
     }
 
     /** Basic getter method. */

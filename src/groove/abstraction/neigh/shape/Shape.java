@@ -21,10 +21,10 @@ import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static groove.graph.EdgeRole.BINARY;
-import gnu.trove.THashMap;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
@@ -97,9 +97,9 @@ public final class Shape extends DefaultHostGraph {
     private Shape(ShapeFactory factory) {
         super("shape", factory);
         this.equivRel = new EquivRelation<ShapeNode>();
-        this.nodeMultMap = new THashMap<ShapeNode,Multiplicity>();
-        this.outEdgeMultMap = new THashMap<EdgeSignature,Multiplicity>();
-        this.inEdgeMultMap = new THashMap<EdgeSignature,Multiplicity>();
+        this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
+        this.outEdgeMultMap = new MyHashMap<EdgeSignature,Multiplicity>();
+        this.inEdgeMultMap = new MyHashMap<EdgeSignature,Multiplicity>();
     }
 
     /** Copying constructor. Used in cloning. */
@@ -109,11 +109,11 @@ public final class Shape extends DefaultHostGraph {
         this.equivRel = shape.equivRel.clone();
         // Clone the multiplicity maps. A shallow copy is sufficient.
         this.nodeMultMap =
-            ((THashMap<ShapeNode,Multiplicity>) shape.nodeMultMap).clone();
+            ((MyHashMap<ShapeNode,Multiplicity>) shape.nodeMultMap).clone();
         this.outEdgeMultMap =
-            ((THashMap<EdgeSignature,Multiplicity>) shape.outEdgeMultMap).clone();
+            ((MyHashMap<EdgeSignature,Multiplicity>) shape.outEdgeMultMap).clone();
         this.inEdgeMultMap =
-            ((THashMap<EdgeSignature,Multiplicity>) shape.inEdgeMultMap).clone();
+            ((MyHashMap<EdgeSignature,Multiplicity>) shape.inEdgeMultMap).clone();
     }
 
     // ------------------------------------------------------------------------
