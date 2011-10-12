@@ -128,6 +128,9 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     private void iterateCertificates2() {
         if ((this.strong || BREAK_DUPLICATES)
             && this.nodePartitionCount < this.nodeCertCount) {
+            if (this.nodeCertCount > tmpCertIxs.length) {
+                tmpCertIxs = new int[this.nodeCertCount + 100];
+            }
             // now look for smallest unbroken duplicate certificate (if any)
             int oldPartitionCount;
             do {
@@ -187,13 +190,17 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      *        {@link #nodePartitionCount} are recalculated
      */
     private void advanceNodeCerts(boolean store) {
-        certStore.clear();
+        int tmpSize = 0;
         for (int i = 0; i < this.nodeCertCount; i++) {
             MyNodeCert<?> nodeCert = (MyNodeCert<?>) this.nodeCerts[i];
             this.graphCertificate += nodeCert.setNewValue();
             if (store) {
-                MyNodeCert<?> oldCertForValue = certStore.put(nodeCert);
-                if (!nodeCert.isSingular()) {
+                if (nodeCert.isSingular()) {
+                    // add to the certStore later, to avoid resetting singularity
+                    tmpCertIxs[tmpSize] = i;
+                    tmpSize++;
+                } else {
+                    MyNodeCert<?> oldCertForValue = certStore.put(nodeCert);
                     if (oldCertForValue == null) {
                         // assume this certificate is singular
                         nodeCert.setSingular(this.iterateCount);
@@ -205,7 +212,12 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             }
         }
         if (store) {
+            // copy the remainder of the certificates to the store
+            for (int i = 0; i < tmpSize; i++) {
+                certStore.add((MyNodeCert<?>) this.nodeCerts[tmpCertIxs[i]]);
+            }
             this.nodePartitionCount = certStore.size();
+            certStore.clear();
         }
     }
 
@@ -339,6 +351,8 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
                 return key.getValue();
             }
         };
+    /** Temporary storage for node certificates. */
+    static private int[] tmpCertIxs = new int[100];
 
     /** Debug flag to switch the use of duplicate breaking on and off. */
     static private final boolean BREAK_DUPLICATES = true;
