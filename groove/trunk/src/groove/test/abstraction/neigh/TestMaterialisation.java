@@ -214,6 +214,24 @@ public class TestMaterialisation {
                 assertEquals(5, matShape.getEquivRelation().size());
             }
         }
+
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+
+        shape = Shape.createShape(graph);
+        preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(2, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                assertEquals(9, matShape.nodeSet().size());
+                assertEquals(15, Util.getBinaryEdges(matShape).size());
+                assertEquals(5, matShape.getEquivRelation().size());
+            }
+        }
     }
 
     @Test
@@ -225,6 +243,9 @@ public class TestMaterialisation {
             e.printStackTrace();
         }
         Rule rule = grammar.getRule("test-mat-1c");
+
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
