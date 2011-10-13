@@ -230,6 +230,7 @@ public final class EquationSystem {
         }
         // Create the return objects.
         for (Solution sol : finishedSols) {
+            assert this.isValid(sol);
             Materialisation mat;
             if (finishedSols.size() == 1) {
                 mat = this.mat;
@@ -312,6 +313,24 @@ public final class EquationSystem {
     private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
         eqs.one().addVar(vars.one());
         eqs.two().addVar(vars.two());
+    }
+
+    private boolean isValid(Solution sol) {
+        assert sol.isComplete(this.stage);
+        boolean result = true;
+        Set<Equation> allEqs = new MyHashSet<Equation>();
+        allEqs.addAll(this.trivialEqs);
+        allEqs.addAll(this.lbEqs);
+        allEqs.addAll(this.ubEqs);
+        for (Equation eq : allEqs) {
+            // Don't use eq.isValidSolution(sol) because this checks for the
+            // dual as well. This means extra unnecessary work.
+            if (!eq.isSatisfied(sol)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -615,7 +634,8 @@ public final class EquationSystem {
                 EdgeMultDir direction = splitBundle.direction;
                 for (EdgeSignature splitEs : splitBundle.splitEs) {
                     // We may have another equation.
-                    Multiplicity constMult = shape.getEdgeSigMult(splitEs);
+                    Multiplicity constMult =
+                        shape.getEdgeSigMult(splitEs).toNodeKind();
                     int maxEdgesCount = splitBundle.edges.size();
                     Duo<Equation> oppEqs =
                         this.createEquations(maxEdgesCount,
@@ -968,7 +988,7 @@ public final class EquationSystem {
                 }
                 // Check if the max sum equals the constant.
                 int openVarsMaxSum = this.getOpenVarsMaxSum(sol);
-                if (openVarsMaxSum == this.constant) {
+                if (openVarsMaxSum == newConst) {
                     // We can set all the open variables to their maximum.
                     for (BoundVar openVar : openVars) {
                         sol.cutLow(openVar, sol.getMaxValue(openVar));
@@ -1337,6 +1357,10 @@ public final class EquationSystem {
 
         boolean isFinished() {
             return this.lbEqs.isEmpty() && this.ubEqs.isEmpty();
+        }
+
+        boolean isComplete(int stage) {
+            return stage == 1 ? this.ubEqs.isEmpty() : this.isFinished();
         }
 
         Equation getBestBranchingEquation() {

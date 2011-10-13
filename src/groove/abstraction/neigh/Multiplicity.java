@@ -442,6 +442,12 @@ public final class Multiplicity {
         return approx(this.i, this.j, MultKind.EDGE_MULT);
     }
 
+    /** Converts the multiplicity to a node kind. */
+    public Multiplicity toNodeKind() {
+        assert this.isEdgeKind();
+        return approx(this.i, this.j, MultKind.NODE_MULT);
+    }
+
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
