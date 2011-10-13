@@ -1196,7 +1196,8 @@ public final class Shape extends DefaultHostGraph {
             && this.getNodeMult(edge.target()).isOne();
     }
 
-    private boolean isEdgeUnique(ShapeEdge edge, EdgeMultDir direction) {
+    /** Returns true if the edge is the only one in the signature. */
+    public boolean isEdgeUnique(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
         return this.isEdgeSigUnique(es);
     }
