@@ -35,6 +35,7 @@ import groove.util.Duo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +45,7 @@ import java.util.Set;
  */
 public final class EquationSystem {
 
-    private static final boolean WARN_BLOWUP = false;
+    private static final boolean WARN_BLOWUP = true;
     private static final int MAX_SOLUTION_COUNT = 4;
 
     /** Creates a new equation system for the given materialisation. */
@@ -247,19 +248,31 @@ public final class EquationSystem {
         }
     }
 
-    private boolean shouldStopEarly(Solution sol) {
-        //return this.stage == 1 && sol.ubEqs.isEmpty();
-        return this.stage == 1 && this.isValid(sol);
+    private Solution tryToMaxSolution(Solution sol) {
+        Solution result = sol;
+        if (this.stage == 1 && sol.ubEqs.isEmpty()) {
+            result = sol.clone();
+            result.setAllVarsToMax(this.edgeVarsMap.values());
+        }
+        return result;
     }
 
     private void iterateSolution(Solution sol, SolutionSet partialSols,
             SolutionSet finishedSols) {
         this.iterateEquations(sol);
-        if (sol.isFinished() || this.shouldStopEarly(sol)) {
+        if (sol.isFinished()) {
             finishedSols.add(sol);
         } else {
-            Equation branchingEq = sol.getBestBranchingEquation();
-            branchingEq.getNewSolutions(sol, partialSols, finishedSols);
+            // Check if we're in first stage and we can stop early.
+            Solution maxSol = this.tryToMaxSolution(sol);
+            if (maxSol != sol) { // Reference inequality is sufficient.
+                // Yes, we can stop. Store the maxed solution.
+                finishedSols.add(maxSol);
+            } else {
+                // No escape, we have to branch.
+                Equation branchingEq = sol.getBestBranchingEquation();
+                branchingEq.getNewSolutions(sol, partialSols, finishedSols);
+            }
         }
     }
 
@@ -1401,6 +1414,14 @@ public final class EquationSystem {
             ValueRange range = this.getValueRange(var);
             if (range.isZeroOne()) {
                 range.cutHigh(0);
+            }
+        }
+
+        void setAllVarsToMax(Collection<Duo<BoundVar>> vars) {
+            for (Duo<BoundVar> pair : vars) {
+                BoundVar lbVar = pair.one();
+                int max = this.getMaxValue(lbVar);
+                this.cutLow(lbVar, max);
             }
         }
     }
