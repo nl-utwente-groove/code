@@ -18,15 +18,16 @@ package groove.abstraction.neigh.trans;
 
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
+import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -729,35 +730,47 @@ public final class Materialisation {
         Set<ShapeEdge> fixEdges = new MyHashSet<ShapeEdge>();
         Set<ShapeEdge> allBundleEdges = new MyHashSet<ShapeEdge>();
         Set<ShapeEdge> usedEdges = new MyHashSet<ShapeEdge>();
+        EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
         for (EdgeBundle bundle : bundles) {
+            EdgeMultDir direction = bundle.direction;
+            // Get the flexible edges from the map.
             Set<ShapeEdge> flexEdges =
                 bundleToEdgesMap.get(new Pair<ShapeNode,EdgeBundle>(newNode,
                     bundle));
             // Collect the fixed edges.
             for (ShapeEdge edge : fixedIncidentEdges) {
-                if (edge.incident(bundle.direction).equals(newNode)
+                if (edge.incident(direction).equals(newNode)
                     && bundle.edges.contains(this.morph.getEdge(edge))) {
                     fixEdges.add(edge);
                 }
             }
-            if (flexEdges.isEmpty()) {
-                // Just add the fixed edges.
-                edgesToAdd.addAll(fixEdges);
-            } else {
-                // Check the multiplicity.
+            // Check if we can add the fixed edges.
+            boolean addFixedEdges = true;
+            Multiplicity mult = bundle.origEsMult;
+            if (!mult.isUnbounded()) {
                 allBundleEdges.addAll(fixEdges);
                 allBundleEdges.addAll(flexEdges);
-                Multiplicity mult = bundle.origEsMult;
-                if (!mult.isUnbounded()
-                    && !Multiplicity.getEdgeSetMult(allBundleEdges).le(mult)) {
-                    vetoedEdges.addAll(fixEdges);
-                } else {
-                    edgesToAdd.addAll(fixEdges);
+                // Count the number of different opposite equivalence classes.
+                for (ShapeEdge bundleEdge : allBundleEdges) {
+                    er.add(this.shape.getEquivClassOf(bundleEdge.opposite(direction)));
+                }
+                int ecCount = er.size();
+                Multiplicity oppMult =
+                    Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
+                if (!oppMult.le(mult)) {
+                    addFixedEdges = false;
                 }
             }
+            if (addFixedEdges) {
+                edgesToAdd.addAll(fixEdges);
+            } else {
+                vetoedEdges.addAll(fixEdges);
+            }
+            // Adjust the sets for the next iteration of the loop.
             usedEdges.addAll(fixEdges);
             fixEdges.clear();
             allBundleEdges.clear();
+            er.clear();
         }
         // Maybe we have some edges left...
         fixedIncidentEdges.removeAll(usedEdges);
@@ -917,11 +930,10 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "1b";
+            String number = "3";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

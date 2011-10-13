@@ -225,12 +225,22 @@ public class TestMaterialisation {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
             assertEquals(2, mats.size());
+            boolean gotSeven = false;
+            boolean gotEight = false;
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
-                assertEquals(9, matShape.nodeSet().size());
-                assertEquals(15, Util.getBinaryEdges(matShape).size());
-                assertEquals(5, matShape.getEquivRelation().size());
+                int nodeCount = matShape.nodeSet().size();
+                if (nodeCount == 7) {
+                    gotSeven = true;
+                } else if (nodeCount == 8) {
+                    gotEight = true;
+                } else {
+                    fail();
+                }
+                int binaryEdgeCount = Util.getBinaryEdges(matShape).size();
+                assertTrue(binaryEdgeCount == 9 || binaryEdgeCount == 11);
             }
+            assertTrue(gotSeven && gotEight);
         }
     }
 
