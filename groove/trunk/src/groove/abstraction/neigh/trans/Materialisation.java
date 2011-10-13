@@ -785,6 +785,7 @@ public final class Materialisation {
         Set<ShapeEdge> flexEdges =
             this.routeNewEdges(newNode, origNode, oldFlexEdges);
 
+        EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
         for (EdgeBundle bundle : bundles) {
             assert bundle.node.equals(origNode);
             Set<ShapeEdge> bundleEdges = new MyHashSet<ShapeEdge>();
@@ -797,12 +798,20 @@ public final class Materialisation {
             }
             // Check the multiplicity.
             Multiplicity mult = bundle.origEsMult;
-            if (!mult.isUnbounded()
-                && !Multiplicity.getEdgeSetMult(bundleEdges).le(mult)) {
-                // We can't have this many incident edges on this node.
-                // Nothing to do. The new node will remain unconnected and
-                // will be garbage collected later...
-                return false;
+            if (!mult.isUnbounded()) {
+                // Count the number of different opposite equivalence classes.
+                for (ShapeEdge bundleEdge : bundleEdges) {
+                    er.add(this.shape.getEquivClassOf(bundleEdge.opposite(bundle.direction)));
+                }
+                int ecCount = er.size();
+                Multiplicity oppMult =
+                    Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
+                if (!oppMult.le(mult)) {
+                    // We can't have this many incident edges on this node.
+                    // Nothing to do. The new node will remain unconnected and
+                    // will be garbage collected later...
+                    return false;
+                }
             }
             // Now add the bundle edges.
             for (ShapeEdge bundleEdge : bundleEdges) {
@@ -810,6 +819,7 @@ public final class Materialisation {
             }
             bundleToEdgesMap.put(
                 new Pair<ShapeNode,EdgeBundle>(newNode, bundle), bundleEdges);
+            er.clear();
         }
         return true;
     }
@@ -930,10 +940,11 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
+        //Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "3";
+            String number = "10";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
