@@ -453,7 +453,8 @@ public final class EquationSystem {
                 shape.addEdge(edge);
             }
             for (EdgeMultDir direction : EdgeMultDir.values()) {
-                if (shape.getNodeMult(edge.incident(direction)).isOne()) {
+                if (shape.getNodeMult(edge.incident(direction)).isOne()
+                    && shape.isEdgeUnique(edge, direction)) {
                     shape.setEdgeMult(edge, direction, mult);
                 }
             }
