@@ -44,7 +44,7 @@ import java.util.Set;
  */
 public final class EquationSystem {
 
-    private static final boolean WARN_BLOWUP = true;
+    private static final boolean WARN_BLOWUP = false;
     private static final int MAX_SOLUTION_COUNT = 4;
 
     /** Creates a new equation system for the given materialisation. */
@@ -248,7 +248,8 @@ public final class EquationSystem {
     }
 
     private boolean shouldStopEarly(Solution sol) {
-        return this.stage == 1 && sol.ubEqs.isEmpty();
+        //return this.stage == 1 && sol.ubEqs.isEmpty();
+        return this.stage == 1 && this.isValid(sol);
     }
 
     private void iterateSolution(Solution sol, SolutionSet partialSols,
@@ -316,7 +317,6 @@ public final class EquationSystem {
     }
 
     private boolean isValid(Solution sol) {
-        assert sol.isComplete(this.stage);
         boolean result = true;
         Set<Equation> allEqs = new MyHashSet<Equation>();
         allEqs.addAll(this.trivialEqs);
@@ -1357,10 +1357,6 @@ public final class EquationSystem {
 
         boolean isFinished() {
             return this.lbEqs.isEmpty() && this.ubEqs.isEmpty();
-        }
-
-        boolean isComplete(int stage) {
-            return stage == 1 ? this.ubEqs.isEmpty() : this.isFinished();
         }
 
         Equation getBestBranchingEquation() {

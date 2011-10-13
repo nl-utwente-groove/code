@@ -553,6 +553,35 @@ public class TestMaterialisation {
     }
 
     @Test
+    public void testMaterialisation10() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-10").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-10");
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(3, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                assertEquals(6, matShape.getEquivRelation().size());
+                for (EdgeMultDir direction : EdgeMultDir.values()) {
+                    for (EdgeSignature es : matShape.getEdgeMultMapKeys(direction)) {
+                        assertTrue(matShape.getEdgeSigMult(es).isOne());
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     public void testRuleAppAndNormalisation() {
         HostGraph graph = null;
         try {

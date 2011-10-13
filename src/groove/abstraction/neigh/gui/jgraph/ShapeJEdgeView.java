@@ -47,7 +47,8 @@ public class ShapeJEdgeView extends JEdgeView {
 
     @Override
     protected boolean isSelfEdge() {
-        return this.getCell().isLoop();
+        //return this.getCell().isLoop();
+        return false;
     }
 
     /** Basic getter method. */
