@@ -24,6 +24,7 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -572,6 +573,21 @@ public final class Materialisation {
         this.nonSingBundles = nonSingBundles;
     }
 
+    void removeUnconnectedNode(ShapeNode nodeToRemove) {
+        this.morph.removeNode(nodeToRemove);
+        this.shape.removeNode(nodeToRemove);
+        for (EdgeBundle bundle : this.nonSingBundles) {
+            Iterator<ShapeEdge> iter = bundle.positivePossibleEdges.iterator();
+            while (iter.hasNext()) {
+                ShapeEdge edge = iter.next();
+                if (edge.source().equals(nodeToRemove)
+                    || edge.target().equals(nodeToRemove)) {
+                    iter.remove();
+                }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Methods for second stage.
     // ------------------------------------------------------------------------
@@ -947,11 +963,11 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        //Parameters.setEdgeMultBound(2);
+        Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "1b";
+            String number = "11";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

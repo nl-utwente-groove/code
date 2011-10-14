@@ -145,8 +145,8 @@ public class ShapeMorphism extends HostGraphMorphism {
      * signature are considered, the node in the source signature is taken to
      * be the given 'nodeS'.
      */
-    private Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
-            EdgeSignature esT) {
+    public Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
+            EdgeSignature esT, boolean createWhenNonExistent) {
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
@@ -154,9 +154,16 @@ public class ShapeMorphism extends HostGraphMorphism {
             Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
             for (ShapeNode esEcNodeS : esEcNodesS) {
                 EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
-                EdgeSignature esS =
-                    from.getEdgeSignature(direction, nodeS, label, ecS);
-                result.add(esS);
+                EdgeSignature esS;
+                if (createWhenNonExistent) {
+                    esS = from.getEdgeSignature(direction, nodeS, label, ecS);
+                } else {
+                    esS =
+                        from.maybeGetEdgeSignature(direction, nodeS, label, ecS);
+                }
+                if (esS != null) {
+                    result.add(esS);
+                }
             }
         }
         return result;
@@ -238,7 +245,7 @@ public class ShapeMorphism extends HostGraphMorphism {
                     Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
                     for (ShapeNode nodeS : nodesS) {
                         Set<EdgeSignature> esSS =
-                            this.getPreImages(from, nodeS, esT);
+                            this.getPreImages(from, nodeS, esT, true);
                         Multiplicity sum = from.getEdgeSigSetMultSum(esSS);
                         // EZ says: we need subsumption, not equality.
                         //if (!esTMult.equals(sum)) {
