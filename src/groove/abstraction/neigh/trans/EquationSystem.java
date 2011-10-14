@@ -663,12 +663,17 @@ public final class EquationSystem {
                 this.createEquations(varsCount, origMult.getLowerBound(),
                     origMult.getUpperBound());
             // ... create one pair of variables for the original node.
-            Duo<BoundVar> vars = retrieveBoundVars(origNode);
-            addVars(eqs, vars);
+            Duo<BoundVar> vars;
+            if (!this.mat.isGarbage(origNode)) {
+                vars = retrieveBoundVars(origNode);
+                addVars(eqs, vars);
+            }
             for (ShapeNode splitNode : splitNodes) {
                 // ... create one pair of variables for each of the split nodes.
-                vars = retrieveBoundVars(splitNode);
-                addVars(eqs, vars);
+                if (!this.mat.isGarbage(splitNode)) {
+                    vars = retrieveBoundVars(splitNode);
+                    addVars(eqs, vars);
+                }
             }
             this.storeEquations(eqs);
         }
