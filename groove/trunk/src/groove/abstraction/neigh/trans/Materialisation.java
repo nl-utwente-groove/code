@@ -24,7 +24,6 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -151,6 +150,16 @@ public final class Materialisation {
     private Map<ShapeNode,Set<EdgeBundle>> bundleSplitMap;
 
     // ------------------------------------------------------------------------
+    // Used in third stage.
+    // ------------------------------------------------------------------------
+
+    /**
+     * Auxiliary set that contains nodes that must be garbage collected at
+     * the end of materialisation.
+     */
+    private Set<ShapeNode> garbageNodes;
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -196,6 +205,8 @@ public final class Materialisation {
         if (mat.stage == 2) {
             this.nodeSplitMap = mat.nodeSplitMap;
             this.bundleSplitMap = mat.bundleSplitMap;
+        } else if (mat.stage == 3) {
+            this.garbageNodes = mat.garbageNodes;
         }
     }
 
@@ -272,28 +283,6 @@ public final class Materialisation {
     /** Returns true if this edge is in the co-domain of the match. */
     boolean isFixed(ShapeEdge edge) {
         return !this.match.getPreImages(edge).isEmpty();
-    }
-
-    /** Remove nodes that cannot exist. */
-    void garbageCollectNodes() {
-        Multiplicity zero = Multiplicity.getMultiplicity(0, 0, NODE_MULT);
-        // We need to check for nodes that got disconnected...
-        int nodeCount = this.shape.nodeSet().size();
-        ShapeNode nodes[] = new ShapeNode[nodeCount];
-        this.shape.nodeSet().toArray(nodes);
-        for (ShapeNode node : nodes) {
-            Multiplicity mult = this.shape.getNodeMult(node);
-            if (mult.getLowerBound() == 0 && this.shape.isUnconnected(node)) {
-                // Get the original node.
-                ShapeNode origNode = this.morph.getNode(node);
-                assert origNode != null;
-                if (!this.originalShape.isUnconnected(origNode)) {
-                    // The node multiplicity can only be zero.
-                    // That is, it is not in the shape.
-                    this.shape.setNodeMult(node, zero);
-                }
-            }
-        }
     }
 
     /**
@@ -933,12 +922,50 @@ public final class Materialisation {
         assert this.stage == 2;
         this.stage++;
         this.nonSingBundles = null;
+        this.garbageNodes = new MyHashSet<ShapeNode>();
+        this.markGarbageNodes();
     }
 
     /** Basic getter method. */
     Map<ShapeNode,Set<ShapeNode>> getNodeSplitMap() {
         assert this.stage == 3;
         return this.nodeSplitMap;
+    }
+
+    /** Mark nodes that cannot exist. */
+    void markGarbageNodes() {
+        assert this.stage == 3;
+        // We need to check for nodes that got disconnected...
+        int nodeCount = this.shape.nodeSet().size();
+        ShapeNode nodes[] = new ShapeNode[nodeCount];
+        this.shape.nodeSet().toArray(nodes);
+        for (ShapeNode node : nodes) {
+            if (this.shape.isUnconnected(node)) {
+                // Get the original node.
+                ShapeNode origNode = this.morph.getNode(node);
+                assert origNode != null;
+                if (!this.originalShape.isUnconnected(origNode)) {
+                    // The node multiplicity can only be zero.
+                    // That is, it is not in the shape.
+                    this.garbageNodes.add(node);
+                }
+            }
+        }
+    }
+
+    /** Remove the nodes from the shape that were marked as garbage. */
+    void garbageCollectNodes() {
+        if (this.stage == 3) {
+            for (ShapeNode garbageNode : this.garbageNodes) {
+                this.shape.removeNode(garbageNode);
+            }
+        }
+    }
+
+    /** Returns true if the given node is marked as garbage. */
+    boolean isGarbage(ShapeNode node) {
+        assert this.stage == 3;
+        return this.garbageNodes.contains(node);
     }
 
     // ------------------------------------------------------------------------
@@ -963,11 +990,11 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        Parameters.setEdgeMultBound(2);
+        //Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "11";
+            String number = "9";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
