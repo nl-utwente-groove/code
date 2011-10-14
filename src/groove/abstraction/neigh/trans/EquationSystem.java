@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public final class EquationSystem {
 
-    private static final boolean WARN_BLOWUP = true;
+    private static final boolean WARN_BLOWUP = false;
     private static final int MAX_SOLUTION_COUNT = 4;
 
     /** Creates a new equation system for the given materialisation. */

@@ -675,6 +675,13 @@ public final class Materialisation {
         for (ShapeEdge edgeToAdd : edgesToAdd) {
             assert !shape.containsEdge(edgeToAdd);
             shape.addEdgeWithoutCheck(edgeToAdd);
+            // We have to adjust the multiplicities here, in case the edge
+            // signature is not used in the second stage of the equation system.
+            ShapeEdge origEdge = this.morph.getEdge(edgeToAdd);
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                Multiplicity origMult = to.getEdgeMult(origEdge, direction);
+                shape.setEdgeMult(edgeToAdd, direction, origMult);
+            }
         }
     }
 
@@ -944,7 +951,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "1c";
+            String number = "1b";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
