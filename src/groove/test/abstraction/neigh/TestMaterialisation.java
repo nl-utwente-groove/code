@@ -582,6 +582,35 @@ public class TestMaterialisation {
     }
 
     @Test
+    public void testMaterialisation11() {
+        HostGraph graph = null;
+        try {
+            graph = view.getHostModel("materialisation-test-11").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-11");
+
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+
+        Shape shape = Shape.createShape(graph);
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertEquals(1, mats.size());
+            for (Materialisation mat : mats) {
+                Shape matShape = mat.getShape();
+                assertEquals(6, matShape.nodeSet().size());
+                assertEquals(5, Util.getBinaryEdges(matShape).size());
+                assertEquals(5, matShape.getEquivRelation().size());
+            }
+        }
+    }
+
+    @Test
     public void testRuleAppAndNormalisation() {
         HostGraph graph = null;
         try {
@@ -590,6 +619,9 @@ public class TestMaterialisation {
             e.printStackTrace();
         }
         Rule rule = grammar.getRule("add");
+
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);

@@ -388,6 +388,11 @@ public final class Multiplicity {
         return this.j == OMEGA;
     }
 
+    /** Returns true if the multiplicity is <0,w>. */
+    public boolean isZeroPlus() {
+        return this.i == 0 && this.j == OMEGA;
+    }
+
     /** Basic inspection method. */
     public boolean isNodeKind() {
         return this.kind == MultKind.NODE_MULT;

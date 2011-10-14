@@ -458,6 +458,7 @@ public final class EquationSystem {
                 requiresSecondStage = true;
             }
         }
+        mat.setNonSingBundles(nonSingBundles);
 
         // Then, update the shape as much as possible.
         ShapeMorphism morph = mat.getShapeMorphism();
@@ -492,12 +493,47 @@ public final class EquationSystem {
             }
         }
 
+        this.clearUnconnectedNodes(mat, edgesNotToInclude);
+
         if (requiresSecondStage) {
-            mat.setNonSingBundles(nonSingBundles);
             mat.moveToSecondStage();
         }
 
         return requiresSecondStage;
+    }
+
+    private void clearUnconnectedNodes(Materialisation mat,
+            Set<ShapeEdge> edgesNotToInclude) {
+        Shape shape = mat.getShape();
+        Shape origShape = mat.getOriginalShape();
+        ShapeMorphism morph = mat.getShapeMorphism().clone();
+        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
+        nodeLoop: for (ShapeNode node : shape.nodeSet()) {
+            if (!shape.getNodeMult(node).isZeroPlus()) {
+                continue nodeLoop;
+            }
+            assert node.equals(morph.getNode(node));
+            esLoop: for (EdgeSignature origEs : origShape.getEdgeSignatures(node)) {
+                if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
+                    // There are no signatures in the shape.
+                    // Check the edges that will be handled on next stage.
+                    for (ShapeEdge edge : edgesNotToInclude) {
+                        ShapeEdge origEdge = morph.getEdge(edge);
+                        if (origEs.contains(origEdge)) {
+                            // The node is connected.
+                            continue esLoop;
+                        }
+                    }
+                    // The node is unconnected. Its multiplicity can
+                    // only be zero.
+                    toRemove.add(node);
+                    continue nodeLoop;
+                }
+            }
+        }
+        for (ShapeNode nodeToRemove : toRemove) {
+            mat.removeUnconnectedNode(nodeToRemove);
+        }
     }
 
     // ------------------------------------------------------------------------

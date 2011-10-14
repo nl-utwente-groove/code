@@ -697,6 +697,21 @@ public final class Shape extends DefaultHostGraph {
      */
     public EdgeSignature getEdgeSignature(EdgeMultDir direction,
             ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
+        EdgeSignature result =
+            maybeGetEdgeSignature(direction, node, label, ec);
+        if (result == null) {
+            result = new EdgeSignature(direction, node, label, ec);
+        }
+        return result;
+    }
+
+    /**
+     * Looks at the keys of the edge multiplicity maps for an edge signature
+     * with the given fields. If no suitable edge signature is found, returns
+     * null.
+     */
+    public EdgeSignature maybeGetEdgeSignature(EdgeMultDir direction,
+            ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
             if (es.getNode().equals(node) && es.getLabel().equals(label)
@@ -704,9 +719,6 @@ public final class Shape extends DefaultHostGraph {
                 result = es;
                 break;
             }
-        }
-        if (result == null) {
-            result = new EdgeSignature(direction, node, label, ec);
         }
         return result;
     }
@@ -1123,6 +1135,20 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
+    /** Returns the edge signatures for the given node. */
+    public Set<EdgeSignature> getEdgeSignatures(ShapeNode node) {
+        assert this.containsNode(node);
+        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
+                if (es.getNode().equals(node)) {
+                    result.add(es);
+                }
+            }
+        }
+        return result;
+    }
+
     private void addNewSingletonEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
         // Update all maps that use edge signatures that contained the old
@@ -1272,9 +1298,8 @@ public final class Shape extends DefaultHostGraph {
      * @return true if the invariant holds, false otherwise.
      */
     public boolean isInvariantOK() {
-        boolean result = true;
         // For all labels.
-        labelLoop: for (TypeLabel label : Util.getBinaryLabels(this)) {
+        for (TypeLabel label : Util.getBinaryLabels(this)) {
             // For all nodes in the shape.
             for (ShapeNode node : this.nodeSet()) {
                 // For all equivalence classes.
@@ -1285,8 +1310,7 @@ public final class Shape extends DefaultHostGraph {
                             this.getEdgeSignature(OUTGOING, node, label, ec);
                         Multiplicity mult = this.getEdgeSigMult(es);
                         if (!mult.isZero()) {
-                            result = false;
-                            break labelLoop;
+                            return false;
                         }
                     }
                     // Check incoming multiplicities.
@@ -1295,14 +1319,13 @@ public final class Shape extends DefaultHostGraph {
                             this.getEdgeSignature(INCOMING, node, label, ec);
                         Multiplicity mult = this.getEdgeSigMult(es);
                         if (!mult.isZero()) {
-                            result = false;
-                            break labelLoop;
+                            return false;
                         }
                     }
                 }
             }
         }
-        return result;
+        return true;
     }
 
 }
