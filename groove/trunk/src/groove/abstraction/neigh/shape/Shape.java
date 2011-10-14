@@ -48,6 +48,7 @@ import groove.trans.RuleNode;
 import groove.util.Duo;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -925,6 +926,7 @@ public final class Shape extends DefaultHostGraph {
         assert !this.isFixed();
         assert this.containsNode(collectorNode);
         assert mat.getStage() == 1;
+        assert this.getNodeMult(collectorNode).isCollector();
 
         // The current match to be updated.
         RuleToShapeMap match = mat.getMatch();
@@ -936,8 +938,20 @@ public final class Shape extends DefaultHostGraph {
         int copies = nodesR.size();
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 
+        // Special case when the collector node multiplicity is not
+        // unbounded and equals exactly the number of copies we want.
+        boolean useCollector = false;
+        Multiplicity collectNodeMult = this.getNodeMult(collectorNode);
+        if (!collectNodeMult.isUnbounded()
+            && collectNodeMult.getLowerBound() == copies) {
+            useCollector = true;
+            copies--;
+        }
+
         // Create a new shape node for each rule node.
-        for (RuleNode nodeR : nodesR) {
+        Iterator<RuleNode> iter = nodesR.iterator();
+        for (int i = 0; i < copies; i++) {
+            RuleNode nodeR = iter.next();
             ShapeNode newNode = this.getFactory().createNode();
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
@@ -955,7 +969,16 @@ public final class Shape extends DefaultHostGraph {
         // Adjust the multiplicity of the original node.
         Multiplicity oldMult = this.getNodeMult(collectorNode);
         Multiplicity newMult = oldMult.sub(Multiplicity.scale(one, copies));
+        assert !newMult.isZero();
         this.setNodeMult(collectorNode, newMult);
+
+        if (useCollector) {
+            assert newMult.isOne();
+            RuleNode nodeR = iter.next();
+            this.copyUnaryEdges(collectorNode, collectorNode, nodeR, match);
+            mat.addMatNode(collectorNode, collectorNode, nodeR);
+            assert !iter.hasNext();
+        }
 
         // Final update of the materialisation regarding the collector node.
         mat.handleCollectorNode(collectorNode);

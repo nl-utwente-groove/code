@@ -24,6 +24,7 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.PowerSetIterator;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
@@ -436,13 +437,8 @@ public final class Materialisation {
     /** Updates the proper sets with the given collector node. */
     public void handleCollectorNode(ShapeNode collectorNode) {
         assert this.stage == 1;
-        if (!this.shape.containsNode(collectorNode)) {
-            // The collector node was removed from the shape and we have a
-            // dangling reference in the shape morphism.
-            this.morph.removeNode(collectorNode);
-        } else {
-            this.matNodes.add(collectorNode);
-        }
+        assert this.shape.containsNode(collectorNode);
+        this.matNodes.add(collectorNode);
     }
 
     /** Updates the proper sets with the given inconsistent edge. */
@@ -990,11 +986,12 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        //Parameters.setEdgeMultBound(2);
+        Parameters.setNodeMultBound(2);
+        Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "9";
+            String number = "12";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
