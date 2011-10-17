@@ -671,21 +671,10 @@ public final class Shape extends DefaultHostGraph {
             }
         }
         if (result == null) {
-            ShapeNode node = null;
+            ShapeNode node = edge.incident(direction);
             TypeLabel label = edge.label();
-            EquivClass<ShapeNode> ec = null;
-            switch (direction) {
-            case OUTGOING:
-                node = edge.source();
-                ec = this.getEquivClassOf(edge.target());
-                break;
-            case INCOMING:
-                node = edge.target();
-                ec = this.getEquivClassOf(edge.source());
-                break;
-            default:
-                assert false;
-            }
+            EquivClass<ShapeNode> ec =
+                this.getEquivClassOf(edge.opposite(direction));
             result = new EdgeSignature(direction, node, label, ec);
         }
         return result;
@@ -1095,7 +1084,7 @@ public final class Shape extends DefaultHostGraph {
         // Now remove all possible edges from the shape.
         for (ShapeEdge possibleEdge : possibleEdges) {
             this.removeEdge(possibleEdge);
-            mat.addPossibleEdge(possibleEdge, possibleEdge, true);
+            mat.addPossibleEdge(possibleEdge, possibleEdge);
         }
     }
 
