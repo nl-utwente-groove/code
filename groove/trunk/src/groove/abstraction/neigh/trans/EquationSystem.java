@@ -230,9 +230,11 @@ public final class EquationSystem {
         }
         // Create the return objects.
         for (Solution sol : finishedSols) {
-            assert this.isValid(sol);
+            if (!this.isValid(sol)) {
+                continue;
+            }
             Materialisation mat;
-            if (finishedSols.size() == 1) {
+            if (finishedSolsSize == 1) {
                 mat = this.mat;
             } else {
                 mat = this.mat.clone();
@@ -540,7 +542,6 @@ public final class EquationSystem {
                     shape.setEdgeSigMult(splitEs, mult);
                 } else {
                     // Node is not concrete.
-                    //assert bundle.origEsMult.le(mult);
                     shape.setEdgeSigMult(splitEs, bundle.origEsMult);
                 }
             }
@@ -1005,6 +1006,20 @@ public final class EquationSystem {
             }
             // Now search for the additional signatures.
             this.computeAdditionalEdges(mat);
+        }
+
+        void removeNodeReferences(Set<ShapeNode> nodesToRemove) {
+            assert !nodesToRemove.contains(this.node);
+            Set<ShapeEdge> edgesToRemove = new MyHashSet<ShapeEdge>();
+            for (ShapeEdge edge : this.allEdges) {
+                if (nodesToRemove.contains(edge.source())
+                    || nodesToRemove.contains(edge.target())) {
+                    edgesToRemove.add(edge);
+                }
+            }
+            for (ShapeEdge edgeToRemove : edgesToRemove) {
+                this.removeEdge(edgeToRemove);
+            }
         }
 
     }
