@@ -667,6 +667,16 @@ public final class Materialisation {
                 }
             }
         }
+        this.updateBundles(toRemove);
+
+        // Add the edges from the new bundles.
+        for (ShapeNode origNode : this.nodeSplitMap.keySet()) {
+            for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
+                for (EdgeBundle bundle : this.bundleSplitMap.get(splitNode)) {
+                    this.addEdges(bundle);
+                }
+            }
+        }
 
         // Now add the remaining edges created by the node split that still
         // give rise to admissible configurations.
@@ -827,10 +837,11 @@ public final class Materialisation {
                 return false;
             }
             newBundles.add(newBundle);
-            // Now add the bundle edges.
-            this.addEdges(newBundle);
         }
-
+        // If we reached this point, we can add the bundle edges.
+        /*for (EdgeBundle newBundle : newBundles) {
+            this.addEdges(newBundle);
+        }*/
         return true;
     }
 
@@ -927,6 +938,18 @@ public final class Materialisation {
         }
     }
 
+    private void updateBundles(Set<ShapeNode> toRemove) {
+        for (ShapeNode nodeToRemove : toRemove) {
+            this.bundleSplitMap.remove(nodeToRemove);
+        }
+        for (ShapeNode splitNode : this.bundleSplitMap.keySet()) {
+            Set<EdgeBundle> splitBundles = this.bundleSplitMap.get(splitNode);
+            for (EdgeBundle splitBundle : splitBundles) {
+                splitBundle.removeNodeReferences(toRemove);
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Methods for third stage.
     // ------------------------------------------------------------------------
@@ -949,19 +972,20 @@ public final class Materialisation {
     /** Mark nodes that cannot exist. */
     void markGarbageNodes() {
         assert this.stage == 3;
+        Shape shape = this.shape;
+        Shape origShape = this.originalShape;
+        this.updateShapeMorphism();
+        ShapeMorphism morph = this.morph.clone();
         // We need to check for nodes that got disconnected...
-        int nodeCount = this.shape.nodeSet().size();
-        ShapeNode nodes[] = new ShapeNode[nodeCount];
-        this.shape.nodeSet().toArray(nodes);
-        for (ShapeNode node : nodes) {
-            if (this.shape.isUnconnected(node)) {
-                // Get the original node.
-                ShapeNode origNode = this.morph.getNode(node);
-                assert origNode != null;
-                if (!this.originalShape.isUnconnected(origNode)) {
-                    // The node multiplicity can only be zero.
-                    // That is, it is not in the shape.
-                    this.garbageNodes.add(node);
+        for (ShapeNode origNode : origShape.nodeSet()) {
+            for (ShapeNode node : morph.getPreImages(origNode)) {
+                for (EdgeSignature origEs : origShape.getEdgeSignatures(origNode)) {
+                    // We know that the original signature has edges.
+                    // Check if the pre-images also do.
+                    if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
+                        // The node got disconnected and therefore cannot exist.
+                        this.garbageNodes.add(node);
+                    }
                 }
             }
         }
@@ -1009,7 +1033,7 @@ public final class Materialisation {
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "12";
+            String number = "9";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
