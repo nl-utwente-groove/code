@@ -149,7 +149,7 @@ public class RuleApplication implements DeltaApplier {
     /**
      * Callback factory method to compute a target for this applier.
      */
-    private HostGraph computeTarget() {
+    protected HostGraph computeTarget() {
         HostGraph target = createTarget();
         applyDelta(target);
         target.setFixed();
@@ -446,7 +446,7 @@ public class RuleApplication implements DeltaApplier {
      * This implementation clones the source.
      * @see HostGraph#clone()
      */
-    private HostGraph createTarget() {
+    protected HostGraph createTarget() {
         return getSource().clone();
     }
 

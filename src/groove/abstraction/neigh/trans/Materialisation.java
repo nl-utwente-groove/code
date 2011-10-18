@@ -45,7 +45,6 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
-import groove.trans.RuleApplication;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleNode;
@@ -337,8 +336,8 @@ public final class Materialisation {
     public Pair<Shape,RuleEvent> applyMatch(SystemRecord record) {
         assert this.hasConcreteMatch();
         RuleEvent event = new BasicEvent(this.matchedRule, this.match, false);
-        RuleApplication app = new RuleApplication(event, this.shape);
-        Shape result = (Shape) app.getTarget();
+        ShapeRuleApplication app = new ShapeRuleApplication(event, this.shape);
+        Shape result = app.getTarget();
         return new Pair<Shape,RuleEvent>(result, event);
     }
 
@@ -1028,12 +1027,12 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        Parameters.setNodeMultBound(2);
+        Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "9";
+            String number = "13";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
