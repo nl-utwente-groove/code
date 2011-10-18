@@ -536,9 +536,9 @@ public final class EquationSystem {
                 }
                 int varNumber = this.edgeVarsMap.get(edge).one().number;
                 Multiplicity mult = sol.getMultValue(varNumber, kind);
-                if (shape.getNodeMult(bundle.node).isOne()) {
+                if (shape.getNodeMult(bundle.node).isOne()
+                    && mult.le(bundle.origEsMult)) {
                     // Node is concrete.
-                    assert mult.le(bundle.origEsMult);
                     shape.setEdgeSigMult(splitEs, mult);
                 } else {
                     // Node is not concrete.
