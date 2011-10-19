@@ -36,7 +36,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.abstraction.neigh.trans.EquationSystem.EdgeBundle;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
@@ -119,42 +118,35 @@ public final class Materialisation {
     // ------------------------------------------------------------------------
 
     /**
-     * Auxiliary set that contains all newly materialised nodes.
+     * Set that contains all newly materialised nodes.
      */
     private Set<ShapeNode> matNodes;
     /**
-     * Auxiliary set that contains all newly materialised edges.
+     * Set that contains all newly materialised edges.
      */
     private Set<ShapeEdge> matEdges;
     /**
-     * Auxiliary set of possible new edges that should be included in the 
+     * Set of possible new edges that should be included in the 
      * shape that is being materialised.
      */
     private Set<ShapeEdge> possibleEdges;
-
-    private Set<EdgeBundle> bundles;
+    /**
+     * Map from nodes to their set of bundles.
+     */
+    private Map<ShapeNode,Set<EdgeBundle>> bundleMap;
+    /**
+     * Set of all bundles involved in the materialisation.
+     */
+    private Set<EdgeBundle> allBundles;
 
     // ------------------------------------------------------------------------
     // Used in second stage.
     // ------------------------------------------------------------------------
 
     /**
-     * Auxiliary set that contains non-singular bundles.
-     */
-    private Set<EdgeBundle> nonSingBundles;
-    /**
      * Map from nodes to their split copies.
      */
     private Map<ShapeNode,Set<ShapeNode>> nodeSplitMap;
-    /**
-     * Map from nodes to their split bundles.
-     */
-    private Map<ShapeNode,Set<EdgeBundle>> bundleSplitMap;
-
-    // ------------------------------------------------------------------------
-    // Used in third stage.
-    // ------------------------------------------------------------------------
-
     /**
      * Auxiliary set that contains nodes that must be garbage collected at
      * the end of materialisation.
@@ -184,7 +176,8 @@ public final class Materialisation {
         this.matNodes = new MyHashSet<ShapeNode>();
         this.matEdges = new MyHashSet<ShapeEdge>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
-        this.bundles = new MyHashSet<EdgeBundle>();
+        this.bundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
+        this.allBundles = new MyHashSet<EdgeBundle>();
     }
 
     /**
@@ -205,19 +198,7 @@ public final class Materialisation {
         // Since the shape can still be modified, we also need to clone the
         // morphism into the original shape.
         this.morph = mat.morph.clone();
-        if (mat.stage == 1) {
-            this.bundles = new MyHashSet<EdgeBundle>();
-            for (EdgeBundle matBundle : mat.bundles) {
-                this.bundles.add(matBundle.clone());
-            }
-        } else if (mat.stage == 2) {
-            // We can just use the same references at this stage.
-            this.nodeSplitMap = mat.nodeSplitMap;
-            this.bundleSplitMap = mat.bundleSplitMap;
-        } else if (mat.stage == 3) {
-            // We can just use the same references at this stage.
-            this.garbageNodes = mat.garbageNodes;
-        }
+        // EDUARDO: Check for additional structures that have to be cloned...
     }
 
     // ------------------------------------------------------------------------
@@ -288,6 +269,87 @@ public final class Materialisation {
     /** Basic getter method. */
     ShapeMorphism getShapeMorphism() {
         return this.morph;
+    }
+
+    Set<EdgeBundle> getBundles() {
+        return this.allBundles;
+    }
+
+    /** Returns the bundles from the given node. */
+    Set<EdgeBundle> getBundles(ShapeNode node) {
+        Set<EdgeBundle> result = this.bundleMap.get(node);
+        if (result == null) {
+            result = Collections.emptySet();
+        }
+        return result;
+    }
+
+    EdgeBundle getBundle(ShapeNode node, EdgeSignature origEs) {
+        EdgeBundle result = null;
+        for (EdgeBundle bundle : this.getBundles(node)) {
+            if (bundle.isEqual(node, origEs)) {
+                result = bundle;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Looks at the keys of the bundle map for an edge bundle compatible
+     * with the given edge. If no suitable edge bundle is found, returns
+     * null.
+     */
+    EdgeBundle maybeGetBundle(ShapeEdge edge, EdgeMultDir direction) {
+        EdgeSignature origEs = this.getOrigEs(edge, direction);
+        return this.getBundle(edge.incident(direction), origEs);
+    }
+
+    /**
+     * Looks at the keys of the bundle map for an edge bundle compatible
+     * with the given edge. If no suitable edge signature is found, a new one
+     * is created and added to the proper structures.
+     */
+    EdgeBundle getBundle(ShapeEdge edge, EdgeMultDir direction) {
+        return this.createBundle(edge, direction, true);
+    }
+
+    EdgeBundle createBundle(EdgeSignature origEs, ShapeNode node) {
+        Multiplicity origEsMult = this.getOrigEsMult(origEs);
+        return new EdgeBundle(origEs, origEsMult, node);
+    }
+
+    EdgeBundle createBundle(ShapeEdge edge, EdgeMultDir direction, boolean store) {
+        ShapeNode node = edge.incident(direction);
+        EdgeSignature origEs = this.getOrigEs(edge, direction);
+        EdgeBundle result = this.getBundle(node, origEs);
+        if (result == null) {
+            result = this.createBundle(origEs, node);
+            if (store) {
+                this.addBundle(result);
+            }
+        }
+        return result;
+    }
+
+    void addBundle(EdgeBundle bundle) {
+        Set<EdgeBundle> bundles = this.bundleMap.get(bundle.node);
+        if (bundles == null) {
+            bundles = new MyHashSet<EdgeBundle>();
+            this.bundleMap.put(bundle.node, bundles);
+        }
+        bundles.add(bundle);
+        this.allBundles.add(bundle);
+    }
+
+    EdgeSignature getOrigEs(ShapeEdge edge, EdgeMultDir direction) {
+        return this.getShapeMorphism().getEdgeSignature(
+            this.getOriginalShape(),
+            this.getShape().getEdgeSignature(edge, direction));
+    }
+
+    Multiplicity getOrigEsMult(EdgeSignature origEs) {
+        return this.getOriginalShape().getEdgeSigMult(origEs);
     }
 
     /** Returns true if this edge is in the co-domain of the match. */
@@ -414,12 +476,6 @@ public final class Materialisation {
     // Methods for first stage.
     // ------------------------------------------------------------------------
 
-    /** Returns the set of bundles for the first stage.*/
-    Set<EdgeBundle> getBundles() {
-        assert this.stage == 1;
-        return this.bundles;
-    }
-
     /** Returns the set of edges involved in the materialisation. */
     Set<ShapeEdge> getAffectedEdges() {
         assert this.stage == 1;
@@ -519,6 +575,7 @@ public final class Materialisation {
         // The deterministic steps of the materialisation are done.
         // Create a new equation system for this materialisation and return
         // the resulting materialisations from the solution.
+        this.computeBundles();
         ResultSet result = new ResultSet();
         EquationSystem.newEqSys(this).solve(result);
 
@@ -562,26 +619,34 @@ public final class Materialisation {
         }
     }
 
-    /** Basic setter method. */
-    void setNonSingBundles(MyHashSet<EdgeBundle> nonSingBundles) {
+    private void computeBundles() {
         assert this.stage == 1;
-        assert this.nonSingBundles == null;
-        this.nonSingBundles = nonSingBundles;
-    }
-
-    void removeUnconnectedNode(ShapeNode nodeToRemove) {
-        assert this.stage == 1;
-        this.morph.removeNode(nodeToRemove);
-        this.shape.removeNode(nodeToRemove);
-        for (EdgeBundle bundle : this.nonSingBundles) {
-            Iterator<ShapeEdge> iter = bundle.possibleEdges.iterator();
-            while (iter.hasNext()) {
-                ShapeEdge edge = iter.next();
-                if (edge.source().equals(nodeToRemove)
-                    || edge.target().equals(nodeToRemove)) {
-                    iter.remove();
+        // Create the initial edge bundles.
+        for (ShapeEdge edge : this.getAffectedEdges()) {
+            for (EdgeMultDir direction : EdgeMultDir.values()) {
+                EdgeBundle bundle = this.getBundle(edge, direction);
+                bundle.addEdge(this.shape, edge, direction);
+            }
+        }
+        // Collect all affected edges.
+        Set<EdgeBundle> additionalBundles = new MyHashSet<EdgeBundle>();
+        for (EdgeBundle bundle : this.getBundles()) {
+            bundle.computeAdditionalEdges(this);
+            for (ShapeEdge edge : bundle.getEdges()) {
+                for (EdgeMultDir direction : EdgeMultDir.values()) {
+                    EdgeBundle oppBundle = this.maybeGetBundle(edge, direction);
+                    if (oppBundle == null) {
+                        // Create additional opposite bundle.
+                        oppBundle = this.createBundle(edge, direction, false);
+                        oppBundle.computeAdditionalEdges(this);
+                        additionalBundles.add(oppBundle);
+                    }
                 }
             }
+        }
+        // Add all additional bundles.
+        for (EdgeBundle additionalBundle : additionalBundles) {
+            this.addBundle(additionalBundle);
         }
     }
 
@@ -589,28 +654,29 @@ public final class Materialisation {
     // Methods for second stage.
     // ------------------------------------------------------------------------
 
-    void moveToSecondStage() {
+    void moveToSecondStage(MyHashSet<EdgeBundle> nonSingBundles) {
         assert this.stage == 1;
-        assert this.nonSingBundles != null;
 
         this.stage++;
         this.matEdges = null;
         this.matNodes = new MyHashSet<ShapeNode>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
-        // Map from original nodes to their split nodes.
         this.nodeSplitMap = new MyHashMap<ShapeNode,Set<ShapeNode>>();
-        // Map from split nodes to their split bundles.
-        this.bundleSplitMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
+        this.garbageNodes = new MyHashSet<ShapeNode>();
 
-        // Compute the set of nodes that need splitting.
-        for (EdgeBundle nonSingBundle : this.nonSingBundles) {
-            ShapeNode node = nonSingBundle.node;
-            Set<EdgeBundle> bundleSet = this.bundleSplitMap.get(node);
-            if (bundleSet == null) {
-                bundleSet = new MyHashSet<EdgeBundle>();
-                this.bundleSplitMap.put(node, bundleSet);
-            }
-            bundleSet.add(nonSingBundle);
+        if (nonSingBundles.isEmpty()) {
+            // We don't need to split nodes.
+            return;
+        }
+
+        // Compute the set of nodes that require splitting.
+        Set<ShapeNode> origNodesToSplit = new MyHashSet<ShapeNode>();
+        for (EdgeBundle nonSingBundle : nonSingBundles) {
+            origNodesToSplit.add(nonSingBundle.node);
+        }
+        // Fill in the node split map.
+        for (ShapeNode origNode : origNodesToSplit) {
+            this.nodeSplitMap.put(origNode, new MyHashSet<ShapeNode>());
         }
 
         Shape shape = this.getShape();
@@ -619,12 +685,12 @@ public final class Materialisation {
             ShapeMorphism.createIdentityMorphism(shape, to);
 
         // Now split the nodes.
-        for (ShapeNode origNode : this.bundleSplitMap.keySet()) {
-            int copies = 1;
-            for (EdgeBundle bundle : this.bundleSplitMap.get(origNode)) {
-                copies =
-                    (int) (copies * Math.pow(2, bundle.possibleEdges.size()));
+        for (ShapeNode origNode : origNodesToSplit) {
+            int expo = 0;
+            for (EdgeBundle bundle : this.getBundles(origNode)) {
+                expo += bundle.possibleEdges.size();
             }
+            int copies = (int) Math.pow(2, expo);
             shape.splitNode(this, origNode, copies);
             for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
                 auxMorph.putNode(splitNode, origNode);
@@ -632,46 +698,43 @@ public final class Materialisation {
         }
 
         // Create all edge permutations.
-        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
+        Set<ShapeNode> vetoedNodes = new MyHashSet<ShapeNode>();
         Set<ShapeEdge> flexEdges = new MyHashSet<ShapeEdge>();
-        for (ShapeNode origNode : this.nodeSplitMap.keySet()) {
-            Set<EdgeBundle> origBundles = this.bundleSplitMap.get(origNode);
+        for (ShapeNode origNode : origNodesToSplit) {
+            Set<EdgeBundle> origBundles = this.getBundles(origNode);
             for (EdgeBundle origBundle : origBundles) {
                 flexEdges.addAll(origBundle.possibleEdges);
             }
             Iterator<Set<ShapeEdge>> iter =
                 new PowerSetIterator<ShapeEdge>(flexEdges, true);
             for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
-                // Add the result of the iterator to the split node.
-                if (!this.addEdges(splitNode, origNode, iter.next(),
-                    origBundles)) {
-                    toRemove.add(splitNode);
-                }
+                this.collectNewEdges(origNode, origBundles, iter.next(),
+                    splitNode, vetoedNodes);
             }
             assert !iter.hasNext();
             flexEdges.clear();
         }
 
         // Remove the nodes that could not be connected.
-        toRemoveLoop: for (ShapeNode nodeToRemove : toRemove) {
-            assert shape.isUnconnected(nodeToRemove);
-            assert shape.getNodeMult(nodeToRemove).isZero();
-            auxMorph.removeNode(nodeToRemove);
-            this.matNodes.remove(nodeToRemove);
-            shape.removeNode(nodeToRemove);
+        nodeRemovalLoop: for (ShapeNode vetoedNode : vetoedNodes) {
+            assert shape.isUnconnected(vetoedNode);
+            assert shape.getNodeMult(vetoedNode).isZero();
+            auxMorph.removeNode(vetoedNode);
+            this.matNodes.remove(vetoedNode);
+            shape.removeNode(vetoedNode);
+            this.bundleMap.remove(vetoedNode);
             for (Set<ShapeNode> splitSet : this.nodeSplitMap.values()) {
-                if (splitSet.contains(nodeToRemove)) {
-                    splitSet.remove(nodeToRemove);
-                    continue toRemoveLoop;
+                if (splitSet.contains(vetoedNode)) {
+                    splitSet.remove(vetoedNode);
+                    continue nodeRemovalLoop;
                 }
             }
         }
-        this.updateBundles(toRemove);
 
         // Add the edges from the new bundles.
-        for (ShapeNode origNode : this.nodeSplitMap.keySet()) {
+        for (ShapeNode origNode : origNodesToSplit) {
             for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
-                for (EdgeBundle bundle : this.bundleSplitMap.get(splitNode)) {
+                for (EdgeBundle bundle : this.getBundles(splitNode)) {
                     this.addEdges(bundle);
                 }
             }
@@ -684,10 +747,8 @@ public final class Materialisation {
         Set<ShapeEdge> vetoedEdges = new MyHashSet<ShapeEdge>();
         for (ShapeNode origNode : this.nodeSplitMap.keySet()) {
             for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
-                if (!toRemove.contains(splitNode)) {
-                    this.collectEdgesToAdd(splitNode, origNode, edgesToAdd,
-                        vetoedEdges);
-                }
+                this.collectEdgesToAdd(splitNode, origNode, edgesToAdd,
+                    vetoedEdges);
             }
         }
         // Finally, add the edges we had left.
@@ -695,13 +756,13 @@ public final class Materialisation {
         for (ShapeEdge edgeToAdd : edgesToAdd) {
             assert !shape.containsEdge(edgeToAdd);
             shape.addEdgeWithoutCheck(edgeToAdd);
-            // We have to adjust the multiplicities here, in case the edge
-            // signature is not used in the second stage of the equation system.
-            ShapeEdge origEdge = this.morph.getEdge(edgeToAdd);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
-                Multiplicity origMult = to.getEdgeMult(origEdge, direction);
-                shape.setEdgeMult(edgeToAdd, direction, origMult);
+                EdgeBundle bundle = this.getBundle(edgeToAdd, direction);
+                bundle.addEdge(this.shape, edgeToAdd, direction);
             }
+        }
+        for (EdgeBundle bundle : this.getBundles()) {
+            bundle.computeAdditionalEdges(this);
         }
     }
 
@@ -711,112 +772,30 @@ public final class Materialisation {
         assert this.shape.containsNode(origNode);
         assert this.shape.containsNode(newNode);
         this.morph.putNode(newNode, origNode);
-        Set<ShapeNode> copiesSet = this.nodeSplitMap.get(origNode);
-        if (copiesSet == null) {
-            copiesSet = new MyHashSet<ShapeNode>();
-            this.nodeSplitMap.put(origNode, copiesSet);
-        }
-        copiesSet.add(newNode);
+        Set<ShapeNode> copies = this.nodeSplitMap.get(origNode);
+        assert copies != null;
+        copies.add(newNode);
         // Add the new node to the set of affected nodes.
         this.matNodes.add(newNode);
     }
 
-    /** Returns the set of edges involved in the materialisation. */
-    Set<ShapeNode> getAffectedNodes() {
-        assert this.stage == 2;
-        return this.bundleSplitMap.keySet();
-    }
-
-    /** Returns the split bundles from the given node. */
-    Set<EdgeBundle> getSplitBundles(ShapeNode node) {
-        assert this.stage == 2 || this.stage == 3;
-        Set<EdgeBundle> result = this.bundleSplitMap.get(node);
-        if (result == null) {
-            result = Collections.emptySet();
-        }
-        return result;
-    }
-
-    private Set<ShapeEdge> getIncidentEdges(ShapeNode splitNode) {
-        assert this.stage == 2;
-        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
-        for (ShapeEdge edge : this.possibleEdges) {
-            if (edge.source().equals(splitNode)
-                || edge.target().equals(splitNode)) {
-                result.add(edge);
-            }
-        }
-        return result;
-    }
-
-    private void collectEdgesToAdd(ShapeNode newNode, ShapeNode origNode,
-            Set<ShapeEdge> edgesToAdd, Set<ShapeEdge> vetoedEdges) {
-        Set<ShapeEdge> allIncidentEdges = this.getIncidentEdges(newNode);
-
-        Set<ShapeEdge> fixEdges = new MyHashSet<ShapeEdge>();
-        Set<ShapeEdge> allBundleEdges = new MyHashSet<ShapeEdge>();
-        Set<ShapeEdge> usedEdges = new MyHashSet<ShapeEdge>();
-        EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
-        for (EdgeBundle origBundle : this.bundleSplitMap.get(origNode)) {
-            EdgeMultDir direction = origBundle.direction;
-            // Collect the fixed edges.
-            for (ShapeEdge edge : allIncidentEdges) {
-                if (edge.incident(direction).equals(newNode)
-                    && origBundle.getEdges().contains(this.morph.getEdge(edge))) {
-                    fixEdges.add(edge);
-                }
-            }
-            EdgeBundle newBundle = this.getNewBundle(origBundle, newNode);
-            // Check if we can add the fixed edges.
-            boolean addFixedEdges = true;
-            Multiplicity mult = newBundle.origEsMult;
-            if (!mult.isUnbounded()) {
-                allBundleEdges.addAll(fixEdges);
-                allBundleEdges.addAll(newBundle.allEdges);
-                // Count the number of different opposite equivalence classes.
-                for (ShapeEdge bundleEdge : allBundleEdges) {
-                    er.add(this.shape.getEquivClassOf(bundleEdge.opposite(direction)));
-                }
-                int ecCount = er.size();
-                Multiplicity oppMult =
-                    Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
-                if (!oppMult.le(mult)) {
-                    addFixedEdges = false;
-                }
-            }
-            if (addFixedEdges) {
-                edgesToAdd.addAll(fixEdges);
-            } else {
-                vetoedEdges.addAll(fixEdges);
-            }
-            // Adjust the sets for the next iteration of the loop.
-            usedEdges.addAll(fixEdges);
-            fixEdges.clear();
-            allBundleEdges.clear();
-            er.clear();
-        }
-        // Maybe we have some edges left...
-        allIncidentEdges.removeAll(usedEdges);
-        edgesToAdd.addAll(allIncidentEdges);
-    }
-
-    private boolean addEdges(ShapeNode newNode, ShapeNode origNode,
-            Set<ShapeEdge> oldFlexEdges, Set<EdgeBundle> origBundles) {
+    private void collectNewEdges(ShapeNode origNode,
+            Set<EdgeBundle> origBundles, Set<ShapeEdge> origFlexEdges,
+            ShapeNode newNode, Set<ShapeNode> vetoedNodes) {
         assert this.stage == 2;
 
         Map<ShapeEdge,Set<ShapeEdge>> flexEdgesMap =
-            this.routeNewEdges(newNode, origNode, oldFlexEdges);
-        Set<EdgeBundle> newBundles = this.bundleSplitMap.get(newNode);
+            this.routeNewEdges(newNode, origNode, origFlexEdges);
+        Set<EdgeBundle> newBundles = this.bundleMap.get(newNode);
         if (newBundles == null) {
             newBundles = new MyHashSet<EdgeBundle>();
-            this.bundleSplitMap.put(newNode, newBundles);
+            this.bundleMap.put(newNode, newBundles);
         }
 
         for (EdgeBundle origBundle : origBundles) {
             // Create a new bundle for the new node.
             EdgeBundle newBundle =
-                new EdgeBundle(origBundle.origEs, origBundle.origEsMult,
-                    newNode);
+                this.createBundle(origBundle.origEs, newNode);
             // Collect all edges associated with the new bundle.
             innerLoop: for (ShapeEdge oldFlexEdge : origBundle.possibleEdges) {
                 Set<ShapeEdge> newFlexEdges = flexEdgesMap.get(oldFlexEdge);
@@ -833,24 +812,19 @@ public final class Materialisation {
                 // We can't have this many incident edges on this node.
                 // Nothing to do. The new node will remain unconnected and
                 // will be garbage collected later...
-                return false;
+                vetoedNodes.add(newNode);
             }
             newBundles.add(newBundle);
         }
-        // If we reached this point, we can add the bundle edges.
-        /*for (EdgeBundle newBundle : newBundles) {
-            this.addEdges(newBundle);
-        }*/
-        return true;
     }
 
     private Map<ShapeEdge,Set<ShapeEdge>> routeNewEdges(ShapeNode newNode,
-            ShapeNode origNode, Set<ShapeEdge> oldEdges) {
+            ShapeNode origNode, Set<ShapeEdge> origEdges) {
         assert this.stage == 2;
         Map<ShapeEdge,Set<ShapeEdge>> result =
             new MyHashMap<ShapeEdge,Set<ShapeEdge>>();
         Set<ShapeNode> opposites = new MyHashSet<ShapeNode>();
-        for (ShapeEdge oldEdge : oldEdges) {
+        for (ShapeEdge oldEdge : origEdges) {
             Set<ShapeEdge> newEdges = new MyHashSet<ShapeEdge>();
             ShapeEdge origEdge = this.morph.getEdge(oldEdge);
             assert origEdge != null;
@@ -894,83 +868,90 @@ public final class Materialisation {
         }
     }
 
-    private EdgeBundle getNewBundle(EdgeBundle origBundle, ShapeNode newNode) {
-        EdgeBundle result = null;
-        for (EdgeBundle newBundle : this.bundleSplitMap.get(newNode)) {
-            if (newBundle.isEqual(newNode, origBundle.origEs)) {
-                result = newBundle;
-                break;
+    private void addEdgeSigsToBundles(ShapeEdge newEdge) {
+        assert this.stage == 2;
+        Shape shape = this.getShape();
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            EdgeBundle newBundle = this.createBundle(newEdge, direction, true);
+            newBundle.addEdge(shape, newEdge, direction);
+        }
+    }
+
+    private Set<ShapeEdge> getIncidentEdges(ShapeNode splitNode) {
+        assert this.stage == 2;
+        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.possibleEdges) {
+            if (edge.source().equals(splitNode)
+                || edge.target().equals(splitNode)) {
+                result.add(edge);
             }
         }
         return result;
     }
 
-    private void addEdgeSigsToBundles(ShapeEdge newEdge) {
-        assert this.stage == 2;
-
-        Shape shape = this.getShape();
-        Shape origShape = this.getOriginalShape();
-
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            ShapeNode node = newEdge.incident(direction);
-            Set<EdgeBundle> splitBundles = this.bundleSplitMap.get(node);
-            if (splitBundles == null) {
-                splitBundles = new MyHashSet<EdgeBundle>();
-                this.bundleSplitMap.put(node, splitBundles);
-            }
-            EdgeBundle newBundle = null;
-            EdgeSignature origEs =
-                this.getShapeMorphism().getEdgeSignature(origShape,
-                    shape.getEdgeSignature(newEdge, direction));
-            bundleLoop: for (EdgeBundle splitBundle : splitBundles) {
-                if (splitBundle.isEqual(node, origEs)) {
-                    newBundle = splitBundle;
-                    break bundleLoop;
+    private void collectEdgesToAdd(ShapeNode newNode, ShapeNode origNode,
+            Set<ShapeEdge> edgesToAdd, Set<ShapeEdge> vetoedEdges) {
+        Set<ShapeEdge> allIncidentEdges = this.getIncidentEdges(newNode);
+        Set<ShapeEdge> fixEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> allBundleEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> usedEdges = new MyHashSet<ShapeEdge>();
+        EquivRelation<ShapeNode> er = new EquivRelation<ShapeNode>();
+        for (EdgeBundle origBundle : this.getBundles(origNode)) {
+            EdgeMultDir direction = origBundle.direction;
+            // Collect the fixed edges.
+            for (ShapeEdge edge : allIncidentEdges) {
+                if (edge.incident(direction).equals(newNode)
+                    && origBundle.getEdges().contains(this.morph.getEdge(edge))) {
+                    fixEdges.add(edge);
                 }
             }
-            if (newBundle == null) {
-                Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
-                newBundle = new EdgeBundle(origEs, origEsMult, node);
-                splitBundles.add(newBundle);
+            EdgeBundle newBundle = this.getBundle(newNode, origBundle.origEs);
+            // Check if we can add the fixed edges.
+            boolean addFixedEdges = true;
+            Multiplicity mult = newBundle.origEsMult;
+            if (!mult.isUnbounded()) {
+                allBundleEdges.addAll(fixEdges);
+                allBundleEdges.addAll(newBundle.allEdges);
+                // Count the number of different opposite equivalence classes.
+                for (ShapeEdge bundleEdge : allBundleEdges) {
+                    er.add(this.shape.getEquivClassOf(bundleEdge.opposite(direction)));
+                }
+                int ecCount = er.size();
+                Multiplicity oppMult =
+                    Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
+                if (!oppMult.le(mult)) {
+                    addFixedEdges = false;
+                }
             }
-            newBundle.addEdge(shape, newEdge, direction);
+            if (addFixedEdges) {
+                edgesToAdd.addAll(fixEdges);
+            } else {
+                vetoedEdges.addAll(fixEdges);
+            }
+            // Adjust the sets for the next iteration of the loop.
+            usedEdges.addAll(fixEdges);
+            fixEdges.clear();
+            allBundleEdges.clear();
+            er.clear();
         }
+        // Maybe we have some edges left...
+        allIncidentEdges.removeAll(usedEdges);
+        edgesToAdd.addAll(allIncidentEdges);
     }
 
-    private void updateBundles(Set<ShapeNode> toRemove) {
-        for (ShapeNode nodeToRemove : toRemove) {
-            this.bundleSplitMap.remove(nodeToRemove);
-        }
-        for (ShapeNode splitNode : this.bundleSplitMap.keySet()) {
-            Set<EdgeBundle> splitBundles = this.bundleSplitMap.get(splitNode);
-            for (EdgeBundle splitBundle : splitBundles) {
-                splitBundle.removeNodeReferences(toRemove);
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Methods for third stage.
-    // ------------------------------------------------------------------------
-
-    /** Moves the materialisation object to the third and last stage. */
-    void moveToThirdStage() {
+    /** Returns the set of nodes involved in the materialisation. */
+    Set<ShapeNode> getAffectedNodes() {
         assert this.stage == 2;
-        this.stage++;
-        this.nonSingBundles = null;
-        this.garbageNodes = new MyHashSet<ShapeNode>();
-        this.markGarbageNodes();
+        return this.bundleMap.keySet();
     }
 
-    /** Basic getter method. */
-    Map<ShapeNode,Set<ShapeNode>> getNodeSplitMap() {
-        assert this.stage == 3;
-        return this.nodeSplitMap;
+    boolean requiresThirdStage() {
+        return !this.nodeSplitMap.isEmpty();
     }
 
     /** Mark nodes that cannot exist. */
     void markGarbageNodes() {
-        assert this.stage == 3;
+        assert this.stage == 2;
         Shape shape = this.shape;
         Shape origShape = this.originalShape;
         this.updateShapeMorphism();
@@ -992,11 +973,26 @@ public final class Materialisation {
 
     /** Remove the nodes from the shape that were marked as garbage. */
     void garbageCollectNodes() {
-        if (this.stage == 3) {
-            for (ShapeNode garbageNode : this.garbageNodes) {
-                this.shape.removeNode(garbageNode);
-            }
+        assert this.stage == 2 || this.stage == 3;
+        for (ShapeNode garbageNode : this.garbageNodes) {
+            this.shape.removeNode(garbageNode);
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Methods for third stage.
+    // ------------------------------------------------------------------------
+
+    /** Moves the materialisation object to the third and last stage. */
+    void moveToThirdStage() {
+        assert this.stage == 2;
+        this.stage++;
+    }
+
+    /** Basic getter method. */
+    Map<ShapeNode,Set<ShapeNode>> getNodeSplitMap() {
+        assert this.stage == 3;
+        return this.nodeSplitMap;
     }
 
     /** Returns true if the given node is marked as garbage. */
@@ -1027,12 +1023,12 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/samples/abs-test.gps/";
-        Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "13";
+            String number = "1a";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
