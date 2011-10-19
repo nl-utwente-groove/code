@@ -17,9 +17,6 @@
 package groove.abstraction.neigh.trans;
 
 import static groove.abstraction.neigh.Multiplicity.OMEGA;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
@@ -30,7 +27,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.TypeLabel;
 import groove.util.Duo;
 
 import java.util.ArrayList;
@@ -267,7 +263,7 @@ public final class EquationSystem {
             // Check if we're in first stage and we can stop early.
             Solution maxSol = this.tryToMaxSolution(sol);
             if (maxSol != sol) { // Reference inequality is sufficient.
-                // Yes, we can stop. Store the maxed solution.
+                // Yes, we can stop. Store the max'ed solution.
                 finishedSols.add(maxSol);
             } else {
                 // No escape, we have to branch.
@@ -357,20 +353,10 @@ public final class EquationSystem {
         this.edgeVarsMap = new MyHashMap<ShapeEdge,Duo<BoundVar>>();
         this.varEdgeMap = new ArrayList<ShapeEdge>();
         Shape shape = this.mat.getShape();
-        Set<EdgeBundle> bundles = this.mat.getBundles();
-
-        // Create the edge bundles.
-        for (ShapeEdge edge : this.mat.getAffectedEdges()) {
-            this.addToEdgeBundle(edge.source(), edge, OUTGOING, bundles);
-            this.addToEdgeBundle(edge.target(), edge, INCOMING, bundles);
-        }
-
-        Set<EdgeSignature> touchedEsSet = new MyHashSet<EdgeSignature>();
 
         // General case:
         // For each bundle...
-        for (EdgeBundle bundle : bundles) {
-            bundle.computeAdditionalEdges(this.mat);
+        for (EdgeBundle bundle : this.mat.getBundles()) {
             int varsCount = bundle.getEdgesCount();
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
             Multiplicity edgeMult = bundle.origEsMult;
@@ -381,7 +367,6 @@ public final class EquationSystem {
                     constMult.getUpperBound());
             // For each split edge signature...
             for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
-                touchedEsSet.add(splitEs);
                 for (ShapeEdge edge : bundle.getSplitEsEdges(splitEs)) {
                     // ... create two bound variables.
                     Duo<BoundVar> vars = retrieveBoundVars(edge);
@@ -405,54 +390,6 @@ public final class EquationSystem {
             }
             this.storeEquations(eqs);
         }
-
-        // Continuation of general case:
-        // Make sure we keep edges that are not part of any bundle but
-        // cannot be removed.
-        // See materialisation test case 12 for an example.
-        for (ShapeEdge varEdge : this.varEdgeMap) {
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                EdgeSignature es = shape.getEdgeSignature(varEdge, direction);
-                if (!touchedEsSet.contains(es) && shape.isEdgeSigUnique(es)) {
-                    ShapeNode node = varEdge.incident(direction);
-                    Multiplicity nodeMult = shape.getNodeMult(node);
-                    Multiplicity edgeMult = shape.getEdgeSigMult(es);
-                    Multiplicity constMult = nodeMult.times(edgeMult);
-                    Duo<Equation> trivialEqs =
-                        this.createEquations(1, constMult.getLowerBound(),
-                            constMult.getUpperBound());
-                    Duo<BoundVar> vars = this.edgeVarsMap.get(varEdge);
-                    addVars(trivialEqs, vars);
-                    this.storeEquations(trivialEqs);
-                }
-            }
-        }
-    }
-
-    private void addToEdgeBundle(ShapeNode node, ShapeEdge edge,
-            EdgeMultDir direction, Set<EdgeBundle> bundles) {
-        assert this.stage == 1;
-        EdgeBundle result = null;
-
-        Shape origShape = this.mat.getOriginalShape();
-        EdgeSignature origEs =
-            this.mat.getShapeMorphism().getEdgeSignature(origShape,
-                this.mat.getShape().getEdgeSignature(edge, direction));
-
-        for (EdgeBundle bundle : bundles) {
-            if (bundle.isEqual(node, origEs)) {
-                result = bundle;
-                break;
-            }
-        }
-
-        if (result == null) {
-            Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
-            result = new EdgeBundle(origEs, origEsMult, node);
-            bundles.add(result);
-        }
-
-        result.addEdge(this.mat.getShape(), edge, direction);
     }
 
     private Duo<BoundVar> retrieveBoundVars(ShapeEdge edge) {
@@ -472,125 +409,60 @@ public final class EquationSystem {
     private boolean updateMatFirstStage(Materialisation mat, Solution sol) {
         assert this.stage == 1;
 
-        boolean requiresSecondStage = false;
         Shape shape = mat.getShape();
         MultKind kind = this.finalMultKind();
 
-        // First, check if we need to split nodes.
-        MyHashSet<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
-        Set<ShapeEdge> edgesNotToInclude = new MyHashSet<ShapeEdge>();
-        for (EdgeBundle bundle : mat.getBundles()) {
-            bundle.updateFromSolution(this, shape, kind, sol);
-            if (bundle.isNonSingular()
-                && shape.getNodeMult(bundle.node).isCollector()) {
-                nonSingBundles.add(bundle);
-                edgesNotToInclude.addAll(bundle.possibleEdges);
-                requiresSecondStage = true;
-            }
-        }
-        mat.setNonSingBundles(nonSingBundles);
-
-        // Then, update the edges in the shape.
-        ShapeMorphism morph = mat.getShapeMorphism();
+        // First, get the zero and positive edges from the solution.
+        Set<ShapeEdge> zeroEdges = new MyHashSet<ShapeEdge>();
+        Set<ShapeEdge> positiveEdges = new MyHashSet<ShapeEdge>();
         for (int i = 0; i < this.varsCount; i++) {
             Multiplicity mult = sol.getMultValue(i, kind);
             ShapeEdge edge = this.varEdgeMap.get(i);
-
             if (mult.isZero()) {
-                if (shape.containsEdge(edge)) {
-                    shape.removeEdge(edge);
-                }
-                morph.removeEdge(edge);
-                continue;
-            }
-
-            if (edgesNotToInclude.contains(edge)) {
-                // We'll handle this edge in the next stage.
-                // Nothing to do for now.
-                continue;
-            }
-
-            // Multiplicity is not zero.
-            // Make sure the edge is in the shape.
-            if (!shape.containsEdge(edge)) {
-                shape.addEdge(edge);
+                zeroEdges.add(edge);
+            } else {
+                positiveEdges.add(edge);
             }
         }
 
-        // Remove nodes that cannot exist.
-        this.clearUnconnectedNodes(mat, edgesNotToInclude);
+        // Remove all zero edges from the shape.
+        ShapeMorphism morph = mat.getShapeMorphism();
+        for (ShapeEdge zeroEdge : zeroEdges) {
+            if (shape.containsEdge(zeroEdge)) {
+                shape.removeEdge(zeroEdge);
+            }
+            morph.removeEdge(zeroEdge);
+        }
 
-        // Finally, make sure the edge multiplicities for the edges that
-        // are in the shape are correct.
+        // Update the bundles and check for non-singular ones.
+        MyHashSet<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
+        Set<ShapeEdge> nonSingEdges = new MyHashSet<ShapeEdge>();
         for (EdgeBundle bundle : mat.getBundles()) {
-            esLoop: for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
-                Set<ShapeEdge> splitEsEdges = bundle.getSplitEsEdges(splitEs);
-                if (splitEsEdges.size() > 1) {
-                    continue esLoop;
-                }
-                ShapeEdge edge = splitEsEdges.iterator().next();
-                if (!shape.containsEdge(edge)) {
-                    // We'll handle this edge in the next stage.
-                    // Nothing to do for now.
-                    continue esLoop;
-                }
-                int varNumber = this.edgeVarsMap.get(edge).one().number;
-                Multiplicity mult = sol.getMultValue(varNumber, kind);
-                if (shape.getNodeMult(bundle.node).isOne()
-                    && mult.le(bundle.origEsMult)) {
-                    // Node is concrete.
-                    shape.setEdgeSigMult(splitEs, mult);
-                } else {
-                    // Node is not concrete.
-                    shape.setEdgeSigMult(splitEs, bundle.origEsMult);
-                }
+            bundle.updateFromSolution(shape, zeroEdges, positiveEdges);
+            if (bundle.isNonSingular()
+                && shape.getNodeMult(bundle.node).isCollector()) {
+                nonSingBundles.add(bundle);
+                nonSingEdges.addAll(bundle.possibleEdges);
+            }
+            /*if (bundle.isEmpty()) {
+                
+            }*/
+        }
+
+        // Add the positive edges to the shape.
+        for (ShapeEdge positiveEdge : positiveEdges) {
+            if (!shape.containsEdge(positiveEdge)
+                && !nonSingEdges.contains(positiveEdge)) {
+                // The multiplicity is positive and this edge won't be
+                // duplicated in the next stage. We have to add the edge to
+                // the shape here.
+                shape.addEdge(positiveEdge);
             }
         }
 
-        if (requiresSecondStage) {
-            mat.moveToSecondStage();
-        }
+        mat.moveToSecondStage(nonSingBundles);
 
-        return requiresSecondStage;
-    }
-
-    // See materialisation test case 11.
-    private void clearUnconnectedNodes(Materialisation mat,
-            Set<ShapeEdge> edgesNotToInclude) {
-        assert this.stage == 1;
-
-        Shape shape = mat.getShape();
-        Shape origShape = mat.getOriginalShape();
-        ShapeMorphism morph = mat.getShapeMorphism().clone();
-        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
-
-        nodeLoop: for (ShapeNode node : shape.nodeSet()) {
-            if (!shape.getNodeMult(node).isZeroPlus()) {
-                continue nodeLoop;
-            }
-            assert node.equals(morph.getNode(node));
-            esLoop: for (EdgeSignature origEs : origShape.getEdgeSignatures(node)) {
-                if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
-                    // There are no signatures in the shape.
-                    // Check the edges that will be handled on next stage.
-                    for (ShapeEdge edge : edgesNotToInclude) {
-                        ShapeEdge origEdge = morph.getEdge(edge);
-                        if (origEs.contains(origEdge)) {
-                            // The node is connected.
-                            continue esLoop;
-                        }
-                    }
-                    // The node is unconnected. Its multiplicity can
-                    // only be zero.
-                    toRemove.add(node);
-                    continue nodeLoop;
-                }
-            }
-        }
-
-        for (ShapeNode nodeToRemove : toRemove) {
-            mat.removeUnconnectedNode(nodeToRemove);
-        }
+        return true;
     }
 
     // ------------------------------------------------------------------------
@@ -608,8 +480,7 @@ public final class EquationSystem {
         // For each affected node...
         for (ShapeNode affectedNode : this.mat.getAffectedNodes()) {
             // For each split bundle...
-            for (EdgeBundle bundle : this.mat.getSplitBundles(affectedNode)) {
-                bundle.computeAdditionalSignatures(this.mat);
+            for (EdgeBundle bundle : this.mat.getBundles(affectedNode)) {
                 // ... create one pair of equations.
                 int esCount = bundle.getSplitEsSet().size();
                 Duo<Equation> eqs =
@@ -691,8 +562,13 @@ public final class EquationSystem {
             EdgeSignature es = this.varEsMap.get(i);
             shape.setEdgeSigMult(es, mult);
         }
-        mat.moveToThirdStage();
-        return true;
+        mat.markGarbageNodes();
+        if (mat.requiresThirdStage()) {
+            mat.moveToThirdStage();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -740,13 +616,13 @@ public final class EquationSystem {
             if (!shape.getNodeMult(node).isOne()) {
                 continue outerLoop;
             }
-            for (EdgeBundle splitBundle : this.mat.getSplitBundles(node)) {
-                EdgeMultDir direction = splitBundle.direction;
-                for (EdgeSignature splitEs : splitBundle.getSplitEsSet()) {
+            for (EdgeBundle bundle : this.mat.getBundles(node)) {
+                EdgeMultDir direction = bundle.direction;
+                for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
                     // We may have another equation.
                     Multiplicity constMult =
                         shape.getEdgeSigMult(splitEs).toNodeKind();
-                    int maxEdgesCount = splitBundle.getEdges().size();
+                    int maxEdgesCount = bundle.getEdges().size();
                     Duo<Equation> oppEqs =
                         this.createEquations(maxEdgesCount,
                             constMult.getLowerBound(),
@@ -799,231 +675,6 @@ public final class EquationSystem {
     // Inner Classes
     // ------------------------------------------------------------------------
 
-    // ----------
-    // EdgeBundle
-    // ----------
-
-    /** A collection of related edge signatures. */
-    public static class EdgeBundle {
-
-        final EdgeMultDir direction;
-        final ShapeNode node;
-        final TypeLabel label;
-        final EdgeSignature origEs;
-        final Multiplicity origEsMult;
-        final Map<EdgeSignature,Set<ShapeEdge>> splitEsMap;
-        final Set<ShapeEdge> allEdges;
-        final Set<ShapeEdge> possibleEdges;
-
-        EdgeBundle(EdgeSignature origEs, Multiplicity origEsMult, ShapeNode node) {
-            this.direction = origEs.getDirection();
-            this.node = node;
-            this.label = origEs.getLabel();
-            this.origEs = origEs;
-            this.origEsMult = origEsMult;
-            this.splitEsMap = new MyHashMap<EdgeSignature,Set<ShapeEdge>>();
-            this.allEdges = new MyHashSet<ShapeEdge>();
-            this.possibleEdges = new MyHashSet<ShapeEdge>();
-        }
-
-        EdgeBundle(EdgeBundle bundle) {
-            this.direction = bundle.direction;
-            this.node = bundle.node;
-            this.label = bundle.label;
-            this.origEs = bundle.origEs;
-            this.origEsMult = bundle.origEsMult;
-            this.splitEsMap = new MyHashMap<EdgeSignature,Set<ShapeEdge>>();
-            for (EdgeSignature es : bundle.splitEsMap.keySet()) {
-                Set<ShapeEdge> edgeSet = new MyHashSet<ShapeEdge>();
-                edgeSet.addAll(bundle.splitEsMap.get(es));
-                this.splitEsMap.put(es, edgeSet);
-            }
-            this.allEdges = new MyHashSet<ShapeEdge>();
-            this.allEdges.addAll(bundle.allEdges);
-            this.possibleEdges = new MyHashSet<ShapeEdge>();
-            this.possibleEdges.addAll(bundle.possibleEdges);
-        }
-
-        @Override
-        public String toString() {
-            return this.direction + ":" + this.node + "-" + this.label + "-"
-                + this.splitEsMap;
-        }
-
-        @Override
-        public EdgeBundle clone() {
-            return new EdgeBundle(this);
-        }
-
-        boolean isEqual(ShapeNode node, EdgeSignature origEs) {
-            return this.node.equals(node) && this.origEs.equals(origEs);
-        }
-
-        Set<EdgeSignature> getSplitEsSet() {
-            return this.splitEsMap.keySet();
-        }
-
-        Set<ShapeEdge> getSplitEsEdges(EdgeSignature splitEs) {
-            Set<ShapeEdge> result = this.splitEsMap.get(splitEs);
-            assert result != null;
-            return result;
-        }
-
-        Set<ShapeEdge> getEdges() {
-            return this.allEdges;
-        }
-
-        int getEdgesCount() {
-            return this.allEdges.size();
-        }
-
-        /**
-         * Looks at the keys of the split map for an edge signature compatible
-         * with the given edge. If no suitable edge signature is found, returns
-         * null.
-         */
-        EdgeSignature maybeGetEdgeSignature(ShapeEdge edge) {
-            EdgeSignature result = null;
-            for (EdgeSignature splitEs : this.getSplitEsSet()) {
-                if (splitEs.contains(edge)) {
-                    result = splitEs;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Looks at the keys of the split map for an edge signature compatible
-         * with the given edge. If no suitable edge signature is found, returns
-         * the edge signature retrieved from the shape.
-         */
-        EdgeSignature getEdgeSignature(Shape shape, ShapeEdge edge,
-                EdgeMultDir direction) {
-            EdgeSignature result = this.maybeGetEdgeSignature(edge);
-            if (result == null) {
-                result = shape.getEdgeSignature(edge, direction);
-                this.splitEsMap.put(result, new MyHashSet<ShapeEdge>());
-            }
-            return result;
-        }
-
-        void addEdge(Shape shape, ShapeEdge edge, EdgeMultDir direction) {
-            assert this.direction == direction;
-            assert this.node.equals(edge.incident(direction));
-            assert this.label.equals(edge.label());
-            EdgeSignature splitEs =
-                this.getEdgeSignature(shape, edge, direction);
-            this.getSplitEsEdges(splitEs).add(edge);
-            this.allEdges.add(edge);
-        }
-
-        void removeEdge(ShapeEdge edge) {
-            assert this.allEdges.contains(edge);
-            EdgeSignature splitEs = this.maybeGetEdgeSignature(edge);
-            assert splitEs != null;
-            Set<ShapeEdge> splitEsEdges = this.getSplitEsEdges(splitEs);
-            splitEsEdges.remove(edge);
-            if (splitEsEdges.isEmpty()) {
-                this.splitEsMap.remove(splitEs);
-            }
-            this.allEdges.remove(edge);
-            this.possibleEdges.remove(edge);
-        }
-
-        boolean isNonSingular() {
-            return this.splitEsMap.size() > 1;
-        }
-
-        void updateFromSolution(EquationSystem eqSys, Shape shape,
-                MultKind kind, Solution sol) {
-            Set<ShapeEdge> toRemove = new MyHashSet<ShapeEdge>();
-            for (ShapeEdge edge : this.getEdges()) {
-                Duo<BoundVar> vars = eqSys.edgeVarsMap.get(edge);
-                if (vars == null) {
-                    continue;
-                }
-                int varNum = vars.one().number;
-                boolean positive = !sol.getMultValue(varNum, kind).isZero();
-                if (positive) {
-                    if (!shape.containsEdge(edge)) {
-                        this.possibleEdges.add(edge);
-                    }
-                } else {
-                    toRemove.add(edge);
-                }
-            }
-            for (ShapeEdge edgeToRemove : toRemove) {
-                this.removeEdge(edgeToRemove);
-            }
-        }
-
-        void computeAdditionalEdges(Materialisation mat) {
-            Shape shape = mat.getShape();
-            for (ShapeEdge edge : shape.binaryEdgeSet(this.node, this.direction)) {
-                if (this.allEdges.contains(edge)) {
-                    continue;
-                }
-                if (edge.label().equals(this.label)) {
-                    EdgeSignature es =
-                        shape.getEdgeSignature(edge, this.direction);
-                    EdgeSignature otherOrigEs =
-                        mat.getShapeMorphism().getEdgeSignature(
-                            mat.getOriginalShape(), es);
-                    if (otherOrigEs.equals(this.origEs)) {
-                        this.addEdge(shape, edge, this.direction);
-                    }
-                }
-            }
-        }
-
-        boolean complyToOriginalMult() {
-            boolean result = true;
-            if (!this.origEsMult.isUnbounded()) {
-                // Count the number of split signatures.
-                int ecCount = this.splitEsMap.size();
-                Multiplicity oppMult =
-                    Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
-                if (!oppMult.le(this.origEsMult)) {
-                    // Too many signatures.
-                    result = false;
-                }
-            }
-            return result;
-        }
-
-        void computeAdditionalSignatures(Materialisation mat) {
-            Shape shape = mat.getShape();
-            // First remove signatures that are no longer present in the shape.
-            // This may happen when we garbage collect nodes.
-            Iterator<EdgeSignature> iter = this.splitEsMap.keySet().iterator();
-            while (iter.hasNext()) {
-                EdgeSignature splitEs = iter.next();
-                if (!shape.hasEdgeSignature(splitEs)) {
-                    this.allEdges.removeAll(this.getSplitEsEdges(splitEs));
-                    iter.remove();
-                }
-            }
-            // Now search for the additional signatures.
-            this.computeAdditionalEdges(mat);
-        }
-
-        void removeNodeReferences(Set<ShapeNode> nodesToRemove) {
-            assert !nodesToRemove.contains(this.node);
-            Set<ShapeEdge> edgesToRemove = new MyHashSet<ShapeEdge>();
-            for (ShapeEdge edge : this.allEdges) {
-                if (nodesToRemove.contains(edge.source())
-                    || nodesToRemove.contains(edge.target())) {
-                    edgesToRemove.add(edge);
-                }
-            }
-            for (ShapeEdge edgeToRemove : edgesToRemove) {
-                this.removeEdge(edgeToRemove);
-            }
-        }
-
-    }
-
     // ---------
     // BoundType
     // ---------
@@ -1036,7 +687,7 @@ public final class EquationSystem {
     // BoundVar
     // --------
 
-    private static class BoundVar {
+    static class BoundVar {
 
         final int number;
         final BoundType type;
@@ -1454,7 +1105,7 @@ public final class EquationSystem {
     // Solution
     // --------
 
-    private static class Solution {
+    static class Solution {
 
         final ValueRange lbValues[];
         final ValueRange ubValues[];
