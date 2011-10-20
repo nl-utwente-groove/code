@@ -435,7 +435,7 @@ public final class EquationSystem {
         }
 
         // Update the bundles and check for non-singular ones.
-        MyHashSet<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
+        Set<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
         Set<ShapeEdge> nonSingEdges = new MyHashSet<ShapeEdge>();
         for (EdgeBundle bundle : mat.getBundles()) {
             bundle.updateFromSolution(shape, zeroEdges, positiveEdges);
@@ -444,9 +444,6 @@ public final class EquationSystem {
                 nonSingBundles.add(bundle);
                 nonSingEdges.addAll(bundle.possibleEdges);
             }
-            /*if (bundle.isEmpty()) {
-                
-            }*/
         }
 
         // Add the positive edges to the shape.
@@ -460,9 +457,61 @@ public final class EquationSystem {
             }
         }
 
+        // Remove nodes that cannot exist.
+        this.clearUnconnectedNodes(mat, nonSingBundles, nonSingEdges);
+
         mat.moveToSecondStage(nonSingBundles);
 
         return true;
+    }
+
+    // See materialisation test case 11.
+    private void clearUnconnectedNodes(Materialisation mat,
+            Set<EdgeBundle> nonSingBundles, Set<ShapeEdge> nonSingEdges) {
+        assert this.stage == 1;
+
+        Shape shape = mat.getShape();
+        Shape origShape = mat.getOriginalShape();
+        ShapeMorphism morph = mat.getShapeMorphism().clone();
+        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
+
+        nodeLoop: for (ShapeNode node : shape.nodeSet()) {
+            if (!shape.getNodeMult(node).isZeroPlus()) {
+                continue nodeLoop;
+            }
+            assert node.equals(morph.getNode(node));
+            esLoop: for (EdgeSignature origEs : origShape.getEdgeSignatures(node)) {
+                if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
+                    // There are no signatures in the shape.
+                    // Check the edges that will be handled on next stage.
+                    for (ShapeEdge edge : nonSingEdges) {
+                        ShapeEdge origEdge = morph.getEdge(edge);
+                        if (origEs.contains(origEdge)) {
+                            // The node is connected.
+                            continue esLoop;
+                        }
+                    }
+                    // The node is unconnected. Its multiplicity can
+                    // only be zero.
+                    toRemove.add(node);
+                    continue nodeLoop;
+                }
+            }
+        }
+
+        for (ShapeNode nodeToRemove : toRemove) {
+            mat.removeUnconnectedNode(nodeToRemove);
+            for (EdgeBundle bundle : nonSingBundles) {
+                Iterator<ShapeEdge> iter = bundle.possibleEdges.iterator();
+                while (iter.hasNext()) {
+                    ShapeEdge edge = iter.next();
+                    if (edge.source().equals(nodeToRemove)
+                        || edge.target().equals(nodeToRemove)) {
+                        iter.remove();
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
