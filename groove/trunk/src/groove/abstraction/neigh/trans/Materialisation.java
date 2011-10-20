@@ -1082,13 +1082,13 @@ public final class Materialisation {
 
     /** Used for tests. */
     public static void main(String args[]) {
-        String DIRECTORY = "junit/samples/abs-test.gps/";
-        Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);
+        String DIRECTORY = "junit/abstraction/basic-tests.gps/";
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
         Multiplicity.initMultStore();
         File file = new File(DIRECTORY);
         try {
-            String number = "13";
+            String number = "11";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
