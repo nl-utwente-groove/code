@@ -27,6 +27,7 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -210,6 +211,45 @@ public final class EdgeBundle {
             }
         }
         return result;
+    }
+
+    void clearPossibleEdges() {
+        Set<ShapeEdge> toRemove = new MyHashSet<ShapeEdge>();
+        toRemove.addAll(this.possibleEdges);
+        for (ShapeEdge edge : toRemove) {
+            this.removeEdge(edge);
+        }
+    }
+
+    void update(Materialisation mat) {
+        this.clearPossibleEdges();
+        Shape shape = mat.getShape();
+        // First remove signatures that are no longer present in the shape.
+        // This may happen when we garbage collect nodes.
+        Iterator<EdgeSignature> iter = this.splitEsMap.keySet().iterator();
+        while (iter.hasNext()) {
+            EdgeSignature splitEs = iter.next();
+            if (!shape.hasEdgeSignature(splitEs)) {
+                this.allEdges.removeAll(this.getSplitEsEdges(splitEs));
+                iter.remove();
+            }
+        }
+        // Now search for the additional signatures.
+        this.computeAdditionalEdges(mat);
+    }
+
+    void removeNodeReferences(Set<ShapeNode> nodesToRemove) {
+        assert !nodesToRemove.contains(this.node);
+        Set<ShapeEdge> edgesToRemove = new MyHashSet<ShapeEdge>();
+        for (ShapeEdge edge : this.allEdges) {
+            if (nodesToRemove.contains(edge.source())
+                || nodesToRemove.contains(edge.target())) {
+                edgesToRemove.add(edge);
+            }
+        }
+        for (ShapeEdge edgeToRemove : edgesToRemove) {
+            this.removeEdge(edgeToRemove);
+        }
     }
 
 }
