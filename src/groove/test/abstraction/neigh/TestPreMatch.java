@@ -42,7 +42,8 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestPreMatch {
 
-    static private final String DIRECTORY = "junit/samples/abs-test.gps/";
+    static private final String DIRECTORY =
+        "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
     static private GraphGrammar grammar;
 
