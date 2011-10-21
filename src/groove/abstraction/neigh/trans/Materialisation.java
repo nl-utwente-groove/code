@@ -20,6 +20,7 @@ import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
@@ -1085,7 +1086,7 @@ public final class Materialisation {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
+        Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             String number = "11";

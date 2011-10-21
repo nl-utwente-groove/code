@@ -18,6 +18,7 @@ package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.match.PreMatch;
@@ -49,6 +50,7 @@ public class TestPreMatch {
 
     @BeforeClass
     public static void setUp() {
+        Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             view = GrammarModel.newInstance(file, false);

@@ -19,6 +19,7 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
@@ -59,6 +60,7 @@ public class TestMaterialisation {
 
     @BeforeClass
     public static void setUp() {
+        Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             view = GrammarModel.newInstance(file, false);

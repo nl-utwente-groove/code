@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.gui.dialog;
 
-import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.gui.jgraph.ShapeJGraph;
 import groove.abstraction.neigh.gui.jgraph.ShapeJModel;
 import groove.abstraction.neigh.shape.Shape;
@@ -110,7 +110,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
 
     /** Test method. */
     public static void main(String args[]) {
-        Multiplicity.initMultStore();
+        Abstraction.initialise();
         String DIRECTORY = "junit/samples/abs-test.gps/";
         File file = new File(DIRECTORY + "shape-build-test-0.gst");
         Shape shape = createShape(file);

@@ -16,7 +16,7 @@
  */
 package groove.gui.action;
 
-import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.shape.Shape;
 import groove.gui.Options;
@@ -38,11 +38,11 @@ public class ToggleExplorationStateAction extends SimulatorAction {
         if (getSimulatorModel().isAbstractionMode()) {
             getSimulatorModel().setAbstractionMode(false);
             this.putValue(Action.NAME, Options.TOGGLE_TO_ABS_ACTION_NAME);
+            Abstraction.terminate();
         } else {
             getSimulatorModel().setAbstractionMode(true);
             this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
-
-            Multiplicity.initMultStore();
+            Abstraction.initialise();
             HostGraph graph =
                 this.getSimulator().getModel().getGts().getStateSet().iterator().next().getGraph();
             Shape shape = Shape.createShape(graph);

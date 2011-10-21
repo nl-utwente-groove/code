@@ -18,7 +18,7 @@ package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
@@ -50,7 +50,7 @@ public class TestShapeIso {
 
     @BeforeClass
     public static void setUp() {
-        Multiplicity.initMultStore();
+        Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             view = GrammarModel.newInstance(file, false);
