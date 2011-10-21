@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.explore;
 
-import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.shape.Shape;
@@ -58,7 +58,7 @@ public final class ShapeGenerator {
 
     /** Resets the generator. */
     public void reset() {
-        Multiplicity.initMultStore();
+        Abstraction.initialise();
         this.gts = null;
     }
 
