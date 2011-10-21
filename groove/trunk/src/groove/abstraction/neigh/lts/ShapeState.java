@@ -174,58 +174,31 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     public Iterator<GraphTransition> getTransitionIter() {
-        /*return this.transitionMap.values().iterator();*/
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Set<GraphTransition> getTransitionSet() {
-        /*Set<GraphTransition> result = new THashSet<GraphTransition>();
-        result.addAll(this.transitionMap.values());
-        return Collections.unmodifiableSet(result);*/
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Map<RuleEvent,GraphTransition> getTransitionMap() {
-        /*return Collections.unmodifiableMap(this.transitionMap);*/
         throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean containsTransition(GraphTransition transition) {
-        /*return this.transitionMap.containsValue(transition);*/
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Collection<ShapeState> getNextStateSet() {
-        /*THashSet<ShapeState> result = new THashSet<ShapeState>();
-        for (GraphTransition transition : this.transitionMap.values()) {
-            result.add((ShapeState) transition.target());
-        }
-        return Collections.unmodifiableSet(result);*/
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Iterator<GraphState> getNextStateIter() {
-        /*return new Iterator<GraphState>() {
-            Iterator<GraphTransition> it = ShapeState.this.getTransitionIter();
-
-            public boolean hasNext() {
-                return this.it.hasNext();
-            }
-
-            public GraphState next() {
-                return this.it.next().target();
-            }
-
-            public void remove() {
-                this.it.remove();
-            }
-
-        };*/
         throw new UnsupportedOperationException();
     }
 

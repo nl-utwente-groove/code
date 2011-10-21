@@ -143,11 +143,15 @@ public final class EquivClass<T extends HostElement> extends MyHashSet<T>
     /** Callback method computing the hash code. */
     private int computeHashCode() {
         final int prime = 31;
-        int sum = 0;
+        int result = 0;
         for (T elem : this) {
-            sum += elem.hashCode();
+            // We can't multiply the result by prime here because this would
+            // make the hash dependent of the ordering of elements.
+            result += elem.hashCode();
         }
-        return prime * sum;
+        // Multiply here. This probably least to a worst hash function, but
+        // nothing to do for now...
+        return result * prime;
     }
 
     /** Returns true if this equivalence class has just one element. */

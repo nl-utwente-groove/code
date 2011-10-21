@@ -45,6 +45,7 @@ public final class EdgeBundle {
     final Map<EdgeSignature,Set<ShapeEdge>> splitEsMap;
     final Set<ShapeEdge> allEdges;
     final Set<ShapeEdge> possibleEdges;
+    private final int hashCode;
 
     EdgeBundle(EdgeSignature origEs, Multiplicity origEsMult, ShapeNode node) {
         this.direction = origEs.getDirection();
@@ -55,6 +56,7 @@ public final class EdgeBundle {
         this.splitEsMap = new MyHashMap<EdgeSignature,Set<ShapeEdge>>();
         this.allEdges = new MyHashSet<ShapeEdge>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
+        this.hashCode = this.computeHashCode();
     }
 
     EdgeBundle(EdgeBundle bundle) {
@@ -73,6 +75,7 @@ public final class EdgeBundle {
         this.allEdges.addAll(bundle.allEdges);
         this.possibleEdges = new MyHashSet<ShapeEdge>();
         this.possibleEdges.addAll(bundle.possibleEdges);
+        this.hashCode = bundle.hashCode;
     }
 
     @Override
@@ -84,6 +87,41 @@ public final class EdgeBundle {
     @Override
     public EdgeBundle clone() {
         return new EdgeBundle(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        boolean result;
+        if (this == o) {
+            result = true;
+        } else if (!(o instanceof EdgeBundle)) {
+            result = false;
+        } else {
+            EdgeBundle bundle = (EdgeBundle) o;
+            result =
+                this.direction.equals(bundle.direction)
+                    && this.node.equals(bundle.node)
+                    && this.label.equals(bundle.label)
+                    && this.origEs.equals(bundle);
+        }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
+    }
+
+    private int computeHashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.direction.hashCode();
+        result = prime * result + this.node.hashCode();
+        result = prime * result + this.label.hashCode();
+        result = prime * result + this.origEs.hashCode();
+        return result;
     }
 
     boolean isEqual(ShapeNode node, EdgeSignature origEs) {
