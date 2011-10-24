@@ -50,8 +50,12 @@ public class ShapeState extends AbstractGraphState {
 
     private final Shape shape;
     private boolean closed;
+    private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
     final ArrayList<GraphTransition> transitions;
+    /** Set of possible subsumed states. */
+    // EDUARDO: Remove this from the state to same memory.
+    final ArrayList<ShapeState> subsumedStates;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -71,6 +75,7 @@ public class ShapeState extends AbstractGraphState {
         this.shape.setName(toString());
         this.closed = false;
         this.transitions = new ArrayList<GraphTransition>();
+        this.subsumedStates = new ArrayList<ShapeState>();
     }
 
     // ------------------------------------------------------------------------
@@ -129,6 +134,42 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public ShapeNode[] getBoundNodes() {
         return EMPTY_NODE_ARRAY;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    private boolean setSubsumptor(ShapeState subsumptor) {
+        if (this.getSubsumptor() != null) {
+            return false;
+        } else {
+            this.subsumptor = subsumptor;
+            return true;
+        }
+    }
+
+    public ShapeState getSubsumptor() {
+        return this.subsumptor;
+    }
+
+    public boolean isSubsumed() {
+        return this.subsumptor != null;
+    }
+
+    public void addSubsumedState(ShapeState subsumed) {
+        this.subsumedStates.add(subsumed);
+    }
+
+    public int markSubsumedStates() {
+        int markCount = 0;
+        for (ShapeState subsumed : this.subsumedStates) {
+            if (subsumed.setSubsumptor(this)) {
+                markCount++;
+            }
+        }
+        this.subsumedStates.clear();
+        return markCount;
     }
 
     // ------------------------------------------------------------------------
