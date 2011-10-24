@@ -653,32 +653,32 @@ public final class Materialisation {
 
     private void computeBundles() {
         assert this.stage == 1;
-        // Create the initial edge bundles.
-        for (ShapeEdge edge : this.getAffectedEdges()) {
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                EdgeBundle bundle = this.getBundle(edge, direction);
-                bundle.addEdge(this.shape, edge, direction);
-            }
-        }
-        // Collect all affected edges.
-        Set<EdgeBundle> additionalBundles = new MyHashSet<EdgeBundle>();
-        for (EdgeBundle bundle : this.getBundles()) {
-            bundle.computeAdditionalEdges(this);
-            for (ShapeEdge edge : bundle.getEdges()) {
+        // Keep adding edges and bundles until we reach a fix point.
+        Set<ShapeEdge> handledEdges = new MyHashSet<ShapeEdge>();
+        Set<EdgeBundle> handledBundles = new MyHashSet<EdgeBundle>();
+        Set<ShapeEdge> toProcess = this.getAffectedEdges();
+
+        while (!toProcess.isEmpty()) {
+            for (ShapeEdge edge : toProcess) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    EdgeBundle oppBundle = this.maybeGetBundle(edge, direction);
-                    if (oppBundle == null) {
-                        // Create additional opposite bundle.
-                        oppBundle = this.createBundle(edge, direction, false);
-                        oppBundle.computeAdditionalEdges(this);
-                        additionalBundles.add(oppBundle);
+                    EdgeBundle bundle = this.getBundle(edge, direction);
+                    bundle.addEdge(this.shape, edge, direction);
+                }
+                handledEdges.add(edge);
+            }
+            toProcess.clear();
+            bundleLoop: for (EdgeBundle bundle : this.getBundles()) {
+                if (handledBundles.contains(bundle)) {
+                    continue bundleLoop;
+                }
+                bundle.computeAdditionalEdges(this);
+                for (ShapeEdge edge : bundle.getEdges()) {
+                    if (!handledEdges.contains(edge)) {
+                        toProcess.add(edge);
                     }
                 }
+                handledBundles.add(bundle);
             }
-        }
-        // Add all additional bundles.
-        for (EdgeBundle additionalBundle : additionalBundles) {
-            this.addBundle(additionalBundle);
         }
     }
 
