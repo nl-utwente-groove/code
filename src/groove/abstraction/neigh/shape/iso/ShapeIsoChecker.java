@@ -37,6 +37,11 @@ import java.util.Map.Entry;
  */
 public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
+    private static final int NON_ISO = 0x0;
+    private static final int DOM_EQUALS_COD = 0x1;
+    private static final int DOM_SUBSUMES_COD = 0x2;
+    private static final int COD_SUBSUMES_DOM = 0x4;
+
     /** The singleton strong instance of this class. */
     static private ShapeIsoChecker strongInstance;
     /** The singleton weak instance of this class. */
@@ -75,46 +80,60 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
     @Override
     public boolean areIsomorphic(Graph<ShapeNode,ShapeEdge> dom,
-            Graph<ShapeNode,ShapeEdge> cod) {
-        return this.areIsomorphic(dom, cod, null, null);
-    }
-
-    /** See {@link #areIsomorphic(Graph, Graph)}. */
-    public boolean areIsomorphic(Shape dom, Shape cod) {
-        return this.areIsomorphic(dom.downcast(), cod.downcast());
-    }
-
-    @Override
-    public boolean areIsomorphic(Graph<ShapeNode,ShapeEdge> dom,
             Graph<ShapeNode,ShapeEdge> cod, ShapeNode[] domNodes,
             ShapeNode[] codNodes) {
-        return this.basicChecks(dom, cod)
-            && super.areIsomorphic(dom, cod, domNodes, codNodes)
-            && this.getIsomorphism(dom, cod) != null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Morphism<ShapeNode,ShapeEdge> getIsomorphism(
             Graph<ShapeNode,ShapeEdge> dom, Graph<ShapeNode,ShapeEdge> cod) {
-        if (!this.basicChecks(dom, cod)) {
-            return null;
+        throw new UnsupportedOperationException();
+    }
+
+    private boolean isDomEqualsCod(int result) {
+        return (result & DOM_EQUALS_COD) == DOM_EQUALS_COD;
+    }
+
+    private boolean isDomSubsumesCod(int result) {
+        return (result & DOM_SUBSUMES_COD) == DOM_SUBSUMES_COD;
+    }
+
+    public boolean areEqual(int result) {
+        return this.isDomEqualsCod(result);
+    }
+
+    public boolean isDomStrictlyLargerThanCod(int result) {
+        return this.isDomSubsumesCod(result) && !this.isDomEqualsCod(result);
+    }
+
+    /** See {@link #areIsomorphic(Graph, Graph)}. */
+    public boolean areIsomorphic(Shape dom, Shape cod) {
+        int result = this.compareShapes(dom, cod);
+        return this.areEqual(result);
+    }
+
+    public int compareShapes(Shape dom, Shape cod) {
+        if (!this.passBasicChecks(dom, cod)) {
+            return NON_ISO;
         }
-        Morphism<ShapeNode,ShapeEdge> result = null;
+        Graph<ShapeNode,ShapeEdge> domG = dom.downcast();
+        Graph<ShapeNode,ShapeEdge> codG = cod.downcast();
         ShapeIsoChecker isoChecker = ShapeIsoChecker.getInstance(true);
         IsoChecker<ShapeNode,ShapeEdge>.IsoCheckerState state =
             new IsoCheckerState();
         Morphism<ShapeNode,ShapeEdge> morphism =
-            isoChecker.getIsomorphism(dom, cod, state);
+            isoChecker.getIsomorphism(domG, codG, state);
+        int result = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
-            if (this.isValidIsomorphism(dom, cod, morphism)) {
-                // Valid shape isomorphism.
-                result = morphism;
+            result = this.checkIsomorphism(dom, cod, morphism);
+            if (result != NON_ISO) {
                 break;
             } else {
                 // Keep trying.
-                morphism = isoChecker.getIsomorphism(dom, cod, state);
+                morphism = isoChecker.getIsomorphism(domG, codG, state);
                 if (state.isPlanEmpty()) {
                     // We got the same morphism back. The check fails.
                     break;
@@ -132,11 +151,9 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
      * (2) they have the same outgoing and incoming edge multiplicities; and
      * (3) they have the same equivalence relation. 
      */
-    private boolean isValidIsomorphism(Graph<ShapeNode,ShapeEdge> domG,
-            Graph<ShapeNode,ShapeEdge> codG,
+    private int checkIsomorphism(Shape dom, Shape cod,
             Morphism<ShapeNode,ShapeEdge> morphism) {
-        Shape dom = Shape.upcast(domG);
-        Shape cod = Shape.upcast(codG);
+        int result = DOM_EQUALS_COD | DOM_SUBSUMES_COD | COD_SUBSUMES_DOM;
 
         // First check the node multiplicities.
         for (Entry<ShapeNode,ShapeNode> nodeEntry : morphism.nodeMap().entrySet()) {
@@ -144,8 +161,10 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             ShapeNode codNode = nodeEntry.getValue();
             Multiplicity domNMult = dom.getNodeMult(domNode);
             Multiplicity codNMult = cod.getNodeMult(codNode);
-            if (!domNMult.equals(codNMult)) {
-                return false;
+            int comparison = this.compareMultiplicities(domNMult, codNMult);
+            result = this.updateResult(result, comparison);
+            if (result == NON_ISO) {
+                return NON_ISO;
             }
         }
 
@@ -156,8 +175,10 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 Multiplicity domEMult = dom.getEdgeMult(domEdge, direction);
                 Multiplicity codEMult = cod.getEdgeMult(codEdge, direction);
-                if (!domEMult.equals(codEMult)) {
-                    return false;
+                int comparison = this.compareMultiplicities(domEMult, codEMult);
+                result = this.updateResult(result, comparison);
+                if (result == NON_ISO) {
+                    return NON_ISO;
                 }
             }
         }
@@ -172,35 +193,41 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             }
             EquivClass<ShapeNode> codEc = cod.getEquivClassOf(codNode);
             if (!codEc.equals(mappedCodEc)) {
-                return false;
+                return NON_ISO;
             } else {
                 mappedCodEc = new EquivClass<ShapeNode>();
             }
         }
 
         // If we reach this point, all tests passed.
-        return true;
+        return result;
     }
 
-    private boolean basicChecks(Graph<ShapeNode,ShapeEdge> domG,
-            Graph<ShapeNode,ShapeEdge> codG) {
-        boolean pass;
-        // First, basic node and edge count check.
-        pass =
-            domG.nodeCount() == codG.nodeCount()
-                && domG.edgeCount() == codG.edgeCount();
-        if (pass) {
-            Shape dom = Shape.upcast(domG);
-            Shape cod = Shape.upcast(codG);
-            // Check the size of the equivalence relation and the size of the edge multiplicity maps.
-            pass =
-                dom.getEquivRelation().size() == cod.getEquivRelation().size()
-                    && dom.getEdgeMultMapKeys(EdgeMultDir.OUTGOING).size() == cod.getEdgeMultMapKeys(
-                        EdgeMultDir.OUTGOING).size()
-                    && dom.getEdgeMultMapKeys(EdgeMultDir.INCOMING).size() == cod.getEdgeMultMapKeys(
-                        EdgeMultDir.INCOMING).size();
+    private boolean passBasicChecks(Shape dom, Shape cod) {
+        return dom.nodeCount() == cod.nodeCount()
+            && dom.edgeCount() == cod.edgeCount()
+            && dom.getEquivRelation().size() == cod.getEquivRelation().size()
+            && dom.getEdgeMultMapKeys(EdgeMultDir.OUTGOING).size() == cod.getEdgeMultMapKeys(
+                EdgeMultDir.OUTGOING).size()
+            && dom.getEdgeMultMapKeys(EdgeMultDir.INCOMING).size() == cod.getEdgeMultMapKeys(
+                EdgeMultDir.INCOMING).size();
+    }
+
+    private int compareMultiplicities(Multiplicity domMult, Multiplicity codMult) {
+        int result = NON_ISO;
+        if (domMult.equals(codMult)) {
+            result |= DOM_EQUALS_COD;
         }
-        return pass;
+        if (domMult.subsumes(codMult)) {
+            result |= DOM_SUBSUMES_COD;
+        }
+        if (codMult.subsumes(domMult)) {
+            result |= COD_SUBSUMES_DOM;
+        }
+        return result;
     }
 
+    private int updateResult(int result, int comparison) {
+        return result & comparison;
+    }
 }

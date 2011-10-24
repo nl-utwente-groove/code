@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
  * hash map and a linked hash map, which provides deterministic iteration.
  */
 //public class MyHashMap<K,V> extends THashMap<K,V> {
+//public class MyHashMap<K,V> extends HashMap<K,V> {
 public class MyHashMap<K,V> extends LinkedHashMap<K,V> {
 
     @SuppressWarnings("unchecked")

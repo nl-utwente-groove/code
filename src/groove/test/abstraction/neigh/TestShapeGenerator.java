@@ -28,6 +28,8 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestShapeGenerator {
 
+    private static final boolean PRINT_RESULT = false;
+
     @Test
     public void testSingleLinkList() {
         final String GRAMMAR = "junit/abstraction/single-link-list.gps";
@@ -39,19 +41,19 @@ public class TestShapeGenerator {
         Parameters.setAbsRadius(1);
 
         generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(9, generator.getStateCount());
         assertEquals(17, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
         generator.reset();
-        generator.exploreGrammar(false);
+        generator.exploreGrammar(PRINT_RESULT);
         assertEquals(15, generator.getStateCount());
         assertEquals(29, generator.getTransitionCount());
 
         Parameters.setNodeMultBound(3);
         generator.reset();
-        generator.exploreGrammar(false);
+        generator.exploreGrammar(PRINT_RESULT);
         assertEquals(21, generator.getStateCount());
         assertEquals(41, generator.getTransitionCount());
     }
@@ -67,12 +69,12 @@ public class TestShapeGenerator {
         Parameters.setNodeMultBound(1);
 
         generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(3, generator.getStateCount());
         assertEquals(3, generator.getTransitionCount());
     }
 
-    @Test
+    /*@Test
     public void testCircularBuffer0() {
         final String GRAMMAR = "junit/abstraction/circ-buf-0.gps";
         final String START_GRAPH = "start";
@@ -83,12 +85,12 @@ public class TestShapeGenerator {
         Parameters.setNodeMultBound(1);
 
         generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(54, generator.getStateCount());
         assertEquals(130, generator.getTransitionCount());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testCircularBuffer1() {
         final String GRAMMAR = "junit/abstraction/circ-buf-1.gps";
         final String START_GRAPH = "start";
@@ -99,12 +101,12 @@ public class TestShapeGenerator {
         Parameters.setNodeMultBound(1);
 
         generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(31, generator.getStateCount());
         assertEquals(85, generator.getTransitionCount());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testFirewall() {
         final String GRAMMAR = "junit/abstraction/firewall.gps";
         final String START_GRAPH = "start-2";
@@ -115,7 +117,7 @@ public class TestShapeGenerator {
         Parameters.setAbsRadius(1);
 
         generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
+        generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(48, generator.getStateCount());
         assertEquals(222, generator.getTransitionCount());
 
@@ -123,18 +125,18 @@ public class TestShapeGenerator {
         Parameters.setEdgeMultBound(2);
 
         generator.reset();
-        generator.exploreGrammar(false);
+        generator.exploreGrammar(PRINT_RESULT);
         assertEquals(124, generator.getStateCount());
         assertEquals(588, generator.getTransitionCount());
 
-        /*Parameters.setNodeMultBound(3);
+        Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(3);
 
         generator.reset();
         generator.exploreGrammar(false);
         assertEquals(255, generator.getStateCount());
-        assertEquals(1225, generator.getTransitionCount());*/
-    }
+        assertEquals(1225, generator.getTransitionCount());
+    }*/
 
     /*@Test
     public void testHopf() {
