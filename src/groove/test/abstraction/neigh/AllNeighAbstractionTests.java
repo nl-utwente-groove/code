@@ -16,6 +16,9 @@
  */
 package groove.test.abstraction.neigh;
 
+import groove.abstraction.neigh.Abstraction;
+
+import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -27,5 +30,11 @@ import org.junit.runners.Suite;
     TestShape.class, TestPreMatch.class, TestMaterialisation.class,
     TestShapeIso.class, TestShapeGenerator.class})
 public class AllNeighAbstractionTests {
-    // Empty by design.
+
+    /** Reverts back to normal (non-abstract) mode. */
+    @AfterClass
+    public static void cleanUp() {
+        Abstraction.terminate();
+    }
+
 }
