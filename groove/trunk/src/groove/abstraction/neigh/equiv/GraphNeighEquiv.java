@@ -18,6 +18,7 @@ package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.MyHashMap;
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.graph.TypeLabel;
@@ -69,16 +70,6 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         for (int i = 1; i <= this.radius; i++) {
             this.refineEquivRelation();
         }
-    }
-
-    // ------------------------------------------------------------------------
-    // Static Methods
-    // ------------------------------------------------------------------------
-
-    /** Returns true if both given sets have the same multiplicity. */
-    private static boolean haveSameMult(Set<HostEdge> s0, Set<HostEdge> s1) {
-        return Multiplicity.getEdgeSetMult(s0).equals(
-            Multiplicity.getEdgeSetMult(s1));
     }
 
     // ------------------------------------------------------------------------
@@ -281,21 +272,30 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      */
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
+        Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
         // For all labels.
         labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
-                Set<HostEdge> n0InterEc =
-                    Util.getIntersectEdges(this.graph, n0, ec, label);
-                Set<HostEdge> n1InterEc =
-                    Util.getIntersectEdges(this.graph, n1, ec, label);
-                Set<HostEdge> ecInterN0 =
-                    Util.getIntersectEdges(this.graph, ec, n0, label);
-                Set<HostEdge> ecInterN1 =
-                    Util.getIntersectEdges(this.graph, ec, n1, label);
+                Util.getIntersectEdges(this.graph, n0, ec, label,
+                    intersectEdges);
+                Multiplicity n0InterEc =
+                    Multiplicity.getEdgeSetMult(intersectEdges);
+                Util.getIntersectEdges(this.graph, n1, ec, label,
+                    intersectEdges);
+                Multiplicity n1InterEc =
+                    Multiplicity.getEdgeSetMult(intersectEdges);
+                Util.getIntersectEdges(this.graph, ec, n0, label,
+                    intersectEdges);
+                Multiplicity ecInterN0 =
+                    Multiplicity.getEdgeSetMult(intersectEdges);
+                Util.getIntersectEdges(this.graph, ec, n1, label,
+                    intersectEdges);
+                Multiplicity ecInterN1 =
+                    Multiplicity.getEdgeSetMult(intersectEdges);
                 equiv =
-                    equiv && haveSameMult(n0InterEc, n1InterEc)
-                        && haveSameMult(ecInterN0, ecInterN1);
+                    equiv && n0InterEc.equals(n1InterEc)
+                        && ecInterN0.equals(ecInterN1);
                 if (!equiv) {
                     break labelLoop;
                 }

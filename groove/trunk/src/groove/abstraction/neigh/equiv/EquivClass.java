@@ -67,7 +67,11 @@ public final class EquivClass<T extends HostElement> extends MyHashSet<T>
             result = false;
         } else {
             EquivClass<?> other = (EquivClass<?>) o;
-            result = this.containsAll(other) && other.containsAll(this);
+            if (this.size() != other.size()) {
+                result = false;
+            } else {
+                result = this.containsAll(other) && other.containsAll(this);
+            }
         }
         // Check for consistency between equals and hashCode.
         assert (!result || this.hashCode() == o.hashCode());
@@ -149,7 +153,7 @@ public final class EquivClass<T extends HostElement> extends MyHashSet<T>
             // make the hash dependent of the ordering of elements.
             result += elem.hashCode();
         }
-        // Multiply here. This probably least to a worst hash function, but
+        // Multiply here. This probably leads to a worst hash function, but
         // nothing to do for now...
         return result * prime;
     }

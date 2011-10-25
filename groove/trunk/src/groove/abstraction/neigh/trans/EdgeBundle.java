@@ -37,6 +37,7 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public final class EdgeBundle {
+
     final EdgeMultDir direction;
     final ShapeNode node;
     final TypeLabel label;

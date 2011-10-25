@@ -57,7 +57,7 @@ public final class PreMatch {
     // ------------------------------------------------------------------------
 
     private PreMatch() {
-        // We make the constructor private to prevent the creation of objects
+        // We make the constructor private to prevent creation of objects
         // of this class.
     }
 
@@ -154,6 +154,7 @@ public final class PreMatch {
 
         if (complyToNodeMult) {
             RuleGraph lhs = match.getRule().lhs();
+            Set<RuleEdge> intersectEdges = new MyHashSet<RuleEdge>();
             // For all binary labels.
             outerLoop: for (TypeLabel label : Util.getBinaryLabels(shape)) {
                 // For all nodes of the LHS.
@@ -169,10 +170,10 @@ public final class PreMatch {
                         ShapeNode w = e.target();
                         Set<RuleNode> pInvW = map.getPreImages(w);
                         RuleLabel ruleLabel = new RuleLabel(label);
-                        Set<RuleEdge> vInterPInvW =
-                            Util.getIntersectEdges(lhs, v, pInvW, ruleLabel);
+                        Util.getIntersectEdges(lhs, v, pInvW, ruleLabel,
+                            intersectEdges);
                         Multiplicity leftMult =
-                            Multiplicity.getEdgeSetMult(vInterPInvW);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
 
                         EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
                         EdgeSignature es =
@@ -194,10 +195,10 @@ public final class PreMatch {
                         ShapeNode w = e.source();
                         Set<RuleNode> pInvW = map.getPreImages(w);
                         RuleLabel ruleLabel = new RuleLabel(label);
-                        Set<RuleEdge> pInvWInterV =
-                            Util.getIntersectEdges(lhs, pInvW, v, ruleLabel);
+                        Util.getIntersectEdges(lhs, pInvW, v, ruleLabel,
+                            intersectEdges);
                         Multiplicity leftMult =
-                            Multiplicity.getEdgeSetMult(pInvWInterV);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
 
                         EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
                         EdgeSignature es =

@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh;
 
-
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -29,6 +29,7 @@ public class PowerSetIterator<T> implements Iterator<Set<T>> {
     final T elems[];
     final int masks[];
     final int total;
+    final Set<T> resultSet;
     int curr;
 
     /**
@@ -45,6 +46,7 @@ public class PowerSetIterator<T> implements Iterator<Set<T>> {
             i++;
         }
         this.total = (int) Math.pow(2, this.elems.length);
+        this.resultSet = new MyHashSet<T>();
         if (skipEmpty) {
             this.curr = 1;
         } else {
@@ -59,14 +61,14 @@ public class PowerSetIterator<T> implements Iterator<Set<T>> {
 
     @Override
     public Set<T> next() {
-        Set<T> result = new MyHashSet<T>();
+        this.resultSet.clear();
         for (int i = 0; i < this.elems.length; i++) {
             if ((this.curr & this.masks[i]) == this.masks[i]) {
-                result.add(this.elems[i]);
+                this.resultSet.add(this.elems[i]);
             }
         }
         this.curr++;
-        return result;
+        return Collections.unmodifiableSet(this.resultSet);
     }
 
     @Override

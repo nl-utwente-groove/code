@@ -29,7 +29,7 @@ import groove.trans.RuleGraph;
 public class TotalAnchorFactory implements AnchorFactory<Rule> {
     /** Private empty constructor to make this a singleton class. */
     private TotalAnchorFactory() {
-        // empty constructor
+        // Empty constructor.
     }
 
     /**

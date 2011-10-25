@@ -44,7 +44,7 @@ public final class Util {
     // ------------------------------------------------------------------------
 
     private Util() {
-        // We make the constructor private to prevent the creation of objects
+        // We make the constructor private to prevent creation of objects
         // of this class.
     }
 
@@ -76,7 +76,7 @@ public final class Util {
 
     /** Returns the set of binary edges of the given graph. */
     @SuppressWarnings("unchecked")
-    public static <E extends HostEdge> Set<E> getBinaryEdges(HostGraph graph) {
+    private static <E extends HostEdge> Set<E> getBinaryEdges(HostGraph graph) {
         Set<E> result = new MyHashSet<E>();
         for (HostEdge edge : graph.edgeSet()) {
             if (edge.getRole() == EdgeRole.BINARY) {
@@ -93,42 +93,39 @@ public final class Util {
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph<?,?> graph, N src, N tgt, Label label) {
-        Set<E> result = new MyHashSet<E>();
+    public static <N extends Node,E extends Edge> void getIntersectEdges(
+            Graph<?,?> graph, N src, N tgt, Label label, Set<E> result) {
+        result.clear();
         for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label) && outEdge.target().equals(tgt)) {
                 result.add((E) outEdge);
             }
         }
-        return result;
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph<?,?> graph, Set<N> srcs, N tgt, Label label) {
-        Set<E> result = new MyHashSet<E>();
+    public static <N extends Node,E extends Edge> void getIntersectEdges(
+            Graph<?,?> graph, Set<N> srcs, N tgt, Label label, Set<E> result) {
+        result.clear();
         for (Edge inEdge : graph.inEdgeSet(tgt)) {
             if (inEdge.label().equals(label) && srcs.contains(inEdge.source())) {
                 result.add((E) inEdge);
             }
         }
-        return result;
     }
 
     /** Returns the set of edges between the given nodes. See Def. 1, pg. 6. */
     @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge> Set<E> getIntersectEdges(
-            Graph<?,?> graph, N src, Set<N> tgts, Label label) {
-        Set<E> result = new MyHashSet<E>();
+    public static <N extends Node,E extends Edge> void getIntersectEdges(
+            Graph<?,?> graph, N src, Set<N> tgts, Label label, Set<E> result) {
+        result.clear();
         for (Edge outEdge : graph.outEdgeSet(src)) {
             if (outEdge.label().equals(label)
                 && tgts.contains(outEdge.target())) {
                 result.add((E) outEdge);
             }
         }
-        return result;
     }
 
 }

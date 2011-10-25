@@ -65,7 +65,11 @@ public class EquivRelation<T extends HostElement> extends
             result = false;
         } else {
             EquivClass<?> other = (EquivClass<?>) o;
-            result = this.containsAll(other) && other.containsAll(this);
+            if (this.size() != other.size()) {
+                result = false;
+            } else {
+                result = this.containsAll(other) && other.containsAll(this);
+            }
         }
         // Check for consistency between equals and hashCode.
         assert (!result || this.hashCode() == o.hashCode());
