@@ -17,9 +17,15 @@
 package groove.abstraction.neigh.trans;
 
 import groove.abstraction.neigh.shape.Shape;
+import groove.trans.DeltaTarget;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.trans.RuleApplication;
+import groove.trans.RuleEffect;
 import groove.trans.RuleEvent;
+
+import java.util.Set;
 
 /**
  * Rule application object tuned for shapes.
@@ -38,6 +44,11 @@ public class ShapeRuleApplication extends RuleApplication {
     }
 
     @Override
+    protected Shape createTarget() {
+        return (Shape) this.getSource();
+    }
+
+    @Override
     protected HostGraph computeTarget() {
         HostGraph target = this.createTarget();
         this.applyDelta(target);
@@ -47,4 +58,30 @@ public class ShapeRuleApplication extends RuleApplication {
         return target;
     }
 
+    @Override
+    protected void mergeNodes(RuleEffect record, DeltaTarget target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void eraseNodes(RuleEffect record, DeltaTarget target) {
+        Shape shape = (Shape) target;
+        Set<HostNode> nodeSet = record.getErasedNodes();
+        // also remove the incident edges of the eraser nodes
+        if (nodeSet != null && !nodeSet.isEmpty()) {
+            // there is a choice here to query the graph for its incident edge
+            // set, which may be expensive if it hasn't yet been computed
+            // the alternative is to iterate over all edges of the source
+            // graph
+            for (HostNode node : nodeSet) {
+                for (HostEdge edge : shape.edgeSet(node)) {
+                    if (!record.isErasedEdge(edge)) {
+                        this.registerErasure(edge);
+                    }
+                }
+                shape.removeNode(node);
+            }
+        }
+        this.removeIsolatedValueNodes(target);
+    }
 }

@@ -267,7 +267,7 @@ public class RuleApplication implements DeltaApplier {
      * incident edges.
      * @param target the target to which to apply the changes
      */
-    private void eraseNodes(RuleEffect record, DeltaTarget target) {
+    protected void eraseNodes(RuleEffect record, DeltaTarget target) {
         Set<HostNode> nodeSet = record.getErasedNodes();
         // also remove the incident edges of the eraser nodes
         if (nodeSet != null && !nodeSet.isEmpty()) {
@@ -291,7 +291,7 @@ public class RuleApplication implements DeltaApplier {
     /**
      * Removes those value nodes whose incoming edges have all been erased.
      */
-    private void removeIsolatedValueNodes(DeltaTarget target) {
+    protected void removeIsolatedValueNodes(DeltaTarget target) {
         // for efficiency we don't use the getter but test for null
         if (this.isolatedValueNodes != null) {
             for (ValueNode node : this.isolatedValueNodes) {
@@ -323,7 +323,7 @@ public class RuleApplication implements DeltaApplier {
      * Callback method to notify that an edge has been erased. Used to ensure
      * that isolated value nodes are removed from the graph.
      */
-    private void registerErasure(HostEdge edge) {
+    protected void registerErasure(HostEdge edge) {
         HostNode target = edge.target();
         if (target instanceof ValueNode) {
             Set<HostEdge> edges = getValueNodeEdges((ValueNode) target);
@@ -338,7 +338,7 @@ public class RuleApplication implements DeltaApplier {
      * Performs the node (and edge) merging.
      * @param target the target to which to apply the changes
      */
-    private void mergeNodes(RuleEffect record, DeltaTarget target) {
+    protected void mergeNodes(RuleEffect record, DeltaTarget target) {
         // delete the merged nodes
         MergeMap mergeMap = record.getMergeMap();
         if (mergeMap != null) {
