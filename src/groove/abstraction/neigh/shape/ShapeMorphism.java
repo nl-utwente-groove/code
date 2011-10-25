@@ -260,9 +260,20 @@ public class ShapeMorphism extends HostGraphMorphism {
         }
 
         if (!(complyToEquivClass && complyToNodeMult && complyToEdgeMult)) {
+            System.out.println("Inconsistent shape morphism!");
+            System.out.println("From shape:");
+            System.out.println(from);
+            System.out.println("To shape:");
+            System.out.println(to);
+            System.out.println("Morphism:");
             System.out.println(this);
-            ShapePreviewDialog.showShape(from);
-            ShapePreviewDialog.showShape(to);
+            System.out.println("EC test: " + complyToEquivClass
+                + ", Node mult test: " + complyToNodeMult
+                + ", Edge mult test: " + complyToEdgeMult);
+            if (!java.awt.GraphicsEnvironment.isHeadless()) {
+                ShapePreviewDialog.showShape(from);
+                ShapePreviewDialog.showShape(to);
+            }
         }
 
         return complyToEquivClass && complyToNodeMult && complyToEdgeMult;

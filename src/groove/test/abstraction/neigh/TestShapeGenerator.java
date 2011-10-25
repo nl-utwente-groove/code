@@ -102,8 +102,8 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
-        assertEquals(31, generator.getStateCount());
-        assertEquals(85, generator.getTransitionCount());
+        assertEquals(21, generator.getStateCount());
+        assertEquals(57, generator.getTransitionCount());
     }
 
     @Test
@@ -128,44 +128,6 @@ public class TestShapeGenerator {
         generator.exploreGrammar(PRINT_RESULT);
         assertEquals(124, generator.getStateCount());
         assertEquals(588, generator.getTransitionCount());
-
-        /*Parameters.setNodeMultBound(3);
-        Parameters.setEdgeMultBound(3);
-
-        generator.reset();
-        generator.exploreGrammar(false);
-        assertEquals(255, generator.getStateCount());
-        assertEquals(1225, generator.getTransitionCount());*/
     }
-
-    /*@Test
-    public void testHopf() {
-        final String GRAMMAR = "junit/abstraction/hopf.gps";
-        final String START_GRAPH = "start";
-        ShapeGenerator generator;
-
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
-        Parameters.setAbsRadius(1);
-
-        generator = new ShapeGenerator();
-        generator.generate(GRAMMAR, START_GRAPH, false);
-        assertEquals(10, generator.getStateCount());
-        assertEquals(14, generator.getTransitionCount());
-
-        Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);
-        generator.reset();
-        generator.exploreGrammar(false);
-        assertEquals(99, generator.getStateCount());
-        assertEquals(326, generator.getTransitionCount());
-
-        Parameters.setNodeMultBound(3);
-        Parameters.setEdgeMultBound(3);
-        generator.reset();
-        generator.exploreGrammar(false);
-        assertEquals(149, generator.getStateCount());
-        assertEquals(494, generator.getTransitionCount());
-    }*/
 
 }

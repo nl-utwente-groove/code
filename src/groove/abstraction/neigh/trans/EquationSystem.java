@@ -247,9 +247,13 @@ public final class EquationSystem {
 
     private Solution tryToMaxSolution(Solution sol) {
         Solution result = sol;
-        if (this.stage == 1 && sol.ubEqs.isEmpty()) {
+        if (this.stage != 2 && sol.ubEqs.isEmpty()) {
             result = sol.clone();
-            result.setAllVarsToMax(this.edgeVarsMap.values());
+            if (this.stage == 1) {
+                result.setAllVarsToMax(this.edgeVarsMap.values());
+            } else if (this.stage == 3) {
+                result.setAllVarsToMax(this.nodeVarsMap.values());
+            }
         }
         return result;
     }
