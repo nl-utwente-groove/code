@@ -311,7 +311,9 @@ public final class Shape extends DefaultHostGraph {
     @Override
     public boolean removeEdge(HostEdge edge) {
         assert !this.isFixed();
-        assert this.containsEdge(edge);
+        if (!this.containsEdge(edge)) {
+            return false;
+        }
         ShapeEdge edgeS = (ShapeEdge) edge;
         if (edgeS.getRole() == BINARY) {
             for (EdgeMultDir direction : EdgeMultDir.values()) {
