@@ -54,8 +54,7 @@ public class ShapeState extends AbstractGraphState {
     /** Set of outgoing transitions from this state. */
     final ArrayList<GraphTransition> transitions;
     /** Set of possible subsumed states. */
-    // EDUARDO: Remove this from the state to same memory.
-    final ArrayList<ShapeState> subsumedStates;
+    ArrayList<ShapeState> subsumedStates;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -109,7 +108,6 @@ public class ShapeState extends AbstractGraphState {
             ((ShapeTransition) transition).setIndex(index);
         }
         this.transitions.add(transition);
-
         return true;
     }
 
@@ -149,18 +147,30 @@ public class ShapeState extends AbstractGraphState {
         }
     }
 
+    /** Basic getter method. */
     public ShapeState getSubsumptor() {
         return this.subsumptor;
     }
 
+    /** Returns true if this state is subsumed by another one in the GTS. */
     public boolean isSubsumed() {
         return this.subsumptor != null;
     }
 
+    /**
+     * Adds the given state to the list of states possibly subsumed by this
+     * one.
+     */
     public void addSubsumedState(ShapeState subsumed) {
         this.subsumedStates.add(subsumed);
     }
 
+    /**
+     * Goes over the list of possible subsumed states and mark them as such,
+     * trying to set this is state as their subsumptor. The list of possible
+     * subsumed states of this state is destroyed during this method call.
+     * Returns the number of states that were marked as subsumed.
+     */
     public int markSubsumedStates() {
         int markCount = 0;
         for (ShapeState subsumed : this.subsumedStates) {
@@ -168,7 +178,7 @@ public class ShapeState extends AbstractGraphState {
                 markCount++;
             }
         }
-        this.subsumedStates.clear();
+        this.subsumedStates = null;
         return markCount;
     }
 

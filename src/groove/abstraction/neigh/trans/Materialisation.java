@@ -467,6 +467,7 @@ public final class Materialisation {
         // the number of edges in the underlying graph structure of the shape.
         boolean complyToEdgeMult = true;
         if (complyToNodeMult && complyToEquivClass) {
+            Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
             // For all binary labels.
             for (TypeLabel label : Util.getBinaryLabels(this.shape)) {
                 // For all nodes v in the image of the LHS.
@@ -483,14 +484,14 @@ public final class Materialisation {
                             this.shape.getEdgeSignature(EdgeMultDir.INCOMING,
                                 v, label, ecW);
                         Multiplicity inMult = this.shape.getEdgeSigMult(inEs);
-                        Set<HostEdge> vInterW =
-                            Util.getIntersectEdges(this.shape, v, w, label);
+                        Util.getIntersectEdges(this.shape, v, w, label,
+                            intersectEdges);
                         Multiplicity vInterWMult =
-                            Multiplicity.getEdgeSetMult(vInterW);
-                        Set<HostEdge> wInterV =
-                            Util.getIntersectEdges(this.shape, w, v, label);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
+                        Util.getIntersectEdges(this.shape, w, v, label,
+                            intersectEdges);
                         Multiplicity wInterVMult =
-                            Multiplicity.getEdgeSetMult(wInterV);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
                         if (!outMult.equals(vInterWMult)
                             || !inMult.equals(wInterVMult)) {
                             complyToEdgeMult = false;
@@ -1017,13 +1018,15 @@ public final class Materialisation {
         Shape origShape = this.originalShape;
         this.updateShapeMorphism();
         ShapeMorphism morph = this.morph.clone();
+        Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
         // We need to check for nodes that got disconnected...
         for (ShapeNode origNode : origShape.nodeSet()) {
             for (ShapeNode node : morph.getPreImages(origNode)) {
                 for (EdgeSignature origEs : origShape.getEdgeSignatures(origNode)) {
                     // We know that the original signature has edges.
                     // Check if the pre-images also do.
-                    if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
+                    morph.getPreImages(shape, node, origEs, false, preImgEs);
+                    if (preImgEs.isEmpty()) {
                         // The node got disconnected and therefore cannot exist.
                         this.garbageNodes.add(node);
                     }

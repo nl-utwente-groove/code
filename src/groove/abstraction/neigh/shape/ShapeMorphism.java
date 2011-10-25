@@ -129,11 +129,11 @@ public class ShapeMorphism extends HostGraphMorphism {
     public static ShapeMorphism createIdentityMorphism(Shape from, Shape to) {
         ShapeMorphism result = from.getFactory().createMorphism();
         for (ShapeNode node : from.nodeSet()) {
-            assert to.nodeSet().contains(node);
+            assert to.containsNode(node);
             result.putNode(node, node);
         }
         for (ShapeEdge edge : from.edgeSet()) {
-            assert to.edgeSet().contains(edge);
+            assert to.containsEdge(edge);
             result.putEdge(edge, edge);
         }
         return result;
@@ -146,8 +146,9 @@ public class ShapeMorphism extends HostGraphMorphism {
      * be the given 'nodeS'.
      */
     public Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
-            EdgeSignature esT, boolean createWhenNonExistent) {
-        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
+            EdgeSignature esT, boolean createWhenNonExistent,
+            final Set<EdgeSignature> result) {
+        result.clear();
         EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
         for (ShapeNode esEcNodeT : esT.getEquivClass()) {
@@ -239,13 +240,13 @@ public class ShapeMorphism extends HostGraphMorphism {
         // Check for item 3.
         boolean complyToEdgeMult = true;
         if (complyToEquivClass && complyToNodeMult) {
+            Set<EdgeSignature> esSS = new MyHashSet<EdgeSignature>();
             dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
                 for (EdgeSignature esT : to.getEdgeMultMapKeys(direction)) {
                     Multiplicity esTMult = to.getEdgeSigMult(esT);
                     Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
                     for (ShapeNode nodeS : nodesS) {
-                        Set<EdgeSignature> esSS =
-                            this.getPreImages(from, nodeS, esT, true);
+                        this.getPreImages(from, nodeS, esT, true, esSS);
                         Multiplicity sum = from.getEdgeSigSetMultSum(esSS);
                         // EZ says: we need subsumption, not equality.
                         //if (!esTMult.equals(sum)) {

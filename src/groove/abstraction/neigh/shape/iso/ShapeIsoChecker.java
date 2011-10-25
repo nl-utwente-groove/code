@@ -37,6 +37,8 @@ import java.util.Map.Entry;
  */
 public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
+    private static final boolean CHECK_SUBSUMPTION = false;
+
     private static final int NON_ISO = 0x0;
     private static final int DOM_EQUALS_COD = 0x1;
     private static final int DOM_SUBSUMES_COD = 0x2;
@@ -99,10 +101,15 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return (result & DOM_SUBSUMES_COD) == DOM_SUBSUMES_COD;
     }
 
+    /** Returns true if the given result value has the equals flag set. */
     public boolean areEqual(int result) {
         return this.isDomEqualsCod(result);
     }
 
+    /** 
+     * Returns true if the given result indicates that the domain subsumes the
+     * co-domain and that they are not equal.
+     */
     public boolean isDomStrictlyLargerThanCod(int result) {
         return this.isDomSubsumesCod(result) && !this.isDomEqualsCod(result);
     }
@@ -113,6 +120,7 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return this.areEqual(result);
     }
 
+    /** Compares the two given shapes and returns a number formed by flags.*/
     public int compareShapes(Shape dom, Shape cod) {
         if (!this.passBasicChecks(dom, cod)) {
             return NON_ISO;
@@ -218,11 +226,13 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         if (domMult.equals(codMult)) {
             result |= DOM_EQUALS_COD;
         }
-        if (domMult.subsumes(codMult)) {
-            result |= DOM_SUBSUMES_COD;
-        }
-        if (codMult.subsumes(domMult)) {
-            result |= COD_SUBSUMES_DOM;
+        if (CHECK_SUBSUMPTION) {
+            if (domMult.subsumes(codMult)) {
+                result |= DOM_SUBSUMES_COD;
+            }
+            if (codMult.subsumes(domMult)) {
+                result |= COD_SUBSUMES_DOM;
+            }
         }
         return result;
     }

@@ -152,6 +152,7 @@ public final class AGTS extends GTS {
         Parameters.setAbsLabels(absLabels);
     }
 
+    /** Returns the number of states marked as subsumed. */
     public int getSubsumedStatesCount() {
         return this.subsumedCount;
     }

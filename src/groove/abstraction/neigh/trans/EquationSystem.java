@@ -474,6 +474,7 @@ public final class EquationSystem {
         Shape origShape = mat.getOriginalShape();
         ShapeMorphism morph = mat.getShapeMorphism().clone();
         Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
+        Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
 
         nodeLoop: for (ShapeNode node : shape.nodeSet()) {
             if (!shape.getNodeMult(node).isZeroPlus()) {
@@ -481,7 +482,8 @@ public final class EquationSystem {
             }
             assert node.equals(morph.getNode(node));
             esLoop: for (EdgeSignature origEs : origShape.getEdgeSignatures(node)) {
-                if (morph.getPreImages(shape, node, origEs, false).isEmpty()) {
+                morph.getPreImages(shape, node, origEs, false, preImgEs);
+                if (preImgEs.isEmpty()) {
                     // There are no signatures in the shape.
                     // Check the edges that will be handled on next stage.
                     for (ShapeEdge edge : nonSingEdges) {
@@ -1154,7 +1156,7 @@ public final class EquationSystem {
     // Solution
     // --------
 
-    static class Solution {
+    private static class Solution {
 
         final ValueRange lbValues[];
         final ValueRange ubValues[];
