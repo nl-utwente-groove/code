@@ -184,7 +184,8 @@ public class MatchApplier implements RuleEventApplier {
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        if (((GraphTransition) match).getAddedNodes().length == 0) {
+        HostNode[] addedNodes = ((GraphTransition) match).getAddedNodes();
+        if (addedNodes == null || addedNodes.length == 0) {
             return true;
         }
         RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
