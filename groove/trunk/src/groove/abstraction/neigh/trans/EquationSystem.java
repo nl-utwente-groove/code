@@ -22,6 +22,7 @@ import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -63,6 +64,8 @@ public final class EquationSystem {
     // ------------------------------------------------------------------------
     private Map<ShapeEdge,Duo<BoundVar>> edgeVarsMap;
     private ArrayList<ShapeEdge> varEdgeMap;
+    private Map<ShapeNode,Set<Set<BoundVar>>> garbageMap;
+    private Set<ShapeNode> garbageNodes;
     // ------------------------------------------------------------------------
     // Used in second stage.
     // ------------------------------------------------------------------------
@@ -356,6 +359,8 @@ public final class EquationSystem {
 
         this.edgeVarsMap = new MyHashMap<ShapeEdge,Duo<BoundVar>>();
         this.varEdgeMap = new ArrayList<ShapeEdge>();
+        boolean mayHaveGarbageNodes =
+            Parameters.getNodeMultBound() < Parameters.getEdgeMultBound();
         Shape shape = this.mat.getShape();
 
         // General case:
@@ -363,6 +368,11 @@ public final class EquationSystem {
         for (EdgeBundle bundle : this.mat.getBundles()) {
             int varsCount = bundle.getEdgesCount();
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
+            boolean nodeMayBecomeGarbage =
+                mayHaveGarbageNodes && nodeMult.isZeroPlus();
+            if (nodeMayBecomeGarbage) {
+                this.registerPossibleGarbageNode(bundle.node);
+            }
             Multiplicity edgeMult = bundle.origEsMult;
             Multiplicity constMult = nodeMult.times(edgeMult);
             // ... create a pair of equations.
@@ -408,6 +418,14 @@ public final class EquationSystem {
             this.varsCount++;
         }
         return vars;
+    }
+
+    private void registerPossibleGarbageNode(ShapeNode node) {
+        assert this.stage == 1;
+        if (this.garbageMap == null) {
+            this.garbageMap = new MyHashMap<ShapeNode,Set<Set<BoundVar>>>();
+        }
+        this.garbageMap.put(node, new MyHashSet<Set<BoundVar>>());
     }
 
     private boolean updateMatFirstStage(Materialisation mat, Solution sol) {
@@ -462,7 +480,7 @@ public final class EquationSystem {
         }
 
         // Remove nodes that cannot exist.
-        this.clearUnconnectedNodes(mat, nonSingBundles, nonSingEdges);
+        this.collectGarbageNodes(mat);
 
         mat.moveToSecondStage(nonSingBundles);
 
@@ -470,53 +488,16 @@ public final class EquationSystem {
     }
 
     // See materialisation test case 11.
-    private void clearUnconnectedNodes(Materialisation mat,
-            Set<EdgeBundle> nonSingBundles, Set<ShapeEdge> nonSingEdges) {
+    private void collectGarbageNodes(Materialisation mat) {
         assert this.stage == 1;
-
-        Shape shape = mat.getShape();
-        Shape origShape = mat.getOriginalShape();
-        ShapeMorphism morph = mat.getShapeMorphism().clone();
-        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
-        Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
-
-        nodeLoop: for (ShapeNode node : shape.nodeSet()) {
-            if (!shape.getNodeMult(node).isZeroPlus()) {
-                continue nodeLoop;
-            }
-            assert node.equals(morph.getNode(node));
-            esLoop: for (EdgeSignature origEs : origShape.getEdgeSignatures(node)) {
-                morph.getPreImages(shape, node, origEs, false, preImgEs);
-                if (preImgEs.isEmpty()) {
-                    // There are no signatures in the shape.
-                    // Check the edges that will be handled on next stage.
-                    for (ShapeEdge edge : nonSingEdges) {
-                        ShapeEdge origEdge = morph.getEdge(edge);
-                        if (origEs.contains(origEdge)) {
-                            // The node is connected.
-                            continue esLoop;
-                        }
-                    }
-                    // The node is unconnected. Its multiplicity can
-                    // only be zero.
-                    toRemove.add(node);
-                    continue nodeLoop;
-                }
-            }
+        if (this.garbageNodes == null) {
+            return;
         }
-
-        for (ShapeNode nodeToRemove : toRemove) {
-            mat.removeUnconnectedNode(nodeToRemove);
-            for (EdgeBundle bundle : nonSingBundles) {
-                Iterator<ShapeEdge> iter = bundle.possibleEdges.iterator();
-                while (iter.hasNext()) {
-                    ShapeEdge edge = iter.next();
-                    if (edge.source().equals(nodeToRemove)
-                        || edge.target().equals(nodeToRemove)) {
-                        iter.remove();
-                    }
-                }
-            }
+        Shape shape = mat.getShape();
+        for (ShapeNode node : this.garbageNodes) {
+            assert shape.getNodeMult(node).isZeroPlus();
+            assert shape.isUnconnected(node);
+            mat.removeUnconnectedNode(node);
         }
     }
 

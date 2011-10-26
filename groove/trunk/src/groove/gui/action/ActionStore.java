@@ -660,6 +660,22 @@ public class ActionStore implements SimulatorListener {
     private RenumberGrammarAction renumberAction;
 
     /**
+     * Returns the search action permanently associated with this simulator.
+     */
+    public SearchAction getSearchAction() {
+        // lazily create the action
+        if (this.searchAction == null) {
+            this.searchAction = new SearchAction(this.simulator);
+        }
+        return this.searchAction;
+    }
+
+    /**
+     * The search action permanently associated with this simulator.
+     */
+    private SearchAction searchAction;
+
+    /**
      * Returns the graph save action permanently associated with this simulator.
      */
     public SaveGrammarAction getSaveGrammarAction() {

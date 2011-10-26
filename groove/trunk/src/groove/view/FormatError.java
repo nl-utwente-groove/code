@@ -17,9 +17,12 @@
 package groove.view;
 
 import groove.graph.Element;
+import groove.gui.ListPanel.SelectionEntry;
+import groove.gui.jgraph.JAttr;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +33,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FormatError implements Comparable<FormatError> {
+public class FormatError implements Comparable<FormatError>, SelectionEntry {
     /** Constructs an error consisting of a string message. */
     public FormatError(String message) {
         this.message = message;
@@ -138,6 +141,30 @@ public class FormatError implements Comparable<FormatError> {
         return result;
     }
 
+    public Color getNormalBackground() {
+        return JAttr.ERROR_NORMAL_BACKGROUND;
+    }
+
+    public Color getNormalForeground() {
+        return JAttr.ERROR_NORMAL_FOREGROUND;
+    }
+
+    public Color getFocusBackground() {
+        return JAttr.ERROR_FOCUS_BACKGROUND;
+    }
+
+    public Color getFocusForeground() {
+        return JAttr.ERROR_FOCUS_FOREGROUND;
+    }
+
+    public Color getSelectBackground() {
+        return JAttr.ERROR_SELECT_BACKGROUND;
+    }
+
+    public Color getSelectForeground() {
+        return JAttr.ERROR_SELECT_FOREGROUND;
+    }
+
     /** Returns the control view in which the error occurs. May be {@code null}. */
     public final ControlModel getControl() {
         return this.control;
@@ -242,4 +269,7 @@ public class FormatError implements Comparable<FormatError> {
     private FormatError subError;
     /** The error message. */
     private final String message;
+
+    /** Prototype instance of this class. */
+    public static final FormatError prototype = new FormatError("");
 }
