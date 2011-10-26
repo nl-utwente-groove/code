@@ -641,6 +641,8 @@ public class Options implements Cloneable {
     public static final String SHOW_SUPERTYPES_ACTION_NAME = "Show supertypes";
     /** Snap to grid action name */
     public static final String SNAP_TO_GRID_NAME = "Snap to grid";
+    /** Search action name */
+    public static final String SEARCH_NAME = "Search ...";
     /**
      * Edit action name
      */
@@ -782,6 +784,9 @@ public class Options implements Cloneable {
     /** Save keystroke */
     public static final KeyStroke SAVE_GRAMMAR_AS_KEY =
         KeyStroke.getKeyStroke("control shift S");
+    /** Search keystroke */
+    public static final KeyStroke SEARCH_KEY =
+        KeyStroke.getKeyStroke("control F");
     /** Select mode keystroke */
     public static final KeyStroke SELECT_MODE_KEY =
         KeyStroke.getKeyStroke("alt S");

@@ -96,11 +96,12 @@ abstract public class ResourceTab extends JPanel implements Tab {
     }
 
     /** Lazily creates and returns the error panel. */
-    final protected ErrorListPanel getErrorPanel() {
+    final protected ListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            this.errorPanel =
-                new ErrorListPanel(String.format("Errors in %s",
-                    getResourceKind().getDescription()));
+            this.errorPanel = new ListPanel();
+            this.errorPanel.setTitle(String.format("Errors in %s",
+                getResourceKind().getDescription()));
+            this.errorPanel.setEntryType(FormatError.prototype);
             this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
@@ -119,7 +120,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     final protected void updateErrors() {
-        getErrorPanel().setErrors(getErrors());
+        getErrorPanel().setEntries(getErrors());
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);
@@ -312,7 +313,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
     /** Panel containing the edit area and error panel. */
     private JSplitPane mainPanel;
     /** Panel displaying format error messages. */
-    private ErrorListPanel errorPanel;
+    private ListPanel errorPanel;
     /** The component that constitutes the tab when this panel is used in a {@link JTabbedPane}. */
     private TabLabel tabLabel;
 

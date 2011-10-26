@@ -39,6 +39,7 @@ import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
 import groove.view.FormatException;
+import groove.view.SearchResult;
 import groove.view.aspect.Expression.Call;
 import groove.view.aspect.Expression.Const;
 import groove.view.aspect.Expression.Field;
@@ -90,6 +91,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
         }
         return result;
+    }
+
+    public void getSearchResults(TypeLabel label, List<SearchResult> results) {
+        SearchResult result = new SearchResult("Dummy search result:", this);
+        results.add(result);
     }
 
     /**

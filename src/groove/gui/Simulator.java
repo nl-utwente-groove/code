@@ -29,6 +29,7 @@ import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
 import groove.gui.Display.Tab;
+import groove.gui.ListPanel.SelectionEntry;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
@@ -40,6 +41,7 @@ import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.HostModel;
+import groove.view.SearchResult;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -49,6 +51,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
@@ -171,14 +174,30 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(List<FormatError> grammarErrors) {
-        getErrorPanel().setErrors(grammarErrors);
+        getListPanel().setTitle(getErrorListPanelTitle());
+        getListPanel().setEntryType(FormatError.prototype);
+        setEntriesAndAdjustListPanel(grammarErrors);
+    }
+
+    /**
+      * Displays a list of search results.
+      */
+    public void setSearchResults(List<SearchResult> searchResults) {
+        getListPanel().setTitle(getSearchListPanelTitle());
+        getListPanel().setEntryType(SearchResult.prototype);
+        setEntriesAndAdjustListPanel(searchResults);
+    }
+
+    private void setEntriesAndAdjustListPanel(
+            Collection<? extends SelectionEntry> entries) {
+        getListPanel().setEntries(entries);
         JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
-        if (getErrorPanel().isVisible()) {
-            contentPane.setBottomComponent(getErrorPanel());
+        if (getListPanel().isVisible()) {
+            contentPane.setBottomComponent(getListPanel());
             contentPane.setDividerSize(1);
             contentPane.resetToPreferredSizes();
         } else {
-            contentPane.remove(getErrorPanel());
+            contentPane.remove(getListPanel());
             contentPane.setDividerSize(0);
         }
     }
@@ -269,27 +288,34 @@ public class Simulator implements SimulatorListener {
         return this.simulatorPanel;
     }
 
-    private ErrorListPanel getErrorPanel() {
-        if (this.errorPanel == null) {
-            final ErrorListPanel result =
-                this.errorPanel = new ErrorListPanel("Errors in grammar");
-            result.addSelectionListener(createErrorListener());
+    private ListPanel getListPanel() {
+        if (this.listPanel == null) {
+            this.listPanel = new ListPanel();
+            this.listPanel.addSelectionListener(createListListener());
         }
-        return this.errorPanel;
+        return this.listPanel;
+    }
+
+    private String getErrorListPanelTitle() {
+        return "Errors in grammar";
+    }
+
+    private String getSearchListPanelTitle() {
+        return "Search result";
     }
 
     /**
      * Creates an observer for the error panel that will select the
      * erroneous part of the resource upon selection of an error.
      */
-    private Observer createErrorListener() {
+    private Observer createListListener() {
         return new Observer() {
             @Override
             public void update(Observable observable, Object arg) {
                 if (arg != null) {
-                    FormatError error = (FormatError) arg;
-                    ResourceKind resource = error.getResourceKind();
-                    String name = error.getResourceName();
+                    SelectionEntry entry = (SelectionEntry) arg;
+                    ResourceKind resource = entry.getResourceKind();
+                    String name = entry.getResourceName();
                     if (resource != null) {
                         getModel().doSelect(resource, name);
                         Tab resourceTab =
@@ -303,15 +329,18 @@ public class Simulator implements SimulatorListener {
                                 jGraph = ((GraphTab) resourceTab).getJGraph();
                             }
                             // select the error cell and switch to the panel
-                            for (Element errorObject : error.getElements()) {
-                                if (jGraph.selectJCell(errorObject)) {
+                            for (Element cell : entry.getElements()) {
+                                if (jGraph.selectJCell(cell)) {
                                     break;
                                 }
                             }
-                        } else if (error.getNumbers().size() > 1) {
-                            int line = error.getNumbers().get(0);
-                            int column = error.getNumbers().get(1);
-                            ((TextTab) resourceTab).select(line, column);
+                        } else if (arg instanceof FormatError) {
+                            FormatError error = (FormatError) arg;
+                            if (error.getNumbers().size() > 1) {
+                                int line = error.getNumbers().get(0);
+                                int column = error.getNumbers().get(1);
+                                ((TextTab) resourceTab).select(line, column);
+                            }
                         }
                     }
                 }
@@ -319,8 +348,8 @@ public class Simulator implements SimulatorListener {
         };
     }
 
-    /** Error display. */
-    private ErrorListPanel errorPanel;
+    /** List display. */
+    private ListPanel listPanel;
 
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
@@ -441,6 +470,7 @@ public class Simulator implements SimulatorListener {
 
         result.add(this.actions.getRelabelAction());
         result.add(this.actions.getRenumberAction());
+        result.add(this.actions.getSearchAction());
 
         result.addSeparator();
 
