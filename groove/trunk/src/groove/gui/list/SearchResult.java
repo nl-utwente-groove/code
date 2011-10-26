@@ -14,15 +14,13 @@
  *
  * $Id$
  */
-package groove.view;
+package groove.gui.list;
 
 import groove.graph.Element;
-import groove.gui.ListPanel.SelectionEntry;
-import groove.gui.jgraph.JAttr;
+import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ import java.util.List;
  * Class encoding a single message reporting a search result in a graph view.
  * @author Eduardo Zambon
  */
-public class SearchResult implements SelectionEntry {
+public class SearchResult implements SelectableListEntry {
     /** Constructs an error consisting of a string message. */
     public SearchResult(String message) {
         this.message = message;
@@ -88,30 +86,6 @@ public class SearchResult implements SelectionEntry {
         return this.message;
     }
 
-    public Color getNormalBackground() {
-        return JAttr.ERROR_NORMAL_BACKGROUND;
-    }
-
-    public Color getNormalForeground() {
-        return JAttr.ERROR_NORMAL_FOREGROUND;
-    }
-
-    public Color getFocusBackground() {
-        return JAttr.ERROR_FOCUS_BACKGROUND;
-    }
-
-    public Color getFocusForeground() {
-        return JAttr.ERROR_FOCUS_FOREGROUND;
-    }
-
-    public Color getSelectBackground() {
-        return JAttr.ERROR_SELECT_BACKGROUND;
-    }
-
-    public Color getSelectForeground() {
-        return JAttr.ERROR_SELECT_FOREGROUND;
-    }
-
     /** Returns the graph in which the error occurs. May be {@code null}. */
     public final AspectGraph getGraph() {
         return this.graph;
@@ -143,6 +117,4 @@ public class SearchResult implements SelectionEntry {
     /** The result message. */
     private final String message;
 
-    /** Prototype instance of this class. */
-    public static final SearchResult prototype = new SearchResult("");
 }
