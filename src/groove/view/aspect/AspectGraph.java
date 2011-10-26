@@ -36,10 +36,10 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
+import groove.gui.list.SearchResult;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.SearchResult;
 import groove.view.aspect.Expression.Call;
 import groove.view.aspect.Expression.Const;
 import groove.view.aspect.Expression.Field;
@@ -93,9 +93,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
+    /**
+     * Collects search results matching the given label into the given list. 
+     */
     public void getSearchResults(TypeLabel label, List<SearchResult> results) {
-        SearchResult result = new SearchResult("Dummy search result:", this);
-        results.add(result);
+        String msg = getRole().getDescription() + " '%s' - Element '%s'";
+        for (AspectEdge edge : edgeSet()) {
+            if ((edge.getRuleLabel() != null && label.equals(edge.getRuleLabel().getTypeLabel()))
+                || label.equals(edge.getTypeLabel())) {
+                results.add(new SearchResult(msg, this.getName(), edge, this));
+            }
+        }
     }
 
     /**

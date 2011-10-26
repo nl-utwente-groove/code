@@ -4,14 +4,17 @@ import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.FreshNameDialog;
+import groove.gui.list.SearchResult;
 import groove.trans.ResourceKind;
-import groove.view.SearchResult;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 /**
  * Action to search for a label in the graphs.
@@ -28,20 +31,26 @@ public class SearchAction extends SimulatorAction {
         String text = askLabel();
         TypeLabel label = TypeLabel.createLabel(text);
         List<SearchResult> searchResults = new ArrayList<SearchResult>();
+        GrammarModel grammar = getSimulator().getModel().getGrammar();
         for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
             if (!kind.isGraphBased()) {
                 continue;
             }
-            for (AspectGraph graph : this.getSimulator().getModel().getStore().getGraphs(
-                kind).values()) {
+            for (String name : grammar.getNames(kind)) {
+                AspectGraph graph =
+                    grammar.getGraphResource(kind, name).getSource();
                 graph.getSearchResults(label, searchResults);
             }
+        }
+        if (searchResults.isEmpty()) {
+            JOptionPane.showMessageDialog(getFrame(),
+                "No results found for label '" + label + "'.");
         }
         getSimulator().setSearchResults(searchResults);
     }
 
     final private String askLabel() {
-        FreshNameDialog<String> nameDialog =
+        FreshNameDialog<String> dialog =
             new FreshNameDialog<String>(Collections.<String>emptySet(), "",
                 false) {
                 @Override
@@ -49,8 +58,8 @@ public class SearchAction extends SimulatorAction {
                     return name;
                 }
             };
-        nameDialog.showDialog(getFrame(), "Label to search: ");
-        return nameDialog.getName();
+        dialog.showDialog(getFrame(), "Label to search");
+        return dialog.getName();
     }
 
 }

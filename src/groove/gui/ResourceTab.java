@@ -20,6 +20,8 @@ import groove.gui.Display.Tab;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
+import groove.gui.list.ErrorListPanel;
+import groove.gui.list.ListPanel;
 import groove.trans.ResourceKind;
 import groove.view.FormatError;
 import groove.view.ResourceModel;
@@ -98,10 +100,9 @@ abstract public class ResourceTab extends JPanel implements Tab {
     /** Lazily creates and returns the error panel. */
     final protected ListPanel getErrorPanel() {
         if (this.errorPanel == null) {
-            this.errorPanel = new ListPanel();
-            this.errorPanel.setTitle(String.format("Errors in %s",
-                getResourceKind().getDescription()));
-            this.errorPanel.setEntryType(FormatError.prototype);
+            this.errorPanel =
+                new ErrorListPanel(String.format("Errors in %s",
+                    getResourceKind().getDescription()));
             this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;

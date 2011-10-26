@@ -29,19 +29,22 @@ import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
 import groove.gui.Display.Tab;
-import groove.gui.ListPanel.SelectionEntry;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.list.ErrorListPanel;
+import groove.gui.list.ListPanel.SelectableListEntry;
+import groove.gui.list.ListTabbedPane;
+import groove.gui.list.SearchResult;
+import groove.gui.list.SearchResultListPanel;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.HostModel;
-import groove.view.SearchResult;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -51,7 +54,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
@@ -174,30 +176,27 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(List<FormatError> grammarErrors) {
-        getListPanel().setTitle(getErrorListPanelTitle());
-        getListPanel().setEntryType(FormatError.prototype);
-        setEntriesAndAdjustListPanel(grammarErrors);
+        getErrorListPanel().setEntries(grammarErrors);
+        adjustListPanel();
     }
 
     /**
       * Displays a list of search results.
       */
     public void setSearchResults(List<SearchResult> searchResults) {
-        getListPanel().setTitle(getSearchListPanelTitle());
-        getListPanel().setEntryType(SearchResult.prototype);
-        setEntriesAndAdjustListPanel(searchResults);
+        getSearchResultListPanel().setEntries(searchResults);
+        adjustListPanel();
     }
 
-    private void setEntriesAndAdjustListPanel(
-            Collection<? extends SelectionEntry> entries) {
-        getListPanel().setEntries(entries);
+    private void adjustListPanel() {
         JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
-        if (getListPanel().isVisible()) {
-            contentPane.setBottomComponent(getListPanel());
+        getListTabbedPane().adjustVisibility();
+        if (getListTabbedPane().isVisible()) {
+            contentPane.setBottomComponent(getListTabbedPane());
             contentPane.setDividerSize(1);
             contentPane.resetToPreferredSizes();
         } else {
-            contentPane.remove(getListPanel());
+            contentPane.remove(getListTabbedPane());
             contentPane.setDividerSize(0);
         }
     }
@@ -288,20 +287,23 @@ public class Simulator implements SimulatorListener {
         return this.simulatorPanel;
     }
 
-    private ListPanel getListPanel() {
-        if (this.listPanel == null) {
-            this.listPanel = new ListPanel();
-            this.listPanel.addSelectionListener(createListListener());
+    private ErrorListPanel getErrorListPanel() {
+        return getListTabbedPane().getErrorListPanel();
+    }
+
+    private SearchResultListPanel getSearchResultListPanel() {
+        return getListTabbedPane().getSearchResultListPanel();
+    }
+
+    private ListTabbedPane getListTabbedPane() {
+        if (this.listTabbedPane == null) {
+            this.listTabbedPane = new ListTabbedPane();
+            this.listTabbedPane.getErrorListPanel().addSelectionListener(
+                createListListener());
+            this.listTabbedPane.getSearchResultListPanel().addSelectionListener(
+                createListListener());
         }
-        return this.listPanel;
-    }
-
-    private String getErrorListPanelTitle() {
-        return "Errors in grammar";
-    }
-
-    private String getSearchListPanelTitle() {
-        return "Search result";
+        return this.listTabbedPane;
     }
 
     /**
@@ -313,7 +315,7 @@ public class Simulator implements SimulatorListener {
             @Override
             public void update(Observable observable, Object arg) {
                 if (arg != null) {
-                    SelectionEntry entry = (SelectionEntry) arg;
+                    SelectableListEntry entry = (SelectableListEntry) arg;
                     ResourceKind resource = entry.getResourceKind();
                     String name = entry.getResourceName();
                     if (resource != null) {
@@ -349,7 +351,7 @@ public class Simulator implements SimulatorListener {
     }
 
     /** List display. */
-    private ListPanel listPanel;
+    private ListTabbedPane listTabbedPane;
 
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {

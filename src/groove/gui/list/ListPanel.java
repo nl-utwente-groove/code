@@ -12,12 +12,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package groove.gui;
+package groove.gui.list;
 
 import groove.graph.Element;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
-import groove.view.FormatError;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,14 +46,15 @@ import javax.swing.event.ListSelectionListener;
  * @author Arend Rensink
  * @version $Revision: 2142 $
  */
-public class ListPanel extends JPanel {
+public abstract class ListPanel extends JPanel {
     /**
      * Constructs a new panel.
      */
-    public ListPanel() {
+    public ListPanel(String title) {
         super(new BorderLayout());
-        this.protoEntry = FormatError.prototype;
-        add(getTitle(), BorderLayout.NORTH);
+        if (title != null) {
+            add(getTitle(title), BorderLayout.NORTH);
+        }
         JScrollPane scrollPane = new JScrollPane(getEntryArea());
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setPreferredSize(new Dimension(0, 70));
@@ -66,7 +66,7 @@ public class ListPanel extends JPanel {
      * Shows or appends a list of selection messages in the window.
      * @param entries the list of messages to be shown
      */
-    public void setEntries(Collection<? extends SelectionEntry> entries) {
+    public void setEntries(Collection<? extends SelectableListEntry> entries) {
         if (entries.isEmpty()) {
             if (isVisible()) {
                 setVisible(false);
@@ -103,13 +103,13 @@ public class ListPanel extends JPanel {
     }
 
     /** Returns the currently selected entry. */
-    public SelectionEntry getSelectedEntry() {
-        return (SelectionEntry) getEntryArea().getSelectedValue();
+    public SelectableListEntry getSelectedEntry() {
+        return (SelectableListEntry) getEntryArea().getSelectedValue();
     }
 
     @Override
     public Dimension getPreferredSize() {
-        if (getEntryArea().getModel().getSize() == 0) {
+        if (getContentSize() == 0) {
             return new Dimension();
         } else {
             return super.getPreferredSize();
@@ -118,51 +118,44 @@ public class ListPanel extends JPanel {
 
     @Override
     public Dimension getMaximumSize() {
-        if (getEntryArea().getModel().getSize() == 0) {
+        if (getContentSize() == 0) {
             return new Dimension();
         } else {
             return super.getMaximumSize();
         }
     }
 
+    /** Returns true if the list has entries. */
+    public boolean hasContent() {
+        return getContentSize() > 0;
+    }
+
+    private int getContentSize() {
+        return getEntryArea().getModel().getSize();
+    }
+
     /** Lazily creates and returns the panel. */
     private JList getEntryArea() {
         if (this.entryArea == null) {
-            this.entryArea = new JList();
+            JList result = this.entryArea = new JList();
+            result.setBackground(getNormalBackground());
+            result.setForeground(getNormalForeground());
+            result.setSelectionBackground(getFocusBackground());
+            result.setSelectionForeground(getFocusForeground());
+            result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            result.setCellRenderer(new CellRenderer());
         }
         return this.entryArea;
     }
 
-    private void refreshEntryArea() {
-        this.entryArea.setBackground(this.protoEntry.getNormalBackground());
-        this.entryArea.setForeground(this.protoEntry.getNormalForeground());
-        this.entryArea.setSelectionBackground(this.protoEntry.getFocusBackground());
-        this.entryArea.setSelectionForeground(this.protoEntry.getFocusForeground());
-        this.entryArea.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.entryArea.setCellRenderer(new CellRenderer());
-    }
-
     /** Lazily creates and returns the title label. */
-    private JLabel getTitle() {
+    private JLabel getTitle(String text) {
         if (this.title == null) {
-            this.title = new JLabel();
+            this.title =
+                new JLabel(
+                    HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(text)));
         }
         return this.title;
-    }
-
-    /** Sets the panel title to the given text. */
-    public void setTitle(String text) {
-        getTitle().setText(
-            HTMLConverter.HTML_TAG.on(HTMLConverter.STRONG_TAG.on(text)));
-    }
-
-    /**
-     * Sets the entry type of the list to the given one.
-     * A call to {@link #setEntries(Collection)} should follow immediately.
-     */
-    public void setEntryType(SelectionEntry entryType) {
-        this.protoEntry = entryType;
-        this.refreshEntryArea();
     }
 
     /** Returns the index of the list component under a given point, or
@@ -175,12 +168,28 @@ public class ListPanel extends JPanel {
         return cellSelected ? result : -1;
     }
 
+    /** Normal background color for entries. */
+    protected abstract Color getNormalBackground();
+
+    /** Normal foreground color for entries. */
+    protected abstract Color getNormalForeground();
+
+    /** Focus background color for entries. */
+    protected abstract Color getFocusBackground();
+
+    /** Focus foreground color for entries. */
+    protected abstract Color getFocusForeground();
+
+    /** Select background color for entries. */
+    protected abstract Color getSelectBackground();
+
+    /** Select foreground color for entries. */
+    protected abstract Color getSelectForeground();
+
     /** The text area containing the messages. */
     private JList entryArea;
     /** The title of the panel. */
     private JLabel title;
-    /** A prototype object of the entries to be used. */
-    private SelectionEntry protoEntry;
 
     private class CellRenderer extends DefaultListCellRenderer {
 
@@ -195,34 +204,15 @@ public class ListPanel extends JPanel {
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, false);
             if (isSelected && !cellHasFocus) {
-                result.setBackground(ListPanel.this.protoEntry.getSelectBackground());
-                result.setForeground(ListPanel.this.protoEntry.getSelectForeground());
+                result.setBackground(ListPanel.this.getSelectBackground());
+                result.setForeground(ListPanel.this.getSelectForeground());
             }
             return result;
         }
     }
 
     /** Interface for entries of the list. */
-    public interface SelectionEntry {
-
-        /** Normal background color for entries. */
-        public Color getNormalBackground();
-
-        /** Normal foreground color for entries. */
-        public Color getNormalForeground();
-
-        /** Focus background color for entries. */
-        public Color getFocusBackground();
-
-        /** Focus foreground color for entries. */
-        public Color getFocusForeground();
-
-        /** Select background color for entries. */
-        public Color getSelectBackground();
-
-        /** Select foreground color for entries. */
-        public Color getSelectForeground();
-
+    public interface SelectableListEntry {
         /** Returns the resource kind for which this entry occurs. */
         public ResourceKind getResourceKind();
 
