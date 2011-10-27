@@ -37,7 +37,8 @@ import java.util.Map.Entry;
  */
 public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
-    private static final boolean CHECK_SUBSUMPTION = false;
+    /** Flag to indicate whether to use subsumption or not. */
+    public static final boolean CHECK_SUBSUMPTION = true;
 
     private static final int NON_ISO = 0x0;
     private static final int DOM_EQUALS_COD = 0x1;

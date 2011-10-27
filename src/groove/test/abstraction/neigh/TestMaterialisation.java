@@ -209,7 +209,7 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(1, mats.size());
+            assertEquals(2, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 assertEquals(9, matShape.nodeSet().size());
@@ -266,7 +266,7 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertEquals(1, mats.size());
+            assertEquals(8, mats.size());
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 assertEquals(14, matShape.nodeSet().size());
