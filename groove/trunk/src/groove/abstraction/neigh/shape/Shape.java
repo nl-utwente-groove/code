@@ -47,6 +47,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.util.Duo;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -344,15 +345,35 @@ public final class Shape extends DefaultHostGraph {
     // Other methods
     // ------------------------------------------------------------------------
 
-    private ShapeNode createNode() {
-        ShapeNode freshNode =
-            (ShapeNode) createNode(getNodeCounter().getNext());
+    @Override
+    public ShapeNode addNode() {
+        int nodeNr = this.getFirstFreeNodeNumber();
+        ShapeNode freshNode = (ShapeNode) createNode(nodeNr);
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         // EZ says: don't make this call here since it might mess with the
         // shape structure...
         // addNode(freshNode);
         return freshNode;
+    }
+
+    private int getFirstFreeNodeNumber() {
+        int numbers[] = new int[this.nodeCount()];
+        int i = 0;
+        for (Node node : this.nodeSet()) {
+            numbers[i] = node.getNumber();
+            i++;
+        }
+        Arrays.sort(numbers);
+        int result = 0;
+        for (i = 0; i < numbers.length; i++) {
+            if (result == numbers[i]) {
+                result++;
+            } else {
+                break;
+            }
+        }
+        return result;
     }
 
     /** Creates an edge accordingly to the given direction. */
@@ -441,7 +462,7 @@ public final class Shape extends DefaultHostGraph {
             // graph nodes are from a different type and therefore are
             // stored in a different node factory. Thus we have to create
             // shape nodes.
-            ShapeNode nodeS = this.createNode();
+            ShapeNode nodeS = this.addNode();
             // Add a shape node to the shape.
             // Call the super method because we have additional information on
             // the node to be added.
@@ -955,7 +976,7 @@ public final class Shape extends DefaultHostGraph {
         Iterator<RuleNode> iter = nodesR.iterator();
         for (int i = 0; i < copies; i++) {
             RuleNode nodeR = iter.next();
-            ShapeNode newNode = this.createNode();
+            ShapeNode newNode = this.addNode();
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
             super.addNode(newNode);
@@ -1119,7 +1140,7 @@ public final class Shape extends DefaultHostGraph {
         EquivClass<ShapeNode> newEc = oldEc.clone();
         for (int i = 0; i < copies - 1; i++) {
             // Create a new shape node.
-            ShapeNode newNode = this.createNode();
+            ShapeNode newNode = this.addNode();
             // Add the new node to the shape. Call the super method because
             // we have additional information on the node to be added.
             super.addNode(newNode);

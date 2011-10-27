@@ -69,10 +69,6 @@ public class ShapeRuleApplication extends RuleApplication {
         Set<HostNode> nodeSet = record.getErasedNodes();
         // also remove the incident edges of the eraser nodes
         if (nodeSet != null && !nodeSet.isEmpty()) {
-            // there is a choice here to query the graph for its incident edge
-            // set, which may be expensive if it hasn't yet been computed
-            // the alternative is to iterate over all edges of the source
-            // graph
             for (HostNode node : nodeSet) {
                 for (HostEdge edge : shape.edgeSet(node)) {
                     if (!record.isErasedEdge(edge)) {
