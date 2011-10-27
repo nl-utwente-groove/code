@@ -320,6 +320,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * equivalence relation on nodes. The returned equivalence class is
      * neither stored nor cached, so call this method consciously.
      */
+    // EDUARDO: Performance bottleneck
     private EquivClass<HostEdge> getEdgeEquivClass(HostEdge edge) {
         EquivClass<HostEdge> ec = new EquivClass<HostEdge>();
         ec.add(edge);
