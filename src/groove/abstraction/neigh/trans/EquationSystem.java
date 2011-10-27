@@ -64,8 +64,6 @@ public final class EquationSystem {
     // ------------------------------------------------------------------------
     private Map<ShapeEdge,Duo<BoundVar>> edgeVarsMap;
     private ArrayList<ShapeEdge> varEdgeMap;
-    private Map<ShapeNode,Set<Set<BoundVar>>> garbageMap;
-    private Set<ShapeNode> garbageNodes;
     // ------------------------------------------------------------------------
     // Used in second stage.
     // ------------------------------------------------------------------------
@@ -319,8 +317,13 @@ public final class EquationSystem {
 
     private Duo<Equation> createEquations(int varsCount, int lbConst,
             int ubConst) {
-        Equation lbEq = new Equation(BoundType.LB, varsCount, lbConst);
-        Equation ubEq = new Equation(BoundType.UB, varsCount, ubConst);
+        return createEquations(varsCount, lbConst, ubConst, null);
+    }
+
+    private Duo<Equation> createEquations(int varsCount, int lbConst,
+            int ubConst, ShapeNode node) {
+        Equation lbEq = new Equation(BoundType.LB, varsCount, lbConst, node);
+        Equation ubEq = new Equation(BoundType.UB, varsCount, ubConst, node);
         return new Duo<Equation>(lbEq, ubEq);
     }
 
@@ -364,17 +367,19 @@ public final class EquationSystem {
         for (EdgeBundle bundle : this.mat.getBundles()) {
             int varsCount = bundle.getEdgesCount();
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
-            boolean nodeMayBecomeGarbage =
-                mayHaveGarbageNodes && nodeMult.isZeroPlus();
-            if (nodeMayBecomeGarbage) {
-                this.registerPossibleGarbageNode(bundle.node);
-            }
             Multiplicity edgeMult = bundle.origEsMult;
             Multiplicity constMult = nodeMult.times(edgeMult);
             // ... create a pair of equations.
-            Duo<Equation> eqs =
-                this.createEquations(varsCount, constMult.getLowerBound(),
-                    constMult.getUpperBound());
+            Duo<Equation> eqs;
+            if (mayHaveGarbageNodes && nodeMult.isZeroPlus()) {
+                eqs =
+                    this.createEquations(varsCount, constMult.getLowerBound(),
+                        constMult.getUpperBound(), bundle.node);
+            } else {
+                eqs =
+                    this.createEquations(varsCount, constMult.getLowerBound(),
+                        constMult.getUpperBound());
+            }
             // For each split edge signature...
             for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
                 for (ShapeEdge edge : bundle.getSplitEsEdges(splitEs)) {
@@ -414,14 +419,6 @@ public final class EquationSystem {
             this.varsCount++;
         }
         return vars;
-    }
-
-    private void registerPossibleGarbageNode(ShapeNode node) {
-        assert this.stage == 1;
-        if (this.garbageMap == null) {
-            this.garbageMap = new MyHashMap<ShapeNode,Set<Set<BoundVar>>>();
-        }
-        this.garbageMap.put(node, new MyHashSet<Set<BoundVar>>());
     }
 
     private boolean updateMatFirstStage(Materialisation mat, Solution sol) {
@@ -476,7 +473,7 @@ public final class EquationSystem {
         }
 
         // Remove nodes that cannot exist.
-        this.collectGarbageNodes(mat);
+        this.collectGarbageNodes(mat, sol);
 
         mat.moveToSecondStage(nonSingBundles);
 
@@ -484,13 +481,13 @@ public final class EquationSystem {
     }
 
     // See materialisation test case 11.
-    private void collectGarbageNodes(Materialisation mat) {
+    private void collectGarbageNodes(Materialisation mat, Solution sol) {
         assert this.stage == 1;
-        if (this.garbageNodes == null) {
+        if (sol.garbageNodes == null) {
             return;
         }
         Shape shape = mat.getShape();
-        for (ShapeNode node : this.garbageNodes) {
+        for (ShapeNode node : sol.garbageNodes) {
             assert shape.getNodeMult(node).isZeroPlus();
             assert shape.isUnconnected(node);
             mat.removeUnconnectedNode(node);
@@ -755,12 +752,14 @@ public final class EquationSystem {
         final BoundType type;
         final ArrayList<BoundVar> vars;
         final int constant;
+        final ShapeNode node;
         Equation dual;
 
-        Equation(BoundType type, int varsCount, int constant) {
+        Equation(BoundType type, int varsCount, int constant, ShapeNode node) {
             this.type = type;
             this.vars = new ArrayList<BoundVar>(varsCount);
             this.constant = constant;
+            this.node = node;
         }
 
         @Override
@@ -787,6 +786,9 @@ public final class EquationSystem {
                 result.append("w");
             } else {
                 result.append(this.constant);
+            }
+            if (this.hasNode()) {
+                result.append(" (" + this.getNode() + ")");
             }
             return result.toString();
         }
@@ -818,8 +820,17 @@ public final class EquationSystem {
             return result;
         }
 
+        boolean hasNode() {
+            return this.node != null;
+        }
+
+        ShapeNode getNode() {
+            assert this.hasNode();
+            return this.node;
+        }
+
         boolean isTrivial() {
-            return this.vars.size() == 1;
+            return this.vars.size() == 1 && !this.hasNode();
         }
 
         void addVar(BoundVar var) {
@@ -843,10 +854,12 @@ public final class EquationSystem {
             boolean result = false;
             switch (this.type) {
             case UB:
-                result = this.constant < this.getMaxRangeValue();
+                result =
+                    this.hasNode() || this.constant < this.getMaxRangeValue();
                 break;
             case LB:
-                result = this.constant > this.getMinRangeValue();
+                result =
+                    this.hasNode() || this.constant > this.getMinRangeValue();
                 break;
             default:
                 assert false;
@@ -890,13 +903,25 @@ public final class EquationSystem {
             // EZ says: sorry for the multiple return points, but otherwise
             // the code becomes less readable...
 
+            int fixedVarsSum = this.getFixedVarsSum(sol);
+
             if (!this.hasOpenVars(sol)) {
+                if (this.hasNode() && fixedVarsSum == 0) {
+                    // Especial case. We have a node in the equation that became
+                    // garbage.
+                    sol.addGarbageNode(this.getNode());
+                }
                 return true;
             }
 
             ArrayList<BoundVar> openVars = this.getOpenVars(sol);
-            int fixedVarsSum = this.getFixedVarsSum(sol);
             int newConst = Multiplicity.sub(this.constant, fixedVarsSum);
+
+            if (this.hasNode() && sol.isGarbage(this.getNode())) {
+                // Especial case. The node in the equation is garbage.
+                // All variables must be zero.
+                newConst = 0;
+            }
 
             if (this.type == BoundType.LB) {
                 if (openVars.size() == 1) {
@@ -1143,6 +1168,7 @@ public final class EquationSystem {
         final ValueRange ubValues[];
         final MyHashSet<Equation> lbEqs;
         final MyHashSet<Equation> ubEqs;
+        MyHashSet<ShapeNode> garbageNodes;
 
         Solution(int varsCount, int lbRange[], int ubRange[],
                 MyHashSet<Equation> lbEqs, MyHashSet<Equation> ubEqs) {
@@ -1170,6 +1196,9 @@ public final class EquationSystem {
             }
             this.lbEqs = original.lbEqs.clone();
             this.ubEqs = original.ubEqs.clone();
+            if (original.garbageNodes != null) {
+                this.garbageNodes = original.garbageNodes.clone();
+            }
         }
 
         ValueRange[] getValueRangeArray(BoundType type) {
@@ -1327,6 +1356,21 @@ public final class EquationSystem {
                 BoundVar lbVar = pair.one();
                 int max = this.getMaxValue(lbVar);
                 this.cutLow(lbVar, max);
+            }
+        }
+
+        void addGarbageNode(ShapeNode node) {
+            if (this.garbageNodes == null) {
+                this.garbageNodes = new MyHashSet<ShapeNode>();
+            }
+            this.garbageNodes.add(node);
+        }
+
+        boolean isGarbage(ShapeNode node) {
+            if (this.garbageNodes == null) {
+                return false;
+            } else {
+                return this.garbageNodes.contains(node);
             }
         }
     }
