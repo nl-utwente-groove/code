@@ -19,6 +19,7 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.explore.ShapeGenerator;
+import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 
 import org.junit.Test;
 
@@ -86,8 +87,13 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
-        assertEquals(54, generator.getStateCount());
-        assertEquals(130, generator.getTransitionCount());
+        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
+            assertEquals(50, generator.getStateCount());
+            assertEquals(106, generator.getTransitionCount());
+        } else {
+            assertEquals(54, generator.getStateCount());
+            assertEquals(130, generator.getTransitionCount());
+        }
     }
 
     @Test
@@ -102,8 +108,12 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
-        assertEquals(21, generator.getStateCount());
-        assertEquals(57, generator.getTransitionCount());
+        assertEquals(31, generator.getStateCount());
+        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
+            assertEquals(81, generator.getTransitionCount());
+        } else {
+            assertEquals(85, generator.getTransitionCount());
+        }
     }
 
     @Test
@@ -119,7 +129,11 @@ public class TestShapeGenerator {
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         assertEquals(48, generator.getStateCount());
-        assertEquals(222, generator.getTransitionCount());
+        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
+            assertEquals(147, generator.getTransitionCount());
+        } else {
+            assertEquals(222, generator.getTransitionCount());
+        }
 
         Parameters.setNodeMultBound(2);
         Parameters.setEdgeMultBound(2);
@@ -127,7 +141,11 @@ public class TestShapeGenerator {
         generator.reset();
         generator.exploreGrammar(PRINT_RESULT);
         assertEquals(124, generator.getStateCount());
-        assertEquals(588, generator.getTransitionCount());
+        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
+            assertEquals(408, generator.getTransitionCount());
+        } else {
+            assertEquals(588, generator.getTransitionCount());
+        }
     }
 
 }
