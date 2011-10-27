@@ -345,7 +345,14 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
 
     private ShapeNode createNode() {
-        return this.getFactory().createNode();
+        ShapeNode freshNode =
+            (ShapeNode) createNode(getNodeCounter().getNext());
+        assert !nodeSet().contains(freshNode) : String.format(
+            "Fresh node %s already in node set %s", freshNode, nodeSet());
+        // EZ says: don't make this call here since it might mess with the
+        // shape structure...
+        // addNode(freshNode);
+        return freshNode;
     }
 
     /** Creates an edge accordingly to the given direction. */
