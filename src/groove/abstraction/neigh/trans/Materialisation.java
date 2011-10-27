@@ -429,7 +429,10 @@ public final class Materialisation {
      */
     public Pair<Shape,RuleEvent> applyMatch(SystemRecord record) {
         assert this.hasConcreteMatch();
-        RuleEvent event = new BasicEvent(this.matchedRule, this.match, false);
+        RuleEvent event = new BasicEvent(this.matchedRule, this.match, true);
+        if (record != null) {
+            event = record.normaliseEvent(event);
+        }
         ShapeRuleApplication app = new ShapeRuleApplication(event, this.shape);
         Shape result = app.getTarget();
         return new Pair<Shape,RuleEvent>(result, event);
