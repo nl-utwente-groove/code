@@ -244,6 +244,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         } else {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);
+            typeEdge.setInMult(modelEdge.getInMult());
+            typeEdge.setOutMult(modelEdge.getOutMult());
             typeEdge.setAbstract(modelEdge.getKind() == ABSTRACT);
         }
         if (typeEdge != null) {

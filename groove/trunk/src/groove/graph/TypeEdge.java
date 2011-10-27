@@ -22,8 +22,9 @@ package groove.graph;
  * @version $Revision $
  */
 public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
+
     /**
-     * Constructs a new type edge.
+     * Constructs a new type edge, with explicit multiplicity.
      */
     public TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
         super(source, label, target);
@@ -42,6 +43,38 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
         this.abstractType = value;
     }
 
+    /**
+     * Gets the 'in' multiplicity of this edge type. May be <code>null</code>,
+     * if no 'in' multiplicity exists.
+     */
+    public Multiplicity getInMult() {
+        return this.inMult;
+    }
+
+    /**
+     * Gets the 'out' multiplicity of this edge type. May be <code>null</code>,
+     * if no 'out' multiplicity exists.
+     */
+    public Multiplicity getOutMult() {
+        return this.outMult;
+    }
+
+    /** Sets the 'in' multiplicity of this edge type. */
+    public void setInMult(Multiplicity inMult) {
+        this.inMult = inMult;
+    }
+
+    /** Sets the 'out' multiplicity of this edge type. */
+    public void setOutMult(Multiplicity outMult) {
+        this.outMult = outMult;
+    }
+
     /** Flag indicating if this edge type is abstract. */
     private boolean abstractType;
+
+    /** In multiplicity of the edge type, if any. */
+    private Multiplicity inMult;
+
+    /** Out multiplicity of the edge type, if any. */
+    private Multiplicity outMult;
 }

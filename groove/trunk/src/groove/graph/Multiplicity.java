@@ -109,6 +109,11 @@ public class Multiplicity extends Duo<Integer> {
         return new Multiplicity(lower, upper);
     }
 
+    /** Checks if a given integer is in the range of the multiplicity. */
+    public boolean inRange(int count) {
+        return one() <= count && count <= two();
+    }
+
     /** Separator sequence in a multiplicity value. */
     static public final String MULT_SEPARATOR = "..";
     /** Text representation of infinite upper bound. */
