@@ -42,7 +42,6 @@ import groove.graph.Multiplicity;
 import groove.graph.TypeLabel;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
-import groove.util.Duo;
 import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.view.FormatError;
@@ -651,7 +650,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     /** Returns the outgoing multiplicity of this (type) edge, if any. */
-    public Duo<Integer> getOutMult() {
+    public Multiplicity getOutMult() {
         return this.outMult;
     }
 

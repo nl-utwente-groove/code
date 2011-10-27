@@ -101,6 +101,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeEdge image =
                 addEdge(otherToThis.get(otherEdge.source()), otherEdge.label(),
                     otherToThis.get(otherEdge.target()));
+            image.setInMult(otherEdge.getInMult());
+            image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
         }
         this.labelStore.add(other.labelStore);
@@ -450,6 +452,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     }
 
+    // TODO
+    // edge multiplicity check to be moved to a HostGraph method
     /**
      * Attempts to find a typing for a given host graph.
      * @param source the rule graph to be typed
@@ -462,6 +466,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         HostFactory hostFactory = HostFactory.newInstance();
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
+        Map<HostNode,Map<TypeEdge,Integer>> inCounts =
+            new HashMap<HostNode,Map<TypeEdge,Integer>>();
+        Map<HostNode,Map<TypeEdge,Integer>> outCounts =
+            new HashMap<HostNode,Map<TypeEdge,Integer>>();
         for (HostNode node : source.nodeSet()) {
             try {
                 HostNode image;
@@ -522,13 +530,70 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             } else {
                 morphism.putEdge(edge,
                     hostFactory.createEdge(sourceImage, typeEdge, targetImage));
+                if (typeEdge.getOutMult() != null) {
+                    countTypeEdge(outCounts, edge.source(), typeEdge);
+                }
+                if (typeEdge.getInMult() != null) {
+                    countTypeEdge(inCounts, edge.target(), typeEdge);
+                }
             }
         }
+        verifyMultiplicity(source, inCounts, true, errors);
+        verifyMultiplicity(source, outCounts, false, errors);
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
         return morphism;
+    }
 
+    /**
+     * Count the occurrence of an edge type relative to a host node.
+     */
+    private void countTypeEdge(Map<HostNode,Map<TypeEdge,Integer>> counts,
+            HostNode node, TypeEdge type) {
+        Map<TypeEdge,Integer> nmap = counts.get(node);
+        if (nmap == null) {
+            nmap = new HashMap<TypeEdge,Integer>();
+            nmap.put(type, 1);
+            counts.put(node, nmap);
+            return;
+        }
+        Integer oldCount = nmap.get(type);
+        if (oldCount == null) {
+            nmap.put(type, 1);
+        } else {
+            nmap.put(type, oldCount + 1);
+        }
+        counts.put(node, nmap);
+    }
+
+    /**
+     * Verify counted multiplicity. The <code>inOrOut</code> argument indicates
+     * whether the 'in' (value <code>true</code>) or 'out' (value <code>false
+     * </code>) multiplicity must be verified. Problems are stored in the
+     * argument set of {@link FormatError}s. 
+     */
+    private void verifyMultiplicity(HostGraph source,
+            Map<HostNode,Map<TypeEdge,Integer>> counts, boolean inOrOut,
+            Set<FormatError> errors) {
+        for (Map.Entry<HostNode,Map<TypeEdge,Integer>> entry1 : counts.entrySet()) {
+            for (Map.Entry<TypeEdge,Integer> entry2 : entry1.getValue().entrySet()) {
+                Multiplicity mult =
+                    inOrOut ? entry2.getKey().getInMult()
+                            : entry2.getKey().getOutMult();
+                int count = entry2.getValue();
+                if (!mult.inRange(count)) {
+                    String msg =
+                        "the " + (inOrOut ? "in" : "out")
+                            + " multiplicity of edge '"
+                            + entry2.getKey().label()
+                            + "' in node '%s' is out of range (got: " + count
+                            + "; expected: " + mult.one() + ".."
+                            + (mult.isUnbounded() ? "*" : mult.two()) + ")";
+                    errors.add(new FormatError(msg, entry1.getKey(), source));
+                }
+            }
+        }
     }
 
     /**
