@@ -693,6 +693,7 @@ public final class Materialisation {
     // Methods for second stage.
     // ------------------------------------------------------------------------
 
+    // EDUARDO: Performance bottleneck
     void moveToSecondStage(Set<EdgeBundle> nonSingBundles) {
         assert this.stage == 1;
 

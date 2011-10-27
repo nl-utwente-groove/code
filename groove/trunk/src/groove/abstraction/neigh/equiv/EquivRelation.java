@@ -157,6 +157,7 @@ public class EquivRelation<T extends HostElement> extends
      * This method assumes that the equivalence relation is consistent, i.e.,
      * an element belongs only to a single equivalence class.
      */
+    // EDUARDO: Performance bottleneck
     public EquivClass<T> getEquivClassOf(T elem) {
         EquivClass<T> result = null;
         for (EquivClass<T> ec : this) {
@@ -173,6 +174,7 @@ public class EquivRelation<T extends HostElement> extends
      * equivalence relation, i.e., if both elements belong to the same
      * equivalence class.
      */
+    // EDUARDO: Performance bottleneck
     public boolean areEquivalent(T elem0, T elem1) {
         EquivClass<T> ec0 = this.getEquivClassOf(elem0);
         EquivClass<T> ec1 = this.getEquivClassOf(elem1);

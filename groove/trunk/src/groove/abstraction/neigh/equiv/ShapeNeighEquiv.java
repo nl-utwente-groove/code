@@ -58,6 +58,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      * classes. See item 6 of Def. 22 on page 17 of the Technical Report for
      * more details.
      */
+    // EDUARDO: Performance bottleneck
     public static Multiplicity getEdgeSetMult(Shape shape, ShapeNode node,
             TypeLabel label, EquivRelation<ShapeNode> kSet,
             EdgeMultDir direction) {
@@ -83,6 +84,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      * comment on the class definition, top of this file).
      */
     @Override
+    // EDUARDO: Performance bottleneck
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
         Shape shape = (Shape) this.graph;
         EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();

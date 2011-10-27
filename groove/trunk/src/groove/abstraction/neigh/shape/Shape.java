@@ -428,7 +428,6 @@ public final class Shape extends DefaultHostGraph {
      * accordingly to the given direction.
      */
     public Set<ShapeEdge> binaryEdgeSet(ShapeNode node, EdgeMultDir direction) {
-        // EDUARDO: Optimize this?
         Set<ShapeEdge> result = null;
         switch (direction) {
         case OUTGOING:
@@ -731,6 +730,7 @@ public final class Shape extends DefaultHostGraph {
      * with the given fields. If no suitable edge signature is found, returns
      * null.
      */
+    // EDUARDO: Performance bottleneck
     public EdgeSignature maybeGetEdgeSignature(EdgeMultDir direction,
             ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
         EdgeSignature result = null;
@@ -922,7 +922,6 @@ public final class Shape extends DefaultHostGraph {
      * Returns the set of edges from the signature occurring in the shape.
      */
     public Set<ShapeEdge> getEdgesFromSig(EdgeSignature es) {
-        // EDUARDO: Optimize this?
         Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         ShapeNode node = es.getNode();
         TypeLabel label = es.getLabel();
@@ -1171,7 +1170,6 @@ public final class Shape extends DefaultHostGraph {
     }
 
     private Set<EdgeSignature> getEdgeSignatures(EquivClass<ShapeNode> ec) {
-        // EDUARDO: Optimize this?
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
@@ -1185,7 +1183,6 @@ public final class Shape extends DefaultHostGraph {
 
     /** Returns the edge signatures for the given node. */
     public Set<EdgeSignature> getEdgeSignatures(ShapeNode node) {
-        // EDUARDO: Optimize this?
         assert this.containsNode(node);
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
@@ -1277,10 +1274,10 @@ public final class Shape extends DefaultHostGraph {
         return this.isEdgeSigUnique(es);
     }
 
-    private boolean isEdgeUnique(ShapeEdge edge) {
-        return this.isEdgeUnique(edge, OUTGOING)
-            && this.isEdgeUnique(edge, INCOMING);
-    }
+    /* private boolean isEdgeUnique(ShapeEdge edge) {
+         return this.isEdgeUnique(edge, OUTGOING)
+             && this.isEdgeUnique(edge, INCOMING);
+     }*/
 
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
@@ -1294,40 +1291,6 @@ public final class Shape extends DefaultHostGraph {
         newShape.createEquivRelation(sne.getPrevEquivRelation(), map);
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
-
-        // Making node and edges multiplicities more precise, when possible.
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
-        for (ShapeNode node : newShape.nodeSet()) {
-            Multiplicity nodeMult = newShape.getNodeMult(node);
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                EdgeMultDir reverse = direction.reverse();
-                for (ShapeEdge edge : newShape.binaryEdgeSet(node, direction)) {
-                    ShapeNode opp = edge.opposite(direction);
-                    Multiplicity oppMult = newShape.getNodeMult(opp);
-                    if (nodeMult.isCollector() && oppMult.isOne()
-                        && newShape.isEdgeConcrete(edge)) {
-                        // The node can only be concrete.
-                        newShape.setNodeMult(node, one);
-                    } else if (nodeMult.isOne() && oppMult.isCollector()
-                        && newShape.isEdgeUnique(edge)) {
-                        EdgeSignature oppEs =
-                            newShape.getEdgeSignature(edge, reverse);
-                        if (newShape.getEdgeSigMult(oppEs).isOne()) {
-                            // We can set the edge multiplicity to the opposite
-                            // node multiplicity.
-                            EdgeSignature es =
-                                newShape.getEdgeSignature(edge, direction);
-                            Multiplicity oldEsMult =
-                                newShape.getEdgeSigMult(es);
-                            Multiplicity newEsMult = oppMult.toEdgeKind();
-                            if (oldEsMult.subsumes(newEsMult)) {
-                                newShape.setEdgeSigMult(es, newEsMult);
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         assert newShape.isInvariantOK();
         return newShape;
