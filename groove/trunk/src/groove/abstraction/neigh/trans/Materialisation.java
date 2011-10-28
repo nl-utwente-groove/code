@@ -702,15 +702,15 @@ public final class Materialisation {
 
         this.stage++;
         this.matEdges = null;
-        this.matNodes = new MyHashSet<ShapeNode>();
-        this.possibleEdges = new MyHashSet<ShapeEdge>();
-        this.nodeSplitMap = new MyHashMap<ShapeNode,Set<ShapeNode>>();
-        this.garbageNodes = new MyHashSet<ShapeNode>();
 
         if (nonSingBundles.isEmpty()) {
             // We don't need to split nodes.
             return;
         }
+
+        this.matNodes = new MyHashSet<ShapeNode>();
+        this.possibleEdges = new MyHashSet<ShapeEdge>();
+        this.nodeSplitMap = new MyHashMap<ShapeNode,Set<ShapeNode>>();
 
         // Compute the set of nodes that require splitting.
         Set<ShapeNode> origNodesToSplit = new MyHashSet<ShapeNode>();
@@ -1012,7 +1012,7 @@ public final class Materialisation {
     }
 
     boolean requiresThirdStage() {
-        return !this.nodeSplitMap.isEmpty();
+        return this.nodeSplitMap != null && !this.nodeSplitMap.isEmpty();
     }
 
     /** Mark nodes that cannot exist. */
@@ -1032,17 +1032,32 @@ public final class Materialisation {
                     morph.getPreImages(shape, node, origEs, false, preImgEs);
                     if (preImgEs.isEmpty()) {
                         // The node got disconnected and therefore cannot exist.
-                        this.garbageNodes.add(node);
+                        this.addGarbageNode(node);
                     }
                 }
             }
         }
     }
 
+    void addGarbageNode(ShapeNode node) {
+        if (this.garbageNodes == null) {
+            this.garbageNodes = new MyHashSet<ShapeNode>();
+        }
+        this.garbageNodes.add(node);
+    }
+
+    Set<ShapeNode> getGarbageNodes() {
+        if (this.garbageNodes == null) {
+            return Collections.emptySet();
+        } else {
+            return this.garbageNodes;
+        }
+    }
+
     /** Remove the nodes from the shape that were marked as garbage. */
     void garbageCollectNodes() {
         assert this.stage == 2 || this.stage == 3;
-        for (ShapeNode garbageNode : this.garbageNodes) {
+        for (ShapeNode garbageNode : this.getGarbageNodes()) {
             this.shape.removeNode(garbageNode);
         }
     }
@@ -1066,7 +1081,7 @@ public final class Materialisation {
     /** Returns true if the given node is marked as garbage. */
     boolean isGarbage(ShapeNode node) {
         assert this.stage == 3;
-        return this.garbageNodes.contains(node);
+        return this.getGarbageNodes().contains(node);
     }
 
     // ------------------------------------------------------------------------
