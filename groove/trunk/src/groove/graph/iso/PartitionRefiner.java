@@ -95,6 +95,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * Iterates node certificates until this results in a stable partitioning.
      */
     private void iterateCertificates1() {
+        resizeTmpCertIxs();
         // get local copies of attributes for speedup
         int nodeCertCount = this.nodeCertCount;
         // collect and then count the number of certificates
@@ -128,9 +129,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     private void iterateCertificates2() {
         if ((this.strong || BREAK_DUPLICATES)
             && this.nodePartitionCount < this.nodeCertCount) {
-            if (this.nodeCertCount > tmpCertIxs.length) {
-                tmpCertIxs = new int[this.nodeCertCount + 100];
-            }
+            resizeTmpCertIxs();
             // now look for smallest unbroken duplicate certificate (if any)
             int oldPartitionCount;
             do {
@@ -170,6 +169,13 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         int edgeCount = this.edgeCerts.length;
         for (int i = this.edge2CertCount; i < edgeCount; i++) {
             ((MyEdge1Cert<?,?>) this.edgeCerts[i]).setNewValue();
+        }
+    }
+
+    /** Extends the {@link #tmpCertIxs} array, if necessary. */
+    private void resizeTmpCertIxs() {
+        if (this.nodeCertCount > tmpCertIxs.length) {
+            tmpCertIxs = new int[this.nodeCertCount + 100];
         }
     }
 
