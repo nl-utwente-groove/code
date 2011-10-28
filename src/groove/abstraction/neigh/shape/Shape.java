@@ -730,7 +730,6 @@ public final class Shape extends DefaultHostGraph {
      * with the given fields. If no suitable edge signature is found, returns
      * null.
      */
-    // EDUARDO: Performance bottleneck
     public EdgeSignature maybeGetEdgeSignature(EdgeMultDir direction,
             ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
         EdgeSignature result = null;

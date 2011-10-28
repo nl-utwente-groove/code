@@ -724,9 +724,8 @@ public final class Materialisation {
 
         // Auxiliary structures.
         Shape shape = this.getShape();
-        Shape to = shape.clone(); // EDUARDO: is this necessary?
         ShapeMorphism auxMorph =
-            ShapeMorphism.createIdentityMorphism(shape, to);
+            ShapeMorphism.createIdentityMorphism(shape, shape);
         Map<ShapeNode,PowerSetIterator> iterMap =
             new MyHashMap<ShapeNode,PowerSetIterator>();
 
@@ -760,7 +759,7 @@ public final class Materialisation {
 
         // Now collect the remaining edges created by the node split that still
         // give rise to admissible configurations.
-        this.createPossibleEdges(auxMorph, shape, to, this.matNodes);
+        this.createPossibleEdges(auxMorph, shape, shape, this.matNodes);
         Map<ShapeNode,Set<ShapeEdge>> outEdgeMap =
             new MyHashMap<ShapeNode,Set<ShapeEdge>>();
         Map<ShapeNode,Set<ShapeEdge>> inEdgeMap =
@@ -786,8 +785,7 @@ public final class Materialisation {
             }
         }
 
-        // And then update all bundles, since the edge signatures may have
-        // changed.
+        // And then update all bundles, since the edge signatures changed.
         for (EdgeBundle bundle : this.getBundles()) {
             bundle.update(this);
         }
@@ -835,19 +833,20 @@ public final class Materialisation {
     private void routeNewEdges(ShapeNode origNode, ShapeEdge origEdge,
             ShapeNode newNode, EdgeMultDir direction, Set<ShapeEdge> result) {
         assert this.stage == 2;
-        Set<ShapeNode> opposites = new MyHashSet<ShapeNode>();
         TypeLabel label = origEdge.label();
         ShapeNode incident = newNode;
         ShapeNode opposite = origEdge.opposite(direction);
-        opposites.add(opposite);
+        ShapeEdge newEdge =
+            this.shape.createEdge(incident, opposite, label, direction);
+        result.add(newEdge);
         Set<ShapeNode> splitNodes = this.nodeSplitMap.get(opposite);
         if (splitNodes != null) {
-            opposites.addAll(splitNodes);
-        }
-        for (ShapeNode newOpposite : opposites) {
-            ShapeEdge newEdge =
-                this.shape.createEdge(incident, newOpposite, label, direction);
-            result.add(newEdge);
+            for (ShapeNode newOpposite : splitNodes) {
+                newEdge =
+                    this.shape.createEdge(incident, newOpposite, label,
+                        direction);
+                result.add(newEdge);
+            }
         }
     }
 

@@ -264,7 +264,7 @@ public final class EdgeBundle {
         this.clearPossibleEdges();
         Shape shape = mat.getShape();
         // First remove signatures that are no longer present in the shape.
-        // This may happen when we garbage collect nodes.
+        // This may happen due to node splits.
         Iterator<EdgeSignature> iter = this.splitEsMap.keySet().iterator();
         while (iter.hasNext()) {
             EdgeSignature splitEs = iter.next();
