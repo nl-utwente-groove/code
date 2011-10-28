@@ -1137,7 +1137,7 @@ public final class Shape extends DefaultHostGraph {
 
         EquivClass<ShapeNode> oldEc = this.getEquivClassOf(nodeS);
         EquivClass<ShapeNode> newEc = oldEc.clone();
-        for (int i = 0; i < copies - 1; i++) {
+        for (int i = 0; i < copies; i++) {
             // Create a new shape node.
             ShapeNode newNode = this.addNode();
             // Add the new node to the shape. Call the super method because
