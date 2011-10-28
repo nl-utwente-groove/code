@@ -421,7 +421,6 @@ public final class EquationSystem {
         return vars;
     }
 
-    // EDUARDO: Performance bottleneck
     private boolean updateMatFirstStage(Materialisation mat, Solution sol) {
         assert this.stage == 1;
 
