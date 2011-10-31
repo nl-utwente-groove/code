@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
@@ -760,24 +759,7 @@ public final class Materialisation {
         // Now collect the remaining edges created by the node split that still
         // give rise to admissible configurations.
         this.createPossibleEdges(auxMorph, shape, shape, this.matNodes);
-        Map<ShapeNode,Set<ShapeEdge>> outEdgeMap =
-            new MyHashMap<ShapeNode,Set<ShapeEdge>>();
-        Map<ShapeNode,Set<ShapeEdge>> inEdgeMap =
-            new MyHashMap<ShapeNode,Set<ShapeEdge>>();
-        this.fillEdgeMaps(outEdgeMap, inEdgeMap);
-        Set<ShapeEdge> edgesToAdd = new MyHashSet<ShapeEdge>();
-        Set<ShapeEdge> vetoedEdges = new MyHashSet<ShapeEdge>();
-        for (ShapeNode origNode : this.nodeSplitMap.keySet()) {
-            for (ShapeNode splitNode : this.nodeSplitMap.get(origNode)) {
-                this.collectEdgesToAdd(splitNode, origNode, edgesToAdd,
-                    vetoedEdges, outEdgeMap.get(splitNode),
-                    inEdgeMap.get(splitNode));
-            }
-        }
-
-        // Finally, add the edges we had left.
-        edgesToAdd.removeAll(vetoedEdges);
-        for (ShapeEdge edgeToAdd : edgesToAdd) {
+        for (ShapeEdge edgeToAdd : this.possibleEdges) {
             shape.addEdgeWithoutCheck(edgeToAdd);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 EdgeBundle bundle = this.getBundle(edgeToAdd, direction);
@@ -819,6 +801,7 @@ public final class Materialisation {
                 for (ShapeEdge newEdge : newEdges) {
                     // Add the new edge to the new bundle.
                     newBundle.addEdge(this.shape, newEdge, direction);
+                    newBundle.setEdgeAsFixed(newEdge);
                     // Add the new edge to the shape.
                     this.shape.addEdgeWithoutCheck(newEdge);
                     // Update the shape morphism.
@@ -848,85 +831,6 @@ public final class Materialisation {
                 result.add(newEdge);
             }
         }
-    }
-
-    private void fillEdgeMaps(Map<ShapeNode,Set<ShapeEdge>> outEdgeMap,
-            Map<ShapeNode,Set<ShapeEdge>> inEdgeMap) {
-        for (ShapeEdge edge : this.possibleEdges) {
-            // OUTGOING
-            ShapeNode src = edge.source();
-            Set<ShapeEdge> outEdges = outEdgeMap.get(src);
-            if (outEdges == null) {
-                outEdges = new MyHashSet<ShapeEdge>();
-                outEdgeMap.put(src, outEdges);
-            }
-            outEdges.add(edge);
-            // INCOMING
-            ShapeNode tgt = edge.target();
-            Set<ShapeEdge> inEdges = inEdgeMap.get(tgt);
-            if (inEdges == null) {
-                inEdges = new MyHashSet<ShapeEdge>();
-                inEdgeMap.put(tgt, inEdges);
-            }
-            inEdges.add(edge);
-        }
-    }
-
-    private void collectEdgesToAdd(ShapeNode newNode, ShapeNode origNode,
-            Set<ShapeEdge> edgesToAdd, Set<ShapeEdge> vetoedEdges,
-            Set<ShapeEdge> outEdges, Set<ShapeEdge> inEdges) {
-        assert this.stage == 2;
-
-        if (outEdges == null) {
-            outEdges = Collections.emptySet();
-        }
-        if (inEdges == null) {
-            inEdges = Collections.emptySet();
-        }
-        Set<ShapeEdge> allIncidentEdges = new MyHashSet<ShapeEdge>();
-        allIncidentEdges.addAll(outEdges);
-        allIncidentEdges.addAll(inEdges);
-
-        Set<ShapeEdge> fixEdges = new MyHashSet<ShapeEdge>();
-        for (EdgeBundle origBundle : this.getBundles(origNode)) {
-            EdgeMultDir direction = origBundle.direction;
-            // Collect the fixed edges.
-            Set<ShapeEdge> inOrOutEdges;
-            if (direction == EdgeMultDir.OUTGOING) {
-                inOrOutEdges = outEdges;
-            } else {
-                assert direction == EdgeMultDir.INCOMING;
-                inOrOutEdges = inEdges;
-            }
-            for (ShapeEdge edge : inOrOutEdges) {
-                if (origBundle.getEdges().contains(this.morph.getEdge(edge))) {
-                    fixEdges.add(edge);
-                }
-            }
-            EdgeBundle newBundle =
-                this.createBundle(newNode, origBundle.origEs, true);
-            // Check if we can add the fixed edges.
-            boolean addFixedEdges = true;
-            Multiplicity mult = newBundle.origEsMult;
-            if (!mult.isUnbounded()) {
-                int oppCount = newBundle.allEdges.size() + 1;
-                Multiplicity oppMult =
-                    Multiplicity.approx(oppCount, oppCount, EDGE_MULT);
-                if (!oppMult.le(mult)) {
-                    addFixedEdges = false;
-                }
-            }
-            if (addFixedEdges) {
-                edgesToAdd.addAll(fixEdges);
-            } else {
-                vetoedEdges.addAll(fixEdges);
-            }
-            // Adjust the sets for the next iteration of the loop.
-            allIncidentEdges.removeAll(fixEdges);
-            fixEdges.clear();
-        }
-        // Maybe we have some edges left...
-        edgesToAdd.addAll(allIncidentEdges);
     }
 
     /** Returns the set of nodes involved in the materialisation. */
@@ -1030,12 +934,12 @@ public final class Materialisation {
     /** Used for tests. */
     public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        Parameters.setNodeMultBound(2);
+        Parameters.setEdgeMultBound(2);
         Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
-            String number = "10";
+            String number = "12";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
