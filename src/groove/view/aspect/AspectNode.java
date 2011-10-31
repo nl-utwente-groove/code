@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import static groove.view.aspect.AspectKind.ABSTRACT;
+import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.COLOR;
 import static groove.view.aspect.AspectKind.CONNECT;
 import static groove.view.aspect.AspectKind.DEFAULT;
@@ -318,8 +319,13 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     public void inferInAspect(AspectEdge edge) throws FormatException {
         assert edge.target() == this;
         testFixed(false);
-        //setNodeLabelsFixed();
-        if (edge.getKind() == CONNECT) {
+        if (edge.getAttrKind() == ARGUMENT) {
+            if (!hasAttrAspect()) {
+                throw new FormatException(
+                    "Target node of %s-edge should be attribute", edge.label(),
+                    this);
+            }
+        } else if (edge.getKind() == CONNECT) {
             if (getKind() != EMBARGO) {
                 throw new FormatException(
                     "Target node of %s-edge should be embargo", edge.label(),
