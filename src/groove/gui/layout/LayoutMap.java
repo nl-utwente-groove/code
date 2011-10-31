@@ -206,11 +206,11 @@ public class LayoutMap<N extends Node,E extends Edge> {
      * information if it is not default (according to the layout information
      * itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
-    public JEdgeLayout putEdge(E key, JEdgeLayout layout) {
-        if (!layout.isDefault()) {
-            return this.edgeMap.put(key, layout);
+    public void putEdge(E key, JEdgeLayout layout) {
+        if (layout.isDefault()) {
+            this.edgeMap.remove(key);
         } else {
-            return null;
+            this.edgeMap.put(key, layout);
         }
     }
 
