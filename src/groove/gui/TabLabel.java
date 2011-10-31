@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.gui.Display.Tab;
 import groove.gui.jgraph.JAttr;
+import groove.gui.list.ListTabbedPane;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -39,6 +40,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
@@ -129,6 +131,14 @@ public class TabLabel extends JPanel {
         this.display = display;
     }
 
+    /** 
+     * Creates new component for the state tab. 
+     */
+    public TabLabel(ListTabbedPane parent, Icon icon, String title) {
+        this(Kind.LIST, icon, title, true);
+        this.parent = parent;
+    }
+
     /** Changes the title of the tab. */
     public void setTitle(String title) {
         this.iconLabel.setText(title);
@@ -170,10 +180,14 @@ public class TabLabel extends JPanel {
             ((ResourceTab) this.tab).saveEditor(true, true);
             break;
         case DISPLAY:
-            this.parent.detach(this.display);
+            ((DisplaysPanel) this.parent).detach(this.display);
             break;
         case STATE:
             ((LTSDisplay) this.display).detachStateTab();
+            break;
+        case LIST:
+            ((ListTabbedPane) this.parent).closeSearchTab();
+            break;
         }
     }
 
@@ -187,7 +201,7 @@ public class TabLabel extends JPanel {
     /** The editor panel in this tab. */
     private Tab tab;
     /** The panel on which the display is shown. */
-    private DisplaysPanel parent;
+    private JTabbedPane parent;
     /** The editor panel in this tab. */
     private Display display;
 
@@ -211,7 +225,8 @@ public class TabLabel extends JPanel {
             setRolloverEnabled(true);
             //Close the proper tab by clicking the button
             addActionListener(this);
-            if (TabLabel.this.kind != Kind.RESOURCE) {
+            if (TabLabel.this.kind != Kind.RESOURCE
+                && TabLabel.this.kind != Kind.LIST) {
                 setIcon(Icons.PIN_ICON);
             }
         }
@@ -230,7 +245,8 @@ public class TabLabel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (TabLabel.this.kind == Kind.RESOURCE) {
+            if (TabLabel.this.kind == Kind.RESOURCE
+                || TabLabel.this.kind == Kind.LIST) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 //shift the image for pressed buttons
                 if (getModel().isPressed()) {
@@ -254,7 +270,7 @@ public class TabLabel extends JPanel {
     private static enum Kind {
         RESOURCE(1, Options.CANCEL_EDIT_ACTION_NAME), DISPLAY(3,
                 Options.DETACH_ACTION_NAME), STATE(5,
-                Options.DETACH_ACTION_NAME);
+                Options.DETACH_ACTION_NAME), LIST(5, "Close");
 
         private Kind(int hGap, String name) {
             this.hGap = hGap;

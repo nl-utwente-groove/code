@@ -9,27 +9,27 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>72 127 48 31</string>
+                <string>70 102 52 80</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>70 41 50 31</string>
+                <string>67 32 55 48</string>
             </attr>
         </node>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:start</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n1">
-            <attr name="label">
-                <string>here</string>
+                <string>type:Area</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:Area</string>
+                <string>flag:even</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>flag:start</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -37,9 +37,9 @@
                 <string>type:Euler</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n0" from="n1">
             <attr name="label">
-                <string>flag:even</string>
+                <string>here</string>
             </attr>
         </edge>
     </graph>
