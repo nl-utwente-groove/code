@@ -29,6 +29,9 @@ public class SearchAction extends SimulatorAction {
     @Override
     public void execute() {
         String text = askLabel();
+        if (text == null) {
+            return;
+        }
         TypeLabel label = TypeLabel.createLabel(text);
         List<SearchResult> searchResults = new ArrayList<SearchResult>();
         GrammarModel grammar = getSimulator().getModel().getGrammar();

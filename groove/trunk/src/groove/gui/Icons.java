@@ -220,6 +220,8 @@ public final class Icons {
     public static final ImageIcon EDIT_STATE_ICON = createIcon("edit-S.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
+    /** Error icon. */
+    public static final ImageIcon ERROR_ICON = createIcon("error.png");
     /** Export action icon. */
     public static final ImageIcon EXPORT_ICON = createIcon("export.gif");
     /** Icon for restart movement. */
@@ -328,6 +330,8 @@ public final class Icons {
     public static final ImageIcon SAVE_AS_ICON = createIcon("saveas.gif");
     /** Select action icon. */
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
+    /** Search action icon. */
+    public static final ImageIcon SEARCH_ICON = createIcon("search.gif");
     /** Closed state icon. */
     public static final ImageIcon STATE_CLOSED_ICON =
         createIcon("state-closed.gif");
