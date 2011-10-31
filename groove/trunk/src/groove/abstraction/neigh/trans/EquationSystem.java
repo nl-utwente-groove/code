@@ -504,6 +504,7 @@ public final class EquationSystem {
         this.outEsVarsMap = new MyHashMap<EdgeSignature,Duo<BoundVar>>();
         this.inEsVarsMap = new MyHashMap<EdgeSignature,Duo<BoundVar>>();
         this.varEsMap = new ArrayList<EdgeSignature>();
+        Shape shape = this.mat.getShape();
 
         // General case:
         // For each affected node...
@@ -522,30 +523,20 @@ public final class EquationSystem {
                     Duo<BoundVar> vars =
                         retrieveBoundVars(es, bundle.direction);
                     addVars(eqs, vars);
-                }
-                this.storeEquations(eqs);
-            }
-        }
-
-        Shape shape = this.mat.getShape();
-
-        // Optimization 1:
-        // Opposite nodes are concrete.
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            Map<EdgeSignature,Duo<BoundVar>> esMap = this.getEsMap(direction);
-            for (EdgeSignature es : esMap.keySet()) {
-                if (shape.isEdgeSigUnique(es)) {
-                    ShapeEdge edge =
-                        shape.getEdgesFromSig(es).iterator().next();
-                    ShapeNode opposite = edge.opposite(direction);
-                    if (shape.getNodeMult(opposite).isOne()) {
-                        Duo<Equation> trivialEqs =
-                            this.createEquations(1, 1, 1);
-                        Duo<BoundVar> vars = esMap.get(es);
-                        addVars(trivialEqs, vars);
-                        this.storeEquations(trivialEqs);
+                    Set<ShapeEdge> edges = bundle.getSplitEsEdges(es);
+                    if (edges.size() == 1) {
+                        // Especial case. Fixed edge signatures.
+                        ShapeEdge edge = edges.iterator().next();
+                        if (this.mat.isFixed(edge)
+                            || bundle.isFixed(edge, bundle.direction, shape)) {
+                            Duo<Equation> trivialEqs =
+                                this.createEquations(1, 1, 1);
+                            addVars(trivialEqs, vars);
+                            this.storeEquations(trivialEqs);
+                        }
                     }
                 }
+                this.storeEquations(eqs);
             }
         }
     }
@@ -587,7 +578,8 @@ public final class EquationSystem {
         MultKind kind = this.finalMultKind();
         for (int i = 0; i < this.varsCount; i++) {
             Multiplicity mult = sol.getMultValue(i, kind);
-            assert !mult.isZero() && (mult.isSingleton() || mult.isCollector());
+            //assert !mult.isZero() && (mult.isSingleton() || mult.isCollector());
+            assert mult.isSingleton() || mult.isCollector();
             EdgeSignature es = this.varEsMap.get(i);
             shape.setEdgeSigMult(es, mult);
         }

@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
@@ -187,6 +186,10 @@ public final class EdgeBundle {
         this.allEdges.add(edge);
     }
 
+    void setEdgeAsFixed(ShapeEdge edge) {
+        this.possibleEdges.add(edge);
+    }
+
     void removeEdge(ShapeEdge edge) {
         assert this.allEdges.contains(edge);
         EdgeSignature splitEs = this.maybeGetEdgeSignature(edge);
@@ -202,6 +205,16 @@ public final class EdgeBundle {
 
     boolean isNonSingular() {
         return this.splitEsMap.size() > 1;
+    }
+
+    boolean isFixed(ShapeEdge edge, EdgeMultDir direction, Shape shape) {
+        boolean result = false;
+        ShapeNode opposite = edge.opposite(direction);
+        if (shape.getNodeMult(opposite).isOne()
+            && this.possibleEdges.contains(edge)) {
+            result = true;
+        }
+        return result;
     }
 
     void computeAdditionalEdges(Materialisation mat) {
@@ -237,31 +250,7 @@ public final class EdgeBundle {
         }
     }
 
-    boolean complyToOriginalMult() {
-        boolean result = true;
-        if (!this.origEsMult.isUnbounded()) {
-            // Count the number of split signatures.
-            int ecCount = this.splitEsMap.size();
-            Multiplicity oppMult =
-                Multiplicity.approx(ecCount, ecCount, EDGE_MULT);
-            if (!oppMult.le(this.origEsMult)) {
-                // Too many signatures.
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    void clearPossibleEdges() {
-        Set<ShapeEdge> toRemove = new MyHashSet<ShapeEdge>();
-        toRemove.addAll(this.possibleEdges);
-        for (ShapeEdge edge : toRemove) {
-            this.removeEdge(edge);
-        }
-    }
-
     void update(Materialisation mat) {
-        this.clearPossibleEdges();
         Shape shape = mat.getShape();
         // First remove signatures that are no longer present in the shape.
         // This may happen due to node splits.
@@ -276,19 +265,4 @@ public final class EdgeBundle {
         // Now search for the additional signatures.
         this.computeAdditionalEdges(mat);
     }
-
-    void removeNodeReferences(Set<ShapeNode> nodesToRemove) {
-        assert !nodesToRemove.contains(this.node);
-        Set<ShapeEdge> edgesToRemove = new MyHashSet<ShapeEdge>();
-        for (ShapeEdge edge : this.allEdges) {
-            if (nodesToRemove.contains(edge.source())
-                || nodesToRemove.contains(edge.target())) {
-                edgesToRemove.add(edge);
-            }
-        }
-        for (ShapeEdge edgeToRemove : edgesToRemove) {
-            this.removeEdge(edgeToRemove);
-        }
-    }
-
 }
