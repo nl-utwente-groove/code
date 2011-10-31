@@ -387,18 +387,22 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (edge != null && isNodeEdgeIn()) {
             GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
         }
-        if (edge != null
-            && (edge.getInMult() != null || edge.getOutMult() != null)) {
-            String inMult =
-                edge.getInMult() == null ? "" : edge.getInMult().toString();
-            String outMult =
-                edge.getOutMult() == null ? "" : edge.getOutMult().toString();
-            GraphConstants.setExtraLabels(result,
-                new Object[] {outMult, inMult});
-            Point2D[] labelPositions =
-                {new Point2D.Double(GraphConstants.PERMILLE * 92 / 100, -11),
-                    new Point2D.Double(GraphConstants.PERMILLE * 8 / 100, -11)};
-            GraphConstants.setExtraLabelPositions(result, labelPositions);
+        if (edge != null) {
+            if (edge.getInMult() != null || edge.getOutMult() != null) {
+                String inMult =
+                    edge.getInMult() == null ? "" : edge.getInMult().toString();
+                String outMult =
+                    edge.getOutMult() == null ? ""
+                            : edge.getOutMult().toString();
+                GraphConstants.setExtraLabels(result, new Object[] {outMult,
+                    inMult});
+                Point2D[] labelPositions =
+                    {new Point2D.Double(IN_MULT_DIST, MULT_X),
+                        new Point2D.Double(OUT_MULT_DIST, MULT_X)};
+                GraphConstants.setExtraLabelPositions(result, labelPositions);
+            } else {
+                GraphConstants.setRemoveAttributes(result, MULT_REMOVAL);
+            }
         }
         if (getJGraph().hasActiveEditor()) {
             GraphConstants.setEditable(result, true);
@@ -486,4 +490,15 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Separator between level name and edge label. */
     private static final char LEVEL_NAME_SEPARATOR = ':';
+    /** Permille fractional distance of in multiplicity label from source node. */
+    private static final double IN_MULT_DIST =
+        GraphConstants.PERMILLE * 90 / 100;
+    /** Permille fractional distance of out multiplicity label from target node. */
+    private static final double OUT_MULT_DIST =
+        GraphConstants.PERMILLE * 10 / 100;
+    /** x-position of multiplicity labels. */
+    private static final double MULT_X = -11;
+    /** Multiplicity removal object. */
+    private static final Object[] MULT_REMOVAL = new Object[] {
+        GraphConstants.EXTRALABELPOSITIONS, GraphConstants.EXTRALABELS};
 }
