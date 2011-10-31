@@ -602,7 +602,6 @@ public final class Shape extends DefaultHostGraph {
     private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv,
             HostToShapeMap map, Shape origShape) {
         assert !this.isFixed();
-        EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();
         // For all binary edges of the shape. (T)
         for (ShapeEdge edgeT : this.binaryEdgeSet()) {
             // For outgoing and incoming maps.
@@ -618,18 +617,14 @@ public final class Shape extends DefaultHostGraph {
                     map.getPreImages(esT.getEquivClass());
                 // Compute the set of equivalence classes from the original
                 // shape that we need to consider.
-                for (EquivClass<ShapeNode> possibleK : origShape.getEquivRelation()) {
-                    if (ecTonS.containsAll(possibleK)) {
-                        kSet.add(possibleK);
-                    }
-                }
+                EquivRelation<ShapeNode> kSet =
+                    currGraphNeighEquiv.getKSet(ecTonS);
                 // Compute the bounded multiplicity sum.
                 Multiplicity mult =
                     ShapeNeighEquiv.getEdgeSetMult(origShape, nodeS,
                         esT.getLabel(), kSet, direction);
                 // Store the multiplicity in the proper multiplicity map.
                 this.setEdgeSigMult(esT, mult);
-                kSet.clear();
             }
         }
     }
@@ -735,7 +730,7 @@ public final class Shape extends DefaultHostGraph {
         EdgeSignature result = null;
         for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
             if (es.getNode().equals(node) && es.getLabel().equals(label)
-                && es.getEquivClass().equals(ec)) {
+                && es.hasSameEquivClass(ec)) {
                 result = es;
                 break;
             }
@@ -1083,6 +1078,8 @@ public final class Shape extends DefaultHostGraph {
         // Replace the original equivalence class with the remainder of the
         // split.
         this.replaceEc(origEc, remEc);
+        // Update the equivalence relation.
+        this.equivRel.add(singEc);
     }
 
     /**
@@ -1172,7 +1169,7 @@ public final class Shape extends DefaultHostGraph {
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
             for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-                if (es.hasEquivClass(ec)) {
+                if (es.hasSameEquivClass(ec)) {
                     result.add(es);
                 }
             }
@@ -1209,8 +1206,6 @@ public final class Shape extends DefaultHostGraph {
                 }
             }
         }
-        // Update the equivalence relation.
-        this.equivRel.add(newEc);
     }
 
     private void replaceEc(EquivClass<ShapeNode> oldEc,
@@ -1272,11 +1267,6 @@ public final class Shape extends DefaultHostGraph {
         EdgeSignature es = this.getEdgeSignature(edge, direction);
         return this.isEdgeSigUnique(es);
     }
-
-    /* private boolean isEdgeUnique(ShapeEdge edge) {
-         return this.isEdgeUnique(edge, OUTGOING)
-             && this.isEdgeUnique(edge, INCOMING);
-     }*/
 
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {

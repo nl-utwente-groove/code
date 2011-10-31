@@ -201,7 +201,7 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
                 mappedCodEc.add(codNode);
             }
             EquivClass<ShapeNode> codEc = cod.getEquivClassOf(codNode);
-            if (!codEc.equals(mappedCodEc)) {
+            if (!EquivClass.<ShapeNode>areEqual(codEc, mappedCodEc)) {
                 return NON_ISO;
             } else {
                 mappedCodEc = new EquivClass<ShapeNode>();

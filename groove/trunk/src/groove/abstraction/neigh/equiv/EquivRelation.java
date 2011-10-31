@@ -16,9 +16,12 @@
  */
 package groove.abstraction.neigh.equiv;
 
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.trans.HostElement;
 import groove.util.Fixable;
+
+import java.util.Map;
 
 /**
  * An equivalence relation is represented as a set of equivalence classes.
@@ -40,6 +43,7 @@ public class EquivRelation<T extends HostElement> extends
      * elements can be added or removed. This avoids nasty hashing problems.
      */
     private int hashCode;
+    private Map<T,EquivClass<T>> elemMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -48,6 +52,7 @@ public class EquivRelation<T extends HostElement> extends
     /** Basic constructor. */
     public EquivRelation() {
         super();
+        this.elemMap = new MyHashMap<T,EquivClass<T>>();
         this.hashCode = 0;
     }
 
@@ -119,16 +124,27 @@ public class EquivRelation<T extends HostElement> extends
     }
 
     @Override
-    public boolean add(EquivClass<T> obj) {
+    public boolean add(EquivClass<T> ec) {
         assert !this.isFixed();
-        obj.setFixed();
-        return super.add(obj);
+        ec.setFixed();
+        for (T elem : ec) {
+            this.elemMap.put(elem, ec);
+        }
+        return super.add(ec);
     }
 
     @Override
     public boolean remove(Object obj) {
         assert !this.isFixed();
-        return super.remove(obj);
+        boolean contained = super.remove(obj);
+        if (contained) {
+            @SuppressWarnings("unchecked")
+            EquivClass<T> ec = (EquivClass<T>) obj;
+            for (T elem : ec) {
+                this.elemMap.remove(elem);
+            }
+        }
+        return contained;
     }
 
     // ------------------------------------------------------------------------
@@ -158,14 +174,7 @@ public class EquivRelation<T extends HostElement> extends
      * an element belongs only to a single equivalence class.
      */
     public EquivClass<T> getEquivClassOf(T elem) {
-        EquivClass<T> result = null;
-        for (EquivClass<T> ec : this) {
-            if (ec.contains(elem)) {
-                result = ec;
-                break;
-            }
-        }
-        return result;
+        return this.elemMap.get(elem);
     }
 
     /**

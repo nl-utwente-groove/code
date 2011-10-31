@@ -81,7 +81,7 @@ public final class EdgeSignature {
             result =
                 this.direction.equals(es.direction)
                     && this.node.equals(es.node) && this.label.equals(es.label)
-                    && this.equivClass.equals(es.equivClass);
+                    && this.hasSameEquivClass(es.equivClass);
         }
         // Check for consistency between equals and hashCode.
         assert (!result || this.hashCode() == o.hashCode());
@@ -138,8 +138,8 @@ public final class EdgeSignature {
     }
 
     /** Returns true if this signature has the given class. */
-    public boolean hasEquivClass(EquivClass<ShapeNode> ec) {
-        return this.equivClass.equals(ec);
+    public boolean hasSameEquivClass(EquivClass<ShapeNode> ec) {
+        return EquivClass.<ShapeNode>areEqual(this.equivClass, ec);
     }
 
     /** Returns true if the signature node is in the equivalence class. */
