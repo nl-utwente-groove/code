@@ -144,6 +144,17 @@ public final class EquivClass<T extends HostElement> extends MyHashSet<T>
     // Other methods
     // ------------------------------------------------------------------------
 
+    /** Compare the given equivalence classes, first by hash then by equality. */
+    public static <T extends HostElement> boolean areEqual(EquivClass<T> ec0,
+            EquivClass<T> ec1) {
+        boolean result = false;
+        if (ec0.hashCode() == ec1.hashCode()) {
+            // The classes may be equal.
+            result = ec0.equals(ec1);
+        }
+        return result;
+    }
+
     /** Callback method computing the hash code. */
     private int computeHashCode() {
         final int prime = 31;

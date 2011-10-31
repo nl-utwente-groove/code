@@ -76,7 +76,7 @@ public final class Util {
 
     /** Returns the set of binary edges of the given graph. */
     @SuppressWarnings("unchecked")
-    private static <E extends HostEdge> Set<E> getBinaryEdges(HostGraph graph) {
+    public static <E extends HostEdge> Set<E> getBinaryEdges(HostGraph graph) {
         Set<E> result = new MyHashSet<E>();
         for (HostEdge edge : graph.edgeSet()) {
             if (edge.getRole() == EdgeRole.BINARY) {

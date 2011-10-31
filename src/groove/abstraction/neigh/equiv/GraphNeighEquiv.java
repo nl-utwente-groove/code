@@ -152,6 +152,8 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         // Equivalence classes removed by splitting. 
         EquivRelation<HostNode> delEquivClasses = new EquivRelation<HostNode>();
 
+        this.prepareRefinement();
+
         // For all equivalence classes.
         for (EquivClass<HostNode> ec : this) {
             this.refineEquivClass(ec, newEquivClasses, delEquivClasses);
@@ -171,6 +173,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     private void refineEquivClass(EquivClass<HostNode> ec,
             EquivRelation<HostNode> newEquivClasses,
             EquivRelation<HostNode> delEquivClasses) {
+
+        if (ec.size() == 1) {
+            return;
+        }
 
         // Convert the equivalence class to an array for efficiency's sake.
         HostNode nodes[] = new HostNode[ec.size()];
@@ -265,6 +271,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         }
     }
 
+    void prepareRefinement() {
+        // Empty by design.
+    }
+
     /**
      * Returns true if the two given nodes are still equivalent in the next
      * iteration. This method implements the second item of Def. 17 (see
@@ -320,7 +330,6 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * equivalence relation on nodes. The returned equivalence class is
      * neither stored nor cached, so call this method consciously.
      */
-    // EDUARDO: Performance bottleneck
     private EquivClass<HostEdge> getEdgeEquivClass(HostEdge edge) {
         EquivClass<HostEdge> ec = new EquivClass<HostEdge>();
         ec.add(edge);

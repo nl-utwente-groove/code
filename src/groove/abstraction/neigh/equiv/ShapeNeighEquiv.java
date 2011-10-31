@@ -21,6 +21,7 @@ import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -28,6 +29,8 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.TypeLabel;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+
+import java.util.Map;
 
 /**
  * This class implements the neighbourhood equivalence relation on shapes.
@@ -37,6 +40,12 @@ import groove.trans.HostNode;
  * @author Eduardo Zambon
  */
 public final class ShapeNeighEquiv extends GraphNeighEquiv {
+
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    private Map<EquivClass<HostNode>,EquivRelation<ShapeNode>> kMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -77,29 +86,39 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    @Override
+    void prepareRefinement() {
+        this.kMap =
+            new MyHashMap<EquivClass<HostNode>,EquivRelation<ShapeNode>>();
+        Shape shape = (Shape) this.graph;
+        // For all equivalence classes.
+        for (EquivClass<HostNode> ec : this) {
+            // Compute the set of equivalence classes from the shape that
+            // we need to consider.
+            EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();
+            for (EquivClass<ShapeNode> possibleK : shape.getEquivRelation()) {
+                if (ec.containsAll(possibleK)) {
+                    kSet.add(possibleK);
+                }
+            }
+            this.kMap.put(ec, kSet);
+        }
+    }
+
     /**
      * Returns true if the two given nodes are still equivalent in the next
      * iteration. This method implements the second item of Def. 19 (see
      * comment on the class definition, top of this file).
      */
     @Override
-    // EDUARDO: Performance bottleneck
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
         Shape shape = (Shape) this.graph;
-        EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();
         boolean equiv = true;
         // For all labels.
         labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
-                // Compute the set of equivalence classes from the shape that
-                // we need to consider.
-                for (EquivClass<ShapeNode> possibleK : shape.getEquivRelation()) {
-                    if (ec.containsAll(possibleK)) {
-                        kSet.add(possibleK);
-                    }
-                }
-
+                EquivRelation<ShapeNode> kSet = this.getKSet(ec);
                 // Calculate the sums.
                 Multiplicity n0OutMultSum =
                     getEdgeSetMult(shape, (ShapeNode) n0, label, kSet, OUTGOING);
@@ -109,7 +128,6 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
                     getEdgeSetMult(shape, (ShapeNode) n0, label, kSet, INCOMING);
                 Multiplicity n1InMultSum =
                     getEdgeSetMult(shape, (ShapeNode) n1, label, kSet, INCOMING);
-
                 // Compare the sums.
                 equiv =
                     equiv && n0OutMultSum.equals(n1OutMultSum)
@@ -117,10 +135,13 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
                 if (!equiv) {
                     break labelLoop;
                 }
-                kSet.clear();
             }
         }
         return equiv;
     }
 
+    /** Returns the kSet associated with the given equivalence class. */
+    public EquivRelation<ShapeNode> getKSet(EquivClass<HostNode> ec) {
+        return this.kMap.get(ec);
+    }
 }
