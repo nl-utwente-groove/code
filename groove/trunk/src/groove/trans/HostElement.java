@@ -25,5 +25,8 @@ import groove.graph.Element;
  * @version $Revision $
  */
 public interface HostElement extends Element {
-    // no added functionality
+    /** 
+     * Returns the number of this element.
+     */
+    public int getNumber();
 }

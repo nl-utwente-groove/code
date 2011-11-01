@@ -213,7 +213,7 @@ public class ShapeMorphism extends HostGraphMorphism {
                     if (ecT == null) {
                         ecT = otherEcT;
                     }
-                    if (!EquivClass.<ShapeNode>areEqual(ecT, otherEcT)) {
+                    if (!ecT.equals(otherEcT)) {
                         complyToEquivClass = false;
                         break ecLoop;
                     }

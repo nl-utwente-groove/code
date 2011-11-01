@@ -2,9 +2,11 @@ package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.graph.InversableElementMap;
 import groove.graph.Node;
 import groove.trans.HostEdge;
+import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.util.Fixable;
 
@@ -87,7 +89,8 @@ public class HostToShapeMap extends
         }
         EquivClass<HostNode> nodesG = this.ecMap.get(ecS);
         if (nodesG == null) {
-            nodesG = new EquivClass<HostNode>();
+            nodesG =
+                new NodeEquivClass<HostNode>((HostFactory) this.getFactory());
             for (ShapeNode nodeS : ecS) {
                 nodesG.addAll(this.getPreImages(nodeS));
             }

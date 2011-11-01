@@ -31,6 +31,7 @@ import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
+import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.abstraction.neigh.equiv.ShapeNeighEquiv;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
@@ -497,7 +498,7 @@ public final class Shape extends DefaultHostGraph {
             // the node to be added.
             super.addNode(nodeS);
             // Fill the shape node multiplicity.
-            Multiplicity mult = origShape.getNodeSetMultSum(ec.downcast());
+            Multiplicity mult = origShape.getNodeSetMultSum(ec);
             this.setNodeMult(nodeS, mult);
             // Update the shape morphism.
             for (HostNode node : ec) {
@@ -515,12 +516,16 @@ public final class Shape extends DefaultHostGraph {
             HostToShapeMap map) {
         assert !this.isFixed();
         for (EquivClass<HostNode> ecG : er) {
-            EquivClass<ShapeNode> ecS = new EquivClass<ShapeNode>();
+            EquivClass<ShapeNode> ecS = newNodeEquivClass();
             for (HostNode node : ecG) {
                 ecS.add(map.getNode(node));
             }
             this.equivRel.add(ecS);
         }
+    }
+
+    private EquivClass<ShapeNode> newNodeEquivClass() {
+        return new NodeEquivClass<ShapeNode>(this.getFactory());
     }
 
     /**
@@ -792,11 +797,11 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the bounded sum of the node multiplicities of the given set.
      */
-    public Multiplicity getNodeSetMultSum(Set<ShapeNode> nodes) {
+    public Multiplicity getNodeSetMultSum(Set<? extends HostNode> nodes) {
         Multiplicity accumulator =
             Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
-        for (ShapeNode node : nodes) {
-            Multiplicity nodeMult = this.getNodeMult(node);
+        for (HostNode node : nodes) {
+            Multiplicity nodeMult = this.getNodeMult((ShapeNode) node);
             accumulator = accumulator.add(nodeMult);
         }
         return accumulator;
@@ -844,7 +849,7 @@ public final class Shape extends DefaultHostGraph {
     /** Creates a new equivalence class and adds the given node in it. */
     private EquivClass<ShapeNode> addToNewEquivClass(ShapeNode node) {
         assert !this.isFixed();
-        EquivClass<ShapeNode> newEc = new EquivClass<ShapeNode>();
+        EquivClass<ShapeNode> newEc = newNodeEquivClass();
         newEc.add(node);
         this.equivRel.add(newEc);
         return newEc;
@@ -1067,7 +1072,7 @@ public final class Shape extends DefaultHostGraph {
         EquivClass<ShapeNode> remEc = origEc.clone();
         remEc.remove(nodeS);
         // The singular equivalence class created by the operation.
-        EquivClass<ShapeNode> singEc = new EquivClass<ShapeNode>();
+        EquivClass<ShapeNode> singEc = newNodeEquivClass();
         singEc.add(nodeS);
         // Update the multiplicities of the new singleton class.
         this.addNewSingletonEc(origEc, singEc);

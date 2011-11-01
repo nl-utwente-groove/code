@@ -122,7 +122,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
                 // We have a node label that should not be grouped by the
                 // abstraction. This means that the node will be put in a
                 // singleton equivalence class.
-                ec = new EquivClass<HostNode>();
+                ec = newNodeEquivClass();
                 ec.add(node);
                 this.add(ec);
                 continue;
@@ -134,7 +134,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             // Put the node in the proper equivalence class.
             if (ec == null) {
                 // We need to create a new equivalence class.
-                ec = new EquivClass<HostNode>();
+                ec = newNodeEquivClass();
                 ec.add(node);
                 labelsToClass.put(nodeLabels, ec);
             } else {
@@ -148,7 +148,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     /** Computes the next iteration of the equivalence relation. */
     private void refineEquivRelation() {
         // Clone the equivalence relation.
-        this.previous = super.clone();
+        this.previous = this.clone();
 
         // We need these two sets because we cannot change the object
         // during iteration.
@@ -263,7 +263,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             if (!alreadyIncluded) {
                 // OK, sweep the row and collect the equivalent nodes to
                 // create a new equivalence class.
-                EquivClass<HostNode> ec = new EquivClass<HostNode>();
+                EquivClass<HostNode> ec = newNodeEquivClass();
                 ec.add(ni);
                 for (int j = i + 1; j < nodes.length; j++) {
                     if (equiv[i][j]) {
@@ -279,6 +279,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
 
     void prepareRefinement() {
         // Empty by design.
+    }
+
+    private NodeEquivClass<HostNode> newNodeEquivClass() {
+        return new NodeEquivClass<HostNode>(this.graph.getFactory());
     }
 
     /**
@@ -334,7 +338,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             EdgeEquivData eed = this.getNormalEdgeEquivData(edge);
             EquivClass<HostEdge> edges = edgeMap.get(eed);
             if (edges == null) {
-                edges = new EquivClass<HostEdge>();
+                edges = new EdgeEquivClass<HostEdge>();
                 edgeMap.put(eed, edges);
             }
             edges.add(edge);
@@ -384,8 +388,8 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
                 EdgeEquivData eed = (EdgeEquivData) o;
                 result =
                     this.label.equals(eed.label)
-                        && EquivClass.areEqual(this.srcEc, eed.srcEc)
-                        && EquivClass.areEqual(this.tgtEc, eed.tgtEc);
+                        && this.srcEc.equals(eed.srcEc)
+                        && this.tgtEc.equals(eed.tgtEc);
             }
             // Check for consistency between equals and hashCode.
             assert (!result || this.hashCode() == o.hashCode());

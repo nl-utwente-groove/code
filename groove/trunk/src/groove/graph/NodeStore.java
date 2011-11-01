@@ -128,6 +128,13 @@ public class NodeStore<N extends Node> {
         return this.maxNodeNr;
     }
 
+    /** Returns the node in the store with the given number. */
+    public Node getNodeFromNr(int nr) {
+        Node node = this.nodes[nr];
+        assert node != null;
+        return node;
+    }
+
     /**
      * The total number of nodes in the {@link #nodes} array.
      */
