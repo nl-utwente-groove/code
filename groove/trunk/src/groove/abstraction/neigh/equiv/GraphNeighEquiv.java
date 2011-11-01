@@ -25,6 +25,7 @@ import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.TreeHashSet;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,8 +50,12 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     private int radius;
     /** The graph on which the equivalence relation was computed. */
     final HostGraph graph;
+    /** The set of binary labels of the given graph. */
+    final Set<TypeLabel> binaryLabels;
     /** The previously computed equivalence relation. */
     private EquivRelation<HostNode> previous;
+    /** Temporary store. */
+    private TreeHashSet<EdgeEquivData> store;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -61,6 +66,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         assert graph != null;
         assert radius >= 0;
         this.graph = graph;
+        this.binaryLabels = Util.getBinaryLabels(this.graph);
         this.radius = radius;
         this.previous = null;
         // Compute and store the equivalence classes based on node labels.
@@ -284,7 +290,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         boolean equiv = true;
         Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
         // For all labels.
-        labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
+        labelLoop: for (TypeLabel label : this.binaryLabels) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
                 Util.getIntersectEdges(this.graph, n0, ec, label,
@@ -315,44 +321,91 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     }
 
     /**
-     * Returns true if the given edges are equivalent according to the
-     * equivalence relation, i.e., if both edges have the same label, and if
-     * both sources and targets are equivalent.
-     */
-    private boolean areEquivalent(HostEdge e0, HostEdge e1) {
-        return e0.label().equals(e1.label())
-            && this.areEquivalent(e0.source(), e1.source())
-            && this.areEquivalent(e0.target(), e1.target());
-    }
-
-    /**
-     * Builds and returns the equivalence class of the given edge, based on the
-     * equivalence relation on nodes. The returned equivalence class is
-     * neither stored nor cached, so call this method consciously.
-     */
-    private EquivClass<HostEdge> getEdgeEquivClass(HostEdge edge) {
-        EquivClass<HostEdge> ec = new EquivClass<HostEdge>();
-        ec.add(edge);
-        for (HostEdge e : this.graph.edgeSet()) {
-            if (this.areEquivalent(edge, e)) {
-                ec.add(e);
-            }
-        }
-        return ec;
-    }
-
-    /**
      * Builds and returns the equivalence relation on edges, based on the
      * equivalence relation on nodes. The returned equivalence relation is
      * neither stored nor cached, so call this method consciously.
      */
     public EquivRelation<HostEdge> getEdgesEquivRel() {
-        EquivRelation<HostEdge> er = new EquivRelation<HostEdge>();
+        this.store = new TreeHashSet<EdgeEquivData>();
+        Map<EdgeEquivData,EquivClass<HostEdge>> edgeMap =
+            new MyHashMap<EdgeEquivData,EquivClass<HostEdge>>();
+
         for (HostEdge edge : this.graph.edgeSet()) {
-            EquivClass<HostEdge> ec = this.getEdgeEquivClass(edge);
-            er.add(ec);
+            EdgeEquivData eed = this.getNormalEdgeEquivData(edge);
+            EquivClass<HostEdge> edges = edgeMap.get(eed);
+            if (edges == null) {
+                edges = new EquivClass<HostEdge>();
+                edgeMap.put(eed, edges);
+            }
+            edges.add(edge);
         }
+
+        EquivRelation<HostEdge> er = new EquivRelation<HostEdge>();
+        er.addAll(edgeMap.values());
+
         return er;
+    }
+
+    private EdgeEquivData getNormalEdgeEquivData(HostEdge edge) {
+        EdgeEquivData eed = new EdgeEquivData(edge);
+        EdgeEquivData result = this.store.put(eed);
+        if (result == null) {
+            result = eed;
+        }
+        return result;
+    }
+
+    private class EdgeEquivData {
+
+        final EquivClass<HostNode> srcEc;
+        final TypeLabel label;
+        final EquivClass<HostNode> tgtEc;
+        final int hashCode;
+
+        EdgeEquivData(HostEdge edge) {
+            this(edge.source(), edge.label(), edge.target());
+        }
+
+        EdgeEquivData(HostNode source, TypeLabel label, HostNode target) {
+            this.srcEc = GraphNeighEquiv.this.getEquivClassOf(source);
+            this.label = label;
+            this.tgtEc = GraphNeighEquiv.this.getEquivClassOf(target);
+            this.hashCode = this.computeHashCode();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            boolean result;
+            if (this == o) {
+                result = true;
+            } else if (!(o instanceof EdgeEquivData)) {
+                result = false;
+            } else {
+                EdgeEquivData eed = (EdgeEquivData) o;
+                result =
+                    this.label.equals(eed.label)
+                        && EquivClass.areEqual(this.srcEc, eed.srcEc)
+                        && EquivClass.areEqual(this.tgtEc, eed.tgtEc);
+            }
+            // Check for consistency between equals and hashCode.
+            assert (!result || this.hashCode() == o.hashCode());
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.hashCode;
+        }
+
+        private int computeHashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.label.hashCode();
+            result = prime * result + this.srcEc.hashCode();
+            result = prime * result + this.tgtEc.hashCode();
+            return result;
+        }
+
     }
 
 }

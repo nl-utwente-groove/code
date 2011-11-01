@@ -615,14 +615,10 @@ public final class Shape extends DefaultHostGraph {
                 // Get the reverse map of ecT from the shape morphism.
                 EquivClass<HostNode> ecTonS =
                     map.getPreImages(esT.getEquivClass());
-                // Compute the set of equivalence classes from the original
-                // shape that we need to consider.
-                EquivRelation<ShapeNode> kSet =
-                    currGraphNeighEquiv.getKSet(ecTonS);
                 // Compute the bounded multiplicity sum.
                 Multiplicity mult =
-                    ShapeNeighEquiv.getEdgeSetMult(origShape, nodeS,
-                        esT.getLabel(), kSet, direction);
+                    currGraphNeighEquiv.getMultSum(direction, nodeS,
+                        esT.getLabel(), ecTonS);
                 // Store the multiplicity in the proper multiplicity map.
                 this.setEdgeSigMult(esT, mult);
             }
