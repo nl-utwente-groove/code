@@ -19,6 +19,7 @@ package groove.abstraction.neigh.shape;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.TypeLabel;
+import groove.trans.HostNode;
 
 /**
  * An edge signature is composed by a direction, a node (n), a label (l),
@@ -44,14 +45,15 @@ public final class EdgeSignature {
     // ------------------------------------------------------------------------
 
     /** Standard constructor that just fills in the object fields. */
+    @SuppressWarnings("unchecked")
     public EdgeSignature(EdgeMultDir direction, ShapeNode node,
-            TypeLabel label, EquivClass<ShapeNode> equivClass) {
+            TypeLabel label, EquivClass<? extends HostNode> equivClass) {
         this.direction = direction;
         this.label = label;
         this.node = node;
-        this.equivClass = equivClass;
         // Fix the equivalence class to avoid problems with hashing.
-        this.equivClass.setFixed();
+        equivClass.setFixed();
+        this.equivClass = (EquivClass<ShapeNode>) equivClass;
         this.hashCode = this.computeHashCode();
     }
 

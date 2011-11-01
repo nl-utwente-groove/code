@@ -22,7 +22,6 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -45,7 +44,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     // Object Fields
     // ------------------------------------------------------------------------
 
-    private Map<EquivClass<HostNode>,EquivRelation<ShapeNode>> kMap;
+    private Map<EdgeSignature,Multiplicity> multMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -58,50 +57,41 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     }
 
     // ------------------------------------------------------------------------
-    // Static Methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns the bounded sum of the multiplicities of the edge
-     * signatures defined by the given node, label, and set of equivalence
-     * classes. See item 6 of Def. 22 on page 17 of the Technical Report for
-     * more details.
-     */
-    public static Multiplicity getEdgeSetMult(Shape shape, ShapeNode node,
-            TypeLabel label, EquivRelation<ShapeNode> kSet,
-            EdgeMultDir direction) {
-        int i = 0;
-        int j = 0;
-        for (EquivClass<ShapeNode> k : kSet) {
-            EdgeSignature es =
-                shape.getEdgeSignature(direction, node, label, k);
-            Multiplicity mult = shape.getEdgeSigMult(es);
-            i = Multiplicity.add(i, mult.getLowerBound());
-            j = Multiplicity.add(j, mult.getUpperBound());
-        }
-        return Multiplicity.approx(i, j, MultKind.EDGE_MULT);
-    }
-
-    // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
     @Override
     void prepareRefinement() {
-        this.kMap =
-            new MyHashMap<EquivClass<HostNode>,EquivRelation<ShapeNode>>();
         Shape shape = (Shape) this.graph;
-        // For all equivalence classes.
-        for (EquivClass<HostNode> ec : this) {
-            // Compute the set of equivalence classes from the shape that
-            // we need to consider.
-            EquivRelation<ShapeNode> kSet = new EquivRelation<ShapeNode>();
-            for (EquivClass<ShapeNode> possibleK : shape.getEquivRelation()) {
-                if (ec.containsAll(possibleK)) {
-                    kSet.add(possibleK);
+        this.multMap = new MyHashMap<EdgeSignature,Multiplicity>();
+        Map<EquivClass<ShapeNode>,EquivClass<HostNode>> reverseKMap =
+            new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
+        Multiplicity zero =
+            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+
+        kLoop: for (EquivClass<ShapeNode> k : shape.getEquivRelation()) {
+            for (EquivClass<HostNode> ec : this) {
+
+                if (ec.containsAll(k)) {
+                    reverseKMap.put(k, ec);
+                    continue kLoop;
                 }
             }
-            this.kMap.put(ec, kSet);
+        }
+
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (EdgeSignature esS : shape.getEdgeMultMapKeys(direction)) {
+                EdgeSignature es =
+                    new EdgeSignature(direction, esS.getNode(), esS.getLabel(),
+                        reverseKMap.get(esS.getEquivClass()));
+                Multiplicity accMult = this.multMap.get(es);
+                if (accMult == null) {
+                    accMult = zero;
+                }
+                Multiplicity mult = shape.getEdgeSigMult(esS);
+                accMult = accMult.add(mult);
+                this.multMap.put(es, accMult);
+            }
         }
     }
 
@@ -112,22 +102,19 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      */
     @Override
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
-        Shape shape = (Shape) this.graph;
         boolean equiv = true;
         // For all labels.
-        labelLoop: for (TypeLabel label : Util.getBinaryLabels(this.graph)) {
+        labelLoop: for (TypeLabel label : this.binaryLabels) {
             // For all equivalence classes.
             for (EquivClass<HostNode> ec : this) {
-                EquivRelation<ShapeNode> kSet = this.getKSet(ec);
-                // Calculate the sums.
                 Multiplicity n0OutMultSum =
-                    getEdgeSetMult(shape, (ShapeNode) n0, label, kSet, OUTGOING);
+                    this.getMultSum(OUTGOING, (ShapeNode) n0, label, ec);
                 Multiplicity n1OutMultSum =
-                    getEdgeSetMult(shape, (ShapeNode) n1, label, kSet, OUTGOING);
+                    this.getMultSum(OUTGOING, (ShapeNode) n1, label, ec);
                 Multiplicity n0InMultSum =
-                    getEdgeSetMult(shape, (ShapeNode) n0, label, kSet, INCOMING);
+                    this.getMultSum(INCOMING, (ShapeNode) n0, label, ec);
                 Multiplicity n1InMultSum =
-                    getEdgeSetMult(shape, (ShapeNode) n1, label, kSet, INCOMING);
+                    this.getMultSum(INCOMING, (ShapeNode) n1, label, ec);
                 // Compare the sums.
                 equiv =
                     equiv && n0OutMultSum.equals(n1OutMultSum)
@@ -140,8 +127,17 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         return equiv;
     }
 
-    /** Returns the kSet associated with the given equivalence class. */
-    public EquivRelation<ShapeNode> getKSet(EquivClass<HostNode> ec) {
-        return this.kMap.get(ec);
+    /**
+     * Returns the multiplicity sum for the edge signature formed by the
+     * given parameters.
+     */
+    public Multiplicity getMultSum(EdgeMultDir direction, ShapeNode node,
+            TypeLabel label, EquivClass<? extends HostNode> ec) {
+        EdgeSignature es = new EdgeSignature(direction, node, label, ec);
+        Multiplicity result = this.multMap.get(es);
+        if (result == null) {
+            result = Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+        }
+        return result;
     }
 }
