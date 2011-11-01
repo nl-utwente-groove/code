@@ -19,6 +19,7 @@ package groove.abstraction.neigh.shape.iso;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -193,7 +194,8 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         }
 
         // Last, check the equivalence relation.
-        EquivClass<ShapeNode> mappedCodEc = new EquivClass<ShapeNode>();
+        EquivClass<ShapeNode> mappedCodEc =
+            new NodeEquivClass<ShapeNode>(dom.getFactory());
         for (EquivClass<ShapeNode> domEc : dom.getEquivRelation()) {
             ShapeNode codNode = null;
             for (ShapeNode domNode : domEc) {
@@ -201,10 +203,10 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
                 mappedCodEc.add(codNode);
             }
             EquivClass<ShapeNode> codEc = cod.getEquivClassOf(codNode);
-            if (!EquivClass.<ShapeNode>areEqual(codEc, mappedCodEc)) {
+            if (!codEc.equals(mappedCodEc)) {
                 return NON_ISO;
             } else {
-                mappedCodEc = new EquivClass<ShapeNode>();
+                mappedCodEc = new NodeEquivClass<ShapeNode>(dom.getFactory());
             }
         }
 

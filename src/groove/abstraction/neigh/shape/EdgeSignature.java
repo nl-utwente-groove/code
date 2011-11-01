@@ -141,7 +141,7 @@ public final class EdgeSignature {
 
     /** Returns true if this signature has the given class. */
     public boolean hasSameEquivClass(EquivClass<ShapeNode> ec) {
-        return EquivClass.<ShapeNode>areEqual(this.equivClass, ec);
+        return this.equivClass.equals(ec);
     }
 
     /** Returns true if the signature node is in the equivalence class. */

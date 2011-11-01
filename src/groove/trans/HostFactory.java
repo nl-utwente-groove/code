@@ -165,6 +165,11 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return new NodeStore<HostNode>(DefaultHostNode.createFactory(null));
     }
 
+    /** Returns the node in the store with the given number. */
+    public HostNode getNodeFromNr(int nr) {
+        return (HostNode) this.getNodeStore().getNodeFromNr(nr);
+    }
+
     /** Internal store of previously generated value nodes. */
     private final Map<String,Map<Object,ValueNode>> valueMaps =
         new HashMap<String,Map<Object,ValueNode>>();
