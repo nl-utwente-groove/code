@@ -53,4 +53,9 @@ public final class ShapeTransition extends DefaultGraphTransition {
             && this.index == ((ShapeTransition) obj).index;
     }
 
+    @Override
+    public ShapeState source() {
+        return (ShapeState) this.source;
+    }
+
 }

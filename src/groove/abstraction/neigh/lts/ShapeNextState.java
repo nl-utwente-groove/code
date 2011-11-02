@@ -22,7 +22,6 @@ import groove.graph.EdgeRole;
 import groove.lts.DerivationLabel;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -65,12 +64,12 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     // ------------------------------------------------------------------------
 
     @Override
-    public GraphState source() {
+    public ShapeState source() {
         return this.transition.source();
     }
 
     @Override
-    public GraphState target() {
+    public ShapeState target() {
         return this;
     }
 
@@ -110,12 +109,12 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public GraphState getTarget(GraphState source) {
+    public ShapeState getTarget(GraphState source) {
         return this;
     }
 
     @Override
-    public GraphTransition toTransition(GraphState source) {
+    public ShapeTransition toTransition(GraphState source) {
         return this.transition;
     }
 

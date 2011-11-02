@@ -92,7 +92,8 @@ public final class ShapeGenerator {
                     + this.gts.getSubsumedStatesCount() + " subsumed ("
                     + this.gts.openStateCount() + " discarded)");
                 System.out.println("Transitions: " + this.getTransitionCount()
-                    + " (" + AGTS.getSpuriousTransitionCount() + " spurious)");
+                    + " (" + this.gts.getSubsumedTransitionsCount()
+                    + " subsumed)");
                 for (GraphState finalState : this.gts.getResultStates()) {
                     Shape finalShape = (Shape) finalState.getGraph();
                     System.out.println(finalShape.toString());
