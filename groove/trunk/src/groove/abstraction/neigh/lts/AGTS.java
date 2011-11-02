@@ -43,7 +43,8 @@ import java.util.Set;
  */
 public final class AGTS extends GTS {
 
-    private int subsumedCount;
+    private int subsumedStatesCount;
+    private int subsumedTransitionsCount;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -52,7 +53,8 @@ public final class AGTS extends GTS {
     /** Constructs the GTS object for the given grammar. */
     public AGTS(GraphGrammar grammar) {
         super(grammar);
-        this.subsumedCount = 0;
+        this.subsumedStatesCount = 0;
+        this.subsumedTransitionsCount = 0;
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
     }
@@ -63,15 +65,19 @@ public final class AGTS extends GTS {
 
     /** The given state must be of type ShapeState. */
     @Override
-    public ShapeState addState(GraphState newState) {
-        assert newState instanceof ShapeState : "Type error : " + newState
+    public ShapeState addState(GraphState newGState) {
+        assert newGState instanceof ShapeState : "Type error : " + newGState
             + " is not of type ShapeState.";
+        ShapeState newState = (ShapeState) newGState;
         ShapeState result = (ShapeState) super.addState(newState);
         if (result == null) {
             // There is no state in the transition system that subsumes the
             // new state. Maybe the new state subsumes some states that are
             // already in the GTS.
-            this.subsumedCount += ((ShapeState) newState).markSubsumedStates();
+            this.subsumedStatesCount += newState.markSubsumedStates();
+        } else if (newState.isSubsumed()) {
+            // The state will produce only a transition.
+            this.subsumedTransitionsCount++;
         }
         return result;
     }
@@ -154,7 +160,12 @@ public final class AGTS extends GTS {
 
     /** Returns the number of states marked as subsumed. */
     public int getSubsumedStatesCount() {
-        return this.subsumedCount;
+        return this.subsumedStatesCount;
+    }
+
+    /** Returns the number of transitions marked as subsumed. */
+    public int getSubsumedTransitionsCount() {
+        return this.subsumedTransitionsCount;
     }
 
     // ------------------------------------------------------------------------
@@ -183,6 +194,9 @@ public final class AGTS extends GTS {
             if (checker.isDomStrictlyLargerThanCod(comparison)) {
                 // New state subsumes old one.
                 myShapeState.addSubsumedState(otherShapeState);
+            } else if (checker.isCodSubsumesDom(comparison)) {
+                // Old state subsumes new state.
+                myShapeState.setSubsumptor(otherShapeState);
             }
             return checker.areEqual(comparison);
         }

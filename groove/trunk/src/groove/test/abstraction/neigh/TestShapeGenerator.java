@@ -88,8 +88,8 @@ public class TestShapeGenerator {
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(50, generator.getStateCount());
-            assertEquals(106, generator.getTransitionCount());
+            assertEquals(31, generator.getStateCount());
+            assertEquals(65, generator.getTransitionCount());
         } else {
             assertEquals(54, generator.getStateCount());
             assertEquals(130, generator.getTransitionCount());
@@ -108,10 +108,11 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
-        assertEquals(51, generator.getStateCount());
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(156, generator.getTransitionCount());
+            assertEquals(32, generator.getStateCount());
+            assertEquals(98, generator.getTransitionCount());
         } else {
+            assertEquals(51, generator.getStateCount());
             assertEquals(160, generator.getTransitionCount());
         }
     }
@@ -128,10 +129,11 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator();
         generator.generate(GRAMMAR, START_GRAPH, PRINT_RESULT);
-        assertEquals(48, generator.getStateCount());
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(147, generator.getTransitionCount());
+            assertEquals(33, generator.getStateCount());
+            assertEquals(132, generator.getTransitionCount());
         } else {
+            assertEquals(48, generator.getStateCount());
             assertEquals(222, generator.getTransitionCount());
         }
 
@@ -140,10 +142,12 @@ public class TestShapeGenerator {
 
         generator.reset();
         generator.exploreGrammar(PRINT_RESULT);
-        assertEquals(124, generator.getStateCount());
+
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(408, generator.getTransitionCount());
+            assertEquals(80, generator.getStateCount());
+            assertEquals(308, generator.getTransitionCount());
         } else {
+            assertEquals(124, generator.getStateCount());
             assertEquals(588, generator.getTransitionCount());
         }
     }

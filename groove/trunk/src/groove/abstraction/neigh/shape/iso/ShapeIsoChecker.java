@@ -103,9 +103,18 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return (result & DOM_SUBSUMES_COD) == DOM_SUBSUMES_COD;
     }
 
+    /** Returns true if the co-domain subsumes the domain. */
+    public boolean isCodSubsumesDom(int result) {
+        return (result & COD_SUBSUMES_DOM) == COD_SUBSUMES_DOM;
+    }
+
     /** Returns true if the given result value has the equals flag set. */
     public boolean areEqual(int result) {
-        return this.isDomEqualsCod(result);
+        boolean equal = this.isDomEqualsCod(result);
+        if (CHECK_SUBSUMPTION) {
+            equal |= this.isCodSubsumesDom(result);
+        }
+        return equal;
     }
 
     /** 

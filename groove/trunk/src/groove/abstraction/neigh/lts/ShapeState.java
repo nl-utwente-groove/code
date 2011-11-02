@@ -52,9 +52,9 @@ public class ShapeState extends AbstractGraphState {
     private boolean closed;
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
-    final ArrayList<GraphTransition> transitions;
+    private final ArrayList<GraphTransition> transitions;
     /** Set of possible subsumed states. */
-    ArrayList<ShapeState> subsumedStates;
+    private ArrayList<ShapeState> subsumedStates;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -138,7 +138,8 @@ public class ShapeState extends AbstractGraphState {
     // Other methods
     // ------------------------------------------------------------------------
 
-    private boolean setSubsumptor(ShapeState subsumptor) {
+    /** Sets the subsumptor to the given state. */
+    public boolean setSubsumptor(ShapeState subsumptor) {
         if (this.getSubsumptor() != null) {
             return false;
         } else {
@@ -163,6 +164,16 @@ public class ShapeState extends AbstractGraphState {
      */
     public void addSubsumedState(ShapeState subsumed) {
         this.subsumedStates.add(subsumed);
+    }
+
+    /** Returns true if this state has subsumed states. */
+    public boolean hasSubsumedStates() {
+        return !this.subsumedStates.isEmpty();
+    }
+
+    /** Returns true is this state subsumes the given state. */
+    public boolean subsumes(ShapeState stateToTest) {
+        return this.subsumedStates.contains(stateToTest);
     }
 
     /**
