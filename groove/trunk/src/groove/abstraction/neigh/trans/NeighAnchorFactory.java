@@ -16,19 +16,26 @@
  */
 package groove.abstraction.neigh.trans;
 
+import groove.abstraction.neigh.Parameters;
 import groove.trans.AnchorFactory;
 import groove.trans.Rule;
+import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
+import groove.trans.RuleNode;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Anchor factory used in abstraction.
- * The anchor is taken to be the entire LHS of the rule.
+ * The anchor is taken to be elements of the LHS that are within the abstraction
+ * radius of eraser elements.
  * 
  * @author Eduardo Zambon
  */
-public class TotalAnchorFactory implements AnchorFactory<Rule> {
+public class NeighAnchorFactory implements AnchorFactory<Rule> {
     /** Private empty constructor to make this a singleton class. */
-    private TotalAnchorFactory() {
+    private NeighAnchorFactory() {
         // Empty constructor.
     }
 
@@ -38,17 +45,32 @@ public class TotalAnchorFactory implements AnchorFactory<Rule> {
      * initialised already.
      */
     public RuleGraph newAnchor(Rule rule) {
-        RuleGraph result = rule.lhs();
+        // EZ says: for simplicity this method assumes that the abstraction
+        // radius is one.
+        assert Parameters.getAbsRadius() == 1;
+        RuleGraph result = rule.lhs().newGraph(rule.getName() + "-anchor");
+        // List of nodes that need to be in a singleton equivalence class
+        // after materialisation.
+        ArrayList<RuleNode> singularNodes = new ArrayList<RuleNode>();
+        singularNodes.addAll(Arrays.asList(rule.getEraserNodes()));
+        singularNodes.addAll(rule.getModifierEnds());
+        // Everything that is within radius distance of the singular nodes
+        // is also part of the anchor.
+        for (RuleNode singularNode : singularNodes) {
+            for (RuleEdge incidentEdge : rule.lhs().edgeSet(singularNode)) {
+                result.addEdge(incidentEdge);
+            }
+        }
         return result;
     }
 
     /**
      * Returns the singleton instance of this class.
      */
-    static public TotalAnchorFactory getInstance() {
+    static public NeighAnchorFactory getInstance() {
         return prototype;
     }
 
     /** The singleton instance of this class. */
-    static private TotalAnchorFactory prototype = new TotalAnchorFactory();
+    static private NeighAnchorFactory prototype = new NeighAnchorFactory();
 }

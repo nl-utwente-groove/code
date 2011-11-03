@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh;
 
-import groove.abstraction.neigh.trans.TotalAnchorFactory;
+import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.trans.MinimalAnchorFactory;
 import groove.trans.Rule;
 
@@ -31,7 +31,7 @@ public final class Abstraction {
     /** Enter abstraction mode. */
     public static void initialise() {
         Multiplicity.initMultStore();
-        Rule.setAnchorFactory(TotalAnchorFactory.getInstance());
+        Rule.setAnchorFactory(NeighAnchorFactory.getInstance());
     }
 
     /** Leaves abstraction mode. */

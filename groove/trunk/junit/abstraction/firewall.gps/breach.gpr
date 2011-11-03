@@ -22,12 +22,12 @@
         </node>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:P</string>
+                <string>flag:u</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>flag:i</string>
+                <string>type:P</string>
             </attr>
         </edge>
         <edge to="n0" from="n1">
@@ -40,9 +40,9 @@
                 <string>type:L</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:u</string>
+                <string>flag:i</string>
             </attr>
         </edge>
     </graph>
