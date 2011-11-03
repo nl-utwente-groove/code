@@ -17,11 +17,13 @@
 package groove.trans;
 
 import groove.graph.DefaultNode;
+import groove.graph.Node;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.trans.RuleEffect.Fragment;
 import groove.util.CacheReference;
+import groove.util.DisposableDispenser;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -526,6 +528,9 @@ final public class BasicEvent extends
             result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
+            if (added == null && this.doAggressiveNodeReuse) {
+                added = new ArrayList<HostNode>();
+            }
             for (int i = 0; i < count; i++) {
                 result[i] =
                     createNode(i, creatorNodes[i].getType(), sourceNodes, added);
@@ -578,7 +583,11 @@ final public class BasicEvent extends
             }
         }
         if (!added) {
-            result = createNode(type);
+            if (this.doAggressiveNodeReuse) {
+                result = getFreshNode(sourceNodes, current);
+            } else {
+                result = createNode(type);
+            }
             if (current != null) {
                 current.add(result);
             }
@@ -588,6 +597,34 @@ final public class BasicEvent extends
         }
         assert result != null;
         return result;
+    }
+
+    /** Basic setter method. */
+    public void setAggressiveNodeReuse() {
+        this.doAggressiveNodeReuse = true;
+    }
+
+    private HostNode getFreshNode(Set<? extends HostNode> sourceNodes,
+            Collection<HostNode> current) {
+        int size = sourceNodes.size();
+        if (current != null) {
+            size += current.size();
+        }
+        int numbers[] = new int[size];
+        int i = 0;
+        for (Node node : sourceNodes) {
+            numbers[i] = node.getNumber();
+            i++;
+        }
+        if (current != null) {
+            for (Node node : current) {
+                numbers[i] = node.getNumber();
+                i++;
+            }
+        }
+        assert i == numbers.length;
+        int freshNr = new DisposableDispenser(numbers).getNext();
+        return getHostFactory().createNode(freshNr);
     }
 
     /**
@@ -672,6 +709,12 @@ final public class BasicEvent extends
     private List<List<HostNode>> freshNodeList;
     /** Store of previously used (canonical) coanchor images. */
     private Map<List<HostNode>,HostNode[]> coanchorImageMap;
+    /**
+     * Flag that indicates if a more expensive search should be used when
+     * creating nodes for this event. This is useful for abstraction, when we
+     * want to make sure the node store remains small. 
+     */
+    private boolean doAggressiveNodeReuse;
     /**
      * The total number of nodes (over all rules) created by {@link BasicEvent}.
      */

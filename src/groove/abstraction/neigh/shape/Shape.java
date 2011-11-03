@@ -46,9 +46,9 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
+import groove.util.DisposableDispenser;
 import groove.util.Duo;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -359,22 +359,7 @@ public final class Shape extends DefaultHostGraph {
     }
 
     private int getFirstFreeNodeNumber() {
-        int numbers[] = new int[this.nodeCount()];
-        int i = 0;
-        for (Node node : this.nodeSet()) {
-            numbers[i] = node.getNumber();
-            i++;
-        }
-        Arrays.sort(numbers);
-        int result = 0;
-        for (i = 0; i < numbers.length; i++) {
-            if (result == numbers[i]) {
-                result++;
-            } else {
-                break;
-            }
-        }
-        return result;
+        return new DisposableDispenser(this.nodeSet()).getNext();
     }
 
     /** Creates an edge accordingly to the given direction. */

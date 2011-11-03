@@ -458,6 +458,7 @@ public final class Materialisation {
         if (this.isRuleModifying()) {
             assert this.hasConcreteMatch();
             event = new BasicEvent(this.matchedRule, this.match, true);
+            ((BasicEvent) event).setAggressiveNodeReuse();
             if (record != null) {
                 event = record.normaliseEvent(event);
             }
