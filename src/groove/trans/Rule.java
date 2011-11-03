@@ -924,7 +924,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
-    final RuleEdge[] getEraserEdges() {
+    public final RuleEdge[] getEraserEdges() {
         if (this.eraserEdges == null) {
             this.eraserEdges = computeEraserEdges();
         }
@@ -966,7 +966,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Returns the LHS nodes that are not mapped to the RHS.
      */
-    final RuleNode[] getEraserNodes() {
+    public final RuleNode[] getEraserNodes() {
         if (this.eraserNodes == null) {
             this.eraserNodes = computeEraserNodes();
         }
@@ -987,7 +987,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Returns an array of LHS nodes that are endpoints of eraser edges, creator
      * edges or mergers.
      */
-    final Set<RuleNode> getModifierEnds() {
+    public final Set<RuleNode> getModifierEnds() {
         if (this.modifierEnds == null) {
             this.modifierEnds = computeModifierEnds();
         }

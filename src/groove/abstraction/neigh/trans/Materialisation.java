@@ -50,7 +50,9 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -93,6 +95,10 @@ public final class Materialisation {
      * The field is final but the morphism is modified by the materialisation.
      */
     private final ShapeMorphism morph;
+    /**
+     * The pre-match that triggered this materialisation.
+     */
+    private final Proof preMatch;
     /**
      * The matched rule.
      */
@@ -159,20 +165,29 @@ public final class Materialisation {
     private Materialisation(Shape shape, Proof preMatch) {
         this.stage = 1;
         this.originalShape = shape;
-        this.shape = this.originalShape.clone();
-        this.morph =
-            ShapeMorphism.createIdentityMorphism(this.shape, this.originalShape);
-        this.matchedRule = preMatch.getRule();
+        this.preMatch = preMatch;
         this.originalMatch = (RuleToShapeMap) preMatch.getPatternMap();
         // Fix the original match to prevent modification.
         this.originalMatch.setFixed();
-        this.match = this.originalMatch.clone();
-        // Create new auxiliary structures.
-        this.matNodes = new MyHashSet<ShapeNode>();
-        this.matEdges = new MyHashSet<ShapeEdge>();
-        this.possibleEdges = new MyHashSet<ShapeEdge>();
-        this.bundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
-        this.allBundles = new MyHashSet<EdgeBundle>();
+        this.matchedRule = preMatch.getRule();
+        if (this.isRuleModifying()) {
+            this.shape = this.originalShape.clone();
+            this.morph =
+                ShapeMorphism.createIdentityMorphism(this.shape,
+                    this.originalShape);
+            this.match = this.originalMatch.clone();
+            // Create new auxiliary structures.
+            this.matNodes = new MyHashSet<ShapeNode>();
+            this.matEdges = new MyHashSet<ShapeEdge>();
+            this.possibleEdges = new MyHashSet<ShapeEdge>();
+            this.bundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
+            this.allBundles = new MyHashSet<EdgeBundle>();
+        } else {
+            // Nothing to do, we just return immediately.
+            this.shape = null;
+            this.morph = null;
+            this.match = null;
+        }
     }
 
     /**
@@ -183,6 +198,7 @@ public final class Materialisation {
         this.stage = mat.stage;
         // No need to clone the original objects since they are fixed.
         this.originalShape = mat.originalShape;
+        this.preMatch = mat.preMatch;
         this.originalMatch = mat.originalMatch;
         this.matchedRule = mat.matchedRule;
         // The match should also be fixed.
@@ -231,8 +247,15 @@ public final class Materialisation {
      */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             Proof preMatch) {
+        Set<Materialisation> result;
         Materialisation initialMat = new Materialisation(shape, preMatch);
-        return initialMat.compute();
+        if (initialMat.isRuleModifying()) {
+            result = initialMat.compute();
+        } else {
+            result = new MyHashSet<Materialisation>();
+            result.add(initialMat);
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -257,6 +280,10 @@ public final class Materialisation {
     // ------------------------------------------------------------------------
     // Common methods to all stages.
     // ------------------------------------------------------------------------
+
+    private boolean isRuleModifying() {
+        return this.matchedRule.isModifying();
+    }
 
     /** Basic getter method. */
     public int getStage() {
@@ -286,6 +313,10 @@ public final class Materialisation {
     /** Basic getter method. */
     ShapeMorphism getShapeMorphism() {
         return this.morph;
+    }
+
+    List<RuleNode> getSingularRuleNodes() {
+        return Arrays.asList(this.matchedRule.getAnchorNodes());
     }
 
     Set<EdgeBundle> getBundles() {
@@ -422,13 +453,22 @@ public final class Materialisation {
      * transformed shape, which is not yet normalised.
      */
     public Pair<Shape,RuleEvent> applyMatch(SystemRecord record) {
-        assert this.hasConcreteMatch();
-        RuleEvent event = new BasicEvent(this.matchedRule, this.match, true);
-        if (record != null) {
-            event = record.normaliseEvent(event);
+        RuleEvent event;
+        Shape result;
+        if (this.isRuleModifying()) {
+            assert this.hasConcreteMatch();
+            event = new BasicEvent(this.matchedRule, this.match, true);
+            if (record != null) {
+                event = record.normaliseEvent(event);
+            }
+            ShapeRuleApplication app =
+                new ShapeRuleApplication(event, this.shape);
+            result = app.getTarget();
+        } else {
+            assert record != null;
+            event = record.getEvent(this.preMatch);
+            result = this.originalShape;
         }
-        ShapeRuleApplication app = new ShapeRuleApplication(event, this.shape);
-        Shape result = app.getTarget();
         return new Pair<Shape,RuleEvent>(result, event);
     }
 
@@ -454,8 +494,12 @@ public final class Materialisation {
             // Item 4: check that for all nodes in the image of the LHS, their
             // equivalence class is a singleton set.
             if (!this.shape.getEquivClassOf(nodeS).isSingleton()) {
-                complyToEquivClass = false;
-                break;
+                RuleNode nodeR =
+                    this.match.getPreImages(nodeS).iterator().next();
+                if (this.getSingularRuleNodes().contains(nodeR)) {
+                    complyToEquivClass = false;
+                    break;
+                }
             }
         }
 
@@ -593,7 +637,8 @@ public final class Materialisation {
 
         // Make sure that all shape nodes in the match image are in a
         // singleton equivalence class.
-        for (ShapeNode nodeS : this.match.nodeMapValueSet()) {
+        for (RuleNode singularNodeR : this.getSingularRuleNodes()) {
+            ShapeNode nodeS = this.match.getNode(singularNodeR);
             if (!this.shape.getEquivClassOf(nodeS).isSingleton()) {
                 // We have a rule node that was mapped to a shape node that is
                 // not in its own equivalence class. We need to singularise the
