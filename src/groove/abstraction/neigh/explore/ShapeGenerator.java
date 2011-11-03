@@ -78,9 +78,9 @@ public final class ShapeGenerator {
     public void exploreGrammar(boolean fromMain) {
         this.gts = new AGTS(this.grammar);
 
-        Exploration exploration =
-            new Exploration(new Serialized("shapebfs"),
-                new Serialized("final"), 0);
+        Exploration exploration = new Exploration(new Serialized("shapebfs"),
+        //new Exploration(new Serialized("shapedfs"),
+            new Serialized("final"), 0);
         try {
             exploration.play(this.gts, null);
             if (exploration.isInterrupted()) {
