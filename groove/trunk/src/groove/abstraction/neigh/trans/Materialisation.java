@@ -650,7 +650,7 @@ public final class Materialisation {
         // The deterministic steps of the materialisation are done.
         // Create a new equation system for this materialisation and return
         // the resulting materialisations from the solution.
-        this.computeBundles();
+        this.computeBundles(this.getAffectedEdges());
         ResultSet result = new ResultSet();
         EquationSystem.newEqSys(this).solve(result);
 
@@ -694,17 +694,17 @@ public final class Materialisation {
         }
     }
 
-    private void computeBundles() {
+    private void computeBundles(Set<ShapeEdge> toProcess) {
         assert this.stage == 1;
         // Keep adding edges and bundles until we reach a fix point.
         Set<ShapeEdge> handledEdges = new MyHashSet<ShapeEdge>();
         Set<EdgeBundle> handledBundles = new MyHashSet<EdgeBundle>();
-        Set<ShapeEdge> toProcess = this.getAffectedEdges();
 
         while (!toProcess.isEmpty()) {
             for (ShapeEdge edge : toProcess) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    EdgeBundle bundle = this.getBundle(edge, direction);
+                    EdgeBundle bundle =
+                        this.createBundle(edge, direction, true);
                     bundle.addEdge(this.shape, edge, direction);
                 }
                 handledEdges.add(edge);
@@ -837,6 +837,7 @@ public final class Materialisation {
         Set<ShapeEdge> newEdges = new MyHashSet<ShapeEdge>();
         for (EdgeBundle origBundle : origMap.keySet()) {
             EdgeMultDir direction = origBundle.direction;
+            EdgeMultDir reverse = direction.reverse();
             // Create a new bundle for the new node.
             EdgeBundle newBundle =
                 this.createBundle(origBundle.origEs, newNode);
@@ -851,6 +852,11 @@ public final class Materialisation {
                     this.shape.addEdgeWithoutCheck(newEdge);
                     // Update the shape morphism.
                     this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
+                    // Now handle the opposite bundle.
+                    EdgeBundle oppBundle =
+                        this.createBundle(newEdge, reverse, true);
+                    oppBundle.addEdge(this.shape, newEdge, reverse);
+                    oppBundle.setEdgeAsFixed(newEdge);
                 }
                 newEdges.clear();
             }

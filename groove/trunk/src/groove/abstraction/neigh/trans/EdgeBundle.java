@@ -181,6 +181,9 @@ public final class EdgeBundle {
         assert this.direction == direction;
         assert this.node.equals(edge.incident(direction));
         assert this.label.equals(edge.label());
+        if (this.allEdges.contains(edge)) {
+            return;
+        }
         EdgeSignature splitEs = this.getEdgeSignature(shape, edge, direction);
         this.getSplitEsEdges(splitEs).add(edge);
         this.allEdges.add(edge);
