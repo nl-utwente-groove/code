@@ -365,6 +365,12 @@ public enum StrategyValue implements ParsableValue {
     /** Special mask for development strategies only. Treated specially. */
     public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
         EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, SHAPE_BFS, SHAPE_DFS);
+    /** Set of strategies for abstract exploration. */
+    public final static EnumSet<StrategyValue> ABSTRACT_STRATEGIES =
+        EnumSet.of(SHAPE_BFS, SHAPE_DFS);
+    /** Set of strategies for abstract exploration. */
+    public final static EnumSet<StrategyValue> CONCRETE_STRATEGIES =
+        EnumSet.complementOf(ABSTRACT_STRATEGIES);
 
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Strategy> {

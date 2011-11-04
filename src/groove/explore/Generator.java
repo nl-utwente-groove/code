@@ -129,8 +129,10 @@ public class Generator extends CommandLineTool {
         super(argsList);
 
         this.strategyOption =
-            new TemplatedOption<Strategy>("s", "str",
-                StrategyEnumerator.newInstance());
+            new TemplatedOption<Strategy>(
+                "s",
+                "str",
+                StrategyEnumerator.newInstance(StrategyValue.CONCRETE_STRATEGIES));
         this.acceptorOption =
             new TemplatedOption<Acceptor>("a", "acc",
                 AcceptorEnumerator.newInstance());
@@ -872,7 +874,7 @@ public class Generator extends CommandLineTool {
      * @see Serialized
      * @see StoreCommandLineOption
      */
-    protected static class TemplatedOption<A> extends
+    public static class TemplatedOption<A> extends
             StoreCommandLineOption<Serialized> {
 
         // Enumerator of all allowed options.
