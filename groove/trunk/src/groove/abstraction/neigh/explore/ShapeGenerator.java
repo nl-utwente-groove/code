@@ -17,49 +17,251 @@
 package groove.abstraction.neigh.explore;
 
 import groove.abstraction.neigh.Abstraction;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
 import groove.abstraction.neigh.lts.AGTS;
-import groove.abstraction.neigh.shape.Shape;
 import groove.explore.Exploration;
+import groove.explore.Generator.TemplatedOption;
+import groove.explore.StrategyEnumerator;
+import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
-import groove.lts.GraphState;
+import groove.explore.strategy.Strategy;
+import groove.explore.util.ExplorationStatistics;
+import groove.graph.DefaultGraph;
 import groove.trans.GraphGrammar;
+import groove.util.CommandLineOption;
+import groove.util.CommandLineTool;
+import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Performs a full abstract exploration of a grammar given as parameter.
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeGenerator {
+public final class ShapeGenerator extends CommandLineTool {
 
     // ------------------------------------------------------------------------
-    // Object Fields
+    // Static fields
     // ------------------------------------------------------------------------
 
+    /** Usage message for the generator. */
+    private static final String USAGE_MESSAGE =
+        "Usage: ShapeGenerator [options] <grammar> <start-graph-name>";
+
+    /**
+     * The GTS that is being constructed. We make it static to enable memory
+     * profiling. The field is cleared in the constructor, so consecutive
+     * Generator instances work as expected.
+     */
+    private static AGTS gts;
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /** String describing the location where the grammar is to be found. */
+    private String grammarLocation;
+    /** String describing the start graph within the grammar. */
+    private String startGraphName;
+    /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
-    private AGTS gts;
+    /** The exploration to be used for the state space generation. */
+    private Exploration exploration;
+    /** The exploration statistics for the generated state space. */
+    private ExplorationStatistics explorationStats;
+    /** Flag that indicates the statistics should be printed. */
+    private boolean isPrintStats;
+    /** Local references to the command line options. */
+    private final TemplatedOption<Strategy> strategyOption;
+    private final MultiplicityBoundOption nodeBoundOption;
+    private final MultiplicityBoundOption edgeBoundOption;
+    private final StatsOption statsOption;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Basic constructor. */
-    public ShapeGenerator() {
-        this.reset();
+    /**
+     * Constructs the generator. In particular, initializes the command line
+     * option classes.
+     */
+    public ShapeGenerator(List<String> argsList) {
+        super(argsList);
+        this.strategyOption =
+            new TemplatedOption<Strategy>(
+                "s",
+                "str",
+                StrategyEnumerator.newInstance(StrategyValue.ABSTRACT_STRATEGIES));
+        addOption(this.strategyOption);
+        this.nodeBoundOption = new MultiplicityBoundOption(MultKind.NODE_MULT);
+        addOption(this.nodeBoundOption);
+        this.edgeBoundOption = new MultiplicityBoundOption(MultKind.EDGE_MULT);
+        addOption(this.edgeBoundOption);
+        this.statsOption = new StatsOption();
+        addOption(this.statsOption);
+    }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * This implementation returns <tt>{@link #USAGE_MESSAGE}</tt>.
+     */
+    @Override
+    protected String getUsageMessage() {
+        return USAGE_MESSAGE;
+    }
+
+    /**
+     * Goes through the list of command line arguments and tries to find command
+     * line options. The options and their parameters are subsequently removed
+     * from the argument list. If an option cannot be parsed, the method prints
+     * an error message and terminates the program.
+     */
+    @Override
+    public void processArguments() {
+        super.processArguments();
+        List<String> argsList = getArgs();
+        if (argsList.size() > 0) {
+            setGrammarLocation(argsList.remove(0));
+        }
+        if (argsList.size() > 0) {
+            setStartGraph(argsList.remove(0));
+        }
+        if (this.grammarLocation == null) {
+            printError("No grammar location specified", true);
+        }
+        Serialized strategy = null;
+        if (isOptionActive(this.strategyOption)) {
+            strategy = this.strategyOption.getValue();
+        } else {
+            strategy = new Serialized("shapebfs");
+        }
+        this.exploration =
+            new Exploration(strategy, new Serialized("final"), 0);
+        if (getVerbosity() == 2) {
+            ShapeMatchApplier.DEBUG = true;
+        } else {
+            ShapeMatchApplier.DEBUG = false;
+        }
+    }
+
+    /**
+     * Callback method to check whether the log command line option is
+     * supported. This implementation returns <tt>false</tt> always.
+     */
+    @Override
+    protected boolean supportsLogOption() {
+        return false;
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
+    /**
+     * Sets the grammar to be used for state space generation.
+     * @param grammarLocation the file name of the grammar (with or without file
+     *        name extension)
+     */
+    private void setGrammarLocation(String grammarLocation) {
+        this.grammarLocation = grammarLocation;
+    }
+
+    /**
+     * Sets the start graph to be used for state space generation.
+     * @param startGraphName the name of the start graph (without file name
+     *        extension)
+     */
+    private void setStartGraph(String startGraphName) {
+        this.startGraphName = startGraphName;
+    }
+
     /** Resets the generator. */
-    public void reset() {
+    private void reset() {
         Abstraction.initialise();
-        this.gts = null;
+        gts = null;
+    }
+
+    /**
+     * Returns the GTS that is being generated. The GTS is lazily obtained from
+     * the grammar if it had not yet been initialised.
+     * @see #getGrammar()
+     */
+    private AGTS getGTS() {
+        if (gts == null) {
+            gts = new AGTS(getGrammar());
+        }
+        return gts;
+    }
+
+    /**
+     * Starts the state space generation process. Before invoking this method,
+     * all relevant parameters should be set.
+     */
+    public void start() {
+        processArguments();
+        init();
+        explore();
+        report();
+    }
+
+    /**
+     * The initialisation phase of state space generation. Called from
+     * <tt>{@link #start}</tt>.
+     */
+    protected void init() {
+        this.explorationStats = new ExplorationStatistics(getGTS());
+        this.explorationStats.configureForGenerator(this.getVerbosity());
+    }
+
+    /**
+     * Explores the state space.
+     */
+    public void explore() {
+        reset();
+        if (getVerbosity() > LOW_VERBOSITY) {
+            println("\n======================================================\n");
+            println("Grammar:\t" + this.grammarLocation);
+            println("Start graph:\t"
+                + (this.startGraphName == null ? "default"
+                        : this.startGraphName));
+            println("Exploration:\t" + this.exploration.getIdentifier());
+            println("Timestamp:\t" + this.invocationTime);
+            print("\nProgress:\n");
+            getGTS().addLTSListener(new GenerateProgressMonitor());
+        }
+        this.explorationStats.start();
+        try {
+            this.exploration.play(getGTS(), null);
+            if (this.exploration.isInterrupted()) {
+                new Exception().printStackTrace();
+            }
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        this.explorationStats.stop();
+    }
+
+    /**
+     * Returns the grammar used for generating the state space. The grammar is
+     * lazily loaded in. The method throws an error and returns
+     * <code>null</code> if the grammar could not be loaded.
+     */
+    private GraphGrammar getGrammar() {
+        if (this.grammar == null) {
+            this.loadGrammar(this.grammarLocation, this.startGraphName);
+        }
+        return this.grammar;
     }
 
     /** Loads a grammar from a given grammar location and a start graph. */
@@ -67,92 +269,193 @@ public final class ShapeGenerator {
         try {
             this.grammar =
                 Groove.loadGrammar(grammarFile, startGraph).toGrammar();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            this.grammar.setFixed();
+        } catch (FormatException exc) {
+            printError("Grammar format error: " + exc.getMessage(), false);
+        } catch (IOException exc) {
+            printError("I/O error while loading grammar: " + exc.getMessage(),
+                false);
         }
     }
 
-    /** Runs the state space exploration. */
-    public void exploreGrammar(boolean fromMain) {
-        this.gts = new AGTS(this.grammar);
-
-        Exploration exploration = new Exploration(new Serialized("shapebfs"),
-        //new Exploration(new Serialized("shapedfs"),
-            new Serialized("final"), 0);
-        try {
-            exploration.play(this.gts, null);
-            if (exploration.isInterrupted()) {
-                new Exception().printStackTrace();
-            }
-            if (fromMain) {
-                System.out.println("States: " + this.getStateCount() + " ("
-                    + this.getFinalStatesCount() + " final) -- "
-                    + this.gts.getSubsumedStatesCount() + " subsumed ("
-                    + this.gts.openStateCount() + " discarded)");
-                System.out.println("Transitions: " + this.getTransitionCount()
-                    + " (" + this.gts.getSubsumedTransitionsCount()
-                    + " subsumed)");
-                for (GraphState finalState : this.gts.getResultStates()) {
-                    Shape finalShape = (Shape) finalState.getGraph();
-                    System.out.println(finalShape.toString());
-                }
-            }
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
+    private void setPrintStats() {
+        this.isPrintStats = true;
     }
 
-    /** Generates the state space for the given grammar and start graph. */
-    public void generate(String grammarFile, String startGraph, boolean fromMain) {
-        loadGrammar(grammarFile, startGraph);
-        if (this.grammar != null) {
-            exploreGrammar(fromMain);
+    private void report() {
+        printfMedium(
+            "\nStates: %d (%d final) -- %d subsumed (%d discarded)\nTransitions: %d (%d subsumed)\n",
+            getStateCount(), getFinalStatesCount(),
+            getGTS().getSubsumedStatesCount(), getGTS().openStateCount(),
+            getTransitionCount(), getGTS().getSubsumedTransitionsCount());
+        // See if we have to save the GTS into a file.
+        if (getOutputFileName() != null) {
+            DefaultGraph gtsGraph =
+                getGTS().toPlainGraph(true, true, true, false);
+            try {
+                Groove.saveGraph(gtsGraph, getOutputFileName());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // See if we have to print the statistics.
+        if (this.isPrintStats) {
+            String report = this.explorationStats.getReport();
+            if (report.length() > 0) {
+                println();
+                println(report);
+            }
         }
     }
 
     /** Basic getter method. */
     public int getStateCount() {
-        return this.gts.nodeCount();
+        return getGTS().nodeCount();
     }
 
     /** Basic getter method. */
     public int getTransitionCount() {
-        return this.gts.getTransitionCount();
+        return getGTS().getTransitionCount();
     }
 
     /** Basic getter method. */
     public int getFinalStatesCount() {
-        return this.gts.getFinalStates().size();
+        return getGTS().getFinalStates().size();
     }
 
     // ------------------------------------------------------------------------
-    // Main method.
+    // Main method
     // ------------------------------------------------------------------------
 
-    /** Command line method. */
-    public static void main(String args[]) {
-        String usage =
-            "Usage : ShapeGenerator <grammar> <startGraph> "
-                + "-n <node_mult_bound> -m <edge_mult_bound -i <abs_radius>";
-        if (args.length != 8) {
-            System.err.println(usage);
-            System.exit(1);
+    /**
+     * Attempts to load a graph grammar from a given location provided as a
+     * parameter with either default start state or a start state provided as a
+     * second parameter.
+     * @param args generator options, grammar and start graph name
+     */
+    public static void main(String[] args) {
+        new ShapeGenerator(new LinkedList<String>(Arrays.asList(args))).start();
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /**
+     * Command line option to specify a multiplicity bound.
+     * @author Eduardo Zambon
+     */
+    private static class MultiplicityBoundOption implements CommandLineOption {
+
+        final MultKind kind;
+
+        MultiplicityBoundOption(MultKind kind) {
+            this.kind = kind;
         }
 
-        String grammarFile = args[0];
-        String startGraph = args[1];
-        int nodeMultBound = Integer.parseInt(args[3]);
-        int edgeMultBound = Integer.parseInt(args[5]);
-        int absRadius = Integer.parseInt(args[7]);
+        @Override
+        public String getName() {
+            String name = null;
+            switch (this.kind) {
+            case NODE_MULT:
+                name = "n";
+                break;
+            case EDGE_MULT:
+                name = "m";
+                break;
+            default:
+                assert false;
+            }
+            return name;
+        }
 
-        // Set the abstraction parameters.
-        Parameters.setNodeMultBound(nodeMultBound);
-        Parameters.setEdgeMultBound(edgeMultBound);
-        Parameters.setAbsRadius(absRadius);
+        @Override
+        public String[] getDescription() {
+            String type = null;
+            switch (this.kind) {
+            case NODE_MULT:
+                type = "node";
+                break;
+            case EDGE_MULT:
+                type = "edge";
+                break;
+            default:
+                assert false;
+            }
+            return new String[] {
+                "Set the " + type + " multiplicity bound to "
+                    + "the given value.",
+                "Argument '" + getParameterName()
+                    + "' must be greater than zero (default value is 1)."};
+        }
 
-        ShapeGenerator generator = new ShapeGenerator();
-        generator.generate(grammarFile, startGraph, true);
+        @Override
+        public String getParameterName() {
+            return "val";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return true;
+        }
+
+        @Override
+        public void parse(String parameter) throws IllegalArgumentException {
+            int bound = 0;
+            try {
+                bound = Integer.parseInt(parameter);
+            } catch (NumberFormatException exc) {
+                throw new IllegalArgumentException("verbosity value '"
+                    + parameter + "' must be numeric");
+            }
+            if (bound < 1) {
+                throw new IllegalArgumentException("'" + parameter
+                    + "' bound must be >= 1.");
+            }
+            switch (this.kind) {
+            case NODE_MULT:
+                Parameters.setNodeMultBound(bound);
+                break;
+            case EDGE_MULT:
+                Parameters.setEdgeMultBound(bound);
+                break;
+            default:
+                assert false;
+            }
+        }
     }
+
+    /**
+     * Command line option to specify logging of exploration statistics.
+     * @author Eduardo Zambon
+     */
+    private class StatsOption implements CommandLineOption {
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Print the exploration statistics to stdout."};
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "t";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) {
+            ShapeGenerator.this.setPrintStats();
+        }
+
+    }
+
 }

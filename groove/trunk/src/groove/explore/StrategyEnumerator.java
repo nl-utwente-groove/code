@@ -40,9 +40,9 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      * Enumerates the available strategies one by one. A strategy is defined
      * by means of a Template<Strategy> instance.
      */
-    private StrategyEnumerator() {
+    private StrategyEnumerator(EnumSet<StrategyValue> enumSet) {
         super("exploration strategy", STRATEGY_TOOLTIP);
-        for (StrategyValue value : EnumSet.allOf(StrategyValue.class)) {
+        for (StrategyValue value : enumSet) {
             Template<Strategy> template = value.getTemplate();
             addTemplate(template);
         }
@@ -50,7 +50,12 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
 
     /** Returns a fresh instance of this class. */
     public static StrategyEnumerator newInstance() {
-        return new StrategyEnumerator();
+        return new StrategyEnumerator(EnumSet.allOf(StrategyValue.class));
+    }
+
+    /** Returns a fresh instance of this class. */
+    public static StrategyEnumerator newInstance(EnumSet<StrategyValue> enumSet) {
+        return new StrategyEnumerator(enumSet);
     }
 
     /**
@@ -64,7 +69,7 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
     }
 
     /** The singleton instance of this class. */
-    private final static StrategyEnumerator INSTANCE = new StrategyEnumerator();
+    private final static StrategyEnumerator INSTANCE = newInstance();
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
         + "<B>1.</B> Which of the applicable transitions will be taken; "
