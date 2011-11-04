@@ -449,6 +449,9 @@ public final class EquationSystem {
             morph.removeEdge(zeroEdge);
         }
 
+        // Remove nodes that cannot exist.
+        this.collectGarbageNodes(mat, sol);
+
         // Update the bundles and check for non-singular ones.
         Set<EdgeBundle> nonSingBundles = new MyHashSet<EdgeBundle>();
         Set<ShapeEdge> nonSingEdges = new MyHashSet<ShapeEdge>();
@@ -471,9 +474,6 @@ public final class EquationSystem {
                 shape.addEdge(positiveEdge);
             }
         }
-
-        // Remove nodes that cannot exist.
-        this.collectGarbageNodes(mat, sol);
 
         mat.moveToSecondStage(nonSingBundles);
 
@@ -583,7 +583,7 @@ public final class EquationSystem {
             EdgeSignature es = this.varEsMap.get(i);
             shape.setEdgeSigMult(es, mult);
         }
-        mat.markGarbageNodes();
+        mat.markGarbageNodes(mat.createGarbageNodeSet());
         if (mat.requiresThirdStage()) {
             mat.moveToThirdStage();
             return true;
