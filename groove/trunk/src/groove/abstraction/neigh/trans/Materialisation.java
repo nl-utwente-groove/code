@@ -704,8 +704,7 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             for (ShapeEdge edge : toProcess) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    EdgeBundle bundle =
-                        this.createBundle(edge, direction, true);
+                    EdgeBundle bundle = this.getBundle(edge, direction);
                     bundle.addEdge(this.shape, edge, direction);
                 }
                 handledEdges.add(edge);
@@ -730,6 +729,7 @@ public final class Materialisation {
         assert this.stage == 1;
         this.morph.removeNode(nodeToRemove);
         this.shape.removeNode(nodeToRemove);
+        this.removeNodeFromBundleMap(nodeToRemove);
     }
 
     // ------------------------------------------------------------------------
@@ -854,8 +854,7 @@ public final class Materialisation {
                     // Update the shape morphism.
                     this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
                     // Now handle the opposite bundle.
-                    EdgeBundle oppBundle =
-                        this.createBundle(newEdge, reverse, true);
+                    EdgeBundle oppBundle = this.getBundle(newEdge, reverse);
                     oppBundle.addEdge(this.shape, newEdge, reverse);
                     oppBundle.setEdgeAsFixed(newEdge);
                 }
@@ -896,8 +895,10 @@ public final class Materialisation {
     }
 
     /** Mark nodes that cannot exist. */
-    void markGarbageNodes() {
-        assert this.stage == 2;
+    void markGarbageNodes(Set<ShapeNode> garbageNodes) {
+        assert this.stage == 2 || this.stage == 3;
+        assert garbageNodes != null;
+        garbageNodes.clear();
         Shape shape = this.shape;
         Shape origShape = this.originalShape;
         this.updateShapeMorphism();
@@ -912,18 +913,11 @@ public final class Materialisation {
                     morph.getPreImages(shape, node, origEs, false, preImgEs);
                     if (preImgEs.isEmpty()) {
                         // The node got disconnected and therefore cannot exist.
-                        this.addGarbageNode(node);
+                        garbageNodes.add(node);
                     }
                 }
             }
         }
-    }
-
-    void addGarbageNode(ShapeNode node) {
-        if (this.garbageNodes == null) {
-            this.garbageNodes = new MyHashSet<ShapeNode>();
-        }
-        this.garbageNodes.add(node);
     }
 
     Set<ShapeNode> getGarbageNodes() {
@@ -934,12 +928,30 @@ public final class Materialisation {
         }
     }
 
+    Set<ShapeNode> createGarbageNodeSet() {
+        if (this.garbageNodes == null) {
+            this.garbageNodes = new MyHashSet<ShapeNode>();
+        }
+        return this.garbageNodes;
+    }
+
     /** Remove the nodes from the shape that were marked as garbage. */
     void garbageCollectNodes() {
         assert this.stage == 2 || this.stage == 3;
-        for (ShapeNode garbageNode : this.getGarbageNodes()) {
-            this.shape.removeNode(garbageNode);
+        if (this.garbageNodes == null) {
+            return;
         }
+        MyHashSet<ShapeNode> garbageNodes =
+            ((MyHashSet<ShapeNode>) this.garbageNodes).clone();
+        while (!garbageNodes.isEmpty()) {
+            for (ShapeNode garbageNode : garbageNodes) {
+                this.shape.removeNode(garbageNode);
+            }
+            // Need to search for garbage nodes again because of possible
+            // new disconnections.
+            this.markGarbageNodes(garbageNodes);
+        }
+
     }
 
     // ------------------------------------------------------------------------
@@ -991,7 +1003,7 @@ public final class Materialisation {
         Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
-            String number = "2";
+            String number = "10";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
