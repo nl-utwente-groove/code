@@ -52,6 +52,7 @@ public class ShapeState extends AbstractGraphState {
     private final Shape shape;
     /** Flag to indicate whether this state is closed or not. */
     private boolean closed;
+    /** A (possible null) reference to a state that subsumes this one. */
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
     private final ArrayList<GraphTransition> transitions;
@@ -75,6 +76,7 @@ public class ShapeState extends AbstractGraphState {
         this.shape = shape;
         this.shape.setName(toString());
         // Fix the shape to avoid modifications.
+        // EDUARDO: restore this after debugging is done.
         // this.shape.setFixed();
         this.closed = false;
         this.transitions = new ArrayList<GraphTransition>();
@@ -147,7 +149,10 @@ public class ShapeState extends AbstractGraphState {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Sets the subsumptor to the given state. */
+    /**
+     * Tries to set the subsumptor to the given state.
+     * Returns true is this state didn't already have a subsumptor.
+     */
     public boolean setSubsumptor(ShapeState subsumptor) {
         if (this.getSubsumptor() != null) {
             return false;
@@ -157,7 +162,7 @@ public class ShapeState extends AbstractGraphState {
         }
     }
 
-    /** Basic getter method. */
+    /** Basic getter method. Returned state may be null. */
     public ShapeState getSubsumptor() {
         return this.subsumptor;
     }
@@ -180,7 +185,7 @@ public class ShapeState extends AbstractGraphState {
         return !this.subsumedStates.isEmpty();
     }
 
-    /** Returns true is this state subsumes the given state. */
+    /** Returns true if this state subsumes the given state. */
     public boolean subsumes(ShapeState stateToTest) {
         return this.subsumedStates.contains(stateToTest);
     }

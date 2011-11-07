@@ -37,13 +37,15 @@ import java.util.Set;
 
 /**
  * The graph transition system for abstract exploration. All states of this
- * GTS are of type Shape.
+ * GTS are of type ShapeState or ShapeNextState.
  * 
  * @author Eduardo Zambon
  */
 public final class AGTS extends GTS {
 
+    /** Number of states marked as subsumed. */
     private int subsumedStatesCount;
+    /** Number of transitions marked as subsumed. */
     private int subsumedTransitionsCount;
 
     // ------------------------------------------------------------------------
@@ -63,7 +65,13 @@ public final class AGTS extends GTS {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** The given state must be of type ShapeState. */
+    /**
+     * Adds the given state to the abstract GTS. 
+     * The given state must be of type ShapeState or ShapeNextState.
+     * While trying to add the new state, subsumption is computed in both
+     * directions. If the state is fresh, this method goes over the subsumed
+     * states already stored and tries to update the subsumption relation.
+     */
     @Override
     public ShapeState addState(GraphState newGState) {
         assert newGState instanceof ShapeState : "Type error : " + newGState
@@ -83,6 +91,7 @@ public final class AGTS extends GTS {
     }
 
     /**
+     * Delegates to super.
      * The given transition must be of type ShapeTransition or ShapeNextState.
      */
     @Override
@@ -109,6 +118,7 @@ public final class AGTS extends GTS {
         };
     }
 
+    /** Throws an UnsupportedOperationException. */
     @Override
     protected GraphCache<GraphState,GraphTransition> createCache() {
         throw new UnsupportedOperationException();
@@ -181,6 +191,7 @@ public final class AGTS extends GTS {
             assert collapse == COLLAPSE_ISO_STRONG;
         }
 
+        /** Compares the given states both for (in)equality and subsumption. */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
             assert myState instanceof ShapeState;
