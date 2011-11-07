@@ -72,6 +72,8 @@ public class ShapeState extends AbstractGraphState {
         setCtrlState(ctrlState);
         this.shape = shape;
         this.shape.setName(toString());
+        // Fix the shape to avoid modifications.
+        this.shape.setFixed();
         this.closed = false;
         this.transitions = new ArrayList<GraphTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
