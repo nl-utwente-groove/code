@@ -757,6 +757,13 @@ public final class Shape extends DefaultHostGraph {
     public void setEdgeSigMult(EdgeSignature es, Multiplicity mult) {
         assert !this.isFixed();
         assert mult.isEdgeKind();
+        assert this.containsNode(es.getNode());
+        assert this.equivRel.contains(es.getEquivClass());
+        this.setEdgeSigMultWithoutCheck(es, mult);
+    }
+
+    /** Sets the edge signature multiplicity. */
+    private void setEdgeSigMultWithoutCheck(EdgeSignature es, Multiplicity mult) {
         EdgeMultDir direction = es.getDirection();
         if (!mult.isZero()) {
             this.getEdgeMultMap(direction).put(es, mult);
@@ -1188,7 +1195,7 @@ public final class Shape extends DefaultHostGraph {
             Multiplicity mult = this.getEdgeSigMult(oldEs);
             if (!mult.isZero()) {
                 if (this.getEdgesFromSig(newEs).size() > 0) {
-                    this.setEdgeSigMult(newEs, mult);
+                    this.setEdgeSigMultWithoutCheck(newEs, mult);
                 }
             }
         }
@@ -1196,6 +1203,9 @@ public final class Shape extends DefaultHostGraph {
 
     private void replaceEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
+        // Update the equivalence relation.
+        this.equivRel.remove(oldEc);
+        this.equivRel.add(newEc);
         // Update all maps that use edge signatures that contained the old
         // equivalence class.
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
@@ -1211,9 +1221,6 @@ public final class Shape extends DefaultHostGraph {
                 }
             }
         }
-        // Update the equivalence relation.
-        this.equivRel.remove(oldEc);
-        this.equivRel.add(newEc);
     }
 
     /** Returns true if both end points of the edge are concrete. */
@@ -1266,7 +1273,6 @@ public final class Shape extends DefaultHostGraph {
         newShape.createEquivRelation(sne.getPrevEquivRelation(), map);
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
-
         assert newShape.isInvariantOK();
         return newShape;
     }
@@ -1285,35 +1291,16 @@ public final class Shape extends DefaultHostGraph {
      * @return true if the invariant holds, false otherwise.
      */
     public boolean isInvariantOK() {
-        Set<ShapeEdge> intersectEdges = new MyHashSet<ShapeEdge>();
-        // For all labels.
-        for (TypeLabel label : Util.getBinaryLabels(this)) {
-            // For all nodes in the shape.
-            for (ShapeNode node : this.nodeSet()) {
-                // For all equivalence classes.
-                for (EquivClass<ShapeNode> ec : this.equivRel) {
-                    // Check outgoing multiplicities.
-                    Util.getIntersectEdges(this, node, ec, label,
-                        intersectEdges);
-                    if (intersectEdges.isEmpty()) {
-                        EdgeSignature es =
-                            this.getEdgeSignature(OUTGOING, node, label, ec);
-                        Multiplicity mult = this.getEdgeSigMult(es);
-                        if (!mult.isZero()) {
-                            return false;
-                        }
-                    }
-                    // Check incoming multiplicities.
-                    Util.getIntersectEdges(this, ec, node, label,
-                        intersectEdges);
-                    if (intersectEdges.isEmpty()) {
-                        EdgeSignature es =
-                            this.getEdgeSignature(INCOMING, node, label, ec);
-                        Multiplicity mult = this.getEdgeSigMult(es);
-                        if (!mult.isZero()) {
-                            return false;
-                        }
-                    }
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
+                // Make sure that the equivalence class of the edge signature
+                // is in the equivalence relation.
+                if (!this.equivRel.contains(es.getEquivClass())) {
+                    return false;
+                }
+                // Make sure the edge signature has corresponding edges.
+                if (this.getEdgesFromSig(es).size() == 0) {
+                    return false;
                 }
             }
         }

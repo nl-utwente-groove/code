@@ -282,10 +282,12 @@ public final class ShapeGenerator extends CommandLineTool {
         }
     }
 
+    /** Basic setter method. */
     private void setPrintStats() {
         this.isPrintStats = true;
     }
 
+    /** Writes output accordingly to options given to the generator. */
     private void report() {
         printfMedium(
             "\nStates: %d (%d final) -- %d subsumed (%d discarded)\nTransitions: %d (%d subsumed)\n",

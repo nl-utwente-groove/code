@@ -24,20 +24,24 @@ import java.util.Set;
 /**
  * An equivalence class (C) is a set of elements that are similar according to
  * a certain equivalence relation.
- * This class is essentially a HashSet and it was created mainly to improve the
- * code readability.
+ * This interface allows different implementations for different elements, for
+ * example, equivalence classes for shape nodes and shape edges.
  * 
  * @author Eduardo Zambon
  */
 public interface EquivClass<T extends HostElement> extends Fixable,
         Iterable<T>, Set<T> {
 
+    /** Fixes the equivalence class to avoid modifications. */
     public void setFixed();
 
     /** Returns true if this equivalence class has just one element. */
     public boolean isSingleton();
 
-    /** Performs a deep copy of the equivalence class. */
+    /**
+     * Shallow clone. Clones the equivalence class but not the elements. 
+     * The clone is not fixed, even if the original is.
+     */
     public EquivClass<T> clone();
 
 }

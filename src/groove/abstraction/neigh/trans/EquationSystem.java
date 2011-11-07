@@ -578,12 +578,11 @@ public final class EquationSystem {
         MultKind kind = this.finalMultKind();
         for (int i = 0; i < this.varsCount; i++) {
             Multiplicity mult = sol.getMultValue(i, kind);
-            //assert !mult.isZero() && (mult.isSingleton() || mult.isCollector());
             assert mult.isSingleton() || mult.isCollector();
             EdgeSignature es = this.varEsMap.get(i);
             shape.setEdgeSigMult(es, mult);
         }
-        mat.markGarbageNodes(mat.createGarbageNodeSet());
+        mat.markGarbageNodes(mat.getGarbageNodeSet());
         if (mat.requiresThirdStage()) {
             mat.moveToThirdStage();
             return true;

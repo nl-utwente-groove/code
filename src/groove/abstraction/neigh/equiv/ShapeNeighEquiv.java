@@ -44,13 +44,17 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     // Object Fields
     // ------------------------------------------------------------------------
 
+    /**
+     * Map from edge signatures to multiplicities, used to improve performance
+     * while computing the neighbourhood equivalence.
+     */
     private Map<EdgeSignature,Multiplicity> multMap;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. */
+    /** Default constructor, delegates to super. */
     public ShapeNeighEquiv(HostGraph graph, int radius) {
         super(graph, radius);
         assert graph instanceof Shape : "Invalid argument type!";
@@ -64,6 +68,8 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     void prepareRefinement() {
         Shape shape = (Shape) this.graph;
         this.multMap = new MyHashMap<EdgeSignature,Multiplicity>();
+        // Reverse map from subsets of the elements that are in this
+        // equivalence relation.
         Map<EquivClass<ShapeNode>,EquivClass<HostNode>> reverseKMap =
             new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
         Multiplicity zero =
@@ -71,7 +77,6 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
 
         kLoop: for (EquivClass<ShapeNode> k : shape.getEquivRelation()) {
             for (EquivClass<HostNode> ec : this) {
-
                 if (ec.containsAll(k)) {
                     reverseKMap.put(k, ec);
                     continue kLoop;

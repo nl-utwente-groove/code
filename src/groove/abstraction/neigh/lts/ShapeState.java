@@ -48,7 +48,9 @@ public class ShapeState extends AbstractGraphState {
     // Object Fields
     // ------------------------------------------------------------------------
 
+    /** The shape associated with this state. */
     private final Shape shape;
+    /** Flag to indicate whether this state is closed or not. */
     private boolean closed;
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
@@ -73,7 +75,7 @@ public class ShapeState extends AbstractGraphState {
         this.shape = shape;
         this.shape.setName(toString());
         // Fix the shape to avoid modifications.
-        this.shape.setFixed();
+        // this.shape.setFixed();
         this.closed = false;
         this.transitions = new ArrayList<GraphTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();

@@ -42,6 +42,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     // Object Fields
     // ------------------------------------------------------------------------
 
+    /** First transition that lead to this state. */
     private final ShapeTransition transition;
 
     // ------------------------------------------------------------------------

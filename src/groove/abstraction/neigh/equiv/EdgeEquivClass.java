@@ -37,10 +37,9 @@ import groove.abstraction.neigh.MyHashSet;
 import groove.trans.HostEdge;
 
 /**
- * An equivalence class (C) is a set of elements that are similar according to
- * a certain equivalence relation.
- * This class is essentially a HashSet and it was created mainly to improve the
- * code readability.
+ * An equivalence class implementation for edges (both from host graphs and
+ * shapes). This class is implemented as a hash set and is used only during
+ * normalisation, i.e., when computing the equivalence relation over shapes.
  * 
  * @author Eduardo Zambon
  */
@@ -62,7 +61,7 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Basic constructor. */
+    /** Basic constructor. Delegates to super. */
     public EdgeEquivClass() {
         super();
         this.hashCode = 0;
@@ -72,7 +71,10 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Two equivalence classes are equal if they have the same objects. */
+    /**
+     * Two equivalence classes are equal if they have the same objects.
+     * This method is expensive, so hash codes should always be checked first. 
+     */
     @Override
     public boolean equals(Object o) {
         boolean result;
@@ -155,6 +157,12 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
         return super.remove(obj);
     }
 
+    /** Returns true if this equivalence class has just one element. */
+    @Override
+    public boolean isSingleton() {
+        return this.size() == 1;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -165,17 +173,12 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
         int result = 0;
         for (T elem : this) {
             // We can't multiply the result by prime here because this would
-            // make the hash dependent of the ordering of elements.
+            // make the hash dependent on the ordering of elements.
             result += elem.hashCode();
         }
         // Multiply here. This probably leads to a worst hash function, but
-        // nothing to do for now...
+        // nothing to do...
         return result * prime;
-    }
-
-    /** Returns true if this equivalence class has just one element. */
-    public boolean isSingleton() {
-        return this.size() == 1;
     }
 
 }
