@@ -50,7 +50,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     private int radius;
     /** The graph on which the equivalence relation was computed. */
     final HostGraph graph;
-    /** The set of binary labels of the given graph. */
+    /** The set of binary labels of the given graph. Used to improve performance. */
     final Set<TypeLabel> binaryLabels;
     /** The previously computed equivalence relation. */
     private EquivRelation<HostNode> previous;
@@ -61,7 +61,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Creates a new equivalence relation with given radius. */
+    /** Creates a new equivalence relation with given non-null radius. */
     public GraphNeighEquiv(HostGraph graph, int radius) {
         assert graph != null;
         assert radius >= 0;
@@ -277,10 +277,16 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         }
     }
 
+    /**
+     * Method that is called before each iteration of the refinement of the
+     * neighbourhood relation. This is used, for example, to compute auxiliary
+     * maps that can speed-up the refinement process.
+     */
     void prepareRefinement() {
-        // Empty by design.
+        // Empty by design. See comment below.
     }
 
+    /** Creates and returns a new node equivalence class object. */
     private NodeEquivClass<HostNode> newNodeEquivClass() {
         return new NodeEquivClass<HostNode>(this.graph.getFactory());
     }
@@ -290,6 +296,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * iteration. This method implements the second item of Def. 17 (see
      * comment on the class definition, top of this file).
      */
+    // EZ says: this method can certainly be optimized. In particular, an
+    // implementation for method prepareRefinement should be provided. This
+    // optimization is not needed for now because the only time this class is
+    // used is when constructing a shape from the start graph.
     boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
         Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
@@ -330,11 +340,15 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * neither stored nor cached, so call this method consciously.
      */
     public EquivRelation<HostEdge> getEdgesEquivRel() {
+        // Initialise the auxiliary store.
         this.store = new TreeHashSet<EdgeEquivData>();
+        // Map from the equivalence information on edges to corresponding
+        // equivalence classes.
         Map<EdgeEquivData,EquivClass<HostEdge>> edgeMap =
             new MyHashMap<EdgeEquivData,EquivClass<HostEdge>>();
 
         for (HostEdge edge : this.graph.edgeSet()) {
+            // Normalise the object.
             EdgeEquivData eed = this.getNormalEdgeEquivData(edge);
             EquivClass<HostEdge> edges = edgeMap.get(eed);
             if (edges == null) {
@@ -350,30 +364,47 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         return er;
     }
 
+    /** Returns the normalised equivalence data for the given edge. */
     private EdgeEquivData getNormalEdgeEquivData(HostEdge edge) {
+        // Create a new object to provide the hash code.
         EdgeEquivData eed = new EdgeEquivData(edge);
+        // Check the tree hash.
         EdgeEquivData result = this.store.put(eed);
         if (result == null) {
+            // We found a new normal eed.
             result = eed;
         }
         return result;
     }
 
+    /**
+     * Auxiliary class use to store the fields used to distinguish edges in the
+     * equivalence relation. Objects of this class are essentially used to
+     * compute hash codes.
+     * 
+     * @author Eduardo Zambon
+     */
     private class EdgeEquivData {
 
+        /**
+         * The equivalence class of the source node of the edge given to the
+         * constructor.
+         */
         final EquivClass<HostNode> srcEc;
+        /** The label of the edge given to the constructor. */
         final TypeLabel label;
+        /**
+         * The equivalence class of the target node of the edge given to the
+         * constructor.
+         */
         final EquivClass<HostNode> tgtEc;
+        /** The hash code of the object. */
         final int hashCode;
 
         EdgeEquivData(HostEdge edge) {
-            this(edge.source(), edge.label(), edge.target());
-        }
-
-        EdgeEquivData(HostNode source, TypeLabel label, HostNode target) {
-            this.srcEc = GraphNeighEquiv.this.getEquivClassOf(source);
-            this.label = label;
-            this.tgtEc = GraphNeighEquiv.this.getEquivClassOf(target);
+            this.srcEc = GraphNeighEquiv.this.getEquivClassOf(edge.source());
+            this.label = edge.label();
+            this.tgtEc = GraphNeighEquiv.this.getEquivClassOf(edge.target());
             this.hashCode = this.computeHashCode();
         }
 
@@ -401,6 +432,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             return this.hashCode;
         }
 
+        /** Callback method computing the hash code. */
         private int computeHashCode() {
             final int prime = 31;
             int result = 1;

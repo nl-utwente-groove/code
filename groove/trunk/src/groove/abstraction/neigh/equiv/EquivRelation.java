@@ -25,8 +25,6 @@ import java.util.Map;
 
 /**
  * An equivalence relation is represented as a set of equivalence classes.
- * This class is essentially a HashSet and it was created mainly to improve the
- * code readability.
  * 
  * @author Eduardo Zambon
  */
@@ -43,7 +41,13 @@ public class EquivRelation<T extends HostElement> extends
      * elements can be added or removed. This avoids nasty hashing problems.
      */
     private int hashCode;
-    private Map<T,EquivClass<T>> elemMap;
+    /**
+     * Reverse map from elements of equivalence classes to their corresponding
+     * classes. This map is used to speed-up the look-up for an equivalence
+     * class of a given element. As an invariant the values of this map must
+     * always correspond to the classes in the equivalence relation.
+     */
+    private final Map<T,EquivClass<T>> elemMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -60,7 +64,10 @@ public class EquivRelation<T extends HostElement> extends
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Two equivalence relations are equal if they have the same classes. */
+    /**
+     * Two equivalence classes are equal if they have the same objects.
+     * This method is expensive, so hash codes should always be checked first. 
+     */
     @Override
     public boolean equals(Object o) {
         boolean result;
@@ -95,7 +102,10 @@ public class EquivRelation<T extends HostElement> extends
     }
 
     /**
-     * Deep clone. Clones the equivalence relation and all equivalence classes. 
+     * Deep clone.
+     * Clones the equivalence relation and all equivalence classes but not the
+     * elements in the classes.
+     * The clone is not fixed, even if the original is.
      */
     @Override
     public EquivRelation<T> clone() {
@@ -157,11 +167,11 @@ public class EquivRelation<T extends HostElement> extends
         int result = 0;
         for (EquivClass<T> elem : this) {
             // We can't multiply the result by prime here because this would
-            // make the hash dependent of the ordering of elements.
+            // make the hash dependent on the ordering of elements.
             result += elem.hashCode();
         }
         // Multiply here. This probably least to a worst hash function, but
-        // nothing to do for now...
+        // nothing to do...
         return result * prime;
     }
 

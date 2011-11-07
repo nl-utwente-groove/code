@@ -735,7 +735,10 @@ public final class Materialisation {
     void removeUnconnectedNode(ShapeNode nodeToRemove) {
         assert this.stage == 1;
         this.morph.removeNode(nodeToRemove);
-        this.shape.removeNode(nodeToRemove);
+        // EZ says: can't remove the node here because we may have conflicts
+        // in node identities when we move to second stage and try split nodes.
+        // this.shape.removeNode(nodeToRemove);
+        this.getGarbageNodeSet().add(nodeToRemove);
         this.removeNodeFromBundleMap(nodeToRemove);
     }
 
@@ -750,7 +753,9 @@ public final class Materialisation {
         this.matEdges = null;
 
         if (nonSingBundles.isEmpty()) {
-            // We don't need to split nodes.
+            // We don't need to split nodes. But maybe we have to collect
+            // garbage nodes.
+            this.simpleGarbageCollectNodes();
             return;
         }
 
@@ -808,6 +813,10 @@ public final class Materialisation {
             }
             assert !iter.hasNext();
         }
+
+        // Now it's safe to remove the nodes that were marked as garbage during
+        // the first stage.
+        this.simpleGarbageCollectNodes();
 
         // Now collect the remaining edges created by the node split that still
         // give rise to admissible configurations.
@@ -935,7 +944,7 @@ public final class Materialisation {
         }
     }
 
-    Set<ShapeNode> createGarbageNodeSet() {
+    Set<ShapeNode> getGarbageNodeSet() {
         if (this.garbageNodes == null) {
             this.garbageNodes = new MyHashSet<ShapeNode>();
         }
@@ -943,7 +952,7 @@ public final class Materialisation {
     }
 
     /** Remove the nodes from the shape that were marked as garbage. */
-    void garbageCollectNodes() {
+    void recursiveGarbageCollectNodes() {
         assert this.stage == 2 || this.stage == 3;
         if (this.garbageNodes == null) {
             return;
@@ -959,6 +968,17 @@ public final class Materialisation {
             this.markGarbageNodes(garbageNodes);
         }
 
+    }
+
+    void simpleGarbageCollectNodes() {
+        assert this.stage == 2;
+        if (this.garbageNodes != null) {
+            for (ShapeNode garbageNode : this.garbageNodes) {
+                // No need to check anything here, the node is guaranteed to
+                // be unconnected.
+                this.shape.removeNode(garbageNode);
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -994,7 +1014,7 @@ public final class Materialisation {
     private static class ResultSet extends MyHashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {
-            mat.garbageCollectNodes();
+            mat.recursiveGarbageCollectNodes();
             mat.updateShapeMorphism();
             assert mat.isShapeMorphConsistent();
             assert mat.getShape().isInvariantOK();
@@ -1006,11 +1026,11 @@ public final class Materialisation {
     public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        Parameters.setEdgeMultBound(2);
         Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
-            String number = "10";
+            String number = "11";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();

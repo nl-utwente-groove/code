@@ -25,18 +25,25 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * An equivalence class (C) is a set of elements that are similar according to
- * a certain equivalence relation.
- * This class is essentially a HashSet and it was created mainly to improve the
- * code readability.
+ * An equivalence class implementation for nodes (both from host graphs and
+ * shapes). This class is implemented as bit set instead of a hash set for
+ * efficiency. Node numbers are used as indices in the bit set, so in order to
+ * keep the objects of this class small, it is necessary that the number of
+ * nodes in the store also be small.
  * 
  * @author Eduardo Zambon
  */
 public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         EquivClass<T> {
 
+    /** Flag for indicating if the equivalence class is fixed. */
     private boolean fixed;
+    /**
+     * Simple counter to avoid the need to go over the whole set to discover
+     * its size.
+     */
     private int elemCount;
+    /** Factory reference used to retrieve node objects. */
     private final HostFactory factory;
 
     // ------------------------------------------------------------------------
@@ -46,13 +53,6 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     /** Basic constructor. */
     public NodeEquivClass(HostFactory factory) {
         super();
-        this.factory = factory;
-        this.elemCount = 0;
-    }
-
-    /** Basic constructor. */
-    public NodeEquivClass(int size, HostFactory factory) {
-        super(size);
         this.factory = factory;
         this.elemCount = 0;
     }
@@ -78,6 +78,11 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         }
     }
 
+    /**
+     * Specialises the return type of the super method.
+     * Shallow clone. Clones the equivalence class but not the elements. 
+     * The clone is not fixed, even if the original is.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public NodeEquivClass<T> clone() {
@@ -86,11 +91,13 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return clone;
     }
 
+    /** Creates and returns a new iterator for elements of this class. */
     @Override
     public Iterator<T> iterator() {
         return new MyIterator();
     }
 
+    /** Fast containment check based on element numbers. */
     @Override
     public boolean contains(Object o) {
         boolean result = false;
@@ -101,6 +108,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return result;
     }
 
+    /** Creates and returns a new array with the elements of this class. */
     @Override
     public Object[] toArray() {
         Object result[] = new Object[this.elemCount];
@@ -112,6 +120,10 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return result;
     }
 
+    /**
+     * Stores the elements of this class in the given array, if possible.
+     * Otherwise creates and returns a new array.
+     */
     @Override
     @SuppressWarnings({"hiding", "unchecked"})
     public <T> T[] toArray(T[] a) {
@@ -127,6 +139,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         }
     }
 
+    /** Checks the containment for all elements of the given collection. */
     @Override
     public boolean containsAll(Collection<?> c) {
         boolean result = true;
@@ -139,6 +152,10 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return result;
     }
 
+    /**
+     * Adds all elements of the given collection to the equivalence class.
+     * Fails in an assertion if the class is fixed.
+     */
     @Override
     public boolean addAll(Collection<? extends T> c) {
         assert !this.isFixed();
@@ -149,11 +166,16 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return changed;
     }
 
+    /** Throws an UnsupportedOperationException. */
     @Override
     public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Removes all elements of the given collection from the equivalence class.
+     * Fails in an assertion if the class is fixed.
+     */
     @Override
     public boolean removeAll(Collection<?> c) {
         assert !this.isFixed();
@@ -165,8 +187,8 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     }
 
     /**
-     * If the equivalence class is fixed, fails in an assertion.
-     * Otherwise, delegates to super class.
+     * Sets the bit indexed by the object number.
+     * Fails in an assertion if the class is fixed.
      */
     @Override
     public boolean add(T obj) {
@@ -181,8 +203,8 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     }
 
     /**
-     * If the equivalence class is fixed, fails in an assertion.
-     * Otherwise, delegates to super class.
+     * Clears the bit indexed by the object number.
+     * Fails in an assertion if the class is fixed.
      */
     @Override
     public boolean remove(Object obj) {
@@ -202,16 +224,22 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return this.elemCount;
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
+    @Override
     public boolean isSingleton() {
         return this.elemCount == 1;
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Dedicated iterator for node equivalence classes. 
+     * @author Eduardo Zambon
+     */
     private class MyIterator implements Iterator<T> {
 
+        /** The number of the node that should be returned by next(). */
         private int curr = NodeEquivClass.this.nextSetBit(0);
 
         @Override
@@ -219,6 +247,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
             return this.curr >= 0;
         }
 
+        /** Returns the current node and computes the next one. */
         @Override
         @SuppressWarnings("unchecked")
         public T next() {
