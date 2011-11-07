@@ -22,11 +22,13 @@ package groove.graph;
  * @version $Revision $
  */
 public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
-
     /**
      * Constructs a new type edge, with explicit multiplicity.
+     * Don't call directly; use {@link TypeFactory} methods instead.
+     * @see TypeFactory#createEdge(TypeNode, Label, TypeNode)
+     * @see TypeFactory#createEdge(TypeNode, String, TypeNode)
      */
-    public TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
+    TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
         super(source, label, target);
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",

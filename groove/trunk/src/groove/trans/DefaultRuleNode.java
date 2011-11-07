@@ -33,7 +33,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      * @param nr the number for this node
      */
     protected DefaultRuleNode(int nr) {
-        this(nr, null, false);
+        this(nr, TypeNode.TOP_NODE, true);
     }
 
     /**
@@ -44,6 +44,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      */
     protected DefaultRuleNode(int nr, TypeNode type, boolean sharp) {
         super(nr);
+        assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
         this.sharp = sharp;
     }
@@ -75,11 +76,6 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
     @Override
     public DefaultRuleNode newNode(int nr, TypeNode type) {
         return new DefaultRuleNode(nr, type, false);
-    }
-
-    /** Factory constructor. */
-    public DefaultRuleNode newNode(int nr, TypeNode type, boolean sharp) {
-        return new DefaultRuleNode(nr, type, sharp);
     }
 
     /**

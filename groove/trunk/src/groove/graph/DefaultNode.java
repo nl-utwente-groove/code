@@ -39,10 +39,10 @@ public class DefaultNode extends AbstractNode implements
     }
 
     /** Factory constructor.
-     * The type is should always be {@code null}. 
+     * The type is should always equal {@link TypeNode#TOP_NODE}. 
      */
     public DefaultNode newNode(int nr, TypeNode type) {
-        assert type == null;
+        assert type == TypeNode.TOP_NODE;
         return new DefaultNode(nr);
     }
 
@@ -61,7 +61,7 @@ public class DefaultNode extends AbstractNode implements
 
     /** Returns the node with the first currently unused node number. */
     static public DefaultNode createNode() {
-        return factory.createNode(null);
+        return factory.createNode(TypeNode.TOP_NODE);
     }
 
     static private final DefaultFactory factory = DefaultFactory.instance();

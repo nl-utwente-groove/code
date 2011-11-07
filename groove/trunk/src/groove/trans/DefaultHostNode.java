@@ -22,7 +22,8 @@ import groove.graph.TypeNode;
 
 /**
  * Default nodes used in host graphs.
- * Node equality is determined by object identity and not by node number.
+ * Host nodes always have an associated {@link TypeNode};
+ * this defaults to {@link TypeNode#TOP_NODE}.
  * @author Arend Rensink
  * @version $Revision: 2936 $
  */
@@ -37,7 +38,7 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      * @param nr the number for this node
      */
     protected DefaultHostNode(int nr) {
-        this(nr, null);
+        this(nr, TypeNode.TOP_NODE);
     }
 
     /**
@@ -52,6 +53,7 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      */
     protected DefaultHostNode(int nr, TypeNode type) {
         super(nr);
+        assert type != null : "Can't create untyped host node";
         this.type = type;
     }
 
