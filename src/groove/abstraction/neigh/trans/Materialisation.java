@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -420,8 +421,11 @@ public final class Materialisation {
      */
     void updateShapeMorphism() {
         Set<HostNode> nodesToRemove = new MyHashSet<HostNode>();
-        for (HostNode key : this.morph.nodeMap().keySet()) {
-            if (!this.shape.containsNode(key)) {
+        for (Entry<HostNode,HostNode> entry : this.morph.nodeMap().entrySet()) {
+            HostNode key = entry.getKey();
+            HostNode value = entry.getValue();
+            if (!this.shape.containsNode(key)
+                || !this.originalShape.containsNode(value)) {
                 nodesToRemove.add(key);
             }
         }
@@ -429,8 +433,11 @@ public final class Materialisation {
             this.morph.removeNode(nodeToRemove);
         }
         Set<HostEdge> edgesToRemove = new MyHashSet<HostEdge>();
-        for (HostEdge key : this.morph.edgeMap().keySet()) {
-            if (!this.shape.containsEdge(key)) {
+        for (Entry<HostEdge,HostEdge> entry : this.morph.edgeMap().entrySet()) {
+            HostEdge key = entry.getKey();
+            HostEdge value = entry.getValue();
+            if (!this.shape.containsEdge(key)
+                || !this.originalShape.containsEdge(value)) {
                 edgesToRemove.add(key);
             }
         }

@@ -236,9 +236,11 @@ public final class ShapeGenerator extends CommandLineTool {
                 + (this.startGraphName == null ? "default"
                         : this.startGraphName));
             println("Exploration:\t" + this.exploration.getIdentifier());
+            println("Node bound:\t" + Parameters.getNodeMultBound()
+                + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
             println("Timestamp:\t" + this.invocationTime);
             if (getVerbosity() == MEDIUM_VERBOSITY) {
-                print("\nProgress:");
+                print("\nProgress:\t");
                 getGTS().addLTSListener(new GenerateProgressMonitor());
             }
         }
