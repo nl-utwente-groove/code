@@ -35,7 +35,7 @@ public class ShapeFactory extends HostFactory {
 
     /** Creates an untyped node with the next number. */
     public ShapeNode createNode() {
-        return (ShapeNode) createNode(null);
+        return (ShapeNode) createNode(TypeNode.TOP_NODE);
     }
 
     @Override
@@ -76,6 +76,7 @@ public class ShapeFactory extends HostFactory {
     }
 
     /** Used only as a reference for the constructor. */
-    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0, null);
+    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0,
+        TypeNode.TOP_NODE);
 
 }

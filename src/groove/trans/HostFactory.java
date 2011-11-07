@@ -23,6 +23,7 @@ import groove.graph.StoreFactory;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 
 import java.util.HashMap;
@@ -162,7 +163,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     /** Callback factory method to initialise the node store. */
     @Override
     protected NodeStore<? extends HostNode> createNodeStore() {
-        return new NodeStore<HostNode>(DefaultHostNode.createFactory(null));
+        return new NodeStore<HostNode>(
+            DefaultHostNode.createFactory(TypeNode.TOP_NODE));
     }
 
     /** Returns the node in the store with the given number. */

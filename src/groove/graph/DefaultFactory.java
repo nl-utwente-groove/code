@@ -29,7 +29,7 @@ public class DefaultFactory extends
 
     /** Creates a new, untyped node. */
     public DefaultNode createNode() {
-        return createNode(null);
+        return createNode(TypeNode.TOP_NODE);
     }
 
     /**

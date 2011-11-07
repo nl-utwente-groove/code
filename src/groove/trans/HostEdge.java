@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.AbstractEdge;
 import groove.graph.TypeEdge;
+import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 
 /**
@@ -44,10 +45,14 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
         this(factory, source, type, type.label(), target, nr);
     }
 
-    /** Constructor for a labelled, untyped edge. */
+    /** 
+     * Constructor for a labelled edge.
+     * The edge type is derived from the source and target node types.
+     */
     protected HostEdge(HostFactory factory, HostNode source, TypeLabel label,
             HostNode target, int nr) {
-        this(factory, source, null, label, target, nr);
+        this(factory, source, TypeFactory.instance().createEdge(
+            source.getType(), label, target.getType()), label, target, nr);
     }
 
     // ------------------------------------------------------------------------

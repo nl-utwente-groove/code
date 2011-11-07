@@ -36,7 +36,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     /** Creates a fresh default host node. */
     public N createNode(int nr) {
-        return createNode(nr, null);
+        return createNode(nr, TypeNode.TOP_NODE);
     }
 
     /** Creates a fresh default host node. */

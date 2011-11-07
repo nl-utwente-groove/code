@@ -345,9 +345,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 if (node instanceof VariableNode || node instanceof ProductNode) {
                     image = node;
                 } else if (isImplicit()) {
-                    image =
-                        ruleFactory.createNode(node.getNumber(),
-                            TypeNode.TOP_NODE, true);
+                    image = ruleFactory.createNode(node.getNumber());
                 } else {
                     // get the type from the parent typing or from the node type edges
                     RuleLabel typingLabel = detectNodeType(source, node);

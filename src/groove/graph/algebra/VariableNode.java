@@ -33,6 +33,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
      */
     public VariableNode(int nr, SignatureKind signature) {
         super(nr);
+        assert signature != null;
         this.signature = signature;
         this.constant = null;
     }
@@ -101,16 +102,12 @@ public class VariableNode extends AbstractNode implements RuleNode {
 
     @Override
     public TypeNode getType() {
-        if (this.signature == null) {
-            return null;
-        } else {
-            return TypeNode.getDataType(this.signature);
-        }
+        return TypeNode.getDataType(this.signature);
     }
 
     @Override
     public boolean isSharp() {
-        return this.signature != null;
+        return true;
     }
 
     /** The signature name of this variable node, if any. */
