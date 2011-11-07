@@ -20,12 +20,13 @@ import groove.lts.DefaultGraphTransition;
 import groove.trans.RuleEvent;
 
 /**
- * Implements a transition in the Shape Transition System.
+ * Implements a transition in the abstract GTS.
  * 
  * @author Eduardo Zambon
  */
 public final class ShapeTransition extends DefaultGraphTransition {
 
+    /** Index of this transition on the source state. */
     private int index;
 
     // ------------------------------------------------------------------------
