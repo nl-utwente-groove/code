@@ -92,6 +92,11 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
+    public Iterator<GraphTransition> getTransitionIter() {
+        return this.transitions.iterator();
+    }
+
+    @Override
     protected void updateClosed() {
         // Nothing to do.
     }
@@ -231,11 +236,6 @@ public class ShapeState extends AbstractGraphState {
     @Override
     protected GraphTransitionStub createInTransitionStub(GraphState source,
             RuleEvent event, HostNode[] addedNodes) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Iterator<GraphTransition> getTransitionIter() {
         throw new UnsupportedOperationException();
     }
 

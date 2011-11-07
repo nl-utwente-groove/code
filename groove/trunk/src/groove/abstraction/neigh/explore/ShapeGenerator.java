@@ -237,8 +237,10 @@ public final class ShapeGenerator extends CommandLineTool {
                         : this.startGraphName));
             println("Exploration:\t" + this.exploration.getIdentifier());
             println("Timestamp:\t" + this.invocationTime);
-            print("\nProgress:\n");
-            getGTS().addLTSListener(new GenerateProgressMonitor());
+            if (getVerbosity() == MEDIUM_VERBOSITY) {
+                print("\nProgress:");
+                getGTS().addLTSListener(new GenerateProgressMonitor());
+            }
         }
         this.explorationStats.start();
         try {
