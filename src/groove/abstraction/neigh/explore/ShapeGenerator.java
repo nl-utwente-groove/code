@@ -240,7 +240,7 @@ public final class ShapeGenerator extends CommandLineTool {
                 + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
             println("Timestamp:\t" + this.invocationTime);
             if (getVerbosity() == MEDIUM_VERBOSITY) {
-                print("\nProgress:\t");
+                print("\nProgress:\n");
                 getGTS().addLTSListener(new GenerateProgressMonitor());
             }
         }

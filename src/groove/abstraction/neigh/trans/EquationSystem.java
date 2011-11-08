@@ -582,7 +582,7 @@ public final class EquationSystem {
             EdgeSignature es = this.varEsMap.get(i);
             shape.setEdgeSigMult(es, mult);
         }
-        mat.markGarbageNodes(mat.getGarbageNodeSet());
+        mat.recursiveGarbageCollectNodes();
         if (mat.requiresThirdStage()) {
             mat.moveToThirdStage();
             return true;
@@ -607,7 +607,7 @@ public final class EquationSystem {
         // General case:
         // For each split node...
         for (ShapeNode origNode : nodeSplitMap.keySet()) {
-            Multiplicity origMult = shape.getNodeMult(origNode);
+            Multiplicity origMult = this.mat.getOrigNodeMult(origNode);
             Set<ShapeNode> splitNodes = nodeSplitMap.get(origNode);
             int varsCount = splitNodes.size() + 1;
             // ... create one pair of equations.
@@ -616,13 +616,13 @@ public final class EquationSystem {
                     origMult.getUpperBound());
             // ... create one pair of variables for the original node.
             Duo<BoundVar> vars;
-            if (!this.mat.isGarbage(origNode)) {
+            if (shape.containsNode(origNode)) {
                 vars = retrieveBoundVars(origNode);
                 addVars(eqs, vars);
             }
             for (ShapeNode splitNode : splitNodes) {
                 // ... create one pair of variables for each of the split nodes.
-                if (!this.mat.isGarbage(splitNode)) {
+                if (shape.containsNode(splitNode)) {
                     vars = retrieveBoundVars(splitNode);
                     addVars(eqs, vars);
                 }
@@ -637,6 +637,7 @@ public final class EquationSystem {
                 continue outerLoop;
             }
             for (EdgeBundle bundle : this.mat.getBundles(node)) {
+                bundle.update(this.mat);
                 EdgeMultDir direction = bundle.direction;
                 for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
                     // We may have another equation.
