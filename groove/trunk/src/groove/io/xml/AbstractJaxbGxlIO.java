@@ -18,10 +18,7 @@ package groove.io.xml;
 
 import static groove.view.aspect.AspectKind.ABSTRACT;
 import static groove.view.aspect.AspectKind.SUBTYPE;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultFactory;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -74,13 +71,8 @@ import de.gupro.gxl.gxl_1_0.ObjectFactory;
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
-public class JaxbGxlIO implements GxlIO {
-    /**
-     * Private constructor for the singleton instance.
-     */
-    private JaxbGxlIO() {
-        // empty
-    }
+public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
+        implements GxlIO<N,E> {
 
     /**
      * Saves a graph to an output stream.
@@ -101,13 +93,12 @@ public class JaxbGxlIO implements GxlIO {
      * information consists of a map from node identities as they occur in the
      * input to node identities in the resulting graph.
      */
-    public Pair<DefaultGraph,Map<String,DefaultNode>> loadGraphWithMap(
-            InputStream in) throws IOException, FormatException {
+    public Pair<Graph<N,E>,Map<String,N>> loadGraphWithMap(InputStream in)
+        throws IOException, FormatException {
         try {
             GraphType gxlGraph = unmarshal(in);
-            Pair<DefaultGraph,Map<String,DefaultNode>> result =
-                gxlToGraph(gxlGraph);
-            DefaultGraph graph = result.one();
+            Pair<Graph<N,E>,Map<String,N>> result = gxlToGraph(gxlGraph);
+            Graph<N,E> graph = result.one();
             if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
                 GraphInfo.addErrors(
                     graph,
@@ -125,7 +116,7 @@ public class JaxbGxlIO implements GxlIO {
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
-    public DefaultGraph loadGraph(InputStream in) throws IOException,
+    public Graph<N,E> loadGraph(InputStream in) throws IOException,
         FormatException {
         return loadGraphWithMap(in).one();
     }
@@ -198,8 +189,9 @@ public class JaxbGxlIO implements GxlIO {
         gxlGraph.setId(graph.getName());
         gxlGraph.setRole(graph.getRole().toString());
         List<GraphElementType> nodesEdges = gxlGraph.getNodeOrEdgeOrRel();
-        // add the nodes
         Map<Node,NodeType> nodeMap = new HashMap<Node,NodeType>();
+        Map<Edge,EdgeType> edgeMap = new HashMap<Edge,EdgeType>();
+
         // get the layout map
         LayoutMap<?,?> layoutMap = null;
         if (GraphInfo.hasLayoutMap(graph)) {
@@ -238,6 +230,7 @@ public class JaxbGxlIO implements GxlIO {
             EdgeType gxlEdge =
                 createGxlEdge(nodeMap, edge.source(), prefixedLabel,
                     edge.target());
+            edgeMap.put(edge, gxlEdge);
             nodesEdges.add(gxlEdge);
             // store the layout
             layout(layoutMap, edge, gxlEdge);
@@ -285,7 +278,19 @@ public class JaxbGxlIO implements GxlIO {
                 graphAttrs.add(attr);
             }
         }
+        // Maybe there are some additional structure that we want to store.
+        this.storeAdditionalStructure(graph, gxlGraph, nodeMap, edgeMap);
         return gxlGraph;
+    }
+
+    /**
+     * Stores additional structure information from the given graph into the
+     * given gxlGraph. This is used, for example, with shapes (abstraction).
+     */
+    protected void storeAdditionalStructure(Graph<?,?> graph,
+            GraphType gxlGraph, Map<Node,NodeType> nodeMap,
+            Map<Edge,EdgeType> edgeMap) {
+        // Empty by design. To be overriden by subclasses.
     }
 
     private EdgeType createGxlEdge(Map<Node,NodeType> nodeMap, Node source,
@@ -329,14 +334,13 @@ public class JaxbGxlIO implements GxlIO {
      * @param gxlGraph the source of the unmarshalling
      * @return pair consisting of the resulting graph and a non-<code>null</code> map
      */
-    private Pair<DefaultGraph,Map<String,DefaultNode>> gxlToGraph(
-            GraphType gxlGraph) throws FormatException {
+    private Pair<Graph<N,E>,Map<String,N>> gxlToGraph(GraphType gxlGraph)
+        throws FormatException {
 
         // Initialize the new objects to be created.
-        DefaultGraph graph = createGraph(gxlGraph.getId());
-        Map<String,DefaultNode> nodeIds = new HashMap<String,DefaultNode>();
-        LayoutMap<DefaultNode,DefaultEdge> layoutMap =
-            new LayoutMap<DefaultNode,DefaultEdge>();
+        Graph<N,E> graph = createGraph(gxlGraph.getId());
+        Map<String,N> nodeIds = new HashMap<String,N>();
+        LayoutMap<N,E> layoutMap = new LayoutMap<N,E>();
 
         // Extract nodes out of the gxl elements.
         for (GraphElementType gxlElement : gxlGraph.getNodeOrEdgeOrRel()) {
@@ -347,7 +351,7 @@ public class JaxbGxlIO implements GxlIO {
                     throw new FormatException("The node " + nodeId
                         + " is declared more than once.");
                 }
-                DefaultNode node = createNode(nodeId);
+                N node = createNode(nodeId);
                 // Extract the layout from the gxlElement attributes.
                 List<AttrType> attrs = ((NodeType) gxlElement).getAttr();
 
@@ -377,7 +381,7 @@ public class JaxbGxlIO implements GxlIO {
                 // Find the source node of the edge.
                 String sourceId =
                     ((NodeType) ((EdgeType) gxlElement).getFrom()).getId();
-                DefaultNode sourceNode = nodeIds.get(sourceId);
+                N sourceNode = nodeIds.get(sourceId);
                 if (sourceNode == null) {
                     throw new FormatException(
                         "Unable to find edge source node " + sourceId + ".");
@@ -385,7 +389,7 @@ public class JaxbGxlIO implements GxlIO {
                 // Find the target node of the edge.
                 String targetId =
                     ((NodeType) ((EdgeType) gxlElement).getTo()).getId();
-                DefaultNode targetNode = nodeIds.get(targetId);
+                N targetNode = nodeIds.get(targetId);
                 if (targetNode == null) {
                     throw new FormatException(
                         "Unable to find edge target node " + sourceId + ".");
@@ -402,7 +406,7 @@ public class JaxbGxlIO implements GxlIO {
                 }
 
                 // Create the edge object.
-                DefaultEdge edge = createEdge(sourceNode, label, targetNode);
+                E edge = createEdge(sourceNode, label, targetNode);
 
                 // Save the layout.
                 String layout = getAttrValue(LAYOUT_ATTR_NAME, attrs, context);
@@ -457,46 +461,12 @@ public class JaxbGxlIO implements GxlIO {
             GraphInfo.setProperties(graph, properties);
         }
         String roleName = gxlGraph.getRole();
-        graph.setRole(roleName == null ? GraphRole.HOST
-                : GraphRole.roles.get(roleName));
+        if (graph instanceof DefaultGraph) {
+            ((DefaultGraph) graph).setRole(roleName == null ? GraphRole.HOST
+                    : GraphRole.roles.get(roleName));
+        }
         GraphInfo.setLayoutMap(graph, layoutMap);
-        return new Pair<DefaultGraph,Map<String,DefaultNode>>(graph, nodeIds);
-    }
-
-    /**
-     * Creates a GROOVE node from a GXL node ID, attempting to retain any node
-     * number that appears as a suffix in the GXL node ID.
-     * @return A GROOVE node with the number in <code>nodeId</code>, or
-     *         <code>null</code> if <code>nodeId</code> does not end on a
-     *         number.
-     */
-    private DefaultNode createNode(String nodeId) {
-        // attempt to construct node number from gxl node
-        // by looking at trailing number shape of node id
-        boolean digitFound = false;
-        int nodeNr = 0;
-        int unit = 1;
-        int charIx;
-        for (charIx = nodeId.length() - 1; charIx >= 0
-            && Character.isDigit(nodeId.charAt(charIx)); charIx--) {
-            nodeNr += unit * (nodeId.charAt(charIx) - '0');
-            unit *= 10;
-            digitFound = true;
-        }
-        if (charIx >= 0 && nodeId.charAt(charIx) == '-') {
-            nodeNr = -nodeNr;
-        }
-        return digitFound ? elementFactory.createNode(nodeNr) : null;
-    }
-
-    /**
-     * Callback factory method to create an attribute edge with given source
-     * node, and a label based on a given attribute map. The edge will be unary
-     * of <code>targetNode == null</code>, binary otherwise.
-     */
-    private DefaultEdge createEdge(DefaultNode sourceNode, String label,
-            DefaultNode targetNode) {
-        return elementFactory.createEdge(sourceNode, label, targetNode);
+        return new Pair<Graph<N,E>,Map<String,N>>(graph, nodeIds);
     }
 
     private void marshal(GraphType gxlGraph, OutputStream out)
@@ -520,9 +490,24 @@ public class JaxbGxlIO implements GxlIO {
         }
     }
 
-    private DefaultGraph createGraph(String name) {
-        return new DefaultGraph(name);
-    }
+    /** Creates a graph with the proper type. */
+    protected abstract Graph<N,E> createGraph(String name);
+
+    /**
+     * Creates a GROOVE node from a GXL node ID, attempting to retain any node
+     * number that appears as a suffix in the GXL node ID.
+     * @return A GROOVE node with the number in <code>nodeId</code>, or
+     *         <code>null</code> if <code>nodeId</code> does not end on a
+     *         number.
+     */
+    protected abstract N createNode(String nodeId);
+
+    /**
+     * Callback factory method to create an attribute edge with given source
+     * node, and a label based on a given attribute map. The edge will be unary
+     * if <code>targetNode == null</code>, binary otherwise.
+     */
+    protected abstract E createEdge(N sourceNode, String label, N targetNode);
 
     /** Reusable context for JAXB (un)marshalling. */
     private JAXBContext context;
@@ -543,17 +528,8 @@ public class JaxbGxlIO implements GxlIO {
         }
     }
     /** Object factory used for marshalling. */
-    private final ObjectFactory factory = new ObjectFactory();
+    protected final ObjectFactory factory = new ObjectFactory();
 
-    /** Returns the singleton instance of this class. */
-    static public JaxbGxlIO getInstance() {
-        return instance;
-    }
-
-    static private final DefaultFactory elementFactory =
-        DefaultFactory.instance();
-    /** Singleton instance of the class. */
-    static private final JaxbGxlIO instance = new JaxbGxlIO();
     /** Attribute name for node and edge identities. */
     static private final String LABEL_ATTR_NAME = "label";
     /** Attribute name for layout information. */
