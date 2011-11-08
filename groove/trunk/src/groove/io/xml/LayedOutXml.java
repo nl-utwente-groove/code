@@ -20,7 +20,6 @@ import static groove.io.FileType.LAYOUT_FILTER;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.gui.layout.LayoutMap;
 import groove.io.LayoutIO;
@@ -60,9 +59,9 @@ public class LayedOutXml implements Xml<DefaultGraph> {
 
     public DefaultGraph unmarshalGraph(URL url) throws IOException {
         // first get the non-layed out result
-        Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> preliminary =
+        Pair<DefaultGraph,Map<String,DefaultNode>> preliminary =
             this.marshaller.unmarshalGraphMap(url);
-        DefaultGraph result = (DefaultGraph) preliminary.one();
+        DefaultGraph result = preliminary.one();
         Map<String,DefaultNode> nodeMap = preliminary.two();
         URL layoutURL = toLayoutURL(url);
         try {

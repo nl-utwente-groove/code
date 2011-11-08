@@ -312,7 +312,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * <code>gxlElement</code> argument to produce a traceable message. Returns
      * <code>null</code> when the attribute does not appear in the list.
      */
-    private String getAttrValue(String attrName, List<AttrType> attrs,
+    protected String getAttrValue(String attrName, List<AttrType> attrs,
             String gxlElement) throws FormatException {
         for (AttrType attr : attrs) {
             if (attr.getName().equals(attrName)) {
@@ -340,6 +340,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         // Initialize the new objects to be created.
         Graph<N,E> graph = createGraph(gxlGraph.getId());
         Map<String,N> nodeIds = new HashMap<String,N>();
+        Map<EdgeType,E> edgeMap = new HashMap<EdgeType,E>();
         LayoutMap<N,E> layoutMap = new LayoutMap<N,E>();
 
         // Extract nodes out of the gxl elements.
@@ -407,6 +408,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
 
                 // Create the edge object.
                 E edge = createEdge(sourceNode, label, targetNode);
+                edgeMap.put((EdgeType) gxlElement, edge);
 
                 // Save the layout.
                 String layout = getAttrValue(LAYOUT_ATTR_NAME, attrs, context);
@@ -466,7 +468,19 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                     : GraphRole.roles.get(roleName));
         }
         GraphInfo.setLayoutMap(graph, layoutMap);
+        loadAdditionalStructure(graph, gxlGraph, nodeIds, edgeMap);
         return new Pair<Graph<N,E>,Map<String,N>>(graph, nodeIds);
+    }
+
+    /**
+     * Loads additional structure information from the given gxlGraph into the
+     * given graph. This is used, for example, with shapes (abstraction).
+     */
+    @SuppressWarnings("unused")
+    protected void loadAdditionalStructure(Graph<N,E> graph,
+            GraphType gxlGraph, Map<String,N> nodeMap, Map<EdgeType,E> edgeMap)
+        throws FormatException {
+        // Empty by design. To be overriden by subclasses.
     }
 
     private void marshal(GraphType gxlGraph, OutputStream out)
