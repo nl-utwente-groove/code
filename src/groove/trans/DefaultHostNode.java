@@ -90,7 +90,8 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      */
     @Override
     public String getToStringPrefix() {
-        return getType() == null ? "n" : getType().getLabel().text() + "-";
+        return getType() == TypeNode.TOP_NODE ? "n"
+                : getType().getLabel().text() + "-";
     }
 
     @Override
