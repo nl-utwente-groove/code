@@ -37,6 +37,7 @@ import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -96,8 +97,8 @@ public final class Shape extends DefaultHostGraph {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Private default constructor. Creates an empty shape. */
-    private Shape(ShapeFactory factory) {
+    /** Default constructor. Creates an empty shape. */
+    public Shape(ShapeFactory factory) {
         super("shape", factory);
         this.equivRel = new EquivRelation<ShapeNode>();
         this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
@@ -142,6 +143,11 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
+
+    @Override
+    public GraphRole getRole() {
+        return GraphRole.SHAPE;
+    }
 
     /** Deep copy of all shape structures. */
     @Override
@@ -432,6 +438,24 @@ public final class Shape extends DefaultHostGraph {
     @SuppressWarnings({"cast", "unchecked", "rawtypes"})
     public Graph<ShapeNode,ShapeEdge> downcast() {
         return (Graph<ShapeNode,ShapeEdge>) ((Graph) this);
+    }
+
+    /** Ugly hack to circumvent typing problems. */
+    @SuppressWarnings({"rawtypes"})
+    public static Shape upcast(Graph<ShapeNode,ShapeEdge> shape) {
+        return (Shape) ((Graph) shape);
+    }
+
+    /**
+     * Clears all non-graph structures of the shape so they can be loaded from
+     * a file. Be very careful with this method, since it destroys all
+     * additional information in the shape.
+     */
+    public void clearStructuresForLoading() {
+        this.equivRel.clear();
+        this.nodeMultMap.clear();
+        this.outEdgeMultMap.clear();
+        this.inEdgeMultMap.clear();
     }
 
     /**
