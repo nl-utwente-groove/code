@@ -260,7 +260,7 @@ public class ShapeMorphism extends HostGraphMorphism {
         }
 
         if (!(complyToEquivClass && complyToNodeMult && complyToEdgeMult)) {
-            System.out.println("Inconsistent shape morphism!");
+            System.out.println("\n\nInconsistent shape morphism!");
             System.out.println("From shape:");
             System.out.println(from);
             System.out.println("To shape:");

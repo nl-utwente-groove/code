@@ -150,6 +150,12 @@ public final class Materialisation {
      */
     private Map<ShapeNode,Set<ShapeNode>> nodeSplitMap;
     /**
+     * Map from nodes to their multiplicities. Nodes can disappear from the
+     * shape due to garbage collection, so in case the original node is gone
+     * we still have its multiplicity stored.  
+     */
+    private Map<ShapeNode,Multiplicity> nodeSplitMultMap;
+    /**
      * Auxiliary set that contains nodes that must be garbage collected at
      * the end of materialisation.
      */
@@ -227,7 +233,8 @@ public final class Materialisation {
             // At this stage we don't have to clone these structures.
             // Just update the references.
             this.nodeSplitMap = mat.nodeSplitMap;
-            this.garbageNodes = mat.garbageNodes;
+            this.nodeSplitMultMap = mat.nodeSplitMultMap;
+            this.garbageNodes = null;
         } else {
             // this.stage == 2. We should not clone the materialisation object
             // during second stage.
@@ -762,6 +769,7 @@ public final class Materialisation {
         this.matNodes = new MyHashSet<ShapeNode>();
         this.possibleEdges = new MyHashSet<ShapeEdge>();
         this.nodeSplitMap = new MyHashMap<ShapeNode,Set<ShapeNode>>();
+        this.nodeSplitMultMap = new MyHashMap<ShapeNode,Multiplicity>();
 
         // Compute the set of nodes that require splitting.
         Set<ShapeNode> origNodesToSplit = new MyHashSet<ShapeNode>();
@@ -791,6 +799,9 @@ public final class Materialisation {
             // For sure we'll have at least one split node, so we can
             // initialise the map already.
             this.nodeSplitMap.put(origNode, new MyHashSet<ShapeNode>());
+            // Store the multiplicity of the original node in case it is
+            // garbage collected.
+            this.nodeSplitMultMap.put(origNode, shape.getNodeMult(origNode));
             // Get the non-singular bundles of the original node.
             Set<EdgeBundle> bundles = auxBundleMap.get(origNode);
             // Iterate over possible configurations and split the nodes.
@@ -936,14 +947,6 @@ public final class Materialisation {
         }
     }
 
-    Set<ShapeNode> getGarbageNodes() {
-        if (this.garbageNodes == null) {
-            return Collections.emptySet();
-        } else {
-            return this.garbageNodes;
-        }
-    }
-
     Set<ShapeNode> getGarbageNodeSet() {
         if (this.garbageNodes == null) {
             this.garbageNodes = new MyHashSet<ShapeNode>();
@@ -954,11 +957,8 @@ public final class Materialisation {
     /** Remove the nodes from the shape that were marked as garbage. */
     void recursiveGarbageCollectNodes() {
         assert this.stage == 2 || this.stage == 3;
-        if (this.garbageNodes == null) {
-            return;
-        }
-        MyHashSet<ShapeNode> garbageNodes =
-            ((MyHashSet<ShapeNode>) this.garbageNodes).clone();
+        MyHashSet<ShapeNode> garbageNodes = new MyHashSet<ShapeNode>();
+        this.markGarbageNodes(garbageNodes);
         while (!garbageNodes.isEmpty()) {
             for (ShapeNode garbageNode : garbageNodes) {
                 this.shape.removeNode(garbageNode);
@@ -967,7 +967,6 @@ public final class Materialisation {
             // new disconnections.
             this.markGarbageNodes(garbageNodes);
         }
-
     }
 
     void simpleGarbageCollectNodes() {
@@ -997,10 +996,9 @@ public final class Materialisation {
         return this.nodeSplitMap;
     }
 
-    /** Returns true if the given node is marked as garbage. */
-    boolean isGarbage(ShapeNode node) {
+    Multiplicity getOrigNodeMult(ShapeNode origNode) {
         assert this.stage == 3;
-        return this.getGarbageNodes().contains(node);
+        return this.nodeSplitMultMap.get(origNode);
     }
 
     // ------------------------------------------------------------------------
@@ -1026,11 +1024,11 @@ public final class Materialisation {
     public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(2);
+        Parameters.setEdgeMultBound(1);
         Abstraction.initialise();
         File file = new File(DIRECTORY);
         try {
-            String number = "11";
+            String number = "9";
             GrammarModel view = GrammarModel.newInstance(file, false);
             HostGraph graph =
                 view.getHostModel("materialisation-test-" + number).toResource();
@@ -1051,4 +1049,32 @@ public final class Materialisation {
             e.printStackTrace();
         }
     }
+
+    /*public static void main(String args[]) {
+         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
+         Parameters.setNodeMultBound(1);
+         Parameters.setEdgeMultBound(2);
+         Abstraction.initialise();
+         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
+         File grammarFile = new File(DIRECTORY);
+         try {
+             String number = "13";
+             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
+             GraphGrammar grammar = view.toGrammar();
+             Rule rule = grammar.getRule("test-mat-" + number);
+             Shape shape = ShapeGxl.getInstance().unmarshalShape(file);
+             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+             for (Proof preMatch : preMatches) {
+                 Set<Materialisation> mats =
+                     Materialisation.getMaterialisations(shape, preMatch);
+                 for (Materialisation mat : mats) {
+                     ShapePreviewDialog.showShape(mat.shape);
+                 }
+             }
+         } catch (IOException e) {
+             e.printStackTrace();
+         } catch (FormatException e) {
+             e.printStackTrace();
+         }
+     }*/
 }

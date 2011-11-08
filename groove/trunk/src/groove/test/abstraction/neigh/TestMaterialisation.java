@@ -24,6 +24,7 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
+import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -641,6 +642,30 @@ public class TestMaterialisation {
                 int edgeCount = Util.getBinaryEdges(matShape).size();
                 assert ((nodeCount == 8 && edgeCount == 8) || (nodeCount == 7 && edgeCount == 7));
             }
+        }
+    }
+
+    @Test
+    public void testMaterialisation13() {
+        Shape shape = null;
+        try {
+            File file = new File(DIRECTORY + "materialisation-test-13.gxl");
+            shape = ShapeGxl.getInstance().unmarshalShape(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-13");
+
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(3, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertTrue(mats.size() == 8 || mats.size() == 0);
         }
     }
 

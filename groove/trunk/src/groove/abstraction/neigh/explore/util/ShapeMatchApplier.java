@@ -120,7 +120,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                 result = trans;
             }
         } catch (AssertionError e) {
-            System.err.println("Found a bug in the abstraction code!!!");
+            System.err.println("\nFound a bug in the abstraction code!!!");
             File file = new File(source.toString() + ".gxl");
             try {
                 ShapeGxl.getInstance().marshalShape(host, file);
@@ -130,9 +130,8 @@ public final class ShapeMatchApplier extends MatchApplier {
             System.err.println(String.format(
                 "Dumped shape from state %s to help debugging.",
                 source.toString()));
-            System.err.println(String.format("Rule: %s", origEvent));
-            System.err.println(String.format("Match: %s",
-                origEvent.getMatch(host)));
+            System.err.println(origEvent.getMatch(host));
+            System.err.println();
             // Raise the error again so it reaches the top level.
             throw e;
         }
