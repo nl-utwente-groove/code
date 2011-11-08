@@ -83,7 +83,8 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      */
     @Override
     public String getToStringPrefix() {
-        return getType() == null ? "n" : getType().getLabel().text() + "-";
+        return getType() == TypeNode.TOP_NODE ? "n"
+                : getType().getLabel().text() + "-";
     }
 
     public TypeNode getType() {
