@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.explore.util;
 
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
+import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeNextState;
 import groove.abstraction.neigh.lts.ShapeState;
@@ -31,6 +32,8 @@ import groove.lts.MatchResult;
 import groove.trans.RuleEvent;
 import groove.util.Pair;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -80,38 +83,58 @@ public final class ShapeMatchApplier extends MatchApplier {
             ShapePreviewDialog.showShape(host);
         }
 
-        // Transform the source state.
-        assert PreMatch.isValidPreMatch(host, origEvent);
-        // Find all materialisations.
-        Set<Materialisation> mats =
-            Materialisation.getMaterialisations(host, origEvent.getMatch(host));
-        // For all materialisations.
-        for (Materialisation mat : mats) {
-            // Transform and normalise the shape.
-            Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
-            Shape transformedShape = pair.one();
-            RuleEvent realEvent = pair.two();
-            Shape target = transformedShape.normalise();
+        try {
+            // Transform the source state.
+            assert PreMatch.isValidPreMatch(host, origEvent);
+            // Find all materialisations.
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(host,
+                    origEvent.getMatch(host));
+            // For all materialisations.
+            for (Materialisation mat : mats) {
+                // Transform and normalise the shape.
+                Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
+                Shape transformedShape = pair.one();
+                RuleEvent realEvent = pair.two();
+                Shape target = transformedShape.normalise();
 
-            GraphTransition trans;
-            ShapeNextState newState =
-                new ShapeNextState(agts.nodeCount(), target, source, realEvent);
-            ShapeState oldState = agts.addState(newState);
-            if (oldState != null) {
-                // The state was not added as an equivalent state existed.
-                trans = new ShapeTransition(source, realEvent, oldState);
-                this.println("New transition: " + trans);
-            } else {
-                // The state was added as a next-state.
-                trans = newState;
-                this.println("New state: " + source + "--" + match + "-->"
-                    + newState);
-                if (USE_GUI) {
-                    ShapePreviewDialog.showShape(newState.getGraph());
+                GraphTransition trans;
+                ShapeNextState newState =
+                    new ShapeNextState(agts.nodeCount(), target, source,
+                        realEvent);
+                ShapeState oldState = agts.addState(newState);
+                if (oldState != null) {
+                    // The state was not added as an equivalent state existed.
+                    trans = new ShapeTransition(source, realEvent, oldState);
+                    this.println("New transition: " + trans);
+                } else {
+                    // The state was added as a next-state.
+                    trans = newState;
+                    this.println("New state: " + source + "--" + match + "-->"
+                        + newState);
+                    if (USE_GUI) {
+                        ShapePreviewDialog.showShape(newState.getGraph());
+                    }
                 }
+                agts.addTransition(trans);
+                result = trans;
             }
-            agts.addTransition(trans);
-            result = trans;
+        } catch (AssertionError e) {
+            System.err.println("Found a bug in the abstraction code!!!");
+            File file = new File(source.toString() + ".gxl");
+            try {
+                ShapeGxl.getInstance().marshalShape(host, file);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            System.err.println(String.format(
+                "Dumped shape from state %s to help debugging.",
+                source.toString()));
+            System.err.println(String.format("Rule: %s", origEvent));
+            System.err.println(String.format("Match: %s",
+                origEvent.getMatch(host)));
+            // Raise the error again so it reaches the top level.
+            throw e;
         }
 
         return result;
