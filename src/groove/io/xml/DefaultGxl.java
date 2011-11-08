@@ -19,21 +19,6 @@ package groove.io.xml;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
-import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.io.PriorityFileName;
-import groove.util.Groove;
-import groove.util.Pair;
-import groove.view.FormatException;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Map;
 
 /**
  * Class to convert graphs to GXL format and back. Currently the conversion only
@@ -41,7 +26,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision: 2973 $
  */
-public class DefaultGxl implements Xml<DefaultGraph> {
+public class DefaultGxl extends
+        AbstractGxl<DefaultNode,DefaultEdge,DefaultGraph> {
 
     /** Returns the singleton instance of this class. */
     public static DefaultGxl getInstance() {
@@ -52,141 +38,14 @@ public class DefaultGxl implements Xml<DefaultGraph> {
         // Private to avoid object creation. Use getInstance() method.
     }
 
-    public DefaultGraph unmarshalGraph(URL url) throws IOException {
-        try {
-            URLConnection connection = url.openConnection();
-            InputStream in = connection.getInputStream();
-            DefaultGraph resultGraph = io.loadGraph(in);
-            // set some more information in the graph, based on the URL
-            GraphInfo.setFile(resultGraph, url.getFile());
-            // derive the name of the graph from the URL
-            String entryName;
-            if (connection instanceof JarURLConnection) {
-                entryName = ((JarURLConnection) connection).getEntryName();
-            } else {
-                entryName = url.getFile();
-            }
-            PriorityFileName priorityName =
-                new PriorityFileName(new File(entryName));
-            if (priorityName.hasPriority()) {
-                GraphInfo.getProperties(resultGraph, true).setPriority(
-                    priorityName.getPriority());
-            }
-
-            // note: don't set the name,
-            // there is no general scheme to derive it from the URL
-            return resultGraph;
-        } catch (FormatException exc) {
-            throw new IOException(String.format(
-                "Format error while loading '%s':\n%s", url, exc.getMessage()),
-                exc);
-        } catch (IOException exc) {
-            throw new IOException(String.format(
-                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
-        }
-    }
-
-    /** backwards compatibility method */
-    public DefaultGraph unmarshalGraph(File file) throws IOException {
-        return unmarshalGraph(Groove.toURL(file));
-    }
-
-    /**
-     * Deletes the graph file, as well as all variants with the same name but
-     * different priorities.
-     */
-    public final void deleteGraph(File file) {
-        deleteFile(file);
-    }
-
-    @Override
-    public final DefaultGraph createGraph(String graphName) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Delete the given file
-     */
-    public void deleteFile(File file) {
-        if (file.exists() && file.canWrite()) {
-            file.delete();
-        }
-    }
-
-    /**
-     * This implementation works by delegating to a {@link GxlIO}.
-     */
-    @Override
-    public void marshalGraph(DefaultGraph graph, File file) throws IOException {
-        this.marshalAnyGraph(graph, file);
-    }
-
-    /**
-     * This implementation works by delegating to a {@link GxlIO}.
-     */
-    public void marshalAnyGraph(Graph<?,?> graph, File file) throws IOException {
-        // create parent dirs if necessary
-        File parent = file.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
-        }
-        FileOutputStream out = new FileOutputStream(file);
-        try {
-            io.saveGraph(graph, out);
-        } finally {
-            out.close();
-        }
-    }
-
-    /**
-     * Reads a graph from an XML formatted URL and returns it. Also constructs
-     * a map from node identities in the XML file to graph nodes. This can be
-     * used to connect with layout information.
-     * @param url the URL to be read from
-     * @return a pair consisting of the unmarshalled graph and a string-to-node
-     *         map from node identities in the XML file to nodes in the
-     *         unmarshalled graph
-     * @throws IOException if an error occurred during file input
-     */
-    protected Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> unmarshalGraphMap(
-            URL url) throws IOException {
-        try {
-            URLConnection connection = url.openConnection();
-            InputStream in = connection.getInputStream();
-            Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> result =
-                io.loadGraphWithMap(in);
-            DefaultGraph resultGraph = (DefaultGraph) result.one();
-            // set some more information in the graph, based on the URL
-            GraphInfo.setFile(resultGraph, url.getFile());
-            // derive the name of the graph from the URL
-            String entryName;
-            if (connection instanceof JarURLConnection) {
-                entryName = ((JarURLConnection) connection).getEntryName();
-            } else {
-                entryName = url.getFile();
-            }
-            PriorityFileName priorityName =
-                new PriorityFileName(new File(entryName));
-            if (priorityName.hasPriority()) {
-                GraphInfo.getProperties(resultGraph, true).setPriority(
-                    priorityName.getPriority());
-            }
-            // note: don't set the name,
-            // there is no general scheme to derive it from the URL
-            return result;
-        } catch (FormatException exc) {
-            throw new IOException(String.format(
-                "Format error while loading '%s':\n%s", url, exc.getMessage()),
-                exc);
-        } catch (IOException exc) {
-            throw new IOException(String.format(
-                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
-        }
-    }
-
     /** Marshaller/unmarshaller. */
     static private final DefaultJaxbGxlIO io = DefaultJaxbGxlIO.getInstance();
 
     private static final DefaultGxl INSTANCE = new DefaultGxl();
+
+    @Override
+    protected GxlIO<DefaultNode,DefaultEdge> getIO() {
+        return io;
+    }
 
 }
