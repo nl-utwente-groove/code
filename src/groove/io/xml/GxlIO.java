@@ -16,9 +16,9 @@
  */
 package groove.io.xml;
 
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Node;
 import groove.util.Pair;
 import groove.view.FormatException;
 
@@ -28,11 +28,11 @@ import java.io.OutputStream;
 import java.util.Map;
 
 /** Interface for marshalling and unmarshalling graphs. */
-public interface GxlIO {
+public interface GxlIO<N extends Node,E extends Edge> {
     /**
      * Saves a graph to an output stream.
      */
-    public abstract void saveGraph(Graph<?,?> graph, OutputStream out)
+    public void saveGraph(Graph<?,?> graph, OutputStream out)
         throws IOException;
 
     /**
@@ -40,14 +40,14 @@ public interface GxlIO {
      * information consists of a map from node identities as they occur in the
      * input to node identities in the resulting graph.
      */
-    public abstract Pair<DefaultGraph,Map<String,DefaultNode>> loadGraphWithMap(
-            InputStream in) throws FormatException, IOException;
+    public Pair<Graph<N,E>,Map<String,N>> loadGraphWithMap(InputStream in)
+        throws FormatException, IOException;
 
     /**
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
-    public abstract DefaultGraph loadGraph(InputStream in)
-        throws FormatException, IOException;
+    public Graph<N,E> loadGraph(InputStream in) throws FormatException,
+        IOException;
 
 }

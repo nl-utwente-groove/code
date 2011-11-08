@@ -28,6 +28,7 @@ import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.TypeLabel;
 import groove.gui.EditType;
@@ -35,7 +36,7 @@ import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.LayoutIO;
-import groove.io.xml.JaxbGxlIO;
+import groove.io.xml.DefaultJaxbGxlIO;
 import groove.trans.ResourceKind;
 import groove.trans.RuleName;
 import groove.trans.SystemProperties;
@@ -436,9 +437,9 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<DefaultGraph,Map<String,DefaultNode>> plainGraphAndMap =
-                    JaxbGxlIO.getInstance().loadGraphWithMap(in);
-                DefaultGraph plainGraph = plainGraphAndMap.one();
+                Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> plainGraphAndMap =
+                    DefaultJaxbGxlIO.getInstance().loadGraphWithMap(in);
+                DefaultGraph plainGraph = (DefaultGraph) plainGraphAndMap.one();
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.

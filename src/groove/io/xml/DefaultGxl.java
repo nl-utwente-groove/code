@@ -16,6 +16,7 @@
  */
 package groove.io.xml;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
@@ -55,7 +56,7 @@ public class DefaultGxl implements Xml<DefaultGraph> {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            DefaultGraph resultGraph = io.loadGraphWithMap(in).one();
+            DefaultGraph resultGraph = io.loadGraph(in);
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL
@@ -147,14 +148,14 @@ public class DefaultGxl implements Xml<DefaultGraph> {
      *         unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
-    protected Pair<DefaultGraph,Map<String,DefaultNode>> unmarshalGraphMap(
+    protected Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> unmarshalGraphMap(
             URL url) throws IOException {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            Pair<DefaultGraph,Map<String,DefaultNode>> result =
+            Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> result =
                 io.loadGraphWithMap(in);
-            DefaultGraph resultGraph = result.one();
+            DefaultGraph resultGraph = (DefaultGraph) result.one();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL
@@ -184,7 +185,7 @@ public class DefaultGxl implements Xml<DefaultGraph> {
     }
 
     /** Marshaller/unmarshaller. */
-    static private final GxlIO io = JaxbGxlIO.getInstance();
+    static private final DefaultJaxbGxlIO io = DefaultJaxbGxlIO.getInstance();
 
     private static final DefaultGxl INSTANCE = new DefaultGxl();
 
