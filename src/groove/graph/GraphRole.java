@@ -41,7 +41,9 @@ public enum GraphRole {
     /** Control automaton role. */
     CTRL("control", "Control Automaton"),
     /** Büchi automaton role. */
-    BUCHI("büchi", "Büchi Automaton");
+    BUCHI("büchi", "Büchi Automaton"),
+    /** Shape role. */
+    SHAPE("shape", "Abstract graph");
 
     private GraphRole(String name, String description) {
         this.name = name;

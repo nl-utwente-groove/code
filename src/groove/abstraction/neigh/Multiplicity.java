@@ -353,6 +353,17 @@ public final class Multiplicity {
     // Other methods
     // ------------------------------------------------------------------------
 
+    /** Returns a string to be used when serializing shapes. */
+    public String toSerialString() {
+        String j;
+        if (this.j == OMEGA) {
+            j = "w";
+        } else {
+            j = this.j + "";
+        }
+        return this.i + " " + j;
+    }
+
     /** Basic getter method. */
     public int getLowerBound() {
         return this.i;
