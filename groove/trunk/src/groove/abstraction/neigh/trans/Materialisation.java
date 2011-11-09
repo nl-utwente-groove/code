@@ -741,9 +741,9 @@ public final class Materialisation {
 
     void removeUnconnectedNode(ShapeNode nodeToRemove) {
         assert this.stage == 1;
-        this.morph.removeNode(nodeToRemove);
         // EZ says: can't remove the node here because we may have conflicts
         // in node identities when we move to second stage and try split nodes.
+        // this.morph.removeNode(nodeToRemove);
         // this.shape.removeNode(nodeToRemove);
         this.getGarbageNodeSet().add(nodeToRemove);
         this.removeNodeFromBundleMap(nodeToRemove);
@@ -975,6 +975,7 @@ public final class Materialisation {
             for (ShapeNode garbageNode : this.garbageNodes) {
                 // No need to check anything here, the node is guaranteed to
                 // be unconnected.
+                this.morph.removeNode(garbageNode);
                 this.shape.removeNode(garbageNode);
             }
         }
@@ -1051,30 +1052,30 @@ public final class Materialisation {
     }
 
     /*public static void main(String args[]) {
-         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
-         Parameters.setNodeMultBound(1);
-         Parameters.setEdgeMultBound(2);
-         Abstraction.initialise();
-         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-         File grammarFile = new File(DIRECTORY);
-         try {
-             String number = "13";
-             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
-             GraphGrammar grammar = view.toGrammar();
-             Rule rule = grammar.getRule("test-mat-" + number);
-             Shape shape = ShapeGxl.getInstance().unmarshalShape(file);
-             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
-             for (Proof preMatch : preMatches) {
-                 Set<Materialisation> mats =
-                     Materialisation.getMaterialisations(shape, preMatch);
-                 for (Materialisation mat : mats) {
-                     ShapePreviewDialog.showShape(mat.shape);
-                 }
-             }
-         } catch (IOException e) {
-             e.printStackTrace();
-         } catch (FormatException e) {
-             e.printStackTrace();
-         }
-     }*/
+        String DIRECTORY = "junit/abstraction/basic-tests.gps/";
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(2);
+        Abstraction.initialise();
+        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+        File grammarFile = new File(DIRECTORY);
+        try {
+            String number = "14";
+            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
+            GraphGrammar grammar = view.toGrammar();
+            Rule rule = grammar.getRule("test-mat-" + number);
+            Shape shape = ShapeGxl.getInstance().unmarshalShape(file);
+            Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+            for (Proof preMatch : preMatches) {
+                Set<Materialisation> mats =
+                    Materialisation.getMaterialisations(shape, preMatch);
+                for (Materialisation mat : mats) {
+                    ShapePreviewDialog.showShape(mat.shape);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
 }

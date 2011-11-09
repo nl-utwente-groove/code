@@ -248,7 +248,8 @@ public final class EquationSystem {
 
     private Solution tryToMaxSolution(Solution sol) {
         Solution result = sol;
-        if (this.stage == 1 && sol.ubEqs.isEmpty()) {
+        if (this.stage == 1
+            && (sol.ubEqs.isEmpty() || sol.allEqsHaveNodes(sol.ubEqs))) {
             result = sol.clone();
             result.setAllVarsToMax(this.edgeVarsMap.values());
         }
@@ -906,20 +907,29 @@ public final class EquationSystem {
                 return true;
             }
 
-            ArrayList<BoundVar> openVars = this.getOpenVars(sol);
-            int newConst = Multiplicity.sub(this.constant, fixedVarsSum);
-
             if (this.hasNode() && sol.isGarbage(this.getNode())) {
                 // Especial case. The node in the equation is garbage.
-                // All variables must be zero.
-                newConst = 0;
+                // All variables must be zero. This may make the solution
+                // invalid but we can properly identify this later.
+                for (BoundVar var : this.vars) {
+                    sol.setToZero(var);
+                }
+                return true;
             }
+
+            ArrayList<BoundVar> openVars = this.getOpenVars(sol);
+            int newConst = Multiplicity.sub(this.constant, fixedVarsSum);
 
             if (this.type == BoundType.LB) {
                 if (openVars.size() == 1) {
                     // Set the lower bound to the new constant.
                     sol.cutLow(openVars.get(0), newConst);
-                    return true;
+                    if (this.hasNode()) {
+                        // We need to keep this special equation around.
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
                 // Check if the max sum equals the constant.
                 int openVarsMaxSum = this.getOpenVarsMaxSum(sol);
@@ -943,7 +953,12 @@ public final class EquationSystem {
                 if (openVars.size() == 1) {
                     // Set the upper bound to the new constant.
                     sol.cutHigh(openVars.get(0), newConst);
-                    return true;
+                    if (this.hasNode()) {
+                        // We need to keep this special equation around.
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
                 // At this point we can at least trim the upper bounds.
                 for (BoundVar openVar : openVars) {
@@ -1148,6 +1163,16 @@ public final class EquationSystem {
         boolean isZeroOne() {
             return this.getMin() == 0 && this.getMax() == 1;
         }
+
+        public void setToZero() {
+            this.nonRecSetToZero();
+            this.dual.nonRecSetToZero();
+        }
+
+        public void nonRecSetToZero() {
+            this.i = 0;
+            this.j = 0;
+        }
     }
 
     // --------
@@ -1161,6 +1186,7 @@ public final class EquationSystem {
         final MyHashSet<Equation> lbEqs;
         final MyHashSet<Equation> ubEqs;
         MyHashSet<ShapeNode> garbageNodes;
+        boolean invalid;
 
         Solution(int varsCount, int lbRange[], int ubRange[],
                 MyHashSet<Equation> lbEqs, MyHashSet<Equation> ubEqs) {
@@ -1294,28 +1320,79 @@ public final class EquationSystem {
             }
         }
 
+        void setToZero(BoundVar var) {
+            if (this.isSingleton(var) && this.getValue(var) != 0) {
+                // We are trying to set the variable to zero but it already
+                // has a non-zero value. This means that the solution is
+                // invalid, so we mark it as such.
+                this.invalid = true;
+            } else {
+                this.getValueRange(var).setToZero();
+            }
+        }
+
         boolean isFinished() {
-            return this.lbEqs.isEmpty() && this.ubEqs.isEmpty();
+            boolean result =
+                this.lbEqs.isEmpty() && this.ubEqs.isEmpty() || this.invalid;
+            if (!result) {
+                result =
+                    allEqsHaveNodes(this.ubEqs) && allEqsHaveNodes(this.lbEqs);
+            }
+            return result;
+        }
+
+        boolean allEqsHaveNodes(Set<Equation> eqs) {
+            boolean result = !eqs.isEmpty();
+            for (Equation eq : eqs) {
+                if (!eq.hasNode()) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
         }
 
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.ubEqs) {
-                if (result == null
-                    || (eq.getOpenVars(this).size() < result.getOpenVars(this).size())) {
+                if (isNewEqBetter(result, eq)) {
                     result = eq;
                 }
             }
             if (result == null) {
                 for (Equation eq : this.lbEqs) {
-                    if (result == null
-                        || (eq.getOpenVars(this).size() < result.getOpenVars(
-                            this).size())) {
+                    if (isNewEqBetter(result, eq)) {
                         result = eq;
                     }
                 }
             }
+            assert !result.hasNode();
             return result;
+        }
+
+        boolean isNewEqBetter(Equation oldEq, Equation newEq) {
+            if (newEq.hasNode()) {
+                return false;
+            }
+            if (oldEq == null) {
+                return true;
+            }
+            // else: oldEq != null && !newEq.hasNode()
+            int newOpenVarsCount = newEq.getOpenVars(this).size();
+            int oldOpenVarsCount = oldEq.getOpenVars(this).size();
+            if (newOpenVarsCount < oldOpenVarsCount) {
+                return true;
+            } else if (newOpenVarsCount > oldOpenVarsCount) {
+                return false;
+            } else {
+                // Same number of open variables. Give preference to
+                // to the equation with best constant.
+                if (oldEq.type == BoundType.UB) {
+                    return newEq.constant < oldEq.constant;
+                } else { // oldEq.type == BoundType.LB
+                    return newEq.constant > oldEq.constant;
+                }
+            }
         }
 
         Multiplicity getMultValue(int varNum, MultKind kind) {
