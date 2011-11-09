@@ -17,6 +17,7 @@
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
@@ -102,18 +103,74 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         // do nothing
     }
 
+    /**
+     * Used locally in this file, and gets the option for show/hide LTS 
+     */
+    public boolean getOptionValue(String option) {
+        return getOptions().getItem(option).isEnabled()
+            && getOptions().isSelected(option);
+    }
+
     @Override
     protected void installListeners() {
         super.installListeners();
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
+        addRefreshListener(SHOW_LTS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
+    }
+
+    public void toggleShowLts() {
+        if (getOptionValue(SHOW_LTS_OPTION)) {
+            getOptions().setSelected(SHOW_LTS_OPTION, false);
+        } else {
+            getOptions().setSelected(SHOW_LTS_OPTION, true);
+        }
+        if (getOptionValue(SHOW_LTS_OPTION)) {
+            LTSJModel ltsModel;
+            ltsModel = getJGraph().newModel();
+            ltsModel.loadGraph(getSimulatorModel().getGts());
+            setJModel(ltsModel);
+            getJGraph().setVisible(true);
+            getJGraph().refresh();
+            getJGraph().freeze();
+            getJGraph().getLayouter().start(false);
+            getJGraph().setEnabled(true);
+        } else {
+            getJGraph().setVisible(false);
+            getJGraph().refresh();
+            getJGraph().setEnabled(false);
+        }
+        return;
+    }
+
+    @Override
+    protected void refresh() {
+        super.refresh();
+        if (getOptionValue(SHOW_LTS_OPTION)) {
+            LTSJModel ltsModel;
+            ltsModel = getJGraph().newModel();
+            ltsModel.loadGraph(getSimulatorModel().getGts());
+            setJModel(ltsModel);
+            getJGraph().setVisible(true);
+            getJGraph().refresh();
+            getJGraph().freeze();
+            getJGraph().getLayouter().start(false);
+            getJGraph().setEnabled(true);
+        } else {
+            getJGraph().setVisible(false);
+            getJGraph().refresh();
+            getJGraph().setEnabled(false);
+        }
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+        if (!getOptionValue(SHOW_LTS_OPTION)) {
+            return;
+        }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
@@ -159,7 +216,9 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             GraphState state = source.getState();
             GraphTransition transition = source.getTransition();
-            getJGraph().setActive(state, transition);
+            if (getJModel() != null) {
+                getJGraph().setActive(state, transition);
+            }
         }
     }
 
@@ -306,6 +365,9 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
          */
         @Override
         public void closeUpdate(GTS lts, GraphState closed) {
+            if (getJModel() == null) {
+                return;
+            }
             GraphJCell jCell = getJModel().getJCellForNode(closed);
             // during automatic generation, we do not always have vertices for
             // all states

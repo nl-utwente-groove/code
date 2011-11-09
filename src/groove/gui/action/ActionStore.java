@@ -299,10 +299,24 @@ public class ActionStore implements SimulatorListener {
     public HideLTSAction getHideLTSAction() {
         // lazily create the action
         if (this.hideLTSAction == null) {
-            this.hideLTSAction = new HideLTSAction(this.simulator, false);
+            this.hideLTSAction = new HideLTSAction(this.simulator, true);
         }
 
         return this.hideLTSAction;
+    }
+
+    /**
+     * Returns the 'default exploration' action that is associated with the
+     * simulator.
+     */
+    public ShowLTSAction getShowLTSAction() {
+        // lazily create the action
+        if (this.showLTSAction == null) {
+            this.showLTSAction = new ShowLTSAction(this.simulator, true);
+            this.showLTSAction.setEnabled(true);
+        }
+
+        return this.showLTSAction;
     }
 
     /**
@@ -311,6 +325,8 @@ public class ActionStore implements SimulatorListener {
     private ExploreAction exploreAction;
 
     private HideLTSAction hideLTSAction;
+
+    private ShowLTSAction showLTSAction;
 
     /**
      * Returns the exploration dialog action permanently associated with this

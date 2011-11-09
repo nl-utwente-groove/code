@@ -229,7 +229,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
                 changedCells.add(jCell);
             }
         }
-        if (state != null) {
+        if (state != null && getModel() != null) {
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(state);
             if (jCell.setActive(true)) {
                 changedCells.add(jCell);

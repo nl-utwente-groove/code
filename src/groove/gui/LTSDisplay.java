@@ -110,6 +110,7 @@ public class LTSDisplay extends Display {
             result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
         }
         result.add(getActions().getHideLTSAction());
+        result.add(getActions().getShowLTSAction());
     }
 
     /**
@@ -122,6 +123,9 @@ public class LTSDisplay extends Display {
      */
     public void emphasiseStates(List<GraphState> counterExamples,
             boolean showTransitions) {
+        if (getLtsModel() == null) {
+            return;
+        }
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
