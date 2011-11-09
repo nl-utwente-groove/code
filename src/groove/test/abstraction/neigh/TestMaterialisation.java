@@ -670,6 +670,30 @@ public class TestMaterialisation {
     }
 
     @Test
+    public void testMaterialisation14() {
+        Shape shape = null;
+        try {
+            File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+            shape = ShapeGxl.getInstance().unmarshalShape(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Rule rule = grammar.getRule("test-mat-14");
+
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(2, preMatches.size());
+        for (Proof preMatch : preMatches) {
+            Set<Materialisation> mats =
+                Materialisation.getMaterialisations(shape, preMatch);
+            assertTrue(mats.size() == 5 || mats.size() == 2);
+        }
+    }
+
+    @Test
     public void testRuleAppAndNormalisation() {
         HostGraph graph = null;
         try {
