@@ -27,6 +27,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
@@ -69,6 +70,13 @@ public abstract class ListPanel extends JPanel {
     public void setEntries(Collection<? extends SelectableListEntry> entries) {
         getEntryArea().setListData(entries.toArray());
         setVisible(!entries.isEmpty());
+    }
+
+    /** Clears all entries from the list. */
+    public void clearEntries() {
+        getEntryArea().setListData(
+            Collections.<SelectableListEntry>emptySet().toArray());
+        setVisible(false);
     }
 
     /** 

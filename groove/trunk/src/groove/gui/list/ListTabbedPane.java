@@ -40,7 +40,7 @@ public final class ListTabbedPane extends JTabbedPane {
     /** Constructs a fresh instance, for a given simulator. */
     public ListTabbedPane() {
         this.errorList = new ErrorListPanel(null);
-        this.searchList = new SearchResultListPanel(null);
+        this.searchList = new SearchResultListPanel(null, this);
         this.errorTabIndex = -1;
         this.searchTabIndex = -1;
         this.adjustVisibility();
@@ -123,6 +123,9 @@ public final class ListTabbedPane extends JTabbedPane {
         }
         if (!this.searchList.hasContent() && this.isSearchTabVisible()) {
             this.removeSearchTab();
+        }
+        if (this.isSearchTabVisible()) {
+            this.setSelectedIndex(this.searchTabIndex);
         }
         setVisible(this.isErrorTabVisible() || this.isSearchTabVisible());
     }

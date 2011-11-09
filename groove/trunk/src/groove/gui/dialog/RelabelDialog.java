@@ -19,24 +19,20 @@ package groove.gui.dialog;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.io.HTMLConverter;
 import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -230,30 +226,15 @@ public class RelabelDialog {
     /** Returns the text field in which the user is to enter his input. */
     private JComboBox getOldField() {
         if (this.oldField == null) {
-            final JComboBox result = this.oldField = new JComboBox();
-            result.setFocusable(false);
-            result.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list,
-                        Object value, int index, boolean isSelected,
-                        boolean cellHasFocus) {
-                    if (value instanceof TypeLabel) {
-                        value =
-                            HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
-                    }
-                    return super.getListCellRendererComponent(list, value,
-                        index, isSelected, cellHasFocus);
-                }
-            });
+            final JComboBox result =
+                this.oldField =
+                    LabelDialogFactory.getLabelComboBox(this.typeGraph);
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     propagateSelection();
                 }
             });
-            for (TypeLabel label : this.typeGraph.getLabels()) {
-                result.addItem(label);
-            }
         }
         return this.oldField;
     }

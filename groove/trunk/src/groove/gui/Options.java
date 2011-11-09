@@ -642,7 +642,7 @@ public class Options implements Cloneable {
     /** Snap to grid action name */
     public static final String SNAP_TO_GRID_NAME = "Snap to grid";
     /** Search action name */
-    public static final String SEARCH_NAME = "Search ...";
+    public static final String SEARCH_ACTION_NAME = "Search ...";
     /**
      * Edit action name
      */

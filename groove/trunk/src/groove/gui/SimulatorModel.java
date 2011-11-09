@@ -8,6 +8,7 @@ import groove.explore.util.RuleEventApplier;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeLabel;
+import groove.gui.list.SearchResult;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
@@ -819,6 +820,22 @@ public class SimulatorModel implements Cloneable {
         String name = getSelected(resource);
         return name == null ? null : getGrammar().getTextResource(resource,
             name);
+    }
+
+    /** Returns a list of search results for the given label. */
+    public final List<SearchResult> searchLabel(TypeLabel label) {
+        List<SearchResult> searchResults = new ArrayList<SearchResult>();
+        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            if (!kind.isGraphBased()) {
+                continue;
+            }
+            for (String name : getGrammar().getNames(kind)) {
+                AspectGraph graph =
+                    getGrammar().getGraphResource(kind, name).getSource();
+                graph.getSearchResults(label, searchResults);
+            }
+        }
+        return searchResults;
     }
 
     /** 
