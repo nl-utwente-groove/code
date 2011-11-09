@@ -302,6 +302,8 @@ public class Simulator implements SimulatorListener {
                 createListListener());
             this.listTabbedPane.getSearchResultListPanel().addSelectionListener(
                 createListListener());
+            this.model.addListener(
+                this.listTabbedPane.getSearchResultListPanel(), Change.GRAMMAR);
         }
         return this.listTabbedPane;
     }

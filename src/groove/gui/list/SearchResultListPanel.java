@@ -16,16 +16,24 @@
  */
 package groove.gui.list;
 
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
+import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.JAttr;
 
 import java.awt.Color;
+import java.util.Set;
 
 /** List panel for search results. */
-public final class SearchResultListPanel extends ListPanel {
+public final class SearchResultListPanel extends ListPanel implements
+        SimulatorListener {
+
+    private final ListTabbedPane parent;
 
     /** Default constructor, delegates to super class. */
-    public SearchResultListPanel(String title) {
+    public SearchResultListPanel(String title, ListTabbedPane parent) {
         super(title);
+        this.parent = parent;
     }
 
     @Override
@@ -56,6 +64,15 @@ public final class SearchResultListPanel extends ListPanel {
     @Override
     protected Color getSelectForeground() {
         return JAttr.SELECT_FOREGROUND;
+    }
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (changes.contains(Change.GRAMMAR)) {
+            this.clearEntries();
+            this.parent.adjustVisibility();
+        }
     }
 
 }

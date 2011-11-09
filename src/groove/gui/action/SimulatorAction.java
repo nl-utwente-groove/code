@@ -20,6 +20,7 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FreshNameDialog;
 import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.SaveDialog;
+import groove.gui.dialog.SearchDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
@@ -275,6 +276,21 @@ public abstract class SimulatorAction extends AbstractAction implements
         if (dialog.showDialog(getFrame(), null)) {
             return new Duo<TypeLabel>(dialog.getOldLabel(),
                 dialog.getNewLabel());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Enters a dialog that asks for a label to be searched.
+     * @return The label to be searched and or <code>null</code> if the dialog
+     *         was cancelled.
+     */
+    protected final TypeLabel askSearch() {
+        SearchDialog dialog =
+            new SearchDialog(getSimulatorModel().getGrammar().getTypeGraph());
+        if (dialog.showDialog(getFrame(), null)) {
+            return dialog.getSearchLabel();
         } else {
             return null;
         }
