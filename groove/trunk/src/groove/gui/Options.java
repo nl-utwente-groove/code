@@ -79,6 +79,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_VALUE_NODES_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
+        addCheckbox(SHOW_LTS_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
@@ -866,6 +867,8 @@ public class Options implements Cloneable {
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
+    /** Show lts option */
+    static public final String SHOW_LTS_OPTION = "Show lts";
     /** Show the tab for control programs. */
     static public final String SHOW_CONTROL_TAB_OPTION =
         "Show control program tab";
@@ -906,6 +909,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
+        boolOptionDefaults.put(SHOW_LTS_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
