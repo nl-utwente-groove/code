@@ -264,19 +264,27 @@ public final class GraphToTikz {
      * @return the line with converted characters, if any.
      */
     private static StringBuilder convertInscriptedHtml(StringBuilder line) {
-        // Convert the pi in product nodes.
-        int i = line.indexOf(HTMLConverter.HTML_PI);
-        while (i != -1) {
-            line.replace(i, i + 6, PI);
-            i = line.indexOf(HTMLConverter.HTML_PI);
-        }
-        // Convert the greater than sign in type nodes.
-        i = line.indexOf(HTMLConverter.HTML_GT);
-        while (i != -1) {
-            line.replace(i, i + 5, GT);
-            i = line.indexOf(HTMLConverter.HTML_GT);
-        }
+        replaceInline(line, HTMLConverter.HTML_PI, PI);
+        replaceInline(line, HTMLConverter.HTML_GT, GT);
+        replaceInline(line, "&#47;", FORWARDSLASH);
+        replaceInline(line, AMP + "lt;", LT);
+        replaceInline(line, AMP + "gt;", GT);
         return line;
+    }
+
+    /**
+     * Replaces all occurrences of the HTML tag in the given line.
+     * @param line the line to be operated on.
+     * @param html the tag to be replaced.
+     * @param tikz the string to replace the tag with.
+     */
+    private static void replaceInline(StringBuilder line, String html,
+            String tikz) {
+        int i = line.indexOf(html);
+        while (i != -1) {
+            line.replace(i, i + html.length(), tikz);
+            i = line.indexOf(html);
+        }
     }
 
     /**
@@ -1528,6 +1536,8 @@ public final class GraphToTikz {
     private static final String BACKSLASH = "$\\backslash$";
     private static final String PI = "$\\pi$";
     private static final String GT = ">";
+    private static final String LT = "<";
+    private static final String FORWARDSLASH = "/";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
