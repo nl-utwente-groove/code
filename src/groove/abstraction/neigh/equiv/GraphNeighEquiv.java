@@ -92,12 +92,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Basic getter method. */
-    public int getRadius() {
-        return this.radius;
-    }
-
-    /** Returns the previously computed equivalence relation. */
+    /**
+     * Returns the previously computed equivalence relation.
+     * Fails on an assertion if this relation is null.
+     */
     public EquivRelation<HostNode> getPrevEquivRelation() {
         assert this.previous != null;
         return this.previous;
@@ -282,8 +280,8 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * neighbourhood relation. This is used, for example, to compute auxiliary
      * maps that can speed-up the refinement process.
      */
-    void prepareRefinement() {
-        // Empty by design. See comment below.
+    protected void prepareRefinement() {
+        // Empty by design. See comment above.
     }
 
     /** Creates and returns a new node equivalence class object. */
@@ -300,7 +298,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // implementation for method prepareRefinement should be provided. This
     // optimization is not needed for now because the only time this class is
     // used is when constructing a shape from the start graph.
-    boolean areStillEquivalent(HostNode n0, HostNode n1) {
+    protected boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
         Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
         // For all labels.
@@ -401,6 +399,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         /** The hash code of the object. */
         final int hashCode;
 
+        /** Basic constructor, just fills the fields. */
         EdgeEquivData(HostEdge edge) {
             this.srcEc = GraphNeighEquiv.this.getEquivClassOf(edge.source());
             this.label = edge.label();
@@ -432,7 +431,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             return this.hashCode;
         }
 
-        /** Callback method computing the hash code. */
+        /** Callback method for computing the hash code. */
         private int computeHashCode() {
             final int prime = 31;
             int result = 1;

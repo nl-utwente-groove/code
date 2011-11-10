@@ -108,7 +108,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         return result;
     }
 
-    /** Creates and returns a new array with the elements of this class. */
+    /** Creates and returns a new array with all elements of this class. */
     @Override
     public Object[] toArray() {
         Object result[] = new Object[this.elemCount];

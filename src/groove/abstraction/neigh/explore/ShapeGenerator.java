@@ -22,6 +22,7 @@ import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.explore.Exploration;
+import groove.explore.Generator;
 import groove.explore.Generator.TemplatedOption;
 import groove.explore.StrategyEnumerator;
 import groove.explore.StrategyValue;
@@ -42,7 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Performs a full abstract exploration of a grammar given as parameter.
+ * Counterpart of {@link Generator} for abstract state space exploration.
  * 
  * @author Eduardo Zambon
  */
@@ -159,6 +160,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * Callback method to check whether the log command line option is
      * supported. This implementation returns <tt>false</tt> always.
      */
+    // EZ says: if you want logs, use pipes... :P
     @Override
     protected boolean supportsLogOption() {
         return false;
@@ -349,6 +351,7 @@ public final class ShapeGenerator extends CommandLineTool {
 
     /**
      * Command line option to specify a multiplicity bound.
+     * 
      * @author Eduardo Zambon
      */
     private static class MultiplicityBoundOption implements CommandLineOption {
@@ -433,6 +436,7 @@ public final class ShapeGenerator extends CommandLineTool {
 
     /**
      * Command line option to specify logging of exploration statistics.
+     * 
      * @author Eduardo Zambon
      */
     private class StatsOption implements CommandLineOption {

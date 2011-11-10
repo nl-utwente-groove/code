@@ -65,11 +65,11 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
     // ------------------------------------------------------------------------
 
     @Override
-    void prepareRefinement() {
+    protected void prepareRefinement() {
         Shape shape = (Shape) this.graph;
         this.multMap = new MyHashMap<EdgeSignature,Multiplicity>();
         // Reverse map from subsets of the elements that are in this
-        // equivalence relation.
+        // equivalence relation to their super set.
         Map<EquivClass<ShapeNode>,EquivClass<HostNode>> reverseKMap =
             new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
         Multiplicity zero =
@@ -106,7 +106,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      * comment on the class definition, top of this file).
      */
     @Override
-    boolean areStillEquivalent(HostNode n0, HostNode n1) {
+    protected boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
         // For all labels.
         labelLoop: for (TypeLabel label : this.binaryLabels) {

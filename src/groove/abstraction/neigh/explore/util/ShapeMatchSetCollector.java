@@ -18,6 +18,7 @@ package groove.abstraction.neigh.explore.util;
 
 import groove.abstraction.neigh.lts.ShapeState;
 import groove.abstraction.neigh.match.PreMatch;
+import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.control.CtrlTransition;
 import groove.explore.util.MatchSetCollector;
 import groove.lts.MatchResult;
@@ -29,6 +30,10 @@ import java.util.Collection;
 
 /**
  * Collector of pre-matches of rules over shapes.
+ * In order for this class to compute the proper number of matches, a
+ * dedicated anchor factory must be installed. For the neighbourhood 
+ * abstraction we used the {@link NeighAnchorFactory}.
+ * 
  * @author Eduardo Zambon
  */
 public final class ShapeMatchSetCollector extends MatchSetCollector {
