@@ -121,48 +121,48 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
 
+    /**
+     * It draws lts or disables the lts tab depending on the value
+     * of SHOW_LTS_OPTION 
+     */
+    public void showHideLts() {
+        if (getOptionValue(SHOW_LTS_OPTION)) {
+            LTSJModel ltsModel;
+            ltsModel = getJGraph().newModel();
+            ltsModel.loadGraph(getSimulatorModel().getGts());
+            setJModel(ltsModel);
+            getJGraph().setVisible(true);
+            getJGraph().refresh();
+            getJGraph().freeze();
+            getJGraph().getLayouter().start(false);
+            getJGraph().setEnabled(true);
+        } else {
+            getJGraph().setVisible(false);
+            getJGraph().refresh();
+            getJGraph().setEnabled(false);
+        }
+    }
+
+    /**
+     * It toggles the value of SHOW_LTS_OPTION 
+     */
     public void toggleShowLts() {
         if (getOptionValue(SHOW_LTS_OPTION)) {
             getOptions().setSelected(SHOW_LTS_OPTION, false);
         } else {
             getOptions().setSelected(SHOW_LTS_OPTION, true);
         }
-        if (getOptionValue(SHOW_LTS_OPTION)) {
-            LTSJModel ltsModel;
-            ltsModel = getJGraph().newModel();
-            ltsModel.loadGraph(getSimulatorModel().getGts());
-            setJModel(ltsModel);
-            getJGraph().setVisible(true);
-            getJGraph().refresh();
-            getJGraph().freeze();
-            getJGraph().getLayouter().start(false);
-            getJGraph().setEnabled(true);
-        } else {
-            getJGraph().setVisible(false);
-            getJGraph().refresh();
-            getJGraph().setEnabled(false);
-        }
+        showHideLts();
         return;
     }
 
+    /**
+     * It handles the event coming from LTS hide/show checkbox in the view menu 
+     */
     @Override
     protected void refresh() {
         super.refresh();
-        if (getOptionValue(SHOW_LTS_OPTION)) {
-            LTSJModel ltsModel;
-            ltsModel = getJGraph().newModel();
-            ltsModel.loadGraph(getSimulatorModel().getGts());
-            setJModel(ltsModel);
-            getJGraph().setVisible(true);
-            getJGraph().refresh();
-            getJGraph().freeze();
-            getJGraph().getLayouter().start(false);
-            getJGraph().setEnabled(true);
-        } else {
-            getJGraph().setVisible(false);
-            getJGraph().refresh();
-            getJGraph().setEnabled(false);
-        }
+        showHideLts();
     }
 
     @Override
