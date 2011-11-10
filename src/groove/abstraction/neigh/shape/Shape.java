@@ -1297,6 +1297,24 @@ public final class Shape extends DefaultHostGraph {
         newShape.createEquivRelation(sne.getPrevEquivRelation(), map);
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
+        // Making node multiplicities more precise, when possible.
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        for (ShapeNode node : newShape.nodeSet()) {
+            Multiplicity nodeMult = newShape.getNodeMult(node);
+            if (nodeMult.isUnbounded()) {
+                for (EdgeMultDir direction : EdgeMultDir.values()) {
+                    for (ShapeEdge edge : newShape.binaryEdgeSet(node,
+                        direction)) {
+                        ShapeNode opp = edge.opposite(direction);
+                        Multiplicity oppMult = newShape.getNodeMult(opp);
+                        if (oppMult.isOne() && newShape.isEdgeConcrete(edge)) {
+                            // The node can only be concrete.
+                            newShape.setNodeMult(node, one);
+                        }
+                    }
+                }
+            }
+        }
         assert newShape.isInvariantOK();
         return newShape;
     }
