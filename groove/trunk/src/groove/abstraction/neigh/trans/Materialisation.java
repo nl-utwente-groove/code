@@ -155,11 +155,6 @@ public final class Materialisation {
      * we still have its multiplicity stored.  
      */
     private Map<ShapeNode,Multiplicity> nodeSplitMultMap;
-    /**
-     * Auxiliary set that contains nodes that must be garbage collected at
-     * the end of materialisation.
-     */
-    private Set<ShapeNode> garbageNodes;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -234,7 +229,6 @@ public final class Materialisation {
             // Just update the references.
             this.nodeSplitMap = mat.nodeSplitMap;
             this.nodeSplitMultMap = mat.nodeSplitMultMap;
-            this.garbageNodes = null;
         } else {
             // this.stage == 2. We should not clone the materialisation object
             // during second stage.
@@ -349,16 +343,6 @@ public final class Materialisation {
             }
         }
         return result;
-    }
-
-    /**
-     * Looks at the keys of the bundle map for an edge bundle compatible
-     * with the given edge. If no suitable edge bundle is found, returns
-     * null.
-     */
-    EdgeBundle maybeGetBundle(ShapeEdge edge, EdgeMultDir direction) {
-        EdgeSignature origEs = this.getOrigEs(edge, direction);
-        return this.getBundle(edge.incident(direction), origEs);
     }
 
     /**
@@ -745,7 +729,6 @@ public final class Materialisation {
         // in node identities when we move to second stage and try split nodes.
         // this.morph.removeNode(nodeToRemove);
         // this.shape.removeNode(nodeToRemove);
-        this.getGarbageNodeSet().add(nodeToRemove);
         this.removeNodeFromBundleMap(nodeToRemove);
     }
 
@@ -760,9 +743,6 @@ public final class Materialisation {
         this.matEdges = null;
 
         if (nonSingBundles.isEmpty()) {
-            // We don't need to split nodes. But maybe we have to collect
-            // garbage nodes.
-            this.simpleGarbageCollectNodes();
             return;
         }
 
@@ -824,10 +804,6 @@ public final class Materialisation {
             }
             assert !iter.hasNext();
         }
-
-        // Now it's safe to remove the nodes that were marked as garbage during
-        // the first stage.
-        this.simpleGarbageCollectNodes();
 
         // Now collect the remaining edges created by the node split that still
         // give rise to admissible configurations.
@@ -947,13 +923,6 @@ public final class Materialisation {
         }
     }
 
-    Set<ShapeNode> getGarbageNodeSet() {
-        if (this.garbageNodes == null) {
-            this.garbageNodes = new MyHashSet<ShapeNode>();
-        }
-        return this.garbageNodes;
-    }
-
     /** Remove the nodes from the shape that were marked as garbage. */
     void recursiveGarbageCollectNodes() {
         assert this.stage == 2 || this.stage == 3;
@@ -966,18 +935,6 @@ public final class Materialisation {
             // Need to search for garbage nodes again because of possible
             // new disconnections.
             this.markGarbageNodes(garbageNodes);
-        }
-    }
-
-    void simpleGarbageCollectNodes() {
-        assert this.stage == 2;
-        if (this.garbageNodes != null) {
-            for (ShapeNode garbageNode : this.garbageNodes) {
-                // No need to check anything here, the node is guaranteed to
-                // be unconnected.
-                this.morph.removeNode(garbageNode);
-                this.shape.removeNode(garbageNode);
-            }
         }
     }
 
