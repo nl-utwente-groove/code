@@ -162,6 +162,7 @@ public class RelabelDialog {
             enabled = false;
         }
         getOkButton().setEnabled(enabled);
+        getNameFieldListener().setEnabled(enabled);
     }
 
     /**
@@ -248,13 +249,23 @@ public class RelabelDialog {
             this.newField = new JTextField();
             this.newField.getDocument().addDocumentListener(
                 new OverlapListener());
-            this.newField.addActionListener(new CloseListener());
+            this.newField.addActionListener(getNameFieldListener());
         }
         return this.newField;
     }
 
+    /** Returns the close listener for the name field. */
+    private CloseListener getNameFieldListener() {
+        if (this.nameFieldListener == null) {
+            this.nameFieldListener = new CloseListener();
+        }
+        return this.nameFieldListener;
+    }
+
     /** The text field where the renamed label is entered. */
     private JTextField newField;
+    /** Close listener for the new name field. */
+    private CloseListener nameFieldListener;
 
     /** Returns the label displaying the current error in the renaming (if any). */
     private JLabel getErrorLabel() {
@@ -343,13 +354,22 @@ public class RelabelDialog {
     private class CloseListener implements ActionListener {
         /** Empty constructor with the right visibility. */
         CloseListener() {
-            // empty
+            this.enabled = true;
+        }
+
+        /** Enables or disables the close listened. */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public void actionPerformed(ActionEvent e) {
-            getOptionPane().setValue(e.getSource());
-            getOptionPane().setVisible(false);
+            if (this.enabled) {
+                getOptionPane().setValue(e.getSource());
+                getOptionPane().setVisible(false);
+            }
         }
+
+        private boolean enabled;
     }
 
     /**
