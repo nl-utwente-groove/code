@@ -25,6 +25,7 @@ import groove.abstraction.neigh.lts.ShapeTransition;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
+import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.explore.util.MatchApplier;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -38,6 +39,10 @@ import java.util.Set;
 
 /**
  * A version of a {@link MatchApplier} for abstract exploration.
+ * In order for this class to receive the proper number of matches on the
+ * {@link #apply(GraphState, MatchResult)} method, a dedicated anchor factory
+ * must be installed. For the neighbourhood abstraction we used the
+ * {@link NeighAnchorFactory}.
  * 
  * @author Eduardo Zambon
  */
@@ -56,7 +61,7 @@ public final class ShapeMatchApplier extends MatchApplier {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. */
+    /** Default constructor. Delegates to super. */
     public ShapeMatchApplier(AGTS gts) {
         super(gts);
     }
@@ -65,11 +70,26 @@ public final class ShapeMatchApplier extends MatchApplier {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    /** Specialises the return type. */
     @Override
     public AGTS getGTS() {
         return (AGTS) super.getGTS();
     }
 
+    /**
+     * Applies the given pre-match to the given state.
+     * 
+     * From the given pre-match a (possible empty) set of materialisations is
+     * computed. For each materialisation the rule is applied, the resulting
+     * shape is normalised and the normalised shape is added to the state space.
+     * Subsumption collapsing is used and thus the normalised shape can
+     * produce either a new transition, if the shape is subsumed by an existing
+     * state, or a new state.
+     * 
+     * Due to non-determinism in the materialisation, a single pre-match may
+     * produce more than one transition. This means that the return value of
+     * this method is garbage: callers should not use it.
+     */
     @Override
     public GraphTransition apply(GraphState sourceGS, MatchResult match) {
         assert sourceGS instanceof ShapeState;
@@ -120,6 +140,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                 result = trans;
             }
         } catch (AssertionError e) {
+            // Additional code for bug hunting.
             System.err.println("\nFound a bug in the abstraction code!!!");
             File file = new File(source.toString() + ".gxl");
             try {
@@ -136,6 +157,7 @@ public final class ShapeMatchApplier extends MatchApplier {
             throw e;
         }
 
+        // Returns the last produced transition.
         return result;
     }
 

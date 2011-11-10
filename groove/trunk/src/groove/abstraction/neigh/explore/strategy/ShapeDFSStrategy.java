@@ -30,10 +30,18 @@ import java.util.Stack;
 
 /**
  * Depth-first search exploration strategy for abstract state spaces.
+ * 
+ * At each state all matches for all rules are explored and the state is closed.
+ * Traversal then continues over one immediate successor. This means that
+ * the states are visited according to a LIFO order. Due to the subsumption
+ * checks performed during exploration this strategy is more likely to yield
+ * a smaller state space and thus uses less memory than BFS.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeDFSStrategy extends ClosingStrategy {
 
+    /** Delegates to super.*/
     @Override
     public void prepare(GTS gts, GraphState state) {
         assert gts instanceof AGTS;

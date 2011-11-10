@@ -26,6 +26,7 @@ import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
+import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -36,7 +37,6 @@ import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
-import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
@@ -979,7 +979,7 @@ public final class Materialisation {
     }
 
     /** Used for tests. */
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
@@ -1006,21 +1006,22 @@ public final class Materialisation {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    /*public static void main(String args[]) {
+    public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
         Abstraction.initialise();
-        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+        File file = new File(DIRECTORY + "materialisation-test-15.gxl");
         File grammarFile = new File(DIRECTORY);
         try {
-            String number = "14";
+            String number = "13";
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-" + number);
             Shape shape = ShapeGxl.getInstance().unmarshalShape(file);
+            ShapePreviewDialog.showShape(shape);
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
@@ -1034,5 +1035,5 @@ public final class Materialisation {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 }

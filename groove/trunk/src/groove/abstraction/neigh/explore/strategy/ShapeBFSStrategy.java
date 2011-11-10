@@ -28,10 +28,19 @@ import groove.lts.GraphState;
 
 /**
  * Breadth-first search exploration strategy for abstract state spaces.
+ * 
+ * At each state all matches for all rules are explored and the state is closed.
+ * Traversal then continues over all the immediate successors. This means that
+ * the states are visited according to their creation order.
+ * 
+ * Depending on the fan-out of each state the number of open states may be
+ * quite high and thus this strategy uses a lot of memory.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeBFSStrategy extends NextOpenStrategy {
 
+    /** Delegates to super.*/
     @Override
     public void prepare(GTS gts, GraphState state) {
         assert gts instanceof AGTS;

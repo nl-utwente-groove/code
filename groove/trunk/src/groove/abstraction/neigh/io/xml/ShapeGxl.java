@@ -29,6 +29,7 @@ import java.net.URL;
 
 /**
  * Class to convert shapes to GXL format and back.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeGxl extends
@@ -43,23 +44,17 @@ public class ShapeGxl extends
         // Private to avoid object creation. Use getInstance() method.
     }
 
-    /**
-     * Loads a shape from the given URL.
-     */
+    /** Loads a shape from the given URL. */
     public Shape unmarshalShape(URL url) throws IOException {
         return Shape.upcast(this.unmarshalGraph(url));
     }
 
-    /**
-     * Loads a shape from the given URL.
-     */
+    /** Loads a shape from the given file. */
     public Shape unmarshalShape(File file) throws IOException {
         return Shape.upcast(this.unmarshalGraph(file));
     }
 
-    /**
-     * Saves the given shape into the given file.
-     */
+    /** Saves the given shape into the given file. */
     public void marshalShape(Shape shape, File file) throws IOException {
         this.marshalGraph(shape.downcast(), file);
     }

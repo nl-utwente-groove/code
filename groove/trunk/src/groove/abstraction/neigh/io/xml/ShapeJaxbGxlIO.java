@@ -45,15 +45,14 @@ import de.gupro.gxl.gxl_1_0.RelendType;
 
 /**
  * Class to read and write shapes in GXL format, using JXB data binding.
+ * 
  * @author Eduardo Zambon
  */
 public class ShapeJaxbGxlIO extends AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
 
     private ShapeFactory elementFactory;
 
-    /**
-     * Private constructor for the singleton instance.
-     */
+    /** Private constructor for the singleton instance. */
     private ShapeJaxbGxlIO() {
         super();
     }
@@ -206,7 +205,8 @@ public class ShapeJaxbGxlIO extends AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
         }
     }
 
-    Multiplicity getMultiplicity(String multStr, MultKind kind) {
+    /** Converts the given string to a proper multiplicity, based on given kind. */
+    private Multiplicity getMultiplicity(String multStr, MultKind kind) {
         String[] parts = multStr.split(" ");
         int lowerBound = Integer.parseInt(parts[0]);
         int upperBound;
