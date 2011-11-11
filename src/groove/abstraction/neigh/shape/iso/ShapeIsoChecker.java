@@ -32,24 +32,61 @@ import groove.trans.HostNode;
 import java.util.Map.Entry;
 
 /**
- * Isomorphism checker for shapes.
+ * Isomorphism checker for shapes. In addition of isomorphism it also checks
+ * for subsumption between shapes. 
  *  
  * @author Eduardo Zambon
  */
-public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
+public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
-    /** Flag to indicate whether to use subsumption or not. */
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /**
+     * Flag that indicates whether to check for subsumption or not. Since this
+     * greatly improve the performance of exploration, the flag is on by
+     * default. It is left here in case subsumption needs to be turned off for
+     * debugging.
+     * 
+     * Bear in mind that the subsumption relation is NOT symmetric!
+     */
     public static final boolean CHECK_SUBSUMPTION = true;
 
+    // Return values for the comparisons.
     private static final int NON_ISO = 0x0;
     private static final int DOM_EQUALS_COD = 0x1;
     private static final int DOM_SUBSUMES_COD = 0x2;
     private static final int COD_SUBSUMES_DOM = 0x4;
 
     /** The singleton strong instance of this class. */
-    static private ShapeIsoChecker strongInstance;
+    private static ShapeIsoChecker strongInstance;
     /** The singleton weak instance of this class. */
-    static private ShapeIsoChecker weakInstance;
+    private static ShapeIsoChecker weakInstance;
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns the singleton instance of this class.
+     * @param strong if <code>true</code>, the checker will not returns false
+     *        negatives.
+     */
+    @SuppressWarnings("unchecked")
+    public static ShapeIsoChecker getInstance(boolean strong) {
+        // Initialise lazily to avoid initialisation circularities.
+        if (strongInstance == null) {
+            strongInstance = new ShapeIsoChecker(true);
+            weakInstance = new ShapeIsoChecker(false);
+
+        }
+        return strong ? strongInstance : weakInstance;
+    }
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /**
      * Private constructor, for the singleton instance of this class.
@@ -60,55 +97,33 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         super(strong);
     }
 
-    /**
-     * Returns the singleton instance of this class.
-     * @param strong if <code>true</code>, the checker will not returns false
-     *        negatives.
-     */
-    @SuppressWarnings("unchecked")
-    static public ShapeIsoChecker getInstance(boolean strong) {
-        // Initialise lazily to avoid initialisation circularities.
-        if (strongInstance == null) {
-            strongInstance = new ShapeIsoChecker(true);
-            weakInstance = new ShapeIsoChecker(false);
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
-        }
-        return strong ? strongInstance : weakInstance;
-    }
-
-    /** Ugly hack for stupid typing problems. */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public IsoChecker<HostNode,HostEdge> downcast() {
-        return (IsoChecker) this;
-    }
-
-    @Override
-    public boolean areIsomorphic(Graph<ShapeNode,ShapeEdge> dom,
-            Graph<ShapeNode,ShapeEdge> cod, ShapeNode[] domNodes,
-            ShapeNode[] codNodes) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Morphism<ShapeNode,ShapeEdge> getIsomorphism(
-            Graph<ShapeNode,ShapeEdge> dom, Graph<ShapeNode,ShapeEdge> cod) {
-        throw new UnsupportedOperationException();
-    }
-
+    /** Convenience method for checking if the flag is set in the given result.*/
     private boolean isDomEqualsCod(int result) {
         return (result & DOM_EQUALS_COD) == DOM_EQUALS_COD;
     }
 
+    /** Convenience method for checking if the flag is set in the given result.*/
     private boolean isDomSubsumesCod(int result) {
         return (result & DOM_SUBSUMES_COD) == DOM_SUBSUMES_COD;
     }
 
-    /** Returns true if the co-domain subsumes the domain. */
+    /** Convenience method for checking if the flag is set in the given result.*/
     public boolean isCodSubsumesDom(int result) {
         return (result & COD_SUBSUMES_DOM) == COD_SUBSUMES_DOM;
     }
 
-    /** Returns true if the given result value has the equals flag set. */
+    /**
+     * Returns true if we can consider the shapes equal based on the given
+     * result of the comparison.
+     * If the {@link #CHECK_SUBSUMPTION} flag is off then only the equality
+     * flag is checked. Otherwise, the shapes are also considered equal if the
+     * co-domain subsumes the domain shape. This means that the new shape (in
+     * the domain) will be collapsed under the old one (in the co-domain).
+     */
     public boolean areEqual(int result) {
         boolean equal = this.isDomEqualsCod(result);
         if (CHECK_SUBSUMPTION) {
@@ -125,7 +140,7 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return this.isDomSubsumesCod(result) && !this.isDomEqualsCod(result);
     }
 
-    /** See {@link #areIsomorphic(Graph, Graph)}. */
+    /** See {@link #compareShapes(Shape, Shape)}. */
     public boolean areIsomorphic(Shape dom, Shape cod) {
         int result = this.compareShapes(dom, cod);
         return this.areEqual(result);
@@ -166,7 +181,7 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
      * Returns true if the given pre-isomorphism is a valid shape isomorphism.
      * Two shapes are isomorphic if:
      * (0) their underlying graph structures are isomorphic (the given morphism);
-     * (1) they have the same node multiplicities;
+     * (1) they have the same node multiplicities (maybe up to subsumption);
      * (2) they have the same outgoing and incoming edge multiplicities; and
      * (3) they have the same equivalence relation. 
      */
@@ -212,6 +227,9 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
                 mappedCodEc.add(codNode);
             }
             EquivClass<ShapeNode> codEc = cod.getEquivClassOf(codNode);
+            // EZ says: we can used equality here because the node equivalence
+            // classes are implemented as bit sets and their equals method is
+            // as fast as computing a hash.
             if (!codEc.equals(mappedCodEc)) {
                 return NON_ISO;
             } else {
@@ -223,6 +241,11 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return result;
     }
 
+    /**
+     * Performs some basic comparisons between the two given shapes. This is
+     * used to speed-up the iso checking: if this method fail (which is cheap
+     * to execute) then for sure the shapes are not isomorphic.
+     */
     private boolean passBasicChecks(Shape dom, Shape cod) {
         return dom.nodeCount() == cod.nodeCount()
             && dom.edgeCount() == cod.edgeCount()
@@ -233,6 +256,11 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
                 EdgeMultDir.INCOMING).size();
     }
 
+    /**
+     * Compares the given multiplicity for equality and also for subsumption
+     * in both directions.
+     * Returns an integer with all the proper flags set. 
+     */
     private int compareMultiplicities(Multiplicity domMult, Multiplicity codMult) {
         int result = NON_ISO;
         if (domMult.equals(codMult)) {
@@ -249,7 +277,34 @@ public class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return result;
     }
 
+    /**
+     * Updated the given result value with the new given comparison.
+     * Returns the new result.
+     */
     private int updateResult(int result, int comparison) {
         return result & comparison;
+    }
+
+    /** Ugly hack for stupid typing problems. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public IsoChecker<HostNode,HostEdge> downcast() {
+        return (IsoChecker) this;
+    }
+
+    // ------------------------------------------------------------------------
+    // Unimplemented methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public boolean areIsomorphic(Graph<ShapeNode,ShapeEdge> dom,
+            Graph<ShapeNode,ShapeEdge> cod, ShapeNode[] domNodes,
+            ShapeNode[] codNodes) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Morphism<ShapeNode,ShapeEdge> getIsomorphism(
+            Graph<ShapeNode,ShapeEdge> dom, Graph<ShapeNode,ShapeEdge> cod) {
+        throw new UnsupportedOperationException();
     }
 }

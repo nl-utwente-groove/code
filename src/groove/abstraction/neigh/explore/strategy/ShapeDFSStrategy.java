@@ -39,7 +39,9 @@ import java.util.Stack;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeDFSStrategy extends ClosingStrategy {
+public final class ShapeDFSStrategy extends ClosingStrategy {
+
+    private final Stack<GraphState> stack = new Stack<GraphState>();
 
     /** Delegates to super.*/
     @Override
@@ -84,5 +86,4 @@ public class ShapeDFSStrategy extends ClosingStrategy {
         this.stack.clear();
     }
 
-    private final Stack<GraphState> stack = new Stack<GraphState>();
 }

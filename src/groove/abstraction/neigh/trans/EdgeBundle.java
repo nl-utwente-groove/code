@@ -31,21 +31,70 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A collection of related edge signatures.
+ * An edge bundle is a collection of split edge signatures that stem from one
+ * single original signature that could no longer be used to represent all its
+ * edges. This a key structure during the materialisation process since it
+ * stores information that still can't be put in the shape that is being
+ * materialised.
  * 
  * @author Eduardo Zambon
  */
 public final class EdgeBundle {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /**
+     * Direction of this edge bundle. Taken from the original edge signature.
+     */
     final EdgeMultDir direction;
+    /**
+     * Node of this bundle. All split edge signatures have this node and thus
+     * also all edges are incident to this node (accordingly to the direction).
+     * Note that this node may differ from the node in the original edge
+     * signature. This is caused, for example, by node materialisation and
+     * node splitting.
+     */
     final ShapeNode node;
+    /**
+     * Label of this edge bundle. Taken from the original edge signature.
+     */
     final TypeLabel label;
+    /**
+     * Original edge signature that had to be split and this created this
+     * bundle.
+     */
     final EdgeSignature origEs;
+    /**
+     * Multiplicity of the original edge signature. The sum of the split
+     * signatures must always be equal to this original multiplicity.
+     */
     final Multiplicity origEsMult;
+    /**
+     * Map from split edge signatures to their associated edges in the shape.
+     * Used to speed-up the code since it avoids expensive look-ups in the
+     * shape structure.
+     */
     final Map<EdgeSignature,Set<ShapeEdge>> splitEsMap;
+    /**
+     * Set of all edges from all split edge signatures. Corresponds to the
+     * union of all values of the split map.
+     */
     final Set<ShapeEdge> allEdges;
+    /**
+     * Set of possible edges (i.e., edges not in the shape) of the
+     * materialisation that will be present in the final configuration.
+     */
     final Set<ShapeEdge> possibleEdges;
+    /**
+     * Hash code of the bundle, computed by the constructor.
+     */
     private final int hashCode;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     EdgeBundle(EdgeSignature origEs, Multiplicity origEsMult, ShapeNode node) {
         this.direction = origEs.getDirection();
@@ -59,6 +108,7 @@ public final class EdgeBundle {
         this.hashCode = this.computeHashCode();
     }
 
+    /** Copying constructor. Used in cloning. */
     EdgeBundle(EdgeBundle bundle) {
         this.direction = bundle.direction;
         this.node = bundle.node;

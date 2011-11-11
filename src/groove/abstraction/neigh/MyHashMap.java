@@ -37,9 +37,4 @@ public class MyHashMap<K,V> extends LinkedHashMap<K,V> {
         super();
     }
 
-    /** Creates a set with proper initial size. */
-    public MyHashMap(int size) {
-        super(size);
-    }
-
 }

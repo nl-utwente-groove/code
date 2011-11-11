@@ -34,16 +34,25 @@ import java.util.Set;
 
 /**
  * Morphism between shapes.
- * @author Arend Rensink
+ * 
+ * @author Eduardo Zambon
  */
-public class ShapeMorphism extends HostGraphMorphism {
+public final class ShapeMorphism extends HostGraphMorphism {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /**
      * Creates a shape morphism with a given element factory.
      */
-    public ShapeMorphism(ShapeFactory factory) {
+    ShapeMorphism(ShapeFactory factory) {
         super(factory);
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public ShapeMorphism clone() {
@@ -85,6 +94,7 @@ public class ShapeMorphism extends HostGraphMorphism {
         return (ShapeEdge) super.putEdge(key, layout);
     }
 
+    /** Removes the node from the morphism and all incident edges. */
     @Override
     public ShapeNode removeNode(HostNode key) {
         Iterator<HostEdge> iter = this.edgeMap().keySet().iterator();
@@ -144,10 +154,20 @@ public class ShapeMorphism extends HostGraphMorphism {
      * shape. Only the pre-images of the nodes in the equivalence class of the
      * signature are considered, the node in the source signature is taken to
      * be the given 'nodeS'.
+     * 
+     * @param from the shape that is the pre-image of this morphism.
+     * @param nodeS the node in the 'from' shape the is to used when looking
+     *              for edge signatures.
+     * @param esT the edge signature in the image of this morphism.
+     * @param createWhenNonExistent flag indicating if an edge signature object
+     *                              should be created if not found in the morphism.
+     * @param result the set of pre-images. The set is cleared at the beginning
+     *               of this method.
      */
-    public Set<EdgeSignature> getPreImages(Shape from, ShapeNode nodeS,
-            EdgeSignature esT, boolean createWhenNonExistent,
-            final Set<EdgeSignature> result) {
+    // EZ says: this method is a bit expensive so maybe it might payoff to try
+    // to improve its performance.
+    public void getPreImages(Shape from, ShapeNode nodeS, EdgeSignature esT,
+            boolean createWhenNonExistent, final Set<EdgeSignature> result) {
         result.clear();
         EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
@@ -167,7 +187,6 @@ public class ShapeMorphism extends HostGraphMorphism {
                 }
             }
         }
-        return result;
     }
 
     /** Returns an edge signature in the given target shape. */
@@ -179,7 +198,7 @@ public class ShapeMorphism extends HostGraphMorphism {
             to.getEquivClassOf(this.getNode(esFrom.getEquivClass().iterator().next())));
     }
 
-    /** Returns true if all keys are in 'from' and all values in 'to'.*/
+    /** Returns true if all keys are in 'from' and all values in 'to'. */
     public boolean isValid(Shape from, Shape to) {
         for (Entry<HostNode,HostNode> entry : this.nodeMap().entrySet()) {
             if (!from.containsNode(entry.getKey())
@@ -200,7 +219,7 @@ public class ShapeMorphism extends HostGraphMorphism {
      * Implements the conditions of a shape morphism given on Def. 11, page 14.
      */
     public boolean isConsistent(Shape from, Shape to) {
-        // As in the paper, let shape 'from' be S and shape 'to be T.
+        // As in the paper, let shape 'from' be S and shape 'to' be T.
 
         // Check for item 1.
         boolean complyToEquivClass = true;
@@ -260,6 +279,9 @@ public class ShapeMorphism extends HostGraphMorphism {
         }
 
         if (!(complyToEquivClass && complyToNodeMult && complyToEdgeMult)) {
+            // This method is only used in assertions so if we hit this point
+            // it means we found a bug in the code. Print some information
+            // to help debugging.
             System.out.println("\n\nInconsistent shape morphism!");
             System.out.println("From shape:");
             System.out.println(from);

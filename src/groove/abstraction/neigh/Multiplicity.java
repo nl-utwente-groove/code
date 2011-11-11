@@ -35,25 +35,25 @@ public final class Multiplicity {
 
     /** The \omega value, differs from all natural numbers. */
     public static final int OMEGA = Integer.MAX_VALUE;
-    /** The node multiplicity store. */
+    /** Node multiplicity store. */
     private static Multiplicity NODE_MULT_STORE[];
-    /** The edge multiplicity store. */
+    /** Edge multiplicity store. */
     private static Multiplicity EDGE_MULT_STORE[];
-    /** The equation system multiplicity store. */
+    /** Equation system multiplicity store. */
     private static Multiplicity EQSYS_MULT_STORE[];
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    /** The lower bound of the multiplicity. */
+    /** Multiplicity lower bound. */
     private final int i;
-    /** The upper bound of the multiplicity. */
+    /** Multiplicity upper bound. */
     private final int j;
-    /** The kind of the multiplicity. */
+    /** Multiplicity kind. */
     private final MultKind kind;
     /**
-     * The index of the multiplicity object in the store.
+     * Index of the multiplicity object in the store.
      * Serves as a perfect hash.
      */
     private final int index;
@@ -374,22 +374,22 @@ public final class Multiplicity {
         return this.j;
     }
 
-    /** Returns true if the multiplicity equals zero; false, otherwise. */
+    /** Returns true if the multiplicity equals zero. */
     public boolean isZero() {
         return this.i == 0 && this.j == 0;
     }
 
-    /** Returns true if the multiplicity equals one; false, otherwise. */
+    /** Returns true if the multiplicity equals one. */
     public boolean isOne() {
         return this.i == 1 && this.j == 1;
     }
 
-    /** Returns true if the upper bound is more than one; false, otherwise. */
+    /** Returns true if the upper bound is more than one. */
     public boolean isCollector() {
         return this.j > 1;
     }
 
-    /** Returns true if the lower and upper bound are equal; false, otherwise. */
+    /** Returns true if the lower and upper bound are equal. */
     public boolean isSingleton() {
         return this.i == this.j;
     }
@@ -412,11 +412,6 @@ public final class Multiplicity {
     /** Basic inspection method. */
     public boolean isEdgeKind() {
         return this.kind == MultKind.EDGE_MULT;
-    }
-
-    /** Basic inspection method. */
-    public boolean isEqSysKind() {
-        return this.kind == MultKind.EQSYS_MULT;
     }
 
     /** Returns the bounded addition of the two given multiplicities. */
@@ -450,12 +445,6 @@ public final class Multiplicity {
     public boolean subsumes(Multiplicity other) {
         assert this.kind == other.kind;
         return other.i >= this.i && other.j <= this.j;
-    }
-
-    /** Converts the multiplicity to an edge kind. */
-    public Multiplicity toEdgeKind() {
-        assert this.isNodeKind();
-        return approx(this.i, this.j, MultKind.EDGE_MULT);
     }
 
     /** Converts the multiplicity to a node kind. */

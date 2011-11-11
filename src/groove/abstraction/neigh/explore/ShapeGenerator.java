@@ -221,7 +221,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * The initialisation phase of state space generation. Called from
      * <tt>{@link #start}</tt>.
      */
-    protected void init() {
+    private void init() {
         this.explorationStats = new ExplorationStatistics(getGTS());
         this.explorationStats.configureForGenerator(this.getVerbosity());
     }
@@ -327,7 +327,7 @@ public final class ShapeGenerator extends CommandLineTool {
     }
 
     /** Basic getter method. */
-    public int getFinalStatesCount() {
+    private int getFinalStatesCount() {
         return getGTS().getFinalStates().size();
     }
 

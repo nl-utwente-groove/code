@@ -280,7 +280,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
      * neighbourhood relation. This is used, for example, to compute auxiliary
      * maps that can speed-up the refinement process.
      */
-    protected void prepareRefinement() {
+    void prepareRefinement() {
         // Empty by design. See comment above.
     }
 
@@ -298,7 +298,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     // implementation for method prepareRefinement should be provided. This
     // optimization is not needed for now because the only time this class is
     // used is when constructing a shape from the start graph.
-    protected boolean areStillEquivalent(HostNode n0, HostNode n1) {
+    boolean areStillEquivalent(HostNode n0, HostNode n1) {
         boolean equiv = true;
         Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
         // For all labels.

@@ -22,14 +22,18 @@ import groove.trans.HostEdge;
 
 /**
  * Class that implements the edges of a shape.
- * This class is essentially a {@link HostEdge} and it was created just to improve
- * the code readability.
+ * This class is essentially a {@link HostEdge} and it was created mainly to
+ * improve the code readability.
  * 
  * @author Eduardo Zambon
  */
 public final class ShapeEdge extends HostEdge {
 
-    /** Default constructor. */
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Default constructor. Delegates to super. */
     ShapeEdge(ShapeFactory factory, ShapeNode source, TypeLabel label,
             ShapeNode target, int nr) {
         super(factory, source, label, target, nr);
@@ -50,6 +54,10 @@ public final class ShapeEdge extends HostEdge {
     public ShapeNode target() {
         return (ShapeNode) super.target();
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /**
      * If the given direction is OUTGOING, returns the source of this edge.

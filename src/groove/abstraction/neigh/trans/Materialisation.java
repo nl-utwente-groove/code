@@ -78,6 +78,7 @@ public final class Materialisation {
     // Object fields
     // ------------------------------------------------------------------------
 
+    /** Current stage of this materialisation object. */
     private int stage;
 
     /**
@@ -137,7 +138,8 @@ public final class Materialisation {
      */
     private Map<ShapeNode,Set<EdgeBundle>> bundleMap;
     /**
-     * Set of all bundles involved in the materialisation.
+     * Set of all bundles involved in the materialisation. Should always
+     * correspond to the union of all values of the bundle map.
      */
     private Set<EdgeBundle> allBundles;
 
@@ -184,7 +186,7 @@ public final class Materialisation {
             this.possibleEdges = new MyHashSet<ShapeEdge>();
             this.bundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
             this.allBundles = new MyHashSet<EdgeBundle>();
-        } else {
+        } else { // The rule is not modifying.
             // Nothing to do, we just return immediately.
             this.shape = null;
             this.morph = null;
@@ -283,6 +285,7 @@ public final class Materialisation {
     // Common methods to all stages.
     // ------------------------------------------------------------------------
 
+    /** Basic inspection method. */
     private boolean isRuleModifying() {
         return this.matchedRule.isModifying();
     }
@@ -317,10 +320,12 @@ public final class Materialisation {
         return this.morph;
     }
 
-    List<RuleNode> getSingularRuleNodes() {
+    /** Returns a list of rule nodes that are part of the anchor. */
+    private List<RuleNode> getSingularRuleNodes() {
         return Arrays.asList(this.matchedRule.getAnchorNodes());
     }
 
+    /** Returns all bundles of this materialisation. */
     Set<EdgeBundle> getBundles() {
         return this.allBundles;
     }
@@ -334,7 +339,11 @@ public final class Materialisation {
         return result;
     }
 
-    EdgeBundle getBundle(ShapeNode node, EdgeSignature origEs) {
+    /**
+     * Returns a bundle from the given node with the given original signature.
+     * The result may be null.
+     */
+    private EdgeBundle getBundle(ShapeNode node, EdgeSignature origEs) {
         EdgeBundle result = null;
         for (EdgeBundle bundle : this.getBundles(node)) {
             if (bundle.isEqual(node, origEs)) {
@@ -346,37 +355,49 @@ public final class Materialisation {
     }
 
     /**
-     * Looks at the keys of the bundle map for an edge bundle compatible
-     * with the given edge. If no suitable edge signature is found, a new one
-     * is created and added to the proper structures.
+     * Creates a new bundle with the given node and original signature.
+     * This bundle is stored in the materialisation structures.
      */
-    EdgeBundle getBundle(ShapeEdge edge, EdgeMultDir direction) {
-        return this.createBundle(edge, direction, true);
-    }
-
-    EdgeBundle createBundle(EdgeSignature origEs, ShapeNode node) {
-        Multiplicity origEsMult = this.getOrigEsMult(origEs);
-        return new EdgeBundle(origEs, origEsMult, node);
-    }
-
-    EdgeBundle createBundle(ShapeEdge edge, EdgeMultDir direction, boolean store) {
-        ShapeNode node = edge.incident(direction);
-        EdgeSignature origEs = this.getOrigEs(edge, direction);
-        return this.createBundle(node, origEs, store);
-    }
-
-    EdgeBundle createBundle(ShapeNode node, EdgeSignature origEs, boolean store) {
+    private EdgeBundle createBundle(ShapeNode node, EdgeSignature origEs) {
         EdgeBundle result = this.getBundle(node, origEs);
         if (result == null) {
-            result = this.createBundle(origEs, node);
-            if (store) {
-                this.addBundle(result);
-            }
+            result = this.createBundleWithoutStoring(node, origEs);
+            this.addBundle(result);
         }
         return result;
     }
 
-    void addBundle(EdgeBundle bundle) {
+    /**
+     * Looks at the keys of the bundle map for an edge bundle compatible
+     * with the given edge. If no suitable edge signature is found, a new one
+     * is created and added to the proper structures.
+     */
+    private EdgeBundle getBundle(ShapeEdge edge, EdgeMultDir direction) {
+        return this.createBundle(edge, direction);
+    }
+
+    /**
+     * Creates a new bundle with the given node and original signature.
+     * This bundle is not stored in the materialisation structures.
+     */
+    private EdgeBundle createBundleWithoutStoring(ShapeNode node,
+            EdgeSignature origEs) {
+        Multiplicity origEsMult = this.getOrigEsMult(origEs);
+        return new EdgeBundle(origEs, origEsMult, node);
+    }
+
+    /**
+     * Creates a new bundle with the given edge and direction.
+     * This bundle is stored in the materialisation structures.
+     */
+    private EdgeBundle createBundle(ShapeEdge edge, EdgeMultDir direction) {
+        ShapeNode node = edge.incident(direction);
+        EdgeSignature origEs = this.getOrigEs(edge, direction);
+        return this.createBundle(node, origEs);
+    }
+
+    /** Adds the given bundle to the materialisation structures. */
+    private void addBundle(EdgeBundle bundle) {
         Set<EdgeBundle> bundles = this.bundleMap.get(bundle.node);
         if (bundles == null) {
             bundles = new MyHashSet<EdgeBundle>();
@@ -386,22 +407,25 @@ public final class Materialisation {
         this.allBundles.add(bundle);
     }
 
-    void removeNodeFromBundleMap(ShapeNode node) {
+    /** Removes the given node and all associated bundles from the map. */
+    private void removeNodeFromBundleMap(ShapeNode node) {
         this.allBundles.removeAll(this.getBundles(node));
         this.bundleMap.remove(node);
     }
 
-    EdgeSignature getOrigEs(ShapeEdge edge, EdgeMultDir direction) {
+    /** Returns the signature of the given edge on the original shape. */
+    private EdgeSignature getOrigEs(ShapeEdge edge, EdgeMultDir direction) {
         return this.getShapeMorphism().getEdgeSignature(
             this.getOriginalShape(),
             this.getShape().getEdgeSignature(edge, direction));
     }
 
-    Multiplicity getOrigEsMult(EdgeSignature origEs) {
+    /** Returns the multiplicity of the given signature on the original shape. */
+    private Multiplicity getOrigEsMult(EdgeSignature origEs) {
         return this.getOriginalShape().getEdgeSigMult(origEs);
     }
 
-    /** Returns true if this edge is in the co-domain of the match. */
+    /** Returns true if the given edge is in the co-domain of the match. */
     boolean isFixed(ShapeEdge edge) {
         return !this.match.getPreImages(edge).isEmpty();
     }
@@ -410,7 +434,8 @@ public final class Materialisation {
      * Removes elements from the morphism that are no longer present in the
      * shape.
      */
-    void updateShapeMorphism() {
+    private void updateShapeMorphism() {
+        // Remove nodes.
         Set<HostNode> nodesToRemove = new MyHashSet<HostNode>();
         for (Entry<HostNode,HostNode> entry : this.morph.nodeMap().entrySet()) {
             HostNode key = entry.getKey();
@@ -423,6 +448,7 @@ public final class Materialisation {
         for (HostNode nodeToRemove : nodesToRemove) {
             this.morph.removeNode(nodeToRemove);
         }
+        // Remove edges.
         Set<HostEdge> edgesToRemove = new MyHashSet<HostEdge>();
         for (Entry<HostEdge,HostEdge> entry : this.morph.edgeMap().entrySet()) {
             HostEdge key = entry.getKey();
@@ -441,7 +467,7 @@ public final class Materialisation {
      * Returns true if the morphism from the materialised shape to the original
      * one is consistent.
      */
-    boolean isShapeMorphConsistent() {
+    private boolean isShapeMorphConsistent() {
         return this.morph.isValid(this.shape, this.originalShape)
             && this.morph.isConsistent(this.shape, this.originalShape);
     }
@@ -476,6 +502,7 @@ public final class Materialisation {
      * and 5 of Def. 35 in pg. 21 of the technical report. 
      * @return true if all three items are satisfied; false, otherwise.
      */
+    // EZ says: this method is only used in assertions, so it was not optimised.
     private boolean hasConcreteMatch() {
         assert this.match.isConsistent();
         // Check for items 3 and 4.
@@ -550,7 +577,7 @@ public final class Materialisation {
     // ------------------------------------------------------------------------
 
     /** Returns the set of edges involved in the materialisation. */
-    Set<ShapeEdge> getAffectedEdges() {
+    private Set<ShapeEdge> getAffectedEdges() {
         assert this.stage == 1;
         Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         result.addAll(this.matEdges);
@@ -608,6 +635,7 @@ public final class Materialisation {
         this.morph.putEdge(possibleEdge, origEdge);
     }
 
+    /** Computes and returns the set of materialisation objects. */
     private Set<Materialisation> compute() {
         assert this.stage == 1;
         // Search for nodes in the original match image that have to be
@@ -693,6 +721,7 @@ public final class Materialisation {
         }
     }
 
+    /** Recursively creates bundles for the given edges. */
     private void computeBundles(Set<ShapeEdge> toProcess) {
         assert this.stage == 1;
         // Keep adding edges and bundles until we reach a fix point.
@@ -723,6 +752,7 @@ public final class Materialisation {
         }
     }
 
+    /** Removes the given node from the materialisation. */
     void removeUnconnectedNode(ShapeNode nodeToRemove) {
         assert this.stage == 1;
         // EZ says: can't remove the node here because we may have conflicts
@@ -736,6 +766,14 @@ public final class Materialisation {
     // Methods for second stage.
     // ------------------------------------------------------------------------
 
+    /**
+     * Prepares this materialisation for second stage. This may involve
+     * a rather complicated process of node splitting. After this method call
+     * we can build a second equation system for resolving the edge signatures
+     * multiplicities. 
+     * 
+     * @param nonSingBundles set of bundles that will have to be split.
+     */
     void moveToSecondStage(Set<EdgeBundle> nonSingBundles) {
         assert this.stage == 1;
 
@@ -835,6 +873,16 @@ public final class Materialisation {
         this.matNodes.add(newNode);
     }
 
+    /**
+     * Adds new edges to the shape after node split.
+     * 
+     * @param origNode the original node that was split.
+     * @param origMap the map of edges that should be connected to the new node.
+     *                This is the result of the power set iterator. Note that
+     *                the edges are still connected to the original node so
+     *                we need to re-route them.
+     * @param newNode the new split node that will receive the new edges.
+     */
     private void addNewEdges(ShapeNode origNode,
             Map<EdgeBundle,Set<ShapeEdge>> origMap, ShapeNode newNode) {
         assert this.stage == 2;
@@ -844,7 +892,7 @@ public final class Materialisation {
             EdgeMultDir reverse = direction.reverse();
             // Create a new bundle for the new node.
             EdgeBundle newBundle =
-                this.createBundle(origBundle.origEs, newNode);
+                this.createBundle(newNode, origBundle.origEs);
             for (ShapeEdge origEdge : origMap.get(origBundle)) {
                 this.routeNewEdges(origNode, origEdge, newNode, direction,
                     newEdges);
@@ -867,6 +915,17 @@ public final class Materialisation {
         }
     }
 
+    /**
+     * Routes the original edge from the original node to new node based on the
+     * given direction. Node that the result is not only a single edge but a
+     * set of edges. This is because maybe the opposite node was also split.
+     * 
+     * @param origNode the original node that was split.
+     * @param origEdge the original edge that is connected to the original node.
+     * @param newNode the new node that was created during splitting.
+     * @param direction the direction to use the original and new node.
+     * @param result the set to store the newly routed edges.
+     */
     private void routeNewEdges(ShapeNode origNode, ShapeEdge origEdge,
             ShapeNode newNode, EdgeMultDir direction, Set<ShapeEdge> result) {
         assert this.stage == 2;
@@ -893,12 +952,13 @@ public final class Materialisation {
         return this.bundleMap.keySet();
     }
 
+    /** Returns true if we had to split nodes in the second state. */
     boolean requiresThirdStage() {
         return this.nodeSplitMap != null && !this.nodeSplitMap.isEmpty();
     }
 
     /** Mark nodes that cannot exist. */
-    void markGarbageNodes(Set<ShapeNode> garbageNodes) {
+    private void markGarbageNodes(Set<ShapeNode> garbageNodes) {
         assert this.stage == 2 || this.stage == 3;
         assert garbageNodes != null;
         garbageNodes.clear();
@@ -954,6 +1014,10 @@ public final class Materialisation {
         return this.nodeSplitMap;
     }
 
+    /** 
+     * Returns the original (after node materialisation) multiplicity of the 
+     * given node.
+     */
     Multiplicity getOrigNodeMult(ShapeNode origNode) {
         assert this.stage == 3;
         return this.nodeSplitMultMap.get(origNode);
@@ -967,6 +1031,13 @@ public final class Materialisation {
     // ResultSet
     // ---------
 
+    /**
+     * Set of materialisation results. Properly checks for consistency of the
+     * shape morphism before adding the materialisation. This is very useful
+     * to catch bugs in the materialisation process.
+     * 
+     * @author Eduardo Zambon
+     */
     private static class ResultSet extends MyHashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {

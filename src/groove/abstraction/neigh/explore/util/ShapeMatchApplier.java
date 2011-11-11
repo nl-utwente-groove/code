@@ -161,6 +161,10 @@ public final class ShapeMatchApplier extends MatchApplier {
         return result;
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     private void println(String s) {
         if (DEBUG) {
             System.out.println(s);
