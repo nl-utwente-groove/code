@@ -19,18 +19,25 @@ package groove.gui;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
+import javax.swing.JComponent;
+
 /**
  * Panel that holds the state display and host graph editors.
  * @author Arend Rensink
  * @version $Revision $
  */
 final public class HostDisplay extends ResourceDisplay {
+
+    // The displayed tree of host graphs.
+    private final MyResourceTree tree;
+
     /**
      * Constructs a panel for a given simulator.
      */
     public HostDisplay(Simulator simulator) {
         super(simulator, ResourceKind.HOST);
         installListeners();
+        this.tree = new MyResourceTree();
     }
 
     @Override
@@ -39,6 +46,36 @@ final public class HostDisplay extends ResourceDisplay {
         if (name.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
             HTMLConverter.STRONG_TAG.on(text);
             HTMLConverter.HTML_TAG.on(text);
+        }
+    }
+
+    @Override
+    protected void resetList() {
+        this.tree.suspendListeners();
+        super.resetList();
+    }
+
+    @Override
+    public JComponent createList() {
+        return this.tree;
+    }
+
+    private class MyResourceTree extends ResourceTree {
+
+        public MyResourceTree() {
+            super(HostDisplay.this, ResourceKind.HOST);
+        }
+
+        @Override
+        public String getDisplayText(String resourceName) {
+            if (resourceName.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
+                StringBuilder text = new StringBuilder(resourceName);
+                HTMLConverter.STRONG_TAG.on(text);
+                HTMLConverter.HTML_TAG.on(text);
+                return text.toString();
+            } else {
+                return resourceName;
+            }
         }
     }
 }
