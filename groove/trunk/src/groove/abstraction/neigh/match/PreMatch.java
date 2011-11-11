@@ -96,7 +96,10 @@ public final class PreMatch {
      * A pre-match is valid if the non-injective matching of the LHS
      * respects node multiplicities.
      */
-    public static boolean isValidPreMatch(Shape shape, Proof match) {
+    // EZ says: This method can certainly be optimised, however from the CPU
+    // profiling we saw that this is far from being a bottle neck in the
+    // execution time, so we leave it as it is for now.
+    private static boolean isValidPreMatch(Shape shape, Proof match) {
         RuleToShapeMap map = (RuleToShapeMap) match.getPatternMap();
 
         // Since we have non-injective matching of the LHS of the rule

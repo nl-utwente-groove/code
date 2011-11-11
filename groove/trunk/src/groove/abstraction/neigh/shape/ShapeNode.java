@@ -27,11 +27,12 @@ import groove.trans.DefaultHostNode;
  * @author Eduardo Zambon
  */
 public final class ShapeNode extends DefaultHostNode {
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. */
+    /** Default constructor. Delegates to super. */
     ShapeNode(int nr, TypeNode type) {
         super(nr, type);
     }

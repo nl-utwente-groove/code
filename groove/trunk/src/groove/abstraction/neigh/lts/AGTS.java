@@ -43,6 +43,10 @@ import java.util.Set;
  */
 public final class AGTS extends GTS {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
     /** Number of states marked as subsumed. */
     private int subsumedStatesCount;
     /** Number of transitions marked as subsumed. */

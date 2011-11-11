@@ -32,17 +32,47 @@ import java.net.URL;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeGxl extends
+public final class ShapeGxl extends
         AbstractGxl<ShapeNode,ShapeEdge,Graph<ShapeNode,ShapeEdge>> {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** Marshaller/unmarshaller. */
+    private static final ShapeJaxbGxlIO io = ShapeJaxbGxlIO.getInstance();
+
+    private static final ShapeGxl INSTANCE = new ShapeGxl();
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
 
     /** Returns the singleton instance of this class. */
     public static ShapeGxl getInstance() {
         return INSTANCE;
     }
 
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     private ShapeGxl() {
         // Private to avoid object creation. Use getInstance() method.
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    protected GxlIO<ShapeNode,ShapeEdge> getIO() {
+        return io;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /** Loads a shape from the given URL. */
     public Shape unmarshalShape(URL url) throws IOException {
@@ -57,16 +87,6 @@ public class ShapeGxl extends
     /** Saves the given shape into the given file. */
     public void marshalShape(Shape shape, File file) throws IOException {
         this.marshalGraph(shape.downcast(), file);
-    }
-
-    /** Marshaller/unmarshaller. */
-    static private final ShapeJaxbGxlIO io = ShapeJaxbGxlIO.getInstance();
-
-    private static final ShapeGxl INSTANCE = new ShapeGxl();
-
-    @Override
-    protected GxlIO<ShapeNode,ShapeEdge> getIO() {
-        return io;
     }
 
 }

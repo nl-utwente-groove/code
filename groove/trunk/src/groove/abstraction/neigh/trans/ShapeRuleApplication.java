@@ -28,21 +28,34 @@ import groove.trans.RuleEvent;
 import java.util.Set;
 
 /**
- * Rule application object tuned for shapes.
+ * Rule application tuned for shapes.
+ * 
  * @author Eduardo Zambon
  */
-public class ShapeRuleApplication extends RuleApplication {
+public final class ShapeRuleApplication extends RuleApplication {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Basic constructor. Delegates to super. */
     public ShapeRuleApplication(RuleEvent event, HostGraph source) {
         super(event, source);
     }
 
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
+
     @Override
     public Shape getTarget() {
         return (Shape) super.getTarget();
     }
 
+    /**
+     * Returns the source since the original shape was already cloned during
+     * materialisation.
+     */
     @Override
     protected Shape createTarget() {
         return (Shape) this.getSource();
@@ -67,14 +80,26 @@ public class ShapeRuleApplication extends RuleApplication {
     protected void eraseNodes(RuleEffect record, DeltaTarget target) {
         Shape shape = (Shape) target;
         Set<HostNode> nodeSet = record.getErasedNodes();
-        // also remove the incident edges of the eraser nodes
+        // Also remove the incident edges of the eraser nodes.
         if (nodeSet != null && !nodeSet.isEmpty()) {
             for (HostNode node : nodeSet) {
                 for (HostEdge edge : shape.edgeSet(node)) {
                     if (!record.isErasedEdge(edge)) {
+                        // EZ says: don't remove the edge from the shape here
+                        // because this is an expensive operation. It has to
+                        // go update the edge signatures as well, and this
+                        // will be done many times in this loop.
+                        // Also, since we're operating on the source, this
+                        // operating will trigger a concurrent modification
+                        // exception on the edge set.
+
+                        // target.removeEdge(edge);
+
+                        // Just mark the edge as erased.
                         this.registerErasure(edge);
                     }
                 }
+                // Remove the node and all incident edges.
                 shape.removeNode(node);
             }
         }

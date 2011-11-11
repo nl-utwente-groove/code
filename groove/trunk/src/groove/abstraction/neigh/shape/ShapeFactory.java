@@ -26,17 +26,42 @@ import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 
-/** Factory class for shape elements. */
-public class ShapeFactory extends HostFactory {
+/**
+ * Factory class for shape elements.
+ * 
+ * @author Eduardo Zambon
+ */
+public final class ShapeFactory extends HostFactory {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** Used only as a reference for the constructor. */
+    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0,
+        TypeNode.TOP_NODE);
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /** Returns a new instance of this factory. */
+    public static ShapeFactory newInstance() {
+        return new ShapeFactory();
+    }
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** Private constructor. */
     private ShapeFactory() {
         super();
     }
 
-    /** Creates an untyped node with the next number. */
-    public ShapeNode createNode() {
-        return (ShapeNode) createNode(TypeNode.TOP_NODE);
-    }
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public ShapeNode createNode(int nr) {
@@ -69,14 +94,5 @@ public class ShapeFactory extends HostFactory {
             }
         });
     }
-
-    /** Returns a new instance of this factory. */
-    public static ShapeFactory newInstance() {
-        return new ShapeFactory();
-    }
-
-    /** Used only as a reference for the constructor. */
-    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0,
-        TypeNode.TOP_NODE);
 
 }

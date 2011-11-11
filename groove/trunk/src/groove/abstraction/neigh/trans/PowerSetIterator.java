@@ -25,20 +25,59 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Iterator that produces the power set of a given set.
+ * Iterator that produces the power set of a given set. It is implemented mainly
+ * as bit-wise operations on integers for efficiency.
+ * 
  * @author Eduardo Zambon
  */
-public class PowerSetIterator implements
+public final class PowerSetIterator implements
         Iterator<Map<EdgeBundle,Set<ShapeEdge>>> {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /**
+     * Flag that indicates if the empty set should be returned.
+     */
     private final boolean skipEmpty;
+    /**
+     * Array of bundles taken from the set passed to the constructor.
+     */
     private final EdgeBundle bundles[];
+    /**
+     * Array of binary masks for edges of each bundle. Has the same size of
+     * the bundles array. A mask 'masks[i]' is associated with bundle
+     * 'bundles[i]' and has as many bits set as the associate bundle has edges.
+     * Each mask is shifted to the left such that there's no overlap of masks.
+     * Each bit set in a mask corresponds to an edge in the 'edges' array.
+     */
     private final int masks[];
+    /**
+     * All edges from the bundles. Stored as an array for efficiency. 
+     */
     private final ShapeEdge edges[];
+    /**
+     * The set of results of this iterator. Each element of this array is
+     * an integer where each bit set corresponds to an edge that is present
+     * in the result map. The length of this array is 2^(edges) but its tail
+     * may not the filled completely because some edge configurations may not
+     * be valid.
+     */
     private final int results[];
+    /**
+     * Object that is returned by the iterator. This map is cleared with
+     * each call to {@link #next()}. Used to avoid object creation.
+     */
     private final Map<EdgeBundle,Set<ShapeEdge>> resultMap;
+    /** The real length of the results array, i.e., the number of valid elements. */
     private int total;
+    /** Current index in the results array. */
     private int curr;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /**
      * Constructs the iterator. */
@@ -87,6 +126,10 @@ public class PowerSetIterator implements
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
+
     @Override
     public boolean hasNext() {
         return this.curr < this.total;
@@ -95,13 +138,17 @@ public class PowerSetIterator implements
     @Override
     public Map<EdgeBundle,Set<ShapeEdge>> next() {
         assert this.hasNext();
+        // Get the next result encoded as an integer.
         int result = this.results[this.curr++];
+        // Iterate over all bundles.
         for (int bundleIdx = 0; bundleIdx < this.bundles.length; bundleIdx++) {
             EdgeBundle bundle = this.bundles[bundleIdx];
             int mask = this.masks[bundleIdx];
+            // This variable tells us with edges of the bundle to add.
             int maskedResult = result & mask;
             Set<ShapeEdge> edgeSet = this.resultMap.get(bundle);
             edgeSet.clear();
+            // Go over all edges and add the selected ones.
             for (int edgeIdx = 0; edgeIdx < this.edges.length; edgeIdx++) {
                 int shiftedIdx = 1 << edgeIdx;
                 if ((maskedResult & shiftedIdx) == shiftedIdx) {
@@ -117,6 +164,14 @@ public class PowerSetIterator implements
         throw new UnsupportedOperationException();
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if the given edge configuration (encoded as an integer) satisfies
+     * the multiplicity constraints for each edge bundle.
+     */
     private boolean isValidResult(int result) {
         boolean isValid = true;
         for (int bundleIdx = 0; bundleIdx < this.bundles.length; bundleIdx++) {

@@ -141,6 +141,9 @@ public final class EdgeSignature {
 
     /** Returns true if this signature has the given class. */
     public boolean hasSameEquivClass(EquivClass<ShapeNode> ec) {
+        // EZ says: we can used equality here because the node equivalence
+        // classes are implemented as bit sets and their equals method is
+        // as fast as computing a hash.
         return this.equivClass.equals(ec);
     }
 

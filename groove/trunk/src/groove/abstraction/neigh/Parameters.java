@@ -38,8 +38,7 @@ public final class Parameters {
     /** The radius of the abstraction (i). Is a natural number. Defaults to 1. */
     private static int absRadius = 1;
     /**
-     * The labels to be used in the abstraction.
-     * Taken from the grammar properties.
+     * Labels to be used in the abstraction. Taken from the grammar properties.
      */
     private static Set<TypeLabel> absLabels = new MyHashSet<TypeLabel>();
 

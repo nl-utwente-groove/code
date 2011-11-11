@@ -48,14 +48,49 @@ import de.gupro.gxl.gxl_1_0.RelendType;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeJaxbGxlIO extends AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
+public final class ShapeJaxbGxlIO extends
+        AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** Singleton instance of the class. */
+    private static final ShapeJaxbGxlIO instance = new ShapeJaxbGxlIO();
+    /** Attribute name for node multiplicities. */
+    private static final String NODE_MULT_ATTR_NAME = "nmult";
+    /** Attribute name for out edge multiplicities. */
+    private static final String EDGE_OUT_MULT_ATTR_NAME = "omult";
+    /** Attribute name for in edge multiplicities. */
+    private static final String EDGE_IN_MULT_ATTR_NAME = "imult";
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
 
     private ShapeFactory elementFactory;
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /** Returns the singleton instance of this class. */
+    public static ShapeJaxbGxlIO getInstance() {
+        return instance;
+    }
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Private constructor for the singleton instance. */
     private ShapeJaxbGxlIO() {
         super();
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
 
     @Override
     protected Graph<ShapeNode,ShapeEdge> createGraph(String name) {
@@ -205,6 +240,10 @@ public class ShapeJaxbGxlIO extends AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     /** Converts the given string to a proper multiplicity, based on given kind. */
     private Multiplicity getMultiplicity(String multStr, MultKind kind) {
         String[] parts = multStr.split(" ");
@@ -217,20 +256,5 @@ public class ShapeJaxbGxlIO extends AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
         }
         return Multiplicity.getMultiplicity(lowerBound, upperBound, kind);
     }
-
-    /** Returns the singleton instance of this class. */
-    public static ShapeJaxbGxlIO getInstance() {
-        return instance;
-    }
-
-    /** Singleton instance of the class. */
-    private static final ShapeJaxbGxlIO instance = new ShapeJaxbGxlIO();
-
-    /** Attribute name for node multiplicities. */
-    private static final String NODE_MULT_ATTR_NAME = "nmult";
-    /** Attribute name for out edge multiplicities. */
-    private static final String EDGE_OUT_MULT_ATTR_NAME = "omult";
-    /** Attribute name for in edge multiplicities. */
-    private static final String EDGE_IN_MULT_ATTR_NAME = "imult";
 
 }

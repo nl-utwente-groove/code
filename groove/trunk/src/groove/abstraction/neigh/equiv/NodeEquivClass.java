@@ -36,6 +36,10 @@ import java.util.Iterator;
 public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         EquivClass<T> {
 
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
     /** Flag for indicating if the equivalence class is fixed. */
     private boolean fixed;
     /**
@@ -230,11 +234,12 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     }
 
     // ------------------------------------------------------------------------
-    // Other methods
+    // Inner classes
     // ------------------------------------------------------------------------
 
     /**
      * Dedicated iterator for node equivalence classes. 
+     * 
      * @author Eduardo Zambon
      */
     private class MyIterator implements Iterator<T> {

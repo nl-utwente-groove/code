@@ -15,18 +15,32 @@ import java.util.Set;
 
 /**
  * Element map from a host graph to a shape.
+ * 
  * @author Eduardo Zambon
  */
-public class HostToShapeMap extends
+public final class HostToShapeMap extends
         InversableElementMap<HostNode,HostEdge,HostNode,HostEdge> implements
         Fixable {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /** Cache used to speed-up some morphism look-ups. */
     private Map<EquivClass<ShapeNode>,EquivClass<HostNode>> ecMap;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Default constructor. */
     public HostToShapeMap(ShapeFactory factory) {
         super(factory);
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
 
     /** Specialises the return type. */
     @SuppressWarnings("unchecked")
@@ -77,6 +91,10 @@ public class HostToShapeMap extends
         assert edge instanceof ShapeEdge;
         return (Set<HostEdge>) super.getPreImages(edge);
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /**
      * Returns the set of nodes that maps to values occurring in the given

@@ -77,19 +77,19 @@ public final class Shape extends DefaultHostGraph {
     // ------------------------------------------------------------------------
 
     /**
-     * The equivalence relation over the nodes of the shape.
+     * Equivalence relation over nodes of the shape.
      */
     private final EquivRelation<ShapeNode> equivRel;
     /**
-     * The node multiplicity map.
+     * Node multiplicity map.
      */
     private final Map<ShapeNode,Multiplicity> nodeMultMap;
     /**
-     * The outgoing edge multiplicity map.
+     * Outgoing edge multiplicity map.
      */
     private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
     /**
-     * The incoming edge multiplicity map.
+     *Incoming edge multiplicity map.
      */
     private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
 
@@ -229,6 +229,7 @@ public final class Shape extends DefaultHostGraph {
      * keeping yourself, then call super.addNode(Node) directly. In this case,
      * be careful not to leave the shape structures in an inconsistent state.
      */
+    // EZ says: this method is used in rule application.
     @Override
     public boolean addNode(HostNode node) {
         assert !this.isFixed();
@@ -241,6 +242,30 @@ public final class Shape extends DefaultHostGraph {
             this.addToNewEquivClass(nodeS);
         }
         return added;
+    }
+
+    /**
+     * Differs from super implementation on the node number that is created.
+     * This method performs a search over the nodes in the shape and uses the
+     * lowest free number for the new node. We have to bypass the factory in
+     * this way because otherwise the number of nodes in the store keeps
+     * increasing and this hurts performance a lot. (See, in particular, the
+     * implementation of {@link NodeEquivClass} for the reason).
+     * 
+     * WARNING: after creating the new node this method makes a call to
+     * super.addNode(HostNode) instead of this.addNode(HostNode). This is
+     * because the second has side-effects that we don't want when creating
+     * a new node.
+     */
+    // EZ says: this method is used during materialisation.
+    @Override
+    public ShapeNode addNode() {
+        int nodeNr = this.getFirstFreeNodeNumber();
+        ShapeNode freshNode = (ShapeNode) createNode(nodeNr);
+        assert !nodeSet().contains(freshNode) : String.format(
+            "Fresh node %s already in node set %s", freshNode, nodeSet());
+        super.addNode(freshNode);
+        return freshNode;
     }
 
     /**
@@ -352,18 +377,7 @@ public final class Shape extends DefaultHostGraph {
     // Other methods
     // ------------------------------------------------------------------------
 
-    @Override
-    public ShapeNode addNode() {
-        int nodeNr = this.getFirstFreeNodeNumber();
-        ShapeNode freshNode = (ShapeNode) createNode(nodeNr);
-        assert !nodeSet().contains(freshNode) : String.format(
-            "Fresh node %s already in node set %s", freshNode, nodeSet());
-        // EZ says: don't make this call here since it might mess with the
-        // shape structure...
-        // addNode(freshNode);
-        return freshNode;
-    }
-
+    /** Returns the lowest free node number of this shape. */
     private int getFirstFreeNodeNumber() {
         return new DisposableDispenser(this.nodeSet()).getNext();
     }
@@ -449,7 +463,7 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Clears all non-graph structures of the shape so they can be loaded from
      * a file. Be very careful with this method, since it destroys all
-     * additional information in the shape.
+     * additional information in the shape apart from the graph structure.
      */
     public void clearStructuresForLoading() {
         this.equivRel.clear();
@@ -464,18 +478,15 @@ public final class Shape extends DefaultHostGraph {
      */
     private void createShapeNodes(GraphNeighEquiv gne, HostToShapeMap map) {
         assert !this.isFixed();
-        // Each node of the shape correspond to an equivalence class
+        // Each node of the shape corresponds to an equivalence class
         // of the graph.
         for (EquivClass<HostNode> ec : gne) {
             // We are building a shape from a graph, this means that the
             // graph nodes are from a different type and therefore are
             // stored in a different node factory. Thus we have to create
-            // shape nodes.
-            ShapeNode nodeS = this.addNode();
-            // Add a shape node to the shape.
-            // Call the super method because we have additional information on
+            // shape nodes. Remember that we have additional information on
             // the node to be added.
-            super.addNode(nodeS);
+            ShapeNode nodeS = this.addNode();
             // Fill the shape node multiplicity.
             int size = ec.size();
             Multiplicity mult = Multiplicity.approx(size, size, NODE_MULT);
@@ -533,6 +544,7 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
+    /** Creates and returns a new node equivalence class object. */
     private EquivClass<ShapeNode> newNodeEquivClass() {
         return new NodeEquivClass<ShapeNode>(this.getFactory());
     }
@@ -567,6 +579,8 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Creates the edge multiplicity maps from a graph neighbourhood relation.
      */
+    // EZ says: this method could be optimised. Not done yet because it's only
+    // used once, when creating the initial shape.
     private void createEdgeMultMaps(GraphNeighEquiv gne, HostToShapeMap map,
             HostGraph graph) {
         assert !this.isFixed();
@@ -786,7 +800,10 @@ public final class Shape extends DefaultHostGraph {
         this.setEdgeSigMultWithoutCheck(es, mult);
     }
 
-    /** Sets the edge signature multiplicity. */
+    /**
+     * Sets the edge signature multiplicity without checking whether the shape
+     * consistency is preserved.
+     */
     private void setEdgeSigMultWithoutCheck(EdgeSignature es, Multiplicity mult) {
         EdgeMultDir direction = es.getDirection();
         if (!mult.isZero()) {
@@ -813,7 +830,7 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the bounded sum of the node multiplicities of the given set.
      */
-    public Multiplicity getNodeSetMultSum(Set<? extends HostNode> nodes) {
+    Multiplicity getNodeSetMultSum(Set<? extends HostNode> nodes) {
         Multiplicity accumulator =
             Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
         for (HostNode node : nodes) {
@@ -842,7 +859,7 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Returns the bounded sum of the edge multiplicities of the given set.
      */
-    public Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS) {
+    Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS) {
         Multiplicity accumulator =
             Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
         for (EdgeSignature es : esS) {
@@ -853,8 +870,8 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
-     * Returns the equivalence class of the given node. It is assumed that
-     * the given node is in the shape. 
+     * Returns the equivalence class of the given node. 
+     * Fails in an assertion if the given node is in the shape. 
      */
     public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
         assert this.nodeSet().contains(node) : "Node " + node
@@ -862,7 +879,7 @@ public final class Shape extends DefaultHostGraph {
         return this.equivRel.getEquivClassOf(node);
     }
 
-    /** Creates a new equivalence class and adds the given node in it. */
+    /** Creates a new equivalence class and adds the given node to it. */
     private EquivClass<ShapeNode> addToNewEquivClass(ShapeNode node) {
         assert !this.isFixed();
         EquivClass<ShapeNode> newEc = newNodeEquivClass();
@@ -910,6 +927,11 @@ public final class Shape extends DefaultHostGraph {
         return this.getEdgesFromSig(es).size() == 1;
     }
 
+    /**
+     * Finds the edge of the given signature with the minimal number. This
+     * edge is taken to be the main edge of the signature in a graphical
+     * representation. 
+     */
     private ShapeEdge getMinimumEdgeFromSig(EdgeSignature es) {
         ShapeEdge result = null;
         ShapeNode resultOpposite = null;
@@ -987,9 +1009,6 @@ public final class Shape extends DefaultHostGraph {
         for (int i = 0; i < copies; i++) {
             RuleNode nodeR = iter.next();
             ShapeNode newNode = this.addNode();
-            // Add the new node to the shape. Call the super method because
-            // we have additional information on the node to be added.
-            super.addNode(newNode);
             // The new node is concrete so set its multiplicity to one.
             this.setNodeMult(newNode, one);
             // Copy the labels from the original node.
@@ -1090,7 +1109,7 @@ public final class Shape extends DefaultHostGraph {
         // The singular equivalence class created by the operation.
         EquivClass<ShapeNode> singEc = newNodeEquivClass();
         singEc.add(nodeS);
-        // Update the multiplicities of the new singleton class.
+        // Update the edge multiplicity map with the new singleton class.
         this.addNewSingletonEc(origEc, singEc);
         // Replace the original equivalence class with the remainder of the
         // split.
@@ -1106,6 +1125,8 @@ public final class Shape extends DefaultHostGraph {
      */
     private void handleCrossingEdges(Materialisation mat, ShapeNode nodeS) {
         Set<ShapeEdge> possibleEdges = new MyHashSet<ShapeEdge>();
+        // First check all edge signatures that will be affected by the split.
+        // I.e., signatures that have the given node in their equivalence class.
         for (EdgeSignature es : this.getEdgeSignatures(this.getEquivClassOf(nodeS))) {
             if (es.isSelfReferencing()) {
                 continue;
@@ -1118,6 +1139,7 @@ public final class Shape extends DefaultHostGraph {
                 }
             }
         }
+        // Now handle all incident edges.
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
@@ -1153,9 +1175,6 @@ public final class Shape extends DefaultHostGraph {
         for (int i = 0; i < copies; i++) {
             // Create a new shape node.
             ShapeNode newNode = this.addNode();
-            // Add the new node to the shape. Call the super method because
-            // we have additional information on the node to be added.
-            super.addNode(newNode);
             // Copy the labels from the pulled node.
             this.copyUnaryEdges(nodeS, newNode, null, null);
             newEc.add(newNode);
@@ -1182,6 +1201,7 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
+    /** Returns all signatures with the given equivalence class. */
     private Set<EdgeSignature> getEdgeSignatures(EquivClass<ShapeNode> ec) {
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
@@ -1194,7 +1214,7 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
-    /** Returns the edge signatures for the given node. */
+    /** Returns all edge signatures with the given node. */
     public Set<EdgeSignature> getEdgeSignatures(ShapeNode node) {
         assert this.containsNode(node);
         Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
@@ -1208,10 +1228,13 @@ public final class Shape extends DefaultHostGraph {
         return result;
     }
 
+    /**
+     * Update all maps that use edge signatures that contained the old
+     * equivalence class. The equivalence relation stays unchanged, i.e., the
+     * old class is not removed and the new one is not added.
+     */
     private void addNewSingletonEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
-        // Update all maps that use edge signatures that contained the old
-        // equivalence class.
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
             EdgeSignature newEs =
                 this.getEdgeSignature(oldEs.getDirection(), oldEs.getNode(),
@@ -1225,6 +1248,11 @@ public final class Shape extends DefaultHostGraph {
         }
     }
 
+    /**
+     * Update all maps that use edge signatures that contained the old
+     * equivalence class. The equivalence relation is changed, i.e., the
+     * old class is removed and the new one is added.
+     */
     private void replaceEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
         // Update the equivalence relation.
@@ -1329,7 +1357,6 @@ public final class Shape extends DefaultHostGraph {
     /**
      * Check if the shape is in a state that complies to the shape invariant.
      * See last item of Def. 7, pg. 10.
-     * This check is expensive. Use it only in assertions.
      * @return true if the invariant holds, false otherwise.
      */
     public boolean isInvariantOK() {

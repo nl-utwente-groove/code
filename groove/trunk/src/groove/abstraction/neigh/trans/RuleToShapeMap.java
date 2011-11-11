@@ -33,12 +33,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-/** Mapping from rules to shapes, used in pre-matches and matches. */
-public class RuleToShapeMap extends RuleToHostMap {
+/** 
+ * Mapping from rules to shapes, used in pre-matches and matches.
+ *
+ * @author Eduardo Zambon
+ */
+public final class RuleToShapeMap extends RuleToHostMap {
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** Creates an empty rule-to-shape match. */
     public RuleToShapeMap(ShapeFactory factory) {
         super(factory);
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
 
     /** Specialises the return type. */
     @SuppressWarnings("unchecked")
@@ -140,6 +153,10 @@ public class RuleToShapeMap extends RuleToHostMap {
         return (Set<RuleEdge>) super.getPreImages(edge);
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     /** Returns an self edge from given node with given label. Maybe be null. */
     public RuleEdge getSelfEdge(RuleNode node, TypeLabel label) {
         RuleEdge result = null;
@@ -164,20 +181,10 @@ public class RuleToShapeMap extends RuleToHostMap {
     }
 
     /**
-     * Returns a set of values for the edge map. Contrary to calling
-     * edgeMap().values(), the set has no repeated values.
-     */
-    public Set<ShapeEdge> edgeMapValueSet() {
-        Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
-        result.addAll(this.edgeMap().values());
-        return result;
-    }
-
-    /**
      * Return the set of inconsistent edges, i.e., with a mapping that does not
      * conform to the node map.
      */
-    public Set<ShapeEdge> getInconsistentEdges() {
+    Set<ShapeEdge> getInconsistentEdges() {
         Set<ShapeEdge> result = new MyHashSet<ShapeEdge>();
         for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
@@ -191,7 +198,7 @@ public class RuleToShapeMap extends RuleToHostMap {
     }
 
     /** Checks the consistency between node and edge maps. */
-    public boolean isConsistent() {
+    boolean isConsistent() {
         boolean result = true;
         for (Entry<RuleEdge,ShapeEdge> entry : this.edgeMap().entrySet()) {
             RuleEdge edgeR = entry.getKey();
@@ -205,14 +212,26 @@ public class RuleToShapeMap extends RuleToHostMap {
         return result;
     }
 
+    /**
+     * Returns true if the actual image of the given rule node in this map
+     * differs from the expected image given.
+     */
     private boolean isNodeInconsistent(RuleNode nodeR, ShapeNode expectedImage) {
         return !this.getNode(nodeR).equals(expectedImage);
     }
 
+    /**
+     * Returns true if the actual image of the source node of the given rule
+     * edge in this map differs from the expected image given.
+     */
     private boolean isSrcInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
         return this.isNodeInconsistent(edgeR.source(), expectedImage.source());
     }
 
+    /**
+     * Returns true if the actual image of the target node of the given rule
+     * edge in this map differs from the expected image given.
+     */
     private boolean isTgtInconsistent(RuleEdge edgeR, ShapeEdge expectedImage) {
         return this.isNodeInconsistent(edgeR.target(), expectedImage.target());
     }

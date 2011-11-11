@@ -28,7 +28,7 @@ import groove.trans.Rule;
  */
 public final class Abstraction {
 
-    /** Enter abstraction mode. */
+    /** Enters abstraction mode. */
     public static void initialise() {
         Multiplicity.initMultStore();
         Rule.setAnchorFactory(NeighAnchorFactory.getInstance());

@@ -28,16 +28,43 @@ import java.util.Arrays;
 
 /**
  * Anchor factory used in abstraction.
- * The anchor is taken to be elements of the LHS that are within the abstraction
+ * The anchor is formed by elements of the LHS that are within the abstraction
  * radius of eraser elements.
  * 
  * @author Eduardo Zambon
  */
-public class NeighAnchorFactory implements AnchorFactory<Rule> {
+public final class NeighAnchorFactory implements AnchorFactory<Rule> {
+
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /** The singleton instance of this class. */
+    private static final NeighAnchorFactory instance = new NeighAnchorFactory();
+
+    // ------------------------------------------------------------------------
+    // Static Methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns the singleton instance of this class.
+     */
+    public static NeighAnchorFactory getInstance() {
+        return instance;
+    }
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** Private empty constructor to make this a singleton class. */
     private NeighAnchorFactory() {
         // Empty constructor.
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /**
      * This implementation assumes that the rule is an <tt>SPORule</tt>, and
@@ -64,13 +91,4 @@ public class NeighAnchorFactory implements AnchorFactory<Rule> {
         return result;
     }
 
-    /**
-     * Returns the singleton instance of this class.
-     */
-    static public NeighAnchorFactory getInstance() {
-        return prototype;
-    }
-
-    /** The singleton instance of this class. */
-    static private NeighAnchorFactory prototype = new NeighAnchorFactory();
 }

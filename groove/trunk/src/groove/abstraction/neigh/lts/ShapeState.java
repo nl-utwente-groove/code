@@ -42,6 +42,10 @@ import java.util.Set;
  */
 public class ShapeState extends AbstractGraphState {
 
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
     private static final ShapeNode[] EMPTY_NODE_ARRAY = new ShapeNode[0];
 
     // ------------------------------------------------------------------------
@@ -56,7 +60,10 @@ public class ShapeState extends AbstractGraphState {
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
     private final ArrayList<GraphTransition> transitions;
-    /** Set of possible subsumed states. */
+    /**
+     * Temporary set of possible subsumed states used when adding the state to
+     * the GTS.
+     */
     private ArrayList<ShapeState> subsumedStates;
 
     // ------------------------------------------------------------------------
@@ -134,7 +141,6 @@ public class ShapeState extends AbstractGraphState {
         return this.closed;
     }
 
-    /** Returns the system record associated with this state. */
     @Override
     protected SystemRecord getRecord() {
         return this.getGTS().getRecord();
@@ -153,7 +159,7 @@ public class ShapeState extends AbstractGraphState {
      * Tries to set the subsumptor to the given state.
      * Returns true is this state didn't already have a subsumptor.
      */
-    public boolean setSubsumptor(ShapeState subsumptor) {
+    boolean setSubsumptor(ShapeState subsumptor) {
         if (this.getSubsumptor() != null) {
             return false;
         } else {
@@ -163,12 +169,12 @@ public class ShapeState extends AbstractGraphState {
     }
 
     /** Basic getter method. Returned state may be null. */
-    public ShapeState getSubsumptor() {
+    private ShapeState getSubsumptor() {
         return this.subsumptor;
     }
 
     /** Returns true if this state is subsumed by another one in the GTS. */
-    public boolean isSubsumed() {
+    boolean isSubsumed() {
         return this.subsumptor != null;
     }
 
@@ -176,18 +182,8 @@ public class ShapeState extends AbstractGraphState {
      * Adds the given state to the list of states possibly subsumed by this
      * one.
      */
-    public void addSubsumedState(ShapeState subsumed) {
+    void addSubsumedState(ShapeState subsumed) {
         this.subsumedStates.add(subsumed);
-    }
-
-    /** Returns true if this state has subsumed states. */
-    public boolean hasSubsumedStates() {
-        return !this.subsumedStates.isEmpty();
-    }
-
-    /** Returns true if this state subsumes the given state. */
-    public boolean subsumes(ShapeState stateToTest) {
-        return this.subsumedStates.contains(stateToTest);
     }
 
     /**
@@ -196,7 +192,7 @@ public class ShapeState extends AbstractGraphState {
      * subsumed states of this state is destroyed during this method call.
      * Returns the number of states that were marked as subsumed.
      */
-    public int markSubsumedStates() {
+    int markSubsumedStates() {
         int markCount = 0;
         for (ShapeState subsumed : this.subsumedStates) {
             if (subsumed.setSubsumptor(this)) {

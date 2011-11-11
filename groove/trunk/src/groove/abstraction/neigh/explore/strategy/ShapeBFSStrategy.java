@@ -38,7 +38,7 @@ import groove.lts.GraphState;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeBFSStrategy extends NextOpenStrategy {
+public final class ShapeBFSStrategy extends NextOpenStrategy {
 
     /** Delegates to super.*/
     @Override
