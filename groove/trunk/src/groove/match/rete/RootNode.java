@@ -47,7 +47,7 @@ public class RootNode extends ReteNetworkNode {
     private Set<SingleEdgePathChecker> otherPathCheckers =
         new TreeHashSet<SingleEdgePathChecker>();
 
-    private NodeCheckerNode theNodeChecker = null;
+    private DefaultNodeChecker theNodeChecker = null;
 
     /**
      * Creates a root n-node for a given RETE network.
@@ -61,9 +61,10 @@ public class RootNode extends ReteNetworkNode {
     public void addSuccessor(ReteNetworkNode nnode) {
         boolean isValid =
             (nnode instanceof EdgeCheckerNode)
-                || ((nnode instanceof NodeCheckerNode) && (this.theNodeChecker == null))
+                || ((nnode instanceof DefaultNodeChecker) && (this.theNodeChecker == null))
                 || (nnode instanceof SingleEdgePathChecker)
-                || (nnode instanceof EmptyPathChecker);
+                || (nnode instanceof EmptyPathChecker)
+                || (nnode instanceof ValueNodeChecker);
         assert isValid;
         /*
          * check to see if n-node is of type g-node-checker or 
@@ -76,8 +77,8 @@ public class RootNode extends ReteNetworkNode {
         if (isValid && !isAlreadySuccessor(nnode)) {
             getSuccessors().add(nnode);
             nnode.addAntecedent(this);
-            if (nnode instanceof NodeCheckerNode) {
-                this.theNodeChecker = (NodeCheckerNode) nnode;
+            if (nnode instanceof DefaultNodeChecker) {
+                this.theNodeChecker = (DefaultNodeChecker) nnode;
             } else if (nnode instanceof EdgeCheckerNode) {
                 EdgeCheckerNode ec = (EdgeCheckerNode) nnode;
                 if (!ec.isWildcardEdge()
@@ -235,5 +236,11 @@ public class RootNode extends ReteNetworkNode {
             this.positivePathCheckers.put(atomLabel, s);
         }
         s.add(pathChecker);
+    }
+
+    @Override
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
+        throw new UnsupportedOperationException();
     }
 }

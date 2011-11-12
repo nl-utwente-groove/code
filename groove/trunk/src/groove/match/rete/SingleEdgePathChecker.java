@@ -79,20 +79,6 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
         }
     }
 
-    @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            giveNewMatchToSuccessor((RetePathMatch) m, n,
-                repeatedSuccessorIndex);
-            previous = n;
-        }
-    }
-
     /**
      * Makes a proper path match with the given host edge
      * @param gEdge The given host edge

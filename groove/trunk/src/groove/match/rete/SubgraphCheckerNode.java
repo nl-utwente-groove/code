@@ -18,7 +18,6 @@ package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
-import groove.rel.LabelVar;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
@@ -224,87 +223,13 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     public void addSuccessor(ReteNetworkNode nnode) {
         boolean isValid =
             (nnode instanceof SubgraphCheckerNode)
-                || (nnode instanceof ConditionChecker);
+                || (nnode instanceof ConditionChecker)
+                || (nnode instanceof DataOperatorChecker)
+                || (nnode instanceof DisconnectedSubgraphChecker);
         assert isValid;
 
         if (isValid) {
             super.addSuccessor(nnode);
-        }
-    }
-
-    /**
-     * Receives a matched edge/node during runtime from an EdgeChecker/NodeChecker antecedent
-     * and passes along down the RETE network based on the rules of the algorithm.
-     * 
-     * This method uses the {@link #receive(ReteNetworkNode, int, AbstractReteMatch)} variant
-     * to do the actual job.
-     * 
-     * @param source The n-node that is calling this method.
-     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
-     *        If <code>source</code> checks against more than one sub-component of this subgraph
-     *        , it will repeat in the list of antecedents. In such a case this
-     *        parameter specifies which of those components is calling this method, which
-     *        could be any value from 0 to k-1, which k is the number of 
-     *        times <code>source</code> occurs in the list of antecedents. 
-     *         
-     * @param mu The graph element found by <code>source</code>.
-     * @param action Determines if the match is added or removed.     */
-    @SuppressWarnings("unchecked")
-    public void receive(ReteNetworkNode source, int repeatIndex,
-            HostElement mu, Action action) {
-
-        AbstractReteMatch sg =
-            (mu instanceof HostEdge) ? new ReteSimpleMatch(source,
-                (HostEdge) mu, this.getOwner().isInjective())
-                    : new ReteSimpleMatch(source, (HostNode) mu,
-                        this.getOwner().isInjective());
-        if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg);
-        } else if (!this.getOwner().isInOnDemandMode()
-            || !unbufferMatch(source, repeatIndex, sg)) {
-
-            if (isLeftAntecedent(source, repeatIndex)) {
-                startDominoDeletion(this.leftMemory, (LeftMatchType) sg);
-            } else {
-                startDominoDeletion(this.rightMemory, (RightMatchType) sg);
-            }
-        }
-    }
-
-    /**
-     * Receives a matched edge bound to a variable during runtime from an EdgeChecker antecedent
-     * and passes along down the RETE network based on the rules of the algorithm.
-     * 
-     * This method uses the {@link #receive(ReteNetworkNode, int, AbstractReteMatch)} variant
-     * to do the actual job.
-     * 
-     * @param source The n-node that is calling this method.
-     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
-     *        If <code>source</code> checks against more than one sub-component of this subgraph
-     *        , it will repeat in the list of antecedents. In such a case this
-     *        parameter specifies which of those components is calling this method, which
-     *        could be any value from 0 to k-1, which k is the number of 
-     *        times <code>source</code> occurs in the list of antecedents. 
-     *         
-     * @param mu The edge found by <code>source</code>.
-     * @param variable The variable to which this <code>mu</code>'s label is bound.
-     * @param action Determines if the match is added or removed.     */
-    @SuppressWarnings("unchecked")
-    public void receiveBoundEdge(ReteNetworkNode source, int repeatIndex,
-            HostEdge mu, LabelVar variable, Action action) {
-
-        AbstractReteMatch sg =
-            new ReteSimpleMatch(source, mu, variable,
-                this.getOwner().isInjective());
-        if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg);
-        } else if (!this.getOwner().isInOnDemandMode()
-            || !unbufferMatch(source, repeatIndex, sg)) {
-            if (isLeftAntecedent(source, repeatIndex)) {
-                startDominoDeletion(this.leftMemory, (LeftMatchType) sg);
-            } else {
-                startDominoDeletion(this.rightMemory, (RightMatchType) sg);
-            }
         }
     }
 
@@ -324,16 +249,6 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         return ((getAntecedents().get(0) != getAntecedents().get(1)) && (getAntecedents().get(
             0) == antecedent))
             || ((getAntecedents().get(0) == getAntecedents().get(1)) && (repeatIndex == 0));
-    }
-
-    private <E extends AbstractReteMatch> void startDominoDeletion(
-            TreeHashSet<E> memory, E match) {
-        if (memory.contains(match)) {
-            AbstractReteMatch m = match;
-            match = memory.put(match);
-            memory.remove(m);
-            match.dominoDelete(null);
-        }
     }
 
     /**
@@ -402,6 +317,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *         
      * @param subgraph The subgraph match found by <code>source</code>.     
      */
+    @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch subgraph) {
         if (this.getOwner().isInOnDemandMode()) {
@@ -462,27 +378,6 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             }
         }
         return result;
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            if (n instanceof SubgraphCheckerNode) {
-                ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
-                    m);
-            } else if (n instanceof ConditionChecker) {
-                ((ConditionChecker) n).receive(m);
-            } else if (n instanceof DisconnectedSubgraphChecker) {
-                ((DisconnectedSubgraphChecker) n).receive(this,
-                    repeatedSuccessorIndex, m);
-            }
-            previous = n;
-        }
     }
 
     @Override
@@ -649,7 +544,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         sb.append("--  Edge Set-\n");
 
         for (int i = 0; i < this.pattern.length; i++) {
-            sb.append("-- " + i + " -" + this.pattern[i].toString() + "\n");
+            sb.append("-- " + i + " -"
+                + this.pattern[i].toString().replace(':', '-') + "\n");
         }
         sb.append("--- Equalities-\n");
         for (int i = 0; i < this.fastEqualityLookupTable.length; i++) {
@@ -779,13 +675,15 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         /**
          * The subgraph-checker node to which this join strategy belongs
          */
-        @SuppressWarnings("rawtypes")
+
+        @SuppressWarnings("unchecked")
         protected SubgraphCheckerNode subgraphChecker;
 
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-        @SuppressWarnings("rawtypes")
+
+        @SuppressWarnings("unchecked")
         public AbstractSimpleTestJoinStrategy(SubgraphCheckerNode sgChecker) {
             this.subgraphChecker = sgChecker;
         }
@@ -879,7 +777,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-        @SuppressWarnings("rawtypes")
+
+        @SuppressWarnings("unchecked")
         public AbstractJoinWithPathStrategy(SubgraphCheckerNode sgChecker) {
             super(sgChecker);
             for (int i = 0; i < sgChecker.fastEqualityLookupTable.length; i++) {
@@ -966,7 +865,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *        coming the left antecedent should be copied for the combined matches that 
      *        are passed down the network.
      */
-    @SuppressWarnings("rawtypes")
+
+    @SuppressWarnings("unchecked")
     public static SubgraphCheckerNode create(ReteNetwork network,
             ReteStaticMapping left, ReteStaticMapping right, boolean keepPrefix) {
         if ((left.getNNode() instanceof AbstractPathChecker)

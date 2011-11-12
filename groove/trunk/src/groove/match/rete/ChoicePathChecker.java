@@ -55,17 +55,4 @@ public class ChoicePathChecker extends AbstractPathChecker {
         return false;
     }
 
-    @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            giveNewMatchToSuccessor((RetePathMatch) m, n,
-                repeatedSuccessorIndex);
-            previous = n;
-        }
-    }
-
 }

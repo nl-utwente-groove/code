@@ -93,6 +93,13 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
             || (this.getExpression().getNegOperand() != null);
     }
 
+    @Override
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch match) {
+        assert match instanceof RetePathMatch;
+        this.receive(source, repeatIndex, (RetePathMatch) match);
+    }
+
     /**
      * Should be called by the antecedents to hand in a new match 
      * @param source The antecedent that is calling this method
@@ -113,39 +120,6 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
     @Override
     public int size() {
         return -this.getExpression().getOperands().size();
-    }
-
-    /**
-     * Calls the appropriate <code>receive</code> method if a given successor
-     * to hand in the new match, if the new match should in fact be handed over 
-     * to that particular successor.
-     * 
-     * @param newMatch the new match
-     * @param n The successor n-node in the RETE network
-     * @param repeatedSuccessorIndex The repeating index for the successor . 
-     *       (See the {@link SubgraphCheckerNode#receive(ReteNetworkNode, int, groove.trans.HostElement, Action)}
-     *       for more info on this parameter.)
-     *          
-     *           
-     */
-    @SuppressWarnings("rawtypes")
-    protected void giveNewMatchToSuccessor(RetePathMatch newMatch,
-            ReteNetworkNode n, int repeatedSuccessorIndex) {
-        if (n instanceof SubgraphCheckerNode) {
-            ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
-                newMatch);
-        } else if (n instanceof ConditionChecker) {
-            ((ConditionChecker) n).receive(newMatch);
-        } else if (n instanceof SubgraphCheckerNode) {
-            ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
-                newMatch);
-        } else if (n instanceof DisconnectedSubgraphChecker) {
-            ((DisconnectedSubgraphChecker) n).receive(this,
-                repeatedSuccessorIndex, newMatch);
-        } else if (n instanceof AbstractPathChecker) {
-            ((AbstractPathChecker) n).receive(this, repeatedSuccessorIndex,
-                newMatch);
-        }
     }
 
     @Override

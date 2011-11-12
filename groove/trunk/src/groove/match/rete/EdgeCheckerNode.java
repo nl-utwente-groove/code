@@ -17,14 +17,19 @@
 package groove.match.rete;
 
 import groove.graph.TypeLabel;
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.RegExpr.Wildcard.LabelConstraint;
 import groove.trans.HostEdge;
+import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleLabel;
+import groove.trans.RuleNode;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
@@ -43,6 +48,16 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      * when the RETE network is working in on-demand mode.
      */
     private TreeHashSet<HostEdge> ondemandBuffer = new TreeHashSet<HostEdge>();
+
+    /**
+     * Edge-checker nodes now have a memory of
+     * matches produced. This is necessary to 
+     * bring the triggering of domino-deletion
+     * inside the edge-checker rather than
+     * relegating it to subgraph checkers.
+     */
+    private TreeHashSet<ReteSimpleMatch> memory =
+        new TreeHashSet<ReteSimpleMatch>();
 
     /**
      * The reporter.
@@ -97,12 +112,21 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
      */
     public boolean canBeMappedToEdge(HostEdge e) {
         RuleEdge e1 = this.getEdge();
-        //condition 1: labels must match <-- commented out because we check this in the root
-        //condition 2: if this is an edge checker for a loop then e should also be a loop
+        //condition 1: node types for end-points of the patter and host edge must be compatible
+        //condition 2: labels must match <-- commented out because we check this in the root
+        //condition 3: if this is an edge checker for a loop then e should also be a loop
         assert (this.isWildcardEdge() && e1.label().getMatchExpr().getWildcardGuard().isSatisfied(
             e.label()))
             || (e1.label().text().equals(e.label().text()));
-        return (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
+        return compatibleTypes(e1.source(), e.source())
+            && compatibleTypes(e1.target(), e.target())
+            && (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
+    }
+
+    private boolean compatibleTypes(RuleNode n1, HostNode n2) {
+        assert !(n1 instanceof ProductNode);
+        return !(n1 instanceof VariableNode)
+            || ((n2 instanceof ValueNode) && (((ValueNode) n2).getSignature().equals(((VariableNode) n1).getSignature())));
     }
 
     /**
@@ -158,8 +182,11 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         RuleEdge e1 = this.getEdge();
         //condition 1: labels must match
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
+        //condition 3: the end-points of this n-node's pattern and the given rule node are of the same type
         return e1.label().equals(e.label())
-            && (e1.source().equals(e1.target()) == (e.source().equals(e.target())));
+            && (e1.source().equals(e1.target()) == (e.source().equals(e.target())))
+            && (e1.source().getClass().equals(e.source().getClass()))
+            && (e1.target().getClass().equals(e.target().getClass()));
     }
 
     /**
@@ -198,43 +225,31 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         }
     }
 
-    @SuppressWarnings("rawtypes")
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        LabelVar variable;
-        if (this.isWildcardEdge()
-            && ((variable = this.getEdge().label().getWildcardId()) != null)) {
-            for (ReteNetworkNode n : this.getSuccessors()) {
-                repeatedSuccessorIndex =
-                    (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-                if (n instanceof SubgraphCheckerNode) {
-                    ((SubgraphCheckerNode) n).receiveBoundEdge(this,
-                        repeatedSuccessorIndex, gEdge, variable, action);
-                } else if (n instanceof ConditionChecker) {
-                    ((ConditionChecker) n).receiveBoundEdge(gEdge, variable,
-                        action);
-                } else if (n instanceof DisconnectedSubgraphChecker) {
-                    ((DisconnectedSubgraphChecker) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
-                }
-                previous = n;
-            }
+        LabelVar variable =
+            this.isWildcardEdge() ? this.getEdge().label().getWildcardId()
+                    : null;
+
+        ReteSimpleMatch m;
+        if (variable != null) {
+            m =
+                new ReteSimpleMatch(this, gEdge, variable,
+                    this.getOwner().isInjective());
         } else {
-            for (ReteNetworkNode n : this.getSuccessors()) {
-                repeatedSuccessorIndex =
-                    (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-                if (n instanceof SubgraphCheckerNode) {
-                    ((SubgraphCheckerNode) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
-                } else if (n instanceof ConditionChecker) {
-                    ((ConditionChecker) n).receive(gEdge, action);
-                } else if (n instanceof DisconnectedSubgraphChecker) {
-                    ((DisconnectedSubgraphChecker) n).receive(this,
-                        repeatedSuccessorIndex, gEdge, action);
-                }
-                previous = n;
+            m = new ReteSimpleMatch(this, gEdge, this.getOwner().isInjective());
+        }
+
+        if (action == Action.ADD) {
+            assert !this.memory.contains(m);
+            this.memory.add(m);
+            passDownMatchToSuccessors(m);
+        } else { // action == Action.REMOVE            
+            if (this.memory.contains(m)) {
+                ReteSimpleMatch m1 = m;
+                m = this.memory.put(m);
+                this.memory.remove(m1);
+                m.dominoDelete(null);
             }
         }
     }
@@ -290,6 +305,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public void clear() {
         this.ondemandBuffer.clear();
+        this.memory.clear();
 
     }
 
@@ -315,7 +331,9 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     }
 
     @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
+
     }
 }

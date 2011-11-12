@@ -17,10 +17,6 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.rel.LabelVar;
-import groove.trans.HostEdge;
-import groove.trans.HostElement;
-import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.util.TreeHashSet;
 
@@ -92,81 +88,6 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
     }
 
     /**
-     * Receives a matched edge/node during runtime from an EdgeChecker/NodeChecker 
-     * antecedent and takes appropriate action according to the <code>action<code>
-     * parameter.
-     * 
-     * @param source The n-node that is calling this method
-     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
-     *        If <code>source</code> checks against more than one disjoint component, it will
-     *        repeat in the list of the current n-nodes antecedents. In such a case this
-     *        parameter specifies which of those components is calling this method, which
-     *        could be any value from 0 to k-1, which k is the number of 
-     *        times <code>source</code> occurs in the list of antecedents. 
-     *         
-     * @param mu The match object found by <code>source</code>.
-     * @param action Determines if the match is added or removed.
-     */
-    public void receive(ReteNetworkNode source, int repeatIndex,
-            HostElement mu, Action action) {
-        AbstractReteMatch sg =
-            (mu instanceof HostEdge) ? new ReteSimpleMatch(source,
-                (HostEdge) mu, this.getOwner().isInjective())
-                    : new ReteSimpleMatch(source, (HostNode) mu,
-                        this.getOwner().isInjective());
-
-        if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg);
-        } else {
-            TreeHashSet<AbstractReteMatch> memory =
-                getPartialMatchesFor(source);
-            if (memory.contains(sg)) {
-                AbstractReteMatch m = sg;
-                sg = memory.put(sg);
-                memory.remove(m);
-                sg.dominoDelete(null);
-            }
-        }
-    }
-
-    /**
-     * Receives a matched edge during runtime from an wild-card EdgeChecker 
-     * antecedent and takes appropriate action according to the <code>action<code>
-     * parameter.
-     * 
-     * @param source The n-node that is calling this method
-     * @param repeatIndex This parameter is basically a counter over repeating antecedents.
-     *        If <code>source</code> checks against more than one disjoint component, it will
-     *        repeat in the list of the current n-nodes antecedents. In such a case this
-     *        parameter specifies which of those components is calling this method, which
-     *        could be any value from 0 to k-1, which k is the number of 
-     *        times <code>source</code> occurs in the list of antecedents. 
-     *         
-     * @param mu The match object found by <code>source</code>.
-     * @param variable The variable which is to be bound to <code>mu</code>'s label.
-     * @param action Determines if the match is added or removed.
-     */
-    public void receiveBoundEdge(ReteNetworkNode source, int repeatIndex,
-            HostEdge mu, LabelVar variable, Action action) {
-        AbstractReteMatch sg =
-            new ReteSimpleMatch(source, mu, variable,
-                this.getOwner().isInjective());
-
-        if (action == Action.ADD) {
-            this.receive(source, repeatIndex, sg);
-        } else {
-            TreeHashSet<AbstractReteMatch> memory =
-                getPartialMatchesFor(source);
-            if (memory.contains(sg)) {
-                AbstractReteMatch m = sg;
-                sg = memory.put(sg);
-                memory.remove(m);
-                sg.dominoDelete(null);
-            }
-        }
-    }
-
-    /**
      * Receives a match of a connected subgraph component of an otherwise
      * disconnected LHS represented by this object. 
      *  
@@ -179,6 +100,7 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
      *        times <code>source</code> occurs in the list of antecedents. 
      * @param match The match object found by <code>source</code>.
      */
+    @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch match) {
         produceAndSendDownNewMatches(source, repeatIndex, match);
@@ -377,23 +299,6 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         this.matchesProduced = 0;
         demandUpdate();
         return this.matchesProduced;
-    }
-
-    @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            if (n instanceof ConditionChecker) {
-                ((ConditionChecker) n).receive(this, m);
-            } else if (n instanceof SubgraphCheckerNode) {
-                ((SubgraphCheckerNode<?,?>) n).receive(this,
-                    repeatedSuccessorIndex, m);
-            }
-            previous = n;
-        }
     }
 
 }

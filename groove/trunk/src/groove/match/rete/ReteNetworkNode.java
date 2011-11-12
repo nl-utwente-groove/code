@@ -255,8 +255,31 @@ public abstract class ReteNetworkNode {
     }
 
     /**
+     * Receives a match from its antecedent.
+     *  
+     * @param source The reference to the antecedent n-node
+     * @param repeatIndex The repeat index if the n-node represented by <code>source</code> 
+     *                    occurs more than once in the list of antecedents. 
+     * @param match       The match passed down from the <code>source</code>
+     */
+    public abstract void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch match);
+
+    /**
      * Passes down a given match to the successors.
      * @param m the given match
      */
-    protected abstract void passDownMatchToSuccessors(AbstractReteMatch m);
+    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+        ReteNetworkNode previous = null;
+        int repeatedSuccessorIndex = 0;
+
+        for (ReteNetworkNode n : this.getSuccessors()) {
+            repeatedSuccessorIndex =
+                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+            n.receive(this, repeatedSuccessorIndex, m);
+            previous = n;
+        }
+
+    }
+
 }

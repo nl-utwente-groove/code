@@ -300,6 +300,28 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Testing the basic count-to-n grammar for first step matches found - 1
+     */
+    public void testDynamicAttr1() {
+        GraphGrammar g = loadGrammar("attribute-count-to-n.gps", "start");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("count-up")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "count-down")) {
+                assertEquals(0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "atZero")) {
+                assertEquals(1, rmList.size());
+            }
+        }
+    }
+
     private GraphGrammar loadGrammar(String grammarName, String startGraphName) {
         GraphGrammar result = null;
         try {
