@@ -89,20 +89,6 @@ public class EmptyPathChecker extends AbstractPathChecker implements
     }
 
     @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
-        assert m != null;
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : this.getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            giveNewMatchToSuccessor((RetePathMatch) m, n,
-                repeatedSuccessorIndex);
-            previous = n;
-        }
-    }
-
-    @Override
     public void clear() {
         //Left empty. Nothing to do.
     }

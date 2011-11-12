@@ -126,7 +126,7 @@ public class ExplorationTest {
     /** Tests the mergers sample. */
     @Test
     public void testMergers() {
-        testExploration("mergers.gps", 66, 143);
+        testExploration("mergers.gps", "start", "bfs", 66, 143);
     }
 
     /** Tests the regexpr sample. */
@@ -140,6 +140,7 @@ public class ExplorationTest {
     @Test
     public void testLooseNodes() {
         testExploration("loose-nodes.gps", 104, 468);
+        testExploration("loose-nodes.gps", "start", "rete", 104, 468);
         testExploration("loose-nodes.gps", "start", "linear", 10, 9);
     }
 
@@ -161,7 +162,8 @@ public class ExplorationTest {
     /** Tests the counting sample. */
     @Test
     public void testCounting() {
-        testExploration("counting.gps", 10, 9);
+        testExploration("counting.gps", "start", "bfs", 10, 9);
+        testExploration("counting.gps", "start", "rete", 10, 9);
     }
 
     /** Tests the quantifier counting sample. */
@@ -173,7 +175,8 @@ public class ExplorationTest {
     /** Tests the attributes sample. */
     @Test
     public void testAttributes() {
-        testExploration("attributed-graphs.gps", 6, 16);
+        testExploration("attributed-graphs.gps", "start", "bfs", 6, 16);
+        testExploration("attributed-graphs.gps", "start", "rete", 6, 16);
     }
 
     /** Tests the attributes sample. */
@@ -213,8 +216,7 @@ public class ExplorationTest {
         GrammarModel gg = loadGrammar("simple.gps", null);
         testExploration(gg, null, 41, 300, 0);
         // test check creator edges property
-        GrammarModel ggCopy =
-            loadGrammar("simpleCheckCreatorEdges.gps", null);
+        GrammarModel ggCopy = loadGrammar("simpleCheckCreatorEdges.gps", null);
         testExploration(ggCopy, null, 41, 188, 0);
         // test dangling edges property
         ggCopy = loadGrammar("simpleCheckDanglingEdges.gps", null);
@@ -375,11 +377,10 @@ public class ExplorationTest {
             nodeCount, edgeCount);
     }
 
-    private GrammarModel loadGrammar(String grammarName,
-            String startGraphName) {
+    private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
-            return GrammarModel.newInstance(new File(INPUT_DIR,
-                grammarName), startGraphName, false);
+            return GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
+                startGraphName, false);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }

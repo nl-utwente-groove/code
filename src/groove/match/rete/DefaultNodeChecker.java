@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2010 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,9 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.graph.DefaultNode;
 import groove.graph.Node;
-import groove.trans.DefaultRuleNode;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
@@ -31,16 +29,25 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber {
+public class DefaultNodeChecker extends NodeChecker implements StateSubscriber {
 
-    private RuleElement[] pattern = new RuleElement[1];
     private TreeHashSet<HostNode> ondemandBuffer = new TreeHashSet<HostNode>();
+
+    /**
+     * Node-checker nodes now have a memory of
+     * matches produced. This is necessary to 
+     * bring the triggering of domino-deletion
+     * inside the node-checker rather than
+     * relegating it to subgraph checkers.
+     */
+    private TreeHashSet<ReteSimpleMatch> memory =
+        new TreeHashSet<ReteSimpleMatch>();
 
     /**
      * The reporter object for this class.
      */
     protected static final Reporter reporter =
-        Reporter.register(NodeCheckerNode.class);
+        Reporter.register(NodeChecker.class);
 
     /**
      * The reporter collecting statistics for the {@link #receiveNode} method.
@@ -51,24 +58,12 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     /**
      * @param network The {@link ReteNetwork} object to which this node will belong.
      */
-    public NodeCheckerNode(ReteNetwork network) {
+    public DefaultNodeChecker(ReteNetwork network) {
         super(network);
         this.pattern[0] =
             RuleFactory.instance().createNode(
                 RuleFactory.instance().getMaxNodeNr() + 1);
         this.getOwner().getState().subscribe(this);
-    }
-
-    /**
-     * Each object of type {@link NodeCheckerNode} has an associated {@link DefaultNode} object 
-     * that will represent and binds to isolated nodes of rules'
-     * LHS during build-time and dynamically to all nodes of a host graph
-     * (either injectively or non-injectively).
-     * 
-     * @return the node object associated with this checker
-     */
-    public DefaultRuleNode getNode() {
-        return (DefaultRuleNode) this.pattern[0];
     }
 
     /**
@@ -91,23 +86,22 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         receiveNodeReporter.stop();
     }
 
-    @SuppressWarnings("rawtypes")
     private void sendDownReceivedNode(HostNode node, Action action) {
-        ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
-        for (ReteNetworkNode n : getSuccessors()) {
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
-            if (n instanceof ConditionChecker) {
-                ((ConditionChecker) n).receive(node, action);
-            } else if (n instanceof SubgraphCheckerNode) {
-                ((SubgraphCheckerNode) n).receive(this, repeatedSuccessorIndex,
-                    node, action);
-            } else if (n instanceof DisconnectedSubgraphChecker) {
-                ((DisconnectedSubgraphChecker) n).receive(this,
-                    repeatedSuccessorIndex, node, action);
+
+        ReteSimpleMatch m =
+            new ReteSimpleMatch(this, node, this.getOwner().isInjective());
+
+        if (action == Action.ADD) {
+            assert !this.memory.contains(m);
+            this.memory.add(m);
+            passDownMatchToSuccessors(m);
+        } else { // action == Action.REMOVE            
+            if (this.memory.contains(m)) {
+                ReteSimpleMatch m1 = m;
+                m = this.memory.put(m);
+                this.memory.remove(m1);
+                m.dominoDelete(null);
             }
-            previous = n;
         }
     }
 
@@ -122,8 +116,8 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
 
     @Override
     public boolean equals(ReteNetworkNode node) {
-        return (node != null) && (node instanceof NodeCheckerNode)
-            && (((NodeCheckerNode) node).getNode().equals(this.getNode()));
+        return (node != null) && (node instanceof DefaultNodeChecker)
+            && (((DefaultNodeChecker) node).getNode().equals(this.getNode()));
     }
 
     /**
@@ -159,6 +153,7 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     @Override
     public void clear() {
         this.ondemandBuffer.clear();
+        this.memory.clear();
     }
 
     @Override
@@ -183,7 +178,9 @@ public class NodeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     }
 
     @Override
-    protected void passDownMatchToSuccessors(AbstractReteMatch m) {
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
     }
+
 }

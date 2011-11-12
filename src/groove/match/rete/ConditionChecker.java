@@ -17,11 +17,8 @@
 package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.rel.LabelVar;
 import groove.trans.Condition;
-import groove.trans.HostEdge;
 import groove.trans.HostElement;
-import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
@@ -133,7 +130,7 @@ public class ConditionChecker extends ReteNetworkNode implements
     /**
      * Establishes the link between this condition checker and its only antecedent
      * (which might be a {@link SubgraphCheckerNode}, a {@link DisconnectedSubgraphChecker},
-     * a {@link NodeCheckerNode}, or an {@link EdgeCheckerNode}.
+     * a {@link NodeChecker}, or an {@link EdgeCheckerNode}.
      * It adds itself to the antecedent's list of successors and adding it to
      * this condition-checker's list of antecedents. It also adjusts the 
      * patterns list of this condition-checker.
@@ -245,13 +242,15 @@ public class ConditionChecker extends ReteNetworkNode implements
 
     /**
      * @return an iterator through the eligible matches of this condition checker,
-     * that is, those positive matches that are not inhibitted by any Nac conditions. 
+     * that is, those positive matches that are not inhibited by any Nac conditions. 
      */
     public Iterator<ReteSimpleMatch> getConflictSetIterator() {
         Iterator<ReteSimpleMatch> result;
         demandUpdate();
         if (this.isEmpty()) {
-            result = this.oneEmptyMatch.iterator();
+            result =
+                this.inhibitionMap.isEmpty() ? this.oneEmptyMatch.iterator()
+                        : this.getConflictSet().iterator();
         } else if (!this.inhibitionMap.isEmpty()
             && (this.conflictSet.size() > 0)) {
             result =
@@ -344,34 +343,6 @@ public class ConditionChecker extends ReteNetworkNode implements
     }
 
     /**
-     * This method is called by an edge checker node when the associated condition
-     * of this n-node has an LHS/Target consisting of only one edge.
-
-     * @param mu The edge in the host graph that needs to be added/removed to/from the conflict set.
-     * @param action Indicates if the given edge is going to be added or removed from the network.
-     */
-    public void receive(HostEdge mu, Action action) {
-        ReteSimpleMatch m =
-            new ReteSimpleMatch(this, mu, this.getOwner().isInjective());
-        updateConflictSet(m, action);
-    }
-
-    /**
-     * This method is called by a wild-card edge checker node when the associated condition
-     * of this n-node has an LHS/Target consisting of only one edge.
-
-     * @param mu The edge in the host graph that needs to be added/removed to/from the conflict set.
-     * @param variable To variable to which the edge label is bound
-     * @param action Indicates if the given edge is going to be added or removed from the network.
-     */
-    public void receiveBoundEdge(HostEdge mu, LabelVar variable, Action action) {
-        ReteSimpleMatch m =
-            new ReteSimpleMatch(this, mu, variable,
-                this.getOwner().isInjective());
-        updateConflictSet(m, action);
-    }
-
-    /**
      * Receives a match of the subgraph representing the lhs of this n-node's
      * associated production rule and turns it into a LHS-to-HOST match and
      * saves it into the conflict set.
@@ -382,39 +353,6 @@ public class ConditionChecker extends ReteNetworkNode implements
         ReteSimpleMatch m =
             new ReteSimpleMatch(this, this.getOwner().isInjective(), match);
         updateConflictSet(m, Action.ADD);
-    }
-
-    /**
-     * Receives a match of the subgraph representing the disconnected LHS/target
-     * of this n-node's {@link #condition} and turns it into a LHS-to-HOST match and
-     * saves it into the conflict set.
-     *  
-     * This method is only called if the target of this node's {@link #condition}
-     * is not a connected graph.
-     * 
-     * @param antecedent The antecedent that is calling this method. 
-     * @param match The match that is to be added/removed to/from the conflict set.
-     */
-    public void receive(DisconnectedSubgraphChecker antecedent,
-            AbstractReteMatch match) {
-        ReteSimpleMatch m =
-            new ReteSimpleMatch(this, this.getOwner().isInjective(), match);
-        updateConflictSet(m, Action.ADD);
-    }
-
-    /**
-     * This method is called by a {@link NodeCheckerNode} when the
-     * LHS/target of this n-node's {@link #condition}
-     * consists of only one node.
-     * 
-     * @param node The matched {@link HostNode} that is to be added/removed to/from 
-     *        the conflict set.
-     * @param action Determines if the match is to be added or removed.
-     */
-    public void receive(HostNode node, Action action) {
-        ReteSimpleMatch m =
-            new ReteSimpleMatch(this, node, this.getOwner().isInjective());
-        this.updateConflictSet(m, action);
     }
 
     /**
@@ -674,6 +612,22 @@ public class ConditionChecker extends ReteNetworkNode implements
     @Override
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void receive(ReteNetworkNode source, int repeatIndex,
+            AbstractReteMatch subgraph) {
+        this.receive(subgraph);
+    }
+
+    /**
+     * Returns the singleton empty match of this 
+     * condition, if this condition's LHS is empty or
+     * it only contains NAC nodes. Otherwise it will
+     * return <code>null</code>
+     */
+    public ReteSimpleMatch getEmptyMatch() {
+        return this.isEmpty() ? this.oneEmptyMatch.iterator().next() : null;
     }
 
 }

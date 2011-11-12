@@ -18,8 +18,6 @@ package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Condition;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
 
 /**
  * A checker node which is the result of superimposing the
@@ -55,27 +53,13 @@ public class CompositeConditionChecker extends ConditionChecker {
     public void receive(AbstractReteMatch match) {
         match.addDominoListener(this.conflictSetMatchDominoAdapter);
         ReteSimpleMatch actualPrefixMatchWithCorrectOwner =
-            ReteSimpleMatch.forge(this.parent, this.getOwner().isInjective(),
-                match.getSpecialPrefix());
+            this.getParent().isEmpty()
+                    ? this.getParent().getEmptyMatch()
+                    : ReteSimpleMatch.forge(this.parent,
+                        this.getOwner().isInjective(), match.getSpecialPrefix());
 
         this.getParent().receiveInhibitorMatch(
             actualPrefixMatchWithCorrectOwner, Action.ADD);
-    }
-
-    @Override
-    public void receive(DisconnectedSubgraphChecker antecedent,
-            AbstractReteMatch match) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void receive(HostEdge mu, Action action) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void receive(HostNode node, Action action) {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -86,8 +70,9 @@ public class CompositeConditionChecker extends ConditionChecker {
      */
     public void matchDeminoRemovedFromConflictSet(AbstractReteMatch m) {
         ReteSimpleMatch actualPrefixMatchWithCorrectOwner =
-            ReteSimpleMatch.forge(this.parent, this.getOwner().isInjective(),
-                m.getSpecialPrefix());
+            this.getParent().isEmpty() ? this.getParent().getEmptyMatch()
+                    : ReteSimpleMatch.forge(this.parent,
+                        this.getOwner().isInjective(), m.getSpecialPrefix());
         this.getParent().receiveInhibitorMatch(
             actualPrefixMatchWithCorrectOwner, Action.REMOVE);
     }
