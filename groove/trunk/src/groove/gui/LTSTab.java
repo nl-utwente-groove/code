@@ -168,7 +168,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (!getOptionValue(SHOW_LTS_OPTION)) {
+        if (source.getGts() != null && !getOptionValue(SHOW_LTS_OPTION)) {
             return;
         }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
