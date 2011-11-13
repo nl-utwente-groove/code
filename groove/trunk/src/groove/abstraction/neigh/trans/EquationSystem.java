@@ -38,12 +38,30 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * An equation system is the mechanism used to resolve non-determinism during
+ * the materialisation phase.
+ * The system is composed of multiplicity variables, that are associated with
+ * elements of the shape under materialisation.
+ * The variables are used to form equations over multiplicities values. The
+ * process of solving the equation system entails finding all possible values
+ * for the multiplicity variables that satisfy all equations.
+ * When a solution is found the materialisation object is adjusted accordingly.
+ * 
  * @author Eduardo Zambon
  */
 public final class EquationSystem {
 
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    // Debug variables.
     private static final boolean WARN_BLOWUP = false;
     private static final int MAX_SOLUTION_COUNT = 4;
+
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
 
     /** Creates a new equation system for the given materialisation. */
     public final static EquationSystem newEqSys(Materialisation mat) {
@@ -51,14 +69,55 @@ public final class EquationSystem {
         return new EquationSystem(mat);
     }
 
+    /** Adds the given pair of variables to the given pair of equations. */
+    private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
+        eqs.one().addVar(vars.one());
+        eqs.two().addVar(vars.two());
+    }
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /**
+     * The initial materialisation object for which the equation system should
+     * be built. If the system has only one solution this object is modified
+     * directly. If there are multiple solutions, this object is cloned.
+     */
     private final Materialisation mat;
+    /**
+     * Stage of this equation system. Should match the state of the
+     * materialisation object.
+     */
     private final int stage;
+    /**
+     * Set of trivial equations (equations with just one variable) that are
+     * used first while solving the system.
+     */
     private final MyHashSet<Equation> trivialEqs;
+    /**
+     * Sets of all equations that compose the system. The objects are final but 
+     * the sets are modified during the creation of the system. After that they
+     * no longer change. 
+     */
     private final MyHashSet<Equation> lbEqs;
     private final MyHashSet<Equation> ubEqs;
+    /**
+     * Range of values for the lower and upper bound variables. The ranges are
+     * stored in the equation system and referenced in the solutions just by
+     * the indexes.
+     */
     private int lbRange[];
     private int ubRange[];
+    /** The number of multiplicity variables of the system. */
     private int varsCount;
+
+    /**
+     * Maps and reverse maps from shape elements to variables. Each element
+     * (the kind of element depends on the stage) is associated with a pair
+     * of lower and upper bound variables. The reverse map is an array indexed
+     * by the variable numbers.
+     */
     // ------------------------------------------------------------------------
     // Used in first stage.
     // ------------------------------------------------------------------------
@@ -76,6 +135,14 @@ public final class EquationSystem {
     private Map<ShapeNode,Duo<BoundVar>> nodeVarsMap;
     private ArrayList<ShapeNode> varNodeMap;
 
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /**
+     * Private constructor to avoid object creation.
+     * Use {@link #newEqSys(Materialisation)}.
+     */
     private EquationSystem(Materialisation mat) {
         assert mat != null;
         this.mat = mat;
@@ -86,6 +153,10 @@ public final class EquationSystem {
         this.varsCount = 0;
         this.create();
     }
+
+    // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------    
 
     @Override
     public String toString() {
@@ -107,9 +178,17 @@ public final class EquationSystem {
     }
 
     // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
     // Common methods to all stages.
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates the equation system. Calls the appropriated creation method
+     * depending on the stage.
+     */
     private void create() {
         this.fillBoundRanges();
         switch (this.stage) {
@@ -127,6 +206,7 @@ public final class EquationSystem {
         }
     }
 
+    /** Fills the range fields accordingly to stage. */
     private void fillBoundRanges() {
         MultKind kind = null;
         switch (this.stage) {
@@ -155,6 +235,10 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Returns the kind of multiplicity that is to be used when updating
+     * the materialisation from a solution.
+     */
     private MultKind finalMultKind() {
         MultKind kind = null;
         switch (this.stage) {
@@ -171,6 +255,12 @@ public final class EquationSystem {
         return kind;
     }
 
+    /**
+     * Stores the given pair of equations in the appropriate sets. If the
+     * equations have no variables or are not useful, they are discarded. An
+     * equation is not useful, for example, if its constant is at the extremity
+     * of the valid bound range.
+     */
     private void storeEquations(Duo<Equation> eqs) {
         Equation lbEq = eqs.one();
         Equation ubEq = eqs.two();
@@ -199,7 +289,11 @@ public final class EquationSystem {
         }
     }
 
-    /** Solves the equation system and stores the results in the given set. */
+    /**
+     * Finds all solutions of this equation system and return all
+     * materialisation objects created from the valid solutions.
+     * This method resolves all non-determinism of the materialisation phase. 
+     */
     public void solve(Set<Materialisation> result) {
         // Compute all solutions.
         Solution initialSol =
@@ -246,6 +340,16 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Tries to set the values of the open variables of the given solution to
+     * their maximum. This is useful in the first stage, when we don't have to
+     * solve the equation system completely and we just want to know if the
+     * variables are zero or positive. This is important to avoid unnecessary
+     * branching in the first stage.
+     * 
+     * @return the same given solution object if it's not possible to maximize
+     *         it, or a new solution object with maximized variables. 
+     */
     private Solution tryToMaxSolution(Solution sol) {
         Solution result = sol;
         if (this.stage == 1
@@ -256,6 +360,12 @@ public final class EquationSystem {
         return result;
     }
 
+    /**
+     * Iterate the given solution over all equations of the system and try to
+     * fix more variables. This may lead to branching. In this case, an
+     * heuristic is used to decide on which equation to use that is likely
+     * to produce less branching. Returns the set of new (partial) solutions.
+     */
     private void iterateSolution(Solution sol, SolutionSet partialSols,
             SolutionSet finishedSols) {
         this.iterateEquations(sol);
@@ -298,6 +408,12 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Updates the given materialisation object using the given solution. Calls
+     * the appropriate update method according to the stage.
+     * 
+     * @return true if a next stage is necessary, false otherwise.
+     */
     private boolean updateMat(Materialisation mat, Solution sol) {
         boolean result = false;
         switch (this.stage) {
@@ -316,11 +432,17 @@ public final class EquationSystem {
         return result;
     }
 
+    /** Creates and returns a pair of equations with the given constants. */
     private Duo<Equation> createEquations(int varsCount, int lbConst,
             int ubConst) {
         return createEquations(varsCount, lbConst, ubConst, null);
     }
 
+    /**
+     * Creates and returns a pair of equations with the given constants and
+     * a reference to a collector node. The node is used only in the
+     * first stage.
+     */
     private Duo<Equation> createEquations(int varsCount, int lbConst,
             int ubConst, ShapeNode node) {
         Equation lbEq = new Equation(BoundType.LB, varsCount, lbConst, node);
@@ -328,12 +450,11 @@ public final class EquationSystem {
         return new Duo<Equation>(lbEq, ubEq);
     }
 
-    private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
-        eqs.one().addVar(vars.one());
-        eqs.two().addVar(vars.two());
-    }
-
+    /** Checks if the given solution satisfies all equations of the system. */
     private boolean isValid(Solution sol) {
+        if (sol.invalid) {
+            return false;
+        }
         boolean result = true;
         Set<Equation> allEqs = new MyHashSet<Equation>();
         allEqs.addAll(this.trivialEqs);
@@ -354,6 +475,10 @@ public final class EquationSystem {
     // Methods for first stage.
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates a first stage equation system. In this stage, each edge bundle
+     * gives rise to an equation and each edge of the bundle to a variable.
+     */
     private void createFirstStage() {
         assert this.stage == 1;
 
@@ -383,6 +508,7 @@ public final class EquationSystem {
             }
             // For each split edge signature...
             for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
+                // For each edge...
                 for (ShapeEdge edge : bundle.getSplitEsEdges(splitEs)) {
                     // ... create two bound variables.
                     Duo<BoundVar> vars = retrieveBoundVars(edge);
@@ -408,6 +534,11 @@ public final class EquationSystem {
         }
     }
 
+    /**
+     * Returns a pair of variables associated with the given edge. If no
+     * variable pair is found, a new one is created and associated with the
+     * edge. 
+     */
     private Duo<BoundVar> retrieveBoundVars(ShapeEdge edge) {
         assert this.stage == 1;
         Duo<BoundVar> vars = this.edgeVarsMap.get(edge);
@@ -422,6 +553,11 @@ public final class EquationSystem {
         return vars;
     }
 
+    /**
+     * Updates the given materialisation object with the given solution.
+     * Always returns true since we always need to go to second stage to
+     * compute the multiplicities for each edge signature. 
+     */
     private boolean updateMatFirstStage(Materialisation mat, Solution sol) {
         assert this.stage == 1;
 
@@ -481,6 +617,12 @@ public final class EquationSystem {
         return true;
     }
 
+    /**
+     * Goes over the collector nodes marked as garbage in the first stage and
+     * removes them from the materialisation. Note that the nodes are not
+     * removed from the shape at this point. This is done later at the end
+     * of second stage. This avoids unnecessary updates on the bundles. 
+     */
     // See materialisation test case 11.
     private void collectGarbageNodes(Materialisation mat, Solution sol) {
         assert this.stage == 1;
@@ -499,6 +641,13 @@ public final class EquationSystem {
     // Methods for second stage.
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates a second stage equation system. In this stage, each edge bundle
+     * gives rise to an equation and each edge signature of the bundle is
+     * associated with a pair of variables.
+     * The equation system created by this method is deterministic, i.e., the
+     * second stage always produces a single solution.
+     */
     private void createSecondStage() {
         assert this.stage == 2;
 
@@ -521,8 +670,7 @@ public final class EquationSystem {
                 // For each edge signature...
                 for (EdgeSignature es : bundle.getSplitEsSet()) {
                     // ... create a pair of variables.
-                    Duo<BoundVar> vars =
-                        retrieveBoundVars(es, bundle.direction);
+                    Duo<BoundVar> vars = retrieveBoundVars(es);
                     addVars(eqs, vars);
                     Set<ShapeEdge> edges = bundle.getSplitEsEdges(es);
                     if (edges.size() == 1) {
@@ -542,6 +690,7 @@ public final class EquationSystem {
         }
     }
 
+    /** Returns the signature map for the given direction. */
     private Map<EdgeSignature,Duo<BoundVar>> getEsMap(EdgeMultDir direction) {
         assert this.stage == 2;
         Map<EdgeSignature,Duo<BoundVar>> result = null;
@@ -558,9 +707,14 @@ public final class EquationSystem {
         return result;
     }
 
-    private Duo<BoundVar> retrieveBoundVars(EdgeSignature es,
-            EdgeMultDir direction) {
+    /**
+     * Returns a pair of variables associated with the given signature. If no
+     * variable pair is found, a new one is created and associated with the
+     * edge signature. 
+     */
+    private Duo<BoundVar> retrieveBoundVars(EdgeSignature es) {
         assert this.stage == 2;
+        EdgeMultDir direction = es.getDirection();
         Duo<BoundVar> vars = this.getEsMap(direction).get(es);
         if (vars == null) {
             BoundVar lbVar = new BoundVar(this.varsCount, BoundType.LB);
@@ -573,6 +727,11 @@ public final class EquationSystem {
         return vars;
     }
 
+    /**
+     * Updates the given materialisation object with the given solution.
+     * Returns true if we had node splits in the second stage, meaning that we
+     * have to compute the multiplicities for the split nodes.
+     */
     private boolean updateMatSecondStage(Materialisation mat, Solution sol) {
         assert this.stage == 2;
         Shape shape = mat.getShape();
@@ -596,6 +755,11 @@ public final class EquationSystem {
     // Methods for third stage.
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates a third stage equation system. In this stage, each node that was
+     * split gives rise to an equation and each new split node corresponds to
+     * a variable.
+     */
     private void createThirdStage() {
         assert this.stage == 3;
 
@@ -668,6 +832,11 @@ public final class EquationSystem {
 
     }
 
+    /**
+     * Returns a pair of variables associated with the given node. If no
+     * variable pair is found, a new one is created and associated with the
+     * node. 
+     */
     private Duo<BoundVar> retrieveBoundVars(ShapeNode node) {
         assert this.stage == 3;
         Duo<BoundVar> vars = this.nodeVarsMap.get(node);
@@ -682,6 +851,10 @@ public final class EquationSystem {
         return vars;
     }
 
+    /**
+     * Updates the given materialisation object with the given solution.
+     * Always returns false, since this is the last stage.
+     */
     private boolean updateMatThirdStage(Materialisation mat, Solution sol) {
         assert this.stage == 3;
         Shape shape = mat.getShape();
@@ -709,7 +882,7 @@ public final class EquationSystem {
     // BoundVar
     // --------
 
-    static class BoundVar {
+    private static class BoundVar {
 
         final int number;
         final BoundType type;
@@ -1179,6 +1352,13 @@ public final class EquationSystem {
     // Solution
     // --------
 
+    /**
+     * Class representing a possible solution for the equation system.
+     * This is the only dynamic part of the system, the remaining structures
+     * are all fixed when trying to solve the system. Objects of this class
+     * are cloned during the solution search, hence we try to keep the objects
+     * as small as possible. 
+     */
     private static class Solution {
 
         final ValueRange lbValues[];
