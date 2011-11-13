@@ -732,7 +732,7 @@ public final class Materialisation {
             for (ShapeEdge edge : toProcess) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
                     EdgeBundle bundle = this.getBundle(edge, direction);
-                    bundle.addEdge(this.shape, edge, direction);
+                    bundle.addEdge(this.shape, edge);
                 }
                 handledEdges.add(edge);
             }
@@ -850,7 +850,7 @@ public final class Materialisation {
             shape.addEdgeWithoutCheck(edgeToAdd);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 EdgeBundle bundle = this.getBundle(edgeToAdd, direction);
-                bundle.addEdge(this.shape, edgeToAdd, direction);
+                bundle.addEdge(this.shape, edgeToAdd);
             }
         }
 
@@ -898,7 +898,7 @@ public final class Materialisation {
                     newEdges);
                 for (ShapeEdge newEdge : newEdges) {
                     // Add the new edge to the new bundle.
-                    newBundle.addEdge(this.shape, newEdge, direction);
+                    newBundle.addEdge(this.shape, newEdge);
                     newBundle.setEdgeAsFixed(newEdge);
                     // Add the new edge to the shape.
                     this.shape.addEdgeWithoutCheck(newEdge);
@@ -906,7 +906,7 @@ public final class Materialisation {
                     this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
                     // Now handle the opposite bundle.
                     EdgeBundle oppBundle = this.getBundle(newEdge, reverse);
-                    oppBundle.addEdge(this.shape, newEdge, reverse);
+                    oppBundle.addEdge(this.shape, newEdge);
                     oppBundle.setEdgeAsFixed(newEdge);
                 }
                 newEdges.clear();
