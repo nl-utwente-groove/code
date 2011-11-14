@@ -23,6 +23,7 @@ import groove.gui.action.SimulatorAction;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel;
 import groove.trans.ResourceKind;
+import groove.trans.RuleName;
 import groove.view.FormatError;
 import groove.view.ResourceModel;
 
@@ -143,12 +144,12 @@ abstract public class ResourceTab extends JPanel implements Tab {
     }
 
     /**
-     * Returns the title of this panel. The title is the name plus an optional
-     * indication of the (dirty) status of the editor.
+     * Returns the title of this panel. The title is the last part of the name 
+     * plus an optional indication of the (dirty) status of the editor.
      */
     @Override
     public String getTitle() {
-        return (isDirty() ? "*" : "") + getName();
+        return (isDirty() ? "*" : "") + new RuleName(getName()).child();
     }
 
     /** Returns the resource kind of this editor tab. */
