@@ -151,6 +151,11 @@ public class ShapeState extends AbstractGraphState {
         return EMPTY_NODE_ARRAY;
     }
 
+    @Override
+    public void clearCache() {
+        // We don't have a cache, so just return.
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -224,11 +229,6 @@ public class ShapeState extends AbstractGraphState {
 
     @Override
     protected StateCache createCache() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void clearCache() {
         throw new UnsupportedOperationException();
     }
 

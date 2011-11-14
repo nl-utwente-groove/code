@@ -93,6 +93,7 @@ public final class ShapeMatchApplier extends MatchApplier {
     @Override
     public GraphTransition apply(GraphState sourceGS, MatchResult match) {
         assert sourceGS instanceof ShapeState;
+        addTransitionReporter.start();
         ShapeState source = (ShapeState) sourceGS;
         GraphTransition result = null;
         RuleEvent origEvent = match.getEvent();
@@ -122,7 +123,9 @@ public final class ShapeMatchApplier extends MatchApplier {
                 ShapeNextState newState =
                     new ShapeNextState(agts.nodeCount(), target, source,
                         realEvent);
+                addStateReporter.start();
                 ShapeState oldState = agts.addState(newState);
+                addStateReporter.stop();
                 if (oldState != null) {
                     // The state was not added as an equivalent state existed.
                     trans = new ShapeTransition(source, realEvent, oldState);
@@ -157,6 +160,7 @@ public final class ShapeMatchApplier extends MatchApplier {
             throw e;
         }
 
+        addTransitionReporter.stop();
         // Returns the last produced transition.
         return result;
     }
