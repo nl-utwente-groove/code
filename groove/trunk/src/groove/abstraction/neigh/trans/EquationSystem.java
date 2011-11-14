@@ -29,6 +29,7 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.util.Duo;
+import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,8 +105,7 @@ public final class EquationSystem {
     private final MyHashSet<Equation> ubEqs;
     /**
      * Range of values for the lower and upper bound variables. The ranges are
-     * stored in the equation system and referenced in the solutions just by
-     * the indexes.
+     * stored in the equation system and referenced in the solutions.
      */
     private int lbRange[];
     private int ubRange[];
@@ -272,6 +272,8 @@ public final class EquationSystem {
         // Fill the duality relation first, before we store the equations.
         lbEq.setDual(ubEq);
         ubEq.setDual(lbEq);
+        lbEq.setFixed();
+        ubEq.setFixed();
         // Now store.
         if (lbEq.isUseful()) {
             if (lbEq.isTrivial()) {
@@ -361,7 +363,7 @@ public final class EquationSystem {
     }
 
     /**
-     * Iterate the given solution over all equations of the system and try to
+     * Iterates the given solution over all equations of the system and tries to
      * fix more variables. This may lead to branching. In this case, an
      * heuristic is used to decide on which equation to use that is likely
      * to produce less branching. Returns the set of new (partial) solutions.
@@ -508,7 +510,7 @@ public final class EquationSystem {
             }
             // For each split edge signature...
             for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
-                // For each edge...
+                // ...for each edge...
                 for (ShapeEdge edge : bundle.getSplitEsEdges(splitEs)) {
                     // ... create two bound variables.
                     Duo<BoundVar> vars = retrieveBoundVars(edge);
@@ -874,6 +876,7 @@ public final class EquationSystem {
     // BoundType
     // ---------
 
+    /** Types of equations and variables. */
     private enum BoundType {
         UB, LB
     }
@@ -882,11 +885,21 @@ public final class EquationSystem {
     // BoundVar
     // --------
 
+    /**
+     * Multiplicity variable class. Each variable has an unique pair of 
+     * number and type (upper or lower bound). Variables can only be present
+     * in equations with compatible types. The variables themselves have no
+     * further information (i.e., they don't have a current value). This allows
+     * for a static representation of the equation system.  
+     */
     private static class BoundVar {
 
+        /** Natural number that identifies this variable. */
         final int number;
+        /** Upper or lower bound type. */
         final BoundType type;
 
+        /** Basic constructor. */
         BoundVar(int number, BoundType type) {
             this.number = number;
             this.type = type;
@@ -913,19 +926,49 @@ public final class EquationSystem {
     // Equation
     // --------
 
-    private class Equation {
+    /**
+     * A class to represent equations of the system. An equation has a type:
+     * upper or lower bound; a list of variables (type compatible with the
+     * equation) and a constant (c).
+     * 
+     * The relation (inequality) used in the equation depends on its type:
+     * - Lower bound equations are taken as: x_0 + x_1 + ... + x_n >= c
+     * - Upper bound equations are taken as: x^0 + x^1 + ... + x^n <= c
+     *   
+     * An equation may have a dual, which is a counter-part with the opposite
+     * type and same variables. If a dual equation is not useful for solving the
+     * system (for example, a lower bound equation with constant zero is not
+     * useful), then the dual field is null.
+     */
+    private class Equation implements Fixable {
 
+        /** Type of this equation. */
         final BoundType type;
+        /** List of variables (type compatible with the equation). */
         final ArrayList<BoundVar> vars;
+        /** Constant value for this equation. */
         final int constant;
+        /**
+         * Special case: reference to a node that may become garbage in the
+         * first stage, and thus affects the solution of the system.
+         */
         final ShapeNode node;
+        /** Reference to a dual equation (may be null). */
         Equation dual;
+        /**
+         * The hash code of this equation. Once computed it cannot be 0.
+         * Once it's different than 0, the equation is fixed and no
+         * elements can be added or removed. This avoids nasty hashing problems.
+         */
+        private int hashCode;
 
+        /** Basic constructor. */
         Equation(BoundType type, int varsCount, int constant, ShapeNode node) {
             this.type = type;
             this.vars = new ArrayList<BoundVar>(varsCount);
             this.constant = constant;
             this.node = node;
+            this.hashCode = 0;
         }
 
         @Override
@@ -959,16 +1002,32 @@ public final class EquationSystem {
             return result.toString();
         }
 
+        /** The hash code is computed by {@link #computeHashCode()}. */
         @Override
-        public int hashCode() {
+        final public int hashCode() {
+            // Lazy computation because the equation may not have been populated yet.
+            if (this.hashCode == 0) {
+                this.hashCode = this.computeHashCode();
+                if (this.hashCode == 0) {
+                    this.hashCode = -1;
+                }
+            }
+            return this.hashCode;
+        }
+
+        private int computeHashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + this.constant;
             result = prime * result + this.type.hashCode();
             for (BoundVar var : this.vars) {
-                result = prime * result + var.number;
+                // We can't multiply the result by prime here because this would
+                // make the hash dependent on the ordering of elements.
+                result += var.number;
             }
-            return result;
+            // Multiply here. This probably least to a worst hash function, but
+            // nothing to do...
+            return result * prime;
         }
 
         @Override
@@ -986,24 +1045,55 @@ public final class EquationSystem {
             return result;
         }
 
+        @Override
+        public void setFixed() {
+            this.hashCode();
+        }
+
+        @Override
+        public boolean isFixed() {
+            return this.hashCode != 0;
+        }
+
+        @Override
+        public void testFixed(boolean fixed) {
+            if (this.isFixed() != fixed) {
+                throw new IllegalStateException();
+            }
+        }
+
+        /** Returns true if this equation has a special node reference. */
         boolean hasNode() {
             return this.node != null;
         }
 
+        /** Returns the node reference of this equation. */
         ShapeNode getNode() {
             assert this.hasNode();
             return this.node;
         }
 
+        /**
+         * Returns true if this equation has one variable and no node reference.
+         */
         boolean isTrivial() {
             return this.vars.size() == 1 && !this.hasNode();
         }
 
+        /**
+         * Adds the given variable to this equation. Fails in an assertion if
+         * the variable type is not equal to the equation type. 
+         */
         void addVar(BoundVar var) {
+            assert !this.isFixed();
             assert var.type == this.type;
             this.vars.add(var);
         }
 
+        /**
+         * Sets the dual of this equation to the parameter passed, if it is
+         * an useful equation.
+         */
         void setDual(Equation dual) {
             assert (this.type == BoundType.LB && dual.type == BoundType.UB)
                 || (this.type == BoundType.UB && dual.type == BoundType.LB);
@@ -1012,10 +1102,15 @@ public final class EquationSystem {
             }
         }
 
+        /** Basic inspection method. */
         boolean hasDual() {
             return this.dual != null;
         }
 
+        /**
+         * Checks if this equation is useful and thus should be added to
+         * the equation system.
+         */
         boolean isUseful() {
             boolean result = false;
             switch (this.type) {
@@ -1033,6 +1128,10 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns an array of possible values for the variables in the
+         * equation.
+         */
         int[] getBoundRange() {
             int result[] = null;
             switch (this.type) {
@@ -1048,15 +1147,26 @@ public final class EquationSystem {
             return result;
         }
 
+        /** Returns the maximum value for the variables in the equation. */
         int getMaxRangeValue() {
             int boundRange[] = this.getBoundRange();
             return boundRange[boundRange.length - 1];
         }
 
+        /** Returns the minimum value for the variables in the equation. */
         int getMinRangeValue() {
             return this.getBoundRange()[0];
         }
 
+        /**
+         * Computes new values for the variables in this equation based on the
+         * given solution. Updates these new values, thus modifying the
+         * solution. If the equation has a dual, the solution is also updated
+         * with new values from the dual equation.
+         * Returns true if this equation can no longer contribute in solving
+         * the system and should be removed from the list of equations of the
+         * solution.
+         */
         boolean computeNewValues(Solution sol) {
             boolean result = this.nonRecComputeNewValues(sol);
             if (result && this.hasDual()) {
@@ -1065,6 +1175,25 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Main method to computes new values for the variables in this 
+         * equation based on the given solution. This method does not consider
+         * the dual equation.
+         * 
+         * Returns true if this equation can no longer contribute in solving
+         * the system and should be removed from the list of equations of the
+         * solution.
+         * If the solution cannot be improved at the moment, the method returns
+         * false, and so this equation will be considered again in future
+         * iterations.
+         * 
+         * We split the equation variables in two types:
+         * - Fixed: variables that have a singleton interval in the given
+         *          solution. Their value cannot change.
+         * - Open: variables that have a non-singleton interval in the given
+         *         solution. We try to improve the solution by making these
+         *         intervals smaller.
+         */
         boolean nonRecComputeNewValues(Solution sol) {
             // EZ says: sorry for the multiple return points, but otherwise
             // the code becomes less readable...
@@ -1073,37 +1202,48 @@ public final class EquationSystem {
 
             if (!this.hasOpenVars(sol)) {
                 if (this.hasNode() && fixedVarsSum == 0) {
-                    // Especial case. We have a node in the equation that became
-                    // garbage.
+                    // Special case. We have a node in the equation that became
+                    // garbage. Mark this node as such in the solution so
+                    // when we reach other equations with the same node we
+                    // can set all variables to zero.
                     sol.addGarbageNode(this.getNode());
                 }
+                // All variables are fixed, so this equation is no longer
+                // useful.
                 return true;
             }
 
             if (this.hasNode() && sol.isGarbage(this.getNode())) {
-                // Especial case. The node in the equation is garbage.
+                // Special case. The node in the equation is garbage.
                 // All variables must be zero. This may make the solution
                 // invalid but we can properly identify this later.
                 for (BoundVar var : this.vars) {
                     sol.setToZero(var);
                 }
+                // We have to discard this equation otherwise the solving
+                // procedure won't terminate.
                 return true;
             }
 
+            // List of variables still open.
             ArrayList<BoundVar> openVars = this.getOpenVars(sol);
+            // New constant value.
             int newConst = Multiplicity.sub(this.constant, fixedVarsSum);
 
             if (this.type == BoundType.LB) {
                 if (openVars.size() == 1) {
-                    // Set the lower bound to the new constant.
+                    // We have only one open variable that has to be at least
+                    // the new constant. Set the lower bound to the new constant.
                     sol.cutLow(openVars.get(0), newConst);
                     if (this.hasNode()) {
                         // We need to keep this special equation around.
                         return false;
                     } else {
+                        // We are done with this equation.
                         return true;
                     }
                 }
+                // else: two or more open variables.
                 // Check if the max sum equals the constant.
                 int openVarsMaxSum = this.getOpenVarsMaxSum(sol);
                 if (openVarsMaxSum == newConst) {
@@ -1112,37 +1252,55 @@ public final class EquationSystem {
                         sol.cutLow(openVar, sol.getMaxValue(openVar));
                     }
                 }
+                // Maybe we improved the solution but we still need this
+                // equation.
                 return false;
-            }
+            } // End: lower bound equation.
 
             if (this.type == BoundType.UB) {
                 if (newConst == 0) {
-                    // All open variables are zero.
+                    // New constant is zero: all open variables must be zero.
                     for (BoundVar openVar : openVars) {
                         sol.cutHigh(openVar, newConst);
                     }
+                    // We are done with this equation.
                     return true;
                 }
                 if (openVars.size() == 1) {
-                    // Set the upper bound to the new constant.
+                    // We have only one open variable that has to be at most
+                    // the new constant. Set the upper bound to the new constant.
                     sol.cutHigh(openVars.get(0), newConst);
                     if (this.hasNode()) {
                         // We need to keep this special equation around.
                         return false;
                     } else {
+                        // We are done with this equation.
                         return true;
                     }
                 }
-                // At this point we can at least trim the upper bounds.
+                // If we reach this point we know that:
+                // - This is an upper bound equation;
+                // - The new constant is positive;
+                // - There are two or more open variables.
+                // Nothing to do except try to trim the upper bounds.
                 for (BoundVar openVar : openVars) {
                     sol.cutHigh(openVar, newConst);
                 }
+                // Maybe we improved the solution but we still need this
+                // equation.
                 return false;
-            }
+            } // End: upper bound equation.
 
+            // This return point is never reached but the compiler cannot tell
+            // this.
+            assert false;
             return false;
         }
 
+        /**
+         * Returns true if the equation has open variables for the given
+         * solution.
+         */
         boolean hasOpenVars(Solution sol) {
             boolean result = false;
             for (BoundVar var : this.vars) {
@@ -1154,6 +1312,10 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns a list of equation variables that are open for the given
+         * solution.
+         */
         ArrayList<BoundVar> getOpenVars(Solution sol) {
             ArrayList<BoundVar> result =
                 new ArrayList<BoundVar>(this.vars.size());
@@ -1165,6 +1327,9 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns the sum of all equation variables in the given solution.
+         */
         int getVarsSum(Solution sol) {
             int result = 0;
             for (BoundVar var : this.vars) {
@@ -1173,6 +1338,9 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns the sum of fixed equation variables in the given solution.
+         */
         int getFixedVarsSum(Solution sol) {
             int result = 0;
             for (BoundVar var : this.vars) {
@@ -1183,6 +1351,10 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns the sum of the maximum values of the open equation variables
+         * in the given solution.
+         */
         int getOpenVarsMaxSum(Solution sol) {
             int result = 0;
             for (BoundVar var : this.vars) {
@@ -1193,6 +1365,10 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns true if the given solution satisfies this equation.
+         * Does not check the dual equation.
+         */
         boolean isSatisfied(Solution sol) {
             int sum = this.getVarsSum(sol);
             boolean result = false;
@@ -1209,6 +1385,11 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns true if the given solution satisfies this equation and its
+         * dual. Note that this is a local check. Even if the given solution
+         * satisfies this equation, some other equation may still be violated.
+         */
         boolean isValidSolution(Solution sol) {
             boolean result = this.isSatisfied(sol);
             if (result && this.hasDual()) {
@@ -1217,6 +1398,19 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Branches the search space for new valid solutions. Branching is
+         * based on the open variables of this equation so, the less open
+         * variables we have, the better (less branching).
+         *  
+         * @param sol the solution to start with.
+         * @param partialSols set of all partial solutions computed so far,
+         *                    newly computed solutions that are not yet
+         *                    finished are put in this set. 
+         * @param finishedSols set of all finished solutions computed so far,
+         *                    newly computed solutions that are finished are
+         *                    put in this set. 
+         */
         void getNewSolutions(Solution sol, SolutionSet partialSols,
                 SolutionSet finishedSols) {
             assert !sol.isFinished();
@@ -1225,7 +1419,7 @@ public final class EquationSystem {
             sol.getEqs(this.type).remove(this);
 
             if (this.isSatisfied(sol)) {
-                // Nothing to do.
+                // The equation is already satisfied. Nothing to do.
                 if (sol.isFinished()) {
                     finishedSols.add(sol);
                 } else {
@@ -1252,19 +1446,26 @@ public final class EquationSystem {
     // ValueRange
     // ----------
 
+    /** Range of possible values for the variables. Used in the solutions. */
     private static class ValueRange implements Iterable<Integer> {
 
+        /** Total range of values. */
         final int range[];
+        /** Current minimum index in the range array. */
         int i;
+        /** Current maximum index in the range array. */
         int j;
+        /** Dual range. */
         ValueRange dual;
 
+        /** Basic constructor. Start the indices to cover the given range. */
         ValueRange(int range[]) {
             this.range = range;
             this.i = 0;
             this.j = range.length - 1;
         }
 
+        /** Copying constructor. */
         ValueRange(ValueRange original) {
             this.range = original.range;
             this.i = original.i;
@@ -1291,39 +1492,59 @@ public final class EquationSystem {
             return new ValueRange(this);
         }
 
+        /** Returns true if this range indices are equal. */
         boolean isSingleton() {
             return this.i == this.j;
         }
 
+        /** Returns the current minimal value of the range. */
         int getMin() {
             return this.range[this.i];
         }
 
+        /** Returns the current maximal value of the range. */
         int getMax() {
             return this.range[this.j];
         }
 
+        /** Sets the dual range. */
         void setDual(ValueRange dual) {
             this.dual = dual;
         }
 
+        /**
+         * Increases the minimum index until we hit the given limit or
+         * the maximum index. Doesn't operate on the dual range.
+         */
         void nonRecCutLow(int limit) {
             while (this.getMin() < limit && this.i < this.j) {
                 this.i++;
             }
         }
 
+        /**
+         * Increases the minimum index until we hit the given limit or
+         * the maximum index. Does operate on the dual range.
+         */
         void cutLow(int limit) {
             this.nonRecCutLow(limit);
             this.dual.nonRecCutLow(limit);
         }
 
+        /**
+         * Decreases the maximum index until we hit the given limit or
+         * the minimum index. Doesn't operate on the dual range.
+         */
         void nonRecCutHigh(int limit) {
             while (this.getMax() > limit && this.i < this.j) {
                 this.j--;
             }
         }
 
+        /**
+         * Decreases the maximum index until we hit the given limit or
+         * the minimum index. Does operate on the dual range.
+         */
         void cutHigh(int limit) {
             this.nonRecCutHigh(limit);
             this.dual.nonRecCutHigh(limit);
@@ -1333,16 +1554,19 @@ public final class EquationSystem {
             return new ValueRangeIterator(this);
         }
 
+        /** Returns true if this current range is 0 .. 1 .*/
         boolean isZeroOne() {
             return this.getMin() == 0 && this.getMax() == 1;
         }
 
-        public void setToZero() {
+        /** Sets this range and its dual to zero. */
+        void setToZero() {
             this.nonRecSetToZero();
             this.dual.nonRecSetToZero();
         }
 
-        public void nonRecSetToZero() {
+        /** Sets this range to zero. */
+        void nonRecSetToZero() {
             this.i = 0;
             this.j = 0;
         }
@@ -1356,18 +1580,23 @@ public final class EquationSystem {
      * Class representing a possible solution for the equation system.
      * This is the only dynamic part of the system, the remaining structures
      * are all fixed when trying to solve the system. Objects of this class
-     * are cloned during the solution search, hence we try to keep the objects
+     * are cloned during the solution search, so we try to keep the objects
      * as small as possible. 
      */
     private static class Solution {
 
+        /** Ranges for lower and upper bound variables. */
         final ValueRange lbValues[];
         final ValueRange ubValues[];
+        /** Sets of equations to use for improving this solution. */
         final MyHashSet<Equation> lbEqs;
         final MyHashSet<Equation> ubEqs;
+        /** Set of nodes marked as garbage. (Only used in first stage). */
         MyHashSet<ShapeNode> garbageNodes;
+        /** Flag to indicate that this solution should be discarded. */
         boolean invalid;
 
+        /** Basic constructor. */
         Solution(int varsCount, int lbRange[], int ubRange[],
                 MyHashSet<Equation> lbEqs, MyHashSet<Equation> ubEqs) {
             this.lbValues = new ValueRange[varsCount];
@@ -1382,6 +1611,7 @@ public final class EquationSystem {
             this.ubEqs = ubEqs.clone();
         }
 
+        /** Copying constructor. */
         Solution(Solution original) {
             int varsCount = original.size();
             this.lbValues = new ValueRange[varsCount];
@@ -1399,6 +1629,7 @@ public final class EquationSystem {
             }
         }
 
+        /** Returns the proper range array for the given bound type. */
         ValueRange[] getValueRangeArray(BoundType type) {
             ValueRange result[] = null;
             switch (type) {
@@ -1414,6 +1645,7 @@ public final class EquationSystem {
             return result;
         }
 
+        /** Returns the proper set of equations for the given bound type. */
         MyHashSet<Equation> getEqs(BoundType type) {
             MyHashSet<Equation> result = null;
             switch (type) {
@@ -1448,18 +1680,28 @@ public final class EquationSystem {
             return new Solution(this);
         }
 
+        /**
+         * Returns the number of values of the solution. Equals the variable
+         * count of the equation system.
+         */
         int size() {
             return this.lbValues.length;
         }
 
+        /** Returns the value range of the given variable. */
         ValueRange getValueRange(BoundVar var) {
             return this.getValueRangeArray(var.type)[var.number];
         }
 
+        /** Returns true if the given variable has a singleton range. */
         boolean isSingleton(BoundVar var) {
             return this.getValueRange(var).isSingleton();
         }
 
+        /**
+         * Returns the minimum or maximum value of the given variable,
+         * depending on the variable type.
+         */
         int getValue(BoundVar var) {
             int result = 0;
             switch (var.type) {
@@ -1475,18 +1717,22 @@ public final class EquationSystem {
             return result;
         }
 
+        /** Returns the maximum value of the given variable. */
         int getMaxValue(BoundVar var) {
             return this.getValueRange(var).getMax();
         }
 
+        /** Cuts the minimum value of the given variable by the given limit. */
         void cutLow(BoundVar var, int limit) {
             this.getValueRange(var).cutLow(limit);
         }
 
+        /** Cuts the maximum value of the given variable by the given limit. */
         void cutHigh(BoundVar var, int limit) {
             this.getValueRange(var).cutHigh(limit);
         }
 
+        /** Cuts a bound of the given variable by the given limit. */
         void cut(BoundVar var, int limit) {
             switch (var.type) {
             case UB:
@@ -1500,6 +1746,7 @@ public final class EquationSystem {
             }
         }
 
+        /** Sets the value of the given variable to zero. */
         void setToZero(BoundVar var) {
             if (this.isSingleton(var) && this.getValue(var) != 0) {
                 // We are trying to set the variable to zero but it already
@@ -1511,6 +1758,12 @@ public final class EquationSystem {
             }
         }
 
+        /**
+         * Returns true if this solution is finished. This is the case if
+         * both equation sets are empty or this solution is marked as invalid.
+         * Special case for first stage: if the solution only has equations
+         * with nodes then it is also considered finished. 
+         */
         boolean isFinished() {
             boolean result =
                 this.lbEqs.isEmpty() && this.ubEqs.isEmpty() || this.invalid;
@@ -1521,6 +1774,7 @@ public final class EquationSystem {
             return result;
         }
 
+        /** Returns true if all equations in the given set have nodes. */
         boolean allEqsHaveNodes(Set<Equation> eqs) {
             boolean result = !eqs.isEmpty();
             for (Equation eq : eqs) {
@@ -1532,6 +1786,11 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Uses some simple heuristics to find an equation that will yield
+         * the least amount of branching in the search. Upper bound equations
+         * always have preference.
+         */
         Equation getBestBranchingEquation() {
             Equation result = null;
             for (Equation eq : this.ubEqs) {
@@ -1550,8 +1809,13 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Returns true if the new equation will produce less branching than
+         * the old one.
+         */
         boolean isNewEqBetter(Equation oldEq, Equation newEq) {
             if (newEq.hasNode()) {
+                // It's pointless to use equations with nodes in branching.
                 return false;
             }
             if (oldEq == null) {
@@ -1561,6 +1825,7 @@ public final class EquationSystem {
             int newOpenVarsCount = newEq.getOpenVars(this).size();
             int oldOpenVarsCount = oldEq.getOpenVars(this).size();
             if (newOpenVarsCount < oldOpenVarsCount) {
+                // The less open variables the better.
                 return true;
             } else if (newOpenVarsCount > oldOpenVarsCount) {
                 return false;
@@ -1575,12 +1840,14 @@ public final class EquationSystem {
             }
         }
 
+        /** Returns a multiplicity value for the given variable number. */
         Multiplicity getMultValue(int varNum, MultKind kind) {
             int i = this.lbValues[varNum].getMin();
             int j = this.ubValues[varNum].getMax();
             return Multiplicity.approx(i, j, kind);
         }
 
+        /** Returns true if this solution subsumes the other. */
         boolean subsumes(Solution other) {
             boolean result = true;
             for (int varNum = 0; varNum < this.size(); varNum++) {
@@ -1593,6 +1860,10 @@ public final class EquationSystem {
             return result;
         }
 
+        /**
+         * Special method used when generating new solutions. Only affects
+         * variables that are currently in a range of 0 .. 1 .
+         */
         void projectToZeroWhenNeeded(BoundVar var) {
             ValueRange range = this.getValueRange(var);
             if (range.isZeroOne()) {
@@ -1600,6 +1871,10 @@ public final class EquationSystem {
             }
         }
 
+        /**
+         * Raises all variables in the given set to their maximum.
+         * Used on first stage.
+         */
         void setAllVarsToMax(Collection<Duo<BoundVar>> vars) {
             for (Duo<BoundVar> pair : vars) {
                 BoundVar lbVar = pair.one();
@@ -1608,6 +1883,10 @@ public final class EquationSystem {
             }
         }
 
+        /**
+         * Adds the given node to the list of garbage nodes.
+         * Used on first stage.
+         */
         void addGarbageNode(ShapeNode node) {
             if (this.garbageNodes == null) {
                 this.garbageNodes = new MyHashSet<ShapeNode>();
@@ -1615,6 +1894,7 @@ public final class EquationSystem {
             this.garbageNodes.add(node);
         }
 
+        /** Checks if the given node is marked as garbage. */
         boolean isGarbage(ShapeNode node) {
             if (this.garbageNodes == null) {
                 return false;
@@ -1628,6 +1908,10 @@ public final class EquationSystem {
     // ValueRangeIterator
     // ------------------
 
+    /**
+     * Simple iterator for a value range. Starts with the minimum and
+     * sweeps the range until hitting the maximum.
+     */
     private static class ValueRangeIterator implements Iterator<Integer> {
 
         ValueRange value;
@@ -1674,15 +1958,28 @@ public final class EquationSystem {
     // BranchSolsIterator
     // ------------------
 
+    /**
+     * Iterator that compute all possible branches of a given solution and
+     * equation. All solutions returned by the iterator are guaranteed to
+     * satisfy the given equation but others equations in the system may still
+     * be violated. 
+     */
     private static class BranchSolsIterator implements Iterator<Solution> {
 
+        /** Equation used for branching. */
         final Equation eq;
+        /** Original solution used for branching. */
         final Solution sol;
+        /** List of open variables of the equation. */
         final ArrayList<BoundVar> openVars;
+        /** Iterator for the values of open variables. */
         final ValueRangeIterator iters[];
+        /** List of all valid solutions. */
         final ArrayList<Solution> validSolutions;
+        /** Index in the list of valid solutions to be returned next. */
         int next;
 
+        /** Default constructor. Pre-computes all solutions. */
         BranchSolsIterator(Equation eq, Solution sol,
                 ArrayList<BoundVar> openVars) {
             assert openVars.size() > 0;
@@ -1721,6 +2018,11 @@ public final class EquationSystem {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * Iterates over all possible values for all open variables and
+         * stores all valid results. No subsumption checks are done here,
+         * they are handled by the solution set (see below).
+         */
         void computeAllSolutions() {
             while (this.iters[0].hasNext()) {
                 // Create a new solution.
@@ -1770,6 +2072,11 @@ public final class EquationSystem {
     // SolutionSet
     // -----------
 
+    /**
+     * Dedicated hash set to stores solutions. Checks for subsumption in
+     * both directions when adding a new solution to the set. This guarantees
+     * a minimum number of solutions and thus less materialisation objects.
+     */
     private static class SolutionSet extends MyHashSet<Solution> {
         @Override
         public boolean add(Solution newSol) {
