@@ -160,7 +160,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * Callback method to check whether the log command line option is
      * supported. This implementation returns <tt>false</tt> always.
      */
-    // EZ says: if you want logs, use pipes... :P
+    // EZ says: if you want logs, use pipes... ;-)
     @Override
     protected boolean supportsLogOption() {
         return false;
@@ -192,6 +192,8 @@ public final class ShapeGenerator extends CommandLineTool {
     private void reset() {
         Abstraction.initialise();
         gts = null;
+        this.explorationStats = new ExplorationStatistics(getGTS());
+        this.explorationStats.configureForGenerator(this.getVerbosity());
     }
 
     /**
@@ -212,18 +214,8 @@ public final class ShapeGenerator extends CommandLineTool {
      */
     public void start() {
         processArguments();
-        init();
         explore();
         report();
-    }
-
-    /**
-     * The initialisation phase of state space generation. Called from
-     * <tt>{@link #start}</tt>.
-     */
-    private void init() {
-        this.explorationStats = new ExplorationStatistics(getGTS());
-        this.explorationStats.configureForGenerator(this.getVerbosity());
     }
 
     /**
@@ -242,7 +234,7 @@ public final class ShapeGenerator extends CommandLineTool {
                 + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
             println("Timestamp:\t" + this.invocationTime);
             if (getVerbosity() == MEDIUM_VERBOSITY) {
-                print("\nProgress:\n");
+                print("\nProgress:\n\n");
                 getGTS().addLTSListener(new GenerateProgressMonitor());
             }
         }
