@@ -1132,14 +1132,16 @@ public final class Shape extends DefaultHostGraph {
                 continue;
             }
             for (ShapeEdge edgeS : this.getEdgesFromSig(es)) {
-                if (!this.isEdgeConcrete(edgeS)) {
+                if (!this.isEdgeConcrete(edgeS)
+                    && (edgeS.source().equals(nodeS) || edgeS.target().equals(
+                        nodeS))) {
                     // We have an edge that is not concrete.
                     // Add it to the list of possible edges.
                     possibleEdges.add(edgeS);
                 }
             }
         }
-        // Now handle all incident edges.
+        // Now handle all incident edges to the node.
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;

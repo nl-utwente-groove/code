@@ -112,11 +112,11 @@ public class TestShapeGenerator {
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(31, generator.getStateCount());
-            assertEquals(92, generator.getTransitionCount());
+            assertEquals(32, generator.getStateCount());
+            assertEquals(96, generator.getTransitionCount());
         } else {
-            assertEquals(50, generator.getStateCount());
-            assertEquals(154, generator.getTransitionCount());
+            assertEquals(55, generator.getStateCount());
+            assertEquals(174, generator.getTransitionCount());
         }
     }
 

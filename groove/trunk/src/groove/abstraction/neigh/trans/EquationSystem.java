@@ -676,7 +676,7 @@ public final class EquationSystem {
                     addVars(eqs, vars);
                     Set<ShapeEdge> edges = bundle.getSplitEsEdges(es);
                     if (edges.size() == 1) {
-                        // Especial case. Fixed edge signatures.
+                        // Special case. Fixed edge signatures.
                         ShapeEdge edge = edges.iterator().next();
                         if (this.mat.isFixed(edge)
                             || bundle.isFixed(edge, bundle.direction, shape)) {
