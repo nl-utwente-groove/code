@@ -799,35 +799,55 @@ public final class EquationSystem {
 
         // Optimization 1:
         // Sum of opposite nodes for concrete nodes.
-        outerLoop: for (ShapeNode node : shape.nodeSet()) {
+        nodeLoop: for (ShapeNode node : shape.nodeSet()) {
             if (!shape.getNodeMult(node).isOne()) {
-                continue outerLoop;
-            }
+                // This node is a collector or it was split. Nothing to do.
+                continue nodeLoop;
+            } // else: the node is concrete.
             for (EdgeBundle bundle : this.mat.getBundles(node)) {
                 bundle.update(this.mat);
                 EdgeMultDir direction = bundle.direction;
-                for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
-                    // We may have another equation.
-                    Multiplicity constMult =
-                        shape.getEdgeSigMult(splitEs).toNodeKind();
-                    int maxEdgesCount = bundle.getEdges().size();
-                    Duo<Equation> oppEqs =
-                        this.createEquations(maxEdgesCount,
+                sigLoop: for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
+                    Set<ShapeEdge> sigEdges = bundle.getSplitEsEdges(splitEs);
+                    if (!bundle.possibleEdges.containsAll(sigEdges)) {
+                        // We don't have a signature with possible edges.
+                        // Nothing to do.
+                        continue sigLoop;
+                    } // else: all edges of the signature are possible edges.
+                    Multiplicity esMult = shape.getEdgeSigMult(splitEs);
+                    // If the edge bound is larger than the node bound then
+                    // the signature multiplicity is more precise and cannot
+                    // be used directly.
+                    Multiplicity constMult = esMult.toNodeKind();
+                    // Create a new equation.
+                    Duo<Equation> eqs =
+                        this.createEquations(sigEdges.size(),
                             constMult.getLowerBound(),
                             constMult.getUpperBound());
-                    innerLoop: for (ShapeEdge edge : shape.getEdgesFromSig(splitEs)) {
+                    // Go over the edges of the signature and check if the
+                    // opposite nodes have variables.
+                    edgeLoop: for (ShapeEdge edge : sigEdges) {
                         ShapeNode opposite = edge.opposite(direction);
                         Duo<BoundVar> vars = this.nodeVarsMap.get(opposite);
                         if (vars == null) {
-                            continue innerLoop;
+                            // The opposite node has no variable.
+                            continue edgeLoop;
                         } // else vars != null.
                         EdgeSignature oppEs =
                             shape.getEdgeSignature(edge, direction.reverse());
-                        if (shape.isEdgeSigConcrete(oppEs)) {
-                            addVars(oppEqs, vars);
+                        assert shape.isEdgeSigConcrete(oppEs);
+                        addVars(eqs, vars);
+                        // Check for a special case.
+                        if (esMult.getUpperBound() == sigEdges.size()) {
+                            // This case implies that all opposite nodes must
+                            // be concrete.
+                            Duo<Equation> trivialEqs =
+                                this.createEquations(1, 1, 1);
+                            addVars(trivialEqs, vars);
+                            this.storeEquations(trivialEqs);
                         }
                     }
-                    this.storeEquations(oppEqs);
+                    this.storeEquations(eqs);
                 }
             }
         }
