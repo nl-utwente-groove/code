@@ -217,10 +217,11 @@ public final class Materialisation {
         if (this.stage == 1) {
             this.bundleMap = new MyHashMap<ShapeNode,Set<EdgeBundle>>();
             this.allBundles = new MyHashSet<EdgeBundle>();
-            for (ShapeNode node : mat.bundleMap.keySet()) {
+            for (Entry<ShapeNode,Set<EdgeBundle>> entry : mat.bundleMap.entrySet()) {
+                ShapeNode node = entry.getKey();
                 Set<EdgeBundle> bundles = new MyHashSet<EdgeBundle>();
                 this.bundleMap.put(node, bundles);
-                for (EdgeBundle matBundle : mat.getBundles(node)) {
+                for (EdgeBundle matBundle : entry.getValue()) {
                     EdgeBundle bundle = matBundle.clone();
                     bundles.add(bundle);
                     this.allBundles.add(bundle);
@@ -887,13 +888,14 @@ public final class Materialisation {
             Map<EdgeBundle,Set<ShapeEdge>> origMap, ShapeNode newNode) {
         assert this.stage == 2;
         Set<ShapeEdge> newEdges = new MyHashSet<ShapeEdge>();
-        for (EdgeBundle origBundle : origMap.keySet()) {
+        for (Entry<EdgeBundle,Set<ShapeEdge>> entry : origMap.entrySet()) {
+            EdgeBundle origBundle = entry.getKey();
             EdgeMultDir direction = origBundle.direction;
             EdgeMultDir reverse = direction.reverse();
             // Create a new bundle for the new node.
             EdgeBundle newBundle =
                 this.createBundle(newNode, origBundle.origEs);
-            for (ShapeEdge origEdge : origMap.get(origBundle)) {
+            for (ShapeEdge origEdge : entry.getValue()) {
                 this.routeNewEdges(origNode, origEdge, newNode, direction,
                     newEdges);
                 for (ShapeEdge newEdge : newEdges) {
