@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
  * Used for debugging. Uncomment the proper lines to switch between a normal
  * hash map and a linked hash map, which provides deterministic iteration.
  */
-//public class MyHashMap<K,V> extends THashMap<K,V> {
 //public class MyHashMap<K,V> extends HashMap<K,V> {
 public class MyHashMap<K,V> extends LinkedHashMap<K,V> {
 

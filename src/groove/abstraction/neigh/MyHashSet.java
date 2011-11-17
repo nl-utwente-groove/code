@@ -22,7 +22,6 @@ import java.util.LinkedHashSet;
  * Used for debugging. Uncomment the proper lines to switch between a normal
  * hash set and a linked hash set, which provides deterministic iteration.
  */
-//public class MyHashSet<T> extends THashSet<T> {
 //public class MyHashSet<T> extends HashSet<T> {
 public class MyHashSet<T> extends LinkedHashSet<T> {
 
