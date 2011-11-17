@@ -33,6 +33,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
@@ -749,6 +750,16 @@ public final class Materialisation {
                     }
                 }
                 handledBundles.add(bundle);
+                if (this.shape.getNodeMult(bundle.node).isZeroPlus()) {
+                    // Special case. We have to add all edges incident to this
+                    // node.
+                    for (ShapeEdge edge : this.shape.edgeSet(bundle.node)) {
+                        if (edge.getRole() == EdgeRole.BINARY
+                            && !handledEdges.contains(edge)) {
+                            toProcess.add(edge);
+                        }
+                    }
+                }
             }
         }
     }
