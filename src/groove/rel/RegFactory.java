@@ -52,7 +52,6 @@ public class RegFactory implements ElementFactory<RegNode,RegEdge> {
         throw new UnsupportedOperationException();
     }
 
-    @Override
     public int getMaxNodeNr() {
         return this.maxNodeNr;
     }

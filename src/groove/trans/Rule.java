@@ -63,8 +63,8 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     public Rule(Condition condition, RuleGraph rhs,
             GraphProperties ruleProperties) {
-        this(condition, rhs, new RuleGraph(condition.getName() + "-root"),
-            ruleProperties);
+        this(condition, rhs, new RuleGraph(condition.getName() + "-root",
+            rhs.getFactory()), ruleProperties);
     }
 
     /**

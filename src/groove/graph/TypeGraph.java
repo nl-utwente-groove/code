@@ -66,6 +66,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public TypeGraph(String name, boolean implicit) {
         super(name);
         this.implicit = implicit;
+        this.factory = new TypeFactory(this);
     }
 
     @Override
@@ -302,7 +303,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     @Override
     public TypeFactory getFactory() {
-        return TypeFactory.instance();
+        return this.factory;
     }
 
     /** Returns the set of imported node types. */
@@ -336,8 +337,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public RuleGraphMorphism analyzeRule(RuleGraph source,
             RuleGraphMorphism parentTyping) throws FormatException {
         testFixed(true);
-        RuleFactory ruleFactory = RuleFactory.instance();
-        RuleGraphMorphism morphism = new RuleGraphMorphism();
+        RuleFactory ruleFactory =
+            parentTyping == null ? RuleFactory.newInstance(this)
+                    : parentTyping.getFactory();
+        RuleGraphMorphism morphism = new RuleGraphMorphism(ruleFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
         for (RuleNode node : source.nodeSet()) {
             try {
@@ -461,7 +464,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public HostGraphMorphism analyzeHost(HostGraph source)
         throws FormatException {
         testFixed(true);
-        HostFactory hostFactory = HostFactory.newInstance();
+        HostFactory hostFactory = HostFactory.newInstance(this);
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
         Map<HostNode,Map<TypeEdge,Integer>> inCounts =
@@ -474,9 +477,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 if (node instanceof ValueNode) {
                     image = node;
                 } else if (isImplicit()) {
-                    image =
-                        hostFactory.createNode(node.getNumber(),
-                            TypeNode.TOP_NODE);
+                    image = hostFactory.createNode(node.getNumber());
                 } else {
                     TypeLabel typingLabel = detectNodeType(source, node);
                     if (typingLabel == null) {
@@ -666,7 +667,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public TypeNode getNode(Label label) {
         assert label.isNodeType();
         if (isImplicit()) {
-            return TypeNode.TOP_NODE;
+            return this.factory.getTopNode();
         } else {
             return this.typeNodeMap.get(getActualType(label));
         }
@@ -832,6 +833,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return edge instanceof TypeEdge;
     }
 
+    /** Type factory associated with this type graph. */
+    private final TypeFactory factory;
     /** Label store permanently associated with this type graph. */
     private final LabelStore labelStore = new LabelStore();
     /** Mapping from node type labels to the corresponding type nodes. */

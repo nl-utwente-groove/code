@@ -38,9 +38,8 @@ public final class TypeLabel extends AbstractLabel {
      * text index. For internal purposes only.
      * @param text the label text
      * @param kind indicator of the type of label (normal, node type or flag).
-     * @param index the index of the label text
      */
-    TypeLabel(String text, EdgeRole kind, int index) {
+    TypeLabel(String text, EdgeRole kind) {
         this.text = text;
         this.role = kind;
     }
@@ -70,6 +69,11 @@ public final class TypeLabel extends AbstractLabel {
     /** The type of label (normal, node type or flag). */
     private final EdgeRole role;
 
+    /** Returns the node type label for a given data signature. */
+    static public final TypeLabel getLabel(SignatureKind sigKind) {
+        return sigLabelMap.get(sigKind);
+    }
+
     /**
      * Returns a default or node type label, depending on the prefix in the
      * input string.
@@ -78,7 +82,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return a label with label type determined by the prefix
      */
     public static TypeLabel createLabel(String prefixedText) {
-        return factory.createLabel(prefixedText);
+        return TypeFactory.instance().createLabel(prefixedText);
     }
 
     /**
@@ -89,7 +93,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return an existing or new label with the given text; non-null
      */
     public static TypeLabel createBinaryLabel(String text) {
-        return factory.createLabel(EdgeRole.BINARY, text);
+        return TypeFactory.instance().createLabel(EdgeRole.BINARY, text);
     }
 
     /**
@@ -126,15 +130,7 @@ public final class TypeLabel extends AbstractLabel {
      * @see #getRole()
      */
     public static TypeLabel createLabel(EdgeRole kind, String text) {
-        return factory.createLabel(kind, text);
-    }
-
-    /**
-     * Yields the number of labels created in the course of the program.
-     * @return Number of labels created
-     */
-    public static int getLabelCount() {
-        return factory.getLabelCount();
+        return TypeFactory.instance().createLabel(kind, text);
     }
 
     /**
@@ -165,23 +161,17 @@ public final class TypeLabel extends AbstractLabel {
         return label.getRole().getPrefix() + label.text();
     }
 
-    static private final TypeFactory factory = TypeFactory.instance();
-
-    /** Type label for nodes in an untyped setting. */
-    static public final TypeLabel NODE =
-        createLabel(EdgeRole.NODE_TYPE, "Node");
-
-    /** Returns the node type label for a given data signature. */
-    static public final TypeLabel getLabel(SignatureKind sigKind) {
-        return sigLabelMap.get(sigKind);
-    }
-
     static private final Map<SignatureKind,TypeLabel> sigLabelMap =
         new EnumMap<SignatureKind,TypeLabel>(SignatureKind.class);
     static {
         for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-            sigLabelMap.put(sigKind,
-                createLabel(EdgeRole.NODE_TYPE, sigKind.getName()));
+            sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(),
+                EdgeRole.NODE_TYPE));
         }
     }
+
+    /** Type label for nodes in an untyped setting. */
+    static public final TypeLabel NODE = new TypeLabel("Node",
+        EdgeRole.NODE_TYPE);
+
 }

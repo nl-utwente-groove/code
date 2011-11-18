@@ -4,6 +4,7 @@ import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.algebra.SignatureKind;
+import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -140,10 +141,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     private TypeGraph computeImplicitType() {
         TypeGraph result = new TypeGraph("implicit type graph", true);
-        TypeNode top = TypeNode.TOP_NODE;
+        TypeFactory factory = result.getFactory();
+        TypeNode top = factory.getTopNode();
         result.addNode(top);
         for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-            result.addNode(TypeNode.getDataType(sigKind));
+            result.addNode(factory.getDataType(sigKind));
         }
         for (TypeLabel label : getLabels()) {
             if (label.isBinary()) {

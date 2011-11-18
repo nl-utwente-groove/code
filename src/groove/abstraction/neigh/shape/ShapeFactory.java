@@ -18,8 +18,7 @@ package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Label;
-import groove.graph.Node.Factory;
-import groove.graph.NodeStore;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.trans.HostFactory;
@@ -32,40 +31,41 @@ import groove.trans.RuleToHostMap;
  * @author Eduardo Zambon
  */
 public final class ShapeFactory extends HostFactory {
-
-    // ------------------------------------------------------------------------
-    // Static fields
-    // ------------------------------------------------------------------------
-
-    /** Used only as a reference for the constructor. */
-    private static final ShapeNode NODE_PROTOTYPE = new ShapeNode(0,
-        TypeNode.TOP_NODE);
-
-    // ------------------------------------------------------------------------
-    // Static methods
-    // ------------------------------------------------------------------------
-
-    /** Returns a new instance of this factory. */
-    public static ShapeFactory newInstance() {
-        return new ShapeFactory();
-    }
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** Private constructor. */
-    private ShapeFactory() {
-        super();
+    private ShapeFactory(TypeGraph type) {
+        super(type);
     }
 
     // ------------------------------------------------------------------------
     // Overriden methods
     // ------------------------------------------------------------------------
+    @Override
+    protected ShapeNode newNode(int nr) {
+        return new ShapeNode(nr, getLastNodeType());
+    }
+
+    @Override
+    public ShapeNode createNode() {
+        return (ShapeNode) super.createNode();
+    }
 
     @Override
     public ShapeNode createNode(int nr) {
         return (ShapeNode) super.createNode(nr);
+    }
+
+    @Override
+    public ShapeNode createNode(TypeNode typeNode) {
+        return (ShapeNode) super.createNode(typeNode);
+    }
+
+    @Override
+    public ShapeNode createNode(int nr, TypeNode typeNode) {
+        return (ShapeNode) super.createNode(nr, typeNode);
     }
 
     @Override
@@ -85,14 +85,16 @@ public final class ShapeFactory extends HostFactory {
         return new RuleToShapeMap(this);
     }
 
-    @Override
-    protected NodeStore<ShapeNode> createNodeStore() {
-        return new NodeStore<ShapeNode>(new Factory<ShapeNode>() {
-            @Override
-            public ShapeNode newNode(int nr, TypeNode type) {
-                return NODE_PROTOTYPE.newNode(nr, type);
-            }
-        });
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+    /** Returns a new, untyped instance of this factory. */
+    public static ShapeFactory newInstance() {
+        return newInstance(null);
     }
 
+    /** Returns a new instance of this factory for a given type graph. */
+    public static ShapeFactory newInstance(TypeGraph type) {
+        return new ShapeFactory(type);
+    }
 }

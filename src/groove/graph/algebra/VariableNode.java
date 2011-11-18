@@ -31,20 +31,24 @@ public class VariableNode extends AbstractNode implements RuleNode {
     /**
      * Constructs a (numbered) typed variable node.
      */
-    public VariableNode(int nr, SignatureKind signature) {
+    public VariableNode(int nr, SignatureKind signature, TypeNode type) {
         super(nr);
         assert signature != null;
         this.signature = signature;
         this.constant = null;
+        assert type != null;
+        this.type = type;
     }
 
     /**
      * Constructs a (numbered) constant variable node.
      */
-    public VariableNode(int nr, Constant constant) {
+    public VariableNode(int nr, Constant constant, TypeNode type) {
         super(nr);
         this.signature = constant.getSignature();
         this.constant = constant;
+        assert type != null;
+        this.type = type;
     }
 
     /**
@@ -53,16 +57,15 @@ public class VariableNode extends AbstractNode implements RuleNode {
     @Override
     public String toString() {
         if (getConstant() == null) {
-            return "x" + getNumber();
+            return super.toString();
         } else {
             return getConstant().toString();
         }
     }
 
-    /** Superseded by the reimplemented {@link #toString()} method. */
     @Override
     protected String getToStringPrefix() {
-        throw new UnsupportedOperationException();
+        return TO_STRING_PREFIX;
     }
 
     /** Nodes are now not canonical, so we need to test for the numbers and classes. */
@@ -102,7 +105,7 @@ public class VariableNode extends AbstractNode implements RuleNode {
 
     @Override
     public TypeNode getType() {
-        return TypeNode.getDataType(this.signature);
+        return this.type;
     }
 
     @Override
@@ -110,8 +113,13 @@ public class VariableNode extends AbstractNode implements RuleNode {
         return true;
     }
 
+    /** The type of this variable node. */
+    private final TypeNode type;
     /** The signature name of this variable node, if any. */
     private final SignatureKind signature;
     /** Optional constant symbol. */
     private final Constant constant;
+
+    /** returns the string preceding the node number in the default variable node id. */
+    static public final String TO_STRING_PREFIX = "x";
 }

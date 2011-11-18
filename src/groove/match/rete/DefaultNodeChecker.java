@@ -60,9 +60,8 @@ public class DefaultNodeChecker extends NodeChecker implements StateSubscriber {
      */
     public DefaultNodeChecker(ReteNetwork network) {
         super(network);
-        this.pattern[0] =
-            RuleFactory.instance().createNode(
-                RuleFactory.instance().getMaxNodeNr() + 1);
+        RuleFactory factory = RuleFactory.newInstance();
+        this.pattern[0] = factory.createNode(factory.getMaxNodeNr() + 1);
         this.getOwner().getState().subscribe(this);
     }
 

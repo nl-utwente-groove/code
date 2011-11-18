@@ -24,6 +24,7 @@ import static groove.view.aspect.AspectKind.PARAM_BI;
 import static groove.view.aspect.AspectKind.PARAM_IN;
 import static groove.view.aspect.AspectKind.PARAM_OUT;
 import static groove.view.aspect.AspectKind.PRODUCT;
+import groove.algebra.Constant;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -54,6 +55,7 @@ import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
@@ -140,6 +142,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     Rule compute() throws FormatException {
+        this.ruleFactory = RuleFactory.newInstance(getType());
+        this.modelMap = new RuleModelMap(this.ruleFactory);
         if (getSource().hasErrors()) {
             throw new FormatException(getSource().getErrors());
         }
@@ -148,7 +152,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             throw new FormatException(normalSource.getErrors());
         }
         LevelTree levelTree = new LevelTree(normalSource);
-        this.modelMap.clear();
         this.modelMap.putAll(levelTree.getModelMap());
         return computeRule(levelTree);
     }
@@ -318,14 +321,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
     }
 
-    /**
-     * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @see #getSource()
-     */
-    RuleGraph createGraph(String name) {
-        return new RuleGraph(name);
-    }
-
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
             this.normalSource = getSource().normalise();
@@ -336,17 +331,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return this.normalSource;
     }
 
+    /** The factory for rule elements according to the given type graph. */
+    private RuleFactory ruleFactory;
     /**
      * Mapping from the elements of the aspect graph representation to the
      * corresponding elements of the rule.
      */
-    private final RuleModelMap modelMap = new RuleModelMap();
+    private RuleModelMap modelMap;
 
     /** The normalised source model. */
     private AspectGraph normalSource;
     /** Set of all labels occurring in the rule. */
     private Set<TypeLabel> labelSet;
-    static private final RuleFactory ruleFactory = RuleFactory.instance();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
@@ -521,7 +517,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             RuleModelMap untypedModelMap = new RuleModelMap();
             SortedMap<Index,Level2> level2Map =
                 buildLevels2(level1Map, untypedModelMap);
-            RuleGraphMorphism typingMap = new RuleGraphMorphism();
+            RuleFactory typedFactory = RuleModel.this.ruleFactory;
+            RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
             try {
                 SortedMap<Index,Level3> level3Map =
                     buildLevels3(level2Map, typingMap);
@@ -533,7 +530,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     untypedModelMap));
             }
             if (NEW_TYPING) {
-                RuleModelMap modelMap = new RuleModelMap();
+                RuleModelMap modelMap = new RuleModelMap(typedFactory);
                 for (Map.Entry<AspectNode,RuleNode> nodeEntry : untypedModelMap.nodeMap().entrySet()) {
                     RuleNode image = typingMap.getNode(nodeEntry.getValue());
                     if (image != null) {
@@ -1067,6 +1064,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         public Level2(Level1 origin, RuleModelMap modelMap)
             throws FormatException {
+            this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
             this.modelMap = modelMap;
             this.isRule = index.isTopLevel();
@@ -1387,20 +1385,32 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private RuleNode computeNodeImage(AspectNode node)
             throws FormatException {
+            RuleNode result;
             if (node.hasParam() && !this.index.isTopLevel()) {
                 throw new FormatException(
                     "Parameter '%d' only allowed on top existential level",
                     node.getNumber(), node);
             }
             AspectKind nodeAttrKind = node.getAttrKind();
+            int nr = node.getNumber();
             if (nodeAttrKind == PRODUCT) {
-                return new ProductNode(node.getNumber(),
-                    node.getArgNodes().size());
+                result =
+                    new ProductNode(node.getNumber(), node.getArgNodes().size());
             } else if (nodeAttrKind.hasSignature()) {
-                return node.getAttrAspect().getVariableNode(node.getNumber());
+                Aspect nodeAttr = node.getAttrAspect();
+                if (nodeAttr.hasContent()) {
+                    result =
+                        this.factory.createVariableNode(nr,
+                            (Constant) nodeAttr.getContent());
+                } else {
+                    result =
+                        this.factory.createVariableNode(nr,
+                            nodeAttrKind.getSignature());
+                }
             } else {
-                return ruleFactory.createNode(node.getNumber());
+                result = this.factory.createNode(nr);
             }
+            return result;
         }
 
         /**
@@ -1429,8 +1439,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     "Cannot compute image of '%s'-edge: target node does not have image",
                     edge.label(), edge.target());
             }
-            return ruleFactory.createEdge(sourceImage, edge.getRuleLabel(),
+            return this.factory.createEdge(sourceImage, edge.getRuleLabel(),
                 targetImage);
+        }
+
+        /**
+         * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * @see #getSource()
+         */
+        private RuleGraph createGraph(String name) {
+            return new RuleGraph(name, this.factory);
         }
 
         @Override
@@ -1444,6 +1462,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return this.index;
         }
 
+        private final RuleFactory factory;
         /** Mapping from aspect graph elements to rule elements. */
         private final RuleModelMap modelMap;
         /** Index of this level. */
@@ -1481,12 +1500,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private class Level3 {
         public Level3(Level2 origin, Level3 parent,
                 RuleGraphMorphism globalTypeMap) throws FormatException {
+            this.factory = globalTypeMap.getFactory();
             this.index = origin.index;
             this.matchCountImage = origin.matchCountImage;
             this.globalTypeMap = globalTypeMap;
             RuleGraphMorphism parentTypeMap =
                 parent == null ? null : parent.typeMap;
-            this.typeMap = new RuleGraphMorphism();
+            this.typeMap = new RuleGraphMorphism(this.factory);
             this.isRule = origin.isRule;
             this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             this.rhs = toTypedGraph(origin.rhs, parentTypeMap, this.typeMap);
@@ -1648,6 +1668,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return !this.lhs.containsEdge(rhsEdge) && rhsEdge.label().isEmpty();
         }
 
+        private final RuleFactory factory;
         /** Index of this level. */
         private final Index index;
         /** The rule node registering the match count. */
@@ -1769,7 +1790,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private RuleGraph getIntersection(RuleGraph parentLhs, RuleGraph myLhs) {
             RuleGraph result =
-                createGraph(getName() + "-" + getIndex() + "-root");
+                parentLhs.newGraph(getName() + "-" + getIndex() + "-root");
             for (RuleNode node : parentLhs.nodeSet()) {
                 if (myLhs.containsNode(node)) {
                     result.addNode(node);
@@ -2072,17 +2093,36 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     /** Mapping from aspect graph elements to rule graph elements. */
-    public static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
+    private static class RuleModelMap extends ModelMap<RuleNode,RuleEdge> {
         /**
-         * Creates a new, empty map.
+         * Creates a new, empty map to a rule graph with a given type factory.
+         */
+        public RuleModelMap(RuleFactory factory) {
+            super(factory);
+        }
+
+        /**
+         * Creates a new, empty map to an untyped rule graph.
          */
         public RuleModelMap() {
-            super(RuleFactory.instance());
+            super(RuleFactory.newInstance());
+        }
+
+        /**
+         * Creates a new, empty map to a rule graph with a given type.
+         */
+        public RuleModelMap(TypeGraph type) {
+            super(RuleFactory.newInstance(type));
+        }
+
+        @Override
+        public RuleFactory getFactory() {
+            return (RuleFactory) super.getFactory();
         }
 
         @Override
         public RuleModelMap newMap() {
-            return new RuleModelMap();
+            return new RuleModelMap(getFactory());
         }
     }
 }

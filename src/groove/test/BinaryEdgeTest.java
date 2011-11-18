@@ -19,6 +19,7 @@ package groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultFactory;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 
@@ -38,8 +39,8 @@ public class BinaryEdgeTest {
 
     @BeforeClass
     public static void setUp() {
-        n1 = DefaultNode.createNode();
-        n2 = DefaultNode.createNode();
+        n1 = DefaultFactory.instance().createNode();
+        n2 = DefaultFactory.instance().createNode();
         e = DefaultEdge.createEdge(n1, "a", n2);
     }
 

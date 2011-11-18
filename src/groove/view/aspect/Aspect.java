@@ -19,7 +19,6 @@ package groove.view.aspect;
 import groove.algebra.Constant;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
-import groove.graph.algebra.VariableNode;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.ContentKind;
 
@@ -159,24 +158,6 @@ public class Aspect {
      */
     public String getContentString() {
         return this.contentKind.toString(getContent());
-    }
-
-    /** 
-     * Returns a variable node, with a given number,
-     * derived from the content of this aspect.
-     * Should only be called for node aspects of data kind.
-     * @param nr the number of the node to be constructed
-     * @return a variable node
-     */
-    public VariableNode getVariableNode(int nr) {
-        assert getKind().hasSignature();
-        VariableNode result;
-        if (hasContent()) {
-            result = new VariableNode(nr, (Constant) getContent());
-        } else {
-            result = new VariableNode(nr, getKind().getSignature());
-        }
-        return result;
     }
 
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */

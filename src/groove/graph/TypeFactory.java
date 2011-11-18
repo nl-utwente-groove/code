@@ -1,16 +1,34 @@
 package groove.graph;
 
+import groove.algebra.SignatureKind;
 import groove.util.Pair;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-/** Factory creating type nodes and edges. */
+/** 
+ * Factory creating type nodes and edges.
+ * The type nodes are numbered consecutively from 0 onwards.
+ */
 public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
-    private TypeFactory() {
-        // empty
+    /**
+     * Constructs a factory for a given type graph.
+     * Should only be called from the constructor of {@link TypeGraph}.
+     * @param typeGraph non-{@code null} type graph for the created type nodes and edges
+     */
+    TypeFactory(TypeGraph typeGraph) {
+        this.typeGraph = typeGraph;
+        initDataTypeMap();
+    }
+
+    private void initDataTypeMap() {
+        for (SignatureKind sig : EnumSet.allOf(SignatureKind.class)) {
+            this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
+        }
     }
 
     @Override
@@ -18,9 +36,33 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         throw new UnsupportedOperationException();
     }
 
-    /** Creates a node with a given type label. */
+    @Override
+    public int getMaxNodeNr() {
+        return this.maxNodeNr;
+    }
+
+    /** 
+     * Returns the unique top node type, used for untyped graphs.
+     * This is only valid if the factory has no type graph, or the type graph is implicit. 
+     */
+    public TypeNode getTopNode() {
+        assert !hasTypeGraph() || getTypeGraph().isImplicit();
+        if (this.topNode == null) {
+            this.topNode = createNode(TypeLabel.NODE);
+        }
+        return this.topNode;
+    }
+
+    /** Creates a node with a given (non-{@code null}) type label. */
     public TypeNode createNode(TypeLabel label) {
-        return new TypeNode(getNextNodeNr(), label);
+        assert label.isNodeType();
+        TypeNode result = this.typeNodeMap.get(label);
+        if (result == null) {
+            result = new TypeNode(getNextNodeNr(), label, this.typeGraph);
+            this.typeNodeMap.put(label, result);
+            this.typeNodeList.add(result);
+        }
+        return result;
     }
 
     /** Creates a label with the given kind-prefixed text. */
@@ -42,18 +84,13 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     @Override
     public TypeEdge createEdge(TypeNode source, Label label, TypeNode target) {
-        return new TypeEdge(source, (TypeLabel) label, target);
+        return new TypeEdge(source, (TypeLabel) label, target, this.typeGraph);
     }
 
     /** Type graph morphisms are not supported. */
     @Override
     public Morphism<TypeNode,TypeEdge> createMorphism() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
     }
 
     /**
@@ -68,6 +105,25 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         return result;
     }
 
+    /** Returns the default type node for a given data signature. */
+    public TypeNode getDataType(SignatureKind signature) {
+        return this.dataTypeMap.get(signature);
+    }
+
+    /** Indicates if this factory is backed up by a type graph. */
+    public boolean hasTypeGraph() {
+        return this.typeGraph != null;
+    }
+
+    /** Indicates if this factory is backed up by a type graph. */
+    public TypeGraph getTypeGraph() {
+        return this.typeGraph;
+    }
+
+    /** Mapping from signatures to corresponding type nodes. */
+    private final Map<SignatureKind,TypeNode> dataTypeMap =
+        new EnumMap<SignatureKind,TypeNode>(SignatureKind.class);
+
     /**
      * Returns a label with the given text, reusing previously created
      * labels where possible.
@@ -79,8 +135,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         labelMap = this.labelMaps.get(kind);
         TypeLabel result = labelMap.get(text);
         if (result == null) {
-            int index = labelMap.size();
-            result = new TypeLabel(text, kind, index);
+            result = new TypeLabel(text, kind);
             labelMap.put(text, result);
             return result;
         }
@@ -93,7 +148,19 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         return this.maxNodeNr;
     }
 
+    /** The maximum node number used so far. */
     private int maxNodeNr;
+
+    /** Type node for the top type (in the absence of a type graph). */
+    private TypeNode topNode;
+
+    /** Auxiliary map from type labels to type nodes */
+    private Map<TypeLabel,TypeNode> typeNodeMap =
+        new HashMap<TypeLabel,TypeNode>();
+
+    /** List of type nodes, in the order of their node number. */
+    private List<TypeNode> typeNodeList = new ArrayList<TypeNode>();
+
     /**
      * The internal translation table from strings to type labels,
      * per edge role.
@@ -106,13 +173,21 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
         }
     }
 
+    /** 
+     * Type graph for this factory. 
+     */
+    private final TypeGraph typeGraph;
+
     /** The internal translation table from node type labels to created type nodes. */
 
     /** Returns the singleton instance of this class. */
     public static TypeFactory instance() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new TypeFactory(null);
+        }
+        return instance;
     }
 
     /** Singleton instance of this class. */
-    private static final TypeFactory INSTANCE = new TypeFactory();
+    private static TypeFactory instance;
 }

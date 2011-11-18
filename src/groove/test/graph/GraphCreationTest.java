@@ -51,7 +51,7 @@ public class GraphCreationTest extends TestCase {
         this.g = new DefaultGraph("g");
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
-            this.n[i] = DefaultNode.createNode();
+            this.n[i] = this.g.getFactory().createNode();
         }
 
         this.e[0] = DefaultEdge.createEdge(this.n[0], "a", this.n[1]);
