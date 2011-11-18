@@ -584,7 +584,7 @@ final public class BasicEvent extends
         }
         if (!added) {
             if (this.doAggressiveNodeReuse) {
-                result = getFreshNode(sourceNodes, current);
+                result = getFreshNode(sourceNodes, current, type);
             } else {
                 result = createNode(type);
             }
@@ -605,7 +605,7 @@ final public class BasicEvent extends
     }
 
     private HostNode getFreshNode(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> current) {
+            Collection<HostNode> current, TypeNode type) {
         int size = sourceNodes.size();
         if (current != null) {
             size += current.size();
@@ -624,7 +624,7 @@ final public class BasicEvent extends
         }
         assert i == numbers.length;
         int freshNr = new DisposableDispenser(numbers).getNext();
-        return getHostFactory().createNode(freshNr);
+        return getHostFactory().createNode(freshNr, type);
     }
 
     /**

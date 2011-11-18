@@ -17,7 +17,6 @@
 package groove.trans;
 
 import groove.graph.AbstractNode;
-import groove.graph.Node;
 import groove.graph.TypeNode;
 
 /**
@@ -26,16 +25,7 @@ import groove.graph.TypeNode;
  * @author Arend Rensink
  * @version $Revision: 2971 $
  */
-public class DefaultRuleNode extends AbstractNode implements RuleNode,
-        Node.Factory<RuleNode> {
-    /**
-     * Constructs a fresh node, with an explicitly given number.
-     * @param nr the number for this node
-     */
-    protected DefaultRuleNode(int nr) {
-        this(nr, TypeNode.TOP_NODE, true);
-    }
-
+public class DefaultRuleNode extends AbstractNode implements RuleNode {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * @param nr the number for this node
@@ -72,19 +62,12 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
         return result;
     }
 
-    /** Factory constructor. */
-    @Override
-    public DefaultRuleNode newNode(int nr, TypeNode type) {
-        return new DefaultRuleNode(nr, type, false);
-    }
-
     /**
      * Returns a string consisting of the letter <tt>'n'</tt>.
      */
     @Override
     public String getToStringPrefix() {
-        return getType() == TypeNode.TOP_NODE ? "n"
-                : getType().getLabel().text() + "-";
+        return "n";
     }
 
     public TypeNode getType() {

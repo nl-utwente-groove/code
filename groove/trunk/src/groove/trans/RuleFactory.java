@@ -16,9 +16,13 @@
  */
 package groove.trans;
 
+import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
+import groove.graph.TypeFactory;
+import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
@@ -28,20 +32,33 @@ import groove.graph.algebra.VariableNode;
 /** Factory class for graph elements. */
 public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     /** Private constructor. */
-    private RuleFactory() {
-        // empty
+    private RuleFactory(TypeFactory typeFactory) {
+        this.typeFactory = typeFactory;
     }
 
-    /** Creates a node with a given number. */
+    /** This implementation creates a node with top node type. */
     public RuleNode createNode(int nr) {
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
-        return new DefaultRuleNode(nr);
+        return createNode(nr, this.typeFactory.getTopNode(), true);
     }
 
     /** Creates a node with a given number. */
     public RuleNode createNode(int nr, TypeNode type, boolean sharp) {
+        assert type.getGraph() == this.typeFactory.getTypeGraph();
         this.maxNodeNr = Math.max(this.maxNodeNr, nr);
         return new DefaultRuleNode(nr, type, sharp);
+    }
+
+    /** Creates a variable node for a given data signature, and with a given node number. */
+    public VariableNode createVariableNode(int nr, SignatureKind signature) {
+        assert signature != null;
+        TypeNode type = this.typeFactory.getDataType(signature);
+        return new VariableNode(nr, signature, type);
+    }
+
+    /** Creates a variable node for a given data constant, and with a given node number. */
+    public VariableNode createVariableNode(int nr, Constant constant) {
+        TypeNode type = this.typeFactory.getDataType(constant.getSignature());
+        return new VariableNode(nr, constant, type);
     }
 
     /** Creates a label with the given text. */
@@ -84,15 +101,19 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return this.maxNodeNr;
     }
 
+    /** The type factory used for creating node and edge types. */
+    private final TypeFactory typeFactory;
     /** The highest node number returned by this factory. */
     private int maxNodeNr;
 
-    /** Returns the singleton instance of this factory. */
-    public static RuleFactory instance() {
-        return INSTANCE;
+    /** Returns a fresh instance of this factory, without type graph. */
+    public static RuleFactory newInstance() {
+        return new RuleFactory(TypeFactory.instance());
     }
 
-    /** Singleton instance of this factory. */
-    private final static RuleFactory INSTANCE = new RuleFactory();
-    /** Factory for default nodes. */
+    /** Returns a fresh instance of this factory, for a given type graph. */
+    public static RuleFactory newInstance(TypeGraph type) {
+        assert type != null;
+        return new RuleFactory(type.getFactory());
+    }
 }

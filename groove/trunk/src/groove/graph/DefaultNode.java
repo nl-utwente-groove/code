@@ -22,28 +22,16 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultNode extends AbstractNode implements
-        Node.Factory<DefaultNode> {
+public class DefaultNode extends AbstractNode {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
      * distinct nodes with the same number will be compared. This is achieved by
-     * using one of the <code>createNode</code> methods in preference to this
-     * constructor.
+     * only calling the constructor from factory methods.
      * @param nr the number for this node
-     * @see #createNode()
-     * @see #createNode(int)
      */
     protected DefaultNode(int nr) {
         super(nr);
-    }
-
-    /** Factory constructor.
-     * The type is should always equal {@link TypeNode#TOP_NODE}. 
-     */
-    public DefaultNode newNode(int nr, TypeNode type) {
-        assert type == TypeNode.TOP_NODE;
-        return new DefaultNode(nr);
     }
 
     /**
@@ -53,16 +41,4 @@ public class DefaultNode extends AbstractNode implements
     public String getToStringPrefix() {
         return "n";
     }
-
-    /** Default method that uses the DefaultNode constructor. */
-    static public DefaultNode createNode(int nr) {
-        return factory.createNode(nr);
-    }
-
-    /** Returns the node with the first currently unused node number. */
-    static public DefaultNode createNode() {
-        return factory.createNode(TypeNode.TOP_NODE);
-    }
-
-    static private final DefaultFactory factory = DefaultFactory.instance();
 }

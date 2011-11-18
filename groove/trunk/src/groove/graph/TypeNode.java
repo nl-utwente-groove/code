@@ -16,12 +16,7 @@
  */
 package groove.graph;
 
-import groove.algebra.SignatureKind;
-
 import java.awt.Color;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
 
 /**
  * Node in a type graph.
@@ -34,22 +29,19 @@ public class TypeNode implements Node {
     /** 
      * Constructs a new type node, with a given number and label.
      * The label must be a node type.
+     * Should only be called from {@link TypeFactory}.
+     * @param nr the number of the type node
+     * @param type the non-{@code null} type label; for untyped graphs, the
+     * default is {@link TypeLabel#NODE}
+     * @param graph the type graph to which this node belongs; may be {@code null}
      * @see Label#isNodeType() 
      */
-    public TypeNode(int nr, TypeLabel type) {
+    public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
         assert type.isNodeType() : String.format(
             "Can't create type node for non-type label '%s'", type);
         this.nr = nr;
         this.type = type;
-    }
-
-    /** 
-     * Creates a new type node, with a given number
-     * and a type that is derived from the number.
-     * @param nr the number of the new node
-     */
-    public TypeNode(int nr) {
-        this(nr, TypeLabel.createLabel(EdgeRole.NODE_TYPE, "t0:" + nr));
+        this.graph = graph;
     }
 
     /** 
@@ -141,6 +133,17 @@ public class TypeNode implements Node {
         this.colour = colour;
     }
 
+    /** 
+     * Returns the type graph with which this node is associated, if any.
+     * @return the associated type graph, or {@code null} if there is none.
+     */
+    public TypeGraph getGraph() {
+        return this.graph;
+    }
+
+    /** The type graph with which this node is associated. */
+    private final TypeGraph graph;
+
     /** Flag indicating if this node type is abstract. */
     private boolean abstracted;
     /** Flag indicating if this node type is imported from another type graph. */
@@ -153,20 +156,4 @@ public class TypeNode implements Node {
     private final int nr;
     /** The type of this node. */
     private final TypeLabel type;
-
-    /** Returns the default type node for a given data signature. */
-    public static TypeNode getDataType(SignatureKind signature) {
-        return dataTypeMap.get(signature);
-    }
-
-    /** Mapping from signatures to corresponding type nodes. */
-    private static final Map<SignatureKind,TypeNode> dataTypeMap =
-        new EnumMap<SignatureKind,TypeNode>(SignatureKind.class);
-    static {
-        for (SignatureKind sig : EnumSet.allOf(SignatureKind.class)) {
-            dataTypeMap.put(sig, new TypeNode(0, TypeLabel.getLabel(sig)));
-        }
-    }
-    /** Type node for non-data nodes in an untyped setting. */
-    public static final TypeNode TOP_NODE = new TypeNode(0, TypeLabel.NODE);
 }

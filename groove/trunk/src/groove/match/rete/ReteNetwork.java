@@ -683,7 +683,7 @@ public class ReteNetwork {
      */
     private RuleGraph copyAndRenumberNodes(RuleGraph source,
             RuleGraphMorphism nodeMapping) {
-        RuleGraph result = new RuleGraph(source.getName());
+        RuleGraph result = source.newGraph(source.getName());
         for (RuleNode n : source.nodeSet()) {
             result.addNode(nodeMapping.getNode(n));
         }

@@ -328,28 +328,10 @@ public class Condition implements Fixable {
         Map<VariableNode,List<Set<VariableNode>>> resolverMap =
             createResolvers();
         stabilise(resolverMap);
-        //        computeUnresolvedNodes();
-        //        stabilizeUnresolvedNodes();
         for (RuleNode node : resolverMap.keySet()) {
             errors.add(new FormatError(
                 "Cannot resolve attribute value node '%s'", node));
         }
-        //        for (RuleNode node : this.unresolvedVariableNodes) {
-        //            errors.add(new FormatError(
-        //                "Cannot resolve attribute value node '%s'", node));
-        //        }
-        //        if (!this.unresolvedProductNodes.isEmpty()) {
-        //            Map.Entry<ProductNode,BitSet> productEntry =
-        //                this.unresolvedProductNodes.entrySet().iterator().next();
-        //            ProductNode product = productEntry.getKey();
-        //            BitSet arguments = productEntry.getValue();
-        //            if (arguments.cardinality() != product.arity()) {
-        //                arguments.flip(0, product.arity());
-        //                errors.add(new FormatError(
-        //                    "Argument edges %s of product node %s missing in sub-condition",
-        //                    arguments, product));
-        //            }
-        //        }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }

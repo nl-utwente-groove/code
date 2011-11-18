@@ -33,8 +33,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
      * Constructs a new, empty rule graph.
      * @param name the name of the new rule graph
      */
-    public RuleGraph(String name) {
+    public RuleGraph(String name, RuleFactory factory) {
         super(name);
+        this.factory = factory;
     }
 
     /**
@@ -42,6 +43,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
      */
     public RuleGraph(RuleGraph graph) {
         super(graph);
+        this.factory = graph.getFactory();
     }
 
     @Override
@@ -56,7 +58,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
 
     @Override
     public RuleGraph newGraph(String name) {
-        return new RuleGraph(getName());
+        return new RuleGraph(name, getFactory());
     }
 
     @SuppressWarnings("unchecked")
@@ -73,6 +75,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
 
     @Override
     public RuleFactory getFactory() {
-        return RuleFactory.instance();
+        return this.factory;
     }
+
+    private final RuleFactory factory;
 }

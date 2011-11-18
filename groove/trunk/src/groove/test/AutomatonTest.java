@@ -99,8 +99,8 @@ public class AutomatonTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        testStore = new TypeGraph("test");
-        TypeNode t = TypeNode.TOP_NODE;
+        testStore = new TypeGraph("test", true);
+        TypeNode t = testStore.getFactory().getTopNode();
         for (HostEdge testEdge : testGraph.edgeSet()) {
             testStore.addEdge(t, testEdge.label(), t);
         }

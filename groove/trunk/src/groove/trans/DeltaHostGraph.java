@@ -439,8 +439,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     @Override
     protected boolean isTypeCorrect(Node node) {
-        return node instanceof HostNode
-            && !getFactory().addNode((HostNode) node);
+        return node instanceof HostNode && !getFactory().addNode(node);
     }
 
     @Override

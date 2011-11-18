@@ -28,11 +28,12 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
      * @see TypeFactory#createEdge(TypeNode, Label, TypeNode)
      * @see TypeFactory#createEdge(TypeNode, String, TypeNode)
      */
-    TypeEdge(TypeNode source, TypeLabel label, TypeNode target) {
+    TypeEdge(TypeNode source, TypeLabel label, TypeNode target, TypeGraph graph) {
         super(source, label, target);
         assert source.equals(target) || label.isBinary() : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
             label.getRole().getDescription(false), label, source, target);
+        this.graph = graph;
     }
 
     /** Indicates if this edge type is abstract. */
@@ -70,6 +71,17 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
     public void setOutMult(Multiplicity outMult) {
         this.outMult = outMult;
     }
+
+    /** 
+     * Returns the type graph with which this edge is associated, if any.
+     * @return the associated type graph, or {@code null} if there is none.
+     */
+    public TypeGraph getGraph() {
+        return this.graph;
+    }
+
+    /** The type graph with which this edge is associated. */
+    private final TypeGraph graph;
 
     /** Flag indicating if this edge type is abstract. */
     private boolean abstractType;

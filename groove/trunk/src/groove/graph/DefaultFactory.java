@@ -27,9 +27,9 @@ public class DefaultFactory extends
         // empty
     }
 
-    /** Creates a new, untyped node. */
-    public DefaultNode createNode() {
-        return createNode(TypeNode.TOP_NODE);
+    @Override
+    protected DefaultNode newNode(int nr) {
+        return new DefaultNode(nr);
     }
 
     /**
@@ -74,11 +74,6 @@ public class DefaultFactory extends
     protected DefaultEdge createEdge(DefaultNode source, Label label,
             DefaultNode target, int nr) {
         return new DefaultEdge(source, (DefaultLabel) label, target, nr);
-    }
-
-    @Override
-    protected NodeStore<? extends DefaultNode> createNodeStore() {
-        return new NodeStore<DefaultNode>(new DefaultNode(0));
     }
 
     /**

@@ -36,6 +36,7 @@ public class ValueNode extends AbstractNode implements HostNode {
         this.algebra = null;
         this.signature = null;
         this.value = null;
+        this.type = null;
     }
 
     /**
@@ -45,12 +46,13 @@ public class ValueNode extends AbstractNode implements HostNode {
      * @param algebra the algebra that the value belongs to; non-null
      * @param value the value to create a graph node for; non-null
      */
-    public ValueNode(int nr, Algebra<?> algebra, Object value) {
+    public ValueNode(int nr, Algebra<?> algebra, Object value, TypeNode type) {
         super(nr);
         this.algebra = algebra;
         this.signature = algebra.getKind();
         this.value = value;
-        assert algebra != null && value != null;
+        this.type = type;
+        assert algebra != null && value != null && type != null;
     }
 
     /**
@@ -103,7 +105,7 @@ public class ValueNode extends AbstractNode implements HostNode {
 
     @Override
     public TypeNode getType() {
-        return TypeNode.getDataType(this.signature);
+        return this.type;
     }
 
     /** The signature of this value node. */
@@ -115,6 +117,8 @@ public class ValueNode extends AbstractNode implements HostNode {
      */
     private final Object value;
 
+    /** The type of this value node. */
+    private final TypeNode type;
     /** Single dummy node, used in e.g., MergeMap */
     public static final ValueNode DUMMY_NODE = new ValueNode();
 }

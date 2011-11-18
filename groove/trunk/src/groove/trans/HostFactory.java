@@ -18,10 +18,11 @@ package groove.trans;
 
 import groove.algebra.Algebra;
 import groove.graph.Label;
-import groove.graph.NodeStore;
+import groove.graph.Node;
 import groove.graph.StoreFactory;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
@@ -39,9 +40,39 @@ import java.util.Map;
  * @version $Revision $
  */
 public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
-    /** Constructor for a fresh factory. */
-    protected HostFactory() {
-        //
+    /** Constructor for a fresh factory, based on a given type graph. */
+    protected HostFactory(TypeGraph type) {
+        if (type == null) {
+            this.typeFactory = TypeFactory.instance();
+        } else {
+            this.typeFactory = type.getFactory();
+        }
+    }
+
+    @Override
+    protected HostNode newNode(int nr) {
+        return new DefaultHostNode(nr, getLastNodeType());
+    }
+
+    /** This implementation creates a host node with top type. */
+    @Override
+    public HostNode createNode(int nr) {
+        return createNode(nr, this.typeFactory.getTopNode());
+    }
+
+    /** Creates and returns a node with a given type, and the next available node number. */
+    public HostNode createNode(TypeNode typeNode) {
+        return createNode(getNextNodeNr(), typeNode);
+    }
+
+    /** Creates and returns a node with a given number and node type. */
+    public HostNode createNode(int nr, TypeNode typeNode) {
+        assert typeNode.getGraph() == this.typeFactory.getTypeGraph();
+        setLastNodeType(typeNode);
+        HostNode result = super.createNode(nr);
+        resetLastNodeType();
+        assert result.getType() == typeNode;
+        return result;
     }
 
     /**
@@ -54,10 +85,10 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         Map<Object,ValueNode> valueMap = getValueMap(algebra);
         ValueNode result = valueMap.get(value);
         if (result == null) {
-            int nr = getNodeStore().getNextNodeNr();
-            result = new ValueNode(nr, algebra, value);
-            valueMap.put(value, result);
-            getNodeStore().addNode(result);
+            TypeNode type = this.typeFactory.getDataType(algebra.getKind());
+            int nr = getNextNodeNr();
+            result = new ValueNode(nr, algebra, value, type);
+            addNode(result);
         }
         return result;
     }
@@ -91,7 +122,9 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * number is already in the factory
      */
     @Override
-    public boolean addNode(HostNode node) throws IllegalArgumentException {
+    public boolean addNode(Node node) throws IllegalArgumentException {
+        assert node instanceof HostNode;
+        assert ((HostNode) node).getType().getGraph() == this.typeFactory.getTypeGraph();
         boolean result = super.addNode(node);
         if (node instanceof ValueNode) {
             // make sure this value was not already wrapped in another node
@@ -129,6 +162,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Creates a typed rule edge. */
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
+        assert type.getGraph() == this.typeFactory.getTypeGraph();
         HostEdge edge =
             new HostEdge(this, source, type, target, getEdgeCount());
         return storeEdge(edge);
@@ -160,25 +194,55 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return new RuleToHostMap(this);
     }
 
-    /** Callback factory method to initialise the node store. */
-    @Override
-    protected NodeStore<? extends HostNode> createNodeStore() {
-        return new NodeStore<HostNode>(
-            DefaultHostNode.createFactory(TypeNode.TOP_NODE));
+    /** 
+     * Sets the type to be used in the next invocation of {@link #newNode(int)}.
+     * This should be called directly prior to a call of {@link #newNode(int)}.
+     * @param type the node type to be used for the next node to be constructed;
+     *  non-{@code null}.
+     */
+    protected final void setLastNodeType(TypeNode type) {
+        assert this.lastNodeType == null;
+        assert type != null;
+        this.lastNodeType = type;
     }
 
-    /** Returns the node in the store with the given number. */
-    public HostNode getNodeFromNr(int nr) {
-        return (HostNode) this.getNodeStore().getNodeFromNr(nr);
+    /** 
+     * Resets the type to be used in the next invocation of {@link #newNode(int)}.
+     * This should be called after an invocation of {@link #newNode(int)}.
+     */
+    protected final void resetLastNodeType() {
+        assert this.lastNodeType != null;
+        this.lastNodeType = null;
+    }
+
+    /**
+     * Returns the type set by the last invocation of {@link #setLastNodeType(TypeNode)}.
+     * Also sets the node type to {@code null}; it is illegal to call this
+     * method twice in succession.
+     * @return the node type set in the last invocation of {@link #setLastNodeType(TypeNode)}
+     */
+    protected final TypeNode getLastNodeType() {
+        TypeNode result = this.lastNodeType;
+        return result;
     }
 
     /** Internal store of previously generated value nodes. */
     private final Map<String,Map<Object,ValueNode>> valueMaps =
         new HashMap<String,Map<Object,ValueNode>>();
+    /** The type factory used for creating node and edge types. */
+    private final TypeFactory typeFactory;
+    /** Stores the node type of the last node that was created. */
+    private TypeNode lastNodeType;
 
-    /** Returns a fresh instance of this factory. */
+    /** Returns a fresh instance of this factory, without type graph. */
     public static HostFactory newInstance() {
-        return new HostFactory();
+        return new HostFactory(null);
+    }
+
+    /** Returns a fresh instance of this factory, for a given type graph. */
+    public static HostFactory newInstance(TypeGraph type) {
+        assert type != null;
+        return new HostFactory(type);
     }
 
     /** The factory used for creating labels. */

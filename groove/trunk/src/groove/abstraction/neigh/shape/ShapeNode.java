@@ -36,14 +36,4 @@ public final class ShapeNode extends DefaultHostNode {
     ShapeNode(int nr, TypeNode type) {
         super(nr, type);
     }
-
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
-
-    /** Factory constructor. */
-    @Override
-    public ShapeNode newNode(int nr, TypeNode type) {
-        return new ShapeNode(nr, type);
-    }
 }

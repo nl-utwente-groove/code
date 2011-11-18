@@ -24,11 +24,21 @@ import groove.graph.Morphism;
  * @version $Revision: 2754 $
  */
 public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
+    /** Constructs a morphism to a rule graph with a given type factory. */
+    public RuleGraphMorphism(RuleFactory factory) {
+        super(factory);
+    }
+
     /**
-     * Creates a new, empty map.
+     * Creates a new, empty morphism to an untyped rule graph.
      */
     public RuleGraphMorphism() {
-        super(RuleFactory.instance());
+        this(RuleFactory.newInstance());
+    }
+
+    @Override
+    public RuleFactory getFactory() {
+        return (RuleFactory) super.getFactory();
     }
 
     @Override
@@ -38,6 +48,6 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
 
     @Override
     public RuleGraphMorphism newMap() {
-        return new RuleGraphMorphism();
+        return new RuleGraphMorphism(getFactory());
     }
 }

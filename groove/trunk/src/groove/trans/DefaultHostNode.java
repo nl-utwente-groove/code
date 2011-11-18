@@ -17,30 +17,17 @@
 package groove.trans;
 
 import groove.graph.AbstractNode;
-import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 
 /**
  * Default nodes used in host graphs.
  * Host nodes always have an associated {@link TypeNode};
- * this defaults to {@link TypeNode#TOP_NODE}.
+ * this defaults to {@link TypeLabel#NODE}.
  * @author Arend Rensink
  * @version $Revision: 2936 $
  */
-public class DefaultHostNode extends AbstractNode implements HostNode,
-        Node.Factory<HostNode> {
-    /**
-     * Constructs a fresh node, with an explicitly given number. Note that node
-     * equality is determined by identity, but it is assumed that never two
-     * distinct nodes with the same number will be compared. This is achieved by
-     * using one of the <code>createNode</code> methods in preference to this
-     * constructor.
-     * @param nr the number for this node
-     */
-    protected DefaultHostNode(int nr) {
-        this(nr, TypeNode.TOP_NODE);
-    }
-
+public class DefaultHostNode extends AbstractNode implements HostNode {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * Note that node
@@ -59,30 +46,10 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
 
     @Override
     public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        DefaultHostNode other = (DefaultHostNode) obj;
-        if (getType() != null) {
-            return getType().equals(other.getType());
-        } else {
-            return other.getType() == null;
-        }
-    }
-
-    @Override
-    protected int computeHashCode() {
-        int result = super.computeHashCode();
-        if (getType() != null) {
-            int prime = 31;
-            result = prime * result + getType().hashCode();
-        }
+        boolean result = super.equals(obj);
+        // equal nodes should have identical types
+        assert !result || getType() == ((DefaultHostNode) obj).getType();
         return result;
-    }
-
-    /** Factory constructor. */
-    public DefaultHostNode newNode(int nr, TypeNode type) {
-        return new DefaultHostNode(nr, type);
     }
 
     /**
@@ -90,8 +57,7 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
      */
     @Override
     public String getToStringPrefix() {
-        return getType() == TypeNode.TOP_NODE ? "n"
-                : getType().getLabel().text() + "-";
+        return "n";
     }
 
     @Override
@@ -100,11 +66,4 @@ public class DefaultHostNode extends AbstractNode implements HostNode,
     }
 
     private final TypeNode type;
-
-    /** Creates a node factory for a given node type.
-     * @param type the node type for the factory; may be {@code null}. 
-     */
-    public static Node.Factory<HostNode> createFactory(TypeNode type) {
-        return new DefaultHostNode(0, type);
-    }
 }

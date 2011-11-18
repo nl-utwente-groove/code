@@ -9,9 +9,12 @@ import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
+import groove.graph.TypeFactory;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.VariableNode;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
@@ -127,16 +130,16 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      */
     private TypeNode getNodeType() {
         TypeNode result = null;
-        if (!getJGraph().getTypeGraph().isImplicit()) {
+        TypeGraph typeGraph = getJGraph().getTypeGraph();
+        if (!typeGraph.isImplicit()) {
             for (AspectEdge edge : getJVertexLabels()) {
                 if (edge.getRole() == EdgeRole.NODE_TYPE) {
-                    result =
-                        getJGraph().getTypeGraph().getNode(edge.getTypeLabel());
+                    result = typeGraph.getNode(edge.getTypeLabel());
                     break;
                 }
             }
         }
-        return result == null ? TypeNode.TOP_NODE : result;
+        return result == null ? typeGraph.getFactory().getTopNode() : result;
     }
 
     void setNodeFixed() {
@@ -150,12 +153,17 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (this.aspect.isMeta()) {
             return null;
         } else if (getNode().hasAttrAspect()) {
-            Aspect attrAspect = getNode().getAttrAspect();
-            if (attrAspect.getKind().hasSignature()) {
-                // delegate the identity string to a corresponding variable node
-                return attrAspect.getVariableNode(getNode().getNumber()).toString();
+            AspectKind attrKind = getNode().getAttrKind();
+            if (attrKind.hasSignature()) {
+                Object content = getNode().getAttrAspect().getContent();
+                if (content == null) {
+                    return VariableNode.TO_STRING_PREFIX
+                        + getNode().getNumber();
+                } else {
+                    return content.toString();
+                }
             } else {
-                assert attrAspect.getKind() == AspectKind.PRODUCT;
+                assert attrKind == AspectKind.PRODUCT;
                 // delegate the identity string to a corresponding product node
                 return new ProductNode(getNode().getNumber(), 0).toString();
             }
@@ -464,10 +472,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             }
             Aspect attrAspect = getNode().getAttrAspect();
             if (attrAspect.getKind().hasSignature()) {
+                TypeFactory factory = getJGraph().getTypeGraph().getFactory();
                 if (attrAspect.hasContent()) {
-                    result.add(TypeLabel.createLabel(attrAspect.getContentString()));
+                    result.add(factory.createLabel(attrAspect.getContentString()));
                 } else {
-                    result.add(TypeLabel.createLabel(EdgeRole.NODE_TYPE,
+                    result.add(factory.createLabel(EdgeRole.NODE_TYPE,
                         attrAspect.getKind().getName()));
                 }
             }
