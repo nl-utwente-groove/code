@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.algebra.Constant;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
@@ -126,7 +127,14 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
     private boolean compatibleTypes(RuleNode n1, HostNode n2) {
         assert !(n1 instanceof ProductNode);
         return !(n1 instanceof VariableNode)
-            || ((n2 instanceof ValueNode) && (((ValueNode) n2).getSignature().equals(((VariableNode) n1).getSignature())));
+            || (((n2 instanceof ValueNode) && (((ValueNode) n2).getSignature().equals(((VariableNode) n1).getSignature()))) && valuesMatch(
+                (VariableNode) n1, (ValueNode) n2));
+    }
+
+    private boolean valuesMatch(VariableNode n1, ValueNode n2) {
+        assert n2.getSignature().equals((n2.getSignature()));
+        Constant c = n1.getConstant();
+        return (c == null) || (c.getSymbol().equals(n2.getSymbol()));
     }
 
     /**
@@ -183,10 +191,36 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
         //condition 1: labels must match
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
         //condition 3: the end-points of this n-node's pattern and the given rule node are of the same type
-        return e1.label().equals(e.label())
-            && (e1.source().equals(e1.target()) == (e.source().equals(e.target())))
-            && (e1.source().getClass().equals(e.source().getClass()))
-            && (e1.target().getClass().equals(e.target().getClass()));
+        //condition 4: if any of the end points in the rule are constant then the values must match
+        return e1.label().equals(e.label()) //condition 1
+            && (e1.source().equals(e1.target()) == (e.source().equals(e.target()))) //condition 2
+            && (e1.source().getClass().equals(e.source().getClass())) //condition 3
+            && (e1.target().getClass().equals(e.target().getClass()))
+            && endPointValuesStaticallyCompatible(e); //condition 4
+    }
+
+    private boolean endPointValuesStaticallyCompatible(RuleEdge e) {
+        RuleEdge e1 = this.getEdge();
+        return nodeValuesStaticallyCompatible(e1.source(), e.source())
+            && nodeValuesStaticallyCompatible(e1.target(), e.target());
+    }
+
+    private boolean nodeValuesStaticallyCompatible(RuleNode n1, RuleNode n2) {
+        boolean result =
+            (n1 instanceof VariableNode) == (n2 instanceof VariableNode);
+        if (result && (n1 instanceof VariableNode)) {
+            VariableNode vn1 = (VariableNode) n1;
+            VariableNode vn2 = (VariableNode) n2;
+            result = vn1.getSignature().equals(vn2.getSignature());
+            if (result) {
+                result =
+                    (vn1.getConstant() == null) == (vn2.getConstant() == null);
+                if (result && (vn1.getConstant() != null)) {
+                    result = vn1.getConstant().equals(vn2.getConstant());
+                }
+            }
+        }
+        return result;
     }
 
     /**

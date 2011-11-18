@@ -19,12 +19,12 @@ package groove.match.rete;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.trans.Condition;
-import groove.trans.Condition.Op;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
+import groove.trans.Condition.Op;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 
@@ -98,32 +98,43 @@ public class ReteSearchStrategy implements SearchStrategy {
         ReteSearchStrategy[] subMatchers = getSubMatchers();
         if (subMatchers.length != 0) {
             for (int i = 0; i < subMatchers.length; i++) {
+
                 Condition subCondition = subMatchers[i].getCondition();
-                Condition.Op op;
-                switch (subCondition.getOp()) {
-                case AND:
-                case OR:
-                    op = subCondition.getOp();
-                    break;
-                case EXISTS:
-                    op = Op.OR;
-                    break;
-                case FORALL:
-                    op = Op.AND;
-                    break;
-                case NOT:
-                    continue;
-                default:
-                    assert false;
-                    op = null;
+                Op subConditionOp = subCondition.getOp();
+                if (subConditionOp != Op.NOT) {
+                    List<TreeMatch> subMatches = new ArrayList<TreeMatch>();
+                    Collector<TreeMatch,List<TreeMatch>> collector =
+                        Visitor.newCollector(subMatches);
+                    subMatchers[i].traverse(host, patternMap, collector);
+                    collector.dispose();
+                    Condition.Op op;
+                    boolean noMatches = subMatches.isEmpty();
+                    boolean positive = subCondition.isPositive();
+                    switch (subConditionOp) {
+                    case AND:
+                        op = noMatches ? Op.TRUE : Op.AND;
+                        break;
+                    case FORALL:
+                        op =
+                            noMatches ? (positive ? Op.FALSE : Op.TRUE)
+                                    : Op.AND;
+                        break;
+                    case OR:
+                        op = noMatches ? Op.FALSE : Op.OR;
+                        break;
+                    case EXISTS:
+                        op =
+                            noMatches ? (positive ? Op.FALSE : Op.TRUE) : Op.OR;
+                        break;
+                    default:
+                        assert false;
+                        op = null;
+                        throw new IllegalStateException();
+                    }
+                    final TreeMatch subResult = new TreeMatch(op, subCondition);
+                    subResult.getSubMatches().addAll(subMatches);
+                    result.addSubMatch(subResult);
                 }
-                final TreeMatch subResult = new TreeMatch(op, subCondition);
-                // add matches for the subconditions
-                Collector<TreeMatch,?> collector =
-                    Visitor.newCollector(subResult.getSubMatches());
-                subMatchers[i].traverse(host, patternMap, collector);
-                collector.dispose();
-                result.addSubMatch(subResult);
             }
         }
         return result;

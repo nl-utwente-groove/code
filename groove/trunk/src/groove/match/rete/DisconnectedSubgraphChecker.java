@@ -128,15 +128,15 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         if (c.isEmpty() || (repeatIndex == 0)) {
             c.add(m);
             m.addContainerCollection(c);
-        }
 
-        List<AbstractReteMatch> completeMatches =
-            this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
+            List<AbstractReteMatch> completeMatches =
+                this.makeWholeMatchesIfPossible(antecedent, repeatIndex, m);
 
-        if (completeMatches != null) {
-            this.matchesProduced += completeMatches.size();
-            for (AbstractReteMatch completeMatch : completeMatches) {
-                passDownMatchToSuccessors(completeMatch);
+            if (completeMatches != null) {
+                this.matchesProduced += completeMatches.size();
+                for (AbstractReteMatch completeMatch : completeMatches) {
+                    passDownMatchToSuccessors(completeMatch);
+                }
             }
         }
     }
