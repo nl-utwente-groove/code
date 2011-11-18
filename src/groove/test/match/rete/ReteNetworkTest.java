@@ -58,6 +58,19 @@ public class ReteNetworkTest extends TestCase {
     }
 
     /**
+     * 
+     */
+    public void testExploreGrammar() {
+        GraphGrammar g = loadGrammar("leader-election.gps", "start");
+        ReteNetwork network = new ReteNetwork(g, false);
+        for (groove.trans.Rule r : g.getRules()) {
+            if (r.getName().equals("next-phase")) {
+                System.out.println(r.toString());
+            }
+        }
+    }
+
+    /**
      * Tests the static structure of the RETE network in the case of a rule with an empty LHS.
      */
     public void testStaticEmptyPriorRules() {
@@ -318,6 +331,31 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getName().toString().equals(
                 "atZero")) {
                 assertEquals(1, rmList.size());
+            }
+        }
+    }
+
+    /**
+     * Testing the leader-election grammar for first step matches found - 1
+     */
+    public void testDynamicLeaderElection() {
+        GraphGrammar g =
+            loadGrammar("leader-election.gps", "after-first-next-phase");
+        ReteNetwork network =
+            new ReteNetwork(g, g.getProperties().isInjective());
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("go-1-1a")) {
+                assertEquals(2, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "pass-message")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "next-phase")) {
+                assertEquals(1, rmList.size());
+            } else {
+                assertEquals(pn.getProductionRule().getName(), 0, rmList.size());
             }
         }
     }

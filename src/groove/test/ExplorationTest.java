@@ -210,6 +210,13 @@ public class ExplorationTest {
         testExploration("inheritance.gps", 756, 5374);
     }
 
+    /** tests attributes, quantifiers and NACs */
+    @Test
+    public void testLeaderElection() {
+        testExploration("leader-election.gps", "start-2", "bfs", 21, 29);
+        testExploration("leader-election.gps", "start-2", "rete", 21, 29);
+    }
+
     /** Tests various parameters settable through the system properties. */
     @Test
     public void testSystemProperties() {

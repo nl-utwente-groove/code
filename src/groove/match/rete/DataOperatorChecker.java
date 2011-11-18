@@ -192,8 +192,8 @@ public class DataOperatorChecker extends ReteNetworkNode {
         sb.append(String.format("- Operator - %s\n", this.operator.toString()));
         sb.append("---  Pattern-\n");
         for (int i = 0; i < this.pattern.length; i++) {
-            sb.append("--- " + i + " -"
-                + this.pattern[i].toString().replace(':', '-') + "\n");
+            sb.append(":" + "--- " + i + " -" + this.pattern[i].toString()
+                + "\n");
         }
         for (int i = 0; i < this.argumentLocator.size(); i++) {
             int[] pos = this.argumentLocator.get(i);

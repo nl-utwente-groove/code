@@ -1119,13 +1119,12 @@ public class ReteNetwork {
                     "Value Node Checker - %s ",
                     ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant().getSymbol()),
                 source));
-            result.add(DefaultEdge.createEdge(source,
-                ((ValueNodeChecker) nnode).getNode().toString().replace(':',
-                    '-'), source));
+            result.add(DefaultEdge.createEdge(source, ":"
+                + ((ValueNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof EdgeCheckerNode) {
             result.add(DefaultEdge.createEdge(source, "Edge Checker", source));
-            result.add(DefaultEdge.createEdge(source,
-                ((EdgeCheckerNode) nnode).getEdge().toString(), source));
+            result.add(DefaultEdge.createEdge(source, ":"
+                + ((EdgeCheckerNode) nnode).getEdge().toString(), source));
         } else if (nnode instanceof SubgraphCheckerNode) {
             String[] lines = nnode.toString().split("\n");
             for (String s : lines) {
@@ -1142,8 +1141,8 @@ public class ReteNetwork {
                 + ((ProductionNode) nnode).getCondition().getName(), source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString().replace(':', '-'), source));
+                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                    + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result.add(DefaultEdge.createEdge(source, "- Condition Checker "
@@ -1151,8 +1150,8 @@ public class ReteNetwork {
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, "--" + i + " "
-                    + e.toString().replace(':', '-'), source));
+                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                    + e.toString(), source));
             }
         } else {
             String[] lines = nnode.toString().split("\n");
