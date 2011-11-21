@@ -108,12 +108,13 @@ final public class GraphTab extends ResourceTab implements MainTab {
                 jModel.loadGraph(graph);
             }
         }
-        if (jModel != null) {
-            getEditArea().setJModel(jModel);
-            setName(name);
-            getTabLabel().setTitle(name);
-            updateErrors();
+        if (jModel == null) {
+            name = null;
         }
+        getEditArea().setJModel(jModel);
+        setName(name);
+        getTabLabel().setTitle(name);
+        updateErrors();
         return jModel != null;
     }
 
@@ -133,8 +134,8 @@ final public class GraphTab extends ResourceTab implements MainTab {
      */
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
-        getJGraph().updateGrammar(grammar);
         setResource(getName());
+        getJGraph().updateGrammar(grammar);
     }
 
     /** Returns the underlying JGraph of this tab. */

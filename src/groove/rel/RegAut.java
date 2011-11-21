@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.trans.HostGraph;
@@ -66,7 +67,7 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
     boolean accepts(List<String> word);
 
     /** Returns the set of labels that can be matched by the automaton. */
-    Set<TypeLabel> getAlphabet();
+    Set<TypeElement> getAlphabet();
 
     /** Returns the label store used by this automaton. */
     TypeGraph getTypeGraph();

@@ -32,6 +32,7 @@ import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Observer;
 
 import javax.swing.Action;
@@ -246,10 +247,18 @@ abstract public class ResourceTab extends JPanel implements Tab {
         this.display.getListPanel().repaint();
     }
 
-    /** Returns the resource model displayed on this tab. */
+    /** 
+     * Returns the resource model displayed on this tab,
+     * or {@code null} if nothing is displayed. 
+     */
     protected ResourceModel<?> getResource() {
-        return getSimulatorModel().getGrammar().getResource(getResourceKind(),
-            getName());
+        String name = getName();
+        if (name == null) {
+            return null;
+        } else {
+            return getSimulatorModel().getGrammar().getResource(
+                getResourceKind(), name);
+        }
     }
 
     /** Saves the resource that is currently being displayed. */
@@ -267,7 +276,12 @@ abstract public class ResourceTab extends JPanel implements Tab {
 
     /** Returns the errors of the displayed resource. */
     protected Collection<FormatError> getErrors() {
-        return getResource().getErrors();
+        ResourceModel<?> resource = getResource();
+        if (resource == null) {
+            return Collections.emptyList();
+        } else {
+            return getResource().getErrors();
+        }
     }
 
     /** Indicates if the displayed resource is currently in an error state. */

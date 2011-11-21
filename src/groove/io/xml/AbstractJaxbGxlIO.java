@@ -24,11 +24,11 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
@@ -238,18 +238,13 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         // add subtype edges if the graph is a type graph
         if (graph instanceof TypeGraph) {
             TypeGraph typeGraph = (TypeGraph) graph;
-            Map<TypeLabel,Set<TypeLabel>> subtypeMap =
-                typeGraph.getDirectSublabelMap();
-            for (Map.Entry<TypeLabel,Set<TypeLabel>> subtypeEntry : subtypeMap.entrySet()) {
-                for (TypeLabel subtype : subtypeEntry.getValue()) {
-                    for (Edge subtypeEdge : graph.labelEdgeSet(subtype)) {
-                        Label supertype = subtypeEntry.getKey();
-                        for (Edge supertypeEdge : graph.labelEdgeSet(supertype)) {
-                            nodesEdges.add(createGxlEdge(nodeMap,
-                                subtypeEdge.source(), SUBTYPE_PREFIX,
-                                supertypeEdge.source()));
-                        }
-                    }
+            Map<TypeNode,Set<TypeNode>> subtypeMap =
+                typeGraph.getDirectSubtypeMap();
+            for (Map.Entry<TypeNode,Set<TypeNode>> subtypeEntry : subtypeMap.entrySet()) {
+                for (TypeNode subtype : subtypeEntry.getValue()) {
+                    TypeNode supertype = subtypeEntry.getKey();
+                    nodesEdges.add(createGxlEdge(nodeMap, subtype,
+                        SUBTYPE_PREFIX, supertype));
                 }
             }
         }

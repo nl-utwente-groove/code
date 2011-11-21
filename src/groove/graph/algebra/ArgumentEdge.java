@@ -32,7 +32,7 @@ public class ArgumentEdge extends RuleEdge {
       * @param label the rule label; must satisfy {@link RuleLabel#isArgument()}
      */
     public ArgumentEdge(ProductNode source, RuleLabel label, VariableNode target) {
-        super(source, label, target);
+        super(source, label, null, target);
         assert label.isArgument();
         this.number = label.getArgument();
         source.setArgument(this.number, target);

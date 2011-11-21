@@ -19,6 +19,7 @@ package groove.gui.dialog;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.view.FormatException;
 
 import java.awt.BorderLayout;
@@ -125,16 +126,17 @@ public class RelabelDialog {
             int labelType = getNewTypeCombobox().getSelectedIndex();
             result = TypeLabel.createLabel(EdgeRole.getRole(labelType), text);
             TypeLabel oldLabel = getOldLabel();
-            if (this.typeGraph.getLabels().contains(result)) {
-                if (result.equals(oldLabel)) {
-                    throw new FormatException("Old and new labels coincide");
-                } else if (this.typeGraph.getSublabels(result).contains(
-                    oldLabel)) {
+            if (result.equals(oldLabel)) {
+                throw new FormatException("Old and new labels coincide");
+            } else if (!this.typeGraph.isImplicit() && oldLabel.isNodeType()
+                && result.isNodeType()) {
+                TypeNode oldType = this.typeGraph.getNode(oldLabel);
+                TypeNode newType = this.typeGraph.getNode(result);
+                if (this.typeGraph.isSubtype(oldType, newType)) {
                     throw new FormatException(
                         "New label '%s' is an existing supertype of '%s'",
                         result, oldLabel);
-                } else if (this.typeGraph.getSublabels(oldLabel).contains(
-                    result)) {
+                } else if (this.typeGraph.isSubtype(newType, oldType)) {
                     throw new FormatException(
                         "New label '%s' is an existing subtype of '%s'",
                         result, oldLabel);

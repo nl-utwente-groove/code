@@ -21,12 +21,12 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
+public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
+        TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.
      * Don't call directly; use {@link TypeFactory} methods instead.
      * @see TypeFactory#createEdge(TypeNode, Label, TypeNode)
-     * @see TypeFactory#createEdge(TypeNode, String, TypeNode)
      */
     TypeEdge(TypeNode source, TypeLabel label, TypeNode target, TypeGraph graph) {
         super(source, label, target);
@@ -72,10 +72,7 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> {
         this.outMult = outMult;
     }
 
-    /** 
-     * Returns the type graph with which this edge is associated, if any.
-     * @return the associated type graph, or {@code null} if there is none.
-     */
+    @Override
     public TypeGraph getGraph() {
         return this.graph;
     }

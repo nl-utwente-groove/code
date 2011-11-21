@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
@@ -38,25 +39,27 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
 
     /** This implementation creates a node with top node type. */
     public RuleNode createNode(int nr) {
-        return createNode(nr, this.typeFactory.getTopNode(), true);
+        return createNode(nr, TypeLabel.NODE, true);
     }
 
     /** Creates a node with a given number. */
-    public RuleNode createNode(int nr, TypeNode type, boolean sharp) {
-        assert type.getGraph() == this.typeFactory.getTypeGraph();
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+    public RuleNode createNode(int nr, TypeLabel typeLabel, boolean sharp) {
+        updateMaxNodeNr(nr);
+        TypeNode type = this.typeFactory.getNode(typeLabel);
         return new DefaultRuleNode(nr, type, sharp);
     }
 
     /** Creates a variable node for a given data signature, and with a given node number. */
     public VariableNode createVariableNode(int nr, SignatureKind signature) {
         assert signature != null;
+        updateMaxNodeNr(nr);
         TypeNode type = this.typeFactory.getDataType(signature);
         return new VariableNode(nr, signature, type);
     }
 
     /** Creates a variable node for a given data constant, and with a given node number. */
     public VariableNode createVariableNode(int nr, Constant constant) {
+        updateMaxNodeNr(nr);
         TypeNode type = this.typeFactory.getDataType(constant.getSignature());
         return new VariableNode(nr, constant, type);
     }
@@ -82,13 +85,12 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
             return new OperatorEdge((ProductNode) source, ruleLabel,
                 (VariableNode) target);
         } else {
-            return new RuleEdge(source, ruleLabel, target);
+            TypeLabel typeLabel = ruleLabel.getTypeLabel();
+            TypeEdge type =
+                typeLabel == null ? null : this.typeFactory.getEdge(
+                    source.getType(), typeLabel, target.getType());
+            return new RuleEdge(source, ruleLabel, type, target);
         }
-    }
-
-    /** Creates a typed rule edge. */
-    public RuleEdge createEdge(RuleNode source, TypeEdge type, RuleNode target) {
-        return new RuleEdge(source, type, target);
     }
 
     @Override
@@ -99,6 +101,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     @Override
     public int getMaxNodeNr() {
         return this.maxNodeNr;
+    }
+
+    /** Maximises the current maximum node number with another number. */
+    private void updateMaxNodeNr(int nr) {
+        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
     }
 
     /** The type factory used for creating node and edge types. */

@@ -44,6 +44,11 @@ public class RuleToHostMap extends
         this.valuation = createValuation();
     }
 
+    @Override
+    public HostNode putNode(RuleNode key, HostNode layout) {
+        return super.putNode(key, layout);
+    }
+
     /**
      * Maps named wildcards, sharp types and atoms to a corresponding
      * type label.

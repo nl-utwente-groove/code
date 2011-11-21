@@ -25,6 +25,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -54,6 +55,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      */
     public DefaultHostGraph(String name, HostFactory factory) {
         super(name);
+        assert factory != null;
         this.factory = factory;
     }
 
@@ -92,7 +94,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * algebra and value.
      */
     public ValueNode addNode(Algebra<?> algebra, Object value) {
-        ValueNode result = getFactory().createNode(algebra, value);
+        ValueNode result = getFactory().createValueNode(algebra, value);
         addNode(result);
         return result;
     }
@@ -152,6 +154,11 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             if (!(node instanceof ValueNode)) {
                 AspectNode nodeImage = targetGraph.addNode(node.getNumber());
                 result.putNode(node, nodeImage);
+                TypeLabel typeLabel = node.getType().label();
+                if (typeLabel != TypeLabel.NODE) {
+                    targetGraph.addEdge(nodeImage, result.mapLabel(typeLabel),
+                        nodeImage);
+                }
             }
         }
         // add edge images

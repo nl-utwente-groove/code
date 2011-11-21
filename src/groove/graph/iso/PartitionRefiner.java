@@ -19,8 +19,10 @@ package groove.graph.iso;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.LinkedList;
@@ -392,8 +394,14 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof MyCert<?>
-                && (this.value == ((MyCert<?>) obj).value);
+            if (this == obj) {
+                return true;
+            }
+            if (obj.getClass() != getClass()) {
+                return false;
+            }
+            MyCert<?> other = ((MyCert<?>) obj);
+            return this.value == other.value;
         }
 
         /**
@@ -481,45 +489,36 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         public MyNodeCert(N node) {
             super(node);
-            this.value = INIT_NODE_VALUE;
+            if (node instanceof HostNode) {
+                this.label = ((HostNode) node).getType().label();
+                this.value = this.label.hashCode();
+            } else {
+                this.label = null;
+                this.value = INIT_NODE_VALUE;
+            }
+        }
+
+        /**
+         * Tests if the other is a {@link PartitionRefiner.MyCert} with the same value.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            if (this.label == null) {
+                return true;
+            }
+            return this.label.equals(((MyNodeCert<?>) obj).label);
         }
 
         @Override
         public String toString() {
             return "c" + this.value;
         }
-
-        /**
-         * Returns <tt>true</tt> of <tt>obj</tt> is also a
-         * {@link PartitionRefiner.MyNodeCert} and has the same value as this one.
-         * @see #getValue()
-         */
-        @Override
-        public boolean equals(Object obj) {
-            // if (obj instanceof NodeCertificate && this.singularRound ==
-            // ((NodeCertificate) obj).singularRound) {
-            // if (this.singularRound == 0) {
-            return obj instanceof MyNodeCert
-                && this.value == ((MyNodeCert<?>) obj).value;
-            // } else {
-            // return this.singularValue == ((NodeCertificate)
-            // obj).singularValue
-            // && this.singularRound == ((NodeCertificate) obj).singularRound;
-            // }
-            // } else {
-            // return false;
-            // }
-        }
-
-        //
-        // @Override
-        // public int hashCode() {
-        // if (this.singularRound == 0) {
-        // return super.hashCode();
-        // } else {
-        // return this.singularValue + this.singularRound;
-        // }
-        // }
 
         /**
          * Change the certificate value predictably to break symmetry.
@@ -570,35 +569,10 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         protected boolean isSingular() {
             return this.singular;
-            // return this.singularRound > 0;
         }
 
-        //        
-        // /** We also have to checkpoint the singularity information. */
-        // @Override
-        // public void setCheckpoint() {
-        // super.setCheckpoint();
-        // this.checkpointSingularRound = this.singularRound;
-        // this.checkpointSingularValue = this.singularValue;
-        // }
-        //
-        // /** We also have to roll back the singularity information. */
-        // @Override
-        // public void rollBack() {
-        // super.rollBack();
-        // if (this.cumulativeSingularRound == 0) {
-        // this.cumulativeSingularRound = this.singularRound;
-        // }
-        // this.singularRound = this.checkpointSingularRound;
-        // this.singularValue = this.checkpointSingularValue;
-        // }
-        //
-        // @Override
-        // public void accumulate(int round) {
-        // super.accumulate(round);
-        // this.singularRound = this.cumulativeSingularRound;
-        // }
-
+        /** Possibly {@code null} node label. */
+        private final Label label;
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
         /**
@@ -606,27 +580,6 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          * calculation.
          */
         boolean singular;
-        // /**
-        // * Round at which the certificate has been set to singular; if
-        // <code>0</code>,
-        // * it is duplicate.
-        // */
-        // private int singularRound;
-        // /**
-        // * Frozen certificate value when the certificate was set to singular.
-        // * If the certificate is singular, this is the value that will be used
-        // * as a criterion for equality.
-        // */
-        // private int singularValue;
-        // /** The value of {@link #singularRound} as frozen at the last
-        // checkpoint. */
-        // private int checkpointSingularRound;
-        // /** The value of {@link #singularValue} as frozen at the last
-        // checkpoint. */
-        // private int checkpointSingularValue;
-        // /** Stores the first round in which the certificate became singuler
-        // (if any). */
-        // private int cumulativeSingularRound;
     }
 
     /**
@@ -644,8 +597,8 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
             super((N) node);
-            this.node = node;
-            this.value = node.getValue().hashCode();
+            this.nodeValue = node.getValue();
+            this.value = this.nodeValue.hashCode();
         }
 
         /**
@@ -654,9 +607,11 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof MyValueNodeCert
-                && this.node.getValue().equals(
-                    ((MyValueNodeCert<?>) obj).node.getValue());
+                && this.nodeValue.equals(((MyValueNodeCert<?>) obj).nodeValue);
         }
 
         /**
@@ -670,7 +625,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             return result;
         }
 
-        private final ValueNode node;
+        private final Object nodeValue;
     }
 
     /**
@@ -692,16 +647,17 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             super(edge);
             this.source = source;
             this.target = target;
-            this.labelIndex = edge.label().hashCode();
-            initValue();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
+            this.value = this.initValue;
             source.addValue(this.value);
             target.addValue(this.value << 1);
         }
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + getElement().label() + "("
-                + this.labelIndex + ")," + this.target + "]";
+            return "[" + this.source + "," + this.label + "(" + this.initValue
+                + ")," + this.target + "]";
         }
 
         /**
@@ -712,41 +668,29 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof MyEdge2Cert) {
-                MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
-                if (this.value != other.value
-                    || this.labelIndex != other.labelIndex
-                    || !this.source.equals(other.source)) {
-                    return false;
-                } else if (this.target == this.source) {
-                    return other.target == other.source;
-                } else {
-                    return this.target.equals(other.target);
-                }
-            } else {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
                 return false;
             }
+            MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
+            if (!this.source.equals(other.source)
+                || !this.label.equals(other.label)) {
+                return false;
+            }
+            if (this.target == this.source) {
+                return other.target == other.source;
+            }
+            return this.target.equals(other.target);
         }
-
-        //
-        // @Override
-        // protected int setNewValue() {
-        // int sourceFrozen = this.source.isFrozen();
-        // int targetFrozen = this.target.isFrozen();
-        // if (sourceFrozen > 0 && targetFrozen > 0) {
-        // setFrozen(Math.max(sourceFrozen, targetFrozen));
-        // return getValue();
-        // } else {
-        // return super.setNewValue();
-        // }
-        // }
 
         /**
          * Computes the value on the basis of the end nodes and the label index.
          */
         @Override
         protected int computeNewValue() {
-            int targetShift = (this.labelIndex & 0xf) + 1;
+            int targetShift = (this.initValue & 0xf) + 1;
             int sourceHashCode = this.source.value;
             int targetHashCode = this.target.value;
             int result =
@@ -758,14 +702,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             return result;
         }
 
-        /**
-         * Initialises the value. Callback method from the constructor. This
-         * implementation takes the label index as the initial value.
-         */
-        protected void initValue() {
-            this.value = this.labelIndex;
-        }
-
+        private final Label label;
         /** The source certificate for the edge. */
         private final MyNodeCert<?> source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
@@ -773,7 +710,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         /**
          * The hash code of the original edge label.
          */
-        private final int labelIndex;
+        private final int initValue;
     }
 
     /**
@@ -788,15 +725,16 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         public MyEdge1Cert(E edge, MyNodeCert<?> source) {
             super(edge);
             this.source = source;
-            this.labelIndex = edge.label().hashCode();
-            initValue();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
+            this.value = this.initValue;
             source.addValue(this.value);
         }
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + getElement().label() + "("
-                + this.labelIndex + ")]";
+            return "[" + this.source + "," + this.label + "(" + this.initValue
+                + ")]";
         }
 
         /**
@@ -807,12 +745,14 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof MyEdge1Cert) {
-                MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
-                return (this.value == other.value && this.labelIndex == other.labelIndex);
-            } else {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
                 return false;
             }
+            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            return this.label.equals(other.label);
         }
 
         /**
@@ -827,19 +767,13 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             return result;
         }
 
-        /**
-         * Initialises the value. Callback method from the constructor. This
-         * implementation takes the label index as the initial value.
-         */
-        protected void initValue() {
-            this.value = this.labelIndex << 4;
-        }
-
         /** The source certificate for the edge. */
         private final MyNodeCert<?> source;
+        /** Possibly {@code null} node label. */
+        private final Label label;
         /**
          * The hash code of the original edge label.
          */
-        private final int labelIndex;
+        private final int initValue;
     }
 }

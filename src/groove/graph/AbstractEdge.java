@@ -27,6 +27,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      * Creates an edge with a given source node and label.
      */
     protected AbstractEdge(N source, L label, N target) {
+        assert source != null && label != null && target != null;
         this.source = source;
         this.label = label;
         this.target = target;

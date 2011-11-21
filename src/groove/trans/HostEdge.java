@@ -18,7 +18,6 @@ package groove.trans;
 
 import groove.graph.AbstractEdge;
 import groove.graph.TypeEdge;
-import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 
 /**
@@ -27,32 +26,14 @@ import groove.graph.TypeLabel;
  */
 public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
         HostElement {
-    /** Inner constructor to initialise all fields. */
-    private HostEdge(HostFactory factory, HostNode source, TypeEdge type,
-            TypeLabel label, HostNode target, int nr) {
-        super(source, label, target);
-        assert source.equals(target) || label.isBinary() : String.format(
+    /** Constructor for a typed edge. */
+    protected HostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
+        super(source, type.label(), target);
+        assert label().isBinary() || source == target : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
-            label.getRole().getDescription(false), label, source, target);
-        this.factory = factory;
+            label().getRole().getDescription(false), label(), source, target);
         this.nr = nr;
         this.type = type;
-    }
-
-    /** Constructor for a typed edge. */
-    protected HostEdge(HostFactory factory, HostNode source, TypeEdge type,
-            HostNode target, int nr) {
-        this(factory, source, type, type.label(), target, nr);
-    }
-
-    /** 
-     * Constructor for a labelled edge.
-     * The edge type is derived from the source and target node types.
-     */
-    protected HostEdge(HostFactory factory, HostNode source, TypeLabel label,
-            HostNode target, int nr) {
-        this(factory, source, TypeFactory.instance().createEdge(
-            source.getType(), label, target.getType()), label, target, nr);
     }
 
     // ------------------------------------------------------------------------
@@ -73,21 +54,14 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
             return false;
         }
         HostEdge other = (HostEdge) obj;
-        if (this.factory == other.factory) {
-            // the objects can now only be equal if they are identical
-            assert getNumber() != other.getNumber();
+        if (getType() != other.getType()) {
             return false;
         }
-        if (!other.source().equals(source())) {
+        if (getNumber() != other.getNumber()) {
             return false;
         }
-        if (!other.target().equals(target())) {
-            return false;
-        }
-        if (!other.label().equals(label())) {
-            return false;
-        }
-        return true;
+        return source().equals(other.source())
+            && target().equals(other.target());
     }
 
     /** 
@@ -106,8 +80,6 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
         return this.type;
     }
 
-    /** The factory that created this edge. */
-    private final HostFactory factory;
     /** The (unique) number of this edge. */
     private final int nr;
     /** Possibly {@code null} type of this edge. */

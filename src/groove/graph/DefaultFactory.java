@@ -71,7 +71,7 @@ public class DefaultFactory extends
     }
 
     @Override
-    protected DefaultEdge createEdge(DefaultNode source, Label label,
+    protected DefaultEdge newEdge(DefaultNode source, Label label,
             DefaultNode target, int nr) {
         return new DefaultEdge(source, (DefaultLabel) label, target, nr);
     }

@@ -323,9 +323,6 @@ public class GraphGrammar {
      * @ensure <tt>result != null</tt>
      */
     public HostGraph getStartGraph() {
-        if (this.startGraph == null) {
-            setStartGraph(createGraph());
-        }
         return this.startGraph;
     }
 
@@ -409,11 +406,6 @@ public class GraphGrammar {
      */
     private Set<Rule> createRuleSet() {
         return new TreeSet<Rule>();
-    }
-
-    /** Callback factory method to create the start graph. */
-    private DefaultHostGraph createGraph() {
-        return new DefaultHostGraph("start");
     }
 
     /**

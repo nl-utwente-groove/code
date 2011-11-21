@@ -60,8 +60,8 @@ public class PredicateTests {
         failure("start_graph(G), graph_edge(G,E), is_node(E)");
 
         // Assert that there are four edges (two node type, two binary, one flag)
-        success("start_graph(G), graph_edge_count(G,N), =(N,5)");
-        success("start_graph(G), graph_edge_set(G,S), length(S,5)");
+        success("start_graph(G), graph_edge_count(G,N), =(N,3)");
+        success("start_graph(G), graph_edge_set(G,S), length(S,3)");
 
         // Assert that some edge is an edge
         success("start_graph(G), graph_edge(G,E), is_edge(E)");
@@ -70,33 +70,33 @@ public class PredicateTests {
 
         // Assert that there are edges labeled 'a', 'f', 'A', 'F' with the appropriate node type
         success("start_graph(G), graph_edge(G,E), edge_label(E,'f'), edge_role_binary(E)");
-        success("start_graph(G), graph_edge(G,E), edge_label(E,'A'), edge_role_node_type(E)");
-        success("start_graph(G), graph_edge(G,E), edge_label(E,'F'), edge_role_node_type(E)");
+        //success("start_graph(G), graph_edge(G,E), edge_label(E,'A'), edge_role_node_type(E)");
+        //success("start_graph(G), graph_edge(G,E), edge_label(E,'F'), edge_role_node_type(E)");
         success("start_graph(G), graph_edge(G,E), edge_label(E,'a'), edge_role_flag(E)");
 
         // Assert that the edge source and edge target of a node type edge are the same
-        success("start_graph(G), graph_edge(G,E), edge_label(E,'A'), edge_source(E,S), edge_target(E,S)");
+        //success("start_graph(G), graph_edge(G,E), edge_label(E,'A'), edge_source(E,S), edge_target(E,S)");
 
         // Test label_edge
         success("start_graph(G), label('f',AL), label_edge(G,AL,E), edge_label(E,'f'), edge_role_binary(E)");
         success("start_graph(G), label('flag:a',AL), label_edge(G,AL,E), edge_label(E,'a'), edge_role_flag(E)");
-        success("start_graph(G), label('type:A',AL), label_edge(G,AL,E), edge_label(E,'A'), edge_role_node_type(E)");
+        //success("start_graph(G), label('type:A',AL), label_edge(G,AL,E), edge_label(E,'A'), edge_role_node_type(E)");
 
         // Test label_edge_set
         success("start_graph(G), label('f', AL), label_edge_set(G,AL,E), length(E,1)");
         success("start_graph(G), label('flag:a', AL), label_edge_set(G,AL,E), length(E,1)");
-        success("start_graph(G), label('type:A', AL), label_edge_set(G,AL,E), length(E,1)");
+        //success("start_graph(G), label('type:A', AL), label_edge_set(G,AL,E), length(E,1)");
 
         // Test node_edge
         success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'f'), edge_role_binary(E)");
         success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'a'), edge_role_flag(E)");
-        success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'A'), edge_role_node_type(E)");
+        //success("start_graph(G), graph_node(G,N), node_edge(G,N,E), edge_label(E,'A'), edge_role_node_type(E)");
 
         // Test node_edge_set, there should be nodes with 1, 2 and 4 edges
         success("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,1)");
-        success("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,2)");
-        failure("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,3)");
-        success("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,4)");
+        failure("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,2)");
+        success("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,3)");
+        failure("start_graph(G), graph_node(G,N), node_edge_set(G,N,E), length(E,4)");
 
         // Assert that there should be nodes numbered 0 through 2
         success("start_graph(G), graph_node(G,N), node_number(N,0)");
@@ -107,17 +107,17 @@ public class PredicateTests {
         // Test node_out_edge and node_out_edge_set
         success("start_graph(G), graph_node(G,N), node_out_edge(G,N,E), edge_source(E,N)");
         success("start_graph(G), graph_node(G,N), node_out_edge_set(G,N,E), length(E,0)");
-        success("start_graph(G), graph_node(G,N), node_out_edge_set(G,N,E), length(E,1)");
-        failure("start_graph(G), graph_node(G,N), node_out_edge_set(G,N,E), length(E,3)");
+        failure("start_graph(G), graph_node(G,N), node_out_edge_set(G,N,E), length(E,1)");
+        success("start_graph(G), graph_node(G,N), node_out_edge_set(G,N,E), length(E,3)");
 
         // Test node_self_edges
         success("start_graph(G), graph_node(G,N), node_self_edges(G,N,E), length(E,1)");
-        success("start_graph(G), graph_node(G,N), node_self_edges(G,N,E), length(E,2)");
+        failure("start_graph(G), graph_node(G,N), node_self_edges(G,N,E), length(E,2)");
         failure("start_graph(G), graph_node(G,N), node_self_edges(G,N,E), length(E,3)");
 
         // Test node_self_edges_excl
         success("start_graph(G), graph_node(G,N), node_self_edges_excl(G,N,E), length(E,1)");
-        success("start_graph(G), graph_node(G,N), node_self_edges_excl(G,N,E), length(E,2)");
+        failure("start_graph(G), graph_node(G,N), node_self_edges_excl(G,N,E), length(E,2)");
         failure("start_graph(G), graph_node(G,N), node_self_edges_excl(G,N,E), length(E,3)");
     }
 
@@ -132,7 +132,7 @@ public class PredicateTests {
         // Test graph_binary, graph_flag, graph_node_type
         success("start_graph(G), graph_binary(G,E), edge_role_binary(E)");
         success("start_graph(G), graph_flag(G,E), edge_role_flag(E)");
-        success("start_graph(G), graph_node_type(G,E), edge_role_node_type(E)");
+        // success("start_graph(G), graph_node_type(G,E), edge_role_node_type(E)");
 
         // Test node_path
         success("gts(G), start_state(S), final_state(F), node_path(G,S,F,[A,B,F])");
@@ -296,7 +296,7 @@ public class PredicateTests {
         failure("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-b',R)");
 
         // Assert that rulematch_edge gives an edge
-        success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_edge(M,E), is_edge(E)");
+        // success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_edge(M,E), is_edge(E)");
 
         // Assert that rulematch_node gives a node
         success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_node(M,N), is_node(N)");

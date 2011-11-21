@@ -19,45 +19,42 @@ package groove.match.plan;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
-import groove.util.NestedIterator;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A search item that searches an image for a node type edge.
+ * A search item that searches an image for a typed node.
  * @author Arend Rensink
  * @version $Revision $
  */
 class NodeTypeSearchItem extends AbstractSearchItem {
     /**
-     * Creates a search item for a given node type edge.
-     * @param edge the edge to be matched
+     * Creates a search item for a given typed node.
+     * @param node the node to be matched
      * @param typeGraph label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
-        assert edge.label().isNodeType();
-        this.edge = edge;
-        this.source = edge.source();
-        this.label = edge.label().getTypeLabel();
+    public NodeTypeSearchItem(RuleNode node, TypeGraph typeGraph) {
+        assert node.getType().getGraph() == typeGraph;
+        this.source = node;
+        this.label = node.getType().label();
         assert this.label.isNodeType() : String.format(
             "Label '%s' is not a node type", this.label);
-        this.boundNodes = new HashSet<RuleNode>(Arrays.asList(edge.source()));
+        this.boundNodes = new HashSet<RuleNode>(Arrays.asList(node));
         Set<TypeLabel> labelStoreSubtypes = typeGraph.getSublabels(this.label);
         this.subtypes =
             labelStoreSubtypes == null ? null : new HashSet<TypeLabel>(
                 labelStoreSubtypes);
-        this.hasProperSubtypes =
-            this.subtypes != null && this.subtypes.size() > 1;
+        this.sharpType =
+            node.isSharp() || this.subtypes == null
+                || this.subtypes.size() == 1;
     }
 
     /**
@@ -71,19 +68,20 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /** Returns the singleton set consisting of the matched edge. */
     @Override
     public Collection<RuleEdge> bindsEdges() {
-        return Collections.singleton(this.edge);
+        return Collections.emptySet();
     }
 
     /**
      * Returns the edge for which this item tests.
      */
-    public RuleEdge getEdge() {
-        return this.edge;
+    public RuleNode getNode() {
+        return this.source;
     }
 
     @Override
     public String toString() {
-        return String.format("Find node type %s", getEdge());
+        return String.format("Find node %s %s", this.label, this.sharpType
+                ? "(sharp)" : "");
     }
 
     /**
@@ -95,15 +93,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     public int compareTo(SearchItem other) {
         int result = 0;
         if (other instanceof NodeTypeSearchItem) {
-            // compare first the edge labels, then the edge ends
-            RuleEdge otherEdge = ((NodeTypeSearchItem) other).getEdge();
-            result = getEdge().label().compareTo(otherEdge.label());
-            if (result == 0) {
-                result = getEdge().source().compareTo(otherEdge.source());
-            }
-            if (result == 0) {
-                result = getEdge().target().compareTo(otherEdge.target());
-            }
+            result = this.label.compareTo(((NodeTypeSearchItem) other).label);
         }
         if (result == 0) {
             return super.compareTo(other);
@@ -118,7 +108,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         // index, the assertion may fail in case of a positive and negative test
         // on the same edge (stupid!)
         // assert !strategy.isEdgeFound(edge);
-        this.edgeIx = strategy.getEdgeIx(this.edge);
         this.sourceFound = strategy.isNodeFound(this.source);
         this.sourceIx = strategy.getNodeIx(this.source);
     }
@@ -128,7 +117,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      */
     @Override
     int getRating() {
-        return this.edge.label().hashCode();
+        return this.label.hashCode();
     }
 
     final public Record createRecord(
@@ -145,42 +134,34 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge is pre-matched in the search. */
     boolean isPreMatched(Search search) {
-        return search.getEdgeSeed(this.edgeIx) != null;
+        return search.getNodeSeed(this.sourceIx) != null;
     }
 
     /** Indicates if the source node has a singular image in the search. */
     boolean isSingular(Search search) {
-        boolean sourceSingular =
-            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
-        return sourceSingular;
+        return this.sourceFound || isPreMatched(search);
     }
 
     /** Creates a record for the case the image is singular. */
     SingularRecord createSingularRecord(Search search) {
-        return new NodeTypeSingularRecord(search, this.edgeIx, this.sourceIx);
+        return new NodeTypeSingularRecord(search, this.sourceIx);
     }
 
     /** Creates a record for the case the image is not singular. */
-    MultipleRecord<HostEdge> createMultipleRecord(Search search) {
-        return new NodeTypeMultipleRecord(search, this.edgeIx, this.sourceIx,
+    MultipleRecord<HostNode> createMultipleRecord(Search search) {
+        return new NodeTypeMultipleRecord(search, this.sourceIx,
             this.sourceFound);
     }
 
     /**
-     * The (node type) edge for which this search item is to find an image.
-     */
-    final RuleEdge edge;
-    /**
-     * The source end of {@link #edge}, separately stored for efficiency.
+     * The node to be matched.
      */
     final RuleNode source;
-    /** The label of {@link #edge}, separately stored for efficiency. */
+    /** The type label to be matched. */
     final TypeLabel label;
     /** The set of end nodes of this edge. */
     private final Set<RuleNode> boundNodes;
 
-    /** The index of the edge in the search. */
-    int edgeIx;
     /** The index of the source in the search. */
     int sourceIx;
     /** Indicates if the source is found before this item is invoked. */
@@ -188,7 +169,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /** The collection of subtypes of this node type. */
     final Collection<TypeLabel> subtypes;
     /** Flag indicating if the node type has non-trivial subtypes. */
-    final boolean hasProperSubtypes;
+    final boolean sharpType;
 
     /**
      * Search record to be used if the node type image is completely determined
@@ -198,9 +179,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      */
     private class NodeTypeSingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
-        public NodeTypeSingularRecord(Search search, int edgeIx, int sourceIx) {
+        public NodeTypeSingularRecord(Search search, int sourceIx) {
             super(search);
-            this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
         }
 
@@ -213,25 +193,12 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         boolean find() {
             boolean result = false;
-            if (NodeTypeSearchItem.this.hasProperSubtypes) {
-                // iterate over the subtypes
-                Iterator<HostEdge> edgeImageIter = getEdgeImageIter();
-                while (edgeImageIter.hasNext()) {
-                    HostEdge edgeImage = edgeImageIter.next();
-                    result = isImageCorrect(edgeImage);
-                    if (result) {
-                        this.image = edgeImage;
-                        break;
-                    }
-                }
+            this.image = computeImage();
+            TypeLabel sourceLabel = this.image.getType().label();
+            if (NodeTypeSearchItem.this.sharpType) {
+                result = NodeTypeSearchItem.this.label.equals(sourceLabel);
             } else {
-                // there is no proper subtype, so we only need try out the node
-                // type itself
-                HostEdge edgeImage = getEdgeImage();
-                result = isImageCorrect(edgeImage);
-                if (result) {
-                    this.image = edgeImage;
-                }
+                result = NodeTypeSearchItem.this.subtypes.contains(sourceLabel);
             }
             if (result) {
                 write();
@@ -241,85 +208,34 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         void erase() {
-            this.search.putEdge(this.edgeIx, null);
+            this.search.putNode(this.sourceIx, null);
         }
 
         @Override
         final boolean write() {
-            return this.search.putEdge(this.edgeIx, this.image);
-        }
-
-        /** Tests if the (uniquely determined) edge image can be used. */
-        private boolean isImageCorrect(HostEdge image) {
-            return this.host.containsEdge(image);
-        }
-
-        /**
-         * Returns an iterator over potential edge images created from subtypes.
-         */
-        private Iterator<HostEdge> getEdgeImageIter() {
-            final HostNode sourceFind =
-                this.sourcePreMatch == null
-                        ? this.search.getNode(this.sourceIx)
-                        : this.sourcePreMatch;
-            assert sourceFind != null : String.format(
-                "Source node of %s has not been found",
-                NodeTypeSearchItem.this.edge);
-            final Iterator<TypeLabel> subtypeIter =
-                NodeTypeSearchItem.this.subtypes.iterator();
-            return new Iterator<HostEdge>() {
-                @Override
-                public boolean hasNext() {
-                    return subtypeIter.hasNext();
-                }
-
-                @Override
-                public HostEdge next() {
-                    TypeLabel subtype = subtypeIter.next();
-                    return createEdge(sourceFind, subtype, sourceFind);
-                }
-
-                @Override
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-            };
-
+            return this.search.putNode(this.sourceIx, this.image);
         }
 
         /**
          * Creates and returns the edge image, as constructed from the available
          * end node images.
          */
-        private HostEdge getEdgeImage() {
-            final HostNode sourceFind =
-                this.sourcePreMatch == null
-                        ? this.search.getNode(this.sourceIx)
-                        : this.sourcePreMatch;
-            assert sourceFind != null : String.format(
-                "Source node of %s has not been found",
-                NodeTypeSearchItem.this.edge);
-            return createEdge(sourceFind, getLabel(), sourceFind);
-        }
-
-        /** Callback method to determine the label of the edge image. */
-        private TypeLabel getLabel() {
-            return NodeTypeSearchItem.this.label;
+        private HostNode computeImage() {
+            return this.sourcePreMatch == null
+                    ? this.search.getNode(this.sourceIx) : this.sourcePreMatch;
         }
 
         @Override
         public String toString() {
-            return NodeTypeSearchItem.this.toString() + " <= " + getEdgeImage();
+            return NodeTypeSearchItem.this.toString() + " <= " + computeImage();
         }
 
         /** The pre-matched (fixed) source image, if any. */
         private HostNode sourcePreMatch;
-        /** The index of the edge in the search. */
-        private final int edgeIx;
         /** The index of the source in the search. */
         private final int sourceIx;
         /** The previously found type, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
-        private HostEdge image;
+        private HostNode image;
     }
 
     /**
@@ -328,18 +244,14 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class NodeTypeMultipleRecord extends MultipleRecord<HostEdge> {
+    private class NodeTypeMultipleRecord extends MultipleRecord<HostNode> {
         /**
          * Creates a record based on a given search.
          */
-        NodeTypeMultipleRecord(Search search, int edgeIx, int sourceIx,
-                boolean sourceFound) {
+        NodeTypeMultipleRecord(Search search, int sourceIx, boolean sourceFound) {
             super(search);
-            this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.sourceFound = sourceFound;
-            assert search.getEdge(edgeIx) == null : String.format(
-                "Edge %s already in %s", NodeTypeSearchItem.this.edge, search);
         }
 
         @Override
@@ -354,32 +266,22 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             if (this.sourceFind == null && this.sourceFound) {
                 this.sourceFind = this.search.getNode(this.sourceIx);
                 assert this.sourceFind != null : String.format(
-                    "Source node of %s not found", NodeTypeSearchItem.this.edge);
+                    "Node %s not found", NodeTypeSearchItem.this.source);
             }
             initImages();
         }
 
         @Override
-        boolean write(HostEdge image) {
-            assert image.target() == image.source();
+        boolean write(HostNode image) {
+            if (NodeTypeSearchItem.this.sharpType
+                && NodeTypeSearchItem.this.label != image.getType().label()
+                || !NodeTypeSearchItem.this.subtypes.contains(image.getType().label())) {
+                return false;
+            }
             if (this.sourceFind == null) {
-                if (!this.search.putNode(this.sourceIx, image.source())) {
+                if (!this.search.putNode(this.sourceIx, image)) {
                     return false;
                 }
-            } else if (this.checkSource) {
-                if (image.source() != this.sourceFind) {
-                    return false;
-                }
-            }
-            if (this.checkLabel) {
-                if (NodeTypeSearchItem.this.hasProperSubtypes
-                    && NodeTypeSearchItem.this.subtypes.contains(image.label())
-                    || NodeTypeSearchItem.this.label == image.label()) {
-                    return false;
-                }
-            }
-            if (this.setEdge) {
-                this.search.putEdge(this.edgeIx, image);
             }
             this.selected = image;
             return true;
@@ -387,18 +289,10 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         void erase() {
-            if (this.setEdge) {
-                this.search.putEdge(this.edgeIx, null);
-            }
-            eraseSourceImage();
-            this.selected = null;
-        }
-
-        /** Rolls back the image set for the source. */
-        private void eraseSourceImage() {
             if (this.sourceFind == null) {
                 this.search.putNode(this.sourceIx, null);
             }
+            this.selected = null;
         }
 
         /**
@@ -408,42 +302,11 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          */
         private void initImages() {
             if (this.sourceFind != null) {
-                // only check the source node edges
-                this.imageIter = this.host.edgeSet(this.sourceFind).iterator();
-                this.checkLabel = true;
-                this.checkSource = false;
+                this.imageIter =
+                    Collections.singleton(this.sourceFind).iterator();
             } else {
-                if (NodeTypeSearchItem.this.hasProperSubtypes) {
-                    // iterate over all edges of all subtypes
-                    final Iterator<TypeLabel> subtypeIter =
-                        NodeTypeSearchItem.this.subtypes.iterator();
-                    this.imageIter =
-                        new NestedIterator<HostEdge>(
-                            new Iterator<Iterator<? extends HostEdge>>() {
-                                @Override
-                                public boolean hasNext() {
-                                    return subtypeIter.hasNext();
-                                }
-
-                                @Override
-                                public Iterator<? extends HostEdge> next() {
-                                    return NodeTypeMultipleRecord.this.host.labelEdgeSet(
-                                        subtypeIter.next()).iterator();
-                                }
-
-                                @Override
-                                public void remove() {
-                                    throw new UnsupportedOperationException();
-                                }
-                            });
-                } else {
-                    this.imageIter =
-                        this.host.labelEdgeSet(NodeTypeSearchItem.this.label).iterator();
-                }
-                this.checkLabel = false;
-                this.checkSource = true;
+                this.imageIter = this.host.nodeSet().iterator();
             }
-            this.setEdge = true;
         }
 
         @Override
@@ -451,8 +314,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             return NodeTypeSearchItem.this.toString() + " <= " + this.selected;
         }
 
-        /** The index of the edge in the search. */
-        final private int edgeIx;
         /** The index of the source in the search. */
         final private int sourceIx;
         /** Indicates if the source is found before this item is invoked. */
@@ -466,23 +327,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * source, or the source was pre-matched.
          */
         private HostNode sourceFind;
-        /**
-         * Flag indicating the if sources of images returned by
-         * {@link #initImages()} have to be checked against the found source
-         * image.
-         */
-        private boolean checkSource;
-        /**
-         * Flag indicating the if labels of images returned by
-         * {@link #initImages()} have to be checked against the edge label.
-         */
-        private boolean checkLabel;
-        /**
-         * Flag indicating if the edge image should actually be set in the
-         * search.
-         */
-        private boolean setEdge;
         /** Image found by the latest call to {@link #next()}, if any. */
-        private HostEdge selected;
+        private HostNode selected;
     }
 }

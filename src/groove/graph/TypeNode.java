@@ -25,7 +25,7 @@ import java.awt.Color;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeNode implements Node {
+public class TypeNode implements Node, TypeElement {
     /** 
      * Constructs a new type node, with a given number and label.
      * The label must be a node type.
@@ -54,18 +54,18 @@ public class TypeNode implements Node {
         boolean result =
             obj instanceof TypeNode
                 && ((TypeNode) obj).getNumber() == getNumber()
-                && ((TypeNode) obj).getLabel().equals(getLabel());
+                && ((TypeNode) obj).label().equals(label());
         return result;
     }
 
     @Override
     public int hashCode() {
-        return getNumber() ^ getLabel().hashCode();
+        return getNumber() ^ label().hashCode();
     }
 
     @Override
     public String toString() {
-        return getLabel().text();
+        return label().text();
     }
 
     @Override
@@ -89,7 +89,7 @@ public class TypeNode implements Node {
     }
 
     /** Returns the type of this node. */
-    public TypeLabel getLabel() {
+    public TypeLabel label() {
         return this.type;
     }
 
@@ -133,10 +133,7 @@ public class TypeNode implements Node {
         this.colour = colour;
     }
 
-    /** 
-     * Returns the type graph with which this node is associated, if any.
-     * @return the associated type graph, or {@code null} if there is none.
-     */
+    @Override
     public TypeGraph getGraph() {
         return this.graph;
     }

@@ -151,7 +151,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     public E createEdge(N source, Label label, N target) {
         assert source != null : "Source node of host edge should not be null";
         assert target != null : "Target node of host edge should not be null";
-        E edge = createEdge(source, label, target, getEdgeCount());
+        E edge = newEdge(source, label, target, getEdgeCount());
         return storeEdge(edge);
     }
 
@@ -160,7 +160,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
      * This will then be compared with the edge store to replace it by its
      * canonical representative.
      */
-    abstract protected E createEdge(N source, Label label, N target, int nr);
+    abstract protected E newEdge(N source, Label label, N target, int nr);
 
     /** Puts an edge in the store and returns its canonical representative. */
     protected E storeEdge(E edge) {

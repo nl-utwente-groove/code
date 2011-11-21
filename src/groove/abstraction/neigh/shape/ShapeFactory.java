@@ -17,10 +17,9 @@
 package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.trans.RuleToShapeMap;
-import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
@@ -59,19 +58,19 @@ public final class ShapeFactory extends HostFactory {
     }
 
     @Override
-    public ShapeNode createNode(TypeNode typeNode) {
-        return (ShapeNode) super.createNode(typeNode);
+    public ShapeNode createNode(TypeLabel type) {
+        return (ShapeNode) super.createNode(type);
     }
 
     @Override
-    public ShapeNode createNode(int nr, TypeNode typeNode) {
-        return (ShapeNode) super.createNode(nr, typeNode);
+    public ShapeNode createNode(int nr, TypeLabel type) {
+        return (ShapeNode) super.createNode(nr, type);
     }
 
     @Override
-    protected ShapeEdge createEdge(HostNode source, Label label,
+    protected ShapeEdge newEdge(HostNode source, TypeEdge type,
             HostNode target, int nr) {
-        return new ShapeEdge(this, (ShapeNode) source, (TypeLabel) label,
+        return new ShapeEdge(this, (ShapeNode) source, type,
             (ShapeNode) target, nr);
     }
 

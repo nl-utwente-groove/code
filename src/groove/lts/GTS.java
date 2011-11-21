@@ -22,14 +22,12 @@ import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
-import groove.trans.DefaultHostGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
@@ -104,19 +102,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * Returns a copy of the given graph with a fresh element factory.
      * The resulting graph will be used as start graph state.
      */
-    protected DefaultHostGraph createStartGraph(HostGraph startGraph) {
-        HostFactory factory = HostFactory.newInstance();
-        DefaultHostGraph result =
-            new DefaultHostGraph(startGraph.getName(), factory);
-        for (HostNode node : startGraph.nodeSet()) {
-            factory.addNode(node);
-            result.addNode(node);
-        }
-        for (HostEdge edge : startGraph.edgeSet()) {
-            factory.addEdge(edge);
-            result.addEdge(edge);
-        }
-        GraphInfo.transfer(startGraph, result, null);
+    protected HostGraph createStartGraph(HostGraph startGraph) {
+        HostGraph result = startGraph.clone();
         result.setFixed();
         return result;
     }

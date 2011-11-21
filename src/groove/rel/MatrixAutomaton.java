@@ -21,6 +21,7 @@ import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
@@ -200,21 +201,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             if (isInverse) {
                 label = label.getInvLabel();
             }
-            Set<TypeLabel> derivedLabels;
-            if (label.isWildcard()) {
-                derivedLabels =
-                    new HashSet<TypeLabel>(
-                        this.typeGraph.getLabels(label.getWildcardKind()));
-                derivedLabels.add(DUMMY_LABELS.get(label.getWildcardKind()));
-            } else if (label.isAtom()) {
-                derivedLabels =
-                    this.typeGraph.getSublabels(label.getTypeLabel());
-            } else {
-                assert label.isSharp();
-                derivedLabels = Collections.singleton(label.getTypeLabel());
+            Set<TypeLabel> derivedLabels = new HashSet<TypeLabel>();
+            for (TypeElement element : this.typeGraph.getMatches(label)) {
+                derivedLabels.add(element.label());
             }
-            assert derivedLabels != null : String.format(
-                "No derived labels for %s", label);
+            if (label.isWildcard()) {
+                derivedLabels.add(DUMMY_LABELS.get(label.getWildcardKind()));
+            }
             Map<TypeLabel,Set<RegEdge>>[][] nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
             for (TypeLabel derivedLabel : derivedLabels) {
@@ -454,22 +447,11 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     @Override
-    public Set<TypeLabel> getAlphabet() {
+    public Set<TypeElement> getAlphabet() {
         assert isFixed();
-        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        Set<TypeElement> result = new HashSet<TypeElement>();
         for (RegEdge edge : edgeSet()) {
-            RuleLabel label = edge.label();
-            if (label.isInv()) {
-                label = label.getInvLabel();
-            }
-            if (label.isWildcard()) {
-                result.addAll(this.typeGraph.getLabels(label.getWildcardKind()));
-            } else if (label.isSharp()) {
-                result.add(label.getTypeLabel());
-            } else {
-                assert label.isAtom();
-                result.addAll(this.typeGraph.getSublabels(label.getTypeLabel()));
-            }
+            result.addAll(this.typeGraph.getMatches(edge.label()));
         }
         return result;
     }
@@ -932,23 +914,30 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              */
             private void propagate(int keyIndex, HostNode image,
                     Map<LabelVar,TypeLabel> valuation) {
-                extend(getPosLabelEdgeMap(keyIndex), getPosEdgeSet(image),
-                    valuation, true);
-                extend(getInvLabelEdgeMap(keyIndex), getInvEdgeSet(image),
-                    valuation, false);
+                extend(getPosLabelEdgeMap(keyIndex), image,
+                    getPosEdgeSet(image), valuation, true);
+                extend(getInvLabelEdgeMap(keyIndex), image,
+                    getInvEdgeSet(image), valuation, false);
             }
 
             /**
              * Extends the match map with key-image pairs derived from the end
              * points of equi-labelled edges from automaton and graph. Also
              * takes wildcard labels into account.
+             * @param image current host node
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
             private void extend(Map<TypeLabel,int[]> keyLabelEdgeMap,
+                    HostNode image,
                     Collection<? extends HostEdge> imageEdgeSet,
                     Map<LabelVar,TypeLabel> valuation, boolean positive) {
                 if (keyLabelEdgeMap != null) {
+                    if (!MatrixAutomaton.this.typeGraph.isImplicit()) {
+                        TypeLabel imageLabel = image.getType().label();
+                        extend(keyLabelEdgeMap.get(imageLabel), image,
+                            imageLabel, valuation);
+                    }
                     for (HostEdge imageEdge : imageEdgeSet) {
                         if (MatchingAlgorithm.this.remainingImageCount == 0) {
                             break;
@@ -957,8 +946,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         HostNode imageNode =
                             positive ? getOpposite(imageEdge)
                                     : getThisEnd(imageEdge);
-                        extend(keyLabelEdgeMap.get(imageEdge.label()),
-                            imageNode, imageLabel, valuation);
+                        extend(keyLabelEdgeMap.get(imageLabel), imageNode,
+                            imageLabel, valuation);
                         //                        extend(
                         //                            keyLabelEdgeMap.get(DUMMY_LABELS[imageEdge.label().getKind()]),
                         //                            imageNode, imageLabel, valuation);
