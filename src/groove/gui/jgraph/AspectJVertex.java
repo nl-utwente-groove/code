@@ -593,13 +593,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (getNode().getGraphRole() == GraphRole.HOST) {
             TypeNode typeNode = getNodeType();
             result = typeNode.getLabelPattern();
-            if (result == null) {
-                // The node doesn't have a label pattern but maybe some super
-                // type does. Check the label store in the type graph.
-                result =
-                    getJGraph().getTypeGraph().getLabelStore().getPattern(
-                        typeNode.label());
-            }
         }
         return result;
     }

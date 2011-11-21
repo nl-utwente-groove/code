@@ -34,13 +34,11 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.util.Duo;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,7 +83,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @return mapping from nodes in the added type graph to the corresponding nodes
      * in this type graph
      */
-    public Map<TypeNode,TypeNode> add(TypeGraph other) {
+    public Map<TypeNode,TypeNode> add(TypeGraph other) throws FormatException {
         testFixed(false);
         Map<TypeNode,TypeNode> otherToThis = new HashMap<TypeNode,TypeNode>();
         for (Node otherNode : other.nodeSet()) {
@@ -111,11 +109,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
         }
-        for (Duo<TypeNode> pair : other.inheritance) {
-            this.inheritance.add(Duo.newDuo(otherToThis.get(pair.one()),
-                otherToThis.get(pair.two())));
+        for (Map.Entry<TypeNode,Set<TypeNode>> entry : other.nodeDirectSupertypeMap.entrySet()) {
+            for (TypeNode supertype : entry.getValue()) {
+                addInheritance(otherToThis.get(entry.getKey()),
+                    otherToThis.get(supertype));
+            }
         }
-        this.labelStore.add(other.labelStore);
         return otherToThis;
     }
 
@@ -123,18 +122,16 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public boolean addNode(TypeNode node) {
         boolean result = super.addNode(node);
         if (result) {
-            assert !this.generatedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
-            this.predefinedNodes = true;
             TypeNode oldType = this.typeNodeMap.put(node.label(), node);
             assert oldType == null : String.format(
                 "Duplicate type node for %s", oldType.label());
             if (node.isImported()) {
                 this.imports.add(node);
             }
-            this.labelStore.addLabel(node.label());
-            if (node.getLabelPattern() != null) {
-                this.labelStore.setPattern(node.label(), node.getLabelPattern());
-            }
+            this.nodeDirectSubtypeMap.add(node);
+            this.nodeDirectSupertypeMap.add(node);
+            this.nodeSubtypeMap.add(node);
+            this.nodeSupertypeMap.add(node);
         }
         return result;
     }
@@ -153,55 +150,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             "Label %s is not a node type", label);
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
-            assert !this.predefinedNodes : "Mixed calls of TypeGraph.addNode(Node) and TypeGraph.addNode(Label)";
             result = getFactory().createNode(label);
-            this.typeNodeMap.put(label, result);
-            super.addNode(result);
-            this.generatedNodes = true;
+            addNode(result);
         }
         return result;
-    }
-
-    /** Flag indicating that {@link #addNode(TypeLabel)} has been used
-     * to add type nodes.
-     */
-    private boolean generatedNodes;
-    /** Flag indicating that {@link #addNode(TypeNode)} has been used
-     * to add type nodes.
-     */
-    private boolean predefinedNodes;
-
-    /** Adds the label as well as the edge. */
-    @Override
-    public TypeEdge addEdge(TypeNode source, Label label, TypeNode target) {
-        TypeEdge result = super.addEdge(source, label, target);
-        this.labelStore.addLabel(result.label());
-        if (label.isNodeType() && source.getLabelPattern() != null) {
-            this.labelStore.setPattern(result.label(), source.getLabelPattern());
-        }
-        return result;
-    }
-
-    /** Adds the labels as well as the edges. */
-    @Override
-    public boolean addEdgeSetWithoutCheck(Collection<? extends TypeEdge> edgeSet) {
-        for (TypeEdge edge : edgeSet) {
-            this.labelStore.addLabel(edge.label());
-        }
-        return super.addEdgeSetWithoutCheck(edgeSet);
-    }
-
-    /** Adds the label as well as the edge. */
-    @Override
-    public boolean addEdgeWithoutCheck(TypeEdge edge) {
-        this.labelStore.addLabel(edge.label());
-        return super.addEdgeWithoutCheck(edge);
     }
 
     @Override
     public TypeGraph clone() {
         TypeGraph result = new TypeGraph(getName());
-        result.add(this);
+        try {
+            result.add(this);
+        } catch (FormatException e) {
+            assert false;
+        }
         return result;
     }
 
@@ -228,20 +190,31 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @throws FormatException if the supertype or subtype is not a node type,
      *         or if the new subtype relation creates a cycle.
      */
-    public void addInheritance(TypeNode supertypeNode, TypeNode subtypeNode)
+    public void addInheritance(TypeNode subtype, TypeNode supertype)
         throws FormatException {
         testFixed(false);
-        this.inheritance.add(Duo.newDuo(subtypeNode, supertypeNode));
-        TypeLabel supertype = supertypeNode.label();
-        assert supertype != null : String.format(
-            "Node '%s' does not have type label", supertypeNode);
-        TypeLabel subtype = subtypeNode.label();
-        assert subtype != null : String.format(
-            "Node '%s' does not have type label", subtypeNode);
-        try {
-            this.labelStore.addSubtype(supertype, subtype);
-        } catch (IllegalArgumentException exc) {
-            throw new FormatException(exc.getMessage());
+        if (supertype.label().isDataType()) {
+            throw new FormatException("Data type '%s' cannot be supertype",
+                supertype);
+        }
+        if (subtype.label().isDataType()) {
+            throw new FormatException("Data type '%s' cannot be subtype",
+                subtype);
+        }
+        if (this.nodeSupertypeMap.get(supertype).contains(subtype)) {
+            throw new FormatException(String.format(
+                "The relation '%s -> %s' introduces a cyclic type dependency",
+                subtype, supertype));
+        }
+        this.nodeDirectSubtypeMap.get(supertype).add(subtype);
+        this.nodeDirectSupertypeMap.get(subtype).add(supertype);
+        Set<TypeNode> subsubtypes = this.nodeSubtypeMap.get(subtype);
+        Set<TypeNode> supersupertypes = this.nodeSupertypeMap.get(supertype);
+        for (TypeNode subsubtype : subsubtypes) {
+            this.nodeSupertypeMap.get(subsubtype).addAll(supersupertypes);
+        }
+        for (TypeNode supersupertype : supersupertypes) {
+            this.nodeSubtypeMap.get(supersupertype).addAll(subsubtypes);
         }
     }
 
@@ -287,8 +260,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         errors.add(new FormatError(
                             "Possible type confusion of %s-%ss",
                             edgeLabel.text(), edgeLabel.isFlag() ? "flag"
-                                    : "edge", edge1.source(), edge1,
-                            edge2.source(), edge2));
+                                    : "edge", edge1, edge2));
                     }
                 }
             }
@@ -301,32 +273,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     @Override
     public void setFixed() {
         super.setFixed();
-        this.labelStore.setFixed();
-        // build node subtype and supertype maps
-        this.nodeDirectSubtypeMap = new SubtypeMap(this);
-        this.nodeDirectSupertypeMap = new SubtypeMap(this);
-        this.nodeSubtypeMap = new SubtypeMap(this);
-        this.nodeSupertypeMap = new SubtypeMap(this);
-        for (TypeNode node : nodeSet()) {
-            this.nodeSubtypeMap.get(node).add(node);
-            this.nodeSupertypeMap.get(node).add(node);
-        }
-        // fill node subtype and supertype maps
-        for (Duo<TypeNode> pair : this.inheritance) {
-            TypeNode subtype = pair.one();
-            TypeNode supertype = pair.two();
-            this.nodeDirectSubtypeMap.get(supertype).add(subtype);
-            this.nodeDirectSupertypeMap.get(subtype).add(supertype);
-            Set<TypeNode> subsubtypes = this.nodeSubtypeMap.get(subtype);
-            Set<TypeNode> supersupertypes =
-                this.nodeSupertypeMap.get(supertype);
-            for (TypeNode subsubtype : subsubtypes) {
-                this.nodeSupertypeMap.get(subsubtype).addAll(supersupertypes);
-            }
-            for (TypeNode supersupertype : supersupertypes) {
-                this.nodeSubtypeMap.get(supersupertype).addAll(subsubtypes);
-            }
-        }
         // build abstract edge subtype map
         for (TypeEdge edge : edgeSet()) {
             if (edge.isAbstract()) {
@@ -493,7 +439,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (edgeLabel.isAtom()) {
                 typeEdge =
                     getTypeEdge(sourceType, edgeLabel.getTypeLabel(),
-                        targetType);
+                        targetType, false);
                 if (typeEdge == null) {
                     errors.add(new FormatError("%s-node has unknown %s-%s",
                         sourceType, edgeLabel, edge.getRole().getDescription(
@@ -609,7 +555,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 // which was already reported as an error
                 continue;
             }
-            TypeEdge typeEdge = getTypeEdge(sourceType, edgeType, targetType);
+            TypeEdge typeEdge =
+                getTypeEdge(sourceType, edgeType, targetType, false);
             if (typeEdge == null) {
                 errors.add(new FormatError("%s-node has unknown %s-%s",
                     sourceType, edgeType.text(),
@@ -720,18 +667,22 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * Returns the type edge for a given source and target node types and 
      * edge label, or {@code null} if the edge label does not occur for the
      * node type or any of its supertypes.
+     * @param precise if {@code true}, the source and target types must be observed
+     * precisely; otherwise, supertypes are allowed
      */
     public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label,
-            TypeNode targetType) {
+            TypeNode targetType, boolean precise) {
         TypeEdge result = null;
-        Set<TypeLabel> sourceSupertypes =
-            this.labelStore.getSupertypes(sourceType.label());
-        Set<TypeLabel> targetSupertypes =
-            this.labelStore.getSupertypes(targetType.label());
+        Set<TypeNode> sourceSupertypes =
+            precise ? Collections.singleton(sourceType)
+                    : getSupertypes(sourceType);
+        Set<TypeNode> targetSupertypes =
+            precise ? Collections.singleton(targetType)
+                    : getSupertypes(targetType);
         if (sourceSupertypes != null && targetSupertypes != null) {
             for (TypeEdge edge : labelEdgeSet(label)) {
-                if (sourceSupertypes.contains(edge.source().label())
-                    && targetSupertypes.contains(edge.target().label())) {
+                if (sourceSupertypes.contains(edge.source())
+                    && targetSupertypes.contains(edge.target())) {
                     // try to find a concrete type
                     if (result == null || result.isAbstract()) {
                         result = edge;
@@ -783,12 +734,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Tests if two nodes have a common subtype. */
     private boolean hasCommonSubtype(TypeNode node1, TypeNode node2) {
-        TypeLabel label1 = node1.label();
-        TypeLabel label2 = node2.label();
         // check for common subtypes
-        Set<TypeLabel> sub1 =
-            new HashSet<TypeLabel>(getLabelStore().getSubtypes(label1));
-        Set<TypeLabel> sub2 = getLabelStore().getSubtypes(label2);
+        Set<TypeNode> sub1 = new HashSet<TypeNode>(getSubtypes(node1));
+        Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub2 != null;
         return sub1.removeAll(sub2);
     }
@@ -797,7 +745,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * Returns the saturated type graph. This is used for checking regular
      * expressions.
      */
-    private Map<TypeLabel,HostNode> getSaturationNodeMap() {
+    private Map<TypeNode,HostNode> getSaturationNodeMap() {
         if (this.saturationNodeMap == null) {
             initSaturation();
         }
@@ -823,56 +771,55 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         testFixed(true);
         HostGraph result =
             new DefaultHostGraph(getName(), HostFactory.newInstance(this));
-        Map<TypeLabel,HostNode> typeNodeMap = new HashMap<TypeLabel,HostNode>();
+        Map<TypeNode,HostNode> typeNodeMap = new HashMap<TypeNode,HostNode>();
         /* Inverse subtyping-saturated set of flag-bearing node types. */
-        Set<TypeLabel> flaggedNodes = new HashSet<TypeLabel>();
+        Set<TypeNode> flaggedNodes = new HashSet<TypeNode>();
         /* Inverse subtype-saturated mapping from node types to all outgoing binary edge neighbours. */
-        Map<TypeLabel,Set<TypeLabel>> connectMap =
-            new HashMap<TypeLabel,Set<TypeLabel>>();
+        Map<TypeNode,Set<TypeNode>> connectMap =
+            new HashMap<TypeNode,Set<TypeNode>>();
         for (TypeNode typeNode : nodeSet()) {
             HostNode nodeImage = result.addNode();
-            TypeLabel typeLabel = typeNode.label();
-            typeNodeMap.put(typeLabel, nodeImage);
-            connectMap.put(typeLabel, new HashSet<TypeLabel>());
+            typeNodeMap.put(typeNode, nodeImage);
+            connectMap.put(typeNode, new HashSet<TypeNode>());
         }
         for (TypeEdge typeEdge : edgeSet()) {
             TypeLabel edgeType = typeEdge.label();
-            TypeLabel sourceType = typeEdge.source().label();
-            TypeLabel targetType = typeEdge.target().label();
+            TypeNode sourceType = typeEdge.source();
+            TypeNode targetType = typeEdge.target();
             if (edgeType.isBinary()) {
-                for (TypeLabel sourceSubtype : this.labelStore.getSubtypes(sourceType)) {
-                    for (TypeLabel targetSubtype : this.labelStore.getSubtypes(targetType)) {
+                for (TypeNode sourceSubtype : getSubtypes(sourceType)) {
+                    for (TypeNode targetSubtype : getSubtypes(targetType)) {
                         result.addEdge(typeNodeMap.get(sourceSubtype),
                             edgeType, typeNodeMap.get(targetSubtype));
                     }
                 }
                 if (connectMap.get(sourceType).add(targetType)) {
-                    for (TypeLabel sourceSuperType : this.labelStore.getSupertypes(sourceType)) {
+                    for (TypeNode sourceSuperType : getSupertypes(sourceType)) {
                         connectMap.get(sourceSuperType).addAll(
-                            this.labelStore.getSupertypes(targetType));
+                            getSupertypes(targetType));
                     }
                 }
             } else {
-                for (TypeLabel sourceSubtype : this.labelStore.getSubtypes(sourceType)) {
+                for (TypeNode sourceSubtype : getSubtypes(sourceType)) {
                     result.addEdge(typeNodeMap.get(sourceSubtype), edgeType,
                         typeNodeMap.get(sourceSubtype));
                 }
                 if (edgeType.isFlag() && flaggedNodes.add(sourceType)) {
-                    for (TypeLabel sourceSuperType : this.labelStore.getSupertypes(sourceType)) {
+                    for (TypeNode sourceSuperType : getSupertypes(sourceType)) {
                         flaggedNodes.add(sourceSuperType);
                     }
                 }
             }
         }
-        for (Map.Entry<TypeLabel,Set<TypeLabel>> connectEntry : connectMap.entrySet()) {
-            for (Label targetType : connectEntry.getValue()) {
+        for (Map.Entry<TypeNode,Set<TypeNode>> connectEntry : connectMap.entrySet()) {
+            for (TypeNode targetType : connectEntry.getValue()) {
                 HostNode source = typeNodeMap.get(connectEntry.getKey());
                 HostNode target = typeNodeMap.get(targetType);
                 result.addEdge(source,
                     MatrixAutomaton.getDummyLabel(EdgeRole.BINARY), target);
             }
         }
-        for (Label flaggedType : flaggedNodes) {
+        for (TypeNode flaggedType : flaggedNodes) {
             HostNode source = typeNodeMap.get(flaggedType);
             result.addEdge(source,
                 MatrixAutomaton.getDummyLabel(EdgeRole.FLAG), source);
@@ -882,49 +829,42 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /** Mapping from type nodes to saturation graph nodes. */
-    private Map<TypeLabel,HostNode> saturationNodeMap;
+    private Map<TypeNode,HostNode> saturationNodeMap;
     /** Saturation of the type graph, for checking regular expressions. */
     private HostGraph saturation;
 
-    /** Returns the labels collected in this type graph. */
-    public LabelStore getLabelStore() {
-        return this.labelStore;
-    }
-
     /** Returns the set of all type labels occurring in the type graph. */
     public Set<TypeLabel> getLabels() {
-        return getLabelStore().getLabels();
+        testFixed(true);
+        if (this.labels == null) {
+            this.labels = new HashSet<TypeLabel>();
+            for (TypeNode node : nodeSet()) {
+                this.labels.add(node.label());
+            }
+            for (TypeEdge edge : edgeSet()) {
+                this.labels.add(edge.label());
+            }
+        }
+        return this.labels;
     }
 
-    /** Returns the set of all type labels of a given kind occurring in the type graph. */
-    public Set<TypeLabel> getLabels(EdgeRole role) {
-        return getLabelStore().getLabels(role);
-    }
-
-    /** Returns the set of all sublabels of a given label. */
-    public Set<TypeLabel> getSublabels(TypeLabel label) {
-        return getLabelStore().getSubtypes(label);
-    }
-
-    /** Returns the mapping from node type labels to direct supertypes. */
+    /** Returns an unmodifiable view on the mapping from node type labels to direct supertypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSupertypeMap() {
-        return this.nodeDirectSupertypeMap;
+        return Collections.unmodifiableMap(this.nodeDirectSupertypeMap);
     }
 
-    /** Returns the mapping from node type labels to direct subtypes. */
+    /** Returns an unmodifiable view on the mapping from node type labels to direct subtypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSubtypeMap() {
-        return this.nodeDirectSubtypeMap;
+        return Collections.unmodifiableMap(this.nodeDirectSubtypeMap);
     }
 
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSubtypes(TypeNode node) {
-        testFixed(true);
         return this.nodeSubtypeMap.get(node);
     }
 
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
-        testFixed(true);
         return this.nodeSupertypeMap.get(node);
     }
 
@@ -970,6 +910,17 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    /** Returns the set of type elements with a given label. */
+    public Set<? extends TypeElement> getTypes(TypeLabel label) {
+        Set<TypeElement> result = new HashSet<TypeElement>();
+        if (label.isNodeType() && !isImplicit()) {
+            result.add(getNode(label));
+        } else {
+            result.addAll(labelEdgeSet(label));
+        }
+        return result;
+    }
+
     @Override
     protected boolean isTypeCorrect(Node node) {
         return node instanceof TypeNode;
@@ -982,8 +933,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Type factory associated with this type graph. */
     private final TypeFactory factory;
-    /** Label store permanently associated with this type graph. */
-    private final LabelStore labelStore = new LabelStore();
     /** Mapping from node type labels to the corresponding type nodes. */
     private final Map<Label,TypeNode> typeNodeMap =
         new HashMap<Label,TypeNode>();
@@ -997,66 +946,60 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      */
     private final boolean implicit;
     /**
-     * List of inheritance pairs.
-     */
-    private final List<Duo<TypeNode>> inheritance =
-        new ArrayList<Duo<TypeNode>>();
-    /**
      * Mapping from node types to direct subtypes.
      * The inverse of {@link #nodeDirectSupertypeMap}.
      * Built at the moment of fixing the type graph.
      */
-    private SubtypeMap nodeDirectSubtypeMap;
+    private final NodeTypeMap nodeDirectSubtypeMap = new NodeTypeMap(false);
     /**
      * Mapping from node types to direct supertypes.
      * The inverse of {@link #nodeDirectSubtypeMap}.
      * Built at the moment of fixing the type graph.
      */
-    private SubtypeMap nodeDirectSupertypeMap;
+    private final NodeTypeMap nodeDirectSupertypeMap = new NodeTypeMap(false);
     /**
      * Reflexive and transitive mapping from node types to node subtypes.
      * The closure of {@link #nodeDirectSubtypeMap}, and the inverse of {@link #nodeSupertypeMap}.
      * Built at the moment of fixing the type graph.
      */
-    private SubtypeMap nodeSubtypeMap;
+    private final NodeTypeMap nodeSubtypeMap = new NodeTypeMap(true);
     /**
      * Reflexive and transitive mapping from node types to node supertypes.
      * The closure of {@link #nodeDirectSupertypeMap}, and the inverse of {@link #nodeSubtypeMap}.
      * Built at the moment of fixing the type graph.
      */
-    private SubtypeMap nodeSupertypeMap;
+    private final NodeTypeMap nodeSupertypeMap = new NodeTypeMap(true);
     /**
     * Mapping from abstract edge types to edge subtypes.
     * Built at the moment of fixing the type graph.
     */
     private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap =
         new HashMap<TypeEdge,Set<TypeEdge>>();
+    /** Set of all labels occurring in the type graph. */
+
+    private Set<TypeLabel> labels;
 
     /** Class holding a mapping from type nodes to sets of type nodes. */
-    private static class SubtypeMap extends HashMap<TypeNode,Set<TypeNode>> {
-        public SubtypeMap(TypeGraph typeGraph) {
-            assert typeGraph.isFixed();
-            for (TypeNode node : typeGraph.nodeSet()) {
-                put(node, new HashSet<TypeNode>());
+    private static class NodeTypeMap extends HashMap<TypeNode,Set<TypeNode>> {
+        /** Creates a new, possibly reflexive map. */
+        public NodeTypeMap(boolean reflexive) {
+            this.reflexive = reflexive;
+        }
+
+        /** 
+         * Adds a node to the keys of the map, with an initially empty image.
+         * If the map is reflexive, the node itself is added to the image.
+         * @param node the node to be added.
+         */
+        public void add(TypeNode node) {
+            Set<TypeNode> record = new HashSet<TypeNode>();
+            Set<TypeNode> oldRecord = put(node, record);
+            assert oldRecord == null;
+            if (this.reflexive) {
+                record.add(node);
             }
         }
 
-        /** Adds the content of another subtype map to this one,
-         * modulo a mapping from the other's nodes to this one's.
-         * @param other the other subtype map
-         * @param map mapping from the nodes of other to the nodes of this
-         */
-        public void add(SubtypeMap other, Map<TypeNode,TypeNode> map) {
-            for (Map.Entry<TypeNode,Set<TypeNode>> entry : other.entrySet()) {
-                TypeNode myKey = map.get(entry.getKey());
-                Set<TypeNode> myValue = get(myKey);
-                if (myValue == null) {
-                    put(myKey, myValue = new HashSet<TypeNode>());
-                }
-                for (TypeNode elem : entry.getValue()) {
-                    myValue.add(map.get(elem));
-                }
-            }
-        }
+        private final boolean reflexive;
     }
 }

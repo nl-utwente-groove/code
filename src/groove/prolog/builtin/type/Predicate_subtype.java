@@ -23,8 +23,13 @@ import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Predicate subtype(+TypeGraph,+Label,+Label)
@@ -48,10 +53,13 @@ public class Predicate_subtype extends GraphPrologCode {
                 TypeGraph typeGraph =
                     (TypeGraph) ((JavaObjectTerm) args[0]).value;
                 TypeLabel l1 = (TypeLabel) ((JavaObjectTerm) args[1]).value;
-
+                TypeNode type1 = typeGraph.getNode(l1);
+                List<TypeLabel> supertypes1 = new ArrayList<TypeLabel>();
+                if (type1 != null) {
+                    collectLabels(supertypes1, typeGraph.getSupertypes(type1));
+                }
                 PrologCollectionIterator it =
-                    new PrologCollectionIterator(
-                        typeGraph.getLabelStore().getSupertypes(l1), args[2],
+                    new PrologCollectionIterator(supertypes1, args[2],
                         interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {
@@ -59,16 +67,25 @@ public class Predicate_subtype extends GraphPrologCode {
                     TypeGraph typeGraph =
                         (TypeGraph) ((JavaObjectTerm) args[0]).value;
                     TypeLabel l2 = (TypeLabel) ((JavaObjectTerm) args[2]).value;
-
+                    TypeNode type2 = typeGraph.getNode(l2);
+                    List<TypeLabel> subtypes2 = new ArrayList<TypeLabel>();
+                    if (type2 != null) {
+                        collectLabels(subtypes2, typeGraph.getSubtypes(type2));
+                    }
                     PrologCollectionIterator it =
-                        new PrologCollectionIterator(
-                            typeGraph.getLabelStore().getSubtypes(l2), args[1],
+                        new PrologCollectionIterator(subtypes2, args[1],
                             interpreter.getUndoPosition());
                     return it.nextSolution(interpreter);
                 } catch (Exception ex) {
                     return FAIL;
                 }
             }
+        }
+    }
+
+    private void collectLabels(List<TypeLabel> result, Set<TypeNode> nodes) {
+        for (TypeNode supertype : nodes) {
+            result.add(supertype.label());
         }
     }
 }

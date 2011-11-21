@@ -26,7 +26,6 @@ import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.gui.DisplayKind;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -37,8 +36,6 @@ import groove.gui.layout.SpringLayouter;
 import groove.trans.ResourceKind;
 import groove.util.Colors;
 import groove.view.GrammarModel;
-import groove.view.ResourceModel;
-import groove.view.TypeModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
@@ -55,7 +52,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -124,18 +120,7 @@ final public class AspectJGraph extends GraphJGraph {
      */
     public void updateGrammar(GrammarModel grammar) {
         this.typeGraph = grammar.getTypeGraph();
-        // retrieves type and label store from the grammar
-        Map<String,Set<TypeLabel>> labelsMap =
-            new HashMap<String,Set<TypeLabel>>();
-        for (ResourceModel<?> typeModel : grammar.getResourceSet(ResourceKind.TYPE)) {
-            // the view may be null if type names
-            // overlap modulo upper/lowercase
-            if (typeModel != null && typeModel.isEnabled()) {
-                labelsMap.put(typeModel.getName(),
-                    ((TypeModel) typeModel).getLabels());
-            }
-        }
-        this.labelsMap = labelsMap;
+        this.typeGraphMap = grammar.getTypeModel().getTypeGraphMap();
         AspectJModel model = getModel();
         if (model != null) {
             model.syncGraph();
@@ -148,8 +133,8 @@ final public class AspectJGraph extends GraphJGraph {
      * Returns a map from names to subsets of labels.
      * This can be used to filter labels.
      */
-    public final Map<String,Set<TypeLabel>> getLabelsMap() {
-        return this.labelsMap;
+    public final Map<String,TypeGraph> getTypeGraphMap() {
+        return this.typeGraphMap;
     }
 
     /**
@@ -558,7 +543,7 @@ final public class AspectJGraph extends GraphJGraph {
     /** Set of all labels and subtypes in the graph. */
     private TypeGraph typeGraph;
     /** Mapping from names to sub-label stores. */
-    private Map<String,Set<TypeLabel>> labelsMap;
+    private Map<String,TypeGraph> typeGraphMap;
     /** Flag indicating that the graph is in the process of inserting an element. */
     private boolean inserting;
     /** Map from line style names to corresponding actions. */

@@ -208,9 +208,9 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /** Convenience method to return the labels map of the jgraph. */
-    private Map<String,Set<TypeLabel>> getLabelsMap() {
+    private Map<String,TypeGraph> getTypeGraphMap() {
         return getJGraph() instanceof AspectJGraph
-                ? ((AspectJGraph) getJGraph()).getLabelsMap() : null;
+                ? ((AspectJGraph) getJGraph()).getTypeGraphMap() : null;
     }
 
     /**
@@ -450,10 +450,10 @@ public class LabelTree extends JTree implements GraphModelListener,
             }
             result.addSeparator();
         }
-        if (isFiltering() && getLabelsMap() != null) {
-            if (getLabelsMap().size() > 1) {
-                result.add(new TypeFilterMenu(getLabelsMap(), true));
-                result.add(new TypeFilterMenu(getLabelsMap(), false));
+        if (isFiltering() && getTypeGraphMap() != null) {
+            if (getTypeGraphMap().size() > 1) {
+                result.add(new TypeFilterMenu(getTypeGraphMap(), true));
+                result.add(new TypeFilterMenu(getTypeGraphMap(), false));
                 result.addSeparator();
             }
         }
@@ -872,11 +872,11 @@ public class LabelTree extends JTree implements GraphModelListener,
 
     /** Menu offering a selection of type graphs to be filtered. */
     private class TypeFilterMenu extends JMenu {
-        TypeFilterMenu(Map<String,Set<TypeLabel>> labelsMap, boolean filter) {
+        TypeFilterMenu(Map<String,TypeGraph> labelsMap, boolean filter) {
             super(filter ? Options.FILTER_TYPE_ACTION_NAME
                     : Options.UNFILTER_TYPE_ACTION_NAME);
             this.filter = filter;
-            for (Map.Entry<String,Set<TypeLabel>> labelsEntry : labelsMap.entrySet()) {
+            for (Map.Entry<String,TypeGraph> labelsEntry : labelsMap.entrySet()) {
                 add(new TypeFilterMenuItem(labelsEntry.getKey(),
                     labelsEntry.getValue()));
             }
@@ -885,12 +885,10 @@ public class LabelTree extends JTree implements GraphModelListener,
         private final boolean filter;
 
         private class TypeFilterMenuItem extends AbstractAction {
-            TypeFilterMenuItem(String name, Set<TypeLabel> labels) {
+            TypeFilterMenuItem(String name, TypeGraph typeGraph) {
                 super(name);
                 this.labels = new HashSet<Label>();
-                for (TypeLabel label : labels) {
-                    this.labels.addAll(getTypeGraph().getSublabels(label));
-                }
+                this.labels.addAll(typeGraph.getLabels());
             }
 
             public void actionPerformed(ActionEvent e) {

@@ -173,7 +173,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
         // if this is an unknown label, don't add the edge
-        if (this.typeGraph.getLabels().contains(expr.toTypeLabel())) {
+        if (!this.typeGraph.getTypes(expr.toTypeLabel()).isEmpty()) {
             result.addEdge(result.getStartNode(), expr.toLabel(),
                 result.getEndNode());
         }

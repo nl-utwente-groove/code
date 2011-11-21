@@ -130,9 +130,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             result.setText(editString);
             result.selectAll();
             return result;
-            //            JScrollPane pane = new JScrollPane(result);
-            //            pane.setSize(100, 100);
-            //            return pane;
         }
 
         /** Returns the document of the editor component. */
