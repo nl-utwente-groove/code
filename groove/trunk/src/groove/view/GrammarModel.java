@@ -436,13 +436,9 @@ public class GrammarModel implements Observer {
         }
         // Set the Prolog environment.
         result.setPrologEnvironment(this.getPrologEnvironment());
-        try {
-            result.setFixed();
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
         if (errors.isEmpty()) {
             assert result.getCtrlAut() != null : "Grammar must have control";
+            result.setFixed();
             return result;
         } else {
             throw new FormatException(errors);

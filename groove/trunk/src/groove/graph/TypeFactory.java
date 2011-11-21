@@ -18,17 +18,16 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     /**
      * Constructs a factory for a given type graph.
      * Should only be called from the constructor of {@link TypeGraph}.
-     * @param typeGraph non-{@code null} type graph for the created type nodes and edges
+     * @param typeGraph type graph for the created type nodes and edges; 
+     * either {@code null} or initially empty
      */
     TypeFactory(TypeGraph typeGraph) {
+        assert typeGraph == null || typeGraph.isEmpty();
         this.typeGraph = typeGraph;
-        initDataTypeMap();
-    }
-
-    private void initDataTypeMap() {
         for (SignatureKind sig : EnumSet.allOf(SignatureKind.class)) {
             this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
         }
+        this.topNode = createNode(TypeLabel.NODE);
     }
 
     @Override
@@ -46,14 +45,10 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
      * This is only valid if the factory has no type graph, or the type graph is implicit. 
      */
     public TypeNode getTopNode() {
-        assert !hasTypeGraph() || getTypeGraph().isImplicit();
-        if (this.topNode == null) {
-            this.topNode = createNode(TypeLabel.NODE);
-        }
         return this.topNode;
     }
 
-    /** Creates a node with a given (non-{@code null}) type label. */
+    /** Looks up or creates a node with a given (non-{@code null}) type label. */
     public TypeNode createNode(TypeLabel label) {
         assert label.isNodeType();
         TypeNode result = this.typeNodeMap.get(label);
@@ -63,6 +58,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
             this.typeNodeList.add(result);
         }
         return result;
+    }
+
+    /** Looks up a node with a given (non-{@code null}) type label. */
+    public TypeNode getNode(TypeLabel label) {
+        assert label.isNodeType();
+        return this.typeNodeMap.get(label);
     }
 
     /** Creates a label with the given kind-prefixed text. */
@@ -84,7 +85,31 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     @Override
     public TypeEdge createEdge(TypeNode source, Label label, TypeNode target) {
-        return new TypeEdge(source, (TypeLabel) label, target, this.typeGraph);
+        TypeLabel typeLabel = (TypeLabel) label;
+        TypeEdge result = getEdge(source, typeLabel, target);
+        if (result == null) {
+            result = newEdge(source, typeLabel, target);
+        }
+        return result;
+    }
+
+    /** 
+     * Returns an edge from the type graph with the given signature.
+     * Creates the edge if the factory has no underlying type graph. 
+     */
+    public TypeEdge getEdge(TypeNode source, TypeLabel label, TypeNode target) {
+        TypeEdge result = null;
+        if (hasTypeGraph()) {
+            result = getTypeGraph().getTypeEdge(source, label, target);
+        } else {
+            result = newEdge(source, label, target);
+        }
+        return result;
+    }
+
+    /** Factory method to create a new edge. */
+    TypeEdge newEdge(TypeNode source, TypeLabel label, TypeNode target) {
+        return new TypeEdge(source, label, target, this.typeGraph);
     }
 
     /** Type graph morphisms are not supported. */
@@ -152,7 +177,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     private int maxNodeNr;
 
     /** Type node for the top type (in the absence of a type graph). */
-    private TypeNode topNode;
+    private final TypeNode topNode;
 
     /** Auxiliary map from type labels to type nodes */
     private Map<TypeLabel,TypeNode> typeNodeMap =

@@ -598,7 +598,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 // type does. Check the label store in the type graph.
                 result =
                     getJGraph().getTypeGraph().getLabelStore().getPattern(
-                        typeNode.getLabel());
+                        typeNode.label());
             }
         }
         return result;

@@ -20,7 +20,6 @@ import groove.util.DefaultFixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,7 +56,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
                 addSubtype(dirSubEntry.getKey(), subtype);
             }
         }
-        this.colorMap.putAll(other.colorMap);
         this.patternMap.putAll(other.patternMap);
     }
 
@@ -373,17 +371,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
 
     @Override
     public void setFixed() {
-        // subtypes inherit colours
-        Map<TypeLabel,Color> extraColors = new HashMap<TypeLabel,Color>();
-        for (Map.Entry<TypeLabel,Color> colorEntry : this.colorMap.entrySet()) {
-            Color color = colorEntry.getValue();
-            for (TypeLabel subtype : getSubs(colorEntry.getKey())) {
-                if (!this.colorMap.containsKey(subtype)) {
-                    extraColors.put(subtype, color);
-                }
-            }
-        }
-        this.colorMap.putAll(extraColors);
         // subtypes inherit label patterns
         Map<TypeLabel,LabelPattern> extraPatterns =
             new HashMap<TypeLabel,LabelPattern>();
@@ -454,19 +441,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
         return false;
     }
 
-    /** Associates a colour with a node type label. */
-    public void setColor(TypeLabel label, Color colour) {
-        testFixed(false);
-        assert label.isNodeType();
-        this.colorMap.put(label, colour);
-    }
-
-    /** Returns the (possibly {@code null}) colour associated with a given type label. */
-    public Color getColor(TypeLabel label) {
-        Color result = this.colorMap.get(label);
-        return result;
-    }
-
     /** Associates a label pattern with a node type label. */
     public void setPattern(TypeLabel label, LabelPattern pattern) {
         testFixed(false);
@@ -523,9 +497,6 @@ public class LabelStore extends DefaultFixable implements Cloneable {
     private Map<TypeLabel,Set<TypeLabel>> dirSuperMap;
     /** Mapping from a type label to its set of subtypes (including itself). */
     private Map<TypeLabel,Set<TypeLabel>> superMap;
-    /** Mapping from node types to declared colours. */
-    private final Map<TypeLabel,Color> colorMap =
-        new HashMap<TypeLabel,Color>();
     /** Mapping from node types to nodified edge label patterns. */
     private final Map<TypeLabel,LabelPattern> patternMap =
         new HashMap<TypeLabel,LabelPattern>();

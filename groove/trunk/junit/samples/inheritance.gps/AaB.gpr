@@ -17,14 +17,14 @@
                 <string>207 121 47 21</string>
             </attr>
         </node>
-        <edge to="n103" from="n102">
-            <attr name="label">
-                <string>del:a</string>
-            </attr>
-        </edge>
         <edge to="n103" from="n103">
             <attr name="label">
                 <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n103" from="n102">
+            <attr name="label">
+                <string>del:a</string>
             </attr>
         </edge>
         <edge to="n102" from="n102">

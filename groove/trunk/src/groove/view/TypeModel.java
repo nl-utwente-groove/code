@@ -83,7 +83,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         Collection<FormatError> errors = createErrors();
         TypeGraph result = new TypeGraph(getName());
         TypeFactory factory = result.getFactory();
-        this.modelMap = new TypeModelMap();
+        this.modelMap = new TypeModelMap(factory);
         // collect primitive type nodes
         for (AspectNode modelNode : getSource().nodeSet()) {
             AspectKind attrKind = modelNode.getAttrKind();
@@ -127,7 +127,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 untypedNodeIter.remove();
             } else {
                 // add a node anyhow, to ensure all edge ends have images
-                TypeNode typeNode = factory.createNode(modelNode.getNumber());
+                TypeNode typeNode = factory.getTopNode();
                 result.addNode(typeNode);
                 this.modelMap.putNode(modelNode, typeNode);
             }
@@ -177,7 +177,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
             throw new FormatException("Duplicate types '%s' and '%s'",
-                typeLabel.text(), oldTypeNode.getLabel().text(), modelNode);
+                typeLabel.text(), oldTypeNode.label().text(), modelNode);
         }
         TypeNode typeNode;
         SignatureKind signature = modelNode.getAttrKind().getSignature();
@@ -227,7 +227,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             modelEdge.source(), elementMap);
         if (typeSource.isImported()) {
             throw new FormatException("Can't change imported type '%s'",
-                typeSource.getLabel(), modelEdge);
+                typeSource.label(), modelEdge);
         }
         TypeNode typeTarget = elementMap.getNode(modelEdge.target());
         assert typeTarget != null : String.format(
@@ -257,18 +257,23 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     /** Map from model to resource nodes. */
     private TypeModelMap modelMap;
 
-    /** Mapping from type graph elements to rule graph elements. */
+    /** Mapping from aspect graph elements to type graph elements. */
     public static class TypeModelMap extends ModelMap<TypeNode,TypeEdge> {
         /**
          * Creates a new, empty map.
          */
-        public TypeModelMap() {
-            super(TypeFactory.instance());
+        public TypeModelMap(TypeFactory factory) {
+            super(factory);
+        }
+
+        @Override
+        public TypeFactory getFactory() {
+            return (TypeFactory) super.getFactory();
         }
 
         @Override
         public TypeModelMap newMap() {
-            return new TypeModelMap();
+            return new TypeModelMap(getFactory());
         }
     }
 }

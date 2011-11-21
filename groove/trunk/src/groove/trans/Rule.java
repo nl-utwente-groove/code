@@ -1207,7 +1207,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the set of merger edges in the RHS of which both ends are in the LHS. */
-    private final Set<RuleEdge> getLhsMergers() {
+    public final Set<RuleEdge> getLhsMergers() {
         if (this.lhsMergers == null) {
             initMergers();
         }
@@ -1218,7 +1218,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Returns the set of merger edges in the RHS of which at least one end
      * is a creator node. 
      */
-    private final Set<RuleEdge> getRhsMergers() {
+    public final Set<RuleEdge> getRhsMergers() {
         if (this.rhsMergers == null) {
             initMergers();
         }

@@ -393,8 +393,8 @@ public class LabelTree extends JTree implements GraphModelListener,
             this.topNode.add(labelNode);
             if (typeGraph != null && typeGraph.getLabels().contains(label)) {
                 addRelatedTypes(labelNode,
-                    isShowsSubtypes() ? typeGraph.getDirectSublabelMap()
-                            : typeGraph.getDirectSuperlabelMap(), newNodes);
+                    isShowsSubtypes() ? typeGraph.getDirectSubtypeMap()
+                            : typeGraph.getDirectSupertypeMap(), newNodes);
             }
         }
         this.treeModel.reload(this.topNode);
@@ -409,14 +409,21 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Only first level subtypes are added.
      */
     private void addRelatedTypes(LabelTreeNode labelNode,
-            Map<TypeLabel,Set<TypeLabel>> map, Set<LabelTreeNode> newNodes) {
+            Map<TypeNode,Set<TypeNode>> map, Set<LabelTreeNode> newNodes) {
         Label label = labelNode.getLabel();
-        Set<TypeLabel> relatedTypes = map.get(label);
+        if (!label.isNodeType()) {
+            return;
+        }
+        TypeNode type = getTypeGraph().getNode(label);
+        if (type == null) {
+            return;
+        }
+        Set<TypeNode> relatedTypes = map.get(type);
         assert relatedTypes != null : String.format(
             "Label '%s' does not occur in label store '%s'", label,
             map.keySet());
-        for (Label type : relatedTypes) {
-            LabelTreeNode typeNode = new LabelTreeNode(type, false);
+        for (TypeNode relType : relatedTypes) {
+            LabelTreeNode typeNode = new LabelTreeNode(relType.label(), false);
             labelNode.add(typeNode);
             if (newNodes != null) {
                 newNodes.add(labelNode);

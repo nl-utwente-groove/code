@@ -18,8 +18,11 @@ package groove.graph.iso;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -396,7 +399,13 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          */
         public MyNodeCert(N node) {
             this.element = node;
-            this.value = INIT_NODE_VALUE;
+            if (node instanceof HostNode) {
+                this.label = ((HostNode) node).getType().label();
+                this.value = this.label.hashCode();
+            } else {
+                this.label = null;
+                this.value = INIT_NODE_VALUE;
+            }
             this.next = this;
             this.prev = this;
         }
@@ -414,8 +423,20 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof PaigeTarjanMcKay.MyNodeCert
-                && this.value == ((MyNodeCert) obj).value;
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof PaigeTarjanMcKay.MyNodeCert)) {
+                return false;
+            }
+            MyNodeCert other = ((MyNodeCert) obj);
+            if (this.value != other.value) {
+                return false;
+            }
+            if (this.label == null) {
+                return true;
+            }
+            return this.label.equals(other.label);
         }
 
         /**
@@ -595,6 +616,8 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         int value;
         /** The element for which this is a certificate. */
         private final N element;
+        /** Potentially {@code null} node label. */
+        private final TypeLabel label;
         /** List of certificates of incoming edges. */
         private final List<MyEdge2Cert> inEdges = new ArrayList<MyEdge2Cert>();
         /** List of certificates of outgoing edges. */
@@ -633,8 +656,8 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
             super((N) node);
-            this.node = node;
-            this.value = node.getValue().hashCode();
+            this.nodeValue = node.getValue();
+            this.value = this.nodeValue.hashCode();
         }
 
         /**
@@ -644,19 +667,23 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof PaigeTarjanMcKay.MyValueNodeCert
-                && this.node.getValue().equals(
-                    ((MyValueNodeCert) obj).node.getValue());
+                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
         }
 
-        private final ValueNode node;
+        private final Object nodeValue;
     }
 
     private class MyEdge1Cert implements EdgeCertificate<N,E> {
         MyEdge1Cert(E edge, MyNodeCert sourceCert) {
             this.edge = edge;
             this.sourceCert = sourceCert;
-            this.value = edge.label().hashCode();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
+            this.value = this.initValue;
             sourceCert.addSelf(this);
         }
 
@@ -666,21 +693,27 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
 
         @Override
         public int hashCode() {
-            return this.sourceCert.hashCode() + this.edge.label().hashCode();
+            return this.sourceCert.hashCode() + this.initValue;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof PaigeTarjanMcKay.MyEdge1Cert
-                && ((MyEdge1Cert) obj).sourceCert.equals(this.sourceCert)
-                && ((MyEdge1Cert) obj).edge.label().equals(this.edge.label());
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof PaigeTarjanMcKay.MyEdge1Cert)) {
+                return false;
+            }
+            MyEdge1Cert other = (MyEdge1Cert) obj;
+            return other.sourceCert.equals(this.sourceCert)
+                && other.label.equals(this.label);
         }
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + getElement().label() + "("
-                + this.edge.label().hashCode() + ")]";
+            return "[" + getSource() + "," + this.label + "("
+                + this.label.hashCode() + ")]";
         }
 
         final int getValue() {
@@ -692,7 +725,12 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         private final E edge;
+        private final Label label;
         private final MyNodeCert sourceCert;
+        /**
+         * The hash code of the original edge label.
+         */
+        protected final int initValue;
         private final int value;
     }
 
@@ -700,7 +738,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         MyEdge2Cert(E edge, MyNodeCert sourceCert, MyNodeCert targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
-            this.labelIndex = edge.label().hashCode();
             sourceCert.addOutEdge(this);
             targetCert.addInEdge(this);
         }
@@ -713,15 +750,20 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
             return obj instanceof PaigeTarjanMcKay.MyEdge2Cert
-                && super.equals(obj)
                 && ((MyEdge2Cert) obj).getTarget().equals(getTarget());
         }
 
         @Override
         public String toString() {
             return "[" + getSource() + "," + getElement().label() + "("
-                + this.labelIndex + ")," + getTarget() + "]";
+                + this.initValue + ")," + getTarget() + "]";
         }
 
         MyNodeCert getTarget() {
@@ -743,23 +785,19 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * certificates and the label.
          */
         private int computeValue() {
-            int shift = (this.labelIndex & 0xf) + 1;
+            int shift = (this.initValue & 0xf) + 1;
             int targetValue = this.targetCert.getValue();
             int sourceValue = getSource().getValue();
             int result =
                 ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
                     + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
-                    + this.labelIndex;
+                    + this.initValue;
             PaigeTarjanMcKay.this.graphCertificate += result;
             return result;
         }
 
         /** The node certificate of the edge target. */
         private final MyNodeCert targetCert;
-        /**
-         * The hash code of the original edge label.
-         */
-        private final int labelIndex;
     }
 
     /**
@@ -984,36 +1022,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 return blockMap.values();
             }
         }
-
-        //
-        // /**
-        // * Merges this block with another with the same hash code. The other
-        // * block will be discarded afterwards, so may be left in an
-        // inconsistent
-        // * state. The other block may not have marked nodes.
-        // */
-        // void merge(Block other) {
-        // assert this.value == other.value : String.format(
-        // "Merging blocks %s and %s with distinct hash codes", this,
-        // other);
-        // assert other.markedNodes.next == other.markedNodes :
-        // String.format("Other block contains marked nodes while merging.");
-        // // set the block of the nodes of the other block
-        // for (NodeCertificate otherNode : other.getNodes()) {
-        // otherNode.setBlock(this);
-        // }
-        // // put the nodes list of the other block behind mine
-        // NodeCertificate myLastNode = this.nodes.prev;
-        // NodeCertificate otherFirstNode = other.nodes.next;
-        // NodeCertificate otherLastNode = other.nodes.prev;
-        // myLastNode.next = otherFirstNode;
-        // otherFirstNode.prev = myLastNode;
-        // this.nodes.prev = otherLastNode;
-        // otherLastNode.next = this.nodes;
-        // // adapt the size of this block
-        // this.size += other.size();
-        // PaigeTarjanMcKay.mergedBlockCount++;
-        // }
 
         /**
          * Appends a given node certificate to this block, and sets the

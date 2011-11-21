@@ -18,8 +18,11 @@ package groove.graph.iso;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
@@ -328,8 +331,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * value is set to the incidence count.
          */
         public MyNodeCert(N node) {
-            this.element = node;
-            this.value = INIT_NODE_VALUE;
+            this.node = node;
+            if (node instanceof HostNode) {
+                this.label = ((HostNode) node).getType().label();
+                this.value = this.label.hashCode();
+            } else {
+                this.label = null;
+                this.value = INIT_NODE_VALUE;
+            }
         }
 
         @Override
@@ -344,8 +353,20 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof SimplePaigeTarjanMcKay.MyNodeCert
-                && this.value == ((MyNodeCert<?,?>) obj).value;
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof MyNodeCert)) {
+                return false;
+            }
+            MyNodeCert<?,?> other = ((MyNodeCert<?,?>) obj);
+            if (this.value != other.value) {
+                return false;
+            }
+            if (this.label == null) {
+                return true;
+            }
+            return this.label.equals(other.label);
         }
 
         /**
@@ -384,7 +405,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
 
         /** Returns the element of which this is a certificate. */
         public N getElement() {
-            return this.element;
+            return this.node;
         }
 
         /** Adds a self-edge certificate to this node certificate. */
@@ -417,7 +438,9 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /** The current value, which determines the hash code. */
         int value;
         /** The element for which this is a certificate. */
-        private final N element;
+        private final N node;
+        /** Potentially {@code null} node label. */
+        private final TypeLabel label;
         /** List of certificates of incoming edges. */
         private final List<MyEdge2Cert<N,E>> inEdges =
             new ArrayList<MyEdge2Cert<N,E>>();
@@ -447,7 +470,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
             super((N) node);
-            this.node = node;
+            this.nodeValue = node.getValue();
             this.value = node.getValue().hashCode();
         }
 
@@ -457,12 +480,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof MyValueNodeCert
-                && this.node.getValue().equals(
-                    ((MyValueNodeCert<?,?>) obj).node.getValue());
+                && this.nodeValue.equals(((MyValueNodeCert<?,?>) obj).nodeValue);
         }
 
-        private final ValueNode node;
+        private final Object nodeValue;
     }
 
     static class MyEdge1Cert<N extends Node,E extends Edge> implements
@@ -470,7 +495,9 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         MyEdge1Cert(E edge, MyNodeCert<N,E> sourceCert) {
             this.edge = edge;
             this.sourceCert = sourceCert;
-            this.value = edge.label().hashCode();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
+            this.value = this.initValue;
             sourceCert.addSelf(this);
         }
 
@@ -485,16 +512,21 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof MyEdge1Cert
-                && ((MyEdge1Cert<?,?>) obj).sourceCert.equals(this.sourceCert)
-                && ((MyEdge1Cert<?,?>) obj).edge.label().equals(
-                    this.edge.label());
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof MyEdge1Cert)) {
+                return false;
+            }
+            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            return other.sourceCert.equals(this.sourceCert)
+                && other.label.equals(this.label);
         }
 
         @Override
         public String toString() {
-            return "[" + getSource() + "," + getElement().label() + "("
-                + this.edge.label().hashCode() + ")]";
+            return "[" + getSource() + "," + this.label + "(" + this.initValue
+                + ")]";
         }
 
         final int getValue() {
@@ -506,7 +538,12 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         private final E edge;
+        private final Label label;
         private final MyNodeCert<N,E> sourceCert;
+        /**
+         * The hash code of the original edge label.
+         */
+        protected final int initValue;
         private final int value;
     }
 
@@ -516,7 +553,6 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 MyNodeCert<N,E> sourceCert, MyNodeCert<N,E> targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
-            this.labelIndex = edge.label().hashCode();
             sourceCert.addOutgoing(this);
             targetCert.addIncoming(this);
             this.strategy = strategy;
@@ -529,6 +565,9 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof MyEdge2Cert && super.equals(obj)
                 && ((MyEdge2Cert<?,?>) obj).getTarget().equals(getTarget());
         }
@@ -536,7 +575,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @Override
         public String toString() {
             return "[" + getSource() + "," + getElement().label() + "("
-                + this.labelIndex + ")," + getTarget() + "]";
+                + this.initValue + ")," + getTarget() + "]";
         }
 
         private MyNodeCert<N,E> getTarget() {
@@ -558,23 +597,19 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * certificates and the label.
          */
         private int computeValue() {
-            int shift = (this.labelIndex & 0xf) + 1;
+            int shift = (this.initValue & 0xf) + 1;
             int targetValue = this.targetCert.getValue();
             int sourceValue = getSource().getValue();
             int result =
                 ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
                     + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift)))
-                    + this.labelIndex;
+                    + this.initValue;
             this.strategy.graphCertificate += result;
             return result;
         }
 
         /** The node certificate of the edge target. */
         private final MyNodeCert<N,E> targetCert;
-        /**
-         * The hash code of the original edge label.
-         */
-        private final int labelIndex;
         /** The strategy to which this certificate belongs. */
         private final SimplePaigeTarjanMcKay<?,E> strategy;
     }

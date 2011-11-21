@@ -212,7 +212,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage =
-                    this.factory.createNode(
+                    this.factory.createValueNode(
                         OperatorEdgeSearchItem.this.operation.getResultAlgebra(),
                         outcome);
                 this.image = targetImage;

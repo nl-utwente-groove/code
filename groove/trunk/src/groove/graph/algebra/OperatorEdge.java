@@ -37,7 +37,7 @@ public class OperatorEdge extends RuleEdge {
      * @param target the target node for the edge
      */
     public OperatorEdge(ProductNode source, RuleLabel label, VariableNode target) {
-        super(source, label, target);
+        super(source, label, null, target);
         assert label.isOperator();
         this.operator = label.getOperator();
     }

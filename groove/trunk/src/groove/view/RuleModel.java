@@ -348,7 +348,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** Debug flag for the attribute syntax normalisation. */
     static private final boolean NORMALISE_DEBUG = false;
     /** Flag for switching on new type system. */
-    static private final boolean NEW_TYPING = false;
+    static private final boolean NEW_TYPING = true;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1165,8 +1165,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         && ruleEdge.label().isNodeType()
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
-                            "Node type %s cannot be deleted", ruleEdge.label(),
-                            modelEdge.source());
+                            "Node type label %s cannot be deleted",
+                            ruleEdge.label().text(), modelEdge.source());
                     }
                 } else {
                     if (!edgeKind.inRHS()) {
@@ -1575,14 +1575,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         result.addNode(image);
                     } else {
                         result.addNode(globalImage);
-                        // add a type test if the global image differs
-                        if (image != globalImage) {
-                            TypeNode imageType = image.getType();
-                            assert getType().isSubtype(imageType,
-                                globalImage.getType());
-                            result.addEdge(image,
-                                new RuleLabel(imageType.getLabel()), image);
-                        }
+                        //                        TypeNode imageType = image.getType();
+                        //                        TypeNode globalImageType = globalImage.getType();
+                        //                        // add a type test if the global image differs
+                        //                        if (imageType != globalImageType) {
+                        //                            assert getType().isSubtype(imageType,
+                        //                                globalImageType);
+                        //                            result.addEdge(image,
+                        //                                new RuleLabel(imageType.getLabel()), image);
+                        //                        }
                     }
                 }
                 for (Map.Entry<RuleEdge,RuleEdge> edgeEntry : typing.edgeMap().entrySet()) {
@@ -1616,7 +1617,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     && !lhs.containsNode(node)) {
                     errors.add(new FormatError(
                         "Creation of abstract %s-edge not allowed",
-                        nodeType.getLabel().text(), node));
+                        nodeType.label().text(), node));
                 }
             }
             // check for ambiguous mergers
@@ -1630,22 +1631,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     if (!source.isSharp()) {
                         errors.add(new FormatError(
                             "Merged %s-node must be sharply typed",
-                            sourceType.getLabel().text(), source));
+                            sourceType.label().text(), source));
                     } else if (parentNodes.contains(source)
                         && !target.isSharp()) {
                         errors.add(new FormatError(
                             "Merged %s-node must be on same quantification level as merge target",
-                            sourceType.getLabel().text(), source));
+                            sourceType.label().text(), source));
                     } else if (!getType().isSubtype(targetType, sourceType)) {
                         errors.add(new FormatError(
                             "Merged %s-node must be supertype of %s",
-                            sourceType.getLabel().text(),
-                            targetType.getLabel().text(), source));
+                            sourceType.label().text(),
+                            targetType.label().text(), source));
                     } else if (!target.isSharp()) {
                         if (!mergedNodes.add(edge.source())) {
                             errors.add(new FormatError(
                                 "%s-node is merged with two distinct non-sharp nodes",
-                                sourceType.getLabel().text(), source));
+                                sourceType.label().text(), source));
                         }
                     }
                 } else {

@@ -233,7 +233,7 @@ public class MatchSetCollector {
                 if (arg instanceof CtrlPar.Const) {
                     CtrlPar.Const constArg = (CtrlPar.Const) arg;
                     image =
-                        this.state.getGraph().getFactory().createNode(
+                        this.state.getGraph().getFactory().createValueNode(
                             constArg.getAlgebra(), constArg.getValue());
                     assert image != null : String.format(
                         "Constant argument %s not initialised properly", arg);

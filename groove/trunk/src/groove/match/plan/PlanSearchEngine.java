@@ -18,8 +18,10 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
@@ -228,14 +230,23 @@ public class PlanSearchEngine extends SearchEngine {
                     unmatchedNodeIter.remove();
                 }
             }
+            // Set of rule nodes that do not have to be typed checked explicitly
+            Set<RuleNode> correctNodes = new HashSet<RuleNode>();
             // then a search item per remaining edge
             for (RuleEdge edge : unmatchedEdges) {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
-                    unmatchedNodes.removeAll(edgeItem.bindsNodes());
+                    TypeEdge edgeType = edge.getType();
+                    if (edgeType != null) {
+                        collectTypeCorrect(correctNodes, edge.source(),
+                            edgeType.source());
+                        collectTypeCorrect(correctNodes, edge.target(),
+                            edgeType.target());
+                    }
                 }
             }
+            unmatchedNodes.removeAll(correctNodes);
             // finally a search item per remaining node
             for (RuleNode node : unmatchedNodes) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
@@ -249,6 +260,25 @@ public class PlanSearchEngine extends SearchEngine {
                 }
             }
             return result;
+        }
+
+        /** 
+         * Tests if the type of a rule node corresponds precisely to a given type.
+         * If so, adds the rule node to a set passed in as a parameter.
+         * The test fails if the node is sharply typed (and has proper subtypes)
+         * or is a subtype of the given type.
+         */
+        private void collectTypeCorrect(Set<RuleNode> correct, RuleNode node,
+                TypeNode checked) {
+            boolean add = node.getType() == checked;
+            if (add && node.isSharp()) {
+                Set<TypeLabel> subLabels =
+                    this.typeGraph.getSublabels(node.getType().label());
+                add = subLabels == null || subLabels.size() == 1;
+            }
+            if (add) {
+                correct.add(node);
+            }
         }
 
         /**
@@ -358,7 +388,8 @@ public class PlanSearchEngine extends SearchEngine {
                 result = createEqualitySearchItem(source, target, false);
             } else if (negOperand != null) {
                 RuleEdge negatedEdge =
-                    new RuleEdge(source, negOperand.toLabel(), target);
+                    this.condition.getFactory().createEdge(source,
+                        negOperand.toLabel(), target);
                 result =
                     createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (label.getWildcardId() != null) {
@@ -369,8 +400,6 @@ public class PlanSearchEngine extends SearchEngine {
                 result = new EqualitySearchItem(source, target, true);
             } else if (label.isSharp()) {
                 result = new Edge2SearchItem(edge);
-            } else if (label.isNodeType()) {
-                result = new NodeTypeSearchItem(edge, this.typeGraph);
             } else if (label.isAtom()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isOperator()) {
@@ -389,7 +418,7 @@ public class PlanSearchEngine extends SearchEngine {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
-                if (((VariableNode) node).getSymbol() != null) {
+                if (((VariableNode) node).getConstant() != null) {
                     result =
                         new ValueNodeSearchItem((VariableNode) node,
                             this.algebraFamily);
@@ -397,7 +426,7 @@ public class PlanSearchEngine extends SearchEngine {
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
             } else if (node instanceof DefaultRuleNode) {
-                result = new NodeSearchItem(node);
+                result = new NodeTypeSearchItem(node, this.typeGraph);
             }
             return result;
         }

@@ -49,20 +49,27 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         }
     }
 
-    @Override
-    protected HostNode newNode(int nr) {
-        return new DefaultHostNode(nr, getLastNodeType());
-    }
-
     /** This implementation creates a host node with top type. */
     @Override
     public HostNode createNode(int nr) {
         return createNode(nr, this.typeFactory.getTopNode());
     }
 
-    /** Creates and returns a node with a given type, and the next available node number. */
-    public HostNode createNode(TypeNode typeNode) {
-        return createNode(getNextNodeNr(), typeNode);
+    /** Creates and returns a node with a given type label, and the next available node number. */
+    public HostNode createNode(TypeLabel type) {
+        return createNode(getNextNodeNr(), type);
+    }
+
+    /** Creates and returns a node with a given number and node type label. */
+    public HostNode createNode(int nr, TypeLabel type) {
+        assert type.isNodeType();
+        TypeNode typeNode = this.typeFactory.getNode(type);
+        assert typeNode != null;
+        setLastNodeType(typeNode);
+        HostNode result = super.createNode(nr);
+        resetLastNodeType();
+        assert result.getType() == typeNode;
+        return result;
     }
 
     /** Creates and returns a node with a given number and node type. */
@@ -81,15 +88,36 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param algebra the algebra of the value
      * @param value algebra representation of the value for the new node
      */
-    public ValueNode createNode(Algebra<?> algebra, Object value) {
-        Map<Object,ValueNode> valueMap = getValueMap(algebra);
-        ValueNode result = valueMap.get(value);
+    public ValueNode createValueNode(Algebra<?> algebra, Object value) {
+        ValueNode result = getValueMap(algebra).get(value);
         if (result == null) {
-            TypeNode type = this.typeFactory.getDataType(algebra.getKind());
-            int nr = getNextNodeNr();
-            result = new ValueNode(nr, algebra, value, type);
-            addNode(result);
+            result = newValueNode(getNextNodeNr(), algebra, value);
         }
+        return result;
+    }
+
+    /**
+     * Returns a numbered value node for a given algebra and value, creating
+     * it if necessary. Stores previously generated instances for reuse.
+     * @param algebra the algebra of the value
+     * @param value algebra representation of the value for the new node
+     */
+    public ValueNode createValueNode(int nr, Algebra<?> algebra, Object value) {
+        ValueNode result = getValueMap(algebra).get(value);
+        if (result == null) {
+            result = newValueNode(nr, algebra, value);
+        }
+        return result;
+    }
+
+    /** 
+     * Creates a new value node with a given node number, algebra and value.
+     * Raises an exception if a different node with that number already exists.
+     */
+    private ValueNode newValueNode(int nr, Algebra<?> algebra, Object value) {
+        TypeNode type = this.typeFactory.getDataType(algebra.getKind());
+        ValueNode result = new ValueNode(nr, algebra, value, type);
+        addNode(result);
         return result;
     }
 
@@ -100,7 +128,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param value string representation of the value for the node to be created
      */
     public ValueNode createNodeFromString(Algebra<?> algebra, String value) {
-        return createNode(algebra, algebra.getValueFromString(value));
+        return createValueNode(algebra, algebra.getValueFromString(value));
     }
 
     /**
@@ -110,7 +138,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param value native Java representation of the value for the node to be created
      */
     public ValueNode createNodeFromJava(Algebra<?> algebra, Object value) {
-        return createNode(algebra, algebra.getValueFromJava(value));
+        return createValueNode(algebra, algebra.getValueFromJava(value));
     }
 
     /** 
@@ -160,12 +188,28 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return createEdge(source, createLabel(text), target);
     }
 
-    /** Creates a typed rule edge. */
-    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
-        assert type.getGraph() == this.typeFactory.getTypeGraph();
-        HostEdge edge =
-            new HostEdge(this, source, type, target, getEdgeCount());
+    @Override
+    public HostEdge createEdge(HostNode source, Label label, HostNode target) {
+        TypeEdge type =
+            this.typeFactory.getEdge(source.getType(), (TypeLabel) label,
+                target.getType());
+        HostEdge edge = newEdge(source, type, target, getEdgeCount());
         return storeEdge(edge);
+    }
+
+    @Override
+    protected HostNode newNode(int nr) {
+        return new DefaultHostNode(nr, getLastNodeType());
+    }
+
+    /** 
+     * This method is not appropriate;
+     * use {@link #newEdge(HostNode, TypeEdge, HostNode, int)} instead.
+     */
+    @Override
+    protected HostEdge newEdge(HostNode source, Label label, HostNode target,
+            int nr) {
+        throw new UnsupportedOperationException();
     }
 
     /** 
@@ -173,15 +217,15 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * This will then be compared with the edge store to replace it by its
      * canonical representative.
      */
-    @Override
-    protected HostEdge createEdge(HostNode source, Label label,
-            HostNode target, int nr) {
-        return new HostEdge(this, source, (TypeLabel) label, target, nr);
+    protected HostEdge newEdge(HostNode source, TypeEdge type, HostNode target,
+            int nr) {
+        assert type.getGraph() == this.typeFactory.getTypeGraph();
+        return new HostEdge(source, type, target, nr);
     }
 
     @Override
     public TypeLabel createLabel(String text) {
-        return LABEL_FACTORY.createLabel(text);
+        return this.typeFactory.createLabel(text);
     }
 
     @Override
@@ -231,7 +275,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         new HashMap<String,Map<Object,ValueNode>>();
     /** The type factory used for creating node and edge types. */
     private final TypeFactory typeFactory;
-    /** Stores the node type of the last node that was created. */
+    /** Stores the node type of the next node to be created. */
     private TypeNode lastNodeType;
 
     /** Returns a fresh instance of this factory, without type graph. */
@@ -244,7 +288,4 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         assert type != null;
         return new HostFactory(type);
     }
-
-    /** The factory used for creating labels. */
-    private final static TypeFactory LABEL_FACTORY = TypeFactory.instance();
 }

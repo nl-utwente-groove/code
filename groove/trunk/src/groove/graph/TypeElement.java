@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2010 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -14,25 +14,25 @@
  *
  * $Id$
  */
-package groove.trans;
+package groove.graph;
 
-import groove.graph.Element;
-import groove.graph.TypeElement;
-
-/**
- * Type of (node and edge) elements that may appear in a {@link HostGraph}.
- * Super-interface of {@link HostNode}s and {@link HostEdge}s.
+/** Superinterface for {@link TypeNode} and {@link TypeEdge}.
+ * 
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostElement extends Element {
+public interface TypeElement {
     /** 
-     * Returns the number of this element.
+     * Returns the type label of this type element.
+     * Note that for type edges, the label does not completely determine
+     * the edge, whereas for type nodes it does. 
      */
-    public int getNumber();
+    public TypeLabel label();
 
     /**
-     * Returns the type of this element.
+     * Returns the (possibly {@code null}) type graph to which
+     * this type element belongs.
+     * @return the associated type graph, or {@code null} if there is none.
      */
-    public TypeElement getType();
+    public TypeGraph getGraph();
 }

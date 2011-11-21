@@ -115,7 +115,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                     TypeModel origModel = importModels.get(origNode);
                     errors.add(new FormatError(
                         "Error in type graph '%s': Unresolved type import '%s'",
-                        origModel.getName(), origNode.getLabel(), getInverse(
+                        origModel.getName(), origNode.label(), getInverse(
                             origModel.getMap().nodeMap(), origNode),
                         origModel.getSource()));
                 }

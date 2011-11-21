@@ -16,12 +16,14 @@
  */
 package groove.graph.iso;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.trans.HostElement;
 import groove.util.IntSet;
 import groove.util.TreeIntSet;
 
@@ -240,8 +242,14 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof Certificate<?>
-                && (this.value == ((Certificate<?>) obj).value);
+            if (this == obj) {
+                return true;
+            }
+            if (obj.getClass() != getClass()) {
+                return false;
+            }
+            Certificate<?> other = ((Certificate<?>) obj);
+            return this.value == other.value;
         }
 
         /**
@@ -297,23 +305,36 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          */
         public MyNodeCert(N node) {
             super(node);
-            this.value = INIT_NODE_VALUE;
+            if (node instanceof HostElement) {
+                this.type = ((HostElement) node).getType().label();
+                this.value = this.type.hashCode();
+            } else {
+                this.type = null;
+                this.value = INIT_NODE_VALUE;
+            }
+        }
+
+        /**
+         * Tests if the other is a {@link Bisimulator.Certificate} with the same value.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            if (this.type == null) {
+                return true;
+            }
+            MyNodeCert<?> other = ((MyNodeCert<?>) obj);
+            return this.type.equals(other.type);
         }
 
         @Override
         public String toString() {
             return "c" + this.value;
-        }
-
-        /**
-         * Returns <tt>true</tt> of <tt>obj</tt> is also a
-         * {@link Bisimulator.MyNodeCert} and has the same value as this one.
-         * @see #getValue()
-         */
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof MyNodeCert
-                && (this.value == ((Certificate<?>) obj).value);
         }
 
         /**
@@ -350,6 +371,8 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             this.nextValue += value;
         }
 
+        /** Node type label (possibly {@code null}. */
+        private final TypeLabel type;
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
     }
@@ -368,8 +391,8 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
             super((N) node);
-            this.node = node;
-            this.value = node.getValue().hashCode();
+            this.nodeValue = node.getValue();
+            this.value = this.nodeValue.hashCode();
         }
 
         /**
@@ -378,9 +401,11 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          */
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return obj instanceof MyValueNodeCert
-                && this.node.getValue().equals(
-                    ((MyValueNodeCert<?>) obj).node.getValue());
+                && this.nodeValue.equals(((MyValueNodeCert<?>) obj).nodeValue);
         }
 
         /**
@@ -394,7 +419,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             return result;
         }
 
-        private final ValueNode node;
+        private final Object nodeValue;
 
     }
 
@@ -417,7 +442,8 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             super(edge);
             this.source = source;
             this.target = target;
-            this.labelIndex = ((DefaultLabel) edge.label()).hashCode();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
             initValue();
             source.addValue(this.value);
             target.addValue(this.value << 1);
@@ -426,31 +452,26 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         @Override
         public String toString() {
             return "[" + this.source + "," + getElement().label() + "("
-                + this.labelIndex + ")," + this.target + "]";
+                + this.initValue + ")," + this.target + "]";
         }
 
-        /**
-         * Returns <tt>true</tt> if <tt>obj</tt> is also a
-         * {@link Bisimulator.MyEdge2Cert} and has the same value, as well as the same
-         * source and target values, as this one.
-         * @see #getValue()
-         */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof MyEdge2Cert) {
-                MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
-                if (this.value != other.value
-                    || this.labelIndex != other.labelIndex
-                    || this.source.value != other.source.value) {
-                    return false;
-                } else if (this.target == this.source) {
-                    return other.target == other.source;
-                } else {
-                    return this.target.value == other.target.value;
-                }
-            } else {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
                 return false;
             }
+            MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
+            if (!this.source.equals(other.source)
+                || !this.label.equals(other.label)) {
+                return false;
+            }
+            if (this.target == this.source) {
+                return other.target == other.source;
+            }
+            return this.target.equals(other.target);
         }
 
         /**
@@ -458,7 +479,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          */
         @Override
         protected int computeNewValue() {
-            int targetShift = (this.labelIndex & 0xf) + 1;
+            int targetShift = (this.initValue & 0xf) + 1;
             int sourceHashCode = this.source.value;
             int targetHashCode = this.target.value;
             int result =
@@ -475,17 +496,19 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          * implementation takes the label index as the initial value.
          */
         protected void initValue() {
-            this.value = this.labelIndex;
+            this.value = this.initValue;
         }
 
         /** The source certificate for the edge. */
         private final MyNodeCert<?> source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
         private final MyNodeCert<?> target;
+        /** The original edge label. */
+        private final Label label;
         /**
          * The hash code of the original edge label.
          */
-        private final int labelIndex;
+        private final int initValue;
     }
 
     /**
@@ -500,7 +523,8 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         public MyEdge1Cert(E edge, MyNodeCert<?> source) {
             super(edge);
             this.source = source;
-            this.labelIndex = edge.label().hashCode();
+            this.label = edge.label();
+            this.initValue = this.label.hashCode();
             initValue();
             source.addValue(this.value);
         }
@@ -508,23 +532,20 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         @Override
         public String toString() {
             return "[" + this.source + "," + getElement().label() + "("
-                + this.labelIndex + ")]";
+                + this.initValue + ")]";
         }
 
-        /**
-         * Returns <tt>true</tt> if <tt>obj</tt> is also a
-         * {@link Bisimulator.MyEdge1Cert} and has the same value, as well as the same
-         * source and target values, as this one.
-         * @see #getValue()
-         */
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof MyEdge1Cert<?,?>) {
-                MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
-                return (this.value == other.value && this.labelIndex == other.labelIndex);
-            } else {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
                 return false;
             }
+            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            return this.source.equals(other.source)
+                && !this.label.equals(other.label);
         }
 
         /**
@@ -544,14 +565,16 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          * implementation takes the label index as the initial value.
          */
         protected void initValue() {
-            this.value = this.labelIndex << 4;
+            this.value = this.initValue << 4;
         }
 
         /** The source certificate for the edge. */
-        private final Certificate<? extends Node> source;
+        private final MyNodeCert<?> source;
+        /** The original edge label. */
+        private final Label label;
         /**
          * The hash code of the original edge label.
          */
-        private final int labelIndex;
+        private final int initValue;
     }
 }

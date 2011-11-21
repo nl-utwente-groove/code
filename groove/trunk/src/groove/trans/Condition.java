@@ -80,6 +80,7 @@ public class Condition implements Fixable {
         assert !operator.hasPattern();
         this.op = operator;
         this.name = name;
+        this.factory = null;
         this.pattern = null;
         this.root = null;
         this.systemProperties = null;
@@ -100,6 +101,7 @@ public class Condition implements Fixable {
         assert operator.hasPattern();
         this.op = operator;
         this.name = name;
+        this.factory = pattern.getFactory();
         this.root =
             root == null ? pattern.newGraph((name == null ? "root" : name
                 + "-root")) : root;
@@ -113,7 +115,7 @@ public class Condition implements Fixable {
     }
 
     /**
-     * Sets the label store of this graph condition.
+     * Sets the type graph of this graph condition.
      */
     public void setTypeGraph(TypeGraph typeGraph) {
         assert typeGraph != null;
@@ -124,8 +126,8 @@ public class Condition implements Fixable {
     }
 
     /**
-     * Returns the label store of this graph condition.
-     * The label store must be set before the graph is fixed.
+     * Returns the type graph of this graph condition.
+     * The type graph must be set before the graph is fixed.
      */
     public TypeGraph getTypeGraph() {
         return this.typeGraph;
@@ -491,6 +493,11 @@ public class Condition implements Fixable {
         return this.op;
     }
 
+    /** Returns the rule factory of this condition. */
+    public RuleFactory getFactory() {
+        return this.factory;
+    }
+
     /** Sets a count node for this universal condition. 
      * @see #getCountNode() */
     public void setCountNode(VariableNode countNode) {
@@ -555,6 +562,8 @@ public class Condition implements Fixable {
      * The name of this condition. May be <code>code</code> null.
      */
     private final String name;
+    /** The factory responsible for creating rule nodes and edges. */
+    private final RuleFactory factory;
 
     /** The rule associated with this condition, if any. */
     private Rule rule;

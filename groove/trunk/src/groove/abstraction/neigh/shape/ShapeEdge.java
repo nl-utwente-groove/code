@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.graph.TypeLabel;
+import groove.graph.TypeEdge;
 import groove.trans.HostEdge;
 
 /**
@@ -34,9 +34,9 @@ public final class ShapeEdge extends HostEdge {
     // ------------------------------------------------------------------------
 
     /** Default constructor. Delegates to super. */
-    ShapeEdge(ShapeFactory factory, ShapeNode source, TypeLabel label,
+    ShapeEdge(ShapeFactory factory, ShapeNode source, TypeEdge type,
             ShapeNode target, int nr) {
-        super(factory, source, label, target, nr);
+        super(source, type, target, nr);
     }
 
     // ------------------------------------------------------------------------

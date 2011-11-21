@@ -31,6 +31,7 @@ import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.rel.RegExpr;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.DefaultRuleNode;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -43,7 +44,6 @@ import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
-import groove.trans.Condition.Op;
 import groove.util.TreeHashSet;
 import groove.view.GrammarModel;
 
@@ -567,7 +567,8 @@ public class ReteNetwork {
             RuleNode n1 = translate(translationMap, edge.source());
             RuleNode n2 = translate(translationMap, edge.target());
             if (!edge.source().equals(n1) || !edge.target().equals(n2)) {
-                result = new RuleEdge(n1, edge.label(), n2);
+                result =
+                    translationMap.getFactory().createEdge(n1, edge.label(), n2);
             }
         }
         return result;

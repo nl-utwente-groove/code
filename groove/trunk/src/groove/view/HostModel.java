@@ -30,6 +30,7 @@ import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
+import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.SystemProperties;
 import groove.util.Pair;
@@ -156,7 +157,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         }
         Set<FormatError> errors =
             new TreeSet<FormatError>(normalSource.getErrors());
-        DefaultHostGraph result = createGraph(normalSource.getName());
+        DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());
         // copy the nodes from model to resource
@@ -188,20 +189,33 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 result.removeNode(modelNode);
             }
         }
-        // test against the type graph, if any
-        TypeGraph type =
-            getGrammar() == null ? null : getGrammar().getTypeGraph();
-        if (type != null) {
+        if (getGrammar() != null) {
             try {
-                type.analyzeHost(result);
+                // test against the type graph, if any
+                TypeGraph type = getGrammar().getTypeGraph();
+                HostGraphMorphism typing = type.analyzeHost(result);
+                result =
+                    new DefaultHostGraph(result.getName(), typing.getFactory());
+                result.addNodeSet(typing.nodeMap().values());
+                result.addEdgeSet(typing.edgeMap().values());
+                HostModelMap newElementMap = elementMap.newMap();
+                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
+                    newElementMap.putNode(nodeEntry.getKey(),
+                        typing.getNode(nodeEntry.getValue()));
+                }
+                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                    newElementMap.putEdge(edgeEntry.getKey(),
+                        typing.getEdge(edgeEntry.getValue()));
+                }
+                elementMap = newElementMap;
             } catch (FormatException e) {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
                     new HashMap<Element,Element>();
-                for (Map.Entry<AspectNode,? extends HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
+                for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     inverseMap.put(nodeEntry.getValue(), nodeEntry.getKey());
                 }
-                for (Map.Entry<AspectEdge,? extends HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
+                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
                     inverseMap.put(edgeEntry.getValue(), edgeEntry.getKey());
                 }
                 for (FormatError error : e.getErrors()) {
@@ -265,13 +279,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             "Inappropriate label %s", hostLabel);
         HostEdge hostEdge = result.addEdge(hostSource, hostLabel, hostNode);
         elementMap.putEdge(modelEdge, hostEdge);
-    }
-
-    /**
-     * Callback method to create the host graph.
-     */
-    private DefaultHostGraph createGraph(String name) {
-        return new DefaultHostGraph(name);
     }
 
     /** Map from model to resource nodes. */
