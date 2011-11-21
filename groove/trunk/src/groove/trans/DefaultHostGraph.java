@@ -25,8 +25,10 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -145,6 +147,16 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     @Override
     public HostFactory getFactory() {
         return this.factory;
+    }
+
+    @Override
+    public TypeGraph getTypeGraph() {
+        return getFactory().getTypeFactory().getGraph();
+    }
+
+    @Override
+    public HostGraph retype(TypeGraph typeGraph) throws FormatException {
+        return typeGraph.analyzeHost(this).createImage(getName());
     }
 
     public HostToAspectMap toAspectMap() {

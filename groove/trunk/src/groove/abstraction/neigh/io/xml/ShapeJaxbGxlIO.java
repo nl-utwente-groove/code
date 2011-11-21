@@ -29,6 +29,7 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.io.xml.AbstractJaxbGxlIO;
 import groove.view.FormatException;
 
@@ -55,8 +56,6 @@ public final class ShapeJaxbGxlIO extends
     // Static fields
     // ------------------------------------------------------------------------
 
-    /** Singleton instance of the class. */
-    private static final ShapeJaxbGxlIO instance = new ShapeJaxbGxlIO();
     /** Attribute name for node multiplicities. */
     private static final String NODE_MULT_ATTR_NAME = "nmult";
     /** Attribute name for out edge multiplicities. */
@@ -68,15 +67,19 @@ public final class ShapeJaxbGxlIO extends
     // Object fields
     // ------------------------------------------------------------------------
 
+    private final TypeGraph typeGraph;
     private ShapeFactory elementFactory;
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** Returns the singleton instance of this class. */
-    public static ShapeJaxbGxlIO getInstance() {
-        return instance;
+    /** 
+     * Returns an instance of this class that will use a given type graph
+     * for creating shapes. 
+     */
+    public static ShapeJaxbGxlIO getInstance(TypeGraph typeGraph) {
+        return new ShapeJaxbGxlIO(typeGraph);
     }
 
     // ------------------------------------------------------------------------
@@ -84,8 +87,8 @@ public final class ShapeJaxbGxlIO extends
     // ------------------------------------------------------------------------
 
     /** Private constructor for the singleton instance. */
-    private ShapeJaxbGxlIO() {
-        super();
+    private ShapeJaxbGxlIO(TypeGraph typeGraph) {
+        this.typeGraph = typeGraph;
     }
 
     // ------------------------------------------------------------------------
@@ -94,7 +97,7 @@ public final class ShapeJaxbGxlIO extends
 
     @Override
     protected Graph<ShapeNode,ShapeEdge> createGraph(String name) {
-        this.elementFactory = ShapeFactory.newInstance();
+        this.elementFactory = ShapeFactory.newInstance(this.typeGraph);
         return new Shape(this.elementFactory).downcast();
     }
 

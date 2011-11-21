@@ -16,8 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.graph.TypeLabel;
-import groove.rel.LabelVar;
+import groove.rel.Valuation;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostFactory;
@@ -27,8 +26,6 @@ import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -66,7 +63,7 @@ public class RetePathMatch extends AbstractReteMatch {
 
     private RetePathMatch(ReteNetworkNode origin) {
         super(origin, false);
-        this.valuation = new HashMap<LabelVar,TypeLabel>();
+        this.valuation = new Valuation();
     }
 
     /**
@@ -78,7 +75,7 @@ public class RetePathMatch extends AbstractReteMatch {
         this.pathLength = 1;
         this.units = new HostNode[] {edge.source(), edge.target()};
         this.associatedEdge = edge;
-        this.valuation = new HashMap<LabelVar,TypeLabel>();
+        this.valuation = new Valuation();
     }
 
     /**
@@ -238,7 +235,7 @@ public class RetePathMatch extends AbstractReteMatch {
         RetePathMatch result = null;
         HostElement[] mUnits = m.getAllUnits();
         if (this.units[1].equals(mUnits[0])) {
-            Map<LabelVar,TypeLabel> valuation = this.mergeValuationsWith(m);
+            Valuation valuation = this.mergeValuationsWith(m);
             if (valuation != null) {
                 result = new RetePathMatch(origin);
                 if (copyPrefix) {
@@ -287,7 +284,7 @@ public class RetePathMatch extends AbstractReteMatch {
 
         result.valuation =
             (shallow) ? this.valuation : (this.valuation != null)
-                    ? new HashMap<LabelVar,TypeLabel>(this.valuation) : null;
+                    ? new Valuation(this.valuation) : null;
         return result;
     }
 

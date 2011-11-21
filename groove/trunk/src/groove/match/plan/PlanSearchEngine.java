@@ -21,7 +21,6 @@ import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
@@ -121,7 +120,7 @@ public class PlanSearchEngine extends SearchEngine {
     static private PlanSearchEngine instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = false;
+    static private final boolean PRINT = true;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
@@ -230,8 +229,6 @@ public class PlanSearchEngine extends SearchEngine {
                     unmatchedNodeIter.remove();
                 }
             }
-            // Set of rule nodes that do not have to be typed checked explicitly
-            Set<RuleNode> correctNodes = new HashSet<RuleNode>();
             // then a search item per remaining edge
             for (RuleEdge edge : unmatchedEdges) {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
@@ -239,14 +236,11 @@ public class PlanSearchEngine extends SearchEngine {
                     result.add(edgeItem);
                     TypeEdge edgeType = edge.getType();
                     if (edgeType != null) {
-                        collectTypeCorrect(correctNodes, edge.source(),
-                            edgeType.source());
-                        collectTypeCorrect(correctNodes, edge.target(),
-                            edgeType.target());
+                        unmatchedNodes.remove(edge.source());
+                        unmatchedNodes.remove(edge.target());
                     }
                 }
             }
-            unmatchedNodes.removeAll(correctNodes);
             // finally a search item per remaining node
             for (RuleNode node : unmatchedNodes) {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
@@ -260,25 +254,6 @@ public class PlanSearchEngine extends SearchEngine {
                 }
             }
             return result;
-        }
-
-        /** 
-         * Tests if the type of a rule node corresponds precisely to a given type.
-         * If so, adds the rule node to a set passed in as a parameter.
-         * The test fails if the node is sharply typed (and has proper subtypes)
-         * or is a subtype of the given type.
-         */
-        private void collectTypeCorrect(Set<RuleNode> correct, RuleNode node,
-                TypeNode checked) {
-            boolean add = node.getType() == checked;
-            if (add && node.isSharp()) {
-                Set<TypeNode> subtypes =
-                    this.typeGraph.getSubtypes(node.getType());
-                add = subtypes == null || subtypes.size() == 1;
-            }
-            if (add) {
-                correct.add(node);
-            }
         }
 
         /**

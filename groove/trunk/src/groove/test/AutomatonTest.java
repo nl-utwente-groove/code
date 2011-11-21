@@ -21,6 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.EdgeRole;
+import groove.graph.TypeEdge;
+import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -31,6 +33,7 @@ import groove.rel.RegAut;
 import groove.rel.RegAut.Result;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
+import groove.rel.Valuation;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -44,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.BeforeClass;
@@ -530,9 +531,10 @@ public class AutomatonTest {
             result.clear();
             addRelated(result, nC3, new String[] {"x", "val"}, nI3);
             addRelated(result, nC4, new String[] {"x", "val"}, nI3);
-            assertEquals(result, aut.getMatches(testGraph, null, null,
-                Collections.singletonMap(new LabelVar("x", EdgeRole.BINARY),
-                    TypeLabel.createBinaryLabel("val"))));
+            assertEquals(
+                result,
+                aut.getMatches(testGraph, null, null,
+                    putValue(new Valuation(), "x", "val")));
             aut = createAutomaton("?x.?x.3");
             result.clear();
             addRelated(result, nI3, new String[] {"x", "3"}, nI3);
@@ -551,9 +553,10 @@ public class AutomatonTest {
                 nC1);
             addRelated(result, nList, new String[] {"x", "last", "y", "in"},
                 nC4);
-            assertEquals(result, aut.getMatches(testGraph, null, null,
-                Collections.singletonMap(new LabelVar("y", EdgeRole.BINARY),
-                    TypeLabel.createBinaryLabel("in"))));
+            assertEquals(
+                result,
+                aut.getMatches(testGraph, null, null,
+                    putValue(new Valuation(), "y", "in")));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -600,6 +603,23 @@ public class AutomatonTest {
         return Arrays.asList(ExprParser.splitExpr(text, " "));
     }
 
+    private Valuation putValue(Valuation result, String var, String label) {
+        TypeFactory typeFactory = testGraph.getFactory().getTypeFactory();
+        TypeNode top = typeFactory.getTopNode();
+        TypeEdge value = typeFactory.createEdge(top, label, top);
+        result.put(new LabelVar(var, EdgeRole.BINARY), value);
+        return result;
+    }
+
+    protected void addRelated(Set<Result> result, HostNode key, String[] ids,
+            HostNode image) {
+        Valuation idMap = new Valuation();
+        for (int i = 0; i < ids.length; i += 2) {
+            putValue(idMap, ids[i], ids[i + 1]);
+        }
+        result.add(new Result(key, image, idMap));
+    }
+
     protected static HostNode getNode(String selfLabel) {
         Collection<? extends HostEdge> edgeSet =
             testGraph.labelEdgeSet(TypeLabel.createBinaryLabel(selfLabel));
@@ -613,15 +633,5 @@ public class AutomatonTest {
     private static void addRelated(Set<Result> results, HostNode one,
             HostNode two) {
         results.add(new Result(one, two, null));
-    }
-
-    protected void addRelated(Set<Result> result, HostNode key, String[] ids,
-            HostNode image) {
-        Map<LabelVar,TypeLabel> idMap = new HashMap<LabelVar,TypeLabel>();
-        for (int i = 0; i < ids.length; i += 2) {
-            idMap.put(new LabelVar(ids[i], EdgeRole.BINARY),
-                TypeLabel.createBinaryLabel(ids[i + 1]));
-        }
-        result.add(new Result(key, image, idMap));
     }
 }

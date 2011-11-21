@@ -1557,7 +1557,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private RuleGraph toTypedGraph(RuleGraph graph,
                 RuleGraphMorphism parentTypeMap, RuleGraphMorphism typeMap) {
-            RuleGraph result = graph.newGraph(graph.getName());
+            RuleGraph result = createGraph(graph.getName());
             try {
                 RuleGraphMorphism typing =
                     getType().analyzeRule(graph, parentTypeMap);
@@ -1667,6 +1667,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** Tests if a given RHS edge is a merger. */
         private boolean isMerger(RuleEdge rhsEdge) {
             return !this.lhs.containsEdge(rhsEdge) && rhsEdge.label().isEmpty();
+        }
+
+        /**
+         * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * @see #getSource()
+         */
+        private RuleGraph createGraph(String name) {
+            return new RuleGraph(name, this.factory);
         }
 
         private final RuleFactory factory;
@@ -1928,7 +1936,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             Condition result =
                 new Condition(this.index.getName(), this.index.getOperator(),
                     pattern, root, getSystemProperties());
-            result.setTypeGraph(getGrammar().getTypeGraph());
+            result.setTypeGraph(getType());
             if (this.index.isPositive()) {
                 result.setPositive();
             }

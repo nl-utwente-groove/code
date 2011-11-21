@@ -20,6 +20,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
+import groove.graph.TypeGraph;
 import groove.io.xml.AbstractGxl;
 import groove.io.xml.GxlIO;
 
@@ -40,25 +41,31 @@ public final class ShapeGxl extends
     // ------------------------------------------------------------------------
 
     /** Marshaller/unmarshaller. */
-    private static final ShapeJaxbGxlIO io = ShapeJaxbGxlIO.getInstance();
+    private final ShapeJaxbGxlIO io;
 
-    private static final ShapeGxl INSTANCE = new ShapeGxl();
+    private static final ShapeGxl INSTANCE = new ShapeGxl(null);
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** Returns the singleton instance of this class. */
+    /** Returns an untyped instance of this class. */
     public static ShapeGxl getInstance() {
         return INSTANCE;
+    }
+
+    /** Returns a class instance using a given type graph to create shapes. */
+    public static ShapeGxl getInstance(TypeGraph typeGraph) {
+        return new ShapeGxl(typeGraph);
     }
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    private ShapeGxl() {
+    private ShapeGxl(TypeGraph typeGraph) {
         // Private to avoid object creation. Use getInstance() method.
+        this.io = ShapeJaxbGxlIO.getInstance(typeGraph);
     }
 
     // ------------------------------------------------------------------------
@@ -67,7 +74,7 @@ public final class ShapeGxl extends
 
     @Override
     protected GxlIO<ShapeNode,ShapeEdge> getIO() {
-        return io;
+        return this.io;
     }
 
     // ------------------------------------------------------------------------

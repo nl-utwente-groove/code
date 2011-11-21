@@ -227,10 +227,10 @@ public class GrammarModel implements Observer {
      */
 
     public HostModel getStartGraphModel() {
-        if (this.startGraph == null && this.startGraphName != null) {
-            this.startGraph = getHostModel(this.startGraphName);
+        if (this.startGraphModel == null && this.startGraphName != null) {
+            this.startGraphModel = getHostModel(this.startGraphName);
         }
-        return this.startGraph;
+        return this.startGraphModel;
     }
 
     /**
@@ -242,15 +242,16 @@ public class GrammarModel implements Observer {
      *         a graph role
      * @see #setStartGraph(String)
      */
-    public void setStartGraph(AspectGraph startGraph) {
+    public HostModel setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
-        this.startGraph = new HostModel(this, startGraph);
+        this.startGraphModel = new HostModel(this, startGraph);
         this.startGraphName = null;
         invalidate();
+        return this.startGraphModel;
     }
 
     /**
@@ -264,7 +265,8 @@ public class GrammarModel implements Observer {
 
     /** Unsets the start graph. */
     public void removeStartGraph() {
-        this.startGraph = null;
+        this.startGraphModel = null;
+        invalidate();
     }
 
     /** Collects and returns the permanent errors of the rule models. */
@@ -476,7 +478,7 @@ public class GrammarModel implements Observer {
         this.grammar = null;
         this.errors = null;
         if (this.startGraphName != null) {
-            this.startGraph = null;
+            this.startGraphModel = null;
         }
     }
 
@@ -600,7 +602,7 @@ public class GrammarModel implements Observer {
     /** Counter of the number of invalidations of the grammar. */
     private int modificationCount;
     /** The start graph of the grammar. */
-    private HostModel startGraph;
+    private HostModel startGraphModel;
     /**
      * Name of the current start graph, if it is one of the graphs in this rule
      * system; <code>null</code> otherwise.

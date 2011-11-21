@@ -1104,7 +1104,8 @@ public final class Materialisation {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             GraphGrammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("test-mat-" + number);
-            Shape shape = ShapeGxl.getInstance().unmarshalShape(file);
+            Shape shape =
+                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
             ShapePreviewDialog.showShape(shape);
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {

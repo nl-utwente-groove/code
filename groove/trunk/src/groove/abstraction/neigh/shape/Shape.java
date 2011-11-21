@@ -126,7 +126,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a shape from the given graph. */
     public static Shape createShape(HostGraph graph) {
-        Shape shape = new Shape(ShapeFactory.newInstance());
+        Shape shape = new Shape(ShapeFactory.newInstance(graph.getTypeGraph()));
         HostToShapeMap map = new HostToShapeMap(shape.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on the given graph.

@@ -17,7 +17,7 @@
 package groove.match.plan;
 
 import groove.algebra.SignatureKind;
-import groove.graph.TypeLabel;
+import groove.graph.TypeEdge;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
@@ -311,13 +311,13 @@ public class PlanSearchStrategy implements SearchStrategy {
             this.edgeImages =
                 new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
             this.varImages =
-                new TypeLabel[PlanSearchStrategy.this.varKeys.length];
+                new TypeEdge[PlanSearchStrategy.this.varKeys.length];
             this.nodeSeeds =
                 new HostNode[PlanSearchStrategy.this.nodeKeys.length];
             this.edgeSeeds =
                 new HostEdge[PlanSearchStrategy.this.edgeKeys.length];
             this.varSeeds =
-                new TypeLabel[PlanSearchStrategy.this.varKeys.length];
+                new TypeEdge[PlanSearchStrategy.this.varKeys.length];
             this.subMatches =
                 new TreeMatch[PlanSearchStrategy.this.condIxMap.size()];
         }
@@ -344,7 +344,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                     this.edgeImages[i] =
                         this.edgeSeeds[i] = edgeEntry.getValue();
                 }
-                for (Map.Entry<LabelVar,TypeLabel> varEntry : seedMap.getValuation().entrySet()) {
+                for (Map.Entry<LabelVar,TypeEdge> varEntry : seedMap.getValuation().entrySet()) {
                     assert isVarFound(varEntry.getKey());
                     int i = getVarIx(varEntry.getKey());
                     this.varImages[i] = this.varSeeds[i] = varEntry.getValue();
@@ -484,7 +484,7 @@ public class PlanSearchStrategy implements SearchStrategy {
         }
 
         /** Sets the variable image for the graph variable with a given index. */
-        final boolean putVar(int index, TypeLabel image) {
+        final boolean putVar(int index, TypeEdge image) {
             this.varImages[index] = image;
             return true;
         }
@@ -506,7 +506,7 @@ public class PlanSearchStrategy implements SearchStrategy {
         }
 
         /** Returns the current variable image at a given index. */
-        final TypeLabel getVar(int index) {
+        final TypeEdge getVar(int index) {
             return this.varImages[index];
         }
 
@@ -532,7 +532,7 @@ public class PlanSearchStrategy implements SearchStrategy {
         /**
          * Returns the variable seed (i.e., the pre-matched image) at a given index.
          */
-        final TypeLabel getVarSeed(int index) {
+        final TypeEdge getVarSeed(int index) {
             return this.varSeeds[index];
         }
 
@@ -560,7 +560,7 @@ public class PlanSearchStrategy implements SearchStrategy {
                     }
                 }
                 for (int i = 0; i < this.varImages.length; i++) {
-                    TypeLabel image = this.varImages[i];
+                    TypeEdge image = this.varImages[i];
                     if (image != null) {
                         patternMap.putVar(PlanSearchStrategy.this.varKeys[i],
                             image);
@@ -592,7 +592,7 @@ public class PlanSearchStrategy implements SearchStrategy {
         /** Array of edge images. */
         private final HostEdge[] edgeImages;
         /** Array of variable images. */
-        private final TypeLabel[] varImages;
+        private final TypeEdge[] varImages;
         /** Array of variable images. */
         private final TreeMatch[] subMatches;
         /**
@@ -609,7 +609,7 @@ public class PlanSearchStrategy implements SearchStrategy {
          * Array indicating, for each index, if the edge with that image was
          * pre-matched in the search.
          */
-        private final TypeLabel[] varSeeds;
+        private final TypeEdge[] varSeeds;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
         /** Index of the last search record known to be singular. */

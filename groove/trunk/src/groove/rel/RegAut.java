@@ -21,7 +21,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleLabel;
@@ -29,7 +28,6 @@ import groove.trans.RuleToHostMap;
 import groove.util.Duo;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -103,12 +101,11 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
      *        constraint
      */
     Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
-            Set<HostNode> endImages, Map<LabelVar,TypeLabel> valuation);
+            Set<HostNode> endImages, Valuation valuation);
 
     /** Type of the automaton's match results. */
     class Result extends Duo<HostNode> {
-        public Result(HostNode one, HostNode two,
-                Map<LabelVar,TypeLabel> valuation) {
+        public Result(HostNode one, HostNode two, Valuation valuation) {
             super(one, two);
             this.valuation = valuation;
         }
@@ -116,7 +113,7 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
         /**
          * Returns the valuation.
          */
-        public Map<LabelVar,TypeLabel> getValuation() {
+        public Valuation getValuation() {
             return this.valuation;
         }
 
@@ -146,6 +143,6 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
                 + this.valuation + "]";
         }
 
-        private final Map<LabelVar,TypeLabel> valuation;
+        private final Valuation valuation;
     }
 }

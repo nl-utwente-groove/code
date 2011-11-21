@@ -72,6 +72,17 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
         this.outMult = outMult;
     }
 
+    /** 
+     * Tests if another type edge is either equal to this one or,
+     * if this one is abstract, is a subtype.
+     */
+    public boolean subsumes(TypeEdge other) {
+        if (this == other) {
+            return true;
+        }
+        return isAbstract() && getGraph().isSubtype(other, this);
+    }
+
     @Override
     public TypeGraph getGraph() {
         return this.graph;

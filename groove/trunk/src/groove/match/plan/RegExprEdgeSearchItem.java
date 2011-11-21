@@ -1,12 +1,13 @@
 /* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
 package groove.match.plan;
 
+import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegExpr;
+import groove.rel.Valuation;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
@@ -206,10 +207,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
 
         @Override
         boolean find() {
-            Map<LabelVar,TypeLabel> valuation =
-                new HashMap<LabelVar,TypeLabel>();
+            Valuation valuation = new Valuation();
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeLabel image =
+                TypeEdge image =
                     this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 valuation.put(var, image);
@@ -232,8 +232,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * Computes the image set by querying the automaton derived for the edge
          * label.
          */
-        private Set<RegAut.Result> computeRelation(
-                Map<LabelVar,TypeLabel> valuation) {
+        private Set<RegAut.Result> computeRelation(Valuation valuation) {
             HostNode sourceFind = this.sourcePreMatch;
             if (sourceFind == null && RegExprEdgeSearchItem.this.sourceFound) {
                 sourceFind =
@@ -274,7 +273,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetFound = targetFound;
             assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
                 RegExprEdgeSearchItem.this.neededVars);
-            this.valuation = new HashMap<LabelVar,TypeLabel>();
+            this.valuation = new Valuation();
         }
 
         @Override
@@ -283,7 +282,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
             this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeLabel image =
+                TypeEdge image =
                     this.search.getVarSeed(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 this.valuation.put(var, image);
@@ -344,7 +343,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                     }
                 }
                 if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
-                    Map<LabelVar,TypeLabel> valuation = image.getValuation();
+                    Map<LabelVar,TypeEdge> valuation = image.getValuation();
                     for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
                         this.search.putVar(
                             RegExprEdgeSearchItem.this.varIxMap.get(var),
@@ -399,6 +398,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * target, or the target was pre-matched.
          */
         private HostNode targetFind;
-        private final Map<LabelVar,TypeLabel> valuation;
+        /** Valuation of the label variables. */
+        private final Valuation valuation;
     }
 }

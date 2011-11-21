@@ -74,7 +74,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Creates and returns a node with a given number and node type. */
     public HostNode createNode(int nr, TypeNode typeNode) {
-        assert typeNode.getGraph() == this.typeFactory.getTypeGraph();
+        assert typeNode.getGraph() == this.typeFactory.getGraph();
         setLastNodeType(typeNode);
         HostNode result = super.createNode(nr);
         resetLastNodeType();
@@ -152,7 +152,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     @Override
     public boolean addNode(Node node) throws IllegalArgumentException {
         assert node instanceof HostNode;
-        assert ((HostNode) node).getType().getGraph() == this.typeFactory.getTypeGraph();
+        assert ((HostNode) node).getType().getGraph() == this.typeFactory.getGraph();
         boolean result = super.addNode(node);
         if (node instanceof ValueNode) {
             // make sure this value was not already wrapped in another node
@@ -219,7 +219,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected HostEdge newEdge(HostNode source, TypeEdge type, HostNode target,
             int nr) {
-        assert type.getGraph() == this.typeFactory.getTypeGraph();
+        assert type.getGraph() == this.typeFactory.getGraph();
         return new HostEdge(source, type, target, nr);
     }
 
@@ -268,6 +268,11 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     protected final TypeNode getLastNodeType() {
         TypeNode result = this.lastNodeType;
         return result;
+    }
+
+    /** Returns the type factory used in this host factory. */
+    public TypeFactory getTypeFactory() {
+        return this.typeFactory;
     }
 
     /** Internal store of previously generated value nodes. */

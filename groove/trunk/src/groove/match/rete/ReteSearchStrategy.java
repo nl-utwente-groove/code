@@ -19,12 +19,12 @@ package groove.match.rete;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.EdgeEmbargo;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
-import groove.trans.Condition.Op;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 
@@ -57,6 +57,7 @@ public class ReteSearchStrategy implements SearchStrategy {
     @Override
     public <T> T traverse(final HostGraph host, RuleToHostMap seedMap,
             Visitor<TreeMatch,T> visitor) {
+        assert host.getFactory().getTypeFactory().getGraph() == this.condition.getTypeGraph();
         ReteNetwork network = getEngine().getNetwork();
         assert network != null;
 

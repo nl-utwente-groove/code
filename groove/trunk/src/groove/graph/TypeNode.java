@@ -51,11 +51,22 @@ public class TypeNode implements Node, TypeElement {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result =
-            obj instanceof TypeNode
-                && ((TypeNode) obj).getNumber() == getNumber()
-                && ((TypeNode) obj).label().equals(label());
+        // only type nodes from the same type graph may be compared
+        assert getGraph() == ((TypeNode) obj).getGraph();
+        boolean result = this == obj;
+        // object equality should imply equal numbers and type labels
+        assert result || getNumber() != ((TypeNode) obj).getNumber()
+            && !label().equals(((TypeNode) obj).label());
         return result;
+        //        if (this == obj) {
+        //            return true;
+        //        }
+        //        if (!(obj instanceof TypeNode)) {
+        //            return false;
+        //        }
+        //        TypeNode other = (TypeNode) obj;
+        //        return other.getNumber() == getNumber()
+        //            && other.label().equals(label());
     }
 
     @Override
@@ -136,6 +147,23 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public TypeGraph getGraph() {
         return this.graph;
+    }
+
+    /** Tests if another type satisfies the constraints of this one.
+     * This is the case if the types are equal, or this type is a
+     * supertype of the other.
+     * @param other the other type node
+     * @param strict if {@code true}, no subtype check is performed
+     * @return {@code true} if {@code other} equals {@code this},
+     * or is a subtype and {@code strict} is {@code false}
+     */
+    public boolean subsumes(TypeNode other, boolean strict) {
+        if (this.equals(other)) {
+            return true;
+        } else {
+            return !strict && getGraph() != null
+                && getGraph().isSubtype(other, this);
+        }
     }
 
     /** The type graph with which this node is associated. */

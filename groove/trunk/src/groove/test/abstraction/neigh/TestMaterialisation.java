@@ -58,6 +58,7 @@ public class TestMaterialisation {
         "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
     static private GraphGrammar grammar;
+    static private ShapeGxl marshaller;
 
     @BeforeClass
     public static void setUp() {
@@ -66,6 +67,7 @@ public class TestMaterialisation {
         try {
             view = GrammarModel.newInstance(file, false);
             grammar = view.toGrammar();
+            marshaller = ShapeGxl.getInstance(view.getTypeGraph());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
@@ -650,7 +652,7 @@ public class TestMaterialisation {
         Shape shape = null;
         try {
             File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-            shape = ShapeGxl.getInstance().unmarshalShape(file);
+            shape = marshaller.unmarshalShape(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -674,7 +676,7 @@ public class TestMaterialisation {
         Shape shape = null;
         try {
             File file = new File(DIRECTORY + "materialisation-test-14.gxl");
-            shape = ShapeGxl.getInstance().unmarshalShape(file);
+            shape = marshaller.unmarshalShape(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
