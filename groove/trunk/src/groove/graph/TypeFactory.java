@@ -86,7 +86,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     @Override
     public TypeEdge createEdge(TypeNode source, Label label, TypeNode target) {
         TypeLabel typeLabel = (TypeLabel) label;
-        TypeEdge result = getEdge(source, typeLabel, target);
+        TypeEdge result = getEdge(source, typeLabel, target, true);
         if (result == null) {
             result = newEdge(source, typeLabel, target);
         }
@@ -97,10 +97,11 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
      * Returns an edge from the type graph with the given signature.
      * Creates the edge if the factory has no underlying type graph. 
      */
-    public TypeEdge getEdge(TypeNode source, TypeLabel label, TypeNode target) {
+    public TypeEdge getEdge(TypeNode source, TypeLabel label, TypeNode target,
+            boolean precise) {
         TypeEdge result = null;
         if (hasTypeGraph()) {
-            result = getTypeGraph().getTypeEdge(source, label, target);
+            result = getTypeGraph().getTypeEdge(source, label, target, precise);
         } else {
             result = newEdge(source, label, target);
         }
@@ -116,18 +117,6 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     @Override
     public Morphism<TypeNode,TypeEdge> createMorphism() {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Yields the number of labels created in the course of the program.
-     * @return Number of labels created
-     */
-    public int getLabelCount() {
-        int result = 0;
-        for (Map<?,?> map : this.labelMaps.values()) {
-            result += map.size();
-        }
-        return result;
     }
 
     /** Returns the default type node for a given data signature. */

@@ -72,7 +72,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     public Set<TypeLabel> getLabels() {
         TypeGraph typeGraph = getResource();
         return typeGraph == null ? Collections.<TypeLabel>emptySet()
-                : typeGraph.getLabelStore().getLabels();
+                : typeGraph.getLabels();
     }
 
     @Override
@@ -241,7 +241,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 model.addEdge(typeSource,
                     modelEdge.getAttrAspect().getContentString(), typeNode);
         } else if (modelEdge.getKind() == SUBTYPE) {
-            model.addInheritance(typeTarget, typeSource);
+            model.addInheritance(typeSource, typeTarget);
         } else {
             TypeLabel typeLabel = modelEdge.getTypeLabel();
             typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);

@@ -192,7 +192,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     public HostEdge createEdge(HostNode source, Label label, HostNode target) {
         TypeEdge type =
             this.typeFactory.getEdge(source.getType(), (TypeLabel) label,
-                target.getType());
+                target.getType(), false);
         HostEdge edge = newEdge(source, type, target, getEdgeCount());
         return storeEdge(edge);
     }

@@ -12,13 +12,11 @@ import groove.trans.ResourceKind;
 import groove.view.aspect.AspectNode;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
@@ -59,8 +57,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * which together make up the combined type model. */
     public Map<String,TypeGraph> getTypeGraphMap() {
         synchronise();
-        return hasErrors() ? null
-                : Collections.unmodifiableMap(this.typeGraphMap);
+        return this.typeGraphMap;
     }
 
     @Override
@@ -125,6 +122,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         if (errors.isEmpty()) {
             return result;
         } else {
+            this.typeGraphMap.clear();
+            this.typeGraphMap.put(getName(), getImplicitTypeGraph());
             throw new FormatException(errors);
         }
     }
@@ -199,7 +198,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     private final Map<String,TypeModel> typeModelMap =
         new HashMap<String,TypeModel>();
     private final Map<String,TypeGraph> typeGraphMap =
-        new TreeMap<String,TypeGraph>();
+        new HashMap<String,TypeGraph>();
     /** The implicit type graph. */
     private TypeGraph implicitTypeGraph;
 }

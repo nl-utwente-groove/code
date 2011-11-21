@@ -272,9 +272,9 @@ public class PlanSearchEngine extends SearchEngine {
                 TypeNode checked) {
             boolean add = node.getType() == checked;
             if (add && node.isSharp()) {
-                Set<TypeLabel> subLabels =
-                    this.typeGraph.getSublabels(node.getType().label());
-                add = subLabels == null || subLabels.size() == 1;
+                Set<TypeNode> subtypes =
+                    this.typeGraph.getSubtypes(node.getType());
+                add = subtypes == null || subtypes.size() == 1;
             }
             if (add) {
                 correct.add(node);
@@ -666,7 +666,7 @@ public class PlanSearchEngine extends SearchEngine {
          * determining which one should be scheduled first. In order from worst
          * to best:
          * <ul>
-         * <li> {@link NodeSearchItem}s of a non-specialised type
+         * <li> {@link NodeTypeSearchItem}s
          * <li> {@link ConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
@@ -690,14 +690,11 @@ public class PlanSearchEngine extends SearchEngine {
         int getRating(SearchItem item) {
             int result = 0;
             Class<?> itemClass = item.getClass();
-            if (itemClass == NodeSearchItem.class) {
-                return result;
-            }
-            if (itemClass == ConditionSearchItem.class) {
+            if (itemClass == NodeTypeSearchItem.class) {
                 return result;
             }
             result++;
-            if (itemClass == NodeTypeSearchItem.class) {
+            if (itemClass == ConditionSearchItem.class) {
                 return result;
             }
             result++;

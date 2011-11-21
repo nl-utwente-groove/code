@@ -80,7 +80,7 @@ public class AntlrGrapher {
                     TypeLabel.createLabel(EdgeRole.NODE_TYPE, token);
                 TypeNode tokenNode = result.addNode(typeLabel);
                 try {
-                    result.addInheritance(topNode, tokenNode);
+                    result.addInheritance(tokenNode, topNode);
                 } catch (FormatException e) {
                     assert false;
                 }

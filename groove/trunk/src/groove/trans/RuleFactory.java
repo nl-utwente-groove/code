@@ -88,7 +88,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
             TypeLabel typeLabel = ruleLabel.getTypeLabel();
             TypeEdge type =
                 typeLabel == null ? null : this.typeFactory.getEdge(
-                    source.getType(), typeLabel, target.getType());
+                    source.getType(), typeLabel, target.getType(), false);
             return new RuleEdge(source, ruleLabel, type, target);
         }
     }

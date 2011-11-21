@@ -17,7 +17,7 @@
 package groove.match.plan;
 
 import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -44,14 +44,9 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     public NodeTypeSearchItem(RuleNode node, TypeGraph typeGraph) {
         assert node.getType().getGraph() == typeGraph;
         this.source = node;
-        this.label = node.getType().label();
-        assert this.label.isNodeType() : String.format(
-            "Label '%s' is not a node type", this.label);
+        this.type = node.getType();
         this.boundNodes = new HashSet<RuleNode>(Arrays.asList(node));
-        Set<TypeLabel> labelStoreSubtypes = typeGraph.getSublabels(this.label);
-        this.subtypes =
-            labelStoreSubtypes == null ? null : new HashSet<TypeLabel>(
-                labelStoreSubtypes);
+        this.subtypes = typeGraph.getSubtypes(this.type);
         this.sharpType =
             node.isSharp() || this.subtypes == null
                 || this.subtypes.size() == 1;
@@ -80,8 +75,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Find node %s %s", this.label, this.sharpType
-                ? "(sharp)" : "");
+        return String.format("Find node %s%s", this.type, this.sharpType
+                ? " (sharp)" : "");
     }
 
     /**
@@ -93,7 +88,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     public int compareTo(SearchItem other) {
         int result = 0;
         if (other instanceof NodeTypeSearchItem) {
-            result = this.label.compareTo(((NodeTypeSearchItem) other).label);
+            result = this.type.compareTo(((NodeTypeSearchItem) other).type);
         }
         if (result == 0) {
             return super.compareTo(other);
@@ -117,7 +112,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      */
     @Override
     int getRating() {
-        return this.label.hashCode();
+        return this.type.hashCode();
     }
 
     final public Record createRecord(
@@ -158,7 +153,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      */
     final RuleNode source;
     /** The type label to be matched. */
-    final TypeLabel label;
+    final TypeNode type;
     /** The set of end nodes of this edge. */
     private final Set<RuleNode> boundNodes;
 
@@ -167,7 +162,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /** Indicates if the source is found before this item is invoked. */
     boolean sourceFound;
     /** The collection of subtypes of this node type. */
-    final Collection<TypeLabel> subtypes;
+    final Collection<TypeNode> subtypes;
     /** Flag indicating if the node type has non-trivial subtypes. */
     final boolean sharpType;
 
@@ -194,11 +189,11 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         boolean find() {
             boolean result = false;
             this.image = computeImage();
-            TypeLabel sourceLabel = this.image.getType().label();
+            TypeNode sourceType = this.image.getType();
             if (NodeTypeSearchItem.this.sharpType) {
-                result = NodeTypeSearchItem.this.label.equals(sourceLabel);
+                result = NodeTypeSearchItem.this.type == sourceType;
             } else {
-                result = NodeTypeSearchItem.this.subtypes.contains(sourceLabel);
+                result = NodeTypeSearchItem.this.subtypes.contains(sourceType);
             }
             if (result) {
                 write();
@@ -274,8 +269,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         boolean write(HostNode image) {
             if (NodeTypeSearchItem.this.sharpType
-                && NodeTypeSearchItem.this.label != image.getType().label()
-                || !NodeTypeSearchItem.this.subtypes.contains(image.getType().label())) {
+                && NodeTypeSearchItem.this.type != image.getType()
+                || !NodeTypeSearchItem.this.subtypes.contains(image.getType())) {
                 return false;
             }
             if (this.sourceFind == null) {
