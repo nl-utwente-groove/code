@@ -70,6 +70,7 @@ public final class PreMatch {
      * The given host must be a shape.
      */
     public static Set<Proof> getPreMatches(final Shape shape, Rule rule) {
+        assert shape.getTypeGraph() == rule.getTypeGraph();
         Set<Proof> preMatches = new MyHashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
         rule.traverseMatches(shape, null,

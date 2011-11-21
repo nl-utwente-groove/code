@@ -80,7 +80,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
             } else {
                 edgeSet = this.host.edgeSet();
             }
-            initImages(edgeSet, true, true, false, true);
+            initImages(edgeSet);
         }
 
         /**

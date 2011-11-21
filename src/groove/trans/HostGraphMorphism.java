@@ -55,4 +55,12 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
     public HostGraphMorphism inverseThen(Morphism<HostNode,HostEdge> other) {
         return (HostGraphMorphism) super.inverseThen(other);
     }
+
+    /** Creates a host graph consisting precisely of the node and edge images in this morphism. */
+    public DefaultHostGraph createImage(String name) {
+        DefaultHostGraph result = new DefaultHostGraph(name, getFactory());
+        result.addNodeSet(nodeMap().values());
+        result.addEdgeSet(edgeMap().values());
+        return result;
+    }
 }

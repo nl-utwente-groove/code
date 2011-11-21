@@ -798,7 +798,7 @@ final public class BasicEvent extends
                 result.putNode(key.target(), edgeImage.target());
                 LabelVar var = key.label().getWildcardId();
                 if (var != null) {
-                    result.putVar(var, edgeImage.label());
+                    result.putVar(var, edgeImage.getType());
                 }
                 result.putEdge(key, edgeImage);
             }

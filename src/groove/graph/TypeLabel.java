@@ -171,7 +171,7 @@ public final class TypeLabel extends AbstractLabel {
     }
 
     /** Type label for nodes in an untyped setting. */
-    static public final TypeLabel NODE = new TypeLabel("Node",
+    static public final TypeLabel NODE = new TypeLabel("\u03A9",
         EdgeRole.NODE_TYPE);
 
 }

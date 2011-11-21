@@ -16,8 +16,9 @@
  */
 package groove.match.rete;
 
-import groove.graph.TypeLabel;
+import groove.graph.TypeEdge;
 import groove.rel.LabelVar;
+import groove.rel.Valuation;
 import groove.rel.VarMap;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
@@ -29,11 +30,10 @@ import groove.trans.RuleToHostMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -70,7 +70,7 @@ public abstract class AbstractReteMatch implements
     /**
      * Variable bindings
      */
-    protected Map<LabelVar,TypeLabel> valuation = null;
+    protected Valuation valuation = null;
 
     /**
      * Calculated hashCode. 0 means it is not yet calculated
@@ -332,8 +332,7 @@ public abstract class AbstractReteMatch implements
     /**
      * An empty valuation map.
      */
-    protected static Map<LabelVar,TypeLabel> emptyMap =
-        new HashMap<LabelVar,TypeLabel>();
+    protected static Valuation emptyMap = new Valuation();
 
     /**
      * Merges the variable valuation map of this match with a given match,
@@ -345,15 +344,15 @@ public abstract class AbstractReteMatch implements
      * @return A new valuation map that is the result of consistent union of both,
      * <code>null</code> if there is a conflict.
      */
-    protected Map<LabelVar,TypeLabel> mergeValuationsWith(AbstractReteMatch m) {
-        Map<LabelVar,TypeLabel> result = null;
-        Map<LabelVar,TypeLabel> v1 = this.getValuation();
-        Map<LabelVar,TypeLabel> v2 = m.getValuation();
+    protected Valuation mergeValuationsWith(AbstractReteMatch m) {
+        Valuation result = null;
+        Valuation v1 = this.getValuation();
+        Valuation v2 = m.getValuation();
         if ((v1 != null) && (v2 != null)) {
-            Map<LabelVar,TypeLabel> vSmall = (v1.size() < v2.size()) ? v1 : v2;
-            Map<LabelVar,TypeLabel> vBig = (vSmall == v1) ? v2 : v1;
-            result = new HashMap<LabelVar,TypeLabel>(v1.size() + v2.size());
-            for (Entry<LabelVar,TypeLabel> e : vSmall.entrySet()) {
+            Map<LabelVar,TypeEdge> vSmall = (v1.size() < v2.size()) ? v1 : v2;
+            Map<LabelVar,TypeEdge> vBig = (vSmall == v1) ? v2 : v1;
+            result = new Valuation(v1.size() + v2.size());
+            for (Entry<LabelVar,TypeEdge> e : vSmall.entrySet()) {
                 if (!vBig.get(e.getKey()).equals(e.getValue())) {
                     result = null;
                     break;
@@ -365,8 +364,8 @@ public abstract class AbstractReteMatch implements
                 result.putAll(vBig);
             }
         } else if ((v1 != null) || (v2 != null)) {
-            Map<LabelVar,TypeLabel> v = (v1 != null) ? v1 : v2;
-            result = new HashMap<LabelVar,TypeLabel>(v);
+            Map<LabelVar,TypeEdge> v = (v1 != null) ? v1 : v2;
+            result = new Valuation(v);
         } else {
             result = emptyMap;
         }
@@ -376,7 +375,7 @@ public abstract class AbstractReteMatch implements
     /**
      * Combines the variable bindings(valuation maps)
      * of a number of match objects into a new valuation map, provided
-     * that the bindings do not contradict eachother. 
+     * that the bindings do not contradict each other. 
      *
      * 
      * @param matches An array
@@ -384,16 +383,15 @@ public abstract class AbstractReteMatch implements
      * there is a binding conflict, i.e. more than one value is bound
      * to the same variable. 
      */
-    protected static Map<LabelVar,TypeLabel> mergeValuations(
-            AbstractReteMatch[] matches) {
-        Map<LabelVar,TypeLabel> result = emptyMap;
+    protected static Valuation mergeValuations(AbstractReteMatch[] matches) {
+        Valuation result = emptyMap;
         for (int i = 0; (i < matches.length) && (result != null); i++) {
-            Map<LabelVar,TypeLabel> v = matches[i].getValuation();
+            Valuation v = matches[i].getValuation();
             if (v != null) {
                 if (result == emptyMap) {
-                    result = new HashMap<LabelVar,TypeLabel>();
+                    result = new Valuation();
                 }
-                for (Entry<LabelVar,TypeLabel> e : v.entrySet()) {
+                for (Entry<LabelVar,TypeEdge> e : v.entrySet()) {
                     if (!result.get(e.getKey()).equals(e.getValue())) {
                         result = null;
                         break;
@@ -469,22 +467,22 @@ public abstract class AbstractReteMatch implements
     }
 
     @Override
-    public Map<LabelVar,TypeLabel> getValuation() {
+    public Valuation getValuation() {
         return this.valuation;
     }
 
     @Override
-    public TypeLabel getVar(LabelVar var) {
+    public TypeEdge getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
     @Override
-    public void putAllVar(Map<LabelVar,TypeLabel> valuation) {
+    public void putAllVar(Valuation valuation) {
         this.valuation.putAll(valuation);
     }
 
     @Override
-    public TypeLabel putVar(LabelVar var, TypeLabel value) {
+    public TypeEdge putVar(LabelVar var, TypeEdge value) {
         return this.valuation.put(var, value);
     }
 }

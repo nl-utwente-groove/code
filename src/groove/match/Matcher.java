@@ -111,6 +111,7 @@ public class Matcher implements SearchStrategy {
     public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
             Visitor<TreeMatch,T> visitor) {
         assert isCorrectSeeding(seedMap);
+        assert host.getFactory().getTypeFactory().getGraph() == this.condition.getTypeGraph();
         return getSearchStrategy().traverse(host, seedMap, visitor);
     }
 

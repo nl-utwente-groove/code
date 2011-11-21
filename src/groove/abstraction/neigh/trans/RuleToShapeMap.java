@@ -21,6 +21,7 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Node;
+import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
@@ -68,7 +69,7 @@ public final class RuleToShapeMap extends RuleToHostMap {
     }
 
     @Override
-    public TypeLabel putVar(LabelVar var, TypeLabel value) {
+    public TypeEdge putVar(LabelVar var, TypeEdge value) {
         assert !isFixed();
         return super.putVar(var, value);
     }

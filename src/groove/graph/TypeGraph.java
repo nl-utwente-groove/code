@@ -350,6 +350,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return getSubtypes(superType).contains(subType);
     }
 
+    /** Tests if one edge type is a subtype of another. */
+    public boolean isSubtype(TypeEdge subtype, TypeEdge supertype) {
+        testFixed(true);
+        return getSubtypes(supertype).contains(subtype);
+    }
+
     /**
      * Attempts to find a typing for a given rule graph.
      * @param source the rule graph to be typed
@@ -863,15 +869,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return this.nodeSubtypeMap.get(node);
     }
 
+    /** Returns the set of subtypes of a given edge type. */
+    public Set<TypeEdge> getSubtypes(TypeEdge edge) {
+        return this.edgeSubtypeMap.get(edge);
+    }
+
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
         return this.nodeSupertypeMap.get(node);
-    }
-
-    /** Returns the set of subtypes of a given (abstract) edge type. */
-    public Set<TypeEdge> getSubtypes(TypeEdge edge) {
-        testFixed(true);
-        return this.edgeSubtypeMap.get(edge);
     }
 
     /**

@@ -103,6 +103,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return this.maxNodeNr;
     }
 
+    /** Returns the type factory used by this rule factory. */
+    public TypeFactory getTypeFactory() {
+        return this.typeFactory;
+    }
+
     /** Maximises the current maximum node number with another number. */
     private void updateMaxNodeNr(int nr) {
         this.maxNodeNr = Math.max(this.maxNodeNr, nr);

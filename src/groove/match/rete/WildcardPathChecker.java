@@ -43,7 +43,7 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
             m = new RetePathMatch(this, edge);
             m.getValuation().put(
                 this.getExpression().allVarSet().iterator().next(),
-                edge.label());
+                edge.getType());
         } else {
             m = new RetePathMatch(this, edge);
         }

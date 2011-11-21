@@ -100,8 +100,8 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     public TypeEdge getEdge(TypeNode source, TypeLabel label, TypeNode target,
             boolean precise) {
         TypeEdge result = null;
-        if (hasTypeGraph()) {
-            result = getTypeGraph().getTypeEdge(source, label, target, precise);
+        if (hasGraph()) {
+            result = getGraph().getTypeEdge(source, label, target, precise);
         } else {
             result = newEdge(source, label, target);
         }
@@ -125,12 +125,12 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Indicates if this factory is backed up by a type graph. */
-    public boolean hasTypeGraph() {
+    public boolean hasGraph() {
         return this.typeGraph != null;
     }
 
     /** Indicates if this factory is backed up by a type graph. */
-    public TypeGraph getTypeGraph() {
+    public TypeGraph getGraph() {
         return this.typeGraph;
     }
 

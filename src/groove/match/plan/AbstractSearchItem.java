@@ -17,12 +17,9 @@
 
 package groove.match.plan;
 
-import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
-import groove.trans.HostEdge;
 import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
@@ -212,12 +209,6 @@ abstract class AbstractSearchItem implements SearchItem {
         @Override
         final public boolean isRelevant() {
             return AbstractSearchItem.this.isRelevant();
-        }
-
-        /** Convenience method to create an edge for the host graph. */
-        final HostEdge createEdge(HostNode source, TypeLabel label,
-                HostNode target) {
-            return this.host.getFactory().createEdge(source, label, target);
         }
 
         /** The underlying search for this record. */

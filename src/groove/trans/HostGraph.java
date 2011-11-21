@@ -19,6 +19,8 @@ package groove.trans;
 import static groove.graph.GraphRole.HOST;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
+import groove.graph.TypeGraph;
+import groove.view.FormatException;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectLabel;
@@ -40,6 +42,15 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
 
     @Override
     HostFactory getFactory();
+
+    /** Returns the type graph for this host graph, if any. */
+    public TypeGraph getTypeGraph();
+
+    /** 
+     * Returns a copy of this graph, typed against a given type graph.
+     * @throws FormatException if there are typing errors in the graph 
+     */
+    public HostGraph retype(TypeGraph typeGraph) throws FormatException;
 
     /** Converts this host graph to an equivalent aspect graph representation. */
     HostToAspectMap toAspectMap();

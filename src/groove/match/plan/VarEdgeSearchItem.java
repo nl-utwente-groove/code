@@ -16,6 +16,7 @@
  */
 package groove.match.plan;
 
+import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
@@ -82,10 +83,10 @@ class VarEdgeSearchItem extends Edge2SearchItem {
             this.varFound);
     }
 
-    boolean isLabelConstraintSatisfied(TypeLabel label) {
-        return label.getRole() == this.var.getKind()
+    boolean isLabelConstraintSatisfied(TypeEdge type) {
+        return type.getRole() == this.var.getKind()
             && this.labelConstraint == null
-            || this.labelConstraint.isSatisfied(label);
+            || this.labelConstraint.isSatisfied(type.label());
     }
 
     /** The variable bound in the wildcard (not <code>null</code>). */
@@ -121,8 +122,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         /** This implementation returns the variable image from the match. */
         @Override
-        TypeLabel getLabel() {
-            TypeLabel result = this.varPreMatch;
+        TypeEdge getType() {
+            TypeEdge result = this.varPreMatch;
             if (result == null) {
                 result = this.search.getVar(this.varIx);
             }
@@ -132,11 +133,11 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /** Tests the label constraint, in addition to calling the super method. */
         @Override
         boolean isImageCorrect(HostEdge image) {
-            return isLabelConstraintSatisfied(image.label())
+            return isLabelConstraintSatisfied(image.getType())
                 && super.isImageCorrect(image);
         }
 
-        private TypeLabel varPreMatch;
+        private TypeEdge varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
     }
@@ -172,7 +173,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
             Set<? extends HostEdge> edgeSet;
             if (this.varFind != null) {
                 if (isLabelConstraintSatisfied(this.varFind)) {
-                    edgeSet = this.host.labelEdgeSet(this.varFind);
+                    edgeSet = this.host.labelEdgeSet(this.varFind.label());
                 } else {
                     edgeSet = EMPTY_IMAGE_SET;
                 }
@@ -188,15 +189,16 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                     edgeSet = this.host.edgeSet();
                 }
             }
-            initImages(edgeSet, true, true, false, true);
+            initImages(edgeSet);
         }
 
         @Override
         boolean write(HostEdge image) {
             boolean result =
-                isLabelConstraintSatisfied(image.label()) && super.write(image);
+                isLabelConstraintSatisfied(image.getType())
+                    && super.write(image);
             if (result && this.varFind == null) {
-                result = this.search.putVar(this.varIx, image.label());
+                result = this.search.putVar(this.varIx, image.getType());
             }
             return result;
         }
@@ -212,7 +214,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /**
          * The pre-matched variable image, if any.
          */
-        private TypeLabel varPreMatch;
+        private TypeEdge varPreMatch;
         /** The index of {@link #var} in the result. */
         private final int varIx;
         /**
@@ -223,7 +225,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         /**
          * The found variable image, if any.
          */
-        private TypeLabel varFind;
+        private TypeEdge varFind;
     }
 
     private static final Set<HostEdge> EMPTY_IMAGE_SET = Collections.emptySet();

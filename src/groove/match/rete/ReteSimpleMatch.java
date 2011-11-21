@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
-import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
+import groove.rel.Valuation;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostFactory;
@@ -28,8 +28,6 @@ import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -134,8 +132,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         this(origin, injective);
         this.units[0] = match;
         this.hashCode = match.hashCode();
-        this.valuation = new HashMap<LabelVar,TypeLabel>();
-        this.valuation.put(variable, match.label());
+        this.valuation = new Valuation();
+        this.valuation.put(variable, match.getType());
     }
 
     /**
@@ -356,8 +354,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
         TreeHashSet<HostNode> nodes =
             (injective) ? new TreeHashSet<HostNode>() : null;
-        Map<LabelVar,TypeLabel> valuation =
-            AbstractReteMatch.mergeValuations(subMatches);
+        Valuation valuation = AbstractReteMatch.mergeValuations(subMatches);
         if (valuation != null) {
             int k = 0;
             for (int i = 0; i < subMatches.length; i++) {
@@ -467,7 +464,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
-        Map<LabelVar,TypeLabel> valuation = m1.mergeValuationsWith(m2);
+        Valuation valuation = m1.mergeValuationsWith(m2);
         if (valuation != null) {
             result = new ReteSimpleMatch(origin, injective);
             HostElement[] units2 = m2.getAllUnits();
@@ -516,7 +513,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
-        Map<LabelVar,TypeLabel> valuation = m1.mergeValuationsWith(m2);
+        Valuation valuation = m1.mergeValuationsWith(m2);
         if (valuation != null) {
             HostElement[] m1Units = m1.getAllUnits();
             result = new ReteSimpleMatch(origin, injective);
@@ -572,7 +569,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         }
         result.valuation =
             (shallow) ? this.valuation : (this.valuation != null)
-                    ? new HashMap<LabelVar,TypeLabel>(this.valuation) : null;
+                    ? new Valuation(this.valuation) : null;
         result.hashCode = this.hashCode;
         return result;
     }

@@ -21,6 +21,7 @@ import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.GraphProperties;
+import groove.graph.TypeGraph;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchStrategy;
@@ -77,6 +78,8 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot,
             GraphProperties ruleProperties) {
+        assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
+            && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
@@ -90,6 +93,11 @@ public class Rule implements Fixable, Comparable<Rule> {
     /** Returns the condition with which this rule is associated. */
     public Condition getCondition() {
         return this.condition;
+    }
+
+    /** Returns the type graph of this rule. */
+    public TypeGraph getTypeGraph() {
+        return getCondition().getTypeGraph();
     }
 
     /** Returns the name of this rule (which equals the name of the associated condition). */

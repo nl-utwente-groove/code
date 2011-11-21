@@ -19,8 +19,10 @@ package groove.trans;
 import groove.graph.ElementMap;
 import groove.graph.InversableElementMap;
 import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
+import groove.rel.Valuation;
 import groove.rel.VarMap;
 
 import java.util.HashMap;
@@ -64,7 +66,7 @@ public class RuleToHostMap extends
                 throw new IllegalArgumentException(String.format(
                     "Label %s cannot be mapped", ruleLabel));
             } else {
-                result = getVar(var);
+                result = getVar(var).label();
             }
         } else {
             assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format(
@@ -74,19 +76,19 @@ public class RuleToHostMap extends
         return result;
     }
 
-    public Map<LabelVar,TypeLabel> getValuation() {
+    public Valuation getValuation() {
         return this.valuation;
     }
 
-    public TypeLabel getVar(LabelVar var) {
+    public TypeEdge getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
-    public TypeLabel putVar(LabelVar var, TypeLabel value) {
+    public TypeEdge putVar(LabelVar var, TypeEdge value) {
         return this.valuation.put(var, value);
     }
 
-    public void putAllVar(Map<LabelVar,TypeLabel> valuation) {
+    public void putAllVar(Valuation valuation) {
         this.valuation.putAll(valuation);
     }
 
@@ -146,8 +148,8 @@ public class RuleToHostMap extends
      * Callback factory method for the valuation mapping. This implementation
      * returns a {@link HashMap}.
      */
-    protected Map<LabelVar,TypeLabel> createValuation() {
-        return new LinkedHashMap<LabelVar,TypeLabel>();
+    protected Valuation createValuation() {
+        return new Valuation();
     }
 
     @Override
@@ -161,5 +163,5 @@ public class RuleToHostMap extends
     }
 
     /** The internal map from variables to labels. */
-    private final Map<LabelVar,TypeLabel> valuation;
+    private final Valuation valuation;
 }
