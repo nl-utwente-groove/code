@@ -114,6 +114,11 @@ public class TypeNode implements Node, TypeElement {
         this.abstracted = value;
     }
 
+    /** Returns true if this node if of top type. */
+    public final boolean isTopType() {
+        return this.type == TypeLabel.NODE;
+    }
+
     /** Indicates if this node type is imported. */
     public final boolean isImported() {
         return this.imported;
