@@ -145,6 +145,7 @@ public class RuleApplicationTest {
      */
     private void test(GrammarModel view, String ruleName, String startName) {
         try {
+            view.setStartGraph(startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
             boolean cont = true;
             for (int j = 0; cont; j++) {
@@ -154,7 +155,6 @@ public class RuleApplicationTest {
                     results.add(view.getHostModel(resultName).toResource());
                 }
             }
-            view.setStartGraph(startName);
             Rule rule = view.toGrammar().getRule(ruleName);
             if (rule == null) {
                 Assert.fail(String.format("Rule '%s' is currently disabled",
