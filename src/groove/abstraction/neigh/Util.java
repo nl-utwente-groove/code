@@ -25,6 +25,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -55,6 +56,10 @@ public final class Util {
     /** Returns the set of labels used as node labels. */
     public static Set<TypeLabel> getNodeLabels(HostGraph graph, HostNode node) {
         Set<TypeLabel> nodeLabels = new MyHashSet<TypeLabel>();
+        TypeNode typeNode = node.getType();
+        if (!typeNode.isTopType()) {
+            nodeLabels.add(typeNode.label());
+        }
         for (HostEdge edge : graph.outEdgeSet(node)) {
             if (edge.getRole() != BINARY) {
                 nodeLabels.add(edge.label());

@@ -256,7 +256,7 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
         @Override
         @SuppressWarnings("unchecked")
         public T next() {
-            T elem = (T) NodeEquivClass.this.factory.createNode(this.curr);
+            T elem = (T) NodeEquivClass.this.factory.getNode(this.curr);
             this.curr = NodeEquivClass.this.nextSetBit(this.curr + 1);
             return elem;
         }

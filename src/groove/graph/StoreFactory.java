@@ -59,6 +59,14 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     /** Factory method to create a fresh node with a given number. */
     abstract protected N newNode(int nr);
 
+    /** Factory method to retrieve a node with a given number. */
+    public N getNode(int nr) {
+        assert nr >= 0 && nr < this.nodes.length;
+        N result = this.nodes[nr];
+        assert result != null;
+        return result;
+    }
+
     /** 
      * Adds a canonical node to the store.
      * This is only correct if a node with this number does not already
