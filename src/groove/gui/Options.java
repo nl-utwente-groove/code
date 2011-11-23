@@ -871,7 +871,7 @@ public class Options implements Cloneable {
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show lts option */
-    static public final String SHOW_LTS_OPTION = "Show lts";
+    static public final String SHOW_LTS_OPTION = "Show LTS";
     /** Show the tab for control programs. */
     static public final String SHOW_CONTROL_TAB_OPTION =
         "Show control program tab";
