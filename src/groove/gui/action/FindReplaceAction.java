@@ -27,10 +27,12 @@ import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.list.SearchResult;
 import groove.util.Duo;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -43,11 +45,12 @@ import org.jgraph.event.GraphSelectionListener;
 /**
  * Action for changing one label into another throughout the grammar.
  */
-public class RelabelGrammarAction extends SimulatorAction implements
+public class FindReplaceAction extends SimulatorAction implements
         GraphSelectionListener, TreeSelectionListener {
     /** Constructs an instance of the action, for a given simulator. */
-    public RelabelGrammarAction(Simulator simulator) {
-        super(simulator, Options.RELABEL_ACTION_NAME, Icons.RENAME_ICON);
+    public FindReplaceAction(Simulator simulator) {
+        super(simulator, Options.FIND_REPLACE_ACTION_NAME, Icons.SEARCH_ICON);
+        putValue(ACCELERATOR_KEY, Options.SEARCH_KEY);
         addAsListener(getHostDisplay());
         addAsListener(getRuleDisplay());
         addAsListener(getTypeDisplay());
@@ -73,15 +76,22 @@ public class RelabelGrammarAction extends SimulatorAction implements
     @Override
     public void execute() {
         if (getDisplaysPanel().saveAllEditors(false)) {
-            Duo<TypeLabel> relabelling = askRelabelling(this.oldLabel);
-            if (relabelling != null) {
-                try {
-                    getSimulatorModel().doRelabel(relabelling.one(),
-                        relabelling.two());
-                } catch (IOException exc) {
-                    showErrorDialog(exc, String.format(
-                        "Error while renaming '%s' into '%s':",
-                        relabelling.one(), relabelling.two()));
+            Duo<TypeLabel> result = askFindSearch(this.oldLabel);
+            if (result != null) {
+                if (result.two() == null) {
+                    // Find label.
+                    List<SearchResult> searchResults =
+                        getSimulatorModel().searchLabel(result.one());
+                    getSimulator().setSearchResults(searchResults);
+                } else { // Replace label.
+                    try {
+                        getSimulatorModel().doRelabel(result.one(),
+                            result.two());
+                    } catch (IOException exc) {
+                        showErrorDialog(exc, String.format(
+                            "Error while renaming '%s' into '%s':",
+                            result.one(), result.two()));
+                    }
                 }
             }
         }

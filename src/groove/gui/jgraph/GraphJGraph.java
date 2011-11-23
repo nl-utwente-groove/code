@@ -1010,7 +1010,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         Object[] cells = getSelectionCells();
         boolean itemAdded = false;
         if (cells != null && cells.length > 0 && getActions() != null) {
-            result.add(getActions().getRelabelAction());
+            result.add(getActions().getFindReplaceAction());
             if (getActions().getSelectColorAction().isEnabled()) {
                 result.add(getActions().getSelectColorAction());
             }

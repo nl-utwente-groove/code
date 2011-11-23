@@ -473,9 +473,8 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(this.actions.getRelabelAction());
+        result.add(this.actions.getFindReplaceAction());
         result.add(this.actions.getRenumberAction());
-        result.add(this.actions.getSearchAction());
 
         result.addSeparator();
 

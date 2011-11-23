@@ -550,8 +550,11 @@ public class Options implements Cloneable {
     public static final String REDO_ACTION_NAME = "Redo";
     /** Refresh grammar action name */
     public static final String REFRESH_GRAMMAR_ACTION_NAME = "Refresh Grammar";
-    /** Graph rename action name */
-    public static final String RELABEL_ACTION_NAME = "Replace Label";
+    /** Find/replace action name */
+    public static final String FIND_REPLACE_ACTION_NAME =
+        "Find/Replace Label...";
+    /** Replace action name */
+    public static final String REPLACE_ACTION_NAME = "Replace Label";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
     /** Renumber action name */
