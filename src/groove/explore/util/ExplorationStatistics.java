@@ -248,17 +248,17 @@ public class ExplorationStatistics {
     /** Reports on the graph data. */
     private void reportGraphElementStatistics() {
         HostFactory factory = this.gts.getHostFactory();
-        printf("\n\tDefault nodes:\t%d%n", factory.getNodeCount());
-        printf("\tFresh nodes:\t%d%n", BasicEvent.getFreshNodeCount());
-        printf("\tFresh edges:\t%d%n", factory.getEdgeCount());
+        printf("\n\tFactory node count:\t%d%n", factory.getNodeCount());
+        //printf("\tFresh nodes:\t%d%n", BasicEvent.getFreshNodeCount());
+        printf("\tFactory edge count:\t%d%n", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
                 / this.gts.nodeCount();
-        printf("\tAverage:\n\t\tNodes:\t%3.1f%n", nodeAvg);
+        printf("\tAverage:\n\t\tNodes per state:\t%3.1f%n", nodeAvg);
         double edgeAvg =
             (double) this.statisticsListener.getEdgeCount()
-                / this.gts.nodeCount();
-        printf("\t\tEdges:\t%3.1f%n", edgeAvg);
+                / this.gts.edgeCount();
+        printf("\t\tEdges per state:\t%3.1f%n", edgeAvg);
     }
 
     /** Reports on the cache usage. */
