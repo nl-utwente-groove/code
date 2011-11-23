@@ -56,7 +56,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
 
     /**
      * Returns the number of edges of this graph. Convenience method for
-     * <tt>nodeSet().size()</tt>
+     * <tt>edgeSet().size()</tt>
      * @return the number of edges in this graph
      * @ensure <tt>result == edgeSet().size()</tt>
      */

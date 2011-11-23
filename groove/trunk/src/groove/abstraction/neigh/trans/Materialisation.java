@@ -484,7 +484,7 @@ public final class Materialisation {
         if (this.isRuleModifying()) {
             assert this.hasConcreteMatch();
             // EZ says: we should not normalise the event because the
-            // event that was created during rule match cannot be used.
+            // event that was created during rule match cannot be re-used.
             // Instead, there is a special mechanism in place to reuse node
             // identities.
             /* event = new BasicEvent(this.matchedRule, this.match, true);
