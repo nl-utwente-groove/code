@@ -313,8 +313,6 @@ public final class Icons {
         createIcon("prolog-file.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
-    /** Rename action icon. */
-    public static final ImageIcon RENAME_ICON = createIcon("rename.gif");
     /** Small icon for production rules, as shown in the rule tree. */
     public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
     /** Icon for rule (GPR) files. */
@@ -332,6 +330,8 @@ public final class Icons {
     public static final ImageIcon SELECT_ICON = createIcon("select.gif");
     /** Search action icon. */
     public static final ImageIcon SEARCH_ICON = createIcon("search.gif");
+    /** Rename action icon. */
+    public static final ImageIcon RENAME_ICON = createIcon("rename.gif");
     /** Closed state icon. */
     public static final ImageIcon STATE_CLOSED_ICON =
         createIcon("state-closed.gif");

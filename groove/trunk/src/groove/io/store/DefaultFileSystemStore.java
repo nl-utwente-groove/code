@@ -477,7 +477,7 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws IOException {
-        MyCompoundEdit result = new MyCompoundEdit(Options.RELABEL_ACTION_NAME);
+        MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
         for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs =

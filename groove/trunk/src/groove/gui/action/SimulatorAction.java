@@ -17,10 +17,9 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.FindReplaceDialog;
 import groove.gui.dialog.FreshNameDialog;
-import groove.gui.dialog.RelabelDialog;
 import groove.gui.dialog.SaveDialog;
-import groove.gui.dialog.SearchDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
@@ -269,31 +268,25 @@ public abstract class SimulatorAction extends AbstractAction implements
      *         replacement, neither of which can be <code>null</code>; or
      *         <code>null</code> if the dialog was cancelled.
      */
-    final protected Duo<TypeLabel> askRelabelling(TypeLabel oldLabel) {
-        RelabelDialog dialog =
-            new RelabelDialog(getSimulatorModel().getGrammar().getTypeGraph(),
-                oldLabel);
-        if (dialog.showDialog(getFrame(), null)) {
-            return new Duo<TypeLabel>(dialog.getOldLabel(),
-                dialog.getNewLabel());
-        } else {
-            return null;
+    final protected Duo<TypeLabel> askFindSearch(TypeLabel oldLabel) {
+        FindReplaceDialog dialog =
+            new FindReplaceDialog(
+                getSimulatorModel().getGrammar().getTypeGraph(), oldLabel);
+        int dialogResult = dialog.showDialog(getFrame(), null);
+        Duo<TypeLabel> result;
+        switch (dialogResult) {
+        case FindReplaceDialog.FIND:
+            result = new Duo<TypeLabel>(dialog.getOldLabel(), null);
+            break;
+        case FindReplaceDialog.REPLACE:
+            result =
+                new Duo<TypeLabel>(dialog.getOldLabel(), dialog.getNewLabel());
+            break;
+        case FindReplaceDialog.CANCEL:
+        default:
+            result = null;
         }
-    }
-
-    /**
-     * Enters a dialog that asks for a label to be searched.
-     * @return The label to be searched and or <code>null</code> if the dialog
-     *         was cancelled.
-     */
-    protected final TypeLabel askSearch() {
-        SearchDialog dialog =
-            new SearchDialog(getSimulatorModel().getGrammar().getTypeGraph());
-        if (dialog.showDialog(getFrame(), null)) {
-            return dialog.getSearchLabel();
-        } else {
-            return null;
-        }
+        return result;
     }
 
     /**

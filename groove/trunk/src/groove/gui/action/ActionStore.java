@@ -632,18 +632,18 @@ public class ActionStore implements SimulatorListener {
      * Returns the rule renaming action permanently associated with this
      * simulator.
      */
-    public RelabelGrammarAction getRelabelAction() {
+    public FindReplaceAction getFindReplaceAction() {
         // lazily create the action
-        if (this.relabelAction == null) {
-            this.relabelAction = new RelabelGrammarAction(this.simulator);
+        if (this.findReplaceAction == null) {
+            this.findReplaceAction = new FindReplaceAction(this.simulator);
         }
-        return this.relabelAction;
+        return this.findReplaceAction;
     }
 
     /**
      * The graph renaming action permanently associated with this simulator.
      */
-    private RelabelGrammarAction relabelAction;
+    private FindReplaceAction findReplaceAction;
 
     /** Returns the delete action appropriate for a given resource kind. */
     public RenameAction getRenameAction(ResourceKind resource) {
@@ -674,22 +674,6 @@ public class ActionStore implements SimulatorListener {
      * The renumbering action permanently associated with this simulator.
      */
     private RenumberGrammarAction renumberAction;
-
-    /**
-     * Returns the search action permanently associated with this simulator.
-     */
-    public SearchAction getSearchAction() {
-        // lazily create the action
-        if (this.searchAction == null) {
-            this.searchAction = new SearchAction(this.simulator);
-        }
-        return this.searchAction;
-    }
-
-    /**
-     * The search action permanently associated with this simulator.
-     */
-    private SearchAction searchAction;
 
     /**
      * Returns the graph save action permanently associated with this simulator.

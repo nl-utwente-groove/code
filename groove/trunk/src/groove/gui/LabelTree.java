@@ -443,7 +443,7 @@ public class LabelTree extends JTree implements GraphModelListener,
         ActionStore actions = getJGraph().getActions();
         if (selectedValues != null && selectedValues.length == 1
             && actions != null) {
-            result.add(actions.getRelabelAction());
+            result.add(actions.getFindReplaceAction());
             if (getJGraph() instanceof AspectJGraph
                 && actions.getSelectColorAction().isEnabled()) {
                 result.add(actions.getSelectColorAction());

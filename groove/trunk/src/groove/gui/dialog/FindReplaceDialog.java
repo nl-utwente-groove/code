@@ -20,20 +20,24 @@ import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.io.HTMLConverter;
 import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -42,18 +46,26 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * Dialog class that lets the user choose a replacement for a graph label.
+ * Dialog finding/replacing labels.
  * @author Arend Rensink
- * @version $Revision $
+ * @author Eduardo Zambon
  */
-public class RelabelDialog {
+public class FindReplaceDialog {
+
+    /** Cancel result. */
+    public static final int CANCEL = 0;
+    /** Find result. */
+    public static final int FIND = 1;
+    /** Replace result. */
+    public static final int REPLACE = 2;
+
     /**
      * Constructs a dialog instance, given a set of existing names (that should
      * not be used) as well as a suggested value for the new rule name.
      * @param typeGraph the type graph containing all labels and sublabels
      * @param oldLabel the label to rename; may be <code>null</code>
      */
-    public RelabelDialog(TypeGraph typeGraph, TypeLabel oldLabel) {
+    public FindReplaceDialog(TypeGraph typeGraph, TypeLabel oldLabel) {
         this.typeGraph = typeGraph;
         this.suggestedLabel = oldLabel;
     }
@@ -67,19 +79,26 @@ public class RelabelDialog {
      * @return <code>true</code> if the user agreed with the outcome of the
      *         dialog.
      */
-    public boolean showDialog(JFrame frame, String title) {
+    public int showDialog(JFrame frame, String title) {
         // set the suggested name in the name field
         if (this.suggestedLabel != null) {
             getOldField().setSelectedItem(this.suggestedLabel);
             propagateSelection();
         }
-        setOkEnabled();
+        setReplaceEnabled();
         JDialog dialog =
             getOptionPane().createDialog(frame,
                 title == null ? DEFAULT_TITLE : title);
         dialog.setVisible(true);
         Object response = getOptionPane().getValue();
-        boolean result = response == getOkButton() || response == getNewField();
+        int result;
+        if (response == getReplaceButton() || response == getNewField()) {
+            result = REPLACE;
+        } else if (response == getFindButton()) {
+            result = FIND;
+        } else {
+            result = CANCEL;
+        }
         return result;
     }
 
@@ -89,10 +108,8 @@ public class RelabelDialog {
     private void propagateSelection() {
         TypeLabel selection = (TypeLabel) getOldField().getSelectedItem();
         getOldTypeLabel().setText(selection.getRole().getDescription(true));
-        //        getOldTypeCombobox().setSelectedIndex(selection.getType());
         getNewTypeCombobox().setSelectedIndex(
             EdgeRole.getIndex(selection.getRole()));
-        //        getNewTypeCheckbox().setSelected(selection.isNodeType());
         getNewField().setText(selection.text());
         getNewField().setSelectionStart(0);
         getNewField().setSelectionEnd(selection.text().length());
@@ -149,11 +166,11 @@ public class RelabelDialog {
     }
 
     /**
-     * Enables or disables the OK-button, depending on the validity of the
+     * Enables or disables the Replace-button, depending on the validity of the
      * renaming. Displays the error in {@link #getErrorLabel()} if the renaming
      * is not valid.
      */
-    private void setOkEnabled() {
+    private void setReplaceEnabled() {
         boolean enabled;
         try {
             getNewLabelWithErrors();
@@ -163,7 +180,7 @@ public class RelabelDialog {
             getErrorLabel().setText(exc.getMessage());
             enabled = false;
         }
-        getOkButton().setEnabled(enabled);
+        getReplaceButton().setEnabled(enabled);
         getNameFieldListener().setEnabled(enabled);
     }
 
@@ -190,7 +207,8 @@ public class RelabelDialog {
             this.optionPane =
                 new JOptionPane(new Object[] {oldPanel, newPanel, errorPanel},
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION,
-                    null, new Object[] {getOkButton(), getCancelButton()});
+                    null, new Object[] {getFindButton(), getReplaceButton(),
+                        getCancelButton()});
         }
         return this.optionPane;
     }
@@ -199,21 +217,35 @@ public class RelabelDialog {
     private JOptionPane optionPane;
 
     /**
-     * Returns the OK button on the dialog.
+     * Returns the Replace button on the dialog.
      */
-    private JButton getOkButton() {
-        if (this.okButton == null) {
-            this.okButton = new JButton("OK");
-            this.okButton.addActionListener(new CloseListener());
+    private JButton getReplaceButton() {
+        if (this.replaceButton == null) {
+            this.replaceButton = new JButton("Replace");
+            this.replaceButton.addActionListener(new CloseListener());
         }
-        return this.okButton;
+        return this.replaceButton;
     }
 
     /** The OK button in the dialog. */
-    private JButton okButton;
+    private JButton replaceButton;
 
     /**
-     * Returns the OK button on the dialog.
+     * Returns the Find button on the dialog.
+     */
+    private JButton getFindButton() {
+        if (this.findButton == null) {
+            this.findButton = new JButton("Find");
+            this.findButton.addActionListener(new CloseListener());
+        }
+        return this.findButton;
+    }
+
+    /** The find button in the dialog. */
+    private JButton findButton;
+
+    /**
+     * Returns the cancel button on the dialog.
      */
     private JButton getCancelButton() {
         if (this.cancelButton == null) {
@@ -230,8 +262,7 @@ public class RelabelDialog {
     private JComboBox getOldField() {
         if (this.oldField == null) {
             final JComboBox result =
-                this.oldField =
-                    LabelDialogFactory.getLabelComboBox(this.typeGraph);
+                this.oldField = getLabelComboBox(this.typeGraph);
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -274,7 +305,7 @@ public class RelabelDialog {
         if (this.errorLabel == null) {
             JLabel result = this.errorLabel = new JLabel();
             result.setForeground(Color.RED);
-            result.setMinimumSize(getOkButton().getPreferredSize());
+            result.setMinimumSize(getReplaceButton().getPreferredSize());
         }
         return this.errorLabel;
     }
@@ -282,7 +313,7 @@ public class RelabelDialog {
     /** Label displaying the current error in the renaming (if any). */
     private JLabel errorLabel;
 
-    /** Returns the combobox for the old label's type. */
+    /** Returns the combo box for the old label's type. */
     private JLabel getOldTypeLabel() {
         if (this.oldTypeLabel == null) {
             final JLabel result = this.oldTypeLabel = new JLabel();
@@ -297,6 +328,32 @@ public class RelabelDialog {
 
     /** Combobox showing the new label's type. */
     private JLabel oldTypeLabel;
+
+    /** Returns the combo box for the label in the given type graph. */
+    private JComboBox getLabelComboBox(TypeGraph typeGraph) {
+        final JComboBox result = new JComboBox();
+        result.setFocusable(false);
+        result.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                if (value instanceof TypeLabel) {
+                    value =
+                        HTMLConverter.HTML_TAG.on(TypeLabel.toHtmlString((TypeLabel) value));
+                }
+                return super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+            }
+        });
+        // EDUARDO: Pending: sort the list properly.
+        for (TypeLabel label : typeGraph.getLabels()) {
+            if (!label.isDataType() && label != TypeLabel.NODE) {
+                result.addItem(label);
+            }
+        }
+        return result;
+    }
 
     /** Returns the combobox for the new label's type. */
     private JComboBox getNewTypeCombobox() {
@@ -325,7 +382,7 @@ public class RelabelDialog {
                     }
                     font = font.deriveFont(fontProperty);
                     getNewField().setFont(font);
-                    setOkEnabled();
+                    setReplaceEnabled();
                 }
             });
 
@@ -342,11 +399,11 @@ public class RelabelDialog {
     /** The old label value suggested at construction time; may be {@code null}. */
     private final TypeLabel suggestedLabel;
     /** Default dialog title. */
-    static private String DEFAULT_TITLE = "Relabel";
+    static private String DEFAULT_TITLE = "Find/Replace Labels";
     /** Text of find label on dialog. */
-    static private String OLD_TEXT = "Old label:";
+    static private String OLD_TEXT = "Find label: ";
     /** Text of replace label on dialog */
-    static private String NEW_TEXT = "New label: ";
+    static private String NEW_TEXT = "Replace with: ";
 
     /**
      * Action listener that closes the dialog and sets the option pane's value
@@ -376,7 +433,7 @@ public class RelabelDialog {
 
     /**
      * Document listener that enables or disables the OK button, using
-     * {@link #setOkEnabled()}
+     * {@link #setReplaceEnabled()}
      */
     private class OverlapListener implements DocumentListener {
         /**
@@ -403,7 +460,7 @@ public class RelabelDialog {
          * The OK button is enabled or disabled as a consequence of this.
          */
         private void testRenaming() {
-            setOkEnabled();
+            setReplaceEnabled();
         }
     }
 }
