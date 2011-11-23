@@ -61,6 +61,7 @@ public final class AGTS extends GTS {
         super(grammar);
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
+        this.getRecord().setReuseEvents(false);
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
     }

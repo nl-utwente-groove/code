@@ -244,8 +244,15 @@ public final class Shape extends DefaultHostGraph {
         return added;
     }
 
+    // EZ says: this method is not type safe and thus cannot be used when
+    // a type graph is enabled. Use method createNode(TypeLabel) instead.
+    @Override
+    public ShapeNode addNode() {
+        assert false;
+        return null;
+    }
+
     /**
-     * Differs from super implementation on the node number that is created.
      * This method performs a search over the nodes in the shape and uses the
      * lowest free number for the new node. We have to bypass the factory in
      * this way because otherwise the number of nodes in the store keeps
@@ -257,11 +264,9 @@ public final class Shape extends DefaultHostGraph {
      * because the second has side-effects that we don't want when creating
      * a new node.
      */
-    // EZ says: this method is used during materialisation.
-    @Override
-    public ShapeNode addNode() {
+    private ShapeNode createNode(TypeLabel type) {
         int nodeNr = this.getFirstFreeNodeNumber();
-        ShapeNode freshNode = (ShapeNode) createNode(nodeNr);
+        ShapeNode freshNode = this.getFactory().createNode(nodeNr, type);
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         super.addNode(freshNode);
@@ -486,7 +491,10 @@ public final class Shape extends DefaultHostGraph {
             // stored in a different node factory. Thus we have to create
             // shape nodes. Remember that we have additional information on
             // the node to be added.
-            ShapeNode nodeS = this.addNode();
+            // Get an arbitrary host node from the equivalence class so we know
+            // the type of the shape node that we have to create.
+            HostNode nodeG = ec.iterator().next();
+            ShapeNode nodeS = this.createNode(nodeG.getType().label());
             // Fill the shape node multiplicity.
             int size = ec.size();
             Multiplicity mult = Multiplicity.approx(size, size, NODE_MULT);
@@ -1008,7 +1016,8 @@ public final class Shape extends DefaultHostGraph {
         Iterator<RuleNode> iter = nodesR.iterator();
         for (int i = 0; i < copies; i++) {
             RuleNode nodeR = iter.next();
-            ShapeNode newNode = this.addNode();
+            ShapeNode newNode =
+                this.createNode(collectorNode.getType().label());
             // The new node is concrete so set its multiplicity to one.
             this.setNodeMult(newNode, one);
             // Copy the labels from the original node.
@@ -1176,7 +1185,7 @@ public final class Shape extends DefaultHostGraph {
         EquivClass<ShapeNode> newEc = oldEc.clone();
         for (int i = 0; i < copies; i++) {
             // Create a new shape node.
-            ShapeNode newNode = this.addNode();
+            ShapeNode newNode = this.createNode(nodeS.getType().label());
             // Copy the labels from the pulled node.
             this.copyUnaryEdges(nodeS, newNode, null, null);
             newEc.add(newNode);

@@ -483,11 +483,17 @@ public final class Materialisation {
         Shape result;
         if (this.isRuleModifying()) {
             assert this.hasConcreteMatch();
-            event = new BasicEvent(this.matchedRule, this.match, true);
+            // EZ says: we should not normalise the event because the
+            // event that was created during rule match cannot be used.
+            // Instead, there is a special mechanism in place to reuse node
+            // identities.
+            /* event = new BasicEvent(this.matchedRule, this.match, true);
             ((BasicEvent) event).setAggressiveNodeReuse();
             if (record != null) {
                 event = record.normaliseEvent(event);
-            }
+            } */
+            event = new BasicEvent(this.matchedRule, this.match, false);
+            ((BasicEvent) event).setAggressiveNodeReuse();
             ShapeRuleApplication app =
                 new ShapeRuleApplication(event, this.shape);
             result = app.getTarget();
@@ -681,7 +687,12 @@ public final class Materialisation {
         // the resulting materialisations from the solution.
         this.computeBundles(this.getAffectedEdges());
         ResultSet result = new ResultSet();
-        EquationSystem.newEqSys(this).solve(result);
+        if (this.getBundles().isEmpty()) {
+            // Trivial case, no need to create an equation system.
+            result.add(this);
+        } else {
+            EquationSystem.newEqSys(this).solve(result);
+        }
 
         return result;
     }
@@ -998,16 +1009,17 @@ public final class Materialisation {
 
     /** Remove the nodes from the shape that were marked as garbage. */
     void recursiveGarbageCollectNodes() {
-        assert this.stage == 2 || this.stage == 3;
-        MyHashSet<ShapeNode> garbageNodes = new MyHashSet<ShapeNode>();
-        this.markGarbageNodes(garbageNodes);
-        while (!garbageNodes.isEmpty()) {
-            for (ShapeNode garbageNode : garbageNodes) {
-                this.shape.removeNode(garbageNode);
-            }
-            // Need to search for garbage nodes again because of possible
-            // new disconnections.
+        if (this.stage == 2 || this.stage == 3) {
+            MyHashSet<ShapeNode> garbageNodes = new MyHashSet<ShapeNode>();
             this.markGarbageNodes(garbageNodes);
+            while (!garbageNodes.isEmpty()) {
+                for (ShapeNode garbageNode : garbageNodes) {
+                    this.shape.removeNode(garbageNode);
+                }
+                // Need to search for garbage nodes again because of possible
+                // new disconnections.
+                this.markGarbageNodes(garbageNodes);
+            }
         }
     }
 
