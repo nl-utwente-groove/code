@@ -41,7 +41,7 @@ import java.util.Set;
  * @version $Revision $
  */
 public class ConditionChecker extends ReteNetworkNode implements
-        StateSubscriber {
+        ReteStateSubscriber {
 
     /**
      * This is the pattern of edges (and isolated nodes)
@@ -94,6 +94,19 @@ public class ConditionChecker extends ReteNetworkNode implements
      * with this condition-checker has nac subconditions.
      */
     protected boolean hasNacSubconditions = false;
+
+    /**
+     * Reference to the n-node checker responsible for counting
+     * the matches of this checker's condition.
+     */
+    protected QuantifierCountChecker countCheckerNode = null;
+
+    /**
+     * The flag that determines if the parent condition-checker 
+     * should be notified of any changes occurred in the conflict set
+     * of this condition-checker. 
+     */
+    protected boolean notifyParent = false;
 
     private Set<ReteSimpleMatch> oneEmptyMatch;
 
@@ -153,6 +166,9 @@ public class ConditionChecker extends ReteNetworkNode implements
             this.subConditionCheckers.add(cc);
             if (cc instanceof CompositeConditionChecker) {
                 this.hasNacSubconditions = true;
+            }
+            if (this.condition.getCountNode() != null) {
+                cc.setNotifyParent(true);
             }
         }
     }
@@ -381,6 +397,12 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param action Determines if the match is to be removed or added.
      */
     protected void updateConflictSet(ReteSimpleMatch m, Action action) {
+        if (this.notifyParent && (this.parent != null)) {
+            this.parent.notifyChange(this);
+        }
+        if (this.countCheckerNode != null) {
+            this.countCheckerNode.invalidateCount();
+        }
         if (action == Action.ADD) {
             addMatchToConflictSet(m);
         } else {
@@ -630,4 +652,75 @@ public class ConditionChecker extends ReteNetworkNode implements
         return this.isEmpty() ? this.oneEmptyMatch.iterator().next() : null;
     }
 
+    /**
+     * @return The checker n-node that does that counts
+     * the matches of this n-node's condition. The return value 
+     * will be <code>null</code> if {@link #getCondition()} returns
+     * a condition that is not universal.
+     */
+    public QuantifierCountChecker getCountCheckerNode() {
+        return this.countCheckerNode;
+    }
+
+    /**
+     * Tells this conditions checker what its quantifier count checker
+     * node is. This method should only be called for conditions
+     * that are universal and have an associated count node.
+     */
+    public void setCountCheckerNode(QuantifierCountChecker value) {
+        assert (this.condition.getCountNode() != null)
+            && value.getCountNode().equals(this.condition.getCountNode());
+        this.countCheckerNode = value;
+    }
+
+    /**
+     * Determines if this condition-checker notifies its parent of
+     * any changes occurred to its conflict set.
+     */
+    public boolean isNotifyParent() {
+        return this.notifyParent;
+    }
+
+    /**
+     * Call this method to tell this condition-checker
+     * whether or not to notify its parent of any changes occurred to its
+     * conflict set.
+     */
+    public void setNotifyParent(boolean value) {
+        this.notifyParent = value;
+        for (ConditionChecker cc : this.getSubConditionCheckers()) {
+            if (cc.getCondition().isPositive()) {
+                cc.setNotifyParent(value);
+            }
+        }
+
+    }
+
+    /**
+     * This method is called by child condition-checkers
+     * of this condition to notify us that their conflict set,
+     * or the conflict set of at-least one of the lower children 
+     * has changed.
+     * @param sender The condition checker to which a change has actually
+     *               occurred. This might be related to several levels
+     *               beneath our current level. 
+     */
+    protected void notifyChange(ConditionChecker sender) {
+        if (this.countCheckerNode != null) {
+            this.countCheckerNode.invalidateCount();
+        }
+        if (this.getParent() != null) {
+            this.getParent().notifyChange(sender);
+        }
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        // Do nothing        
+    }
 }

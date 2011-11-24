@@ -25,7 +25,7 @@ import groove.trans.RuleNode;
  * @version $Revision $
  */
 public abstract class NodeChecker extends ReteNetworkNode implements
-        StateSubscriber {
+        ReteStateSubscriber {
 
     /**
      * Single node pattern represented by this node checker

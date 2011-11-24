@@ -27,7 +27,7 @@ import java.util.List;
  * @version $Revision $
  */
 public class EmptyPathChecker extends AbstractPathChecker implements
-        StateSubscriber {
+        ReteStateSubscriber {
 
     private EmptyPathMatch emptyMatch = new EmptyPathMatch(this);
 
@@ -97,5 +97,15 @@ public class EmptyPathChecker extends AbstractPathChecker implements
     public List<? extends Object> initialize() {
         passDownMatchToSuccessors(this.emptyMatch);
         return null;
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 }

@@ -55,4 +55,13 @@ public class AtomPathChecker extends SingleEdgePathChecker {
         return new RetePathMatch(this, edge);
     }
 
+    @Override
+    public void updateBegin() {
+        // Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        // Do nothing        
+    }
 }

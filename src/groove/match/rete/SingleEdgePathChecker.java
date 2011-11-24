@@ -34,7 +34,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @version $Revision $
  */
 public abstract class SingleEdgePathChecker extends AbstractPathChecker
-        implements StateSubscriber {
+        implements ReteStateSubscriber {
 
     /**
      * edge path-checkers have memories to store their single-edge

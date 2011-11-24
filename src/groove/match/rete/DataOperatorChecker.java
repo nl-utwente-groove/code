@@ -52,9 +52,10 @@ public class DataOperatorChecker extends ReteNetworkNode {
      * (see the <code>opEdge</code>) is performed on the proper value nodes
      * in the given match.
      * 
-     * @param network
-     * @param antecedent
-     * @param opEdge
+     * @param network The owner RETE network
+     * @param antecedent The static mapping of the antecedent
+     * @param opEdge the edge with the operator label that represents  
+     *               the operation this checker node should perform.
      */
     public DataOperatorChecker(ReteNetwork network,
             ReteStaticMapping antecedent, OperatorEdge opEdge) {

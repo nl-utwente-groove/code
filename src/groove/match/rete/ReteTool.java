@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
+import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
@@ -61,18 +62,25 @@ public class ReteTool extends CommandLineTool {
     }
 
     private void start() {
-        processArguments();
-        doSaveReteNetwork();
-        print("RETE network shape was successuflly saved to "
-            + this.saveNetworkOption.outputFilePath);
+        try {
+            processArguments();
+            doSaveReteNetwork();
+            print("RETE network shape was successuflly saved to "
+                + this.saveNetworkOption.outputFilePath);
+        } catch (FormatException ex) {
+            print("Could not load the grammar due to some formatting errors in it:"
+                + ex.getMessage());
+        }
     }
 
-    private void doSaveReteNetwork() {
+    private void doSaveReteNetwork() throws FormatException {
         String name = "RETE-" + getGrammarView().getName();
         String filePath =
             (this.saveNetworkOption.outputFilePath != null)
                     ? this.saveNetworkOption.outputFilePath : name;
-        new ReteNetwork(getGrammarView(), false).save(filePath, name);
+        (new ReteSearchEngine(getGrammarView().toGrammar())).getNetwork().save(
+            filePath, name);
+
     }
 
     private GrammarModel loadGrammar(String path) {
@@ -90,7 +98,6 @@ public class ReteTool extends CommandLineTool {
      */
     public static void main(String[] args) {
         new ReteTool(new LinkedList<String>(Arrays.asList(args))).start();
-
     }
 
     @Override

@@ -81,4 +81,15 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
     public LabelConstraint getGuard() {
         return ((Wildcard) this.getExpression()).getGuard();
     }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing
+
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
+    }
 }

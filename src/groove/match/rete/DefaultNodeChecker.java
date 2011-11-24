@@ -29,7 +29,8 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class DefaultNodeChecker extends NodeChecker implements StateSubscriber {
+public class DefaultNodeChecker extends NodeChecker implements
+        ReteStateSubscriber {
 
     private TreeHashSet<HostNode> ondemandBuffer = new TreeHashSet<HostNode>();
 
@@ -180,6 +181,16 @@ public class DefaultNodeChecker extends NodeChecker implements StateSubscriber {
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 
 }

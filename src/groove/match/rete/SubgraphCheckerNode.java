@@ -36,7 +36,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMatchType extends AbstractReteMatch>
-        extends ReteNetworkNode implements StateSubscriber {
+        extends ReteNetworkNode implements ReteStateSubscriber {
 
     /**
      * left on-demand buffer
@@ -889,6 +889,16 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             throw new UnsupportedOperationException(
                 "Antecent types are not supported.");
         }
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 
 }

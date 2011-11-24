@@ -36,7 +36,7 @@ import java.util.List;
  * @version $Revision $
  */
 public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
-        StateSubscriber {
+        ReteStateSubscriber {
 
     private RuleElement[] pattern;
 
@@ -299,6 +299,16 @@ public class DisconnectedSubgraphChecker extends ReteNetworkNode implements
         this.matchesProduced = 0;
         demandUpdate();
         return this.matchesProduced;
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 
 }

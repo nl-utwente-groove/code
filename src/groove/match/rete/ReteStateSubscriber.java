@@ -28,7 +28,7 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public interface StateSubscriber {
+public interface ReteStateSubscriber {
     /**
      * This method instructs the subscriber to create new runtime data
      * structures anew. 
@@ -46,5 +46,19 @@ public interface StateSubscriber {
      *  
      */
     public void clear();
+
+    /**
+     * This method tells the subscriber that a new round of updates 
+     * to the RETE network has just begun. 
+     */
+    public void updateBegin();
+
+    /**
+     * This method tells the subscriber that all updates
+     * have been delivered to the RETE network. However, it does
+     * not necessarily mean that these updates
+     * have fully propagated through the network.
+     */
+    public void updateEnd();
 
 }
