@@ -26,9 +26,11 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
+import groove.util.FreeNumberDispenser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Factory class for host graph elements.
@@ -79,6 +81,63 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         HostNode result = super.createNode(nr);
         resetLastNodeType();
         assert result.getType() == typeNode;
+        return result;
+    }
+
+    /**
+     * Creates and returns a node with the given type. Tries to re-use node
+     * numbers that do not occur in the given set, while ensuring type
+     * consistency.
+     * @see #createNode(TypeLabel, FreeNumberDispenser)
+     */
+    public HostNode createNode(TypeLabel type, Set<? extends HostNode> usedNodes) {
+        FreeNumberDispenser dispenser = new FreeNumberDispenser(usedNodes);
+        return this.createNode(type, dispenser);
+    }
+
+    /**
+     * Creates and returns a node with the given type. Tries to re-use node
+     * numbers that do not occur in the given array, while ensuring type
+     * consistency.
+     * @see #createNode(TypeLabel, FreeNumberDispenser)
+     */
+    public HostNode createNode(TypeLabel type, int usedNodes[]) {
+        FreeNumberDispenser dispenser = new FreeNumberDispenser(usedNodes);
+        return this.createNode(type, dispenser);
+    }
+
+    /**
+     * Creates and returns a node with the given type. Tries to re-use node
+     * numbers that do not occur in the set given to the dispenser, while
+     * ensuring type consistency. 
+     */
+    private HostNode createNode(TypeLabel type, FreeNumberDispenser dispenser) {
+        TypeNode typeNode = getTypeFactory().getNode(type);
+        int freeNr = dispenser.getNext();
+        HostNode result = null;
+        while (freeNr != -1) {
+            // We have a free number of a node that already exists in the store.
+            // Retrieve this node and check if the type coincide.
+            result = getNode(freeNr);
+            if (result.getType() == typeNode) {
+                // Yes, the types are the same. We are done.
+                return result;
+            } else {
+                // No, the types are different. Try another free number.
+                freeNr = dispenser.getNext();
+            }
+        }
+        // There are no more free numbers to try. We can go over the rest
+        // of the node store and look for an node with the proper type.
+        for (int i = dispenser.getMaxNumber() + 1; i < getMaxNodeNr(); i++) {
+            result = getNode(i);
+            if (result.getType() == typeNode) {
+                // Yes, the types are the same. We are done.
+                return result;
+            }
+        }
+        // Nothing else to do, we need to create a new node.
+        result = this.createNode(type);
         return result;
     }
 

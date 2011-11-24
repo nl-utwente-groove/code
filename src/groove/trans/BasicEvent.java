@@ -23,7 +23,6 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.trans.RuleEffect.Fragment;
 import groove.util.CacheReference;
-import groove.util.DisposableDispenser;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -624,8 +623,7 @@ final public class BasicEvent extends
             }
         }
         assert i == numbers.length;
-        int freshNr = new DisposableDispenser(numbers).getNext();
-        return getHostFactory().createNode(freshNr, type);
+        return getHostFactory().createNode(type, numbers);
     }
 
     /**
