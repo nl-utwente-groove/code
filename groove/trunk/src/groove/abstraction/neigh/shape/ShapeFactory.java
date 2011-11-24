@@ -24,6 +24,8 @@ import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleToHostMap;
 
+import java.util.Set;
+
 /**
  * Factory class for shape elements.
  * 
@@ -65,6 +67,12 @@ public final class ShapeFactory extends HostFactory {
     @Override
     public ShapeNode createNode(int nr, TypeLabel type) {
         return (ShapeNode) super.createNode(nr, type);
+    }
+
+    @Override
+    public ShapeNode createNode(TypeLabel type,
+            Set<? extends HostNode> usedNodes) {
+        return (ShapeNode) super.createNode(type, usedNodes);
     }
 
     @Override

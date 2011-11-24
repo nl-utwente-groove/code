@@ -47,7 +47,6 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
-import groove.util.DisposableDispenser;
 import groove.util.Duo;
 
 import java.util.Collection;
@@ -253,27 +252,6 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
-     * This method performs a search over the nodes in the shape and uses the
-     * lowest free number for the new node. We have to bypass the factory in
-     * this way because otherwise the number of nodes in the store keeps
-     * increasing and this hurts performance a lot. (See, in particular, the
-     * implementation of {@link NodeEquivClass} for the reason).
-     * 
-     * WARNING: after creating the new node this method makes a call to
-     * super.addNode(HostNode) instead of this.addNode(HostNode). This is
-     * because the second has side-effects that we don't want when creating
-     * a new node.
-     */
-    private ShapeNode createNode(TypeLabel type) {
-        int nodeNr = this.getFirstFreeNodeNumber();
-        ShapeNode freshNode = this.getFactory().createNode(nodeNr, type);
-        assert !nodeSet().contains(freshNode) : String.format(
-            "Fresh node %s already in node set %s", freshNode, nodeSet());
-        super.addNode(freshNode);
-        return freshNode;
-    }
-
-    /**
      * Adds the given edge to the shape and properly adjust the multiplicities
      * when necessary.
      */
@@ -382,9 +360,24 @@ public final class Shape extends DefaultHostGraph {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Returns the lowest free node number of this shape. */
-    private int getFirstFreeNodeNumber() {
-        return new DisposableDispenser(this.nodeSet()).getNext();
+    /**
+     * This method performs a search over the nodes in the shape and uses the
+     * lowest free number for the new node. We have to bypass the factory in
+     * this way because otherwise the number of nodes in the store keeps
+     * increasing and this hurts performance a lot. (See, in particular, the
+     * implementation of {@link NodeEquivClass} for the reason).
+     * 
+     * WARNING: after creating the new node this method makes a call to
+     * super.addNode(HostNode) instead of this.addNode(HostNode). This is
+     * because the second has side-effects that we don't want when creating
+     * a new node.
+     */
+    private ShapeNode createNode(TypeLabel type) {
+        ShapeNode freshNode = this.getFactory().createNode(type, nodeSet());
+        assert !nodeSet().contains(freshNode) : String.format(
+            "Fresh node %s already in node set %s", freshNode, nodeSet());
+        super.addNode(freshNode);
+        return freshNode;
     }
 
     /** Creates an edge accordingly to the given direction. */

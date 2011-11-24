@@ -151,4 +151,21 @@ public class TestShapeGenerator {
         }
     }
 
+    @Test
+    public void testEuler() {
+        final String GRAMMAR = "junit/abstraction/euler-counting.gps";
+        final String START_GRAPH = "start";
+        ShapeGenerator generator;
+
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
+
+        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            generator.start();
+            assertEquals(211, generator.getStateCount());
+            assertEquals(1151, generator.getTransitionCount());
+        }
+    }
+
 }

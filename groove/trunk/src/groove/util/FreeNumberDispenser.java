@@ -20,23 +20,25 @@ import java.util.Arrays;
 import java.util.Set;
 
 /**
- * State-less dispenser that can only be used once.
+ * Dispenser that returns numbers not occurring in the given array.
+ *  
  * @author Eduardo Zambon
 
  */
-public class DisposableDispenser implements Dispenser {
+public class FreeNumberDispenser implements Dispenser {
 
     /**
      * Creates the dispenser for the given array. The array is modified
      * in the process.
      */
-    public DisposableDispenser(int numbers[]) {
+    public FreeNumberDispenser(int numbers[]) {
         this.numbers = numbers;
+        this.curr = 0;
         Arrays.sort(this.numbers);
     }
 
     /** Creates the dispenser for the given set. The set is unchanged. */
-    public DisposableDispenser(Set<? extends Node> nodeSet) {
+    public FreeNumberDispenser(Set<? extends Node> nodeSet) {
         this(getArray(nodeSet));
     }
 
@@ -52,29 +54,33 @@ public class DisposableDispenser implements Dispenser {
     }
 
     /**
-     * This method can only be called once. After the first call, throws
-     * an unsupported operation exception.
      * Returns the first free node number not occurring in the node set
-     * passed to the constructor. 
+     * passed to the constructor. Or -1 if no free number can be found. 
      */
     public int getNext() {
-        if (this.numbers != null) {
-            int result = 0;
-            for (int i = 0; i < this.numbers.length; i++) {
-                if (result == this.numbers[i]) {
-                    result++;
-                } else {
-                    break;
-                }
+        int result = -1;
+        for (int i = this.curr; i < this.numbers.length; i++) {
+            if (result == this.numbers[i]) {
+                result++;
+            } else {
+                this.curr = i + 1;
+                break;
             }
-            this.numbers = null;
-            return result;
-        } else {
-            throw new UnsupportedOperationException();
         }
+        return result;
+    }
 
+    /** Returns the highest number on the given array. */
+    public int getMaxNumber() {
+        if (this.numbers.length == 0) {
+            return 0;
+        } else {
+            return this.numbers[this.numbers.length - 1];
+        }
     }
 
     /** The sorted array for which a new number is computed. */
-    private int numbers[];
+    private final int numbers[];
+    /** The current index to continue the search. */
+    private int curr;
 }
