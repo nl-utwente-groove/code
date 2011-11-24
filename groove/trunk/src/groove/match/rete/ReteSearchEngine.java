@@ -45,7 +45,8 @@ public class ReteSearchEngine extends SearchEngine {
      */
     public ReteSearchEngine(GraphGrammar grammar) {
         this.network =
-            new ReteNetwork(grammar, grammar.getProperties().isInjective());
+            new ReteNetwork(this, grammar,
+                grammar.getProperties().isInjective());
     }
 
     /**
@@ -76,6 +77,7 @@ public class ReteSearchEngine extends SearchEngine {
             return;
         }
 
+        this.network.setUpdating(true);
         for (HostNode n : deltaStore.getRemovedNodeSet()) {
             this.network.update(n, Action.REMOVE);
         }
@@ -93,12 +95,14 @@ public class ReteSearchEngine extends SearchEngine {
         }
 
         this.network.getState().setHostGraph(destGraph);
+        this.network.setUpdating(false);
         transitionOccurredReporter.stop();
     }
 
     @Override
     public synchronized ReteSearchStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
+        //TODO: ARASH: What about the seed nodes and edges?
         return new ReteSearchStrategy(this, condition);
     }
 

@@ -20,6 +20,7 @@ import groove.match.rete.ConditionChecker;
 import groove.match.rete.ProductionNode;
 import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
+import groove.match.rete.ReteSearchEngine;
 import groove.match.rete.ReteSimpleMatch;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
@@ -50,24 +51,11 @@ public class ReteNetworkTest extends TestCase {
      * Tests the static structure of the RETE network for an empty grammar.
      */
     public void testStaticEmptyGrammar() {
-        GraphGrammar g = new GraphGrammar("empty");
-        ReteNetwork network = new ReteNetwork(g, false);
+        ReteSearchEngine g = new ReteSearchEngine(new GraphGrammar("empty"));
+        ReteNetwork network = g.getNetwork();
         assertEquals(0, network.getRoot().getSuccessors().size());
         assertEquals(0, network.getConditonCheckerNodes().size());
         assertEquals(0, network.getProductionNodes().size());
-    }
-
-    /**
-     * 
-     */
-    public void testExploreGrammar() {
-        GraphGrammar g = loadGrammar("leader-election.gps", "start");
-        ReteNetwork network = new ReteNetwork(g, false);
-        for (groove.trans.Rule r : g.getRules()) {
-            if (r.getName().equals("next-phase")) {
-                System.out.println(r.toString());
-            }
-        }
     }
 
     /**
@@ -75,7 +63,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testStaticEmptyPriorRules() {
         GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
-        ReteNetwork network = new ReteNetwork(g, false);
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
     }
 
@@ -84,7 +73,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testStaticSimple() {
         GraphGrammar g = loadGrammar("simple.gps", "start");
-        ReteNetwork network = new ReteNetwork(g, false);
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
     }
 
@@ -93,7 +83,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testStaticPetriNet() {
         GraphGrammar g = loadGrammar("petrinet.gps", "start");
-        ReteNetwork network = new ReteNetwork(g, false);
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
     }
 
@@ -102,8 +93,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicRegExp1() {
         GraphGrammar g = loadGrammar("basic-regexp.gps", "g1");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -138,8 +129,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicRegExp2() {
         GraphGrammar g = loadGrammar("basic-regexp.gps", "g2");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -175,8 +166,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicRegExp3() {
         GraphGrammar g = loadGrammar("basic-regexp.gps", "g3");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -211,8 +202,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicRegExp4() {
         GraphGrammar g = loadGrammar("basic-regexp.gps", "g4");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -268,8 +259,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicEmptyRule() {
         GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -282,8 +273,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicSimpleInjectiveRule() {
         GraphGrammar g = loadGrammar("simpleInjective.gps", "start");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -301,7 +292,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicControl() {
         GraphGrammar g = loadGrammar("control.gps", "start");
-        ReteNetwork network = new ReteNetwork(g, false);
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -318,8 +310,8 @@ public class ReteNetworkTest extends TestCase {
      */
     public void testDynamicAttr1() {
         GraphGrammar g = loadGrammar("attribute-count-to-n.gps", "start");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
@@ -339,15 +331,15 @@ public class ReteNetworkTest extends TestCase {
      * Testing the leader-election grammar for first step matches found - 1
      */
     public void testDynamicLeaderElection() {
-        GraphGrammar g =
-            loadGrammar("leader-election.gps", "after-first-next-phase");
-        ReteNetwork network =
-            new ReteNetwork(g, g.getProperties().isInjective());
+        GraphGrammar g = loadGrammar("leader-election.gps", "start-2");
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
-            if (pn.getProductionRule().getName().toString().equals("go-1-1a")) {
-                assertEquals(2, rmList.size());
+            if (pn.getProductionRule().getName().toString().equals(
+                "pick-number")) {
+                assertEquals(4, rmList.size());
             } else if (pn.getProductionRule().getName().toString().equals(
                 "pass-message")) {
                 assertEquals(1, rmList.size());

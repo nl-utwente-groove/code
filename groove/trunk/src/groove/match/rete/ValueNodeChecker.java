@@ -34,7 +34,8 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class ValueNodeChecker extends NodeChecker implements StateSubscriber {
+public class ValueNodeChecker extends NodeChecker implements
+        ReteStateSubscriber {
 
     /**
      * Creates
@@ -104,5 +105,15 @@ public class ValueNodeChecker extends NodeChecker implements StateSubscriber {
             new ReteSimpleMatch(this, valueNode, getOwner().isInjective());
         passDownMatchToSuccessors(match);
         return null;
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 }

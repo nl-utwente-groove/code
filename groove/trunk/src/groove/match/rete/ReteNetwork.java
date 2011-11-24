@@ -31,7 +31,6 @@ import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.rel.RegExpr;
 import groove.trans.Condition;
-import groove.trans.Condition.Op;
 import groove.trans.DefaultRuleNode;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -44,8 +43,8 @@ import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
+import groove.trans.Condition.Op;
 import groove.util.TreeHashSet;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,6 +85,9 @@ public class ReteNetwork {
     private HashMap<Constant,ValueNodeChecker> valueNodeCheckerNodes =
         new HashMap<Constant,ValueNodeChecker>();
 
+    private HashMap<RuleNode,QuantifierCountChecker> quantifierCountCheckerNodes =
+        new HashMap<RuleNode,QuantifierCountChecker>();
+
     private PathCheckerFactory pathCheckerFactory =
         new PathCheckerFactory(this);
 
@@ -96,21 +98,12 @@ public class ReteNetwork {
     private HostFactory hostFactory = null;
 
     /**
-    * Creates a new RETE network from scratch out of 
-    * the rules of a {@link GrammarModel}.
-    *  
-    * @param grammar is the stored grammar view whose rules' lhs will
-    * be fed into the construction algorithm one by one.
-    * @param enableInjectivity specifies if matching should be injectively
-    */
-    public ReteNetwork(GrammarModel grammar, boolean enableInjectivity) {
-        this.grammarName = grammar.getName();
-        this.injective = enableInjectivity;
-        this.root = new RootNode(this);
-        this.state = new ReteState(this);
-        ArrayList<Rule> rules = new ArrayList<Rule>(grammar.getRules());
-        this.build(rules);
-    }
+     * Flag that determines if the RETE network is in the process
+     * of receiving updates.
+     */
+    private boolean updating = false;
+
+    private ReteSearchEngine ownerEngine = null;
 
     /**
      * Creates a RETE network and initializes its state by processing the
@@ -120,12 +113,14 @@ public class ReteNetwork {
      * @param enableInjectivity determines if this RETE network should perform 
      *        injective matching.
      */
-    public ReteNetwork(GraphGrammar g, boolean enableInjectivity) {
+    public ReteNetwork(ReteSearchEngine engine, GraphGrammar g,
+            boolean enableInjectivity) {
         this.grammarName = g.getName();
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
         this.state = new ReteState(this);
         this.build(g.getRules());
+        this.ownerEngine = engine;
     }
 
     /**
@@ -158,13 +153,11 @@ public class ReteNetwork {
          * of the RETE network only.
          */
         StaticMap openList = new StaticMap();
-        RuleGraph g = condition.getPattern();
-
-        Collection<RuleEdge> edgeList = getEdgeCollection(condition);
 
         Set<RuleEdge> emptyAndNegativePathEdges = new TreeHashSet<RuleEdge>();
         Set<OperatorEdge> operatorEdges = new TreeHashSet<OperatorEdge>();
-        mapEdgesAndNodes(openList, edgeList, g.nodeSet(),
+        mapQuantifierCountNodes(openList, condition);
+        mapEdgesAndNodes(openList, condition.getPattern(),
             emptyAndNegativePathEdges, operatorEdges);
 
         if (openList.size() > 0) {
@@ -332,7 +325,7 @@ public class ReteNetwork {
         if (result == null) {
             //this is a rule/condition with empty LHS/target. 
             //Such-special nodes will always return 
-            //and empty match set. They do not have any antecedents.            
+            //an empty match set. They do not have any antecedents.            
             if (parent == null) {
                 result = new ProductionNode(this, condition.getRule(), null);
                 this.productionNodes.put(condition.getRule(),
@@ -342,6 +335,13 @@ public class ReteNetwork {
                 result = new ConditionChecker(this, condition, parent, null);
                 this.conditionCheckerNodes.put(condition, result);
             }
+        }
+        if (condition.getCountNode() != null) {
+            QuantifierCountChecker qcc =
+                this.getQuantifierCountCheckerFor(condition);
+            assert qcc != null;
+            qcc.setUniversalQuantifierChecker(result);
+            result.setCountCheckerNode(qcc);
         }
         if (condition.getSubConditions().size() > 0) {
             Set<Condition> nacs = new HashSet<Condition>();
@@ -357,6 +357,28 @@ public class ReteNetwork {
                 result);
             for (Condition c : positiveSubConditions) {
                 addConditionToNetwork(c, result);
+            }
+        }
+    }
+
+    /**
+     * Finds the count nodes of the immediately lower quantifiers 
+     * and creates/maps appropriate {@link QuantifierCountChecker} n-nodes
+     * for them.
+     * @param openList Where the mapping(s), if any, would be put
+     * @param condition The condition for sub-conditions of which the count nodes
+     *                  should be found
+     */
+    private void mapQuantifierCountNodes(StaticMap openList, Condition condition) {
+        for (Condition c : condition.getSubConditions()) {
+            if ((c.getOp() == Op.FORALL) && (c.getCountNode() != null)) {
+                QuantifierCountChecker qcc =
+                    new QuantifierCountChecker(this, c);
+                this.quantifierCountCheckerNodes.put(c.getCountNode(), qcc);
+                ReteStaticMapping sm =
+                    new ReteStaticMapping(qcc,
+                        new RuleElement[] {c.getCountNode()});
+                openList.add(sm);
             }
         }
     }
@@ -582,8 +604,7 @@ public class ReteNetwork {
      *                 and the n-nodes in the RETE network. This list will be
      *                 filled by this method with mappings of normal nodes and
      *                 and edges.
-     * @param edgeSet  The given set of edges in a rule that need to be processed
-     * @param nodeSet  The given set of nodes in a rule that need to be processed
+     * @param ruleGraph  The rule graph whose nodes and edges should be processed
      * @param emptyAndNegativePathEdges  This is an output parameter. This method
      *                                   fills up this collection with the edges
      *                                   that are either negative path match (labelled
@@ -597,19 +618,22 @@ public class ReteNetwork {
      *                      collects the data operator edges in this set without
      *                      statically mapping them and putting them on the open-list.                      
      */
-    private void mapEdgesAndNodes(StaticMap openList,
-            Collection<RuleEdge> edgeSet, Collection<RuleNode> nodeSet,
+    private void mapEdgesAndNodes(StaticMap openList, RuleGraph ruleGraph,
             Set<RuleEdge> emptyAndNegativePathEdges,
             Set<OperatorEdge> operatorEdges) {
 
         Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
+        Collection<RuleEdge> edgeSet = ruleGraph.edgeSet();
+        Collection<RuleNode> nodeSet = ruleGraph.nodeSet();
+
         //Adding the required edge-checkers if needed.
         for (RuleEdge e : edgeSet) {
             ReteStaticMapping mapping = null;
             if (e instanceof OperatorEdge) {
                 operatorEdges.add((OperatorEdge) e);
-                mappedLHSNodes.add(e.target()); // We don't need n-nodecheckers for that
-                mappedLHSNodes.add(e.source()); // We don't need n-nodecheckers for that
+                // We don't need n-node-checkers for those
+                mappedLHSNodes.add(e.target());
+                mappedLHSNodes.add(e.source());
             } else if (e instanceof ArgumentEdge) {
                 continue;
             } else if (e.label().isAtom() || e.label().isWildcard()) {
@@ -642,7 +666,8 @@ public class ReteNetwork {
         //will be represented by a separate static mapping in the open list.
         //This part is a deviation from the standard algorithm spec.        
         for (RuleNode n : nodeSet) {
-            if (!mappedLHSNodes.contains(n)) {
+            if (!mappedLHSNodes.contains(n)
+                && !this.quantifierCountCheckerNodes.containsKey(n)) {
                 NodeChecker nc = findNodeCheckerForNode(n);
                 ReteStaticMapping mapping =
                     new ReteStaticMapping(nc, new RuleElement[] {n});
@@ -758,9 +783,8 @@ public class ReteNetwork {
             Set<RuleEdge> emptyAcceptingAndNegativeEdges =
                 new TreeHashSet<RuleEdge>();
             Set<OperatorEdge> operatorEdge = new TreeHashSet<OperatorEdge>();
-            mapEdgesAndNodes(openList, newNacGraph.edgeSet(),
-                newNacGraph.nodeSet(), emptyAcceptingAndNegativeEdges,
-                operatorEdge);
+            mapEdgesAndNodes(openList, newNacGraph,
+                emptyAcceptingAndNegativeEdges, operatorEdge);
             if (m1 == null) {
                 m1 = openList.get(0);
                 byPassList.add(m1);
@@ -792,7 +816,6 @@ public class ReteNetwork {
                     positiveConditionChecker, openList.get(0));
             this.compositeConditionCheckerNodes.add(result);
         }
-
     }
 
     private ReteStaticMapping duplicateAndTranslateMapping(
@@ -907,6 +930,7 @@ public class ReteNetwork {
      * @param action Determines if the given element has been added or removed.
      */
     public void update(HostNode e, Action action) {
+        assert this.isUpdating();
         this.getRoot().receiveNode(e, action);
     }
 
@@ -919,6 +943,7 @@ public class ReteNetwork {
      * @param action Determines if the given element has been added or removed.
      */
     public void update(HostEdge e, Action action) {
+        assert this.isUpdating();
         this.getRoot().receiveEdge(e, action);
     }
 
@@ -962,6 +987,17 @@ public class ReteNetwork {
     }
 
     /**
+     * Retrieves the quantifier count checker n-node for the given condition.
+     * 
+     * @param c The condition. It has to be universal and it must have a count node 
+     *          associated with it in the rule.
+     */
+    public QuantifierCountChecker getQuantifierCountCheckerFor(Condition c) {
+        assert (c.getOp() == Op.FORALL) && (c.getCountNode() != null);
+        return this.quantifierCountCheckerNodes.get(c.getCountNode());
+    }
+
+    /**
      * @param r The given rule
      * @return Returns the production checker node in the RETE network that finds matches
      * for the given rule <code>r</code>
@@ -993,6 +1029,7 @@ public class ReteNetwork {
         this.getState().clearSubscribers();
         this.getState().initializeSubscribers();
         ReteUpdateMode oldUpdateMode = this.getState().getUpdateMode();
+        this.setUpdating(true);
         this.getState().updateMode = ReteUpdateMode.NORMAL;
         for (HostNode n : g.nodeSet()) {
             this.getRoot().receiveNode(n, Action.ADD);
@@ -1004,6 +1041,7 @@ public class ReteNetwork {
             this.getState().setUpdateMode(oldUpdateMode);
         }
         this.getState().setHostGraph(g);
+        this.setUpdating(false);
     }
 
     /** Creates and returns a graph showing the structure of this RETE network. */
@@ -1017,8 +1055,27 @@ public class ReteNetwork {
         graph.addEdge(rootNode, "ROOT", rootNode);
         addChildren(graph, map, this.getRoot());
         addEmptyConditions(graph, map);
+        addQuantifierCountCheckers(graph, map);
         addSubConditionEdges(graph, map);
         return graph;
+    }
+
+    private void addQuantifierCountCheckers(DefaultGraph graph,
+            Map<ReteNetworkNode,DefaultNode> map) {
+        for (ConditionChecker cc : this.getConditonCheckerNodes()) {
+            QuantifierCountChecker qcc = cc.getCountCheckerNode();
+            if (qcc != null) {
+                DefaultNode qccNode = graph.addNode();
+                map.put(qcc, qccNode);
+                DefaultEdge[] flags = makeNNodeLabels(qcc, qccNode);
+                for (DefaultEdge f : flags) {
+                    graph.addEdge(f);
+                }
+                String l = "count";
+                graph.addEdge(map.get(cc), l, map.get(qcc));
+                addChildren(graph, map, qcc);
+            }
+        }
     }
 
     private void addEmptyConditions(DefaultGraph graph,
@@ -1122,6 +1179,10 @@ public class ReteNetwork {
                 source));
             result.add(DefaultEdge.createEdge(source, ":"
                 + ((ValueNodeChecker) nnode).getNode().toString(), source));
+        } else if (nnode instanceof QuantifierCountChecker) {
+            result.add(DefaultEdge.createEdge(source,
+                String.format("Quantifier Count Checker "), source));
+
         } else if (nnode instanceof EdgeCheckerNode) {
             result.add(DefaultEdge.createEdge(source, "Edge Checker", source));
             result.add(DefaultEdge.createEdge(source, ":"
@@ -1206,6 +1267,36 @@ public class ReteNetwork {
      */
     public HashMap<Constant,ValueNodeChecker> getValueNodeCheckerNodes() {
         return this.valueNodeCheckerNodes;
+    }
+
+    /**
+     * Puts the network in the update reception mode.  
+     */
+    public void setUpdating(boolean updating) {
+        if (updating && !this.updating) {
+            this.updating = updating;
+            getState().notifyUpdateBegin();
+        } else if (!updating && this.updating) {
+            this.updating = updating;
+            getState().notifyUpdateEnd();
+        } else {
+            this.updating = updating;
+        }
+    }
+
+    /**
+     * @return <code>true</code> if the network is in the process of receiving
+     * updates, <code>false</code> otherwise. 
+     */
+    public boolean isUpdating() {
+        return this.updating;
+    }
+
+    /**
+     * @return The {@link ReteSearchEngine} to which this network belongs
+     */
+    public ReteSearchEngine getOwnerEngine() {
+        return this.ownerEngine;
     }
 
     /**
@@ -1437,8 +1528,10 @@ public class ReteNetwork {
 
         private ReteNetwork owner;
         private HostGraph hostGraph;
-        private Set<StateSubscriber> subscribers =
-            new HashSet<StateSubscriber>();
+        private Set<ReteStateSubscriber> subscribers =
+            new HashSet<ReteStateSubscriber>();
+        private Set<ReteStateSubscriber> updateSubscribers =
+            new HashSet<ReteStateSubscriber>();
         private ReteUpdateMode updateMode = ReteUpdateMode.NORMAL;
 
         protected ReteState(ReteNetwork owner) {
@@ -1449,26 +1542,46 @@ public class ReteNetwork {
             return this.owner;
         }
 
-        public synchronized void subscribe(StateSubscriber sb) {
-            this.subscribers.add(sb);
+        public synchronized void subscribe(ReteStateSubscriber sb) {
+            this.subscribe(sb, false);
         }
 
-        public void unsubscribe(StateSubscriber sb) {
+        public synchronized void subscribe(ReteStateSubscriber sb,
+                boolean receiveUpdateNotifications) {
+            this.subscribers.add(sb);
+            if (receiveUpdateNotifications) {
+                this.updateSubscribers.add(sb);
+            }
+        }
+
+        public void unsubscribe(ReteStateSubscriber sb) {
             sb.clear();
             this.subscribers.remove(sb);
+            this.updateSubscribers.remove(sb);
         }
 
         public void clearSubscribers() {
-            for (StateSubscriber sb : this.subscribers) {
+            for (ReteStateSubscriber sb : this.subscribers) {
                 sb.clear();
             }
         }
 
         public synchronized void initializeSubscribers() {
-            for (StateSubscriber sb : this.subscribers) {
+            for (ReteStateSubscriber sb : this.subscribers) {
                 sb.initialize();
             }
+        }
 
+        public synchronized void notifyUpdateBegin() {
+            for (ReteStateSubscriber sb : this.updateSubscribers) {
+                sb.updateBegin();
+            }
+        }
+
+        public synchronized void notifyUpdateEnd() {
+            for (ReteStateSubscriber sb : this.updateSubscribers) {
+                sb.updateEnd();
+            }
         }
 
         synchronized void setHostGraph(HostGraph hgraph) {

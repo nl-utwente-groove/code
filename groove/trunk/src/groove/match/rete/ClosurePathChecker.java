@@ -33,7 +33,7 @@ import com.sun.org.apache.xpath.internal.operations.Plus;
  * @version $Revision $
  */
 public class ClosurePathChecker extends AbstractPathChecker implements
-        StateSubscriber {
+        ReteStateSubscriber {
 
     private EmptyPathMatch emptyMatch = new EmptyPathMatch(this);
 
@@ -172,6 +172,16 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             passDownMatchToSuccessors(this.emptyMatch);
         }
         return null;
+    }
+
+    @Override
+    public void updateBegin() {
+        // Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        // Do nothing        
     }
 
 }

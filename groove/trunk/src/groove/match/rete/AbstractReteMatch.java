@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -138,23 +138,23 @@ public abstract class AbstractReteMatch implements
         if (result) {
             for (RuleNode n : anchorMap.nodeMap().keySet()) {
                 int[] idx = lookup.getNode(n);
-                assert idx != null;
-                HostElement e = units[idx[0]];
-                if (e instanceof HostNode) {
-                    if (!e.equals(anchorMap.getNode(n))) {
-                        result = false;
-                        break;
-                    }
-                } else {
-                    HostNode n1 =
-                        (idx[1] == 0) ? ((HostEdge) e).source()
-                                : ((HostEdge) e).target();
-                    if (!n1.equals(anchorMap.getNode(n))) {
-                        result = false;
-                        break;
+                if (idx != null) {
+                    HostElement e = units[idx[0]];
+                    if (e instanceof HostNode) {
+                        if (!e.equals(anchorMap.getNode(n))) {
+                            result = false;
+                            break;
+                        }
+                    } else {
+                        HostNode n1 =
+                            (idx[1] == 0) ? ((HostEdge) e).source()
+                                    : ((HostEdge) e).target();
+                        if (!n1.equals(anchorMap.getNode(n))) {
+                            result = false;
+                            break;
+                        }
                     }
                 }
-
             }
         }
         return result;

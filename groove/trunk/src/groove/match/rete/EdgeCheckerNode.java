@@ -40,7 +40,8 @@ import java.util.List;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber {
+public class EdgeCheckerNode extends ReteNetworkNode implements
+        ReteStateSubscriber {
 
     private RuleElement[] pattern = new RuleElement[1];
 
@@ -369,5 +370,16 @@ public class EdgeCheckerNode extends ReteNetworkNode implements StateSubscriber 
             AbstractReteMatch subgraph) {
         throw new UnsupportedOperationException();
 
+    }
+
+    @Override
+    public void updateBegin() {
+        //Do nothing
+
+    }
+
+    @Override
+    public void updateEnd() {
+        //Do nothing        
     }
 }
