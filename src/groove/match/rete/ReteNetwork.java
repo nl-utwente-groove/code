@@ -22,6 +22,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
@@ -40,6 +41,7 @@ import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
+import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
@@ -67,11 +69,10 @@ public class ReteNetwork {
     private final String grammarName;
     private RootNode root;
 
-    //Every RETE network in GROOVE will have at most one node-checker.
-    //This <code>nodeChecker</code> attribute is not null if and only if
-    //the LHS of some rule/sub-condition in the grammar has at least 
-    //one isolated node.
-    private DefaultNodeChecker nodeChecker = null;
+    //Due to typing, RETE now can have many node checkers, one for each
+    //type of node occurring as an isolated node
+    private HashMap<TypeNode,DefaultNodeChecker> defaultNodeCheckers =
+        new HashMap<TypeNode,DefaultNodeChecker>();
 
     private HashMap<Rule,ProductionNode> productionNodes =
         new HashMap<Rule,ProductionNode>();
@@ -572,7 +573,8 @@ public class ReteNetwork {
         return result;
     }
 
-    private RuleNode translate(RuleGraphMorphism translationMap, RuleNode node) {
+    private RuleNode translate(RuleFactory factory,
+            RuleGraphMorphism translationMap, RuleNode node) {
         RuleNode result = node;
         if (translationMap != null) {
             result = translationMap.getNode(node);
@@ -583,14 +585,14 @@ public class ReteNetwork {
         return result;
     }
 
-    private RuleEdge translate(RuleGraphMorphism translationMap, RuleEdge edge) {
+    private RuleEdge translate(RuleFactory factory,
+            RuleGraphMorphism translationMap, RuleEdge edge) {
         RuleEdge result = edge;
         if (translationMap != null) {
-            RuleNode n1 = translate(translationMap, edge.source());
-            RuleNode n2 = translate(translationMap, edge.target());
+            RuleNode n1 = translate(factory, translationMap, edge.source());
+            RuleNode n2 = translate(factory, translationMap, edge.target());
             if (!edge.source().equals(n1) || !edge.target().equals(n2)) {
-                result =
-                    translationMap.getFactory().createEdge(n1, edge.label(), n2);
+                result = factory.createEdge(n1, edge.label(), n2);
             }
         }
         return result;
@@ -685,12 +687,33 @@ public class ReteNetwork {
      *         to the newly made/numbered nodes. 
      */
     private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source) {
-        RuleGraphMorphism result = new RuleGraphMorphism();
+        RuleGraphMorphism result = source.getFactory().createMorphism();
         for (RuleNode n : source.nodeSet()) {
-            result.nodeMap().put(
-                n,
-                source.getFactory().createNode(
-                    source.getFactory().getMaxNodeNr() + 1));
+            if (n instanceof VariableNode) {
+                VariableNode vn = (VariableNode) n;
+                if (vn.getConstant() != null) {
+                    result.nodeMap().put(
+                        n,
+                        source.getFactory().createVariableNode(
+                            source.getFactory().getMaxNodeNr() + 1,
+                            vn.getConstant()));
+
+                } else {
+                    result.nodeMap().put(
+                        n,
+                        source.getFactory().createVariableNode(
+                            source.getFactory().getMaxNodeNr() + 1,
+                            vn.getSignature()));
+                }
+            } else {
+
+                result.nodeMap().put(
+                    n,
+                    source.getFactory().createNode(
+                        source.getFactory().getMaxNodeNr() + 1,
+                        n.getType().label(), n.isSharp()));
+            }
+
         }
         return result;
     }
@@ -714,7 +737,7 @@ public class ReteNetwork {
             result.addNode(nodeMapping.getNode(n));
         }
         for (RuleEdge e : source.edgeSet()) {
-            result.addEdge(translate(nodeMapping, e));
+            result.addEdge(translate(source.getFactory(), nodeMapping, e));
         }
         return result;
     }
@@ -774,7 +797,8 @@ public class ReteNetwork {
                 copyRootMap(nac.getRoot().nodeSet(), nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
-                duplicateAndTranslateMapping(lastSubgraphMapping, newRootMap);
+                duplicateAndTranslateMapping(nac.getPattern().getFactory(),
+                    lastSubgraphMapping, newRootMap);
             if (m1 != null) {
                 byPassList.add(m1);
                 openList.add(m1);
@@ -818,7 +842,7 @@ public class ReteNetwork {
         }
     }
 
-    private ReteStaticMapping duplicateAndTranslateMapping(
+    private ReteStaticMapping duplicateAndTranslateMapping(RuleFactory factory,
             ReteStaticMapping source, RuleGraphMorphism translationMap) {
         ReteStaticMapping result = null;
         if (source != null) {
@@ -827,10 +851,12 @@ public class ReteNetwork {
             for (int i = 0; i < newElements.length; i++) {
                 if (oldElements[i] instanceof RuleEdge) {
                     newElements[i] =
-                        translate(translationMap, (RuleEdge) oldElements[i]);
+                        translate(factory, translationMap,
+                            (RuleEdge) oldElements[i]);
                 } else {
                     newElements[i] =
-                        translate(translationMap, (RuleNode) oldElements[i]);
+                        translate(factory, translationMap,
+                            (RuleNode) oldElements[i]);
                 }
             }
             result = new ReteStaticMapping(source.getNNode(), newElements);
@@ -842,11 +868,13 @@ public class ReteNetwork {
 
         NodeChecker result = null;
         if (n instanceof DefaultRuleNode) {
-            if (this.nodeChecker == null) {
-                this.nodeChecker = new DefaultNodeChecker(this);
-                this.root.addSuccessor(this.nodeChecker);
+            DefaultNodeChecker dnc = this.defaultNodeCheckers.get(n.getType());
+            if (dnc == null) {
+                dnc = new DefaultNodeChecker(this, n);
+                this.defaultNodeCheckers.put(n.getType(), dnc);
+                this.root.addSuccessor(dnc);
             }
-            result = this.nodeChecker;
+            result = dnc;
         } else if (n instanceof VariableNode) {
             VariableNode vn = (VariableNode) n;
             assert vn.getConstant() != null;
@@ -1016,6 +1044,20 @@ public class ReteNetwork {
     public ConditionChecker getConditionCheckerNodeFor(Condition c) {
         ConditionChecker result = this.conditionCheckerNodes.get(c);
         return result;
+    }
+
+    /**
+     * Returns a map of default node checkers based on their type.
+     */
+    public HashMap<TypeNode,DefaultNodeChecker> getDefaultNodeCheckers() {
+        return this.defaultNodeCheckers;
+    }
+
+    /**
+     * Returns a collection of default node checkers.
+     */
+    public DefaultNodeChecker getDefaultNodeCheckerForType(TypeNode type) {
+        return this.defaultNodeCheckers.get(type);
     }
 
     /**

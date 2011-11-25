@@ -17,12 +17,14 @@
 package groove.match.rete;
 
 import groove.graph.Node;
+import groove.graph.TypeNode;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
-import groove.trans.RuleFactory;
+import groove.trans.RuleNode;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,6 +46,13 @@ public class DefaultNodeChecker extends NodeChecker implements
     private TreeHashSet<ReteSimpleMatch> memory =
         new TreeHashSet<ReteSimpleMatch>();
 
+    /** The collection of subtypes of this node type. */
+    final Collection<TypeNode> subtypes;
+    /** Flag indicating if the node type has non-trivial subtypes. */
+    final boolean sharpType;
+    /** The type label to be matched. */
+    final TypeNode type;
+
     /**
      * The reporter object for this class.
      */
@@ -59,10 +68,14 @@ public class DefaultNodeChecker extends NodeChecker implements
     /**
      * @param network The {@link ReteNetwork} object to which this node will belong.
      */
-    public DefaultNodeChecker(ReteNetwork network) {
+    public DefaultNodeChecker(ReteNetwork network, RuleNode node) {
         super(network);
-        RuleFactory factory = RuleFactory.newInstance();
-        this.pattern[0] = factory.createNode(factory.getMaxNodeNr() + 1);
+        this.pattern[0] = node;
+        this.type = node.getType();
+        this.subtypes = node.getType().getGraph().getSubtypes(this.type);
+        this.sharpType =
+            node.isSharp() || this.subtypes == null
+                || this.subtypes.size() == 1;
         this.getOwner().getState().subscribe(this);
     }
 
@@ -117,7 +130,7 @@ public class DefaultNodeChecker extends NodeChecker implements
     @Override
     public boolean equals(ReteNetworkNode node) {
         return (node != null) && (node instanceof DefaultNodeChecker)
-            && (((DefaultNodeChecker) node).getNode().equals(this.getNode()));
+            && (((DefaultNodeChecker) node).getType().equals(this.getType()));
     }
 
     /**
@@ -191,6 +204,18 @@ public class DefaultNodeChecker extends NodeChecker implements
     @Override
     public void updateEnd() {
         //Do nothing        
+    }
+
+    @Override
+    public boolean canBeStaticallyMappedTo(RuleNode node) {
+        return this.getNode().getType() == node.getType();
+    }
+
+    /**
+     * Returns the type of node that this checker will check against
+     */
+    public TypeNode getType() {
+        return this.type;
     }
 
 }

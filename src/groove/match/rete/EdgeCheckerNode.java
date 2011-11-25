@@ -17,8 +17,9 @@
 package groove.match.rete;
 
 import groove.algebra.Constant;
+import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
-import groove.graph.algebra.ProductNode;
+import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
@@ -75,6 +76,49 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
         reporter.register("receiveEdge(source, gEdge, action)");
 
     /**
+     * Determines if this edge checker strictly checks against loop edges.
+     */
+    protected boolean selfEdge = false;
+
+    /**
+     * The type of the edge this checker will enforce during checking.
+     */
+    protected TypeEdge type;
+
+    /**
+     * The type of the source node that will be enforced on incoming edge
+     * matches. If it is null then it means this checker will not
+     * enforce any typing on the source of the incoming edges.
+     */
+    protected TypeNode sourceType;
+
+    /**
+     * The type of the target node that will be enforced on incoming edge
+     * matches. If it is null then it means this checker will not
+     * enforce any typing on the target of the incoming edges.
+     */
+    protected TypeNode targetType;
+
+    /**
+     * Direct reference to the edge representing the pattern of this
+     * edge-checker. This is equivalent to (RuleEdge)pattern[0] and is
+     * redundantly stored like this for performance reasons. 
+     */
+    protected RuleEdge edge;
+
+    /**
+     * Direct reference to the source of the edge for performance reasons.
+     * Equivalent to {@link #getEdge()}.{@link RuleEdge#source()}.
+     */
+    protected RuleNode sourceNode;
+
+    /**
+     * Direct reference to the target of the edge for performance reasons.
+     * Equivalent to {@link #getEdge()}.{@link RuleEdge#target()}.
+     */
+    protected RuleNode targetNode;
+
+    /**
      * Creates an new edge-checker n-node that matches a certain kind of edge.
      * 
      * @param e The edge that is to be used as a sample edge that this edge-checker 
@@ -82,10 +126,27 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      */
     public EdgeCheckerNode(ReteNetwork network, RuleEdge e) {
         super(network);
+        this.edge = e;
         this.pattern[0] = e;
+
+        this.type = e.getType();
+        this.sourceType =
+            e.source().isSharp() || this.type == null
+                || this.sourceType != this.type.source() ? e.source().getType()
+                    : null;
+
+        this.targetType =
+            e.target().isSharp() || this.type == null
+                || this.targetType != this.type.target() ? e.target().getType()
+                    : null;
+        this.selfEdge = e.source().equals(e.target());
+        this.sourceNode = e.source();
+        this.targetNode = e.target();
+
         //This is just to fill up the lookup table
         getPatternLookupTable();
         this.getOwner().getState().subscribe(this);
+
     }
 
     @Override
@@ -113,23 +174,42 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      *          edge-checker by the root, <code>false</code> otherwise.
      */
     public boolean canBeMappedToEdge(HostEdge e) {
-        RuleEdge e1 = this.getEdge();
+
         //condition 1: node types for end-points of the patter and host edge must be compatible
         //condition 2: labels must match <-- commented out because we check this in the root
         //condition 3: if this is an edge checker for a loop then e should also be a loop
-        assert (this.isWildcardEdge() && e1.label().getMatchExpr().getWildcardGuard().isSatisfied(
+        assert (this.isWildcardEdge() && this.edge.label().getMatchExpr().getWildcardGuard().isSatisfied(
             e.label()))
-            || (e1.label().text().equals(e.label().text()));
-        return compatibleTypes(e1.source(), e.source())
-            && compatibleTypes(e1.target(), e.target())
-            && (!e1.source().equals(e1.target()) || (e.source().equals(e.target())));
+            || (this.edge.label().text().equals(e.label().text()));
+
+        return (this.type == null || this.type.subsumes(e.getType()))
+            && checkSourceType(e.source()) && checkTargetType(e.target())
+            && checkValues(this.sourceNode, e.source())
+            && checkValues(this.targetNode, e.target())
+            && (!this.selfEdge || (e.source().equals(e.target())));
     }
 
-    private boolean compatibleTypes(RuleNode n1, HostNode n2) {
-        assert !(n1 instanceof ProductNode);
+    /** Tests if a given host edge source type matches the source type of 
+     * the pattern for the edge checker. */
+    boolean checkSourceType(HostNode imageSource) {
+        return this.sourceType == null
+            || this.sourceType.subsumes(imageSource.getType(),
+                this.sourceNode.isSharp());
+    }
+
+    /** Tests if a given host edge target type matches the target type of 
+     * the pattern for the edge checker. */
+    boolean checkTargetType(HostNode imageTarget) {
+        return this.targetType == null
+            || this.targetType.subsumes(imageTarget.getType(),
+                this.targetNode.isSharp());
+    }
+
+    private boolean checkValues(RuleNode n1, HostNode n2) {
         return !(n1 instanceof VariableNode)
             || (((n2 instanceof ValueNode) && (((ValueNode) n2).getSignature().equals(((VariableNode) n1).getSignature()))) && valuesMatch(
                 (VariableNode) n1, (ValueNode) n2));
+
     }
 
     private boolean valuesMatch(VariableNode n1, ValueNode n2) {
@@ -143,7 +223,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * wild-card edges.
      */
     public boolean isWildcardEdge() {
-        return this.getEdge().label().isWildcard();
+        return this.edge.label().isWildcard();
     }
 
     /**
@@ -152,7 +232,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      */
     public boolean isPositiveWildcard() {
         LabelConstraint lc =
-            ((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard();
+            ((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard();
         return this.isWildcardEdge() && (lc == null || !lc.isNegated());
     }
 
@@ -162,8 +242,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      */
     public boolean isWildcardGuarded() {
         return this.isWildcardEdge()
-            && (((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard() != null)
-            && (((RegExpr.Wildcard) this.getEdge().label().getMatchExpr()).getGuard().getLabels() != null);
+            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard() != null)
+            && (((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard().getLabels() != null);
     }
 
     /**
@@ -171,7 +251,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * the given label (either by exact matching or through wild-card matching)
      */
     public boolean isAcceptingLabel(TypeLabel l) {
-        RuleLabel rl = this.getEdge().label();
+        RuleLabel rl = this.edge.label();
         return (this.isWildcardEdge() && rl.getWildcardGuard().isSatisfied(l))
             || rl.text().equals(l.text());
     }
@@ -188,22 +268,20 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      *         and <code>e</code> are loops or both are non-loops.
      */
     public boolean canBeStaticallyMappedToEdge(RuleEdge e) {
-        RuleEdge e1 = this.getEdge();
         //condition 1: labels must match
         //condition 2: if this is an edge checker for a loop then e should also be a loop and vice versa
         //condition 3: the end-points of this n-node's pattern and the given rule node are of the same type
         //condition 4: if any of the end points in the rule are constant then the values must match
-        return e1.label().equals(e.label()) //condition 1
-            && (e1.source().equals(e1.target()) == (e.source().equals(e.target()))) //condition 2
-            && (e1.source().getClass().equals(e.source().getClass())) //condition 3
-            && (e1.target().getClass().equals(e.target().getClass()))
+        return this.edge.label().equals(e.label()) //condition 1
+            && (!this.selfEdge || (e.source() == e.target())) //condition 2
+            && (this.sourceNode.getType() == e.source().getType()) //condition 3
+            && (this.targetNode.getType() == e.target().getType())
             && endPointValuesStaticallyCompatible(e); //condition 4
     }
 
     private boolean endPointValuesStaticallyCompatible(RuleEdge e) {
-        RuleEdge e1 = this.getEdge();
-        return nodeValuesStaticallyCompatible(e1.source(), e.source())
-            && nodeValuesStaticallyCompatible(e1.target(), e.target());
+        return nodeValuesStaticallyCompatible(this.sourceNode, e.source())
+            && nodeValuesStaticallyCompatible(this.targetNode, e.target());
     }
 
     private boolean nodeValuesStaticallyCompatible(RuleNode n1, RuleNode n2) {
@@ -263,8 +341,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
         LabelVar variable =
-            this.isWildcardEdge() ? this.getEdge().label().getWildcardId()
-                    : null;
+            this.isWildcardEdge() ? this.edge.label().getWildcardId() : null;
 
         ReteSimpleMatch m;
         if (variable != null) {
@@ -293,7 +370,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * @return the edge associated with this edge-checker
      */
     public RuleEdge getEdge() {
-        return (RuleEdge) this.pattern[0];
+        return this.edge;
     }
 
     @Override
@@ -314,7 +391,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
 
     @Override
     public String toString() {
-        return "Checking edge: " + this.getEdge().toString();
+        return "Checking edge: " + this.edge.toString();
     }
 
     @Override

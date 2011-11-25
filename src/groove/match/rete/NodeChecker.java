@@ -52,4 +52,14 @@ public abstract class NodeChecker extends ReteNetworkNode implements
         return this.pattern;
     }
 
+    /**
+     * Determines if this node checker can be chosen to check against the
+     * given node in a rule.
+     * 
+     * @param node The given rule node for which we are looking for a checker
+     * @return  Concrete implementations should return <code>true</code> if it is possible
+     * for this n-node to serve as a checker for the given node, <code>false</code> otherwise.
+     */
+    public abstract boolean canBeStaticallyMappedTo(RuleNode node);
+
 }

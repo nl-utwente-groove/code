@@ -17,11 +17,13 @@
 package groove.match.rete;
 
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.util.TreeHashSet;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +49,10 @@ public class RootNode extends ReteNetworkNode {
     private Set<SingleEdgePathChecker> otherPathCheckers =
         new TreeHashSet<SingleEdgePathChecker>();
 
-    private DefaultNodeChecker theNodeChecker = null;
+    private HashMap<TypeNode,Collection<DefaultNodeChecker>> defaultNodeCheckers =
+        null;
+
+    private DefaultNodeChecker theOnlyNodeChecker = null;
 
     /**
      * Creates a root n-node for a given RETE network.
@@ -61,7 +66,7 @@ public class RootNode extends ReteNetworkNode {
     public void addSuccessor(ReteNetworkNode nnode) {
         boolean isValid =
             (nnode instanceof EdgeCheckerNode)
-                || ((nnode instanceof DefaultNodeChecker) && (this.theNodeChecker == null))
+                || (nnode instanceof DefaultNodeChecker)
                 || (nnode instanceof SingleEdgePathChecker)
                 || (nnode instanceof EmptyPathChecker)
                 || (nnode instanceof ValueNodeChecker);
@@ -78,8 +83,15 @@ public class RootNode extends ReteNetworkNode {
             getSuccessors().add(nnode);
             nnode.addAntecedent(this);
             if (nnode instanceof DefaultNodeChecker) {
-                this.theNodeChecker = (DefaultNodeChecker) nnode;
+                if (this.defaultNodeCheckers == null) {
+                    addDefaultNodeChecker((DefaultNodeChecker) nnode);
+                    this.theOnlyNodeChecker = (DefaultNodeChecker) nnode;
+                } else {
+                    this.theOnlyNodeChecker = null;
+                    addDefaultNodeChecker((DefaultNodeChecker) nnode);
+                }
             } else if (nnode instanceof EdgeCheckerNode) {
+                //TODO we should probably index the edge checkers based on types as well
                 EdgeCheckerNode ec = (EdgeCheckerNode) nnode;
                 if (!ec.isWildcardEdge()
                     || (ec.isPositiveWildcard() && ec.isWildcardGuarded())) {
@@ -102,6 +114,39 @@ public class RootNode extends ReteNetworkNode {
 
     }
 
+    private void addDefaultNodeChecker(DefaultNodeChecker nnode) {
+        if (this.defaultNodeCheckers == null) {
+            this.defaultNodeCheckers =
+                new HashMap<TypeNode,Collection<DefaultNodeChecker>>();
+        }
+        Collection<DefaultNodeChecker> nodeCheckers =
+            this.defaultNodeCheckers.get(nnode.getType());
+        if (nodeCheckers == null) {
+            nodeCheckers = new TreeHashSet<DefaultNodeChecker>();
+            //copy the node checkers of supertypes here
+            for (TypeNode superType : nnode.getType().getGraph().getSubtypes(
+                nnode.getType())) {
+                Collection<DefaultNodeChecker> ncs =
+                    this.defaultNodeCheckers.get(superType);
+                if (ncs != null) {
+                    nodeCheckers.addAll(ncs);
+                }
+            }
+        }
+        if (!nodeCheckers.contains(nnode)) {
+            nodeCheckers.add(nnode);
+        }
+        //put yourself in the list of checker for subtypes too
+        for (TypeNode subType : nnode.getType().getGraph().getSubtypes(
+            nnode.getType())) {
+            Collection<DefaultNodeChecker> ncs =
+                this.defaultNodeCheckers.get(subType);
+            if ((ncs != null) && !ncs.contains(nnode)) {
+                ncs.add(nnode);
+            }
+        }
+    }
+
     /**
      * This is the method that is to be called for each single atomic update
      * to the RETE network, i.e. a single node creation/removal.
@@ -110,8 +155,16 @@ public class RootNode extends ReteNetworkNode {
      * @param action Determined if the given node is deleted or added.
      */
     public void receiveNode(HostNode elem, Action action) {
-        if (this.theNodeChecker != null) {
-            this.theNodeChecker.receiveNode(elem, action);
+        if (this.theOnlyNodeChecker != null) {
+            this.theOnlyNodeChecker.receiveNode(elem, action);
+        } else if (this.defaultNodeCheckers != null) {
+            Collection<DefaultNodeChecker> dncc =
+                this.defaultNodeCheckers.get(elem.getType());
+            if (dncc != null) {
+                for (DefaultNodeChecker nc : dncc) {
+                    nc.receiveNode(elem, action);
+                }
+            }
         }
     }
 
