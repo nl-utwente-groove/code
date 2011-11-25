@@ -85,6 +85,8 @@ public final class ShapeGenerator extends CommandLineTool {
     private final MultiplicityBoundOption nodeBoundOption;
     private final MultiplicityBoundOption edgeBoundOption;
     private final StatsOption statsOption;
+    /** Reduced GTS. */
+    private AGTS reducedGTS;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -192,6 +194,7 @@ public final class ShapeGenerator extends CommandLineTool {
     private void reset() {
         Abstraction.initialise();
         gts = null;
+        this.reducedGTS = null;
         this.explorationStats = new ExplorationStatistics(getGTS());
         this.explorationStats.configureForGenerator(this.getVerbosity());
     }
@@ -282,12 +285,10 @@ public final class ShapeGenerator extends CommandLineTool {
     }
 
     /** Writes output accordingly to options given to the generator. */
-    private void report() {
-        printfMedium(
-            "\nStates: %d (%d final) -- %d subsumed (%d discarded)\nTransitions: %d (%d subsumed)\n",
-            getStateCount(), getFinalStatesCount(),
-            getGTS().getSubsumedStatesCount(), getGTS().openStateCount(),
-            getTransitionCount(), getGTS().getSubsumedTransitionsCount());
+    public void report() {
+        reportGTS(getGTS(), "Original GTS");
+        AGTS reducedGTS = getReducedGTS();
+        reportGTS(reducedGTS, "Reduced GTS");
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
             DefaultGraph gtsGraph =
@@ -308,19 +309,22 @@ public final class ShapeGenerator extends CommandLineTool {
         }
     }
 
-    /** Basic getter method. */
-    public int getStateCount() {
-        return getGTS().nodeCount();
+    private void reportGTS(AGTS gts, String header) {
+        printfMedium(
+            "\n"
+                + header
+                + ": States: %d (%d final) -- %d subsumed (%d discarded) / Transitions: %d (%d subsumed)\n",
+            gts.getStateCount(), gts.getFinalStates().size(),
+            gts.getSubsumedStatesCount(), gts.openStateCount(),
+            gts.getTransitionCount(), gts.getSubsumedTransitionsCount());
     }
 
     /** Basic getter method. */
-    public int getTransitionCount() {
-        return getGTS().getTransitionCount();
-    }
-
-    /** Basic getter method. */
-    private int getFinalStatesCount() {
-        return getGTS().getFinalStates().size();
+    public AGTS getReducedGTS() {
+        if (this.reducedGTS == null) {
+            this.reducedGTS = getGTS().reduceGTS();
+        }
+        return this.reducedGTS;
     }
 
     // ------------------------------------------------------------------------

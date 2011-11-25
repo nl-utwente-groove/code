@@ -16,10 +16,12 @@
  */
 package groove.abstraction.neigh.lts;
 
+import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;
 import groove.lts.AbstractGraphState;
+import groove.lts.DerivationLabel;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.GraphTransitionStub;
@@ -31,6 +33,7 @@ import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +68,8 @@ public class ShapeState extends AbstractGraphState {
      * the GTS.
      */
     private ArrayList<ShapeState> subsumedStates;
+    /** Set of successor states. Computed lazily. */
+    private Set<ShapeState> nextStates;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -110,6 +115,11 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
+    public Set<GraphTransition> getTransitionSet() {
+        return new HashSet<GraphTransition>(this.transitions);
+    }
+
+    @Override
     protected void updateClosed() {
         // Nothing to do.
     }
@@ -118,15 +128,13 @@ public class ShapeState extends AbstractGraphState {
     public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeNextState : "Invalid transition type.";
-        int index = this.transitions.size();
-        if (transition instanceof ShapeNextState) {
-            ((ShapeNextState) transition).setIndex(index);
-        }
-        if (transition instanceof ShapeTransition) {
-            ((ShapeTransition) transition).setIndex(index);
-        }
         this.transitions.add(transition);
         return true;
+    }
+
+    @Override
+    public boolean containsTransition(GraphTransition transition) {
+        return this.transitions.contains(transition);
     }
 
     @Override
@@ -156,15 +164,53 @@ public class ShapeState extends AbstractGraphState {
         // We don't have a cache, so just return.
     }
 
+    @Override
+    public Collection<ShapeState> getNextStateSet() {
+        if (this.nextStates != null) {
+            return this.nextStates;
+        } else {
+            Set<ShapeState> result = new MyHashSet<ShapeState>();
+            for (GraphTransition transition : this.transitions) {
+                result.add((ShapeState) transition.target());
+            }
+            if (this.isClosed()) {
+                this.nextStates = result;
+            }
+            return result;
+        }
+    }
+
+    @Override
+    public Iterator<ShapeState> getNextStateIter() {
+        return getNextStateSet().iterator();
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
     /**
+     * Returns true if this state has an outgoing transition to the given
+     * target state with given label.
+     */
+    protected boolean containsTransition(DerivationLabel label,
+            ShapeState target) {
+        boolean result = false;
+        for (GraphTransition trans : this.transitions) {
+            if (trans.target().getNumber() == target.getNumber()
+                && trans.label().equals(label)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Tries to set the subsumptor to the given state.
      * Returns true is this state didn't already have a subsumptor.
      */
-    boolean setSubsumptor(ShapeState subsumptor) {
+    protected boolean setSubsumptor(ShapeState subsumptor) {
         if (this.getSubsumptor() != null) {
             return false;
         } else {
@@ -174,12 +220,12 @@ public class ShapeState extends AbstractGraphState {
     }
 
     /** Basic getter method. Returned state may be null. */
-    private ShapeState getSubsumptor() {
+    protected ShapeState getSubsumptor() {
         return this.subsumptor;
     }
 
     /** Returns true if this state is subsumed by another one in the GTS. */
-    boolean isSubsumed() {
+    protected boolean isSubsumed() {
         return this.subsumptor != null;
     }
 
@@ -187,7 +233,7 @@ public class ShapeState extends AbstractGraphState {
      * Adds the given state to the list of states possibly subsumed by this
      * one.
      */
-    void addSubsumedState(ShapeState subsumed) {
+    protected void addSubsumedState(ShapeState subsumed) {
         this.subsumedStates.add(subsumed);
     }
 
@@ -197,7 +243,7 @@ public class ShapeState extends AbstractGraphState {
      * subsumed states of this state is destroyed during this method call.
      * Returns the number of states that were marked as subsumed.
      */
-    int markSubsumedStates() {
+    protected int markSubsumedStates() {
         int markCount = 0;
         for (ShapeState subsumed : this.subsumedStates) {
             if (subsumed.setSubsumptor(this)) {
@@ -245,27 +291,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Set<GraphTransition> getTransitionSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Map<RuleEvent,GraphTransition> getTransitionMap() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsTransition(GraphTransition transition) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Collection<ShapeState> getNextStateSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Iterator<GraphState> getNextStateIter() {
         throw new UnsupportedOperationException();
     }
 
