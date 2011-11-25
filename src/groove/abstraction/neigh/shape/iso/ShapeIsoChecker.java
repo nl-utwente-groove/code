@@ -28,6 +28,7 @@ import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
+import groove.util.Pair;
 
 import java.util.Map.Entry;
 
@@ -142,14 +143,17 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
 
     /** See {@link #compareShapes(Shape, Shape)}. */
     public boolean areIsomorphic(Shape dom, Shape cod) {
-        int result = this.compareShapes(dom, cod);
+        int result = this.compareShapes(dom, cod).one();
         return this.areEqual(result);
     }
 
     /** Compares the two given shapes and returns a number formed by flags.*/
-    public int compareShapes(Shape dom, Shape cod) {
+    public Pair<Integer,Morphism<ShapeNode,ShapeEdge>> compareShapes(Shape dom,
+            Shape cod) {
+        Pair<Integer,Morphism<ShapeNode,ShapeEdge>> result =
+            new Pair<Integer,Morphism<ShapeNode,ShapeEdge>>(NON_ISO, null);
         if (!this.passBasicChecks(dom, cod)) {
-            return NON_ISO;
+            return result;
         }
         Graph<ShapeNode,ShapeEdge> domG = dom.downcast();
         Graph<ShapeNode,ShapeEdge> codG = cod.downcast();
@@ -158,12 +162,15 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             new IsoCheckerState();
         Morphism<ShapeNode,ShapeEdge> morphism =
             isoChecker.getIsomorphism(domG, codG, state);
-        int result = NON_ISO;
+        int comparison = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
             // Check for the extra conditions.
-            result = this.checkIsomorphism(dom, cod, morphism);
-            if (result != NON_ISO) {
+            comparison = this.checkIsomorphism(dom, cod, morphism);
+            if (comparison != NON_ISO) {
+                result =
+                    new Pair<Integer,Morphism<ShapeNode,ShapeEdge>>(comparison,
+                        morphism);
                 break;
             } else {
                 // Keep trying.
