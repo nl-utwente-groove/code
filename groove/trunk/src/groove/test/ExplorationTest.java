@@ -214,7 +214,8 @@ public class ExplorationTest {
     /** tests the subtyping functionality. */
     @Test
     public void testInheritance() {
-        testExploration("inheritance.gps", 756, 5374);
+        testExploration("inheritance.gps", "start", "bfs", 756, 5374);
+        testExploration("inheritance.gps", "start", "rete", 756, 5374);
     }
 
     /** tests attributes, quantifiers and NACs */

@@ -21,6 +21,7 @@ import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.trans.RuleNode;
 
 import java.util.List;
 
@@ -37,6 +38,8 @@ import java.util.List;
 public class ValueNodeChecker extends NodeChecker implements
         ReteStateSubscriber {
 
+    final VariableNode node;
+
     /**
      * Creates
      * @param network The network this n-node is to belong to
@@ -44,6 +47,7 @@ public class ValueNodeChecker extends NodeChecker implements
     public ValueNodeChecker(ReteNetwork network, VariableNode variableNode) {
         super(network);
         this.pattern[0] = variableNode;
+        this.node = variableNode;
         this.getOwner().getState().subscribe(this);
     }
 
@@ -115,5 +119,14 @@ public class ValueNodeChecker extends NodeChecker implements
     @Override
     public void updateEnd() {
         //Do nothing        
+    }
+
+    @Override
+    public boolean canBeStaticallyMappedTo(RuleNode node) {
+        assert (node instanceof VariableNode)
+            && (((VariableNode) node).getConstant() != null);
+        return (node instanceof VariableNode)
+            && ((VariableNode) node).getConstant().equals(
+                this.node.getConstant());
     }
 }
