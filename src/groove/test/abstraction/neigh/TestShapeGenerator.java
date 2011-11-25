@@ -19,6 +19,7 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.explore.ShapeGenerator;
+import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 
 import java.util.Arrays;
@@ -53,18 +54,23 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
-        assertEquals(9, generator.getStateCount());
-        assertEquals(17, generator.getTransitionCount());
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(6, gts.getStateCount());
+        assertEquals(11, gts.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
         generator.explore();
-        assertEquals(15, generator.getStateCount());
-        assertEquals(29, generator.getTransitionCount());
+        generator.report();
+        gts = generator.getReducedGTS();
+        assertEquals(6, gts.getStateCount());
+        assertEquals(11, gts.getTransitionCount());
 
         Parameters.setNodeMultBound(3);
         generator.explore();
-        assertEquals(21, generator.getStateCount());
-        assertEquals(41, generator.getTransitionCount());
+        generator.report();
+        gts = generator.getReducedGTS();
+        assertEquals(6, gts.getStateCount());
+        assertEquals(11, gts.getTransitionCount());
     }
 
     @Test
@@ -78,8 +84,9 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
-        assertEquals(3, generator.getStateCount());
-        assertEquals(3, generator.getTransitionCount());
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(3, gts.getStateCount());
+        assertEquals(3, gts.getTransitionCount());
     }
 
     @Test
@@ -93,13 +100,9 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
-        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(31, generator.getStateCount());
-            assertEquals(65, generator.getTransitionCount());
-        } else {
-            assertEquals(54, generator.getStateCount());
-            assertEquals(130, generator.getTransitionCount());
-        }
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(26, gts.getStateCount());
+        assertEquals(59, gts.getTransitionCount());
     }
 
     @Test
@@ -113,13 +116,9 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
-        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(33, generator.getStateCount());
-            assertEquals(100, generator.getTransitionCount());
-        } else {
-            assertEquals(57, generator.getStateCount());
-            assertEquals(182, generator.getTransitionCount());
-        }
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(17, gts.getStateCount());
+        assertEquals(40, gts.getTransitionCount());
     }
 
     @Test
@@ -133,24 +132,17 @@ public class TestShapeGenerator {
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
-        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(33, generator.getStateCount());
-            assertEquals(132, generator.getTransitionCount());
-        } else {
-            assertEquals(48, generator.getStateCount());
-            assertEquals(222, generator.getTransitionCount());
-        }
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(24, gts.getStateCount());
+        assertEquals(102, gts.getTransitionCount());
 
         Parameters.setNodeMultBound(2);
         Parameters.setEdgeMultBound(2);
         generator.explore();
-        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            assertEquals(80, generator.getStateCount());
-            assertEquals(308, generator.getTransitionCount());
-        } else {
-            assertEquals(124, generator.getStateCount());
-            assertEquals(588, generator.getTransitionCount());
-        }
+        generator.report();
+        gts = generator.getReducedGTS();
+        assertEquals(48, gts.getStateCount());
+        assertEquals(208, gts.getTransitionCount());
     }
 
     @Test
@@ -165,8 +157,9 @@ public class TestShapeGenerator {
         if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             generator.start();
-            assertEquals(211, generator.getStateCount());
-            assertEquals(1151, generator.getTransitionCount());
+            AGTS gts = generator.getReducedGTS();
+            assertEquals(128, gts.getStateCount());
+            assertEquals(431, gts.getTransitionCount());
         }
     }
 

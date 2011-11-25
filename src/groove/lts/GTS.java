@@ -183,7 +183,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     /** Adds a given state to the final states of this GTS. */
-    private void setFinal(GraphState state) {
+    protected void setFinal(GraphState state) {
         this.finalStates.add(state);
     }
 

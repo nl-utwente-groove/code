@@ -124,26 +124,6 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition.getCtrlTransition();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof ShapeNextState
-            && this.getIndex() == ((ShapeNextState) obj).getIndex();
-    }
-
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /** Sets the index of the transition in the state transition set. */
-    void setIndex(int index) {
-        this.transition.setIndex(index);
-    }
-
-    /** Gets the index of the transition in the state transition set. */
-    int getIndex() {
-        return this.transition.getIndex();
-    }
-
     // ------------------------------------------------------------------------
     // Unimplemented methods
     // ------------------------------------------------------------------------
