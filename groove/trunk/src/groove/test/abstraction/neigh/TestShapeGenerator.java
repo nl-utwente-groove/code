@@ -34,9 +34,11 @@ import org.junit.Test;
 public class TestShapeGenerator {
 
     private static final int VERBOSITY = 0;
+    private static final String STRATEGY = "shapebfs";
 
     private List<String> getArgs(String grammar, String startGraph) {
-        String args[] = {"-v", VERBOSITY + "", grammar, startGraph};
+        String args[] =
+            {"-v", VERBOSITY + "", "-s", STRATEGY, grammar, startGraph};
         return new LinkedList<String>(Arrays.asList(args));
     }
 

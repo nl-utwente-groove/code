@@ -16,11 +16,16 @@
  */
 package groove.abstraction.neigh.lts;
 
+import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.GraphCache;
+import groove.graph.Morphism;
 import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 import groove.lts.GTS;
@@ -29,10 +34,12 @@ import groove.lts.GraphTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.util.FilterIterator;
+import groove.util.Pair;
 import groove.util.TreeHashSet;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -51,6 +58,8 @@ public final class AGTS extends GTS {
     private int subsumedStatesCount;
     /** Number of transitions marked as subsumed. */
     private int subsumedTransitionsCount;
+    /** Flag to indicate if we should do ancestor collapsing. */
+    private boolean checkAncestorCollapsing;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -61,6 +70,7 @@ public final class AGTS extends GTS {
         super(grammar);
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
+        this.checkAncestorCollapsing = false;
         this.getRecord().setReuseEvents(false);
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
@@ -88,6 +98,7 @@ public final class AGTS extends GTS {
             // new state. Maybe the new state subsumes some states that are
             // already in the GTS.
             this.subsumedStatesCount += newState.markSubsumedStates();
+            this.doAncestorCollapsing(newState);
         } else if (newState.isSubsumed()) {
             // The state will produce only a transition.
             this.subsumedTransitionsCount++;
@@ -184,6 +195,48 @@ public final class AGTS extends GTS {
         return this.subsumedTransitionsCount;
     }
 
+    private boolean doAncestorCollapsing(ShapeState newState) {
+        if (!this.checkAncestorCollapsing
+            || !(newState instanceof ShapeNextState)) {
+            return false;
+        }
+        boolean changed = false;
+        ShapeState ancestor = ((ShapeNextState) newState).source();
+        Shape oldShape = ancestor.getGraph();
+        Shape newShape = newState.getGraph();
+        // Since state is a new fresh state, its direct ancestor is was not yet
+        // subsumed (otherwise the ancestor would not have been explored). So,
+        // all we need to do is check if the ancestor is subsumed by the new
+        // state. (Remember that subsumption implies isomorphism).
+        ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
+        Pair<Integer,Morphism<ShapeNode,ShapeEdge>> result =
+            checker.compareShapes(newShape, oldShape);
+        int comparison = result.one();
+        if (checker.isDomStrictlyLargerThanCod(comparison)) {
+            // The new state subsumes the ancestor.
+            Morphism<ShapeNode,ShapeEdge> morphism = result.two();
+            Multiplicity zeroPlus =
+                Multiplicity.getMultiplicity(0, Multiplicity.OMEGA,
+                    MultKind.NODE_MULT);
+            // Check for nodes in the new shape that can be collapsed to 0+.
+            for (Entry<ShapeNode,ShapeNode> entry : morphism.nodeMap().entrySet()) {
+                ShapeNode newNode = entry.getValue();
+                Multiplicity newMult = newShape.getNodeMult(newNode);
+                if (!newMult.isZeroPlus() && newMult.isUnbounded()) {
+                    ShapeNode oldNode = entry.getKey();
+                    Multiplicity oldMult = oldShape.getNodeMult(oldNode);
+                    if (newMult.le(oldMult)) {
+                        // The multiplicity decreased in the new shape. We can
+                        // set it to zeroPlus.
+                        newShape.setNodeMult(newNode, zeroPlus);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        return changed;
+    }
+
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
@@ -207,7 +260,7 @@ public final class AGTS extends GTS {
             ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
             int comparison =
                 checker.compareShapes(myShapeState.getGraph(),
-                    otherShapeState.getGraph());
+                    otherShapeState.getGraph()).one();
             if (checker.isDomStrictlyLargerThanCod(comparison)) {
                 // New state subsumes old one.
                 myShapeState.addSubsumedState(otherShapeState);
