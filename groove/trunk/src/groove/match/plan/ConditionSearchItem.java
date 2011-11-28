@@ -174,13 +174,17 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     /** Tests if this condition or one of its subconditions is a modifying rule. */
     private boolean isModifying() {
+        return isModifying(this.condition);
+    }
+
+    /** tests if a given condition or one of its subconditions is a modifying rule. */
+    private boolean isModifying(Condition condition) {
         boolean result = false;
-        if (this.condition.hasRule()) {
-            result = this.condition.getRule().isModifying();
+        if (condition.hasRule()) {
+            result = condition.getRule().isModifying();
         } else {
-            for (Condition subCondition : this.condition.getSubConditions()) {
-                if (subCondition.hasRule()
-                    && subCondition.getRule().isModifying()) {
+            for (Condition subCondition : condition.getSubConditions()) {
+                if (isModifying(subCondition)) {
                     result = true;
                     break;
                 }
@@ -300,7 +304,9 @@ class ConditionSearchItem extends AbstractSearchItem {
             RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
                 ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
-            if (ConditionSearchItem.this.preCounted) {
+            if (ConditionSearchItem.this.positive && matches.isEmpty()) {
+                result = false;
+            } else if (ConditionSearchItem.this.preCounted) {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
                 this.countImage =

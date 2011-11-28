@@ -86,6 +86,7 @@ public class PlanSearchEngine extends SearchEngine {
         for (AbstractSearchItem item : plan) {
             boolean relevant = anchorNodes.removeAll(item.bindsNodes());
             relevant |= anchorEdges.removeAll(item.bindsEdges());
+            // universal conditions need to find all matches, so everything is relevant
             relevant |= condition.getOp() == Op.FORALL;
             item.setRelevant(relevant);
         }
@@ -94,12 +95,13 @@ public class PlanSearchEngine extends SearchEngine {
             System.out.print(String.format(
                 "%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s",
                 condition.getName(), seedNodes, seedEdges, result));
-            System.out.printf("%n    Dependencies: [");
+            System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d: %s", i, plan.getDependency(i));
+                System.out.printf("%d%s: %s", i, plan.get(i).isRelevant() ? "*"
+                        : "", plan.getDependency(i));
             }
             System.out.println("]");
         }
