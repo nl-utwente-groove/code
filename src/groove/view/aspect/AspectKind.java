@@ -936,6 +936,7 @@ public enum AspectKind {
             assert oldValue == null;
             tokenMap.put(value.name(), value.toString());
         }
+        nestedValueMap.put(NestedValue.AT_SYMBOL, NestedValue.AT);
         tokenMap.put("COLON", "" + AspectParser.SEPARATOR);
         tokenMap.put("EQUALS", "" + AspectParser.ASSIGN);
         tokenMap.put("DOT", ".");
@@ -1581,7 +1582,7 @@ public enum AspectKind {
         /** Embedding of one nesting level in another. */
         IN("in"),
         /** Assignment of a nesting level to a rule node. */
-        AT("at"),
+        AT("@"),
         /** Count of the number of matches of a universal quantifier. */
         COUNT("count");
 
@@ -1595,5 +1596,8 @@ public enum AspectKind {
         }
 
         private final String text;
+
+        /** Alternative symbol for {@link #AT}. */
+        public static final String AT_SYMBOL = "at";
     }
 }
