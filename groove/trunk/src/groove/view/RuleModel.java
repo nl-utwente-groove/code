@@ -697,7 +697,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             // add edges to nesting data structures
             for (AspectEdge edge : this.source.edgeSet()) {
                 try {
-                    if (!edge.getKind().isMeta()) {
+                    if (edge.getKind() == CONNECT || !edge.getKind().isMeta()) {
                         getLevel(result, edge).addEdge(edge);
                     }
                 } catch (FormatException exc) {
