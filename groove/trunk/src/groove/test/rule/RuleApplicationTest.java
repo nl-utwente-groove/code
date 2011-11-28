@@ -212,7 +212,7 @@ public class RuleApplicationTest {
             }
         }
         int leftOver = found.nextClearBit(0);
-        if (leftOver < found.cardinality()) {
+        if (leftOver < results.size()) {
             Assert.fail(String.format(
                 "Rule %s, start graph %s: Expected target missing: %s",
                 rule.getName(), start.getName(),
