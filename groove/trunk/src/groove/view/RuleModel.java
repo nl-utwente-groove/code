@@ -1001,7 +1001,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * @param elem the element about which the question is asked
          */
         private boolean isForNextLevel(AspectElement elem) {
-            assert !elem.getKind().isMeta();
+            assert elem.getKind() == CONNECT || !elem.getKind().isMeta();
             boolean result = false;
             if (!this.index.getOperator().hasPattern()) {
                 result = true;

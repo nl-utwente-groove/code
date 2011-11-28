@@ -304,7 +304,8 @@ class ConditionSearchItem extends AbstractSearchItem {
             RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
                 ConditionSearchItem.this.matcher.findAll(this.host, contextMap);
-            if (ConditionSearchItem.this.positive && matches.isEmpty()) {
+            if (ConditionSearchItem.this.condition.getOp() == Op.FORALL
+                && ConditionSearchItem.this.positive && matches.isEmpty()) {
                 result = false;
             } else if (ConditionSearchItem.this.preCounted) {
                 result = matches.size() == this.preCount;
