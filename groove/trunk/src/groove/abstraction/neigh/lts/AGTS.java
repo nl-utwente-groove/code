@@ -333,6 +333,7 @@ public final class AGTS extends GTS {
                         origSrcClosure.getCtrlState(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
+                result.startState = reducedSrc;
             }
             // Go over all next states.
             for (GraphTransition origTrans : origSrcClosure.getTransitionSet()) {

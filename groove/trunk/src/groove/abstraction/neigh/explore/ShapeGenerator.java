@@ -292,7 +292,7 @@ public final class ShapeGenerator extends CommandLineTool {
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
             DefaultGraph gtsGraph =
-                getGTS().toPlainGraph(true, true, true, false);
+                reducedGTS.toPlainGraph(true, true, true, false);
             try {
                 Groove.saveGraph(gtsGraph, getOutputFileName());
             } catch (IOException e) {

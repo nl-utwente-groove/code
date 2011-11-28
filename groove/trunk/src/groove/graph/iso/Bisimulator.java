@@ -95,8 +95,9 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             // we need to break symmetry
             int minCertValue = Integer.MAX_VALUE;
             MyNodeCert<N> minCert = null;
-            for (MyNodeCert<N> nodeCert : (MyNodeCert<N>[]) this.nodeCerts) {
-                int newCert = nodeCert.setNewValue();
+            //for (MyNodeCert<N> nodeCert : (MyNodeCert<N>[]) this.nodeCerts) {
+            for (NodeCertificate<N> nodeCert : this.nodeCerts) {
+                int newCert = ((MyNodeCert<N>) nodeCert).setNewValue();
                 if (iterateCount > 0 && partitionCount < nodeCertCount) {
                     if (!certStore.add(newCert)) {
                         // this certificate is a duplicate; maybe it is the
@@ -104,7 +105,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
                         if (BREAK_SYMMETRIES && newCert < minCertValue
                             || minCert == null) {
                             minCertValue = newCert;
-                            minCert = nodeCert;
+                            minCert = (MyNodeCert<N>) nodeCert;
                         }
                     }
                 }
@@ -147,7 +148,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             // give them a chance to get their hash code right
             int edgeCount = this.edgeCerts.length;
             for (int i = this.edge2CertCount; i < edgeCount; i++) {
-                ((MyEdge2Cert<N,E>) this.edgeCerts[i]).setNewValue();
+                ((MyEdge1Cert<N,E>) this.edgeCerts[i]).setNewValue();
             }
         }
         recordIterateCount(iterateCount);
