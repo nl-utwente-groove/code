@@ -250,7 +250,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         // show the node identity
         result.addAll(getNodeIdLines());
-        if (hasError() || getJGraph().isShowAspects()) {
+        // the following used to include hasError() as a disjunct
+        if (getJGraph().isShowAspects()) {
             result.addAll(getUserObject().toLines());
             for (AspectEdge edge : getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
@@ -414,6 +415,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 // this is a field declaration
                 result.append(TYPE_TEXT);
                 result.append(STRONG_TAG.on(aspectEdge.getAttrKind().getName()));
+            } else if (aspectEdge.getKind().isRole()) {
+                String levelName = aspectEdge.getLevelName();
+                if (levelName != null && levelName.length() != 0) {
+                    result.append(LEVEL_NAME_SEPARATOR + levelName);
+                }
             }
         }
         // use special node label prefixes to indicate edge role
@@ -461,9 +467,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private Collection<? extends Label> computeListLabels() {
         getNode().testFixed(true);
         Collection<Label> result;
-        if (hasError()) {
-            result = getUserObject().toLabels();
-        } else if (this.aspect.isMeta()) {
+        //        if (hasError()) {
+        //            result = getUserObject().toLabels();
+        //        } else
+        if (this.aspect.isMeta()) {
             return Collections.emptySet();
         } else {
             result = new ArrayList<Label>();

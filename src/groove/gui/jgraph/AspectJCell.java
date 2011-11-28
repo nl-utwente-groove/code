@@ -52,4 +52,7 @@ public interface AspectJCell extends GraphJCell {
      * Adds an error to the extra errors in this cell.
      */
     void addExtraError(FormatError error);
+
+    /** Separator between level name and edge label. */
+    static final char LEVEL_NAME_SEPARATOR = '@';
 }

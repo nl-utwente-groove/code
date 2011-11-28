@@ -272,7 +272,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private List<StringBuilder> computeLines() {
         if (isSourceLabel()) {
             return Collections.emptyList();
-        } else if (hasError() || getJGraph().isShowAspects()) {
+        } else if (getJGraph().isShowAspects()) {
+            // used to include hasError() as a disjunct
             return getUserObject().toLines();
         } else {
             return super.getLines();
@@ -299,9 +300,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Recomputes the set of list labels for this aspect node. */
     private Collection<? extends Label> computeListLabels() {
-        if (hasError()) {
-            return getUserObject().toLabels();
-        } else if (this.aspect.isMeta()) {
+        //        if (hasError()) {
+        //            return getUserObject().toLabels();
+        //        } else 
+        if (this.aspect.isMeta()) {
             return Collections.emptySet();
         } else {
             return super.getListLabels();
@@ -328,9 +330,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * and value nodes are not shown.
      */
     public boolean isSourceLabel() {
-        if (hasError()) {
-            return false;
-        }
+        //        if (hasError()) {
+        //            return false;
+        //        }
         if (getJGraph().isShowValueNodes()) {
             return false;
         }
@@ -488,8 +490,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return new AspectJEdge(jGraph);
     }
 
-    /** Separator between level name and edge label. */
-    private static final char LEVEL_NAME_SEPARATOR = ':';
     /** Permille fractional distance of in multiplicity label from source node. */
     private static final double IN_MULT_DIST =
         GraphConstants.PERMILLE * 90 / 100;
