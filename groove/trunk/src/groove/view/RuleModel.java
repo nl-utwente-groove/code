@@ -151,15 +151,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         if (normalSource.hasErrors()) {
             throw new FormatException(normalSource.getErrors());
         }
-        LevelTree levelTree = new LevelTree(normalSource);
-        this.modelMap.putAll(levelTree.getModelMap());
-        return computeRule(levelTree);
+        this.levelTree = new LevelTree(normalSource);
+        this.modelMap.putAll(this.levelTree.getModelMap());
+        return computeRule(this.levelTree);
     }
 
     @Override
     void notifyGrammarModified() {
         super.notifyGrammarModified();
         this.labelSet = null;
+        this.levelTree = null;
     }
 
     /** Returns the set of labels occurring in this rule. */
@@ -187,6 +188,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             throw new IllegalStateException();
         }
         return this.modelMap;
+    }
+
+    /** Returns a mapping from rule nesting levels to sets of aspect elements on that level. */
+    public TreeMap<Index,Set<AspectElement>> getLevelTree() {
+        synchronise();
+        if (this.levelTree == null) {
+            return null;
+        }
+        TreeMap<Index,Set<AspectElement>> result =
+            new TreeMap<RuleModel.Index,Set<AspectElement>>();
+        for (Map.Entry<Index,Level1> levelEntry : this.levelTree.getLevel1Map().entrySet()) {
+            Index index = levelEntry.getKey();
+            Level1 level = levelEntry.getValue();
+            Set<AspectElement> elements = new HashSet<AspectElement>();
+            result.put(index, elements);
+            elements.addAll(level.modelNodes);
+            elements.addAll(level.modelEdges);
+        }
+        return result;
     }
 
     public int compareTo(RuleModel o) {
@@ -248,10 +268,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             System.out.println("");
         }
         // store the derived subrules in order
-        TreeMap<Index,Condition> ruleTree = new TreeMap<Index,Condition>();
+        TreeMap<Index,Condition> conditionTree = new TreeMap<Index,Condition>();
         // construct the rule tree and add parent rules
         try {
-            for (Level4 level : levelTree.getLevels()) {
+            for (Level4 level : levelTree.getLevel4Map().values()) {
                 Index index = level.getIndex();
                 Op operator = index.getOperator();
                 Condition condition;
@@ -260,27 +280,27 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 } else {
                     condition = new Condition(index.getName(), operator);
                 }
-                ruleTree.put(index, condition);
+                conditionTree.put(index, condition);
                 if (condition.hasRule() && !index.isTopLevel()) {
                     // look for the first parent rule
                     Index parentIndex = index.getParent();
-                    while (!ruleTree.get(parentIndex).hasRule()) {
+                    while (!conditionTree.get(parentIndex).hasRule()) {
                         parentIndex = parentIndex.getParent();
                     }
                     condition.getRule().setParent(
-                        ruleTree.get(parentIndex).getRule(),
+                        conditionTree.get(parentIndex).getRule(),
                         index.getIntArray());
                 }
             }
             // now add subconditions and fix the conditions
             // this needs to be done bottom-up
-            for (Map.Entry<Index,Condition> entry : ruleTree.descendingMap().entrySet()) {
+            for (Map.Entry<Index,Condition> entry : conditionTree.descendingMap().entrySet()) {
                 Condition condition = entry.getValue();
                 assert condition != null;
                 Index index = entry.getKey();
                 if (!index.isTopLevel()) {
                     condition.setFixed();
-                    Condition parentCond = ruleTree.get(index.getParent());
+                    Condition parentCond = conditionTree.get(index.getParent());
                     parentCond.addSubCondition(condition);
                 }
             }
@@ -289,10 +309,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
         // due to errors in the above, it might be that the
         // rule tree is empty, in which case we shouldn't proceed
-        if (ruleTree.isEmpty()) {
+        if (conditionTree.isEmpty()) {
             result = null;
         } else {
-            result = ruleTree.firstEntry().getValue().getRule();
+            result = conditionTree.firstEntry().getValue().getRule();
             if (result != null) {
                 result.setPriority(getPriority());
                 result.setConfluent(isConfluent());
@@ -343,6 +363,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private AspectGraph normalSource;
     /** Set of all labels occurring in the rule. */
     private Set<TypeLabel> labelSet;
+    /** Mapping from level indices to conditions on those levels. */
+    private LevelTree levelTree;
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
@@ -354,15 +376,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * Class encoding an index in a tree, consisting of a list of indices at
      * every level of the tree.
      */
-    private class Index extends DefaultFixable implements Comparable<Index> {
+    static private class Index extends DefaultFixable implements
+            Comparable<Index> {
         /**
          * Constructs a new level, without setting parent or children.
          * @param levelNode the model level node representing this level; may be
          *        <code>null</code> for an implicit or top level
+         * @param namePrefix name prefix in case there is no level node to determine the name
          */
         public Index(Condition.Op operator, boolean positive,
-                AspectNode levelNode) {
+                AspectNode levelNode, String namePrefix) {
             assert levelNode == null || levelNode.getKind().isQuantifier();
+            this.namePrefix = namePrefix;
             this.operator = operator;
             this.positive = positive;
             this.levelNode = levelNode;
@@ -408,7 +433,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             String levelName =
                 isImplicit() ? null : this.levelNode.getLevelName();
             if (levelName == null) {
-                return RuleModel.this.getName()
+                return this.namePrefix
                     + (isTopLevel() ? ""
                             : Groove.toString(this.index.toArray()));
             } else {
@@ -497,6 +522,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return this.levelNode == null;
         }
 
+        /** The name prefix of the index (to be followed by the index list). */
+        private final String namePrefix;
         /** The model node representing this quantification level. */
         final Condition.Op operator;
         /** Flag indicating that this level has to be matched more than once. */
@@ -515,10 +542,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         public LevelTree(AspectGraph source) throws FormatException {
             this.source = source;
             SortedSet<Index> indexSet = buildTree();
-            SortedMap<Index,Level1> level1Map = buildLevels1(indexSet);
+            this.level1Map = buildLevels1(indexSet);
             RuleModelMap untypedModelMap = new RuleModelMap();
             SortedMap<Index,Level2> level2Map =
-                buildLevels2(level1Map, untypedModelMap);
+                buildLevels2(this.level1Map, untypedModelMap);
             RuleFactory typedFactory = RuleModel.this.ruleFactory;
             RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
             try {
@@ -644,7 +671,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private Index createIndex(Condition.Op operator, boolean positive,
                 AspectNode levelNode, Map<Index,List<Index>> levelTree) {
-            Index result = new Index(operator, positive, levelNode);
+            Index result = new Index(operator, positive, levelNode, getName());
             levelTree.put(result, new ArrayList<Index>());
             return result;
         }
@@ -867,8 +894,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /**
          * Returns the quantification levels in ascending or descending order
          */
-        public final Collection<Level4> getLevels() {
-            return this.level4Map.values();
+        public final Map<Index,Level1> getLevel1Map() {
+            return this.level1Map;
+        }
+
+        /**
+         * Returns the quantification levels in ascending or descending order
+         */
+        public final Map<Index,Level4> getLevel4Map() {
+            return this.level4Map;
         }
 
         /** Returns the mapping from aspect graph elements to rule elements. */
@@ -885,6 +919,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private final AspectGraph source;
         /** The top level of the rule tree. */
         private Index topLevelIndex;
+        /** Mapping from level indices to stage 1 levels. */
+        private SortedMap<Index,Level1> level1Map;
         /** Mapping from level indices to stage 4 levels. */
         private SortedMap<Index,Level4> level4Map;
         /** mapping from nesting meta-nodes nodes to nesting levels. */
