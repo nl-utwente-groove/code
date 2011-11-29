@@ -391,7 +391,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             super.setFixed();
         }
 
-        /** Returns the parent level of this tree index. */
+        /** Returns the parent level of this tree index.
+         * @return the parent index, or {@code null} if this is the top level 
+         */
         public Index getParent() {
             testFixed(true);
             return this.parent;
@@ -675,7 +677,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 Level1 level = new Level1(index, parentLevel);
                 result.put(index, level);
             }
-            // initialise the match count nodes are defined at super-levels
+            // initialise the match count nodes and check that they are defined at super-levels
             for (Map.Entry<Index,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
                 AspectNode matchCount = matchCountEntry.getValue();
                 Index definedAt = getLevel(result, matchCount).getIndex();
@@ -686,6 +688,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         matchCount);
                 }
                 Level1 level = result.get(usedAt);
+                // add the match count node to all intermediate levels 
+                // (between definition and usage)
+                Index addTo = usedAt.getParent();
+                while (addTo != null && !addTo.equals(definedAt)) {
+                    result.get(addTo).addNode(matchCount);
+                    addTo = addTo.getParent();
+                }
                 level.setMatchCount(matchCount);
             }
             // add nodes to nesting data structures

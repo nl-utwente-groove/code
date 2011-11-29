@@ -476,6 +476,11 @@ public class Condition implements Fixable {
             result.append(prefix);
             result.append(" * RHS:     " + getRule().rhs());
         }
+        if (hasCountNode()) {
+            result.append('\n');
+            result.append(prefix);
+            result.append(" * Count:   " + getCountNode());
+        }
         if (!getSubConditions().isEmpty()) {
             result.append('\n');
             result.append(prefix);
@@ -508,9 +513,17 @@ public class Condition implements Fixable {
     /** 
      * Returns the count node of this universal condition, if any.
      * The count node is bound to the number of matches of the condition.
+     * @return the count node, or {@code null} if there is none
      */
     public VariableNode getCountNode() {
         return this.countNode;
+    }
+
+    /** 
+     * Tests if this is a universal condition with a count node.
+     */
+    public boolean hasCountNode() {
+        return this.countNode != null;
     }
 
     /** Sets this universal condition to positive (meaning that
