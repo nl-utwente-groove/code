@@ -32,9 +32,17 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n3" from="n2">
+        <edge to="n1" from="n0">
             <attr name="label">
-                <string>at</string>
+                <string>new:=</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 114 140 169 172 223 140 12</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>del:b</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -42,9 +50,9 @@
                 <string>type:#B</string>
             </attr>
         </edge>
-        <edge to="n1" from="n0">
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>del:b</string>
+                <string>forall:</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -57,17 +65,9 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n1" from="n0">
+        <edge to="n3" from="n2">
             <attr name="label">
-                <string>new:=</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 114 140 169 172 223 140 12</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>forall:</string>
+                <string>at</string>
             </attr>
         </edge>
     </graph>

@@ -1,50 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeAcrossNesting">
+    <graph edgemode="directed" edgeids="false" role="rule" id="positiveForallNoMatch">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <attr name="$version">
-            <string>curly</string>
-        </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>39 130 34 46</string>
-            </attr>
-        </node>
         <node id="n0">
             <attr name="layout">
-                <string>132 77 30 31</string>
+                <string>128 64 34 31</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>43 136 42 36</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>129 134 34 46</string>
+                <string>125 140 34 31</string>
             </attr>
         </node>
-        <edge to="n2" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>new:=</string>
+                <string></string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>a</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>forall:</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n2">
-            <attr name="label">
-                <string>at</string>
+                <string>forallx:</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:B</string>
+                <string></string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n2">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
     </graph>
