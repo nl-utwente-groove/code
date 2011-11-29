@@ -28,19 +28,13 @@ import groove.gui.jgraph.GraphJModel;
 import groove.io.HTMLConverter;
 import groove.util.ObservableSet;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -51,31 +45,20 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractCellEditor;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
-import javax.swing.DropMode;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellEditor;
-import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -88,7 +71,7 @@ import org.jgraph.event.GraphModelListener;
  * @author Arend Rensink
  * @version $Revision: 1915 $
  */
-public class LabelTree extends JTree implements GraphModelListener,
+public class LabelTree extends CheckboxTree implements GraphModelListener,
         TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
@@ -109,28 +92,10 @@ public class LabelTree extends JTree implements GraphModelListener,
                 }
             });
         }
-        // initialise the list model
+        // initialise the tree model
         this.topNode = new DefaultMutableTreeNode();
         this.treeModel = new DefaultTreeModel(this.topNode);
         setModel(this.treeModel);
-        setCellRenderer(new MyCellRenderer());
-        setCellEditor(new MyCellEditor());
-        setEditable(true);
-        setRootVisible(false);
-        setShowsRootHandles(true);
-        // set drag and drop
-        setDropMode(DropMode.ON_OR_INSERT);
-        // make sure the checkbox never selects the label
-        // note that the BasicTreeUI may not be what is used in the current LAF,
-        // but I don't know any other way to modify the selection behaviour
-        setUI(new BasicTreeUI() {
-            @Override
-            protected void selectPathForEvent(TreePath path, MouseEvent event) {
-                if (!isOverCheckBox(path, event.getPoint().x)) {
-                    super.selectPathForEvent(path, event);
-                }
-            }
-        });
         // set selection mode
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -138,6 +103,11 @@ public class LabelTree extends JTree implements GraphModelListener,
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
         setEnabled(jGraph.isEnabled());
+    }
+
+    @Override
+    protected CellRenderer createRenderer() {
+        return new MyTreeCellRenderer();
     }
 
     /** Creates a tool bar for the label tree. */
@@ -202,7 +172,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /** Convenience method to return the label store of the jgraph. */
-    private TypeGraph getTypeGraph() {
+    TypeGraph getTypeGraph() {
         return getJGraph() instanceof AspectJGraph
                 ? ((AspectJGraph) getJGraph()).getTypeGraph() : null;
     }
@@ -277,15 +247,10 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /**
-     * In addition to delegating the method to <tt>super</tt>, sets the
-     * background color to <tt>null</tt> when disabled and back to the default
-     * when enabled.
+     * Enables the buttons in addition to delegating the method to <tt>super</tt>.
      */
     @Override
     public void setEnabled(boolean enabled) {
-        if (enabled != isEnabled()) {
-            setBackground(getColor(enabled));
-        }
         getShowAllLabelsButton().setEnabled(enabled);
         getShowSubtypesButton().setEnabled(enabled);
         getShowSupertypesButton().setEnabled(enabled);
@@ -622,7 +587,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * Indicates if this tree is currently showing subtype relations.
      */
-    private boolean isShowsSubtypes() {
+    boolean isShowsSubtypes() {
         return this.showsSubtypes;
     }
 
@@ -631,26 +596,6 @@ public class LabelTree extends JTree implements GraphModelListener,
      */
     private void setShowsSubtypes(boolean show) {
         this.showsSubtypes = show;
-    }
-
-    /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
-    private boolean isOverCheckBox(TreePath path, int x) {
-        boolean result = false;
-        if (path != null
-            && path.getLastPathComponent() instanceof LabelTreeNode) {
-            LabelTreeNode labelNode =
-                (LabelTreeNode) path.getLastPathComponent();
-            Rectangle pathBounds = getPathBounds(path);
-            if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
-                int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
-                result = labelNode.hasFilterControl() && x < checkboxBorder;
-            } else {
-                int checkboxBorder =
-                    pathBounds.x + pathBounds.width - CHECKBOX_WIDTH;
-                result = labelNode.hasFilterControl() && x >= checkboxBorder;
-            }
-        }
-        return result;
     }
 
     /**
@@ -672,14 +617,14 @@ public class LabelTree extends JTree implements GraphModelListener,
     /**
      * The bag of labels in this jmodel.
      */
-    private final Map<Label,Set<GraphJCell>> labelCellMap =
+    final Map<Label,Set<GraphJCell>> labelCellMap =
         new TreeMap<Label,Set<GraphJCell>>();
     /** Flag indicating if a tool bar should be used. */
     private final boolean toolBar;
     /** Flag indicating if label filtering should be used. */
     private final boolean filtering;
     /** Set of filtered labels. */
-    private final ObservableSet<Label> filteredLabels;
+    final ObservableSet<Label> filteredLabels;
     /** The top node in the JTree. */
     private final DefaultMutableTreeNode topNode;
     /** 
@@ -703,44 +648,15 @@ public class LabelTree extends JTree implements GraphModelListener,
      * Returns the icon for subtype or supertype mode, depending on the
      * parameter.
      */
-    private static Icon getModeIcon(boolean subtypes) {
+    static Icon getModeIcon(boolean subtypes) {
         return subtypes ? Icons.ARROW_OPEN_UP_ICON : Icons.ARROW_OPEN_DOWN_ICON;
     }
-
-    /**
-     * Border to put some space to the left and right of the labels inside the
-     * list.
-     */
-    public static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
 
     /** Colour HTML tag for the foreground colour of special labels. */
     private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 
-    /** Orientation of the filtering checkboxes in the label cells. */
-    private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
-
-    /** Preferred width of a checkbox. */
-    private static final int CHECKBOX_WIDTH =
-        new JCheckBox().getPreferredSize().width;
-
-    /** Returns the appropriate background colour for an enabledness condition. */
-    private Color getColor(boolean enabled) {
-        return enabled ? getBackground() : DISABLED_COLOUR;
-    }
-
-    private static JTextField enabledField = new JTextField();
-    private static JTextField disabledField = new JTextField();
-    static {
-        enabledField.setEditable(true);
-        disabledField.setEditable(false);
-    }
-    /** The background colour of an enabled component. */
-    private static Color ENABLED_COLOUR = enabledField.getBackground();
-    /** The background colour of a disabled component. */
-    private static Color DISABLED_COLOUR = disabledField.getBackground();
-
     /** Tree node wrapping a label. */
-    public class LabelTreeNode extends DefaultMutableTreeNode {
+    public class LabelTreeNode extends TreeNode {
         /**
          * Constructs a new node, for a given label.
          * @param label The label wrapped in this node
@@ -762,8 +678,23 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
 
         /** Indicates if this tree node has a node filtering checkbox. */
-        public final boolean hasFilterControl() {
+        @Override
+        public final boolean hasCheckbox() {
             return isFiltering() && isTopNode();
+        }
+
+        @Override
+        public boolean isSelected() {
+            return !isFiltered(getLabel());
+        }
+
+        @Override
+        public void setSelected(boolean selected) {
+            if (selected) {
+                LabelTree.this.filteredLabels.remove(getLabel());
+            } else {
+                LabelTree.this.filteredLabels.add(getLabel());
+            }
         }
 
         @Override
@@ -776,7 +707,7 @@ public class LabelTree extends JTree implements GraphModelListener,
     }
 
     /** Tree node wrapping a type graph. */
-    public class TypeGraphTreeNode extends DefaultMutableTreeNode {
+    public class TypeGraphTreeNode extends TreeNode {
         /**
          * Constructs a new node, for a given type graph.
          * @param name name of the type graph
@@ -805,6 +736,21 @@ public class LabelTree extends JTree implements GraphModelListener,
         /** Changes the showing status of this node. */
         public final void setShowing(boolean showing) {
             this.showing = showing;
+        }
+
+        @Override
+        public boolean hasCheckbox() {
+            return true;
+        }
+
+        @Override
+        public boolean isSelected() {
+            return isShowing();
+        }
+
+        @Override
+        public void setSelected(boolean selected) {
+            // currently does nothins
         }
 
         @Override
@@ -903,281 +849,6 @@ public class LabelTree extends JTree implements GraphModelListener,
         }
     }
 
-    /**
-     * Special cell renderer that visualises the NO_LABEL label as well as
-     * filtered labels.
-     */
-    private class MyCellRenderer extends JPanel implements TreeCellRenderer {
-        /** Empty constructor with the correct visibility. */
-        MyCellRenderer() {
-            this.jLabel = new DefaultTreeCellRenderer();
-            this.jLabel.setOpenIcon(null);
-            this.jLabel.setLeafIcon(null);
-            this.jLabel.setClosedIcon(null);
-            this.jLabel.setBorder(LabelTree.INSET_BORDER);
-            this.checkbox = new JCheckBox();
-            this.checkbox.setOpaque(false);
-            setLayout(new BorderLayout());
-            add(this.jLabel, BorderLayout.CENTER);
-            add(this.checkbox, CHECKBOX_ORIENTATION);
-            setBorder(new EmptyBorder(0, 2, 0, 0));
-            setComponentOrientation(LabelTree.this.getComponentOrientation());
-            setOpaque(false);
-        }
-
-        public Component getTreeCellRendererComponent(JTree tree, Object value,
-                boolean sel, boolean expanded, boolean leaf, int row,
-                boolean hasFocus) {
-            JComponent result;
-            this.jLabel.getTreeCellRendererComponent(tree, value, sel,
-                expanded, leaf, row, hasFocus);
-            Color background = getColor(LabelTree.this.isEnabled());
-            boolean isDropCell = isDropCell(tree, row);
-            // this.jLabel.setBackgroundNonSelectionColor(background);
-            this.jLabel.setOpaque(!sel && !isDropCell);
-            this.jLabel.setBackground(ENABLED_COLOUR);
-            this.labelNode =
-                value instanceof LabelTree.LabelTreeNode
-                        ? (LabelTree.LabelTreeNode) value : null;
-            if (this.labelNode != null && this.labelNode.hasFilterControl()) {
-                this.checkbox.setSelected(!isFiltered(this.labelNode.getLabel()));
-                setBackground(background);
-                // re-add the label (it gets detached if used as a stand-alone
-                // renderer)
-                add(this.jLabel, BorderLayout.CENTER);
-                result = this;
-            } else if (value instanceof TypeGraphTreeNode) {
-                this.checkbox.setSelected(((TypeGraphTreeNode) value).isShowing());
-                setBackground(background);
-                // re-add the label (it gets detached if used as a stand-alone
-                // renderer)
-                add(this.jLabel, BorderLayout.CENTER);
-                result = this;
-            } else {
-                result = this.jLabel;
-            }
-            // set a sub- or supertype icon if the node label is a subnode
-            Icon labelIcon = null;
-            if (this.labelNode != null && !this.labelNode.isTopNode()) {
-                labelIcon = getModeIcon(isShowsSubtypes());
-            }
-            this.jLabel.setIcon(labelIcon);
-            // set tool tip text
-            if (this.labelNode != null) {
-                Label label = this.labelNode.getLabel();
-                StringBuilder toolTipText = new StringBuilder();
-                Set<GraphJCell> occurrences =
-                    LabelTree.this.labelCellMap.get(label);
-                int count = occurrences == null ? 0 : occurrences.size();
-                toolTipText.append(count);
-                toolTipText.append(" occurrence");
-                if (count != 1) {
-                    toolTipText.append("s");
-                }
-                if (isFiltering()) {
-                    if (toolTipText.length() != 0) {
-                        toolTipText.append(HTMLConverter.HTML_LINEBREAK);
-                    }
-                    if (LabelTree.this.filteredLabels.contains(label)) {
-                        toolTipText.append("Filtered label; doubleclick to show");
-                    } else {
-                        toolTipText.append("Visible label; doubleclick to filter");
-                    }
-                }
-                if (toolTipText.length() != 0) {
-                    result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
-                }
-                if (label instanceof TypeLabel && label.isNodeType()) {
-                    TypeGraph typeGraph = getTypeGraph();
-                    TypeNode typeNode =
-                        typeGraph != null ? getTypeGraph().getNode(label)
-                                : null;
-                    if (typeNode != null && typeNode.getColor() != null) {
-                        this.jLabel.setForeground(typeNode.getColor());
-                    }
-                }
-            }
-            return result;
-        }
-
-        private boolean isDropCell(JTree tree, int row) {
-            JTree.DropLocation dropLocation = tree.getDropLocation();
-            return dropLocation != null && dropLocation.getChildIndex() == -1
-                && tree.getRowForPath(dropLocation.getPath()) == row;
-
-        }
-
-        /** Returns the label node last rendered. */
-        public LabelTree.LabelTreeNode getLabelTreeNode() {
-            return this.labelNode;
-        }
-
-        /** Returns the checkbox sub-component of this renderer. */
-        public JCheckBox getCheckbox() {
-            return this.checkbox;
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        protected void firePropertyChange(String propertyName, Object oldValue,
-                Object newValue) {
-            // Strings get interned...
-            if ("text".equals(propertyName)
-                || (("font".equals(propertyName) || "foreground".equals(propertyName))
-                    && oldValue != newValue && getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey) != null)) {
-
-                super.firePropertyChange(propertyName, oldValue, newValue);
-            }
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, byte oldValue,
-                byte newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, char oldValue,
-                char newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, short oldValue,
-                short newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, int oldValue,
-                int newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, long oldValue,
-                long newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, float oldValue,
-                float newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, double oldValue,
-                double newValue) {
-            // empty
-        }
-
-        /**
-         * Overridden for performance reasons. See the <a
-         * href="#override">Implementation Note</a> for more information.
-         */
-        @Override
-        public void firePropertyChange(String propertyName, boolean oldValue,
-                boolean newValue) {
-            // empty
-        }
-
-        /** JLabel on the center of the panel. */
-        private final DefaultTreeCellRenderer jLabel;
-        /** Checkbox on the right hand side of the panel. */
-        private final JCheckBox checkbox;
-        /** Label node last rendered. */
-        private LabelTree.LabelTreeNode labelNode;
-    }
-
-    /** Cell editor enabling the selection of the filtering checkboxes. */
-    private class MyCellEditor extends AbstractCellEditor implements
-            TreeCellEditor {
-        public MyCellEditor() {
-            ItemListener itemListener = new ItemListener() {
-                public void itemStateChanged(ItemEvent itemEvent) {
-                    stopCellEditing();
-                    LabelTreeNode editedNode =
-                        MyCellEditor.this.editor.getLabelTreeNode();
-                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-                        LabelTree.this.filteredLabels.remove(editedNode.getLabel());
-                    } else {
-                        LabelTree.this.filteredLabels.add(editedNode.getLabel());
-                    }
-                }
-            };
-            this.editor.getCheckbox().addItemListener(itemListener);
-        }
-
-        /** Returns the {@link LabelTreeNode} currently being edited. */
-        public Object getCellEditorValue() {
-            return this.editor.getLabelTreeNode();
-        }
-
-        /** A cell is editable if it is a {@link LabelTreeNode}. */
-        @Override
-        public boolean isCellEditable(EventObject event) {
-            boolean result = false;
-            if (event instanceof MouseEvent) {
-                MouseEvent mouseEvent = (MouseEvent) event;
-                TreePath path =
-                    LabelTree.this.getPathForLocation(mouseEvent.getX(),
-                        mouseEvent.getY());
-                result = isOverCheckBox(path, mouseEvent.getX());
-            }
-            return result;
-        }
-
-        @Override
-        public boolean shouldSelectCell(EventObject event) {
-            return false;
-        }
-
-        public Component getTreeCellEditorComponent(JTree tree, Object value,
-                boolean selected, boolean expanded, boolean leaf, int row) {
-
-            Component editor =
-                this.editor.getTreeCellRendererComponent(tree, value, selected,
-                    expanded, leaf, row, false);
-
-            return editor;
-        }
-
-        /** The actual editor is just an instance of the renderer. */
-        private final MyCellRenderer editor = new MyCellRenderer();
-    }
-
     /** Action changing the show mode to showing subtypes or supertypes. */
     private class ShowModeAction extends AbstractAction {
         /**
@@ -1239,6 +910,68 @@ public class LabelTree extends JTree implements GraphModelListener,
             return isShowsAllLabels()
                     ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
                     : Options.SHOW_ALL_LABELS_ACTION_NAME;
+        }
+    }
+
+    /** Adds an icon, tool tip text and label colour. */
+    private class MyTreeCellRenderer extends CellRenderer {
+        public MyTreeCellRenderer() {
+            super(LabelTree.this);
+        }
+
+        @Override
+        public JComponent getTreeCellRendererComponent(JTree tree,
+                Object value, boolean sel, boolean expanded, boolean leaf,
+                int row, boolean hasFocus) {
+            JComponent result =
+                super.getTreeCellRendererComponent(tree, value, sel, expanded,
+                    leaf, row, hasFocus);
+            // set a sub- or supertype icon if the node label is a subnode
+            Icon labelIcon = null;
+            LabelTreeNode labelTreeNode = null;
+            if (getTreeNode() instanceof LabelTreeNode) {
+                labelTreeNode = (LabelTreeNode) getTreeNode();
+            }
+            if (labelTreeNode != null && !labelTreeNode.isTopNode()) {
+                labelIcon = LabelTree.getModeIcon(isShowsSubtypes());
+            }
+            getInner().setIcon(labelIcon);
+            // set tool tip text
+            if (labelTreeNode != null) {
+                Label label = labelTreeNode.getLabel();
+                StringBuilder toolTipText = new StringBuilder();
+                Set<GraphJCell> occurrences =
+                    LabelTree.this.labelCellMap.get(label);
+                int count = occurrences == null ? 0 : occurrences.size();
+                toolTipText.append(count);
+                toolTipText.append(" occurrence");
+                if (count != 1) {
+                    toolTipText.append("s");
+                }
+                if (isFiltering()) {
+                    if (toolTipText.length() != 0) {
+                        toolTipText.append(HTMLConverter.HTML_LINEBREAK);
+                    }
+                    if (isFiltered(label)) {
+                        toolTipText.append("Filtered label; doubleclick to show");
+                    } else {
+                        toolTipText.append("Visible label; doubleclick to filter");
+                    }
+                }
+                if (toolTipText.length() != 0) {
+                    result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
+                }
+                // set node colour
+                if (label instanceof TypeLabel && label.isNodeType()) {
+                    TypeGraph typeGraph = getTypeGraph();
+                    TypeNode typeNode =
+                        typeGraph != null ? typeGraph.getNode(label) : null;
+                    if (typeNode != null && typeNode.getColor() != null) {
+                        getInner().setForeground(typeNode.getColor());
+                    }
+                }
+            }
+            return result;
         }
     }
 }
