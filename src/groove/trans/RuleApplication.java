@@ -207,7 +207,7 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         for (HostEdge edge : sourceEdges) {
-            if (getEffect().isErasedEdge(edge)) {
+            if (!getEffect().isErasedEdge(edge)) {
                 HostEdge edgeImage =
                     mergeMap == null ? edge : mergeMap.mapEdge(edge);
                 if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
