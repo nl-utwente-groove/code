@@ -81,5 +81,5 @@ public class MatcherFactory {
     }
 
     private static MatcherFactory instance;
-    private static SearchEngine defaultEngine = PlanSearchEngine.instance();
+    private static SearchEngine defaultEngine = PlanSearchEngine.getInstance();
 }

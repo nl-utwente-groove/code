@@ -16,6 +16,7 @@
  */
 package groove.match.plan;
 
+import static groove.match.SearchEngine.SearchMode.NORMAL;
 import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -44,6 +45,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,11 +67,11 @@ import java.util.TreeSet;
 public class PlanSearchEngine extends SearchEngine {
     /**
      * Private constructor. Get the instance through
-     * {@link #instance()}.
+     * {@link #getInstance()}.
      * @see AlgebraFamily#getInstance(String)
      */
-    private PlanSearchEngine() {
-        // empty
+    private PlanSearchEngine(SearchMode searchMode) {
+        this.searchMode = searchMode;
     }
 
     @Override
@@ -81,7 +84,7 @@ public class PlanSearchEngine extends SearchEngine {
             anchorNodes.addAll(Arrays.asList(condition.getRule().getAnchorNodes()));
             anchorEdges.addAll(Arrays.asList(condition.getRule().getAnchorEdges()));
         }
-        PlanData planData = new PlanData(condition);
+        PlanData planData = new PlanData(condition, this.searchMode);
         SearchPlan plan = planData.getPlan(seedNodes, seedEdges);
         for (AbstractSearchItem item : plan) {
             boolean relevant = anchorNodes.removeAll(item.bindsNodes());
@@ -109,20 +112,34 @@ public class PlanSearchEngine extends SearchEngine {
         return result;
     }
 
+    /** The search mode for plans created by this engine. */
+    private final SearchMode searchMode;
+
     /** Returns an instance of this factory class.
      * @see AlgebraFamily#getInstance(String)
      */
-    static public PlanSearchEngine instance() {
-        if (instance == null) {
-            instance = new PlanSearchEngine();
-        }
-        return instance;
+    static public PlanSearchEngine getInstance() {
+        return getInstance(SearchMode.NORMAL);
     }
 
-    static private PlanSearchEngine instance;
+    /** Returns an instance of this factory class, for a given search mode.
+     * @see AlgebraFamily#getInstance(String)
+     */
+    static public PlanSearchEngine getInstance(SearchMode searchMode) {
+        if (instance == null) {
+            instance =
+                new EnumMap<SearchMode,PlanSearchEngine>(SearchMode.class);
+            for (SearchMode mode : EnumSet.allOf(SearchMode.class)) {
+                instance.put(mode, new PlanSearchEngine(mode));
+            }
+        }
+        return instance.get(searchMode);
+    }
+
+    static private Map<SearchMode,PlanSearchEngine> instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = false;
+    static private final boolean PRINT = true;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the
@@ -138,8 +155,9 @@ public class PlanSearchEngine extends SearchEngine {
          * @param condition the graph condition for which we develop the search
          *        plan
          */
-        PlanData(Condition condition) {
+        PlanData(Condition condition, SearchMode searchMode) {
             this.condition = condition;
+            this.searchMode = searchMode;
             this.typeGraph = condition.getTypeGraph();
             if (condition.hasPattern()) {
                 RuleGraph graph = condition.getPattern();
@@ -179,9 +197,13 @@ public class PlanSearchEngine extends SearchEngine {
                     RuleEdge embargoEdge =
                         ((EdgeEmbargo) subCondition).getEmbargoEdge();
                     if (embargoEdge.label().isEmpty()) {
-                        item =
-                            createEqualitySearchItem(embargoEdge.source(),
-                                embargoEdge.target(), false);
+                        if (this.condition.getSystemProperties().isInjective()) {
+                            item = null;
+                        } else {
+                            item =
+                                createEqualitySearchItem(embargoEdge.source(),
+                                    embargoEdge.target(), false);
+                        }
                     } else {
                         item =
                             createNegatedSearchItem(createEdgeSearchItem(embargoEdge));
@@ -189,7 +211,9 @@ public class PlanSearchEngine extends SearchEngine {
                 } else {
                     item = new ConditionSearchItem(subCondition);
                 }
-                result.add(item);
+                if (item != null) {
+                    result.add(item);
+                }
             }
             return result;
         }
@@ -227,8 +251,11 @@ public class PlanSearchEngine extends SearchEngine {
                 RuleNode node = unmatchedNodeIter.next();
                 if (node instanceof VariableNode
                     && ((VariableNode) node).getConstant() != null) {
-                    result.add(createNodeSearchItem(node));
-                    unmatchedNodeIter.remove();
+                    AbstractSearchItem nodeItem = createNodeSearchItem(node);
+                    if (nodeItem != null) {
+                        result.add(nodeItem);
+                        unmatchedNodeIter.remove();
+                    }
                 }
             }
             // then a search item per remaining edge
@@ -299,19 +326,35 @@ public class PlanSearchEngine extends SearchEngine {
                 this.used = true;
             }
             SearchPlan result =
-                new SearchPlan(this.condition, seedNodes, seedEdges);
+                new SearchPlan(this.condition, seedNodes, seedEdges,
+                    this.searchMode != NORMAL
+                        || this.condition.getSystemProperties().isInjective());
             Collection<AbstractSearchItem> items =
                 computeSearchItems(seedNodes, seedEdges);
             while (!items.isEmpty()) {
                 AbstractSearchItem bestItem = Collections.max(items, this);
-                result.add(bestItem);
+                // check if the item is compatible with the search mode
+                boolean include;
+                switch (this.searchMode) {
+                case MINIMAL:
+                    include = bestItem.isMinimal();
+                    break;
+                case REGEXPR:
+                    include = (bestItem instanceof RegExprEdgeSearchItem);
+                    break;
+                default:
+                    include = true;
+                }
+                if (include) {
+                    result.add(bestItem);
+                    this.remainingEdges.removeAll(bestItem.bindsEdges());
+                    this.remainingNodes.removeAll(bestItem.bindsNodes());
+                    this.remainingVars.removeAll(bestItem.bindsVars());
+                    // notify the observing comparators of the change
+                    setChanged();
+                    notifyObservers(bestItem);
+                }
                 items.remove(bestItem);
-                this.remainingEdges.removeAll(bestItem.bindsEdges());
-                this.remainingNodes.removeAll(bestItem.bindsNodes());
-                this.remainingVars.removeAll(bestItem.bindsVars());
-                // notify the observing comparators of the change
-                setChanged();
-                notifyObservers(bestItem);
             }
             return result;
         }
@@ -375,11 +418,10 @@ public class PlanSearchEngine extends SearchEngine {
                 result = new WildcardEdgeSearchItem(edge);
             } else if (label.isEmpty()) {
                 result = new EqualitySearchItem(source, target, true);
-            } else if (label.isSharp()) {
-                result = new Edge2SearchItem(edge);
-            } else if (label.isAtom()) {
+            } else if (label.isSharp() || label.isAtom()) {
                 result = new Edge2SearchItem(edge);
             } else if (label.isOperator()) {
+                assert this.searchMode == NORMAL;
                 result =
                     new OperatorEdgeSearchItem((OperatorEdge) edge,
                         this.algebraFamily);
@@ -395,6 +437,7 @@ public class PlanSearchEngine extends SearchEngine {
         protected AbstractSearchItem createNodeSearchItem(RuleNode node) {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
+                assert this.searchMode == NORMAL;
                 if (((VariableNode) node).getConstant() != null) {
                     result =
                         new ValueNodeSearchItem((VariableNode) node,
@@ -462,6 +505,8 @@ public class PlanSearchEngine extends SearchEngine {
          */
         private boolean used;
 
+        /** The search mode for the plan. */
+        private final SearchMode searchMode;
         /** The graph condition for which we develop the plan. */
         private final Condition condition;
     }

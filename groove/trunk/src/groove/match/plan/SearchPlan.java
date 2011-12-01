@@ -32,13 +32,14 @@ import java.util.Set;
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** 
      * Constructs a search plan with given injectivity. 
+     * @param injective flag indicating that the match should be injective
      * @param seedNodes nodes whose image is pre-matched before invoking the search plan
      * @param seedEdges edges whose image is pre-matched before invoking the search plan
      */
     public SearchPlan(Condition condition, Collection<RuleNode> seedNodes,
-            Collection<RuleEdge> seedEdges) {
+            Collection<RuleEdge> seedEdges, boolean injective) {
         this.condition = condition;
-        this.injective = condition.getSystemProperties().isInjective();
+        this.injective = injective;
         this.seedNodes = seedNodes;
         this.seedEdges = seedEdges;
     }

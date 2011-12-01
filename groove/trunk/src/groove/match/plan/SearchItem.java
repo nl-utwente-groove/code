@@ -16,6 +16,7 @@
  */
 package groove.match.plan;
 
+import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostGraph;
@@ -93,6 +94,15 @@ public interface SearchItem extends Comparable<SearchItem> {
      * differ on relevant parts.
      */
     boolean isRelevant();
+
+    /**
+     * Signals if this search item should be included in a search plan
+     * for minimal search mode.
+     * @return if {@code true}, the search item should be included in a search
+     * plan for minimal search mode
+     * @see SearchMode#MINIMAL
+     */
+    boolean isMinimal();
 
     /**
      * Prepares the search item for actual searching by providing additional

@@ -128,6 +128,12 @@ abstract class AbstractSearchItem implements SearchItem {
         return this.relevant;
     }
 
+    @Override
+    public boolean isMinimal() {
+        // the default behaviour is to include the item
+        return true;
+    }
+
     /** 
      * Flag indicating the relevance of this search item.
      * Default value is <code>true</code>
