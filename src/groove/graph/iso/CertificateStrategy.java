@@ -16,6 +16,9 @@
  */
 package groove.graph.iso;
 
+import groove.abstraction.neigh.shape.EdgeSignature;
+import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -70,15 +73,48 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
+            if (getGraph() instanceof Shape) {
+                this.graphCertificate += computeShapeCertificate((Shape) getGraph());
+            }
+
             if (this.graphCertificate == 0) {
                 this.graphCertificate = 1;
             }
+        }
+        if (getGraph() instanceof Shape) {
+            Shape shape = (Shape) getGraph();
+            shape.getEquivRelation().hashCode();
         }
         if (TRACE) {
             System.err.printf("Graph certificate: %d%n", this.graphCertificate);
         }
         // return the computed certificate
         return this.graphCertificate;
+    }
+
+    /** Computes an additional hash value for a shape graph. */
+    private int computeShapeCertificate(Shape shape) {
+        int result = 0;
+        for (ShapeNode node : shape.nodeSet()) {
+            @SuppressWarnings("unchecked")
+            N n = (N) node;
+            int nHash = getNodeCert(n).hashCode();
+            for (ShapeNode equivNode : shape.getEquivClassOf(node)) {
+                @SuppressWarnings("unchecked")
+                N equivN = (N) equivNode;
+                result += getNodeCert(equivN).hashCode();
+            }
+            for (EdgeSignature sig : shape.getEdgeSignatures(node)) {
+                int sigHash = sig.getLabel().hashCode();
+                for (ShapeNode opposite : sig.getEquivClass()) {
+                    @SuppressWarnings("unchecked")
+                    N oppositeN = (N) opposite;
+                    sigHash += getNodeCert(oppositeN).hashCode();
+                }
+                result += nHash * sigHash;
+            }
+        }
+        return result;
     }
 
     /** Returns the node certificates calculated for the graph. */
