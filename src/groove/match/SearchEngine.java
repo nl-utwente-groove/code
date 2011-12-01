@@ -45,4 +45,20 @@ public abstract class SearchEngine {
      */
     public abstract SearchStrategy createMatcher(Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges);
+
+    /** 
+     * Value determining what is actually checked in the search.
+     * For abstraction, it is important that NACs are checked only after
+     * materialisation.
+     */
+    public static enum SearchMode {
+        /** Everything is checked. */
+        NORMAL,
+        /** Binary NACS and regular expressions are not checked, nor is match injectivity. */
+        MINIMAL,
+        /** 
+         * Only regular expressions are checked; match injectivity is not checked.
+         */
+        REGEXPR
+    }
 }
