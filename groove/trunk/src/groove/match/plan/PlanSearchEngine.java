@@ -91,6 +91,12 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |= anchorEdges.removeAll(item.bindsEdges());
             // universal conditions need to find all matches, so everything is relevant
             relevant |= condition.getOp() == Op.FORALL;
+            // universal conditions may result in a tree match that does
+            // not have any proof; therefore they must be considered relevant
+            // in order not to miss matches
+            relevant |=
+                item instanceof ConditionSearchItem
+                    && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
@@ -139,7 +145,7 @@ public class PlanSearchEngine extends SearchEngine {
     static private Map<SearchMode,PlanSearchEngine> instance;
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = true;
+    static private final boolean PRINT = false;
 
     /**
      * Plan data extension based on a graph condition. Additionally it takes the

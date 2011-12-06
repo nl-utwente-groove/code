@@ -172,6 +172,13 @@ class ConditionSearchItem extends AbstractSearchItem {
         super.setRelevant(relevant || isModifying());
     }
 
+    /**
+     * Returns the condition wrapped in this search item.
+     */
+    public Condition getCondition() {
+        return this.condition;
+    }
+
     /** Tests if this condition or one of its subconditions is a modifying rule. */
     private boolean isModifying() {
         return isModifying(this.condition);
