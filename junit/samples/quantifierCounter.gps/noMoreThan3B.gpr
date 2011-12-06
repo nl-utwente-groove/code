@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="noMoreThan3">
+    <graph edgemode="directed" edgeids="false" role="rule" id="noMoreThan3B">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
         <node id="n6">
             <attr name="layout">
-                <string>320 144 48 46</string>
+                <string>459 151 48 46</string>
             </attr>
         </node>
         <node id="n0">
@@ -16,7 +19,7 @@
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>258 100 28 31</string>
+                <string>258 100 27 31</string>
             </attr>
         </node>
         <node id="n2">
@@ -39,6 +42,11 @@
                 <string>151 325 82 33</string>
             </attr>
         </node>
+        <node id="n7">
+            <attr name="layout">
+                <string>311 279 43 31</string>
+            </attr>
+        </node>
         <edge to="n6" from="n6">
             <attr name="label">
                 <string>new:</string>
@@ -46,7 +54,12 @@
         </edge>
         <edge to="n6" from="n6">
             <attr name="label">
-                <string>A</string>
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n6">
+            <attr name="label">
+                <string>in</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -61,7 +74,12 @@
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>A</string>
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n1">
+            <attr name="label">
+                <string>in</string>
             </attr>
         </edge>
         <edge to="n0" from="n1">
@@ -84,6 +102,11 @@
                 <string>prod:</string>
             </attr>
         </edge>
+        <edge to="n5" from="n4">
+            <attr name="label">
+                <string>int:lt</string>
+            </attr>
+        </edge>
         <edge to="n2" from="n4">
             <attr name="label">
                 <string>arg:0</string>
@@ -94,14 +117,14 @@
                 <string>arg:1</string>
             </attr>
         </edge>
-        <edge to="n5" from="n4">
-            <attr name="label">
-                <string>int:lt</string>
-            </attr>
-        </edge>
         <edge to="n5" from="n5">
             <attr name="label">
                 <string>bool:true</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n7">
+            <attr name="label">
+                <string>Pool</string>
             </attr>
         </edge>
     </graph>

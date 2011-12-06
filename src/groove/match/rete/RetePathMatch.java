@@ -120,7 +120,7 @@ public class RetePathMatch extends AbstractReteMatch {
             this.nodes.add(this.units[0]);
             this.nodes.add(this.units[1]);
         }
-        return null;
+        return this.nodes;
     }
 
     @Override

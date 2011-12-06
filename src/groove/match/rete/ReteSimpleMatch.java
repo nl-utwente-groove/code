@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
 import groove.trans.HostEdge;
@@ -37,13 +38,13 @@ import java.util.Set;
 public class ReteSimpleMatch extends AbstractReteMatch {
 
     /** Host graph elements. */
-    private HostElement[] units;
+    protected HostElement[] units;
     /**
      * This is the set of nodes (host nodes) in this match.
      * It is only of use in injective matching so it will be
      * filled lazily if needed by the <code>getNodes</code> method.
      */
-    private Set<HostNode> nodes = null;
+    protected Set<HostNode> nodes = null;
 
     /**
      * Creates a new match object from a given sub-match copying all the units of the submatch.
@@ -591,5 +592,148 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         result.units = source.getAllUnits();
         result.valuation = source.valuation;
         return result;
+    }
+
+    /**
+     * Represents a match for a quantifier's count node as well
+     * as the quantifier's root anchor nodes.
+     * 
+     * @author Arash Jalali
+     * @version $Revision $
+     */
+    public static class ReteCountMatch extends ReteSimpleMatch {
+        private final boolean dummy;
+
+        /**
+         * Creates a non-wildcard count match.
+         * 
+         * @param owner The {@link QuantifierCountChecker} node to which this match belongs
+         * @param anchors The pre-matched root nodes of the quantifier
+         * @param value The count value
+         */
+        public ReteCountMatch(ReteNetworkNode owner, HostNode[] anchors,
+                ValueNode value) {
+            super(owner, owner.getOwner().isInjective());
+            assert (owner instanceof QuantifierCountChecker)
+                && (anchors.length + 1 == owner.getPattern().length);
+            this.dummy = false;
+            for (int i = 0; i < anchors.length; i++) {
+                this.units[i] = anchors[i];
+            }
+            this.units[this.units.length - 1] = value;
+        }
+
+        /**
+         * Creates a dummy count match.
+         * 
+         * See {@link #isDummy()} on what a dummy count match is.
+         * @param owner The {@link QuantifierCountChecker} n-node this match
+         *              belongs to.
+         * @param value The zero value node for this dummy match. 
+         * @exception {@link IllegalArgumentException} is raised if 
+         *            the <code>value</code> parameter does not
+         *            represent a zero.
+         */
+        public ReteCountMatch(ReteNetworkNode owner, ValueNode value) {
+            super(owner, owner.getOwner().isInjective());
+            this.dummy = true;
+            for (int i = 0; i < this.units.length - 1; i++) {
+                this.units[i] = value;
+            }
+            if (!value.getValue().equals(0)) {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "The given value for the wildcard match must be zero. It is now %s",
+                        value.getValue().toString()));
+            } else {
+                this.units[this.units.length - 1] = value;
+            }
+        }
+
+        /**
+         * Determines if this match is a dummy count match.
+         *  
+         * A dummy count match is one that represents
+         * the zero-count for all the possible anchors
+         * that do not explicitly occur in matches produced by
+         * a {@link QuantifierCountChecker}.
+         * 
+         * A dummy match's units (see {@link #getAllUnits()})
+         * consist of zero value nodes for all anchor values
+         * and zero (0) for the value itself.
+         */
+        public boolean isDummy() {
+            return this.dummy;
+        }
+
+        /**
+         * Returns the value node associated with the actual count-value
+         * this match represents 
+         */
+        public ValueNode getValue() {
+            return (ValueNode) this.units[this.units.length - 1];
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o != null) {
+                return (o instanceof ReteCountMatch)
+                    && this.getOrigin() == ((ReteCountMatch) o).getOrigin()
+                    && this.dummy == ((ReteCountMatch) o).dummy
+                    && this.getValue() == ((ReteCountMatch) o).getValue();
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "Count match for "
+                + ((QuantifierCountChecker) getOrigin()).getUniversalQuantifierChecker().getCondition().getName()
+                + ". Value = " + this.getValue().toString();
+        }
+
+        /**
+         * Merges this dummy count match with a given match. 
+         * 
+         * @param origin The RETE network n-node to which this match is to belong to 
+         * @param leftMatch the actual match that is to be merged with this dummy count match
+         * @param copyPrefix if {@literal true} then the special prefix link of leftMatch 
+        *        (or leftMatch if its prefix is null) will be copied to that of the result. 
+         * @param mergeLookupTable A table that determines where the anchor points (to be copied from)
+         *                         reside in the leftMatch.
+         */
+        public ReteSimpleMatch dummyMerge(ReteNetworkNode origin,
+                AbstractReteMatch leftMatch, boolean copyPrefix,
+                int[][] mergeLookupTable) {
+            assert this.dummy;
+            ReteSimpleMatch result =
+                new ReteSimpleMatch(origin, origin.getOwner().isInjective());
+            HostElement[] leftUnits = leftMatch.getAllUnits();
+            int i = 0;
+            for (; i < leftUnits.length; i++) {
+                result.units[i] = leftUnits[i];
+            }
+            for (; i < leftUnits.length + this.units.length - 1; i++) {
+                int[] pos = mergeLookupTable[i - leftUnits.length];
+                result.units[i] =
+                    pos[1] == -1 ? leftUnits[pos[0]] : pos[1] == 0
+                            ? ((HostEdge) leftUnits[pos[0]]).source()
+                            : ((HostEdge) leftUnits[pos[0]]).target();
+            }
+            result.units[result.units.length - 1] =
+                this.units[this.units.length - 1];
+            if (copyPrefix) {
+                result.specialPrefix =
+                    (leftMatch.specialPrefix != null) ? leftMatch.specialPrefix
+                            : leftMatch;
+            }
+
+            result.hashCode();
+            this.getSuperMatches().add(result);
+            leftMatch.getSuperMatches().add(result);
+            result.valuation = leftMatch.valuation;
+            return result;
+        }
     }
 }

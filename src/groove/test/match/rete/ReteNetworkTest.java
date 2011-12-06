@@ -352,6 +352,60 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Tests the first step of the counting quantifier example
+     */
+    public void testDynamicQuantifierCount1() {
+        GraphGrammar g = loadGrammar("quantifierCounter.gps", "start");
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("sameCount")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "noMoreThan3A")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "noMoreThan3B")) {
+                assertEquals(1, rmList.size());
+            } else {
+                assertEquals(pn.getProductionRule().getName(), 0, rmList.size());
+            }
+        }
+    }
+
+    /**
+     * Tests the first step of the counting quantifier example
+     */
+    public void testDynamicQuantifierCount2() {
+        GraphGrammar g = loadGrammar("quantifierCounter.gps", "twoAOneB");
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("sameCount")) {
+                assertEquals(0, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "noMoreThan3A")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "noMoreThan3B")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "countOfAequals2")) {
+                assertEquals(1, rmList.size());
+            } else if (pn.getProductionRule().getName().toString().equals(
+                "threeOfAnyKind")) {
+                assertEquals(1, rmList.size());
+            } else {
+                assertEquals(pn.getProductionRule().getName(), 0, rmList.size());
+            }
+        }
+    }
+
     private GraphGrammar loadGrammar(String grammarName, String startGraphName) {
         GraphGrammar result = null;
         try {

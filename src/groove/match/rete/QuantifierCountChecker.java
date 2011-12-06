@@ -20,13 +20,20 @@ import groove.algebra.JavaIntAlgebra;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.TreeMatch;
+import groove.match.rete.ReteSimpleMatch.ReteCountMatch;
 import groove.trans.Condition;
+import groove.trans.HostNode;
 import groove.trans.RuleElement;
+import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 import groove.trans.Condition.Op;
+import groove.util.TreeHashSet;
 import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Asks an associated condition-checker related to a universal
@@ -47,13 +54,20 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
      * The match containing the single node-binding between the
      * count node and the actual count value calculated at each round.
      */
-    private ReteSimpleMatch match = null;
+    private Set<ReteCountMatch> matches = new TreeHashSet<ReteCountMatch>();
+    private ReteCountMatch dummyMatch;
 
     /**
      * The condition checker for the universal quantifier to be
      * counted.
      */
     private ConditionChecker universalQuantifierChecker;
+
+    /**
+     * Inidicates if the latest valid count matches have been
+     * sent down to the successors. 
+     */
+    private boolean updatesSent = false;
 
     /**
      * The full matcher used to ask the matches for counting
@@ -69,8 +83,22 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
         assert condition.getOp() == Op.FORALL
             && (condition.getCountNode() != null);
         this.condition = condition;
-        this.pattern = new RuleElement[] {condition.getCountNode()};
+        makePattern();
+        getPatternLookupTable(); //Just to fill out the pattern index
         this.getOwner().getState().subscribe(this, true);
+
+    }
+
+    private void makePattern() {
+        ArrayList<RuleNode> rootNodes = new ArrayList<RuleNode>();
+        rootNodes.addAll(this.condition.getRoot().nodeSet());
+        Collections.sort(rootNodes);
+        this.pattern = new RuleElement[rootNodes.size() + 1];
+        int i = 0;
+        for (RuleNode n : rootNodes) {
+            this.pattern[i++] = n;
+        }
+        this.pattern[i] = this.condition.getCountNode();
     }
 
     @Override
@@ -146,17 +174,27 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
      * set of this condition checker or of its sub-condition-checkers)
      */
     public boolean invalidateCount() {
-        boolean result = this.match != null;
-        if (this.match != null) {
-            this.match.dominoDelete(null);
-            this.match = null;
+        boolean result = !this.matches.isEmpty();
+        if (result) {
+            for (ReteSimpleMatch match : this.matches) {
+                match.dominoDelete(null);
+            }
+            this.matches.clear();
         }
+        if (this.dummyMatch != null) {
+            this.dummyMatch.dominoDelete(null);
+            this.dummyMatch = null;
+        }
+        this.updatesSent = false;
         return result;
     }
 
     @Override
     public void clear() {
-        this.match = null;
+        this.matches.clear();
+        this.dummyMatch = null;
+        this.updatesSent = false;
+        this.conditionMatcher = null;
     }
 
     @Override
@@ -173,40 +211,110 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
 
     @Override
     public void updateEnd() {
-        if (this.match == null) {
-            this.match = calculateMatch();
-            if (this.match != null) {
-                passDownMatchToSuccessors(this.match);
+        if (!this.updatesSent) {
+            calculateMatches();
+            if (!this.matches.isEmpty()) {
+                for (ReteSimpleMatch match : this.matches) {
+                    passDownMatchToSuccessors(match);
+                }
             }
+            if (this.dummyMatch != null) {
+                passDownMatchToSuccessors(this.dummyMatch);
+            }
+            this.updatesSent = true;
         }
     }
 
-    private ReteSimpleMatch calculateMatch() {
-        ReteSimpleMatch result = null;
-        List<TreeMatch> matchList = new ArrayList<TreeMatch>();
-        Collector<TreeMatch,?> collector = Collector.newCollector(matchList);
+    private void calculateMatches() {
+        this.matches.clear();
+        Set<RuleToHostMap> activeAnchors =
+            this.universalQuantifierChecker.getActiveConflictsetAnchors(false);
         if (this.conditionMatcher == null) {
             this.conditionMatcher =
                 this.getOwner().getOwnerEngine().createMatcher(
                     this.universalQuantifierChecker.getCondition(), null, null);
         }
+        if (activeAnchors != null) {
+            for (RuleToHostMap anchor : activeAnchors) {
+                ReteCountMatch m = getCountMatch(anchor);
+                if (m != null) {
+                    this.matches.add(m);
+                }
+            }
+        } else {
+            ReteCountMatch m = getCountMatch(null);
+            if (m != null) {
+                this.matches.add(m);
+            }
+        }
+        if (this.condition.getCountNode().getConstant() == null) {
+            this.dummyMatch =
+                new ReteCountMatch(
+                    this,
+                    this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNodeFromJava(
+                        JavaIntAlgebra.instance, 0));
+        } else {
+            this.dummyMatch = null;
+        }
+
+    }
+
+    private ReteCountMatch getCountMatch(RuleToHostMap anchor) {
+        ReteCountMatch countMatch = null;
+        List<TreeMatch> matchList = new ArrayList<TreeMatch>();
+        Collector<TreeMatch,?> collector = Collector.newCollector(matchList);
         this.conditionMatcher.traverse(
             this.getOwner().getOwnerEngine().getNetwork().getState().getHostGraph(),
-            null, collector);
+            anchor, collector);
         ValueNode vn =
             this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNodeFromJava(
                 JavaIntAlgebra.instance, matchList.size());
         if (this.getCountNode().getConstant() != null) {
             if (this.getCountNode().getConstant().getSymbol().equals(
                 vn.getSymbol())) {
-                result =
-                    new ReteSimpleMatch(this, vn, this.getOwner().isInjective());
+                countMatch =
+                    new ReteCountMatch(this, getAnchorNodes(anchor), vn);
             }
         } else {
-            result =
-                new ReteSimpleMatch(this, vn, this.getOwner().isInjective());
+            countMatch = new ReteCountMatch(this, getAnchorNodes(anchor), vn);
+        }
+        if (countMatch != null) {
+            this.matches.add(countMatch);
+        }
+        return countMatch;
+    }
+
+    private HostNode[] getAnchorNodes(RuleToHostMap map) {
+        HostNode[] result = new HostNode[this.pattern.length - 1];
+        if (map != null) {
+            for (int i = 0; i < this.pattern.length - 1; i++) {
+                HostNode hn = map.getNode((RuleNode) this.pattern[i]);
+                assert hn != null;
+                result[i] = hn;
+            }
         }
         return result;
+    }
+
+    /**
+     * Determines if this quantifier count checker produces different count
+     * values for different given higher level anchors. 
+     * 
+     * If the return
+     * value of this method is <code>true</code> then it means this checker
+     * n-node will only produce one count match.
+     */
+    public boolean isAnchored() {
+        return !this.condition.getRoot().isEmpty();
+    }
+
+    /**
+     * Returns <code>true</code> if the count node that this checker
+     * is associated with is a constant, in which case a dummy match
+     * is not produced. Returns <code>false</code> otherwise.
+     */
+    public boolean isConstant() {
+        return this.getCountNode().getConstant() != null;
     }
 
 }

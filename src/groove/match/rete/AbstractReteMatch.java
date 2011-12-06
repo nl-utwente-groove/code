@@ -189,6 +189,16 @@ public abstract class AbstractReteMatch implements
     }
 
     /**
+     * Removes a listener from the list of {@link DominoEventListener} objects
+     * that will be notified when this match object is deleted through 
+     * a domino-deletion process.
+     * @param listener The object to be removed from the list of listeners.
+     */
+    public void removeDominoListener(DominoEventListener listener) {
+        this.dominoListeners.remove(listener);
+    }
+
+    /**
      * Checks if the intersection of two sets of nodes is empty.
      * 
      * @param s1 One set of nodes

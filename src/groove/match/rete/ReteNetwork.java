@@ -86,8 +86,8 @@ public class ReteNetwork {
     private HashMap<Constant,ValueNodeChecker> valueNodeCheckerNodes =
         new HashMap<Constant,ValueNodeChecker>();
 
-    private HashMap<RuleNode,QuantifierCountChecker> quantifierCountCheckerNodes =
-        new HashMap<RuleNode,QuantifierCountChecker>();
+    private HashMap<Condition,QuantifierCountChecker> quantifierCountCheckerNodes =
+        new HashMap<Condition,QuantifierCountChecker>();
 
     private PathCheckerFactory pathCheckerFactory =
         new PathCheckerFactory(this);
@@ -244,8 +244,19 @@ public class ReteNetwork {
                                 : null;
 
                     if (m2 != null) {
+                        if ((m1.getNNode() instanceof QuantifierCountChecker)
+                            && !(m2.getNNode() instanceof QuantifierCountChecker)) {
+                            //swap m1 and m2 so that the quantifier count checker
+                            //is always the right antecedent
+                            ReteStaticMapping temp = m1;
+                            m1 = m2;
+                            m2 = temp;
+                        }
                         SubgraphCheckerNode sgc =
-                            new SubgraphCheckerNode(this, m1, m2);
+                            (m2.getNNode() instanceof QuantifierCountChecker)
+                                    ? new QuantifierCountSubgraphChecker(this,
+                                        m1, m2) : new SubgraphCheckerNode(this,
+                                        m1, m2);
 
                         ReteStaticMapping newCombinedMapping =
                             ReteStaticMapping.combine(m1, m2, sgc);
@@ -375,10 +386,9 @@ public class ReteNetwork {
             if ((c.getOp() == Op.FORALL) && (c.getCountNode() != null)) {
                 QuantifierCountChecker qcc =
                     new QuantifierCountChecker(this, c);
-                this.quantifierCountCheckerNodes.put(c.getCountNode(), qcc);
+                this.quantifierCountCheckerNodes.put(c, qcc);
                 ReteStaticMapping sm =
-                    new ReteStaticMapping(qcc,
-                        new RuleElement[] {c.getCountNode()});
+                    new ReteStaticMapping(qcc, qcc.getPattern());
                 openList.add(sm);
             }
         }
@@ -663,6 +673,10 @@ public class ReteNetwork {
                 mappedLHSNodes.add(e.target());
             }
         }
+        for (Condition c : this.quantifierCountCheckerNodes.keySet()) {
+            assert c.getCountNode() != null;
+            mappedLHSNodes.add(c.getCountNode());
+        }
         //Now we see if there are any unmatched nodes on the lhs
         //These are isolated nodes. We will use one node checker but each
         //will be represented by a separate static mapping in the open list.
@@ -908,22 +922,19 @@ public class ReteNetwork {
     private ReteStaticMapping pickCheckerNodeConnectedTo(StaticMap openList,
             ReteStaticMapping g1) {
         ReteStaticMapping result = null;
-        Set<RuleNode> nodes1 = g1.getLhsNodes();
         for (ReteStaticMapping m : openList) {
-            if (m != g1) {
-                Set<RuleNode> nodes2 = m.getLhsNodes();
-                for (RuleNode n : nodes1) {
-                    if (nodes2.contains(n)) {
-                        result = m;
-                        break;
-                    }
-                }
-                if (result != null) {
+            if ((m != g1) && isOkToJoin(g1, m)) {
+                if (ReteStaticMapping.properlyOverlap(g1, m)) {
+                    result = m;
                     break;
                 }
             }
         }
         return result;
+    }
+
+    private boolean isOkToJoin(ReteStaticMapping m1, ReteStaticMapping m2) {
+        return !((m1.getNNode() instanceof QuantifierCountChecker) && (m2.getNNode() instanceof QuantifierCountChecker));
     }
 
     private EdgeCheckerNode findEdgeCheckerForEdge(RuleEdge e) {
@@ -1022,7 +1033,7 @@ public class ReteNetwork {
      */
     public QuantifierCountChecker getQuantifierCountCheckerFor(Condition c) {
         assert (c.getOp() == Op.FORALL) && (c.getCountNode() != null);
-        return this.quantifierCountCheckerNodes.get(c.getCountNode());
+        return this.quantifierCountCheckerNodes.get(c);
     }
 
     /**
@@ -1223,7 +1234,13 @@ public class ReteNetwork {
                 + ((ValueNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof QuantifierCountChecker) {
             result.add(DefaultEdge.createEdge(source,
-                String.format("Quantifier Count Checker "), source));
+                String.format("- Quantifier Count Checker "), source));
+            for (int i = 0; i < ((QuantifierCountChecker) nnode).getPattern().length; i++) {
+                RuleElement e =
+                    ((QuantifierCountChecker) nnode).getPattern()[i];
+                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                    + e.toString(), source));
+            }
 
         } else if (nnode instanceof EdgeCheckerNode) {
             result.add(DefaultEdge.createEdge(source, "Edge Checker", source));
@@ -1468,6 +1485,37 @@ public class ReteNetwork {
             return result;
         }
 
+        public static boolean properlyOverlap(ReteStaticMapping one,
+                ReteStaticMapping theOther) {
+            boolean result = false;
+            Set<RuleNode> nodes1 = new TreeHashSet<RuleNode>();
+            nodes1.addAll(one.getLhsNodes());
+            Set<RuleNode> nodes2 = new TreeHashSet<RuleNode>();
+            nodes2.addAll(theOther.getLhsNodes());
+
+            if ((one.getNNode() instanceof QuantifierCountChecker)
+                || (theOther.getNNode() instanceof QuantifierCountChecker)) {
+                result = true;
+                if (one.getNNode() instanceof QuantifierCountChecker) {
+                    nodes1.remove(one.getNNode().getPattern()[one.getNNode().getPattern().length - 1]);
+                    result = result && nodes2.containsAll(nodes1);
+                }
+                if (theOther.getNNode() instanceof QuantifierCountChecker) {
+                    nodes2.remove(theOther.getNNode().getPattern()[theOther.getNNode().getPattern().length - 1]);
+                    result = result && nodes1.containsAll(nodes2);
+                }
+
+            } else {
+                for (RuleNode n : nodes1) {
+                    result = nodes2.contains(n);
+                    if (result) {
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
         public ReteNetworkNode getNNode() {
             return this.nNode;
         }
@@ -1480,7 +1528,7 @@ public class ReteNetwork {
          * @return The set of LHS nodes in this mapping.
          */
         public Set<RuleNode> getLhsNodes() {
-            return this.nodeLookupMap.keySet();
+            return Collections.unmodifiableSet(this.nodeLookupMap.keySet());
         }
 
         /**

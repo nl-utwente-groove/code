@@ -76,7 +76,6 @@ public class ReteSearchEngine extends SearchEngine {
             transitionOccurredReporter.stop();
             return;
         }
-
         this.network.setUpdating(true);
         for (HostNode n : deltaStore.getRemovedNodeSet()) {
             this.network.update(n, Action.REMOVE);
