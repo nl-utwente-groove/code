@@ -169,8 +169,8 @@ public class ExplorationTest {
     /** A very simple/pure tests for the quantifier counting. */
     @Test
     public void testQuantifierCounter() {
-        testExploration("quantifierCounter.gps", 4, 4);
-        testExploration("quantifierCounter.gps", "start", "rete", 4, 4);
+        testExploration("quantifierCounter.gps", 16, 41);
+        testExploration("quantifierCounter.gps", "start", "rete", 16, 41);
     }
 
     /** Tests the quantifier counting sample. */

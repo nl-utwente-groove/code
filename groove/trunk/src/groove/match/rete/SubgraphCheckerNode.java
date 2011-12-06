@@ -67,7 +67,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * right match during runtime. This is basically the join condition
      * that this subgraph represents.
      */
-    private int[][] fastEqualityLookupTable;
+    protected int[][] fastEqualityLookupTable;
 
     /**
      * The static subgraph pattern represented by this checker
@@ -77,7 +77,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     //This flag indicates if the special prefix link of matches coming
     //the left antecedent should be copied for the combined matches
     //that are passed down the network.
-    private boolean shouldPreservePrefix = false;
+    protected boolean shouldPreservePrefix = false;
 
     /**
      * The strategy object that performs the join and test operations
@@ -118,8 +118,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     @SuppressWarnings("unchecked")
     protected void selectJoinStrategy(ReteStaticMapping left,
             ReteStaticMapping right) {
-        if (!(left.getNNode() instanceof AbstractPathChecker)
-            && !(right.getNNode() instanceof AbstractPathChecker)) {
+        if ((!(left.getNNode() instanceof AbstractPathChecker) && !(right.getNNode() instanceof AbstractPathChecker))) {
+
             this.joinStrategy =
                 (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<ReteSimpleMatch,ReteSimpleMatch>(
                     this) {
@@ -133,6 +133,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                     }
 
                 };
+
         } else if (right.getNNode() instanceof AbstractPathChecker) {
             this.joinStrategy =
                 (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractJoinWithPathStrategy<AbstractReteMatch>(
@@ -141,7 +142,6 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                     @Override
                     public AbstractReteMatch construct(AbstractReteMatch left,
                             RetePathMatch right) {
-
                         return (right.isEmpty())
                                 ? this.mergeWithEmptyPath(left)
                                 : ReteSimpleMatch.merge(

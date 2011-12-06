@@ -83,8 +83,8 @@ public class ValueNodeChecker extends NodeChecker implements
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch match) {
-        // TODO Auto-generated method stub
-
+        throw new UnsupportedOperationException(
+            "This method is not supposed to have been called.");
     }
 
     @Override

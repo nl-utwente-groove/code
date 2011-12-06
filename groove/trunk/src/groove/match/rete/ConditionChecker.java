@@ -18,7 +18,10 @@ package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Condition;
+import groove.trans.HostEdge;
 import groove.trans.HostElement;
+import groove.trans.HostFactory;
+import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
@@ -32,16 +35,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
  * @version $Revision $
  */
 public class ConditionChecker extends ReteNetworkNode implements
-        ReteStateSubscriber {
+        ReteStateSubscriber, DominoEventListener {
 
     /**
      * This is the pattern of edges (and isolated nodes)
@@ -359,6 +364,30 @@ public class ConditionChecker extends ReteNetworkNode implements
     }
 
     /**
+     * Returns a collection of {@link RuleToHostMap} objects representing
+     * the condition root images that have some partial conflict
+     * set stored and associated with it in this condition checker.
+     * This method returns <code>null</code> if the condition of this 
+     * condition checker has an empty root.
+     */
+    public Set<RuleToHostMap> getActiveConflictsetAnchors(boolean includeEmpty) {
+        Set<RuleToHostMap> result = null;
+        if (this.conflictSetSearchTree != null) {
+            result = new HashSet<RuleToHostMap>();
+            HashMap<Set<ReteSimpleMatch>,RuleToHostMap> g =
+                this.conflictSetSearchTree.getCollectionsToAnchorsMap();
+            for (Entry<Set<ReteSimpleMatch>,RuleToHostMap> s : g.entrySet()) {
+
+                if (includeEmpty || !s.getKey().isEmpty()) {
+
+                    result.add(s.getValue());
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Receives a match of the subgraph representing the lhs of this n-node's
      * associated production rule and turns it into a LHS-to-HOST match and
      * saves it into the conflict set.
@@ -383,11 +412,16 @@ public class ConditionChecker extends ReteNetworkNode implements
      *               one of its (possibly many) inhibitors has been removed.
      */
     public void receiveInhibitorMatch(ReteSimpleMatch m, Action action) {
-
         if (action == Action.ADD) {
             this.inhibitionMap.add(m);
         } else {
             this.inhibitionMap.remove(m);
+        }
+        if (this.countCheckerNode != null) {
+            this.countCheckerNode.invalidateCount();
+        }
+        if (this.notifyParent && (this.parent != null)) {
+            this.parent.notifyChange(this);
         }
     }
 
@@ -397,16 +431,16 @@ public class ConditionChecker extends ReteNetworkNode implements
      * @param action Determines if the match is to be removed or added.
      */
     protected void updateConflictSet(ReteSimpleMatch m, Action action) {
-        if (this.notifyParent && (this.parent != null)) {
-            this.parent.notifyChange(this);
-        }
-        if (this.countCheckerNode != null) {
-            this.countCheckerNode.invalidateCount();
-        }
         if (action == Action.ADD) {
             addMatchToConflictSet(m);
         } else {
             removeMatchFromConflictSet(m);
+        }
+        if (this.countCheckerNode != null) {
+            this.countCheckerNode.invalidateCount();
+        }
+        if (this.notifyParent && (this.parent != null)) {
+            this.parent.notifyChange(this);
         }
     }
 
@@ -428,6 +462,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         assert !c.contains(m);
         c.add(m);
         m.addContainerCollection(c);
+        m.addDominoListener(this);
     }
 
     /**
@@ -491,6 +526,9 @@ public class ConditionChecker extends ReteNetworkNode implements
     public void clear() {
         this.inhibitionMap.clear();
         this.conflictSet.clear();
+        if (this.conflictSetSearchTree != null) {
+            this.conflictSetSearchTree.clear();
+        }
 
     }
 
@@ -521,40 +559,80 @@ public class ConditionChecker extends ReteNetworkNode implements
 
         HashMap<HostElement,Object> root = new HashMap<HostElement,Object>();
 
+        HashMap<Set<ReteSimpleMatch>,RuleToHostMap> collectionsToAnchorsMap =
+            new HashMap<Set<ReteSimpleMatch>,RuleToHostMap>();
+
+        HostFactory factory;
+
         SearchTree(List<? extends RuleElement> searchOrder) {
             this.rootSearchOrder = new RuleElement[searchOrder.size()];
             this.rootSearchOrder = searchOrder.toArray(this.rootSearchOrder);
         }
 
-        @SuppressWarnings("unchecked")
+        public void clear() {
+            this.root.clear();
+            for (Set<ReteSimpleMatch> c : this.collectionsToAnchorsMap.keySet()) {
+                c.clear();
+            }
+            this.collectionsToAnchorsMap.clear();
+        }
+
         Set<ReteSimpleMatch> getStorageFor(ReteSimpleMatch m) {
+            return getStorageFor(m, true);
+        }
+
+        @SuppressWarnings("unchecked")
+        Set<ReteSimpleMatch> getStorageFor(ReteSimpleMatch m, boolean create) {
             Set<ReteSimpleMatch> result = null;
             HashMap<HostElement,Object> leaf = this.root;
-            for (int i = 0; i < this.rootSearchOrder.length - 1; i++) {
+            RuleToHostMap anchorMap = getFactory().createRuleToHostMap();
+            int i = 0;
+            for (; i < this.rootSearchOrder.length - 1; i++) {
                 HostElement ei;
                 if (this.rootSearchOrder[i] instanceof RuleNode) {
                     ei = m.getNode((RuleNode) this.rootSearchOrder[i]);
+                    anchorMap.putNode((RuleNode) this.rootSearchOrder[i],
+                        (HostNode) ei);
                 } else {
                     ei = m.getEdge((RuleEdge) this.rootSearchOrder[i]);
+                    anchorMap.putEdge((RuleEdge) this.rootSearchOrder[i],
+                        (HostEdge) ei);
                 }
+
                 HashMap<HostElement,Object> treeNode =
                     (HashMap<HostElement,Object>) leaf.get(ei);
                 if (treeNode == null) {
-                    treeNode = new HashMap<HostElement,Object>();
-                    leaf.put(ei, treeNode);
+                    if (create) {
+                        treeNode = new HashMap<HostElement,Object>();
+                        leaf.put(ei, treeNode);
+                    } else {
+                        leaf = null;
+                        break;
+                    }
                 }
                 leaf = treeNode;
             }
-            HostElement ei =
-                (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode)
-                        ? m.getNode((RuleNode) this.rootSearchOrder[this.rootSearchOrder.length - 1])
-                        : m.getEdge((RuleEdge) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
-            Object o = leaf.get(ei);
-            if (o == null) {
-                o = new TreeHashSet<AbstractReteMatch>();
-                leaf.put(ei, o);
+            if (leaf != null) {
+                HostElement ei;
+                if (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode) {
+                    ei =
+                        m.getNode((RuleNode) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
+                    anchorMap.putNode((RuleNode) this.rootSearchOrder[i],
+                        (HostNode) ei);
+                } else {
+                    ei =
+                        m.getEdge((RuleEdge) this.rootSearchOrder[this.rootSearchOrder.length - 1]);
+                    anchorMap.putEdge((RuleEdge) this.rootSearchOrder[i],
+                        (HostEdge) ei);
+                }
+                Object o = leaf.get(ei);
+                if ((o == null) && create) {
+                    o = new TreeHashSet<AbstractReteMatch>();
+                    leaf.put(ei, o);
+                }
+                result = (Set<ReteSimpleMatch>) o;
             }
-            result = (Set<ReteSimpleMatch>) o;
+            this.collectionsToAnchorsMap.put(result, anchorMap);
             return result;
         }
 
@@ -589,7 +667,20 @@ public class ConditionChecker extends ReteNetworkNode implements
                 leaf.put(ei, o);
             }
             result = (Set<ReteSimpleMatch>) o;
+            this.collectionsToAnchorsMap.put(result, anchorMap);
             return result;
+        }
+
+        HostFactory getFactory() {
+            if (this.factory == null) {
+                this.factory =
+                    ConditionChecker.this.getOwner().getHostFactory();
+            }
+            return this.factory;
+        }
+
+        HashMap<Set<ReteSimpleMatch>,RuleToHostMap> getCollectionsToAnchorsMap() {
+            return this.collectionsToAnchorsMap;
         }
     }
 
@@ -722,5 +813,15 @@ public class ConditionChecker extends ReteNetworkNode implements
     @Override
     public void updateEnd() {
         // Do nothing        
+    }
+
+    @Override
+    public void matchRemoved(AbstractReteMatch match) {
+        if (this.countCheckerNode != null) {
+            this.countCheckerNode.invalidateCount();
+        }
+        if (this.notifyParent && (this.parent != null)) {
+            this.parent.notifyChange(this);
+        }
     }
 }

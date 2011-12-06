@@ -97,13 +97,13 @@ public class DataOperatorChecker extends ReteNetworkNode {
 
     @Override
     public int demandOneMatch() {
-        // TODO Auto-generated method stub
+        // TODO ARASH:implement on-demand
         return 0;
     }
 
     @Override
     public boolean demandUpdate() {
-        // TODO Auto-generated method stub
+        // TODO ARASH:implement on-demand
         return false;
     }
 
