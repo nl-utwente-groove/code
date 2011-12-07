@@ -239,4 +239,36 @@ public class Util {
      */
     private static final long FIFTY_MB = 1024 * 1024 * 50;
 
+    /** Unicode hex string for "there exists" (existential quantifier) */
+    public final static char EXISTS = '\u2203';
+    /** Unicode hex string for "for all" (universal quantifier) */
+    public final static char FORALL = '\u2200';
+    /** Unicode hex string for "and" (conjunction) */
+    public final static char WEDGE = '\u2227';
+    /** Unicode hex string for "or" (disjunction) */
+    public final static char VEE = '\u2228';
+    /** Unicode hex string for "not" (negation) */
+    public final static char NEG = '\u00AC';
+
+    /** Lower case letter pi. */
+    public static final char LC_PI = '\u03C0';
+    /** HTML tau symbol. */
+    static public final char LC_TAU = '\u03C4';
+    /** HTML epsilon symbol. */
+    static public final char LC_EPSILON = '\u03B5';
+    /** HTML lambda symbol. */
+    static public final char LC_LAMBDA = '\u03BB';
+
+    /** HTML opening << quote symbol. */
+    static public final char FRENCH_QUOTES_OPEN = '\u00AB';
+    /** HTML closing >> quote symbol. */
+    static public final char FRENCH_QUOTES_CLOSED = '\u00BB';
+    /** HTML greater than symbol. */
+    static public final char GT = '>';
+    /** HTML left angular bracket symbol. */
+    static public final char LANGLE = '<'; // &#9001;
+    /** HTML right angular bracket symbol. */
+    static public final char RANGLE = '>'; // &#9002;
+    /** HTML times symbol. */
+    static public final char TIMES = '\u2A09';
 }

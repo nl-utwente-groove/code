@@ -392,6 +392,8 @@ public class Options implements Cloneable {
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
+    /** Rule tree pane title */
+    public static final String RULE_TREE_PANE_TITLE = "Rule nesting";
     /** States pane title */
     public static final String STATES_PANE_TITLE = "Graphs";
     /** Rules pane title */

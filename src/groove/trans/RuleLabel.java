@@ -21,11 +21,11 @@ import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.io.Util;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
-import groove.util.Groove;
 import groove.util.Property;
 
 import java.util.List;
@@ -104,7 +104,7 @@ public class RuleLabel extends AbstractLabel {
         if (isOperator()) {
             result = getOperator().getName();
         } else if (isArgument()) {
-            result = "" + Groove.LC_PI + getArgument();
+            result = "" + Util.LC_PI + getArgument();
         } else {
             result = getMatchExpr().toString();
             result = EdgeRole.parseLabel(result).two();
