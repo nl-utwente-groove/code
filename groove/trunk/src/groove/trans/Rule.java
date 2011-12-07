@@ -1240,7 +1240,7 @@ public class Rule implements Fixable, Comparable<Rule> {
         this.lhsMergeMap = new HashMap<RuleNode,RuleNode>();
         this.rhsMergeMap = new HashMap<RuleNode,RuleNode>();
         for (RuleEdge rhsEdge : rhs().edgeSet()) {
-            if (rhsEdge.label().isEmpty()) {
+            if (rhsEdge.label().isEmpty() && !this.lhs.containsEdge(rhsEdge)) {
                 RuleNode source = rhsEdge.source();
                 RuleNode target = rhsEdge.target();
                 if (lhs().containsNode(source) && lhs().containsNode(target)) {
