@@ -57,9 +57,6 @@ public class Groove {
     public static final String FILE_SEPARATOR =
         System.getProperty("file.separator");
 
-    /** Lower case letter pi. */
-    public static final char LC_PI = '\u03C0';
-
     /** Default name for the start graph. */
     public static final String DEFAULT_START_GRAPH_NAME = "start";
     /** Default name for control files. */

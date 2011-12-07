@@ -13,14 +13,22 @@ import groove.gui.jgraph.GraphJCell;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.Box;
 import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 import org.jgraph.JGraph;
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 
 /** Display tab component showing a graph-based resource. */
 final public class GraphTab extends ResourceTab implements MainTab {
@@ -179,5 +187,54 @@ final public class GraphTab extends ResourceTab implements MainTab {
             addRefreshListener(SHOW_VALUE_NODES_OPTION);
             addRefreshListener(SHOW_LTS_OPTION);
         }
+
+        @Override
+        protected JComponent createLabelPane() {
+            JComponent result;
+            JComponent labelPane = super.createLabelPane();
+            final RuleLevelTree levelTree = getJGraph().getLevelTree();
+            if (levelTree == null) {
+                result = labelPane;
+            } else {
+                this.levelTree = levelTree;
+                JSplitPane splitPane =
+                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, labelPane,
+                        createLevelTreePanel(levelTree));
+                // deselect the level tree whenever the graph
+                // selection changes
+                getJGraph().addGraphSelectionListener(
+                    new GraphSelectionListener() {
+                        @Override
+                        public void valueChanged(GraphSelectionEvent e) {
+                            levelTree.clearSelection();
+                        }
+                    });
+                result = splitPane;
+            }
+            return result;
+        }
+
+        /** Creates a panel for the rule level tree. */
+        private JPanel createLevelTreePanel(RuleLevelTree levelTree) {
+            JPanel result = new JPanel(new BorderLayout(), false);
+            Box labelPaneTop = Box.createVerticalBox();
+            JLabel labelPaneTitle =
+                new JLabel(" " + Options.RULE_TREE_PANE_TITLE + " ");
+            labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
+            labelPaneTop.add(labelPaneTitle);
+            result.add(labelPaneTop, BorderLayout.NORTH);
+            result.add(createLabelScrollPane(levelTree), BorderLayout.CENTER);
+            return result;
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            if (this.levelTree != null) {
+                this.levelTree.setEnabled(enabled);
+            }
+        }
+
+        private RuleLevelTree levelTree;
     }
 }

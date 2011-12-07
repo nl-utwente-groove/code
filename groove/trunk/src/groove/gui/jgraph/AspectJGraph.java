@@ -28,6 +28,7 @@ import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.gui.DisplayKind;
 import groove.gui.Options;
+import groove.gui.RuleLevelTree;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.ForestLayouter;
@@ -159,6 +160,23 @@ final public class AspectJGraph extends GraphJGraph {
     public final boolean isShowValueNodes() {
         return hasActiveEditor()
             || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+    }
+
+    /**
+     * Lazily creates and returns the rule level tree associated
+     * with this JGraph, if any.
+     */
+    public RuleLevelTree getLevelTree() {
+        if (this.levelTree == null && getGraphRole() == GraphRole.RULE
+            && !hasActiveEditor()) {
+            this.levelTree = createLevelTree();
+        }
+        return this.levelTree;
+    }
+
+    /** Callback method to create the rule level tree. */
+    protected RuleLevelTree createLevelTree() {
+        return new RuleLevelTree(this);
     }
 
     @Override
@@ -540,6 +558,8 @@ final public class AspectJGraph extends GraphJGraph {
     private final boolean forState;
     /** The role for which this {@link GraphJGraph} will display graphs. */
     private final GraphRole graphRole;
+    /** The JTree of rule levels, if any. */
+    private RuleLevelTree levelTree;
     /** Set of all labels and subtypes in the graph. */
     private TypeGraph typeGraph;
     /** Mapping from names to sub-label stores. */

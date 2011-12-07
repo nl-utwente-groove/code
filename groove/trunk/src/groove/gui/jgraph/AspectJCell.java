@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
 import groove.view.FormatError;
+import groove.view.aspect.AspectKind;
 
 /**
  * Instantiation of a {@link GraphJCell} with an {@link AspectJObject}
@@ -26,6 +27,9 @@ import groove.view.FormatError;
  * @version $Revision $
  */
 public interface AspectJCell extends GraphJCell {
+    /** Returns the aspect kind of the element wrapped in this cell. */
+    AspectKind getAspect();
+
     /** Returns the user object of this cell, with the given type. */
     AspectJObject getUserObject();
 

@@ -63,6 +63,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
+    public AspectKind getAspect() {
+        return this.aspect;
+    }
+
+    @Override
     public AspectNode getSourceNode() {
         return (AspectNode) super.getSourceNode();
     }
@@ -343,6 +348,18 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         } else {
             return getTargetNode().getAttrKind().hasSignature();
         }
+    }
+
+    @Override
+    public boolean isVisible() {
+        boolean result = true;
+        if (getJGraph().getLevelTree() != null) {
+            result = getJGraph().getLevelTree().isVisible(this);
+        }
+        if (result) {
+            result = super.isVisible();
+        }
+        return result;
     }
 
     @Override

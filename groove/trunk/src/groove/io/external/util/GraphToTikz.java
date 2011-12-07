@@ -16,6 +16,7 @@
  */
 package groove.io.external.util;
 
+import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
@@ -39,9 +40,9 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.io.HTMLConverter;
+import groove.io.Util;
 import groove.trans.RuleLabel;
 import groove.util.Duo;
-import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 
@@ -238,7 +239,7 @@ public final class GraphToTikz {
             case '\\':
                 result.append(BACKSLASH);
                 break;
-            case Groove.LC_PI:
+            case Util.LC_PI:
                 result.append(PI);
                 break;
             default:
@@ -264,11 +265,10 @@ public final class GraphToTikz {
      * @return the line with converted characters, if any.
      */
     private static StringBuilder convertInscriptedHtml(StringBuilder line) {
-        replaceInline(line, HTMLConverter.HTML_PI, PI);
-        replaceInline(line, HTMLConverter.HTML_GT, GT);
-        replaceInline(line, "&#47;", FORWARDSLASH);
-        replaceInline(line, AMP + "lt;", LT);
-        replaceInline(line, AMP + "gt;", GT);
+        replaceInline(line, toHtml(Util.LC_PI), PI);
+        replaceInline(line, toHtml(GT), GT);
+        replaceInline(line, toHtml(FORWARDSLASH), FORWARDSLASH);
+        replaceInline(line, toHtml(LT), LT);
         return line;
     }
 
@@ -875,7 +875,7 @@ public final class GraphToTikz {
             convertInscriptedHtml(escapeSpecialChars(htmlLine));
         int font = HTMLConverter.removeFontTags(line);
         String aux = "";
-        int i = line.indexOf(HTMLConverter.HTML_EXISTS);
+        int i = line.indexOf(toHtml(Util.EXISTS));
         if (i > -1) {
             this.result.append(line.substring(0, i));
             String sub =
@@ -885,7 +885,7 @@ public final class GraphToTikz {
             } else {
                 this.result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
             }
-        } else if (line.indexOf(HTMLConverter.HTML_FORALL) > -1) {
+        } else if (line.indexOf(HTMLConverter.toHtml(Util.FORALL)) > -1) {
             if (line.indexOf(HTMLConverter.SUPER_TAG.tagBegin) > -1) {
                 this.result.append(FORALLX_STR);
             } else {

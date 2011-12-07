@@ -21,6 +21,9 @@ import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+import groove.io.HTMLConverter;
+import groove.io.Util;
+import groove.trans.Condition.Op;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -669,22 +672,32 @@ public class Condition implements Fixable {
      */
     public static enum Op {
         /** Universally quantified pattern. */
-        FORALL("Universal"),
+        FORALL("Universal", Util.FORALL),
         /** Existentially quantified pattern. */
-        EXISTS("Existential"),
+        EXISTS("Existential", Util.EXISTS),
         /** Negated condition. */
-        NOT("Negated"),
+        NOT("Negated", Util.NEG),
         /** Conjunction of subconditions. */
-        AND("Conjunctive"),
+        AND("Conjunctive", Util.WEDGE),
         /** Disjunction of subconditions. */
-        OR("Disjunctive"),
+        OR("Disjunctive", Util.VEE),
         /** Truth. */
-        TRUE("True"),
+        TRUE("True", HTMLConverter.STRONG_TAG.on(Boolean.TRUE)),
         /** Falsehood. */
-        FALSE("False");
+        FALSE("False", HTMLConverter.STRONG_TAG.on(Boolean.FALSE));
 
-        private Op(String name) {
+        private Op(String name, char symbol) {
+            this(name, "" + symbol);
+        }
+
+        private Op(String name, String symbol) {
             this.name = name;
+            this.symbol = symbol;
+        }
+
+        /** Returns the symbol for this condition operator. */
+        public final String getSymbol() {
+            return this.symbol;
         }
 
         /** Returns the name of this condition operator. */
@@ -727,5 +740,6 @@ public class Condition implements Fixable {
         }
 
         private final String name;
+        private final String symbol;
     }
 }

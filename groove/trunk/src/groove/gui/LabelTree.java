@@ -57,10 +57,7 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -92,13 +89,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 }
             });
         }
-        // initialise the tree model
-        this.topNode = new DefaultMutableTreeNode();
-        this.treeModel = new DefaultTreeModel(this.topNode);
-        setModel(this.treeModel);
-        // set selection mode
-        getSelectionModel().setSelectionMode(
-            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
@@ -216,26 +206,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         setEnabled(this.jModel != null);
     }
 
-    @Override
-    protected void fireValueChanged(TreeSelectionEvent e) {
-        // only inform the listeners if the change is not triggered
-        // from this object
-        if (!this.changing) {
-            this.changing = true;
-            super.fireValueChanged(e);
-            this.changing = false;
-        }
-    }
-
-    @Override
-    public void clearSelection() {
-        if (!this.changing) {
-            this.changing = true;
-            super.clearSelection();
-            this.changing = false;
-        }
-    }
-
     /**
      * Returns the set of jcells whose label sets contain a given label.
      * @param label the label looked for
@@ -346,7 +316,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         // clear the selection first
         clearSelection();
         // clear the list
-        this.topNode.removeAllChildren();
+        getTopNode().removeAllChildren();
         Set<Label> labels = new TreeSet<Label>(getLabels());
         TypeGraph typeGraph = getTypeGraph();
         if (isShowsAllLabels() && typeGraph != null) {
@@ -355,14 +325,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         Set<LabelTreeNode> newNodes = new HashSet<LabelTreeNode>();
         for (Label label : labels) {
             LabelTreeNode labelNode = new LabelTreeNode(label, true);
-            this.topNode.add(labelNode);
+            getTopNode().add(labelNode);
             if (typeGraph != null && typeGraph.getLabels().contains(label)) {
                 addRelatedTypes(labelNode,
                     isShowsSubtypes() ? typeGraph.getDirectSubtypeMap()
                             : typeGraph.getDirectSupertypeMap(), newNodes);
             }
         }
-        this.treeModel.reload(this.topNode);
+        getModel().reload(getTopNode());
         for (LabelTreeNode newNode : newNodes) {
             expandPath(new TreePath(newNode.getPath()));
         }
@@ -599,12 +569,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /**
-     * The list model used for the JList.
-     * @require <tt>listModel == listComponent.getModel()</tt>
-     */
-    private final DefaultTreeModel treeModel;
-
-    /**
      * The {@link GraphJGraph}associated to this label list.
      */
     private final GraphJGraph jGraph;
@@ -625,13 +589,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     private final boolean filtering;
     /** Set of filtered labels. */
     final ObservableSet<Label> filteredLabels;
-    /** The top node in the JTree. */
-    private final DefaultMutableTreeNode topNode;
-    /** 
-     * Flag indicating that the selection model is changing.
-     * This means the listener should not be active.
-     */
-    private transient boolean changing;
     /** Mode of the label tree: showing subtypes or supertypes. */
     private boolean showsSubtypes = true;
     /** Mode of the label tree: showing all labels or just those in the graph. */

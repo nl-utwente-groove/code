@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.LabelTree.LabelTreeNode;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,16 +29,18 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeSelectionEvent;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 /** JTree specialisation in which the nodes may have checkboxes. */
 public class CheckboxTree extends JTree {
@@ -57,14 +57,35 @@ public class CheckboxTree extends JTree {
         // make sure the checkbox never selects the label
         // note that the BasicTreeUI may not be what is used in the current LAF,
         // but I don't know any other way to modify the selection behaviour
-        setUI(new BasicTreeUI() {
+        BasicTreeUI ui = new BasicTreeUI() {
             @Override
             protected void selectPathForEvent(TreePath path, MouseEvent event) {
                 if (!isOverCheckBox(path, event.getPoint().x)) {
                     super.selectPathForEvent(path, event);
                 }
             }
-        });
+        };
+        setUI(ui);
+        // initialise the tree model
+        this.topNode = new DefaultMutableTreeNode();
+        this.treeModel = new DefaultTreeModel(this.topNode);
+        setModel(this.treeModel);
+        // set selection mode
+        getSelectionModel().setSelectionMode(
+            TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+    }
+
+    @Override
+    public BasicTreeUI getUI() {
+        return (BasicTreeUI) super.getUI();
+    }
+
+    @Override
+    public void setBackground(Color background) {
+        if (background != null) {
+            this.lastBackground = background;
+        }
+        super.setBackground(background);
     }
 
     /**
@@ -89,10 +110,8 @@ public class CheckboxTree extends JTree {
     /** Tests if a given x-coordinate is over the checkbox part of a tree path. */
     private boolean isOverCheckBox(TreePath path, int x) {
         boolean result = false;
-        if (path != null
-            && path.getLastPathComponent() instanceof LabelTreeNode) {
-            LabelTreeNode labelNode =
-                (LabelTreeNode) path.getLastPathComponent();
+        if (path != null && path.getLastPathComponent() instanceof TreeNode) {
+            TreeNode labelNode = (TreeNode) path.getLastPathComponent();
             Rectangle pathBounds = getPathBounds(path);
             if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
                 int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
@@ -118,15 +137,56 @@ public class CheckboxTree extends JTree {
 
     /** Returns the appropriate background colour for an enabledness condition. */
     Color getColor(boolean enabled) {
-        return enabled ? getBackground() : DISABLED_COLOUR;
+        return enabled ? this.lastBackground : null;
     }
 
-    private static JTextField enabledField = new JTextField();
-    private static JTextField disabledField = new JTextField();
-    static {
-        enabledField.setEditable(true);
-        disabledField.setEditable(false);
+    @Override
+    protected void fireValueChanged(TreeSelectionEvent e) {
+        // only inform the listeners if the change is not triggered
+        // from this object
+        if (!this.changing) {
+            this.changing = true;
+            super.fireValueChanged(e);
+            this.changing = false;
+        }
     }
+
+    @Override
+    public void clearSelection() {
+        if (!this.changing) {
+            this.changing = true;
+            super.clearSelection();
+            this.changing = false;
+        }
+    }
+
+    @Override
+    public DefaultTreeModel getModel() {
+        return this.treeModel;
+    }
+
+    /** Returns the fixed top node of the tree. */
+    public DefaultMutableTreeNode getTopNode() {
+        return this.topNode;
+    }
+
+    /** The top node in the JTree. */
+    private final DefaultMutableTreeNode topNode;
+    /**
+     * The list model used for the JList.
+     * @require <tt>listModel == listComponent.getModel()</tt>
+     */
+    private final DefaultTreeModel treeModel;
+    /**
+     * Value of the last explicitly set non-{@code null} background color.
+     * This is used as new background the next time the tree is enabled.
+     */
+    private Color lastBackground;
+    /** 
+     * Flag indicating that the selection model is changing.
+     * This means the listener should not be active.
+     */
+    private transient boolean changing;
 
     /** Orientation of the filtering checkboxes in the label cells. */
     private static final String CHECKBOX_ORIENTATION = BorderLayout.WEST;
@@ -134,11 +194,6 @@ public class CheckboxTree extends JTree {
     /** Preferred width of a checkbox. */
     private static final int CHECKBOX_WIDTH =
         new JCheckBox().getPreferredSize().width;
-
-    /** The background colour of an enabled component. */
-    private static final Color ENABLED_COLOUR = enabledField.getBackground();
-    /** The background colour of a disabled component. */
-    private static final Color DISABLED_COLOUR = disabledField.getBackground();
 
     /**
      * Special cell renderer for nodes with optional checkboxes.
@@ -175,7 +230,7 @@ public class CheckboxTree extends JTree {
             Color background = this.tree.getColor(tree.isEnabled());
             // this.jLabel.setBackgroundNonSelectionColor(background);
             this.jLabel.setOpaque(!sel);
-            this.jLabel.setBackground(CheckboxTree.ENABLED_COLOUR);
+            this.jLabel.setBackground(background);
             this.labelNode =
                 value instanceof TreeNode ? (TreeNode) value : null;
             if (this.labelNode != null && this.labelNode.hasCheckbox()) {

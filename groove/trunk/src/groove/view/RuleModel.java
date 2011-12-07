@@ -376,7 +376,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * Class encoding an index in a tree, consisting of a list of indices at
      * every level of the tree.
      */
-    static private class Index extends DefaultFixable implements
+    static public class Index extends DefaultFixable implements
             Comparable<Index> {
         /**
          * Constructs a new level, without setting parent or children.
@@ -422,6 +422,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         public Index getParent() {
             testFixed(true);
             return this.parent;
+        }
+
+        /**
+         * Returns the (optional) aspect node with which this level is
+         * associated.
+         */
+        public AspectNode getLevelNode() {
+            return this.levelNode;
         }
 
         /**

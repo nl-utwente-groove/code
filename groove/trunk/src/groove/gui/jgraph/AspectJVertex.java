@@ -2,6 +2,7 @@ package groove.gui.jgraph;
 
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
@@ -18,6 +19,7 @@ import groove.graph.algebra.VariableNode;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
+import groove.io.Util;
 import groove.trans.RuleLabel;
 import groove.util.Colors;
 import groove.view.FormatError;
@@ -61,6 +63,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public AspectNode getNode() {
         return (AspectNode) super.getNode();
+    }
+
+    @Override
+    public AspectKind getAspect() {
+        return this.aspect;
     }
 
     @SuppressWarnings("unchecked")
@@ -357,18 +364,17 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             StringBuilder line = new StringBuilder();
             switch (this.aspect) {
             case FORALL:
-                line.append(HTMLConverter.HTML_FORALL);
+                line.append(HTML_FORALL);
                 break;
             case FORALL_POS:
-                line.append(HTMLConverter.HTML_FORALL);
-                line.append(HTMLConverter.SUPER_TAG.on(HTMLConverter.HTML_GT
-                    + "0"));
+                line.append(HTML_FORALL);
+                line.append(HTMLConverter.SUPER_TAG.on(HTML_GT + "0"));
                 break;
             case EXISTS:
-                line.append(HTMLConverter.HTML_EXISTS);
+                line.append(HTML_EXISTS);
                 break;
             case EXISTS_OPT:
-                line.append(HTMLConverter.HTML_EXISTS);
+                line.append(HTML_EXISTS);
                 line.append(HTMLConverter.SUPER_TAG.on("?"));
             }
             String level = (String) getNode().getAspect().getContent();
@@ -536,6 +542,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
+    public boolean isVisible() {
+        boolean result = true;
+        if (getJGraph().getLevelTree() != null) {
+            result = getJGraph().getLevelTree().isVisible(this);
+        }
+        if (result) {
+            result = super.isVisible();
+        }
+        return result;
+    }
+
+    @Override
     public final boolean hasError() {
         return !this.extraErrors.isEmpty() || !this.errors.isEmpty();
     }
@@ -694,5 +712,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     static private final String ASSIGN_TEXT = " = ";
     static private final String TYPE_TEXT = ": ";
     static private final String IMPORT_TEXT = String.format("%simport%s",
-        HTMLConverter.FRENCH_QUOTES_OPEN, HTMLConverter.FRENCH_QUOTES_CLOSED);
+        HTMLConverter.toHtml(Util.FRENCH_QUOTES_OPEN),
+        HTMLConverter.toHtml(Util.FRENCH_QUOTES_CLOSED));
+    static private final String HTML_EXISTS = toHtml(Util.EXISTS);
+    static private final String HTML_FORALL = toHtml(Util.FORALL);
+    static private final String HTML_GT = toHtml('>');
 }

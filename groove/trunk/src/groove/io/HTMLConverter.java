@@ -19,7 +19,6 @@ package groove.io;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.gui.jgraph.AspectJGraph;
 import groove.util.Colors;
-import groove.util.Groove;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -33,6 +32,11 @@ import org.jgraph.graph.GraphConstants;
  * @version $Revision: 3122 $
  */
 public class HTMLConverter {
+
+    /** Converts a string representation of a unicode hex char to a HTML encoding thereof. */
+    public static String toHtml(char unicode) {
+        return String.format("&#%d;", 0 + unicode);
+    }
 
     /**
      * Converts a piece of text to HTML by replacing special characters to their
@@ -66,8 +70,10 @@ public class HTMLConverter {
                 text.replace(i, i + 1, HTML_LINEBREAK);
                 i += HTML_LINEBREAK.length() - 1;
                 break;
-            case Groove.LC_PI:
-                text.replace(i, i + 1, HTML_PI);
+            default:
+                if (c > 0xFF) {
+                    text.replace(i, i + 1, toHtml(c));
+                }
             }
         }
         return text;
@@ -195,34 +201,6 @@ public class HTMLConverter {
 
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
-    /** HTML opening << quote symbol. */
-    static public final String FRENCH_QUOTES_OPEN = "&#171;"; // &laquo;
-    /** HTML closing >> quote symbol. */
-    static public final String FRENCH_QUOTES_CLOSED = "&#187;"; // &raquo;
-    /** HTML greater than symbol. */
-    static public final String HTML_GT = "&#62;"; // &gt;
-    /** HTML forall symbol. */
-    static public final String HTML_FORALL = "&#8704;"; // &forall;
-    /** HTML exists symbol. */
-    static public final String HTML_EXISTS = "&#8707;"; // &exist;
-    /** HTML or symbol. */
-    static public final String HTML_OR = "&#8744;"; // &or;
-    /** HTML negation symbol. */
-    static public final String HTML_NOT = "&#172;"; // &not;
-    /** HTML lambda symbol. */
-    static public final String HTML_LAMBDA = "&#955;"; // &lambda;
-    /** HTML left angular bracket symbol. */
-    static public final String HTML_LANGLE = "&lt;"; // &#9001; / &lang;
-    /** HTML right angular bracket symbol. */
-    static public final String HTML_RANGLE = "&gt;"; // &#9002; / &rang;
-    /** HTML tau symbol. */
-    static public final String HTML_TAU = "&#932;"; // &tau;
-    /** HTML pi symbol. */
-    static public final String HTML_PI = "&#960;"; // &pi;
-    /** HTML epsilon symbol. */
-    static public final String HTML_EPSILON = "&#949;"; // &epsilon;
-    /** HTML times symbol. */
-    static public final String HTML_TIMES = "&#215;"; // &times;
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */
