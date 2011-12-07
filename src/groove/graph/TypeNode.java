@@ -124,6 +124,11 @@ public class TypeNode implements Node, TypeElement {
         return this.imported;
     }
 
+    /** Indicates if this node type stands for a data type. */
+    public boolean isDataType() {
+        return this.type.isDataType();
+    }
+
     /** Sets this node type to imported. */
     public final void setImported(boolean value) {
         this.imported = value;

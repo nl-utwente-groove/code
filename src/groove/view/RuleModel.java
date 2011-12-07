@@ -1555,19 +1555,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.isRule = origin.isRule;
             this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             this.rhs = toTypedGraph(origin.rhs, parentTypeMap, this.typeMap);
-            if (!getType().isImplicit()) {
-                try {
-                    Set<RuleNode> parentNodes = new HashSet<RuleNode>();
-                    if (parentTypeMap != null) {
-                        for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
-                            parentNodes.add(this.typeMap.getNode(origParentNode));
-                        }
+            try {
+                Set<RuleNode> parentNodes = new HashSet<RuleNode>();
+                if (parentTypeMap != null) {
+                    for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
+                        parentNodes.add(this.typeMap.getNode(origParentNode));
                     }
-                    checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
-                } catch (FormatException exc) {
-                    this.errors.addAll(transferErrors(exc.getErrors(),
-                        this.typeMap));
                 }
+                checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
+            } catch (FormatException exc) {
+                this.errors.addAll(transferErrors(exc.getErrors(), this.typeMap));
             }
             if (!this.errors.isEmpty()) {
                 throw new FormatException(this.errors);
@@ -1693,6 +1690,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                                 "%s-node is merged with two distinct non-sharp nodes",
                                 sourceType.label().text(), source));
                         }
+                    } else if (source.getType().isDataType()) {
+                        errors.add(new FormatError(
+                            "Primitive %s-node can't be merged",
+                            sourceType.label().text(), source));
                     }
                 } else {
                     TypeEdge edgeType = edge.getType();
