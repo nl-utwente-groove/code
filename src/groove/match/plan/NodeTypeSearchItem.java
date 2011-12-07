@@ -75,8 +75,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     @Override
     public String toString() {
-        return String.format("Find node %s%s", this.type, this.sharpType
-                ? " (sharp)" : "");
+        return String.format("Find node %s:%s%s", this.source, this.type,
+            this.sharpType ? " (sharp)" : "");
     }
 
     /**
