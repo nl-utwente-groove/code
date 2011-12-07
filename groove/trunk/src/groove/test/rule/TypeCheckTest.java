@@ -49,6 +49,12 @@ public class TypeCheckTest {
         test("shadow");
     }
 
+    /** Tests for regression. */
+    @Test
+    public void testRegression() {
+        test("regression");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
