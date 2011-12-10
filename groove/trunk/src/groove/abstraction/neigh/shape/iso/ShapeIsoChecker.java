@@ -85,6 +85,16 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return strong ? strongInstance : weakInstance;
     }
 
+    /**
+     * Returns true if the shapes are marked as exactly equal, i.e., without
+     * taking subsumption into account.
+     */
+    public static boolean areExactlyEqual(Shape s, Shape t) {
+        ShapeIsoChecker checker = getInstance(true);
+        int result = checker.compareShapes(s, t).one();
+        return checker.isDomEqualsCod(result);
+    }
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -117,6 +127,14 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return (result & COD_SUBSUMES_DOM) == COD_SUBSUMES_DOM;
     }
 
+    /** 
+     * Returns true if the given result indicates that the domain subsumes the
+     * co-domain and that they are not equal.
+     */
+    public boolean isDomStrictlyLargerThanCod(int result) {
+        return this.isDomSubsumesCod(result) && !this.isDomEqualsCod(result);
+    }
+
     /**
      * Returns true if we can consider the shapes equal based on the given
      * result of the comparison.
@@ -131,14 +149,6 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             equal |= this.isCodSubsumesDom(result);
         }
         return equal;
-    }
-
-    /** 
-     * Returns true if the given result indicates that the domain subsumes the
-     * co-domain and that they are not equal.
-     */
-    public boolean isDomStrictlyLargerThanCod(int result) {
-        return this.isDomSubsumesCod(result) && !this.isDomEqualsCod(result);
     }
 
     /** See {@link #compareShapes(Shape, Shape)}. */
