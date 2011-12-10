@@ -96,4 +96,24 @@ public final class ShapeGxl extends
         this.marshalGraph(shape.downcast(), file);
     }
 
+    /** Tries to load a shape from the given file. May return null. */
+    public Shape loadShape(File file) {
+        Shape result = null;
+        try {
+            result = this.unmarshalShape(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /** Tries to save the given shape to the given file. May fail silently. */
+    public void saveShape(Shape shape, File file) {
+        try {
+            this.marshalShape(shape, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

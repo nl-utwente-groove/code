@@ -204,7 +204,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * the grammar if it had not yet been initialised.
      * @see #getGrammar()
      */
-    private AGTS getGTS() {
+    public AGTS getGTS() {
         if (gts == null) {
             gts = new AGTS(getGrammar());
         }
@@ -292,7 +292,7 @@ public final class ShapeGenerator extends CommandLineTool {
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
             DefaultGraph gtsGraph =
-                reducedGTS.toPlainGraph(true, true, true, false);
+                this.reducedGTS.toPlainGraph(true, true, true, false);
             try {
                 Groove.saveGraph(gtsGraph, getOutputFileName());
             } catch (IOException e) {
