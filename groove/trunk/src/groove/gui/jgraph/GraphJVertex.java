@@ -121,11 +121,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
             || getJGraph().isShowLoopsAsNodeLabels();
     }
 
-    /** Tests if a given edge's layout attributes
-    protected boolean hasLayout(Edge<?> edge) {
-        
-    }
-    
     /**
      * Returns an unmodifiable view on the self edges.
      * These are the edges added using {@link #addJVertexLabel(Edge)}.

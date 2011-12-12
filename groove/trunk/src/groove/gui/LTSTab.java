@@ -174,7 +174,6 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
-                getJGraph().getFilteredLabels().clear();
                 setJModel(null);
                 setEnabled(false);
                 SwingUtilities.invokeLater(new Runnable() {

@@ -64,6 +64,9 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         // reset the active state and transition
         this.activeState = null;
         this.activeTransition = null;
+        if (model == null) {
+            getFilteredLabels().clear();
+        }
         super.setModel(model);
     }
 
