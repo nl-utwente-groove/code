@@ -26,7 +26,6 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.io.HTMLConverter;
-import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -36,12 +35,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
@@ -76,14 +73,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * {@link #updateModel()} should be called before the list can be used.
      * @param jGraph the jgraph with which this list is to be associated
      * @param toolBar if {@code true}, the panel should have a tool bar
+     * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public LabelTree(GraphJGraph jGraph, boolean toolBar) {
+    public LabelTree(GraphJGraph jGraph, boolean toolBar, boolean filtering) {
         this.jGraph = jGraph;
-        this.filteredLabels = jGraph.getFilteredLabels();
-        this.filtering = this.filteredLabels != null;
+        this.labelFilter = new LabelFilter();
+        this.filtering = filtering;
         this.toolBar = toolBar;
-        if (this.filtering) {
-            this.filteredLabels.addObserver(new Observer() {
+        if (filtering) {
+            this.labelFilter.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
                     LabelTree.this.repaint();
                 }
@@ -98,6 +96,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     @Override
     protected CellRenderer createRenderer() {
         return new MyTreeCellRenderer();
+    }
+
+    /**
+     * Creates an action that, on invocation,
+     * will filter all labels occurring in a given array of cells.
+     */
+    public Action createFilterAction(Object[] cells) {
+        return new FilterAction(cells);
     }
 
     /** Creates a tool bar for the label tree. */
@@ -173,12 +179,28 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 ? ((AspectJGraph) getJGraph()).getTypeGraphMap() : null;
     }
 
+    /** Returns the label filter associated with this label tree. */
+    public LabelFilter getFilter() {
+        synchroniseModel();
+        return this.labelFilter;
+    }
+
     /**
      * Returns an unmodifiable view on the label set maintained by this label
      * tree.
      */
     public Collection<Label> getLabels() {
-        return Collections.unmodifiableSet(this.labelCellMap.keySet());
+        return Collections.unmodifiableSet(getFilter().getLabels());
+    }
+
+    /** 
+     * Refreshes the labels according to the jModel,
+     * if the jModel has changed.
+     */
+    private void synchroniseModel() {
+        if (this.jModel != getJGraph().getModel()) {
+            updateModel();
+        }
     }
 
     /**
@@ -190,31 +212,43 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         if (this.jModel != null) {
             this.jModel.removeGraphModelListener(this);
         }
-        this.jModel = this.jGraph.getModel();
-        this.labelCellMap.clear();
-        if (this.jModel != null) {
+        this.jModel = getJGraph().getModel();
+        if (this.typeGraph != getTypeGraph()) {
+            this.typeGraph = getTypeGraph();
+            getFilter().clear();
+        } else {
+            getFilter().clearJCells();
+        }
+        if (this.jModel == null) {
+            getFilter().clear();
+        } else {
             this.jModel.addGraphModelListener(this);
+            if (getTypeGraph() != null) {
+                for (Label label : getTypeGraph().getLabels()) {
+                    getFilter().addLabel(label);
+                }
+            }
             for (int i = 0; i < this.jModel.getRootCount(); i++) {
                 GraphJCell cell = (GraphJCell) this.jModel.getRootAt(i);
                 if (isListable(cell)) {
-                    addToLabels(cell);
+                    getFilter().addJCell(cell);
                 }
             }
         }
         updateTree();
-        setDragEnabled(getTypeGraph() != null && !getTypeGraph().isFixed());
         setEnabled(this.jModel != null);
     }
 
-    /**
-     * Returns the set of jcells whose label sets contain a given label.
-     * @param label the label looked for
-     * @return the set of {@link GraphJCell}s for which {@link GraphJCell#getListLabels()}
-     *         contains <tt>label</tt>
-     */
-    public Set<GraphJCell> getJCells(Object label) {
-        return this.labelCellMap.get(label);
-    }
+    //
+    //    /**
+    //     * Returns the set of jcells whose label sets contain a given label.
+    //     * @param label the label looked for
+    //     * @return the set of {@link GraphJCell}s for which {@link GraphJCell#getListLabels()}
+    //     *         contains <tt>label</tt>
+    //     */
+    //    public Set<GraphJCell> getJCells(Object label) {
+    //        return this.filteredLabels.getJCells(label);
+    //    }
 
     /**
      * Enables the buttons in addition to delegating the method to <tt>super</tt>.
@@ -249,7 +283,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             for (Object changeEntry : changeMap.entrySet()) {
                 Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
                 if (isListable(obj)) {
-                    changed |= modifyLabels((GraphJCell) obj);
+                    changed |= getFilter().modifyJCell((GraphJCell) obj);
                 }
             }
         }
@@ -260,7 +294,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (isListable(element)) {
-                    changed |= addToLabels((GraphJCell) element);
+                    changed |= getFilter().addJCell((GraphJCell) element);
                 }
             }
         }
@@ -271,7 +305,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 // the cell may be a port, so we have to check for
                 // JCell-hood
                 if (isListable(element)) {
-                    changed |= removeFromLabels((GraphJCell) element);
+                    changed |= getFilter().removeJCell((GraphJCell) element);
                 }
             }
         }
@@ -298,7 +332,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             for (TreePath selectedPath : selectionPaths) {
                 Label label =
                     ((LabelTreeNode) selectedPath.getLastPathComponent()).getLabel();
-                Set<GraphJCell> occurrences = this.labelCellMap.get(label);
+                Set<GraphJCell> occurrences = getFilter().getJCells(label);
                 if (occurrences != null) {
                     emphSet.addAll(occurrences);
                 }
@@ -319,17 +353,16 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         getTopNode().removeAllChildren();
         Set<Label> labels = new TreeSet<Label>(getLabels());
         TypeGraph typeGraph = getTypeGraph();
-        if (isShowsAllLabels() && typeGraph != null) {
-            labels.addAll(typeGraph.getLabels());
-        }
         Set<LabelTreeNode> newNodes = new HashSet<LabelTreeNode>();
         for (Label label : labels) {
-            LabelTreeNode labelNode = new LabelTreeNode(label, true);
-            getTopNode().add(labelNode);
-            if (typeGraph != null && typeGraph.getLabels().contains(label)) {
-                addRelatedTypes(labelNode,
-                    isShowsSubtypes() ? typeGraph.getDirectSubtypeMap()
-                            : typeGraph.getDirectSupertypeMap(), newNodes);
+            if (isShowsAllLabels() || getFilter().hasJCells(label)) {
+                LabelTreeNode labelNode = new LabelTreeNode(label, true);
+                getTopNode().add(labelNode);
+                if (typeGraph != null && typeGraph.getLabels().contains(label)) {
+                    addRelatedTypes(labelNode,
+                        isShowsSubtypes() ? typeGraph.getDirectSubtypeMap()
+                                : typeGraph.getDirectSupertypeMap(), newNodes);
+                }
             }
         }
         getModel().reload(getTopNode());
@@ -405,89 +438,89 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         return result;
     }
 
-    /**
-     * Adds a cell to the label map. This means that for all labels of the cell,
-     * the cell is inserted in that label's image. The return value indicates if
-     * any labels were added
-     */
-    private boolean addToLabels(GraphJCell cell) {
-        boolean result = false;
-        for (Label label : cell.getListLabels()) {
-            result |= addToLabels(cell, label);
-        }
-        return result;
-    }
-
-    /**
-     * Adds a cell-label pair to the label map. If the label does not yet exist
-     * in the map, insetrs it. The return value indicates if the label had to be
-     * created.
-     */
-    private boolean addToLabels(GraphJCell cell, Label label) {
-        boolean result = false;
-        Set<GraphJCell> currentCells = this.labelCellMap.get(label);
-        if (currentCells == null) {
-            currentCells = new HashSet<GraphJCell>();
-            this.labelCellMap.put(label, currentCells);
-            result = true;
-        }
-        currentCells.add(cell);
-        return result;
-    }
-
-    /**
-     * Removes a cell from the values of the label map, and removes a label if
-     * there are no cells left for it. The return value indicates if there were
-     * any labels removed.
-     */
-    private boolean removeFromLabels(GraphJCell cell) {
-        boolean result = false;
-        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
-            this.labelCellMap.entrySet().iterator();
-        while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
-            Set<GraphJCell> cellSet = labelEntry.getValue();
-            if (cellSet.remove(cell) && cellSet.isEmpty()) {
-                labelIter.remove();
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Modifies the presence of the cell in the label map. The return value
-     * indicates if there were any labels added or removed.
-     */
-    private boolean modifyLabels(GraphJCell cell) {
-        boolean result = false;
-        Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
-        // go over the existing label map
-        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
-            this.labelCellMap.entrySet().iterator();
-        while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
-            Label label = labelEntry.getKey();
-            Set<GraphJCell> cellSet = labelEntry.getValue();
-            if (newLabelSet.remove(label)) {
-                // the cell should be in the set
-                cellSet.add(cell);
-            } else if (cellSet.remove(cell) && cellSet.isEmpty()) {
-                // the cell was in the set but shouldn't have been,
-                // and the set is now empty
-                labelIter.remove();
-                result = true;
-            }
-        }
-        // any new labels left over were not in the label map; add them
-        for (Label label : newLabelSet) {
-            Set<GraphJCell> newCells = new HashSet<GraphJCell>();
-            newCells.add(cell);
-            this.labelCellMap.put(label, newCells);
-            result = true;
-        }
-        return result;
-    }
+    //    /**
+    //     * Adds a cell to the label map. This means that for all labels of the cell,
+    //     * the cell is inserted in that label's image. The return value indicates if
+    //     * any labels were added
+    //     */
+    //    private boolean addToLabels(GraphJCell cell) {
+    //        boolean result = false;
+    //        for (Label label : cell.getListLabels()) {
+    //            result |= addToLabels(cell, label);
+    //        }
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Adds a cell-label pair to the label map. If the label does not yet exist
+    //     * in the map, inserts it. The return value indicates if the label had to be
+    //     * created.
+    //     */
+    //    private boolean addToLabels(GraphJCell cell, Label label) {
+    //        boolean result = false;
+    //        Set<GraphJCell> currentCells = this.labelCellMap.get(label);
+    //        if (currentCells == null) {
+    //            currentCells = new HashSet<GraphJCell>();
+    //            this.labelCellMap.put(label, currentCells);
+    //            result = true;
+    //        }
+    //        currentCells.add(cell);
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Removes a cell from the values of the label map, and removes a label if
+    //     * there are no cells left for it. The return value indicates if there were
+    //     * any labels removed.
+    //     */
+    //    private boolean removeFromLabels(GraphJCell cell) {
+    //        boolean result = false;
+    //        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
+    //            this.labelCellMap.entrySet().iterator();
+    //        while (labelIter.hasNext()) {
+    //            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
+    //            Set<GraphJCell> cellSet = labelEntry.getValue();
+    //            if (cellSet.remove(cell) && cellSet.isEmpty()) {
+    //                labelIter.remove();
+    //                result = true;
+    //            }
+    //        }
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Modifies the presence of the cell in the label map. The return value
+    //     * indicates if there were any labels added or removed.
+    //     */
+    //    private boolean modifyLabels(GraphJCell cell) {
+    //        boolean result = false;
+    //        Set<Label> newLabelSet = new HashSet<Label>(cell.getListLabels());
+    //        // go over the existing label map
+    //        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
+    //            this.labelCellMap.entrySet().iterator();
+    //        while (labelIter.hasNext()) {
+    //            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
+    //            Label label = labelEntry.getKey();
+    //            Set<GraphJCell> cellSet = labelEntry.getValue();
+    //            if (newLabelSet.remove(label)) {
+    //                // the cell should be in the set
+    //                cellSet.add(cell);
+    //            } else if (cellSet.remove(cell) && cellSet.isEmpty()) {
+    //                // the cell was in the set but shouldn't have been,
+    //                // and the set is now empty
+    //                labelIter.remove();
+    //                result = true;
+    //            }
+    //        }
+    //        // any new labels left over were not in the label map; add them
+    //        for (Label label : newLabelSet) {
+    //            Set<GraphJCell> newCells = new HashSet<GraphJCell>();
+    //            newCells.add(cell);
+    //            this.labelCellMap.put(label, newCells);
+    //            result = true;
+    //        }
+    //        return result;
+    //    }
 
     /**
      * If the object to be displayed is a {@link Label}, this implementation
@@ -536,22 +569,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
     /** Indicates if a given label is currently filtered. */
     public boolean isFiltered(Label label) {
-        return isFiltering() && this.filteredLabels.contains(label);
-    }
-
-    /**
-     * Indicates if this tree is currently showing all labels, or just those
-     * existing in the graph.
-     */
-    private boolean isShowsAllLabels() {
-        return this.showsAllLabels;
-    }
-
-    /**
-     * Changes the value of the show-all-labels flag.
-     */
-    private void setShowsAllLabels(boolean show) {
-        this.showsAllLabels = show;
+        synchroniseModel();
+        return isFiltering() && !getFilter().isSelected(label);
     }
 
     /**
@@ -569,6 +588,21 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /**
+     * Indicates if this tree is currently showing all labels, or just those
+     * existing in the graph.
+     */
+    public boolean isShowsAllLabels() {
+        return this.showsAllLabels;
+    }
+
+    /**
+     * Changes the value of the show-all-labels flag.
+     */
+    public void setShowsAllLabels(boolean show) {
+        this.showsAllLabels = show;
+    }
+
+    /**
      * The {@link GraphJGraph}associated to this label list.
      */
     private final GraphJGraph jGraph;
@@ -577,23 +611,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * The {@link GraphJModel}currently being viewed by this label list.
      */
     private GraphJModel<?,?> jModel;
-
-    /**
-     * The bag of labels in this jmodel.
-     */
-    final Map<Label,Set<GraphJCell>> labelCellMap =
-        new TreeMap<Label,Set<GraphJCell>>();
+    /** The type graph in the model, if any. */
+    private TypeGraph typeGraph;
     /** Flag indicating if a tool bar should be used. */
     private final boolean toolBar;
     /** Flag indicating if label filtering should be used. */
     private final boolean filtering;
     /** Set of filtered labels. */
-    final ObservableSet<Label> filteredLabels;
-    /** Mode of the label tree: showing subtypes or supertypes. */
-    private boolean showsSubtypes = true;
+    private final LabelFilter labelFilter;
     /** Mode of the label tree: showing all labels or just those in the graph. */
     private boolean showsAllLabels = false;
-
+    /** Mode of the label tree: showing subtypes or supertypes. */
+    private boolean showsSubtypes = true;
     /** Button for setting the show subtypes mode. */
     private JToggleButton showSubtypesButton;
     /** Button for setting the show supertypes mode. */
@@ -647,11 +676,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
         @Override
         public void setSelected(boolean selected) {
-            if (selected) {
-                LabelTree.this.filteredLabels.remove(getLabel());
-            } else {
-                LabelTree.this.filteredLabels.add(getLabel());
-            }
+            getFilter().setSelected(getLabel(), selected);
         }
 
         @Override
@@ -735,9 +760,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 if (path != null) {
                     Label label =
                         ((LabelTreeNode) path.getLastPathComponent()).getLabel();
-                    if (!LabelTree.this.filteredLabels.add(label)) {
-                        LabelTree.this.filteredLabels.remove(label);
-                    }
+                    getFilter().changeSelected(label);
                 }
             }
         }
@@ -751,6 +774,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     private class FilterAction extends AbstractAction {
+        FilterAction(Object[] cells) {
+            super(Options.FILTER_ACTION_NAME);
+            this.filter = true;
+            this.labels = new ArrayList<Label>();
+            for (Object cell : cells) {
+                this.labels.addAll(((GraphJCell) cell).getListLabels());
+            }
+        }
+
         FilterAction(TreePath[] cells, boolean filter) {
             super(filter ? Options.FILTER_ACTION_NAME
                     : Options.UNFILTER_ACTION_NAME);
@@ -762,11 +794,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (this.filter) {
-                LabelTree.this.filteredLabels.addAll(this.labels);
-            } else {
-                LabelTree.this.filteredLabels.removeAll(this.labels);
-            }
+            getFilter().setSelected(this.labels, !this.filter);
         }
 
         private final boolean filter;
@@ -795,11 +823,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             }
 
             public void actionPerformed(ActionEvent e) {
-                if (TypeFilterMenu.this.filter) {
-                    LabelTree.this.filteredLabels.addAll(this.labels);
-                } else {
-                    LabelTree.this.filteredLabels.removeAll(this.labels);
-                }
+                getFilter().setSelected(this.labels,
+                    !TypeFilterMenu.this.filter);
             }
 
             private final Collection<Label> labels;
@@ -897,8 +922,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             if (labelTreeNode != null) {
                 Label label = labelTreeNode.getLabel();
                 StringBuilder toolTipText = new StringBuilder();
-                Set<GraphJCell> occurrences =
-                    LabelTree.this.labelCellMap.get(label);
+                Set<GraphJCell> occurrences = getFilter().getJCells(label);
                 int count = occurrences == null ? 0 : occurrences.size();
                 toolTipText.append(count);
                 toolTipText.append(" occurrence");

@@ -38,7 +38,6 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
-import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -107,19 +106,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph for a given simulator.
      * @param simulator simulator to which the JGraph belongs.
-     * @param hasFilters indicates if this JGraph is to use label filtering.
+     * @param filtering indicates if this JGraph is to use label filtering.
      */
-    public GraphJGraph(Simulator simulator, boolean hasFilters) {
+    public GraphJGraph(Simulator simulator, boolean filtering) {
         super((GraphJModel<?,?>) null);
         this.simulator = simulator;
         this.options =
             simulator == null ? new Options() : simulator.getOptions();
-        if (hasFilters) {
-            this.filteredLabels = new ObservableSet<Label>();
-            this.filteredLabels.addObserver(this.refreshListener);
-        } else {
-            this.filteredLabels = null;
-        }
+        this.filtering = filtering;
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -134,12 +128,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
         setDisconnectable(false);
     }
 
-    /**
-     * Returns the set of labels that is currently filtered from view. If
-     * <code>null</code>, no filtering is going on.
-     */
-    public final ObservableSet<Label> getFilteredLabels() {
-        return this.filteredLabels;
+    /** Indicates if the JGraph allows filtering of labels. */
+    final public boolean isFiltering() {
+        return this.filtering;
     }
 
     /**
@@ -147,8 +138,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * the case if it is in the set of filtered labels.
      */
     public boolean isFiltering(Label label) {
-        return this.filteredLabels != null
-            && this.filteredLabels.contains(label);
+        return this.labelTree.isFiltered(label);
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */
@@ -536,7 +526,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
             if (jModel != null) {
                 setName(jModel.getName());
             }
-            getLabelTree().updateModel();
             if (model != null && this.layouter != null) {
                 int layoutCount = freeze();
                 if (layoutCount > 0) {
@@ -816,13 +805,21 @@ public class GraphJGraph extends org.jgraph.JGraph {
     public LabelTree getLabelTree() {
         if (this.labelTree == null) {
             this.labelTree = createLabelTree();
+            this.labelTree.getFilter().addObserver(new Observer() {
+                /** The method is called when a filtered set is changed. */
+                @SuppressWarnings({"unchecked"})
+                public void update(Observable o, Object arg) {
+                    assert arg instanceof Set;
+                    refreshCells((Set<GraphJCell>) arg);
+                }
+            });
         }
         return this.labelTree;
     }
 
     /** Callback method to create the label tree. */
     protected LabelTree createLabelTree() {
-        return new LabelTree(this, true);
+        return new LabelTree(this, true, this.filtering);
     }
 
     /** 
@@ -1016,8 +1013,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             }
             itemAdded = true;
         }
-        if (this.filteredLabels != null && cells != null && cells.length > 0) {
-            result.add(new FilterAction(cells));
+        if (this.labelTree.isFiltering() && cells != null && cells.length > 0) {
+            result.add(this.labelTree.createFilterAction(cells));
             itemAdded = true;
         }
         if (itemAdded) {
@@ -1189,12 +1186,10 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Simulator simulator;
     /** The options object with which this {@link GraphJGraph} was constructed. */
     private final Options options;
-    /** The set of labels currently filtered from view. */
-    private final ObservableSet<Label> filteredLabels;
+    /** Flag indicating if the JGraph is filtering labels. */
+    private final boolean filtering;
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
-    /** The fixed refresh listener of this {@link GraphJModel}. */
-    private final RefreshListener refreshListener = new RefreshListener();
     private CancelEditListener cancelListener;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
@@ -1318,25 +1313,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         }
     }
 
-    /** Action to turn filtering on for a set of selected cells. */
-    private class FilterAction extends AbstractAction {
-        FilterAction(Object[] cells) {
-            super(Options.FILTER_ACTION_NAME);
-            this.cells = cells;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Set<Label> labels = new HashSet<Label>();
-            for (Object cell : this.cells) {
-                labels.addAll(((GraphJCell) cell).getListLabels());
-            }
-            getFilteredLabels().addAll(labels);
-        }
-
-        /** The array of cells upon which this action works. */
-        private final Object[] cells;
-    }
-
     /** Creates the view factory for this jGraph. */
     protected JCellViewFactory createViewFactory() {
         return new JCellViewFactory(this);
@@ -1457,44 +1433,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         @Override
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
-        }
-    }
-
-    /**
-     * Observer that calls {@link GraphJGraph#refreshCells(Collection)} whenever it receives an
-     * update event.
-     */
-    private class RefreshListener implements Observer {
-        /** Empty constructor wit the correct visibility. */
-        RefreshListener() {
-            // empty
-        }
-
-        /** The method is called when a filtered set is changed. */
-        @SuppressWarnings({"unchecked"})
-        public void update(Observable o, Object arg) {
-            Set<Label> changedLabelSet = null;
-            if (arg instanceof ObservableSet.AddUpdate) {
-                changedLabelSet =
-                    ((ObservableSet.AddUpdate<Label>) arg).getAddedSet();
-            } else {
-                changedLabelSet =
-                    ((ObservableSet.RemoveUpdate<Label>) arg).getRemovedSet();
-            }
-            Set<GraphJCell> changedCellSet = new HashSet<GraphJCell>();
-            for (Label label : changedLabelSet) {
-                Set<GraphJCell> labelledCells = getLabelTree().getJCells(label);
-                if (labelledCells != null) {
-                    for (GraphJCell cell : labelledCells) {
-                        changedCellSet.add(cell);
-                        if (cell instanceof GraphJEdge) {
-                            changedCellSet.add(((GraphJEdge) cell).getSourceVertex());
-                            changedCellSet.add(((GraphJEdge) cell).getTargetVertex());
-                        }
-                    }
-                }
-            }
-            refreshCells(changedCellSet);
         }
     }
 

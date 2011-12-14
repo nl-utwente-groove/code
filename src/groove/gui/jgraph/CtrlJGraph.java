@@ -88,7 +88,7 @@ public class CtrlJGraph extends GraphJGraph {
     @Override
     protected LabelTree createLabelTree() {
         // no tool bar on the label tree
-        return new LabelTree(this, false);
+        return new LabelTree(this, false, isFiltering());
     }
 
     /**
