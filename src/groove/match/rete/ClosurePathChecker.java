@@ -101,13 +101,15 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             RetePathMatch newMatch) {
         Set<RetePathMatch> resultingMatches = new TreeHashSet<RetePathMatch>();
         resultingMatches.add(new RetePathMatch(this, newMatch));
-        this.leftMemory.add(newMatch);
-        newMatch.addContainerCollection(this.leftMemory);
-        for (RetePathMatch right : this.rightMemory) {
-            if (this.test(newMatch, right)) {
-                RetePathMatch combined = this.construct(newMatch, right);
-                if (combined != null) {
-                    resultingMatches.add(combined);
+        if (newMatch.start() != newMatch.end()) {
+            this.leftMemory.add(newMatch);
+            newMatch.addContainerCollection(this.leftMemory);
+            for (RetePathMatch right : this.rightMemory) {
+                if (this.test(newMatch, right)) {
+                    RetePathMatch combined = this.construct(newMatch, right);
+                    if (combined != null) {
+                        resultingMatches.add(combined);
+                    }
                 }
             }
         }
