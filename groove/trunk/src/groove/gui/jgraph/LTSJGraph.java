@@ -64,9 +64,6 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         // reset the active state and transition
         this.activeState = null;
         this.activeTransition = null;
-        if (model == null) {
-            getFilteredLabels().clear();
-        }
         super.setModel(model);
     }
 
@@ -174,7 +171,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     @Override
     protected LabelTree createLabelTree() {
         // no tool bar on the label tree
-        return new LabelTree(this, false);
+        return new LabelTree(this, false, isFiltering());
     }
 
     /**
