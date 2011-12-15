@@ -25,12 +25,17 @@ import groove.trans.ResourceKind;
  * @version $Revision $
  */
 final public class TypeDisplay extends ResourceDisplay {
+
+    // The displayed tree of host graphs.
+    // private final MyResourceTree tree;
+
     /**
      * Constructs a panel for a given simulator.
      */
     public TypeDisplay(Simulator simulator) {
         super(simulator, ResourceKind.TYPE);
         installListeners();
+        // this.tree = new MyResourceTree();
     }
 
     @Override
@@ -44,4 +49,36 @@ final public class TypeDisplay extends ResourceDisplay {
             text.append(")");
         }
     }
+
+    /*
+    @Override
+    protected void resetList() {
+        this.tree.suspendListeners();
+        super.resetList();
+    }
+
+    @Override
+    public JComponent createList() {
+        return this.tree;
+    }
+
+    private class MyResourceTree extends ResourceTree {
+
+        public MyResourceTree() {
+            super(TypeDisplay.this, ResourceKind.TYPE);
+        }
+
+        @Override
+        public String getDisplayText(String fullName, String shortName) {
+            if (getResource(fullName).isEnabled()) {
+                StringBuilder text = new StringBuilder(shortName);
+                HTMLConverter.STRONG_TAG.on(text);
+                HTMLConverter.HTML_TAG.on(text);
+                return text.toString();
+            } else {
+                return "(" + shortName + ")";
+            }
+        }
+    }
+    */
 }

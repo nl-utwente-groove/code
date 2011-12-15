@@ -35,10 +35,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -80,7 +80,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     private Color enabledBackground;
 
     // Used separator character.
-    private static final char SEPARATOR_CHAR = '.';
     private static final String SEPARATOR = ".";
 
     /** Creates an instance for a given simulator. */
@@ -131,41 +130,14 @@ public class ResourceTree extends JTree implements SimulatorListener {
      * local tree. The resources are sorted before they are added.
      */
     private void loadGrammar(GrammarModel grammar) {
-
-        // get all resource names
-        Set<String> rawNames = new TreeSet<String>(new LeveledComparator());
-        rawNames.addAll(grammar.getNames(this.resourceKind));
-
-        // add each resource, one by one
-        for (String name : rawNames) {
-            String[] components = name.split("\\" + SEPARATOR);
-
-            // recursively add this resource
-            DefaultMutableTreeNode parent = this.root;
-            for (int i = 0; i < components.length; i++) {
-                DefaultMutableTreeNode lastChild = null;
-                if (parent.getChildCount() > 0) {
-                    lastChild = (DefaultMutableTreeNode) parent.getLastChild();
-                }
-                if (lastChild != null && lastChild instanceof PathNode
-                    && ((PathNode) lastChild).getPath().equals(components[i])) {
-                    // path node already exists, continue
-                    parent = lastChild;
-                } else {
-                    if (i < components.length - 1) {
-                        // create new path node
-                        PathNode newChild = new PathNode(components[i]);
-                        parent.add(newChild);
-                        parent = newChild;
-                    } else {
-                        // create new resource (leaf) node
-                        ResourceNode leaf =
-                            new ResourceNode(name, components[i]);
-                        parent.add(leaf);
-                    }
-                }
-            }
+        // get all resources, and store them in the sorted FolderTree
+        FolderTree ftree = new FolderTree();
+        for (String resource : grammar.getNames(this.resourceKind)) {
+            ftree.insert(resource);
         }
+
+        // store all FolderTree items in this.root
+        ftree.store(this.root);
     }
 
     @Override
@@ -267,8 +239,8 @@ public class ResourceTree extends JTree implements SimulatorListener {
     /**
      * Creates the text to be displayed for a given resource.
      */
-    public String getDisplayText(String resourceName) {
-        return resourceName;
+    public String getDisplayText(String fullName, String shortName) {
+        return shortName;
     }
 
     /**
@@ -494,7 +466,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
 
         /** Default constructor. */
         public ResourceNode(String resourceName, String lastComponent) {
-            super(getDisplayText(lastComponent), false);
+            super(getDisplayText(resourceName, lastComponent), false);
             this.resourceName = resourceName;
         }
 
@@ -530,38 +502,62 @@ public class ResourceTree extends JTree implements SimulatorListener {
     }
 
     // ========================================================================
-    // LOCAL CLASS - LeveledComparator
+    // LOCAL CLASS - FolderTree
     // ========================================================================
 
     /**
-     * Customized comparator, which first looks at the number of separators,
-     * and then at the texts themselves. Ensures that paths are always smaller
-     * than files.
+     * A {@link FolderTree} is a sorted tree of resources. Each resource is
+     * split in its path components, and each components is stored as a
+     * separate level in the tree.
      */
-    private class LeveledComparator implements Comparator<String> {
+    private class FolderTree {
 
-        @Override
-        public int compare(String o1, String o2) {
-            int c1 = countSeparators(o1);
-            int c2 = countSeparators(o2);
-            if (c1 < c2) {
-                return 1;
-            }
-            if (c1 > c2) {
-                return -1;
-            }
-            return o1.compareTo(o2);
+        // The subfolders of this tree. 
+        public final TreeMap<String,FolderTree> folders;
+
+        // The resources that are stores directly at this level.
+        public final TreeMap<String,String> resources;
+
+        /** Create a new (empty) FolderTree. */
+        public FolderTree() {
+            this.folders = new TreeMap<String,FolderTree>();
+            this.resources = new TreeMap<String,String>();
         }
 
-        private int countSeparators(String name) {
-            char[] chars = name.toCharArray();
-            int count = 0;
-            for (int i = 0; i < chars.length; i++) {
-                if (chars[i] == SEPARATOR_CHAR) {
-                    count++;
+        /** Insert a new resource in the tree. */
+        public void insert(String resource) {
+            String[] components = resource.split("\\" + SEPARATOR);
+            insert(0, components, resource);
+        }
+
+        /** Local indexes insert. */
+        private void insert(int index, String[] components, String resource) {
+            if (index == components.length - 1) {
+                this.resources.put(components[index], resource);
+            } else {
+                FolderTree folder = this.folders.get(components[index]);
+                if (folder == null) {
+                    folder = new FolderTree();
                 }
+                folder.insert(index + 1, components, resource);
+                this.folders.put(components[index], folder);
             }
-            return count;
         }
+
+        /** Add all tree resources to a DefaultMutableTreeNode. */
+        public void store(DefaultMutableTreeNode root) {
+            for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
+                PathNode path = new PathNode(entry.getKey());
+                entry.getValue().store(path);
+                root.add(path);
+            }
+            for (Map.Entry<String,String> entry : this.resources.entrySet()) {
+                ResourceNode leaf =
+                    new ResourceNode(entry.getValue(), entry.getKey());
+                root.add(leaf);
+            }
+        }
+
     }
+
 }

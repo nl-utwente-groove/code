@@ -67,14 +67,14 @@ final public class HostDisplay extends ResourceDisplay {
         }
 
         @Override
-        public String getDisplayText(String resourceName) {
-            if (resourceName.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
-                StringBuilder text = new StringBuilder(resourceName);
+        public String getDisplayText(String fullName, String shortName) {
+            if (fullName.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
+                StringBuilder text = new StringBuilder(shortName);
                 HTMLConverter.STRONG_TAG.on(text);
                 HTMLConverter.HTML_TAG.on(text);
                 return text.toString();
             } else {
-                return resourceName;
+                return shortName;
             }
         }
     }

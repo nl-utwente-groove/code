@@ -18,12 +18,11 @@ package groove.io.store;
 
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
-import static groove.io.FileType.RULE_FILTER;
+import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.PROPERTIES;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultGraph;
-import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
 import groove.gui.EditType;
 import groove.gui.Options;
@@ -314,12 +313,14 @@ public class DefaultFileSystemStore extends SystemStore {
         testInit();
         AspectGraph oldGraph = getGraphMap(kind).remove(oldName);
         assert oldGraph != null;
-        this.marshaller.deleteGraph(createFile(kind, oldName));
+        File oldFile = createFile(kind, oldName);
+        this.marshaller.deleteGraph(oldFile);
         AspectGraph newGraph = oldGraph.rename(newName);
         AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
         assert previous == null;
         this.marshaller.marshalGraph(newGraph.toPlainGraph(),
             createFile(kind, newName));
+        deleteEmptyDirectories(oldFile.getParentFile());
         // change the properties if there is a change in the enabled types
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
@@ -336,6 +337,21 @@ public class DefaultFileSystemStore extends SystemStore {
         return new GraphBasedEdit(kind, EditType.RENAME,
             Collections.singleton(oldGraph), Collections.singleton(newGraph),
             oldProps, newProps);
+    }
+
+    /**
+     * Recursively clean up empty directories, after a delete or a rename.
+     */
+    private static void deleteEmptyDirectories(File directory) {
+        if (directory == null || !directory.isDirectory()) {
+            return;
+        }
+        if (directory.listFiles().length > 0) {
+            return;
+        }
+        File parent = directory.getParentFile();
+        directory.delete();
+        deleteEmptyDirectories(parent);
     }
 
     @Override
@@ -409,7 +425,9 @@ public class DefaultFileSystemStore extends SystemStore {
         for (String name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
-            this.marshaller.deleteGraph(createFile(kind, name));
+            File oldFile = createFile(kind, name);
+            this.marshaller.deleteGraph(oldFile);
+            deleteEmptyDirectories(oldFile.getParentFile());
             deletedGraphs.add(graph);
             typesChanged |= typeNames.remove(name);
         }
@@ -623,84 +641,64 @@ public class DefaultFileSystemStore extends SystemStore {
     private void loadGraphs(ResourceKind kind, ExtensionFilter filter)
         throws IOException {
         getGraphMap(kind).clear();
-        if (kind == RULE) {
-            try {
-                collectRules(this.file, null);
-            } catch (FormatException e) {
-                throw new IOException(e.getMessage());
-            }
-        } else {
-            File[] files = this.file.listFiles(filter);
-            // read in production rules
-            for (File file : files) {
-                // check for overlapping rule and directory names
-                if (!file.isDirectory()) {
-                    DefaultGraph plainGraph =
-                        this.marshaller.unmarshalGraph(file);
-                    String graphName = filter.stripExtension(file.getName());
-                    /*
-                     * For backward compatibility, we set the role and name of the
-                     * graph
-                     */
-                    plainGraph.setRole(kind.getGraphRole());
-                    plainGraph.setName(graphName);
-                    AspectGraph graph = AspectGraph.newInstance(plainGraph);
-                    /* Store the graph */
-                    Object oldEntry = getGraphMap(kind).put(graphName, graph);
-                    assert oldEntry == null : String.format(
-                        "Duplicate %s name '%s'", kind.getGraphRole(),
-                        graphName);
-                }
-            }
+        try {
+            collectGraphs(kind, filter, this.file, null);
+        } catch (FormatException e) {
+            throw new IOException(e.getMessage());
         }
     }
 
     /**
-     * Auxiliary method to descend recursively into subdirectories and load all
-     * rules found there into the rule map
-     * @param directory directory to descend into
-     * @param rulePath rule name prefix for the current directory (with respect
-     *        to the global file)
+     * Loads all corresponding graph resources from both the current directory
+     * and all its subdirectories.
+     * @param kind the {@link ResourceKind} to load
+     * @param filter the {@link ExtensionFilter} of the resource
+     * @param path the current path
+     * @param pathName the name of the current path relative to the grammar
      * @throws IOException if an error occurs while loading a rule graph
      * @throws FormatException if there is a rule name with an error
      */
-    private void collectRules(File directory, RuleName rulePath)
-        throws IOException, FormatException {
-        File[] files = directory.listFiles(RULE_FILTER);
+    private void collectGraphs(ResourceKind kind, ExtensionFilter filter,
+            File path, RuleName pathName) throws IOException, FormatException {
+
+        // find all files in the current path 
+        File[] files = path.listFiles(filter);
         if (files == null) {
-            throw new IOException(LOAD_ERROR + ": no files found at "
-                + directory);
-        } else {
-            Map<String,AspectGraph> ruleMap = getGraphMap(RULE);
-            // read in production rules
-            for (File file : files) {
-                String fileName = RULE_FILTER.stripExtension(file.getName());
-                PriorityFileName priorityFileName =
-                    new PriorityFileName(fileName);
-                RuleName ruleName =
-                    new RuleName(rulePath, priorityFileName.getActualName());
-                // check for overlapping rule and directory names
-                if (file.isDirectory()) {
-                    if (!file.getName().startsWith(".")) {
-                        collectRules(file, ruleName);
-                    }
-                } else {
-                    DefaultGraph plainGraph =
-                        this.marshaller.unmarshalGraph(file);
-                    /*
-                     * For backward compatibility, we set the role and name of
-                     * the rule graph
-                     */
-                    plainGraph.setRole(GraphRole.RULE);
-                    plainGraph.setName(ruleName.toString());
-                    AspectGraph ruleGraph = AspectGraph.newInstance(plainGraph);
-                    /* Store the rule graph */
-                    AspectGraph oldRule =
-                        ruleMap.put(ruleName.toString(), ruleGraph);
-                    assert oldRule == null : String.format(
-                        "Duplicate rule name '%s'", ruleName);
+            throw new IOException(LOAD_ERROR + ": unable to get list of files"
+                + "in path " + path);
+        }
+
+        // process all files one by one
+        for (File file : files) {
+            // get name of file
+            String fileName =
+                new PriorityFileName(filter.stripExtension(file.getName())).getActualName();
+
+            // recurse if the file is a directory
+            if (file.isDirectory()) {
+                if (!file.getName().startsWith(".")) {
+                    RuleName extendedPathName =
+                        new RuleName(pathName, fileName);
+                    collectGraphs(kind, filter, file, extendedPathName);
                 }
+                continue;
             }
+
+            // read graph from file
+            DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
+            RuleName graphName = new RuleName(pathName, fileName);
+
+            // backwards compatibility: set role and name
+            plainGraph.setRole(kind.getGraphRole());
+            plainGraph.setName(graphName.toString());
+
+            // store graph in corresponding map
+            AspectGraph graph = AspectGraph.newInstance(plainGraph);
+            Object oldEntry =
+                getGraphMap(kind).put(graphName.toString(), graph);
+            assert oldEntry == null : String.format("Duplicate %s name '%s'",
+                kind.getGraphRole(), graphName);
+
         }
     }
 
@@ -808,15 +806,16 @@ public class DefaultFileSystemStore extends SystemStore {
      */
     private File createFile(ResourceKind kind, String name) {
         File basis = this.file;
-        if (kind == RULE) {
+        String shortName = name;
+        if (kind == RULE || kind == HOST || kind == TYPE) {
             RuleName ruleName = new RuleName(name);
             for (int i = 0; i < ruleName.size() - 1; i++) {
                 basis = new File(basis, ruleName.get(i));
                 basis.mkdir();
             }
-            name = ruleName.get(ruleName.size() - 1);
+            shortName = ruleName.get(ruleName.size() - 1);
         }
-        return new File(basis, kind.getFilter().addExtension(name));
+        return new File(basis, kind.getFilter().addExtension(shortName));
     }
 
     /** Posts the edit, and also notifies the observers. */
