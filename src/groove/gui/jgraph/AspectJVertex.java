@@ -430,7 +430,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         }
         // use special node label prefixes to indicate edge role
         Aspect edgeAspect = aspectEdge.getAspect();
-        if (!edgeAspect.equals(getNode().getAspect())
+        if (edgeAspect != null
+            && !edgeAspect.equals(getNode().getAspect())
             && (getNode().getGraphRole() == GraphRole.RULE || edgeAspect.getKind() == REMARK)) {
             addRoleIndicator(result, edgeAspect.getKind());
         }

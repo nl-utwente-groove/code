@@ -19,7 +19,6 @@ package groove.match.plan;
 import static groove.match.SearchEngine.SearchMode.NORMAL;
 import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorEdge;
@@ -186,6 +185,73 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         /**
+         * Creates and returns a search plan on the basis of the given data.
+         * @param seedNodes the set of pre-matched nodes; may be
+         *        <code>null</code> for an empty set
+         * @param seedEdges the set of pre-matched edges; may be
+         *        <code>null</code> for an empty set
+         */
+        public SearchPlan getPlan(Collection<RuleNode> seedNodes,
+                Collection<RuleEdge> seedEdges) {
+            if (this.used) {
+                throw new IllegalStateException(
+                    "Method getPlan() was already called");
+            } else {
+                this.used = true;
+            }
+            SearchPlan result =
+                new SearchPlan(this.condition, seedNodes, seedEdges,
+                    this.searchMode != NORMAL
+                        || this.condition.getSystemProperties().isInjective());
+            Collection<AbstractSearchItem> items =
+                computeSearchItems(seedNodes, seedEdges);
+            while (!items.isEmpty()) {
+                AbstractSearchItem bestItem = Collections.max(items, this);
+                // check if the item is compatible with the search mode
+                boolean include;
+                switch (this.searchMode) {
+                case MINIMAL:
+                    include = bestItem.isMinimal();
+                    break;
+                case REGEXPR:
+                    include = (bestItem instanceof RegExprEdgeSearchItem);
+                    break;
+                default:
+                    include = true;
+                }
+                if (include) {
+                    result.add(bestItem);
+                    this.remainingEdges.removeAll(bestItem.bindsEdges());
+                    this.remainingNodes.removeAll(bestItem.bindsNodes());
+                    this.remainingVars.removeAll(bestItem.bindsVars());
+                    // notify the observing comparators of the change
+                    setChanged();
+                    notifyObservers(bestItem);
+                }
+                items.remove(bestItem);
+            }
+            return result;
+        }
+
+        /**
+         * Orders search items according to the lexicographic order of the
+         * available item comparators.
+         */
+        final public int compare(SearchItem o1, SearchItem o2) {
+            int result = 0;
+            Iterator<Comparator<SearchItem>> comparatorIter =
+                getComparators().iterator();
+            while (result == 0 && comparatorIter.hasNext()) {
+                Comparator<SearchItem> next = comparatorIter.next();
+                result = next.compare(o1, o2);
+            }
+            if (result == 0) {
+                result = o1.compareTo(o2);
+            }
+            return result;
+        }
+
+        /**
          * Adds embargo and injection search items to the super result.
          * @param seedNodes the set of pre-matched nodes
          * @param seedEdges the set of pre-matched edges
@@ -269,11 +335,8 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
-                    TypeEdge edgeType = edge.getType();
-                    if (edgeType != null) {
-                        unmatchedNodes.remove(edge.source());
-                        unmatchedNodes.remove(edge.target());
-                    }
+                    unmatchedNodes.remove(edge.source());
+                    unmatchedNodes.remove(edge.target());
                 }
             }
             // finally a search item per remaining node
@@ -312,73 +375,6 @@ public class PlanSearchEngine extends SearchEngine {
                 List<String> controlLabels = properties.getControlLabels();
                 List<String> commonLabels = properties.getCommonLabels();
                 result.add(new FrequencyComparator(controlLabels, commonLabels));
-            }
-            return result;
-        }
-
-        /**
-         * Creates and returns a search plan on the basis of the given data.
-         * @param seedNodes the set of pre-matched nodes; may be
-         *        <code>null</code> for an empty set
-         * @param seedEdges the set of pre-matched edges; may be
-         *        <code>null</code> for an empty set
-         */
-        public SearchPlan getPlan(Collection<RuleNode> seedNodes,
-                Collection<RuleEdge> seedEdges) {
-            if (this.used) {
-                throw new IllegalStateException(
-                    "Method getPlan() was already called");
-            } else {
-                this.used = true;
-            }
-            SearchPlan result =
-                new SearchPlan(this.condition, seedNodes, seedEdges,
-                    this.searchMode != NORMAL
-                        || this.condition.getSystemProperties().isInjective());
-            Collection<AbstractSearchItem> items =
-                computeSearchItems(seedNodes, seedEdges);
-            while (!items.isEmpty()) {
-                AbstractSearchItem bestItem = Collections.max(items, this);
-                // check if the item is compatible with the search mode
-                boolean include;
-                switch (this.searchMode) {
-                case MINIMAL:
-                    include = bestItem.isMinimal();
-                    break;
-                case REGEXPR:
-                    include = (bestItem instanceof RegExprEdgeSearchItem);
-                    break;
-                default:
-                    include = true;
-                }
-                if (include) {
-                    result.add(bestItem);
-                    this.remainingEdges.removeAll(bestItem.bindsEdges());
-                    this.remainingNodes.removeAll(bestItem.bindsNodes());
-                    this.remainingVars.removeAll(bestItem.bindsVars());
-                    // notify the observing comparators of the change
-                    setChanged();
-                    notifyObservers(bestItem);
-                }
-                items.remove(bestItem);
-            }
-            return result;
-        }
-
-        /**
-         * Orders search items according to the lexicographic order of the
-         * available item comparators.
-         */
-        final public int compare(SearchItem o1, SearchItem o2) {
-            int result = 0;
-            Iterator<Comparator<SearchItem>> comparatorIter =
-                getComparators().iterator();
-            while (result == 0 && comparatorIter.hasNext()) {
-                Comparator<SearchItem> next = comparatorIter.next();
-                result = next.compare(o1, o2);
-            }
-            if (result == 0) {
-                result = o1.compareTo(o2);
             }
             return result;
         }
