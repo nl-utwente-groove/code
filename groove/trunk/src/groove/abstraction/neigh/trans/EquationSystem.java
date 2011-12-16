@@ -72,7 +72,6 @@ public final class EquationSystem {
 
     /** Adds the given pair of variables to the given pair of equations. */
     private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
-
         eqs.one().addVar(vars.one());
         eqs.two().addVar(vars.two());
     }
@@ -324,9 +323,7 @@ public final class EquationSystem {
         }
         // Create the return objects.
         for (Solution sol : finishedSols) {
-            if (!this.isValid(sol)) {
-                continue;
-            }
+            assert this.isValid(sol);
             Materialisation mat;
             if (finishedSolsSize == 1) {
                 mat = this.mat;
@@ -344,23 +341,74 @@ public final class EquationSystem {
     }
 
     /**
-     * Tries to set the values of the open variables of the given solution to
+     * Tries to add the given solution to the set of finished solutions.
+     * @return true if the solution was valid and it was added, false otherwise. 
+     */
+    private boolean addFinishedSolution(Solution sol, Set<Solution> finishedSols) {
+        boolean added = false;
+        if (this.isValid(sol)) {
+            finishedSols.add(sol);
+            added = true;
+        }
+        return added;
+    }
+
+    /**
+     * Checks if we can set the values of open variables of the given solution to
+     * their maximum. This is useful in the first stage, when we don't have to
+     * solve the equation system completely and we just want to know if the
+     * variables are zero or positive. This is important to avoid unnecessary
+     * branching in the first stage.
+     */
+    private boolean canMaxSolution(Solution sol) {
+        return this.stage == 1
+            && (sol.ubEqs.isEmpty() || sol.allEqsHaveNodes(sol.ubEqs))
+            && !sol.hasZeroOneVars();
+    }
+
+    /**
+     * Set the values of the open variables of the given solution to
      * their maximum. This is useful in the first stage, when we don't have to
      * solve the equation system completely and we just want to know if the
      * variables are zero or positive. This is important to avoid unnecessary
      * branching in the first stage.
      * 
-     * @return the same given solution object if it's not possible to maximize
-     *         it, or a new solution object with maximized variables. 
+     * @return a new solution object with maximized variables. 
      */
-    private Solution tryToMaxSolution(Solution sol) {
-        Solution result = sol;
-        if (this.stage == 1
-            && (sol.ubEqs.isEmpty() || sol.allEqsHaveNodes(sol.ubEqs))) {
-            result = sol.clone();
-            result.setAllVarsToMax(this.edgeVarsMap.values());
-        }
+    private Solution maxSolution(Solution sol) {
+        Solution result = sol.clone();
+        result.setAllVarsToMax(this.edgeVarsMap.values());
         return result;
+    }
+
+    /** 
+     * Checks if we can branch on the variables with zero or one values.
+     * Used only for the first stage.
+     * @return true if we can branch, false otherwise.
+     */
+    private boolean canBranchOnZeroOneValues(Solution sol) {
+        return this.stage == 1
+            && (sol.ubEqs.isEmpty() || sol.allEqsHaveNodes(sol.ubEqs))
+            && sol.hasZeroOneVars();
+    }
+
+    /** 
+     * Branches on the variables with zero or one values. After the new solutions
+     * are created they are max'ed out and stored as finished.
+     * Used only for the first stage.
+     */
+    private void branchOnZeroOneValues(Solution sol, SolutionSet finishedSols) {
+        assert this.stage == 1;
+        Collection<Duo<BoundVar>> allVars = this.edgeVarsMap.values();
+        ArrayList<BoundVar> zeroOneVars = sol.getZeroOneVars(allVars);
+        // Iterate the solutions.
+        ZeroOneBranchIterator iter =
+            new ZeroOneBranchIterator(sol, zeroOneVars);
+        while (iter.hasNext()) {
+            Solution newSol = iter.next();
+            newSol.setAllVarsToMax(allVars);
+            this.addFinishedSolution(newSol, finishedSols);
+        }
     }
 
     /**
@@ -373,15 +421,21 @@ public final class EquationSystem {
             SolutionSet finishedSols) {
         this.iterateEquations(sol);
         if (sol.isFinished()) {
-            finishedSols.add(sol);
+            this.addFinishedSolution(sol, finishedSols);
         } else {
             // Check if we're in first stage and we can stop early.
-            Solution maxSol = this.tryToMaxSolution(sol);
-            if (maxSol != sol) { // Reference inequality is sufficient.
+            if (this.canMaxSolution(sol)) {
                 // Yes, we can stop. Store the max'ed solution.
-                finishedSols.add(maxSol);
+                this.addFinishedSolution(this.maxSolution(sol), finishedSols);
+            } else
+            // No escape, we have to branch.
+            if (this.canBranchOnZeroOneValues(sol)) {
+                // Special case for first stage where we can branch on variables
+                // with possible zero or one values, and then max out the
+                // remainder open variables.
+                this.branchOnZeroOneValues(sol, finishedSols);
             } else {
-                // No escape, we have to branch.
+                // Default case for branching, pick an equation and branch.
                 Equation branchingEq = sol.getBestBranchingEquation();
                 branchingEq.getNewSolutions(sol, partialSols, finishedSols);
             }
@@ -930,7 +984,7 @@ public final class EquationSystem {
      * further information (i.e., they don't have a current value). This allows
      * for a static representation of the equation system.  
      */
-    private static class BoundVar {
+    private static final class BoundVar {
 
         /** Natural number that identifies this variable. */
         final int number;
@@ -978,7 +1032,7 @@ public final class EquationSystem {
      * system (for example, a lower bound equation with constant zero is not
      * useful), then the dual field is null.
      */
-    private class Equation implements Fixable {
+    private final class Equation implements Fixable {
 
         /** Type of this equation. */
         final BoundType type;
@@ -1459,19 +1513,20 @@ public final class EquationSystem {
             if (this.isSatisfied(sol)) {
                 // The equation is already satisfied. Nothing to do.
                 if (sol.isFinished()) {
-                    finishedSols.add(sol);
+                    EquationSystem.this.addFinishedSolution(sol, finishedSols);
                 } else {
                     partialSols.add(sol);
                 }
             } else {
                 // Iterate the solutions.
                 ArrayList<BoundVar> openVars = this.getOpenVars(sol);
-                BranchSolsIterator iter =
-                    new BranchSolsIterator(this, sol, openVars);
+                EquationBranchIterator iter =
+                    new EquationBranchIterator(this, sol, openVars);
                 while (iter.hasNext()) {
                     Solution newSol = iter.next();
                     if (newSol.isFinished()) {
-                        finishedSols.add(newSol);
+                        EquationSystem.this.addFinishedSolution(newSol,
+                            finishedSols);
                     } else {
                         partialSols.add(newSol);
                     }
@@ -1485,7 +1540,7 @@ public final class EquationSystem {
     // ----------
 
     /** Range of possible values for the variables. Used in the solutions. */
-    private static class ValueRange implements Iterable<Integer> {
+    private static final class ValueRange implements Iterable<Integer> {
 
         /** Total range of values. */
         final int range[];
@@ -1621,7 +1676,7 @@ public final class EquationSystem {
      * are cloned during the solution search, so we try to keep the objects
      * as small as possible. 
      */
-    private static class Solution {
+    private static final class Solution {
 
         /** Ranges for lower and upper bound variables. */
         final ValueRange lbValues[];
@@ -1910,6 +1965,40 @@ public final class EquationSystem {
         }
 
         /**
+         * Returns true if the solution has at least one variable within the
+         * 0 .. 1 range.
+         */
+        boolean hasZeroOneVars() {
+            boolean result = false;
+            for (int varNum = 0; varNum < this.size(); varNum++) {
+                if (this.lbValues[varNum].isZeroOne()
+                    && this.ubValues[varNum].isZeroOne()) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns a list of the given collection formed by the variables in
+         * the zero .. one range.
+         */
+        ArrayList<BoundVar> getZeroOneVars(Collection<Duo<BoundVar>> vars) {
+            ArrayList<BoundVar> result = new ArrayList<BoundVar>(vars.size());
+            for (Duo<BoundVar> varDuo : vars) {
+                BoundVar lbVar = varDuo.one();
+                BoundVar ubVar = varDuo.two();
+                ValueRange lbRange = this.getValueRange(lbVar);
+                ValueRange ubRange = this.getValueRange(ubVar);
+                if (lbRange.isZeroOne() && ubRange.isZeroOne()) {
+                    result.add(ubVar);
+                }
+            }
+            return result;
+        }
+
+        /**
          * Raises all variables in the given set to their maximum.
          * Used on first stage.
          */
@@ -1950,7 +2039,7 @@ public final class EquationSystem {
      * Simple iterator for a value range. Starts with the minimum and
      * sweeps the range until hitting the maximum.
      */
-    private static class ValueRangeIterator implements Iterator<Integer> {
+    private static final class ValueRangeIterator implements Iterator<Integer> {
 
         ValueRange value;
         int i;
@@ -1992,47 +2081,40 @@ public final class EquationSystem {
 
     }
 
-    // ------------------
-    // BranchSolsIterator
-    // ------------------
+    // ---------------------
+    // GenericBranchIterator
+    // ---------------------
 
     /**
-     * Iterator that compute all possible branches of a given solution and
-     * equation. All solutions returned by the iterator are guaranteed to
-     * satisfy the given equation but others equations in the system may still
-     * be violated. 
+     * Generic iterator that compute all possible branches of a given solution. 
      */
-    private static class BranchSolsIterator implements Iterator<Solution> {
+    private static abstract class GenericBranchIterator implements
+            Iterator<Solution> {
 
-        /** Equation used for branching. */
-        final Equation eq;
         /** Original solution used for branching. */
         final Solution sol;
-        /** List of open variables of the equation. */
-        final ArrayList<BoundVar> openVars;
-        /** Iterator for the values of open variables. */
+        /** List of variables to be iterated. */
+        final ArrayList<BoundVar> vars;
+        /** Iterators for the values of variables. */
         final ValueRangeIterator iters[];
         /** List of all valid solutions. */
         final ArrayList<Solution> validSolutions;
         /** Index in the list of valid solutions to be returned next. */
         int next;
 
-        /** Default constructor. Pre-computes all solutions. */
-        BranchSolsIterator(Equation eq, Solution sol,
-                ArrayList<BoundVar> openVars) {
-            assert openVars.size() > 0;
-            this.eq = eq;
+        /** Default constructor. */
+        GenericBranchIterator(Solution sol, ArrayList<BoundVar> vars) {
+            assert vars.size() > 0;
             this.sol = sol;
-            this.openVars = openVars;
-            this.iters = new ValueRangeIterator[openVars.size()];
+            this.vars = vars;
+            this.iters = new ValueRangeIterator[vars.size()];
             int i = 0;
-            for (BoundVar var : this.openVars) {
+            for (BoundVar var : this.vars) {
                 this.iters[i] = sol.getValueRange(var).iterator();
                 i++;
             }
             this.validSolutions = new ArrayList<Solution>();
             this.next = 0;
-            this.computeAllSolutions();
         }
 
         @Override
@@ -2056,6 +2138,9 @@ public final class EquationSystem {
             throw new UnsupportedOperationException();
         }
 
+        /** Creates and stores a new valid solution. */
+        abstract void createNewSolution();
+
         /**
          * Iterates over all possible values for all open variables and
          * stores all valid results. No subsumption checks are done here,
@@ -2063,27 +2148,8 @@ public final class EquationSystem {
          */
         void computeAllSolutions() {
             while (this.iters[0].hasNext()) {
-                // Create a new solution.
-                Solution newSol = this.sol.clone();
-                int i = 0;
-                for (ValueRangeIterator iter : this.iters) {
-                    newSol.cut(this.openVars.get(i), iter.current());
-                    i++;
-                }
-                if (this.eq.hasDual()) {
-                    this.eq.dual.nonRecComputeNewValues(newSol);
-                } else if (this.eq.type == BoundType.LB) {
-                    // Variables with zero or one values have to be handled
-                    // in a special way.
-                    for (BoundVar openVar : this.openVars) {
-                        newSol.projectToZeroWhenNeeded(openVar);
-                    }
-                }
-                if (this.eq.isValidSolution(newSol)) {
-                    this.validSolutions.add(newSol);
-                }
-
-                // Update iterators and compute next solution.
+                createNewSolution();
+                // Update iterators.
                 int curr = this.iters.length - 1;
                 this.iters[curr].next();
                 if (!this.iters[curr].hasNext()) {
@@ -2097,12 +2163,95 @@ public final class EquationSystem {
                     }
                     if (prev >= 0) {
                         // Reset all iterators between prev + 1 and curr .
-                        for (i = prev + 1; i <= curr; i++) {
+                        for (int i = prev + 1; i <= curr; i++) {
                             this.iters[i].reset();
                         }
                     }
                 }
             }
+        }
+    }
+
+    // ----------------------
+    // EquationBranchIterator
+    // ----------------------
+
+    /**
+     * Iterator that compute all possible branches of a given solution and
+     * equation. All solutions returned by the iterator are guaranteed to
+     * satisfy the given equation but others equations in the system may still
+     * be violated. 
+     */
+    private static final class EquationBranchIterator extends
+            GenericBranchIterator {
+
+        /** Equation used for branching. */
+        final Equation eq;
+
+        /** Default constructor. Pre-computes all solutions. */
+        EquationBranchIterator(Equation eq, Solution sol,
+                ArrayList<BoundVar> openVars) {
+            super(sol, openVars);
+            this.eq = eq;
+            this.computeAllSolutions();
+        }
+
+        /**
+         * Creates and stores a new valid solution.
+         */
+        @Override
+        void createNewSolution() {
+            Solution newSol = this.sol.clone();
+            int i = 0;
+            for (ValueRangeIterator iter : this.iters) {
+                newSol.cut(this.vars.get(i), iter.current());
+                i++;
+            }
+            if (this.eq.hasDual()) {
+                this.eq.dual.nonRecComputeNewValues(newSol);
+            } else if (this.eq.type == BoundType.LB) {
+                // Variables with zero or one values have to be handled
+                // in a special way.
+                for (BoundVar openVar : this.vars) {
+                    newSol.projectToZeroWhenNeeded(openVar);
+                }
+            }
+            if (this.eq.isValidSolution(newSol)) {
+                this.validSolutions.add(newSol);
+            }
+        }
+    }
+
+    // ----------------------
+    // ZeroOneBranchIterator
+    // ----------------------
+
+    /**
+     * Iterator that compute all possible branches of variables in the zero
+     * one range. The solutions returned are NOT max'ed out.
+     * Used only on first state.
+     */
+    private static final class ZeroOneBranchIterator extends
+            GenericBranchIterator {
+
+        /** Default constructor. Pre-computes all solutions. */
+        ZeroOneBranchIterator(Solution sol, ArrayList<BoundVar> zeroOneVars) {
+            super(sol, zeroOneVars);
+            this.computeAllSolutions();
+        }
+
+        /**
+         * Creates and stores a new valid solution.
+         */
+        @Override
+        void createNewSolution() {
+            Solution newSol = this.sol.clone();
+            int i = 0;
+            for (ValueRangeIterator iter : this.iters) {
+                newSol.cutHigh(this.vars.get(i), iter.current());
+                i++;
+            }
+            this.validSolutions.add(newSol);
         }
     }
 
@@ -2115,7 +2264,7 @@ public final class EquationSystem {
      * both directions when adding a new solution to the set. This guarantees
      * a minimum number of solutions and thus less materialisation objects.
      */
-    private static class SolutionSet extends MyHashSet<Solution> {
+    private static final class SolutionSet extends MyHashSet<Solution> {
         @Override
         public boolean add(Solution newSol) {
             boolean storeNew = true;

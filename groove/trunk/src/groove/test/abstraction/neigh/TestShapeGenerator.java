@@ -158,8 +158,8 @@ public class TestShapeGenerator {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
             generator.start();
             AGTS gts = generator.getReducedGTS();
-            assertEquals(142, gts.getStateCount());
-            assertEquals(506, gts.getTransitionCount());
+            assertEquals(152, gts.getStateCount());
+            assertEquals(586, gts.getTransitionCount());
         }
     }
 
