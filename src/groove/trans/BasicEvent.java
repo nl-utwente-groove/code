@@ -487,6 +487,10 @@ final public class BasicEvent extends
         return result;
     }
 
+    /**
+     * Returns the set of images of the LHS
+     * creator edges.
+     */
     private Set<HostEdge> getSimpleCreatedEdges() {
         if (isReuse()) {
             return getCache().getSimpleCreatedEdges();
@@ -496,8 +500,8 @@ final public class BasicEvent extends
     }
 
     /**
-     * Computes the set of explicitly erased edges, i.e., the images of the LHS
-     * eraser edges. Callback method from {@link #getErasedEdges()}.
+     * Computes the set of images of the LHS
+     * creator edges. Callback method from {@link #getSimpleCreatedEdges()}.
      */
     private Set<HostEdge> computeSimpleCreatedEdges() {
         Set<HostEdge> result = createEdgeSet();
