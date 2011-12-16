@@ -25,7 +25,6 @@ import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -33,6 +32,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
@@ -1104,7 +1104,7 @@ public final class Materialisation {
         }
     }*/
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
@@ -1127,6 +1127,61 @@ public final class Materialisation {
                     ShapePreviewDialog.showShape(mat.shape);
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    public static void main(String args[]) {
+        String DIRECTORY = "junit/abstraction/euler-counting.gps/";
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
+        Abstraction.initialise();
+        File grammarFile = new File(DIRECTORY);
+        try {
+            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
+            GraphGrammar grammar = view.toGrammar();
+            ShapeGxl marshaller = ShapeGxl.getInstance(grammar.getTypeGraph());
+            Shape dfs = marshaller.loadShape(new File(DIRECTORY + "dfs8.gxl"));
+            Shape bfs = marshaller.loadShape(new File(DIRECTORY + "bfs8.gxl"));
+            ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
+            int result = checker.compareShapes(dfs, bfs).one();
+            System.out.println("Comparison: " + result);
+            Rule rule = grammar.getRule("toOldArea10");
+
+            //ShapePreviewDialog.showShape(bfs);
+
+            /*Set<Proof> preMatches = PreMatch.getPreMatches(dfs, rule);
+            assert preMatches.size() == 1;
+            Proof preMatch = preMatches.iterator().next();
+            Set<Materialisation> dfsMats =
+                Materialisation.getMaterialisations(dfs, preMatch);*/
+
+            Set<Proof> preMatches = PreMatch.getPreMatches(bfs, rule);
+            assert preMatches.size() == 1;
+            Proof preMatch = preMatches.iterator().next();
+            Set<Materialisation> bfsMats =
+                Materialisation.getMaterialisations(bfs, preMatch);
+
+            /*System.out.println(dfsMats.size());*/
+            System.out.println(bfsMats.size());
+
+            /*Iterator<Materialisation> iter = dfsMats.iterator();
+            Materialisation dfsMat0 = iter.next();
+            Materialisation dfsMat1 = iter.next();
+            ShapePreviewDialog.showShape(dfsMat0.getShape());
+            ShapePreviewDialog.showShape(dfsMat1.getShape());
+            for (Materialisation bfsMat : bfsMats) {
+                result =
+                    checker.compareShapes(dfsMat0.getShape(), bfsMat.getShape()).one();
+                System.out.println("Comparison dfsMat0: " + result);
+                result =
+                    checker.compareShapes(dfsMat1.getShape(), bfsMat.getShape()).one();
+                System.out.println("Comparison dfsMat1: " + result);
+                ShapePreviewDialog.showShape(bfsMat.getShape());
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {

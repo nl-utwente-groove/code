@@ -649,13 +649,8 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation13() {
-        Shape shape = null;
-        try {
-            File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-            shape = marshaller.unmarshalShape(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        File file = new File(DIRECTORY + "materialisation-test-13.gxl");
+        Shape shape = marshaller.loadShape(file);
         Rule rule = grammar.getRule("test-mat-13");
 
         Parameters.setNodeMultBound(1);
@@ -673,13 +668,8 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation14() {
-        Shape shape = null;
-        try {
-            File file = new File(DIRECTORY + "materialisation-test-14.gxl");
-            shape = marshaller.unmarshalShape(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+        Shape shape = marshaller.loadShape(file);
         Rule rule = grammar.getRule("test-mat-14");
 
         Parameters.setNodeMultBound(1);

@@ -34,7 +34,6 @@ import groove.trans.RuleEvent;
 import groove.util.Pair;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -146,11 +145,7 @@ public final class ShapeMatchApplier extends MatchApplier {
             // Additional code for bug hunting.
             System.err.println("\nFound a bug in the abstraction code!!!");
             File file = new File(source.toString() + ".gxl");
-            try {
-                ShapeGxl.getInstance().marshalShape(host, file);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            ShapeGxl.getInstance().saveShape(host, file);
             System.err.println(String.format(
                 "Dumped shape from state %s to help debugging.",
                 source.toString()));
