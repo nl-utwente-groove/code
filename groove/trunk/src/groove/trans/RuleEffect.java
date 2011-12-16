@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -211,7 +210,7 @@ public class RuleEffect {
         } else {
             if (this.createdEdgesAliased) {
                 newCreatedEdges =
-                    new ArrayList<HostEdge>(
+                    new HostEdgeSet(
                         (oldCreatedEdges.size() + createdEdges.size()) * 2);
                 newCreatedEdges.addAll(oldCreatedEdges);
                 this.createdEdgesAliased = false;
@@ -231,10 +230,9 @@ public class RuleEffect {
         Collection<HostEdge> oldCreatedEdges = this.createdEdges;
         Collection<HostEdge> newCreatedEdges;
         if (oldCreatedEdges == null) {
-            newCreatedEdges = new ArrayList<HostEdge>();
+            newCreatedEdges = new HostEdgeSet();
         } else if (this.createdEdgesAliased) {
-            newCreatedEdges =
-                new ArrayList<HostEdge>(this.createdEdges.size() * 2);
+            newCreatedEdges = new HostEdgeSet(this.createdEdges.size() * 2);
             newCreatedEdges.addAll(oldCreatedEdges);
             this.createdEdgesAliased = false;
         } else {
