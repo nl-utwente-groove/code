@@ -30,8 +30,9 @@ public class ChoicePathChecker extends AbstractPathChecker {
      * Creates a choice path checker node for given path expression
      * of type
      */
-    public ChoicePathChecker(ReteNetwork network, Choice expression) {
-        super(network, expression);
+    public ChoicePathChecker(ReteNetwork network, Choice expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
         assert expression.getChoiceOperands() != null;
     }
 
@@ -39,6 +40,9 @@ public class ChoicePathChecker extends AbstractPathChecker {
     public void receive(ReteNetworkNode source, int repeatedIndex,
             RetePathMatch newMatch) {
         assert repeatedIndex < 2;
+        if (!newMatch.start().equals(newMatch.end()) && this.loop) {
+            return;
+        }
         RetePathMatch m = newMatch.reoriginate(this);
         passDownMatchToSuccessors(m);
     }

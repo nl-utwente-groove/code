@@ -54,8 +54,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
      * @param expression The regular path expression, the operator of
      * which should be either {@link Plus} or {@link Star}.
      */
-    public ClosurePathChecker(ReteNetwork network, RegExpr expression) {
-        super(network, expression);
+    public ClosurePathChecker(ReteNetwork network, RegExpr expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
 
         assert (expression.getPlusOperand() != null)
             || (expression.getStarOperand() != null);
@@ -69,6 +70,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             RetePathMatch newMatch) {
+        if (!newMatch.start().equals(newMatch.end()) && this.loop) {
+            return;
+        }
         receiveNewIncomingMatch(source, newMatch);
     }
 
@@ -76,9 +80,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         Set<RetePathMatch> resultingNewMatches =
             new TreeHashSet<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
-            this.rightMemory.add(loopBackMatch);
             if (!loopBackMatch.isEmpty()
                 && !loopBackMatch.start().equals(loopBackMatch.end())) {
+                this.rightMemory.add(loopBackMatch);
                 loopBackMatch.addContainerCollection(this.rightMemory);
                 for (RetePathMatch left : this.leftMemory) {
                     if (this.test(left, loopBackMatch)) {
@@ -101,7 +105,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             RetePathMatch newMatch) {
         Set<RetePathMatch> resultingMatches = new TreeHashSet<RetePathMatch>();
         resultingMatches.add(new RetePathMatch(this, newMatch));
-        if (newMatch.start() != newMatch.end()) {
+        if (!newMatch.start().equals(newMatch.end())) {
             this.leftMemory.add(newMatch);
             newMatch.addContainerCollection(this.leftMemory);
             for (RetePathMatch right : this.rightMemory) {
@@ -114,7 +118,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             }
         }
         passDownMatches(resultingMatches);
-        receiveLoopBackMatches(resultingMatches);
+        if (!this.loop) {
+            receiveLoopBackMatches(resultingMatches);
+        }
     }
 
     private void passDownMatches(Set<RetePathMatch> theMatches) {

@@ -41,12 +41,16 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
     protected RegExpr expression;
 
     /**
-     * Creates a path checker node based on a given regular expression and a pair of
-     * nodes representing the start and end nodes of the path in its pattern.
-     * For internal used only.
-     *      
+     * Determines if the path matches produced by this
+     * checker should have the same end and starting node.
      */
-    protected AbstractPathChecker(ReteNetwork network, RegExpr expression,
+    protected final boolean loop;
+
+    /**
+     * Creates a path checker node based on a given regular expression 
+     * and a flag that determines if this checker is loop path checker.
+     */
+    public AbstractPathChecker(ReteNetwork network, RegExpr expression,
             boolean isLoop) {
         super(network);
         assert (network != null) && (expression != null);
@@ -55,16 +59,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
         RuleNode n1 = f.createNode(f.getMaxNodeNr());
         RuleNode n2 = (isLoop) ? n1 : f.createNode(f.getMaxNodeNr());
         this.endPointsPattern = new RuleNode[] {n1, n2};
-    }
-
-    /**
-     * Creates a path checker node based on a given regular expression.
-     * 
-     * @param network The RETE network this checker will belong to
-     * @param expression regular expression for which this object is a path checker
-     */
-    public AbstractPathChecker(ReteNetwork network, RegExpr expression) {
-        this(network, expression, false);
+        this.loop = isLoop;
     }
 
     @Override
@@ -125,6 +120,10 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
     @Override
     public String toString() {
         return "- Path-checker for: " + this.getExpression().toString();
+    }
+
+    public boolean isLoop() {
+        return this.loop;
     }
 
 }

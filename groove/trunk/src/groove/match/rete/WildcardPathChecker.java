@@ -32,8 +32,9 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
     /**
      * Creates a checker node for a given wild-card expression 
      */
-    public WildcardPathChecker(ReteNetwork network, Wildcard expression) {
-        super(network, expression);
+    public WildcardPathChecker(ReteNetwork network, Wildcard expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
     }
 
     @Override
