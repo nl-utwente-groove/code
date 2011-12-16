@@ -250,7 +250,7 @@ public abstract class AbstractReteMatch implements
                     m.dominoDelete(this);
                 }
             }
-            //this.superMatches = null;
+            this.superMatches = null;
 
             for (Collection<? extends AbstractReteMatch> c : this.containerCollections) {
                 c.remove(this);
