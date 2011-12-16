@@ -42,9 +42,11 @@ public class InversionPathChecker extends AbstractPathChecker {
     @Override
     public void receive(ReteNetworkNode source, int repeatedIndex,
             RetePathMatch newMatch) {
-        if (!newMatch.start().equals(newMatch.end()) && this.loop) {
+        if (this.loop && !newMatch.isEmpty()
+            && !newMatch.start().equals(newMatch.end())) {
             return;
         }
+
         RetePathMatch m = newMatch.inverse(this);
         passDownMatchToSuccessors(m);
     }

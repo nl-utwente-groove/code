@@ -158,7 +158,7 @@ public class PathCheckerFactory {
             RegExpr e =
                 (exp.isSeq()) ? new RegExpr.Seq(ops) : new RegExpr.Choice(ops);
             AbstractPathChecker combined =
-                getPathCheckerFor(e, checkers.size() == 0);
+                getPathCheckerFor(e, (checkers.size() == 0) ? isLoop : false);
             checkers.push(combined);
         }
         return checkers.pop();

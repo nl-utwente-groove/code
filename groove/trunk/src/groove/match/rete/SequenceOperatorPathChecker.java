@@ -68,7 +68,8 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
 
             if (this.test(left, right)) {
                 RetePathMatch combined = this.construct(left, right);
-                if (combined != null) {
+                if ((combined != null)
+                    && (!this.loop || combined.isEmpty() || combined.start() == combined.end())) {
                     passDownMatchToSuccessors(combined);
                 }
             }
@@ -84,9 +85,8 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      *  
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.isEmpty()
-            || right.isEmpty()
-            || (left.end().equals(right.start()) && (!this.loop || left.start() == right.end()));
+        return left.isEmpty() || right.isEmpty()
+            || left.end().equals(right.start());
     }
 
     /**

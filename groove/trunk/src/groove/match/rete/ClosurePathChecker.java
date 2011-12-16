@@ -70,7 +70,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             RetePathMatch newMatch) {
-        if (!newMatch.start().equals(newMatch.end()) && this.loop) {
+        if (this.loop && !newMatch.isEmpty()
+            && !newMatch.start().equals(newMatch.end())) {
             return;
         }
         receiveNewIncomingMatch(source, newMatch);

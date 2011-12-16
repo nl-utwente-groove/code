@@ -70,23 +70,23 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
         }
 
         RetePathMatch m = makeMatch(gEdge);
-        if ((gEdge.source() == gEdge.target()) == this.loop) {
-            if (action == Action.ADD) {
 
-                assert !this.memory.contains(m);
-                this.memory.add(m);
-                passDownMatchToSuccessors(m);
+        if (action == Action.ADD) {
 
-            } else { // action == Action.REMOVE
+            assert !this.memory.contains(m);
+            this.memory.add(m);
+            passDownMatchToSuccessors(m);
 
-                if (this.memory.contains(m)) {
-                    RetePathMatch m1 = m;
-                    m = this.memory.put(m);
-                    this.memory.remove(m1);
-                    m.dominoDelete(null);
-                }
+        } else { // action == Action.REMOVE
+
+            if (this.memory.contains(m)) {
+                RetePathMatch m1 = m;
+                m = this.memory.put(m);
+                this.memory.remove(m1);
+                m.dominoDelete(null);
             }
         }
+
     }
 
     /**
