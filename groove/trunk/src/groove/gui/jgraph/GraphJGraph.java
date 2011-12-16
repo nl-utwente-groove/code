@@ -138,7 +138,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * the case if it is in the set of filtered labels.
      */
     public boolean isFiltering(Label label) {
-        return this.labelTree.isFiltered(label);
+        return getLabelTree().isFiltered(label);
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */
@@ -1013,8 +1013,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             }
             itemAdded = true;
         }
-        if (this.labelTree.isFiltering() && cells != null && cells.length > 0) {
-            result.add(this.labelTree.createFilterAction(cells));
+        if (isFiltering() && cells != null && cells.length > 0) {
+            result.add(getLabelTree().createFilterAction(cells));
             itemAdded = true;
         }
         if (itemAdded) {
