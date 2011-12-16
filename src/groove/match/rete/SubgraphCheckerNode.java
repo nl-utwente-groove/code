@@ -787,11 +787,19 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                 if (equality[2] == 0) {
                     this.pathStartIndexInLeft =
                         new int[] {equality[0], equality[1]};
+                    if (sgChecker.fastEqualityLookupTable.length == 1) {
+                        this.pathEndIndexInLeft = this.pathStartIndexInLeft;
+                    }
+
                 }
                 //This equality is about the start point of the path edge
                 else if (equality[2] == 1) {
                     this.pathEndIndexInLeft =
                         new int[] {equality[0], equality[1]};
+                    //If the path checker antecedent is a loop edge
+                    if (sgChecker.fastEqualityLookupTable.length == 1) {
+                        this.pathStartIndexInLeft = this.pathEndIndexInLeft;
+                    }
                 }
             }
         }
@@ -806,24 +814,29 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         }
 
         private boolean testJointPointNodesEquality(LT left) {
-            assert this.subgraphChecker.fastEqualityLookupTable.length == 2;
-            HostElement[] leftUnits = left.getAllUnits();
-            int[] equality = this.subgraphChecker.fastEqualityLookupTable[0];
+            assert this.subgraphChecker.fastEqualityLookupTable.length <= 2;
+            if (this.subgraphChecker.fastEqualityLookupTable.length == 2) {
+                HostElement[] leftUnits = left.getAllUnits();
+                int[] equality =
+                    this.subgraphChecker.fastEqualityLookupTable[0];
 
-            HostNode node1 =
-                (equality[1] >= 0) ? ((equality[1] == 0)
-                        ? ((HostEdge) leftUnits[equality[0]]).source()
-                        : ((HostEdge) leftUnits[equality[0]]).target())
-                        : (HostNode) leftUnits[equality[0]];
+                HostNode node1 =
+                    (equality[1] >= 0) ? ((equality[1] == 0)
+                            ? ((HostEdge) leftUnits[equality[0]]).source()
+                            : ((HostEdge) leftUnits[equality[0]]).target())
+                            : (HostNode) leftUnits[equality[0]];
 
-            equality = this.subgraphChecker.fastEqualityLookupTable[1];
-            HostNode node2 =
-                (equality[1] >= 0) ? ((equality[1] == 0)
-                        ? ((HostEdge) leftUnits[equality[0]]).source()
-                        : ((HostEdge) leftUnits[equality[0]]).target())
-                        : (HostNode) leftUnits[equality[0]];
+                equality = this.subgraphChecker.fastEqualityLookupTable[1];
+                HostNode node2 =
+                    (equality[1] >= 0) ? ((equality[1] == 0)
+                            ? ((HostEdge) leftUnits[equality[0]]).source()
+                            : ((HostEdge) leftUnits[equality[0]]).target())
+                            : (HostNode) leftUnits[equality[0]];
 
-            return node1.equals(node2);
+                return node1.equals(node2);
+            } else {
+                return true;
+            }
         }
 
         /**
@@ -851,7 +864,6 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             return new ReteSimpleMatch(this.subgraphChecker,
                 this.subgraphChecker.getOwner().isInjective(), left,
                 new HostElement[] {node1, node2});
-
         }
     }
 

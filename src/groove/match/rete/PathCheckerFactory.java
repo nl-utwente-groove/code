@@ -26,7 +26,9 @@ import groove.rel.RegExpr.Wildcard;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -37,8 +39,8 @@ import java.util.Stack;
  */
 public class PathCheckerFactory {
     private ReteNetwork owner;
-    private HashMap<String,AbstractPathChecker> pathCheckers =
-        new HashMap<String,AbstractPathChecker>();
+    private HashMap<String,Set<AbstractPathChecker>> pathCheckers =
+        new HashMap<String,Set<AbstractPathChecker>>();
 
     /**
      * Creates a path-checker factory for a given RETE network
@@ -52,29 +54,45 @@ public class PathCheckerFactory {
      * Factory method that creates or re-uses an already created
      * RETE path checker 
      */
-    public AbstractPathChecker getPathCheckerFor(RegExpr exp) {
-        AbstractPathChecker result = this.pathCheckers.get(exp.toString());
-        if (result == null) {
-            result = create(exp);
-            this.pathCheckers.put(exp.toString(), result);
+    public AbstractPathChecker getPathCheckerFor(RegExpr exp, boolean loop) {
+        Set<AbstractPathChecker> candidates =
+            this.pathCheckers.get(exp.toString());
+        AbstractPathChecker result = null;
+        if (candidates == null) {
+            candidates = new HashSet<AbstractPathChecker>();
+            result = create(exp, loop);
+            candidates.add(result);
+            this.pathCheckers.put(exp.toString(), candidates);
+        } else {
+            for (AbstractPathChecker pc : candidates) {
+                if (pc.isLoop() == loop) {
+                    result = pc;
+                    break;
+                }
+            }
+            if (result == null) {
+                result = create(exp, loop);
+                candidates.add(result);
+            }
         }
         return result;
     }
 
-    private AbstractPathChecker create(RegExpr exp) {
+    private AbstractPathChecker create(RegExpr exp, boolean isLoop) {
         AbstractPathChecker result = null;
         List<RegExpr> operands = null;
         if (exp.isAtom()) {
             operands = Collections.emptyList();
-            result = new AtomPathChecker(this.owner, (Atom) exp);
+            result = new AtomPathChecker(this.owner, (Atom) exp, isLoop);
             this.owner.getRoot().addSuccessor(result);
         } else if (exp.isChoice()) {
             operands = ((Choice) exp).getChoiceOperands();
-            result = new ChoicePathChecker(this.owner, (RegExpr.Choice) exp);
+            result =
+                new ChoicePathChecker(this.owner, (RegExpr.Choice) exp, isLoop);
         } else if (exp.isInv()) {
             operands = new ArrayList<RegExpr>();
             operands.add(exp.getInvOperand());
-            result = new InversionPathChecker(this.owner, (Inv) exp);
+            result = new InversionPathChecker(this.owner, (Inv) exp, isLoop);
         } else if (exp.isNeg()) {
             throw new UnsupportedOperationException(
                 "Negation is not supported by this factory.");
@@ -82,13 +100,14 @@ public class PathCheckerFactory {
             operands = new ArrayList<RegExpr>();
             operands.add(exp.isPlus() ? exp.getPlusOperand()
                     : exp.getStarOperand());
-            result = new ClosurePathChecker(this.owner, exp);
+            result = new ClosurePathChecker(this.owner, exp, isLoop);
         } else if (exp.isSeq()) {
             operands = exp.getSeqOperands();
             if (operands.size() == 2) {
-                result = new SequenceOperatorPathChecker(this.owner, exp);
+                result =
+                    new SequenceOperatorPathChecker(this.owner, exp, isLoop);
             } else {
-                result = buildBinaryTree(exp);
+                result = buildBinaryTree(exp, isLoop);
                 operands = Collections.emptyList();
             }
         } else if (exp.isEmpty()) {
@@ -97,13 +116,15 @@ public class PathCheckerFactory {
             this.owner.getRoot().addSuccessor(result);
         } else if (exp.isWildcard()) {
             operands = Collections.emptyList();
-            result = new WildcardPathChecker(this.owner, (Wildcard) exp);
+            result =
+                new WildcardPathChecker(this.owner, (Wildcard) exp, isLoop);
             this.owner.getRoot().addSuccessor(result);
         }
 
         if (result != null) {
+            boolean loop = (operands.size() == 1) ? isLoop : false;
             for (RegExpr operand : operands) {
-                AbstractPathChecker pc = getPathCheckerFor(operand);
+                AbstractPathChecker pc = getPathCheckerFor(operand, loop);
                 result.addAntecedent(pc);
                 pc.addSuccessor(result);
             }
@@ -121,12 +142,12 @@ public class PathCheckerFactory {
      * {@link Choice}.
      * 
      */
-    private AbstractPathChecker buildBinaryTree(RegExpr exp) {
+    private AbstractPathChecker buildBinaryTree(RegExpr exp, boolean isLoop) {
         List<RegExpr> operands = exp.getOperands();
         assert (exp.isSeq()) || (exp.isChoice()) && (operands.size() >= 2);
         Stack<AbstractPathChecker> checkers = new Stack<AbstractPathChecker>();
         for (RegExpr op : operands) {
-            checkers.push(getPathCheckerFor(op));
+            checkers.push(getPathCheckerFor(op, false));
         }
         while (checkers.size() > 1) {
             AbstractPathChecker pc2 = checkers.pop();
@@ -136,7 +157,8 @@ public class PathCheckerFactory {
             ops.add(pc2.getExpression());
             RegExpr e =
                 (exp.isSeq()) ? new RegExpr.Seq(ops) : new RegExpr.Choice(ops);
-            AbstractPathChecker combined = getPathCheckerFor(e);
+            AbstractPathChecker combined =
+                getPathCheckerFor(e, checkers.size() == 0);
             checkers.push(combined);
         }
         return checkers.pop();
@@ -146,7 +168,7 @@ public class PathCheckerFactory {
      * @return A map from regular expression strings to path-checkers that
      * check against that expression.
      */
-    public HashMap<String,AbstractPathChecker> getPathCheckersMap() {
+    public HashMap<String,Set<AbstractPathChecker>> getPathCheckersMap() {
         return this.pathCheckers;
     }
 }

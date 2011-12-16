@@ -43,7 +43,7 @@ public class EmptyPathChecker extends AbstractPathChecker implements
      * @param network The network to which is empty path-checker should belong.
      */
     private EmptyPathChecker(ReteNetwork network) {
-        super(network, new Empty());
+        super(network, new Empty(), true);
         this.getOwner().getState().subscribe(this);
     }
 

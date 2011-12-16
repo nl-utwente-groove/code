@@ -35,8 +35,9 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      * if possible. 
      *  
      */
-    public SequenceOperatorPathChecker(ReteNetwork network, RegExpr expression) {
-        super(network, expression);
+    public SequenceOperatorPathChecker(ReteNetwork network, RegExpr expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
         this.leftMemory = new TreeHashSet<RetePathMatch>();
         this.rightMemory = new TreeHashSet<RetePathMatch>();
     }
@@ -83,8 +84,9 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      *  
      */
     protected boolean test(RetePathMatch left, RetePathMatch right) {
-        return left.isEmpty() || right.isEmpty()
-            || left.end().equals(right.start());
+        return left.isEmpty()
+            || right.isEmpty()
+            || (left.end().equals(right.start()) && (!this.loop || left.start() == right.end()));
     }
 
     /**

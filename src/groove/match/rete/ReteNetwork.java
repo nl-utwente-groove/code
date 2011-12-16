@@ -541,7 +541,8 @@ public class ReteNetwork {
             ReteStaticMapping m1 = openList.get(0);
             AbstractPathChecker pc =
                 this.pathCheckerFactory.getPathCheckerFor((exp.isNeg())
-                        ? exp.getNegOperand() : exp);
+                        ? exp.getNegOperand() : exp, exp.isEmpty()
+                    || e.source() == e.target());
             ReteStaticMapping m2 =
                 new ReteStaticMapping(pc, new RuleElement[] {e.source(),
                     e.target()});
@@ -659,7 +660,8 @@ public class ReteNetwork {
             } else if (!e.label().getMatchExpr().isAcceptsEmptyWord()
                 && !e.label().getMatchExpr().isNeg()) {
                 AbstractPathChecker pathChecker =
-                    this.pathCheckerFactory.getPathCheckerFor(e.label().getMatchExpr());
+                    this.pathCheckerFactory.getPathCheckerFor(
+                        e.label().getMatchExpr(), e.source() == e.target());
                 mapping =
                     new ReteStaticMapping(pathChecker, new RuleElement[] {
                         e.source(), e.target()});
@@ -700,32 +702,35 @@ public class ReteNetwork {
      * @return The mapping from the nodes of the <code>source</code>
      *         to the newly made/numbered nodes. 
      */
-    private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source) {
-        RuleGraphMorphism result = source.getFactory().createMorphism();
+    private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source,
+            Condition positiveRule) {
+        RuleFactory rfact = positiveRule.getFactory();
+        RuleGraphMorphism result = rfact.createMorphism();
+        int maxNodeNr = 0;
+        for (RuleNode n : positiveRule.getPattern().nodeSet()) {
+            if (maxNodeNr < n.getNumber()) {
+                maxNodeNr = n.getNumber();
+            }
+        }
+        maxNodeNr++;
         for (RuleNode n : source.nodeSet()) {
+
             if (n instanceof VariableNode) {
                 VariableNode vn = (VariableNode) n;
                 if (vn.getConstant() != null) {
-                    result.nodeMap().put(
-                        n,
-                        source.getFactory().createVariableNode(
-                            source.getFactory().getMaxNodeNr() + 1,
-                            vn.getConstant()));
+                    result.nodeMap().put(n,
+                        rfact.createVariableNode(maxNodeNr++, vn.getConstant()));
 
                 } else {
                     result.nodeMap().put(
                         n,
-                        source.getFactory().createVariableNode(
-                            source.getFactory().getMaxNodeNr() + 1,
-                            vn.getSignature()));
+                        rfact.createVariableNode(maxNodeNr++, vn.getSignature()));
                 }
             } else {
-
                 result.nodeMap().put(
                     n,
-                    source.getFactory().createNode(
-                        source.getFactory().getMaxNodeNr() + 1,
-                        n.getType().label(), n.isSharp()));
+                    rfact.createNode(maxNodeNr++, n.getType().label(),
+                        n.isSharp()));
             }
 
         }
@@ -737,6 +742,7 @@ public class ReteNetwork {
      * node map. 
      * 
      * @param source The rule graph to be copied
+     * @param rfact  The factor of nodes to be used to renumbering
      * @param nodeMapping A bijection between nodes of <code>source</code>
      * and the nodes of the expected result of this method.
      *  
@@ -744,14 +750,14 @@ public class ReteNetwork {
      * is equal to the range of <code>nodeMapping</code>.
      * 
      */
-    private RuleGraph copyAndRenumberNodes(RuleGraph source,
+    private RuleGraph copyAndRenumberNodes(RuleGraph source, RuleFactory rfact,
             RuleGraphMorphism nodeMapping) {
         RuleGraph result = source.newGraph(source.getName());
         for (RuleNode n : source.nodeSet()) {
             result.addNode(nodeMapping.getNode(n));
         }
         for (RuleEdge e : source.edgeSet()) {
-            result.addEdge(translate(source.getFactory(), nodeMapping, e));
+            result.addEdge(translate(rfact, nodeMapping, e));
         }
         return result;
     }
@@ -804,14 +810,18 @@ public class ReteNetwork {
             //to avoid in any mix-up in the join-equalities
             //of the entailing composite subgraph checkers.
             RuleGraphMorphism nodeRenumberingMapping =
-                createRuleMorphismForCloning(nac.getPattern());
+                createRuleMorphismForCloning(nac.getPattern(),
+                    positiveConditionChecker.getCondition());
             RuleGraph newNacGraph =
-                copyAndRenumberNodes(nac.getPattern(), nodeRenumberingMapping);
+                copyAndRenumberNodes(nac.getPattern(),
+                    positiveConditionChecker.getCondition().getFactory(),
+                    nodeRenumberingMapping);
             RuleGraphMorphism newRootMap =
                 copyRootMap(nac.getRoot().nodeSet(), nodeRenumberingMapping);
 
             ReteStaticMapping m1 =
-                duplicateAndTranslateMapping(nac.getPattern().getFactory(),
+                duplicateAndTranslateMapping(
+                    positiveConditionChecker.getCondition().getFactory(),
                     lastSubgraphMapping, newRootMap);
             if (m1 != null) {
                 byPassList.add(m1);

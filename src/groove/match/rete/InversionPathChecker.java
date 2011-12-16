@@ -33,14 +33,18 @@ public class InversionPathChecker extends AbstractPathChecker {
      * @param expression The regular expression that has inversion
      * as its top-most operator.
      */
-    public InversionPathChecker(ReteNetwork network, Inv expression) {
-        super(network, expression);
+    public InversionPathChecker(ReteNetwork network, Inv expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
         assert expression.getInvOperand() != null;
     }
 
     @Override
     public void receive(ReteNetworkNode source, int repeatedIndex,
             RetePathMatch newMatch) {
+        if (!newMatch.start().equals(newMatch.end()) && this.loop) {
+            return;
+        }
         RetePathMatch m = newMatch.inverse(this);
         passDownMatchToSuccessors(m);
     }

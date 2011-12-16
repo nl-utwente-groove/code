@@ -51,8 +51,9 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
      * @param expression The regular expression that should be either
      * an atom or a wild-card.
      */
-    public SingleEdgePathChecker(ReteNetwork network, RegExpr expression) {
-        super(network, expression);
+    public SingleEdgePathChecker(ReteNetwork network, RegExpr expression,
+            boolean isLoop) {
+        super(network, expression, isLoop);
         this.getOwner().getState().subscribe(this);
         assert (expression instanceof Atom) || (expression instanceof Wildcard);
     }
@@ -64,17 +65,26 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
      */
     public void receive(ReteNetworkNode source, HostEdge gEdge, Action action) {
 
+        if (this.loop && gEdge.source() != gEdge.target()) {
+            return;
+        }
+
         RetePathMatch m = makeMatch(gEdge);
-        if (action == Action.ADD) {
-            assert !this.memory.contains(m);
-            this.memory.add(m);
-            passDownMatchToSuccessors(m);
-        } else { // action == Action.REMOVE            
-            if (this.memory.contains(m)) {
-                RetePathMatch m1 = m;
-                m = this.memory.put(m);
-                this.memory.remove(m1);
-                m.dominoDelete(null);
+        if ((gEdge.source() == gEdge.target()) == this.loop) {
+            if (action == Action.ADD) {
+
+                assert !this.memory.contains(m);
+                this.memory.add(m);
+                passDownMatchToSuccessors(m);
+
+            } else { // action == Action.REMOVE
+
+                if (this.memory.contains(m)) {
+                    RetePathMatch m1 = m;
+                    m = this.memory.put(m);
+                    this.memory.remove(m1);
+                    m.dominoDelete(null);
+                }
             }
         }
     }

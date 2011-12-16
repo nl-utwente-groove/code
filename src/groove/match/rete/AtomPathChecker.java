@@ -30,8 +30,8 @@ public class AtomPathChecker extends SingleEdgePathChecker {
      * @param theAtom the atom component of the regular expression 
      *         that is to be checked by this n-node 
      */
-    public AtomPathChecker(ReteNetwork network, Atom theAtom) {
-        super(network, theAtom);
+    public AtomPathChecker(ReteNetwork network, Atom theAtom, boolean isLoop) {
+        super(network, theAtom, isLoop);
     }
 
     /**
