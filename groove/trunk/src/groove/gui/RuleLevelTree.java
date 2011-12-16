@@ -113,7 +113,7 @@ public class RuleLevelTree extends CheckboxTree implements
         getTopNode().removeAllChildren();
         Set<LevelNode> newNodes = new HashSet<LevelNode>();
         Map<Index,Set<AspectElement>> levelTree = this.rule.getLevelTree();
-        boolean enabled = levelTree.size() > 1;
+        boolean enabled = levelTree != null && levelTree.size() > 1;
         if (enabled) {
             for (Map.Entry<Index,Set<AspectElement>> levelEntry : levelTree.entrySet()) {
                 Index index = levelEntry.getKey();
