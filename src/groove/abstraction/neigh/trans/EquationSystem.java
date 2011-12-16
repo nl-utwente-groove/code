@@ -72,6 +72,7 @@ public final class EquationSystem {
 
     /** Adds the given pair of variables to the given pair of equations. */
     private static void addVars(Duo<Equation> eqs, Duo<BoundVar> vars) {
+
         eqs.one().addVar(vars.one());
         eqs.two().addVar(vars.two());
     }
@@ -452,6 +453,14 @@ public final class EquationSystem {
         return new Duo<Equation>(lbEq, ubEq);
     }
 
+    /** Updates the constants in the given equations to the given values. */
+    private void updateConstant(Duo<Equation> eqs, int lbConst, int ubConst) {
+        Equation lbEq = eqs.one();
+        Equation ubEq = eqs.two();
+        lbEq.constant = lbConst;
+        ubEq.constant = ubConst;
+    }
+
     /** Checks if the given solution satisfies all equations of the system. */
     private boolean isValid(Solution sol) {
         if (sol.invalid) {
@@ -821,32 +830,41 @@ public final class EquationSystem {
                     Multiplicity constMult = esMult.toNodeKind();
                     // Create a new equation.
                     Duo<Equation> eqs =
-                        this.createEquations(sigEdges.size(),
-                            constMult.getLowerBound(),
-                            constMult.getUpperBound());
+                        this.createEquations(sigEdges.size(), 0, 0);
                     // Go over the edges of the signature and check if the
                     // opposite nodes have variables.
                     edgeLoop: for (ShapeEdge edge : sigEdges) {
+                        EdgeSignature oppEs =
+                            shape.getEdgeSignature(edge, direction.reverse());
+                        if (!shape.isEdgeSigConcrete(oppEs)) {
+                            // We have an opposite edge signature that is not
+                            // concrete. This means that we can't create a
+                            // proper equation for this case. Abort.
+                            break edgeLoop;
+                        }
                         ShapeNode opposite = edge.opposite(direction);
                         Duo<BoundVar> vars = this.nodeVarsMap.get(opposite);
                         if (vars == null) {
-                            // The opposite node has no variable.
-                            continue edgeLoop;
-                        } // else vars != null.
-                        EdgeSignature oppEs =
-                            shape.getEdgeSignature(edge, direction.reverse());
-                        assert shape.isEdgeSigConcrete(oppEs);
-                        addVars(eqs, vars);
-                        // Check for a special case.
-                        if (esMult.getUpperBound() == sigEdges.size()) {
-                            // This case implies that all opposite nodes must
-                            // be concrete.
-                            Duo<Equation> trivialEqs =
-                                this.createEquations(1, 1, 1);
-                            addVars(trivialEqs, vars);
-                            this.storeEquations(trivialEqs);
+                            // The opposite node has no variable, so its
+                            // multiplicity is already known. Subtract this
+                            // value from the equation constant.
+                            Multiplicity oppMult = shape.getNodeMult(opposite);
+                            constMult = constMult.sub(oppMult);
+                        } else { // vars != null.
+                            addVars(eqs, vars);
+                            // Check for a special case.
+                            if (esMult.getUpperBound() == sigEdges.size()) {
+                                // This case implies that all opposite nodes must
+                                // be concrete.
+                                Duo<Equation> trivialEqs =
+                                    this.createEquations(1, 1, 1);
+                                addVars(trivialEqs, vars);
+                                this.storeEquations(trivialEqs);
+                            }
                         }
                     }
+                    this.updateConstant(eqs, constMult.getLowerBound(),
+                        constMult.getUpperBound());
                     this.storeEquations(eqs);
                 }
             }
@@ -967,7 +985,7 @@ public final class EquationSystem {
         /** List of variables (type compatible with the equation). */
         final ArrayList<BoundVar> vars;
         /** Constant value for this equation. */
-        final int constant;
+        int constant;
         /**
          * Special case: reference to a node that may become garbage in the
          * first stage, and thus affects the solution of the system.
