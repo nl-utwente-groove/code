@@ -299,8 +299,8 @@ public class QuantifierCountSubgraphChecker extends
                     this.subgraphChecker.shouldPreservePrefix,
                     this.leftAnchorLookup);
             } else {
-                return left.merge(this.subgraphChecker, right,
-                    this.subgraphChecker.shouldPreservePrefix);
+                return ReteSimpleMatch.merge(this.subgraphChecker, left, right,
+                    this.subgraphChecker.shouldPreservePrefix, false);
             }
         }
 

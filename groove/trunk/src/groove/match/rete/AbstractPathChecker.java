@@ -20,8 +20,10 @@ import groove.rel.RegExpr;
 import groove.rel.RegExpr.Empty;
 import groove.rel.RegExpr.Neg;
 import groove.rel.RegExpr.Star;
+import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
+import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 
 /**
@@ -31,9 +33,9 @@ import groove.trans.RuleNode;
 public abstract class AbstractPathChecker extends ReteNetworkNode {
 
     /**
-     * The static start and end node patterns of this checker node.
+     * The static pattern representing this path's regular expression edge.
      */
-    protected RuleNode[] endPointsPattern = new RuleNode[2];
+    protected RuleEdge[] pattern;
 
     /**
      * The regular path expression checked by this checker node
@@ -58,13 +60,14 @@ public abstract class AbstractPathChecker extends ReteNetworkNode {
         RuleFactory f = RuleFactory.newInstance();
         RuleNode n1 = f.createNode(f.getMaxNodeNr());
         RuleNode n2 = (isLoop) ? n1 : f.createNode(f.getMaxNodeNr());
-        this.endPointsPattern = new RuleNode[] {n1, n2};
+        this.pattern =
+            new RuleEdge[] {f.createEdge(n1, new RuleLabel(expression), n2)};
         this.loop = isLoop;
     }
 
     @Override
     public RuleElement[] getPattern() {
-        return this.endPointsPattern;
+        return this.pattern;
     }
 
     /**

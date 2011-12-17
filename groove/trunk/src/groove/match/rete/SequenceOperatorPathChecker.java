@@ -95,7 +95,7 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
         if (!left.isEmpty() && !right.isEmpty()) {
-            return (RetePathMatch) left.merge(this, right, false);
+            return left.concatenate(this, right, false);
         } else if (!left.isEmpty()) {
             return left.reoriginate(this);
         } else {

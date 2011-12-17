@@ -77,12 +77,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         receiveNewIncomingMatch(source, newMatch);
     }
 
-    private void receiveLoopBackMatches(Set<RetePathMatch> loopBackMatches) {
+    private void receiveLoopBackMatches(Set<RetePathMatch> loopBackMatches,
+            int recursionCounter) {
         Set<RetePathMatch> resultingNewMatches =
             new TreeHashSet<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
-            if (!loopBackMatch.isEmpty()
-                && !loopBackMatch.start().equals(loopBackMatch.end())) {
+            if (loopBackMatch.getNodeCount() == loopBackMatch.getPathLength() + 1) {
                 this.rightMemory.add(loopBackMatch);
                 loopBackMatch.addContainerCollection(this.rightMemory);
                 for (RetePathMatch left : this.leftMemory) {
@@ -98,7 +98,10 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         }
         if (resultingNewMatches.size() > 0) {
             passDownMatches(resultingNewMatches);
-            receiveLoopBackMatches(resultingNewMatches);
+            if (recursionCounter > 0) {
+                receiveLoopBackMatches(resultingNewMatches,
+                    recursionCounter - 1);
+            }
         }
     }
 
@@ -120,13 +123,16 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         }
         passDownMatches(resultingMatches);
         if (!this.loop) {
-            receiveLoopBackMatches(resultingMatches);
+            receiveLoopBackMatches(resultingMatches,
+                this.getOwner().getState().getHostGraph().nodeCount());
         }
     }
 
     private void passDownMatches(Set<RetePathMatch> theMatches) {
         for (RetePathMatch m : theMatches) {
-            passDownMatchToSuccessors(m);
+            if (!this.loop || (m.isEmpty() || m.start() == m.end())) {
+                passDownMatchToSuccessors(m);
+            }
         }
     }
 
@@ -149,7 +155,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
         if (!left.isEmpty() && !right.isEmpty()) {
-            return (RetePathMatch) left.merge(this, right, false);
+            return left.concatenate(this, right, false);
         } else if (!left.isEmpty()) {
             return left.reoriginate(this);
         } else {
