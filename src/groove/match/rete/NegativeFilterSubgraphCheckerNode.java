@@ -85,6 +85,21 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
                     }
 
                 };
+        } else if ((left.getNNode() instanceof AbstractPathChecker)
+            && (right.getNNode() instanceof AbstractPathChecker)) {
+            this.joinStrategy =
+                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractJoinWithPathStrategy<RetePathMatch>(
+                    this) {
+
+                    @Override
+                    public AbstractReteMatch construct(RetePathMatch left,
+                            RetePathMatch right) {
+                        assert right == null;
+                        return new ReteSimpleMatch(this.subgraphChecker,
+                            this.subgraphChecker.getOwner().isInjective(), left);
+                    }
+
+                };
         } else {
             throw new UnsupportedOperationException();
         }

@@ -120,22 +120,29 @@ public class DataOperatorChecker extends ReteNetworkNode {
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch subgraph) {
-        HostElement[] matchUnits = subgraph.getAllUnits();
+        Object[] matchUnits = subgraph.getAllUnits();
         //
         List<Object> arguments = new ArrayList<Object>();
         for (int i = 0; i < this.argumentLocator.size(); i++) {
             int[] pos = this.argumentLocator.get(i);
-            HostElement e = matchUnits[pos[0]];
+            Object e = matchUnits[pos[0]];
             ValueNode vn;
-            if (pos[1] != -1) {
+            if (e instanceof HostEdge) {
                 HostNode n =
                     (pos[1] == 0) ? ((HostEdge) e).source()
                             : ((HostEdge) e).target();
                 assert n instanceof ValueNode;
                 vn = (ValueNode) n;
-            } else {
+            } else if (e instanceof HostNode) {
                 assert e instanceof ValueNode;
                 vn = (ValueNode) e;
+            } else { //e instance of RetePathMatch
+                HostNode n =
+                    (pos[1] == 0) ? ((RetePathMatch) e).start()
+                            : ((RetePathMatch) e).end();
+                assert n instanceof ValueNode;
+                vn = (ValueNode) n;
+
             }
             arguments.add(vn.getValue());
         }
@@ -162,10 +169,19 @@ public class DataOperatorChecker extends ReteNetworkNode {
             int[] pos =
                 this.getAntecedents().get(0).getPatternLookupTable().getNode(
                     (Node) this.pattern[this.pattern.length - 1]);
-            HostElement e = matchUnits[pos[0]];
-            HostNode n =
-                (pos[1] == -1) ? (HostNode) e : (pos[1] == 0)
-                        ? ((HostEdge) e).source() : ((HostEdge) e).target();
+            Object e = matchUnits[pos[0]];
+            HostNode n;
+            if (e instanceof HostNode) {
+                n = (HostNode) e;
+            } else if (e instanceof HostEdge) {
+                n =
+                    (pos[1] == 0) ? ((HostEdge) e).source()
+                            : ((HostEdge) e).target();
+            } else { //e instance of RetePathMatch
+                n =
+                    (pos[1] == 0) ? ((RetePathMatch) e).start()
+                            : ((RetePathMatch) e).end();
+            }
             assert n instanceof ValueNode;
             if (((ValueNode) n).getValue().equals(outcome)) {
                 resultValueNode = (ValueNode) n;

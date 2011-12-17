@@ -21,8 +21,6 @@ import groove.rel.LabelVar;
 import groove.rel.Valuation;
 import groove.rel.VarMap;
 import groove.trans.HostEdge;
-import groove.trans.HostElement;
-import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
@@ -39,8 +37,7 @@ import java.util.Map.Entry;
  * @author Arash Jalali
  * @version $Revision $
  */
-public abstract class AbstractReteMatch implements
-        Comparable<AbstractReteMatch>, VarMap {
+public abstract class AbstractReteMatch implements VarMap {
 
     private boolean injective = false;
 
@@ -102,7 +99,7 @@ public abstract class AbstractReteMatch implements
      * @return The array of all the match elements, i.e. elements of 
      * the host graph that are part of this match.
      */
-    public abstract HostElement[] getAllUnits();
+    public abstract Object[] getAllUnits();
 
     /**
      * @return The number of units in this match.
@@ -125,7 +122,7 @@ public abstract class AbstractReteMatch implements
      */
     public boolean conformsWith(RuleToHostMap anchorMap) {
         LookupTable lookup = this.origin.getPatternLookupTable();
-        HostElement[] units = this.getAllUnits();
+        Object[] units = this.getAllUnits();
         boolean result = true;
         for (Entry<RuleEdge,? extends HostEdge> m : anchorMap.edgeMap().entrySet()) {
             int i = lookup.getEdge(m.getKey());
@@ -139,16 +136,24 @@ public abstract class AbstractReteMatch implements
             for (RuleNode n : anchorMap.nodeMap().keySet()) {
                 int[] idx = lookup.getNode(n);
                 if (idx != null) {
-                    HostElement e = units[idx[0]];
+                    Object e = units[idx[0]];
                     if (e instanceof HostNode) {
                         if (!e.equals(anchorMap.getNode(n))) {
                             result = false;
                             break;
                         }
-                    } else {
+                    } else if (e instanceof HostEdge) {
                         HostNode n1 =
                             (idx[1] == 0) ? ((HostEdge) e).source()
                                     : ((HostEdge) e).target();
+                        if (!n1.equals(anchorMap.getNode(n))) {
+                            result = false;
+                            break;
+                        }
+                    } else { //a path match unit
+                        HostNode n1 =
+                            (idx[1] == 0) ? ((RetePathMatch) e).start()
+                                    : ((RetePathMatch) e).end();
                         if (!n1.equals(anchorMap.getNode(n))) {
                             result = false;
                             break;
@@ -304,16 +309,6 @@ public abstract class AbstractReteMatch implements
     }
 
     /**
-     * Implementations of this method should make sure a proper
-     * GROOVE compatible map object is created that corresponds 
-     * with this RETE-specific match object. 
-     * 
-     * @param factory The factory that can create the right map type 
-     * @return A translation of this match object to the {@link RuleToHostMap} representation  
-     */
-    public abstract RuleToHostMap toRuleToHostMap(HostFactory factory);
-
-    /**
      * Creates a new match object that is the result of merging this match 
      * with a given match (the <code>m</code> parameter).
      * The semantics of the merge depends on the concrete implementation but
@@ -336,9 +331,10 @@ public abstract class AbstractReteMatch implements
      * that merging has not been possible due to some sort of conflict.
     
      */
+    /*
     public abstract AbstractReteMatch merge(ReteNetworkNode origin,
             AbstractReteMatch m, boolean copyLeftPrefix);
-
+    */
     /**
      * An empty valuation map.
      */
@@ -426,17 +422,6 @@ public abstract class AbstractReteMatch implements
         return this.specialPrefix;
     }
 
-    /**
-     * Concrete implementations should create a clone copy of this current
-     * object. 
-     * The interpretation as to what a "shallow" copy means is left to
-     * concrete implementations, but it should properly documented.
-     * 
-     * @param shallow determines if all reference data is properly cloned 
-     * as well or some object references are just copied. 
-     */
-    protected abstract AbstractReteMatch clone(boolean shallow);
-
     @Override
     public synchronized int hashCode() {
         if (this.hashCode == 0) {
@@ -456,7 +441,7 @@ public abstract class AbstractReteMatch implements
     protected void refreshHashCode(int initialHash, int initialIndex) {
         this.hashCode = initialHash;
         int l = this.getAllUnits().length;
-        HostElement[] theUnits = this.getAllUnits();
+        Object[] theUnits = this.getAllUnits();
         for (int i = initialIndex; i < l; i++) {
             if (i > 0) {
                 boolean neg = this.hashCode < 0;

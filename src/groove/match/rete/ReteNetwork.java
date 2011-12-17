@@ -544,8 +544,7 @@ public class ReteNetwork {
                         ? exp.getNegOperand() : exp, exp.isEmpty()
                     || e.source() == e.target());
             ReteStaticMapping m2 =
-                new ReteStaticMapping(pc, new RuleElement[] {e.source(),
-                    e.target()});
+                new ReteStaticMapping(pc, new RuleElement[] {e});
             if (exp.isNeg()) {
                 NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch> sg =
                     new NegativeFilterSubgraphCheckerNode<ReteSimpleMatch,RetePathMatch>(
@@ -663,8 +662,7 @@ public class ReteNetwork {
                     this.pathCheckerFactory.getPathCheckerFor(
                         e.label().getMatchExpr(), e.source() == e.target());
                 mapping =
-                    new ReteStaticMapping(pathChecker, new RuleElement[] {
-                        e.source(), e.target()});
+                    new ReteStaticMapping(pathChecker, new RuleElement[] {e});
             } else {
                 emptyAndNegativePathEdges.add(e);
             }
@@ -1093,6 +1091,7 @@ public class ReteNetwork {
         this.getState().initializeSubscribers();
         ReteUpdateMode oldUpdateMode = this.getState().getUpdateMode();
         this.setUpdating(true);
+        this.getState().setHostGraph(g);
         this.getState().updateMode = ReteUpdateMode.NORMAL;
         for (HostNode n : g.nodeSet()) {
             this.getRoot().receiveNode(n, Action.ADD);
@@ -1103,7 +1102,6 @@ public class ReteNetwork {
         if (oldUpdateMode == ReteUpdateMode.ONDEMAND) {
             this.getState().setUpdateMode(oldUpdateMode);
         }
-        this.getState().setHostGraph(g);
         this.setUpdating(false);
     }
 

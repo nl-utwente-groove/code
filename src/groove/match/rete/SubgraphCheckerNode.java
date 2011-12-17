@@ -19,7 +19,6 @@ package groove.match.rete;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
 import groove.trans.HostEdge;
-import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
@@ -128,7 +127,9 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                     public AbstractReteMatch construct(ReteSimpleMatch left,
                             ReteSimpleMatch right) {
 
-                        return left.merge(this.subgraphChecker, right,
+                        return ReteSimpleMatch.merge(this.subgraphChecker,
+                            left, right,
+                            this.subgraphChecker.getOwner().isInjective(),
                             this.subgraphChecker.shouldPreservePrefix);
                     }
 
@@ -142,14 +143,11 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
                     @Override
                     public AbstractReteMatch construct(AbstractReteMatch left,
                             RetePathMatch right) {
-                        return (right.isEmpty())
-                                ? this.mergeWithEmptyPath(left)
-                                : ReteSimpleMatch.merge(
-                                    this.subgraphChecker,
-                                    left,
-                                    right,
-                                    this.subgraphChecker.getOwner().isInjective(),
-                                    this.subgraphChecker.shouldPreservePrefix);
+                        return (right.isEmpty()) ? this.mergeWithEmptyPath(
+                            left, right) : ReteSimpleMatch.merge(
+                            this.subgraphChecker, left, right,
+                            this.subgraphChecker.getOwner().isInjective(),
+                            this.subgraphChecker.shouldPreservePrefix);
                     }
 
                 };
@@ -693,8 +691,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             boolean allEqualitiesSatisfied = true;
             boolean injective = this.subgraphChecker.getOwner().isInjective();
 
-            HostElement[] leftUnits = left.getAllUnits();
-            HostElement[] rightUnits = right.getAllUnits();
+            Object[] leftUnits = left.getAllUnits();
+            Object[] rightUnits = right.getAllUnits();
             Set<HostNode> nodesLeft = (injective) ? left.getNodes() : null;
             Set<HostNode> nodesRight = (injective) ? right.getNodes() : null;
 
@@ -702,16 +700,33 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             for (; i < this.subgraphChecker.fastEqualityLookupTable.length; i++) {
                 int[] equality =
                     this.subgraphChecker.fastEqualityLookupTable[i];
-                HostNode n1 =
-                    (equality[1] >= 0) ? ((equality[1] == 0)
-                            ? ((HostEdge) leftUnits[equality[0]]).source()
-                            : ((HostEdge) leftUnits[equality[0]]).target())
-                            : (HostNode) leftUnits[equality[0]];
-                HostNode n2 =
-                    (equality[3] >= 0) ? ((equality[3] == 0)
-                            ? ((HostEdge) rightUnits[equality[2]]).source()
-                            : ((HostEdge) rightUnits[equality[2]]).target())
-                            : (HostNode) rightUnits[equality[2]];
+                Object leftU = leftUnits[equality[0]];
+                Object rightU = rightUnits[equality[2]];
+                HostNode n1, n2;
+
+                if (leftU instanceof HostNode) {
+                    n1 = (HostNode) leftU;
+                } else if (leftU instanceof HostEdge) {
+                    n1 =
+                        (equality[1] == 0) ? ((HostEdge) leftU).source()
+                                : ((HostEdge) leftU).target();
+                } else { //leftU instanceof RetePathMatch
+                    n1 =
+                        (equality[1] == 0) ? ((RetePathMatch) leftU).start()
+                                : ((RetePathMatch) leftU).end();
+                }
+
+                if (rightU instanceof HostNode) {
+                    n2 = (HostNode) rightU;
+                } else if (rightU instanceof HostEdge) {
+                    n2 =
+                        (equality[3] == 0) ? ((HostEdge) rightU).source()
+                                : ((HostEdge) rightU).target();
+                } else { //leftU instanceof RetePathMatch
+                    n2 =
+                        (equality[3] == 0) ? ((RetePathMatch) rightU).start()
+                                : ((RetePathMatch) rightU).end();
+                }
 
                 allEqualitiesSatisfied = n1.equals(n2);
 
@@ -784,7 +799,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
             for (int i = 0; i < sgChecker.fastEqualityLookupTable.length; i++) {
                 int[] equality = sgChecker.fastEqualityLookupTable[i];
                 //This equality is about the start point of the path edge
-                if (equality[2] == 0) {
+                if (equality[3] == 0) {
                     this.pathStartIndexInLeft =
                         new int[] {equality[0], equality[1]};
                     if (sgChecker.fastEqualityLookupTable.length == 1) {
@@ -793,7 +808,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
 
                 }
                 //This equality is about the start point of the path edge
-                else if (equality[2] == 1) {
+                else if (equality[3] == 1) {
                     this.pathEndIndexInLeft =
                         new int[] {equality[0], equality[1]};
                     //If the path checker antecedent is a loop edge
@@ -816,22 +831,39 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         private boolean testJointPointNodesEquality(LT left) {
             assert this.subgraphChecker.fastEqualityLookupTable.length <= 2;
             if (this.subgraphChecker.fastEqualityLookupTable.length == 2) {
-                HostElement[] leftUnits = left.getAllUnits();
+                Object[] leftUnits = left.getAllUnits();
                 int[] equality =
                     this.subgraphChecker.fastEqualityLookupTable[0];
 
-                HostNode node1 =
-                    (equality[1] >= 0) ? ((equality[1] == 0)
-                            ? ((HostEdge) leftUnits[equality[0]]).source()
-                            : ((HostEdge) leftUnits[equality[0]]).target())
-                            : (HostNode) leftUnits[equality[0]];
+                Object u1 = leftUnits[equality[0]];
+
+                HostNode node1;
+                if (u1 instanceof HostNode) {
+                    node1 = (HostNode) u1;
+                } else if (u1 instanceof HostEdge) {
+                    node1 =
+                        ((equality[1] == 0) ? ((HostEdge) u1).source()
+                                : ((HostEdge) u1).target());
+                } else { //u1 instanceof RetePathMatch
+                    node1 =
+                        ((equality[1] == 0) ? ((RetePathMatch) u1).start()
+                                : ((RetePathMatch) u1).end());
+                }
 
                 equality = this.subgraphChecker.fastEqualityLookupTable[1];
-                HostNode node2 =
-                    (equality[1] >= 0) ? ((equality[1] == 0)
-                            ? ((HostEdge) leftUnits[equality[0]]).source()
-                            : ((HostEdge) leftUnits[equality[0]]).target())
-                            : (HostNode) leftUnits[equality[0]];
+                Object u2 = leftUnits[equality[0]];
+                HostNode node2;
+                if (u2 instanceof HostNode) {
+                    node2 = (HostNode) u2;
+                } else if (u2 instanceof HostEdge) {
+                    node2 =
+                        ((equality[1] == 0) ? ((HostEdge) u2).source()
+                                : ((HostEdge) u2).target());
+                } else { //u2 instanceof RetePathMatch
+                    node2 =
+                        ((equality[1] == 0) ? ((RetePathMatch) u2).start()
+                                : ((RetePathMatch) u2).end());
+                }
 
                 return node1.equals(node2);
             } else {
@@ -845,25 +877,47 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
          * 
          * @param left the given left match
          */
-        public ReteSimpleMatch mergeWithEmptyPath(LT left) {
+        public ReteSimpleMatch mergeWithEmptyPath(LT left,
+                RetePathMatch emptyMatch) {
+            assert emptyMatch instanceof EmptyPathMatch;
             int[] equality = this.pathStartIndexInLeft;
-            HostElement[] leftUnits = left.getAllUnits();
-            HostNode node1 =
-                (equality[1] >= 0) ? ((equality[1] == 0)
-                        ? ((HostEdge) leftUnits[equality[0]]).source()
-                        : ((HostEdge) leftUnits[equality[0]]).target())
-                        : (HostNode) leftUnits[equality[0]];
+            Object[] leftUnits = left.getAllUnits();
+            Object u1 = leftUnits[equality[0]];
+
+            HostNode node1;
+            if (u1 instanceof HostNode) {
+                node1 = (HostNode) u1;
+            } else if (u1 instanceof HostEdge) {
+                node1 =
+                    (equality[1] == 0) ? ((HostEdge) u1).source()
+                            : ((HostEdge) u1).target();
+            } else { //u1 instanceof RetePathMatch
+                node1 =
+                    (equality[1] == 0) ? ((RetePathMatch) u1).start()
+                            : ((RetePathMatch) u1).end();
+            }
 
             equality = this.pathEndIndexInLeft;
-            HostNode node2 =
-                (equality[1] >= 0) ? ((equality[1] == 0)
-                        ? ((HostEdge) leftUnits[equality[0]]).source()
-                        : ((HostEdge) leftUnits[equality[0]]).target())
-                        : (HostNode) leftUnits[equality[0]];
+            u1 = leftUnits[equality[0]];
+
+            HostNode node2;
+            if (u1 instanceof HostNode) {
+                node2 = (HostNode) u1;
+            } else if (u1 instanceof HostEdge) {
+                node2 =
+                    (equality[1] == 0) ? ((HostEdge) u1).source()
+                            : ((HostEdge) u1).target();
+            } else { //u1 instanceof RetePathMatch
+                node2 =
+                    (equality[1] == 0) ? ((RetePathMatch) u1).start()
+                            : ((RetePathMatch) u1).end();
+            }
+            assert node1 == node2;
 
             return new ReteSimpleMatch(this.subgraphChecker,
                 this.subgraphChecker.getOwner().isInjective(), left,
-                new HostElement[] {node1, node2});
+                new Object[] {new RetePathMatch.EmptyPathMatch(
+                    emptyMatch.getOrigin(), node1)});
         }
     }
 

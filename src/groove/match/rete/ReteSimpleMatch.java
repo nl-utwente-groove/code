@@ -20,7 +20,6 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
 import groove.trans.HostEdge;
-import groove.trans.HostElement;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
@@ -38,7 +37,7 @@ import java.util.Set;
 public class ReteSimpleMatch extends AbstractReteMatch {
 
     /** Host graph elements. */
-    protected HostElement[] units;
+    protected Object[] units;
     /**
      * This is the set of nodes (host nodes) in this match.
      * It is only of use in injective matching so it will be
@@ -73,15 +72,14 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * object. It is assumed that <code>unitsToAppend.length + subMatch.getAllUnits().length == origin.getPattern().length</code>
      */
     public ReteSimpleMatch(ReteNetworkNode origin, boolean injective,
-            AbstractReteMatch subMatch, HostElement[] unitsToAppend) {
+            AbstractReteMatch subMatch, Object[] unitsToAppend) {
         this(origin, injective);
-        HostElement[] subMatchUnits = subMatch.getAllUnits();
+        Object[] subMatchUnits = subMatch.getAllUnits();
         assert unitsToAppend.length + subMatchUnits.length == origin.getPattern().length;
         this.specialPrefix = subMatch.specialPrefix;
         this.valuation = subMatch.valuation;
         subMatch.getSuperMatches().add(this);
-        this.units =
-            new HostElement[subMatchUnits.length + unitsToAppend.length];
+        this.units = new Object[subMatchUnits.length + unitsToAppend.length];
         for (int i = 0; i < subMatchUnits.length; i++) {
             this.units[i] = subMatchUnits[i];
         }
@@ -102,7 +100,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      */
     public ReteSimpleMatch(ReteNetworkNode origin, boolean injective) {
         super(origin, injective);
-        this.units = new HostElement[origin.getPattern().length];
+        this.units = new Object[origin.getPattern().length];
     }
 
     /**
@@ -166,7 +164,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * the host graph that are part of this match.
      */
     @Override
-    public HostElement[] getAllUnits() {
+    public Object[] getAllUnits() {
         return this.units;
     }
 
@@ -228,35 +226,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     }
 
     /**
-     * Compares this match to an allegedly-comparable match. It does not really
-     * check for comparability, i.e. to see that the two have the same actually
-     * originate from the same pattern.
-     * 
-     * To check comparability the {@link #equals(ReteSimpleMatch)} method should be called.
-     * 
-     * @param m The match to which the current match object should be compared.
-     * @return positive integer if this match is greater than <code>m</code>,
-     * zero if the two have the exact same match-units in the exact same order, and
-     * a negative integer if the this match is less than <code>m</code>.
-     */
-    public int compareTo(AbstractReteMatch m) {
-        HostElement[] thisList = this.getAllUnits();
-        HostElement[] mList = m.getAllUnits();
-
-        int result = this.hashCode() - m.hashCode();
-        if (result == 0) {
-            result = this.size() - m.size();
-            if (result == 0) {
-                int thisSize = this.size();
-                for (int i = 0; (i < thisSize) && (result == 0); i++) {
-                    result = thisList[i].compareTo(mList[i]);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * @param m A given match
      * @return <code>true</code> if this object is equal to <code>m</code>, i.e.
      * if they both refer to the same object or if they have the same origin,
@@ -278,8 +247,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     }
 
     private boolean compareToForEquality(AbstractReteMatch m) {
-        HostElement[] thisList = this.getAllUnits();
-        HostElement[] mList = m.getAllUnits();
+        Object[] thisList = this.getAllUnits();
+        Object[] mList = m.getAllUnits();
         boolean result = true;
 
         int thisSize = this.size();
@@ -310,7 +279,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     public boolean isContainedAt(int index, ReteSimpleMatch m) {
         boolean result = true;
         int mSize = m.size();
-        HostElement[] units = this.getAllUnits();
+        Object[] units = this.getAllUnits();
         for (int i = 0; i < mSize; i++) {
             if (!this.units[i + index].equals(units[i])) {
                 result = false;
@@ -318,23 +287,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
         }
         return result;
-    }
-
-    /**
-     * Merges two sub-matches into a bigger one. For more details see 
-     * the documentation for {@link #merge(ReteNetworkNode, ReteSimpleMatch, AbstractReteMatch, boolean, boolean)}
-     *
-     * @param origin The n-node that is to be set as the origin of the resulting merge.  
-     * @param m1 The left match, the units of which will be at the beginning of the
-     *           units of the merged match.
-     * @param m2 The right match, the units of which will be at the end of the
-     *           units of the merged match.
-     * @param injective Specifies if this is an injectively found match. 
-     * @return The resulting merged match.
-     */
-    public static ReteSimpleMatch merge(ReteNetworkNode origin,
-            ReteSimpleMatch m1, AbstractReteMatch m2, boolean injective) {
-        return ReteSimpleMatch.merge(origin, m1, m2, injective, false);
     }
 
     /**
@@ -350,6 +302,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * @return A newly created match object containing the merge of all the subMatches
      * if they do not conflict, {@literal null} otherwise. 
      */
+
     public static ReteSimpleMatch merge(ReteNetworkNode origin,
             AbstractReteMatch[] subMatches, boolean injective) {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
@@ -359,7 +312,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         if (valuation != null) {
             int k = 0;
             for (int i = 0; i < subMatches.length; i++) {
-                HostElement[] subMatchUnits = subMatches[i].getAllUnits();
+                Object[] subMatchUnits = subMatches[i].getAllUnits();
                 if (injective) {
                     for (HostNode n : subMatches[i].getNodes()) {
                         if (nodes.put(n) != null) {
@@ -395,23 +348,27 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * @param factory The factory that can create the right map type 
      * @return A translation of this match object to the {@link RuleToHostMap} representation  
      */
-    @Override
     public RuleToHostMap toRuleToHostMap(HostFactory factory) {
         if (this.equivalentMap == null) {
             this.equivalentMap = factory.createRuleToHostMap();
 
             RuleElement[] pattern = this.getOrigin().getPattern();
             for (int i = 0; i < this.units.length; i++) {
-                HostElement e = this.units[i];
+                Object e = this.units[i];
                 if (e instanceof HostNode) {
                     this.equivalentMap.putNode((RuleNode) pattern[i],
                         (HostNode) e);
-                } else {
+                } else if (e instanceof HostEdge) {
                     RuleEdge e1 = (RuleEdge) pattern[i];
                     HostEdge e2 = (HostEdge) e;
                     this.equivalentMap.putEdge(e1, e2);
                     this.equivalentMap.putNode(e1.source(), e2.source());
                     this.equivalentMap.putNode(e1.target(), e2.target());
+                } else { //e instance of RetePathMatch
+                    RuleEdge e1 = (RuleEdge) pattern[i];
+                    RetePathMatch m = (RetePathMatch) e;
+                    this.equivalentMap.putNode(e1.source(), m.start());
+                    this.equivalentMap.putNode(e1.target(), m.end());
                 }
             }
             if (this.getValuation() != null) {
@@ -435,13 +392,15 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         return sb.toString();
     }
 
+    /*
     @Override
     public AbstractReteMatch merge(ReteNetworkNode origin, AbstractReteMatch m,
             boolean copyLeftPrefix) {
+        assert m instanceof ReteSimpleMatch;
         return ReteSimpleMatch.merge(origin, this, m, this.isInjective(),
             copyLeftPrefix);
     }
-
+    */
     /**
      * Combines a simple match with any other type of matche into one match, preserving
      * the prelim match's hash code. 
@@ -461,30 +420,31 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * if m1 and m2 do not conflict, {@literal null} otherwise. 
      */
     public static ReteSimpleMatch merge(ReteNetworkNode origin,
-            ReteSimpleMatch m1, AbstractReteMatch m2, boolean injective,
+            AbstractReteMatch m1, AbstractReteMatch m2, boolean injective,
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
         Valuation valuation = m1.mergeValuationsWith(m2);
         if (valuation != null) {
             result = new ReteSimpleMatch(origin, injective);
-            HostElement[] units2 = m2.getAllUnits();
+            Object[] units1 = m1.getAllUnits();
+            Object[] units2 = m2.getAllUnits();
             if (copyPrefix) {
                 result.specialPrefix =
                     (m1.specialPrefix != null) ? m1.specialPrefix : m1;
             }
-            assert result.units.length == m1.units.length + units2.length;
+            assert result.units.length == units1.length + units2.length;
             int i = 0;
-            for (; i < m1.units.length; i++) {
-                result.units[i] = m1.units[i];
+            for (; i < units1.length; i++) {
+                result.units[i] = units1[i];
             }
 
             for (; i < result.units.length; i++) {
-                result.units[i] = units2[i - m1.units.length];
+                result.units[i] = units2[i - units1.length];
             }
 
             assert m1.hashCode != 0;
-            result.refreshHashCode(m1.hashCode, m1.units.length);
+            result.refreshHashCode(m1.hashCode, units1.length);
             m1.getSuperMatches().add(result);
             m2.getSuperMatches().add(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
@@ -510,15 +470,15 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * if m1 and m2 do not conflict, {@literal null} otherwise. 
      */
     public static ReteSimpleMatch merge(ReteNetworkNode origin,
-            AbstractReteMatch m1, AbstractReteMatch m2, boolean injective,
+            ReteSimpleMatch m1, ReteSimpleMatch m2, boolean injective,
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
         Valuation valuation = m1.mergeValuationsWith(m2);
         if (valuation != null) {
-            HostElement[] m1Units = m1.getAllUnits();
+            Object[] m1Units = m1.getAllUnits();
             result = new ReteSimpleMatch(origin, injective);
-            HostElement[] units2 = m2.getAllUnits();
+            Object[] units2 = m2.getAllUnits();
             if (copyPrefix) {
                 result.specialPrefix =
                     (m1.specialPrefix != null) ? m1.specialPrefix : m1;
@@ -538,40 +498,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             m2.getSuperMatches().add(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
         }
-        return result;
-    }
-
-    /**
-     * Makes another <code>ReteSimpleMatch</code> object that contains the same
-     * units as the units in this object.
-     * 
-     * The origin is set to the same as the origin of this object as reported
-     * by {@link #getOrigin()}.
-     * 
-     * 
-     * @param shallow if {@literal true} then the unit array of the source is reused
-     *               otherwise a new array of the same size is created and the contents
-     *               are copied.
-     * @return A new {@link ReteSimpleMatch} object the content 
-     *         of which is copied from the match object given in the 
-     *         <code>source</code> parameter.
-     */
-    @Override
-    protected AbstractReteMatch clone(boolean shallow) {
-        ReteSimpleMatch result =
-            new ReteSimpleMatch(this.getOrigin(), this.isInjective());
-        if (shallow) {
-            result.units = this.units;
-        } else {
-            result.units = new HostElement[this.units.length];
-            for (int i = 0; i < result.units.length; i++) {
-                result.units[i] = this.units[i];
-            }
-        }
-        result.valuation =
-            (shallow) ? this.valuation : (this.valuation != null)
-                    ? new Valuation(this.valuation) : null;
-        result.hashCode = this.hashCode;
         return result;
     }
 
@@ -709,17 +635,26 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             assert this.dummy;
             ReteSimpleMatch result =
                 new ReteSimpleMatch(origin, origin.getOwner().isInjective());
-            HostElement[] leftUnits = leftMatch.getAllUnits();
+            Object[] leftUnits = leftMatch.getAllUnits();
             int i = 0;
             for (; i < leftUnits.length; i++) {
                 result.units[i] = leftUnits[i];
             }
             for (; i < leftUnits.length + this.units.length - 1; i++) {
                 int[] pos = mergeLookupTable[i - leftUnits.length];
-                result.units[i] =
-                    pos[1] == -1 ? leftUnits[pos[0]] : pos[1] == 0
-                            ? ((HostEdge) leftUnits[pos[0]]).source()
-                            : ((HostEdge) leftUnits[pos[0]]).target();
+                Object u = leftUnits[pos[0]];
+                if (u instanceof HostNode) {
+                    result.units[i] = u;
+                } else if (u instanceof HostEdge) {
+                    result.units[i] =
+                        pos[1] == 0 ? ((HostEdge) u).source()
+                                : ((HostEdge) u).target();
+                } else { // u instance of RetePathMatch
+                    assert u instanceof RetePathMatch;
+                    result.units[i] =
+                        pos[1] == 0 ? ((RetePathMatch) u).start()
+                                : ((RetePathMatch) u).end();
+                }
             }
             result.units[result.units.length - 1] =
                 this.units[this.units.length - 1];

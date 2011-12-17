@@ -77,6 +77,7 @@ public class ReteSearchEngine extends SearchEngine {
             return;
         }
         this.network.setUpdating(true);
+        this.network.getState().setHostGraph(destGraph);
         for (HostNode n : deltaStore.getRemovedNodeSet()) {
             this.network.update(n, Action.REMOVE);
         }
@@ -93,7 +94,6 @@ public class ReteSearchEngine extends SearchEngine {
             this.network.update(e, Action.ADD);
         }
 
-        this.network.getState().setHostGraph(destGraph);
         this.network.setUpdating(false);
         transitionOccurredReporter.stop();
     }
