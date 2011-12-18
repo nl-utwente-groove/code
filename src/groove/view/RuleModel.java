@@ -153,6 +153,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
         this.levelTree = new LevelTree(normalSource);
         this.modelMap.putAll(this.levelTree.getModelMap());
+        this.typeMap = new TypeModelMap(getType().getFactory());
+        for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
+            this.typeMap.putNode(nodeEntry.getKey(),
+                nodeEntry.getValue().getType());
+        }
+        for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
+            this.typeMap.putEdge(edgeEntry.getKey(),
+                edgeEntry.getValue().getType());
+        }
         return computeRule(this.levelTree);
     }
 
@@ -188,6 +197,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             throw new IllegalStateException();
         }
         return this.modelMap;
+    }
+
+    @Override
+    public TypeModelMap getTypeMap() {
+        synchronise();
+        return this.typeMap;
     }
 
     /** Returns a mapping from rule nesting levels to sets of aspect elements on that level. */
@@ -358,7 +373,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * corresponding elements of the rule.
      */
     private RuleModelMap modelMap;
-
+    /** Map from source model to types. */
+    private TypeModelMap typeMap;
     /** The normalised source model. */
     private AspectGraph normalSource;
     /** Set of all labels occurring in the rule. */

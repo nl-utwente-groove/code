@@ -17,6 +17,7 @@
 package groove.gui;
 
 import groove.graph.Label;
+import groove.graph.TypeElement;
 import groove.gui.jgraph.GraphJCell;
 
 import java.util.Collection;
@@ -39,9 +40,18 @@ import java.util.Set;
 public class LabelFilter extends Observable {
     /** Clears the inverse mapping from labels to {@link GraphJCell}s. */
     public void clearJCells() {
-        for (Set<GraphJCell> jCellSet : this.labelCellMap.values()) {
+        for (Set<GraphJCell> jCellSet : this.entryCellMap.values()) {
             jCellSet.clear();
         }
+    }
+
+    /** Retrieves the filter entries on a given jCell. */
+    public Set<Entry> getEntries(GraphJCell jCell) {
+        Set<Entry> result = new HashSet<LabelFilter.Entry>();
+        for (Label label : jCell.getListLabels()) {
+            result.add(createEntry(label));
+        }
+        return result;
     }
 
     /** Adds a {@link GraphJCell} to the inverse mapping. 
@@ -61,8 +71,9 @@ public class LabelFilter extends Observable {
      * created.
      */
     private boolean addToLabels(GraphJCell jCell, Label label) {
-        boolean result = addLabel(label);
-        Set<GraphJCell> currentCells = this.labelCellMap.get(label);
+        Entry entry = createEntry(label);
+        boolean result = addEntry(entry);
+        Set<GraphJCell> currentCells = this.entryCellMap.get(entry);
         currentCells.add(jCell);
         return result;
     }
@@ -73,10 +84,10 @@ public class LabelFilter extends Observable {
      */
     public boolean removeJCell(GraphJCell jCell) {
         boolean result = false;
-        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
-            this.labelCellMap.entrySet().iterator();
+        Iterator<Map.Entry<Entry,Set<GraphJCell>>> labelIter =
+            this.entryCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
+            Map.Entry<Entry,Set<GraphJCell>> labelEntry = labelIter.next();
             Set<GraphJCell> cellSet = labelEntry.getValue();
             if (cellSet.remove(jCell) && cellSet.isEmpty()) {
                 labelIter.remove();
@@ -94,11 +105,11 @@ public class LabelFilter extends Observable {
         boolean result = false;
         Set<Label> newLabelSet = new HashSet<Label>(jCell.getListLabels());
         // go over the existing label map
-        Iterator<Map.Entry<Label,Set<GraphJCell>>> labelIter =
-            this.labelCellMap.entrySet().iterator();
+        Iterator<Map.Entry<Entry,Set<GraphJCell>>> labelIter =
+            this.entryCellMap.entrySet().iterator();
         while (labelIter.hasNext()) {
-            Map.Entry<Label,Set<GraphJCell>> labelEntry = labelIter.next();
-            Label label = labelEntry.getKey();
+            Map.Entry<Entry,Set<GraphJCell>> labelEntry = labelIter.next();
+            Entry label = labelEntry.getKey();
             Set<GraphJCell> cellSet = labelEntry.getValue();
             if (newLabelSet.remove(label)) {
                 // the cell should be in the set
@@ -118,44 +129,49 @@ public class LabelFilter extends Observable {
     }
 
     /** Returns the set of {@link GraphJCell}s bearing a given label. */
-    public Set<GraphJCell> getJCells(Label label) {
-        return this.labelCellMap.get(label);
+    public Set<GraphJCell> getJCells(Entry entry) {
+        return this.entryCellMap.get(entry);
     }
 
     /** Indicates if there is at least one {@link GraphJCell} bearing a given label. */
-    public boolean hasJCells(Label label) {
-        Set<GraphJCell> jCells = getJCells(label);
+    public boolean hasJCells(Entry entry) {
+        Set<GraphJCell> jCells = getJCells(entry);
         return jCells != null && !jCells.isEmpty();
     }
 
     /** Clears the entire filter. */
     public void clear() {
         this.selected.clear();
-        this.labelCellMap.clear();
+        this.entryCellMap.clear();
     }
 
-    /** Adds a label to those known in this filter. */
+    /** Adds a label entry to those known in this filter. */
     public boolean addLabel(Label label) {
+        return addEntry(createEntry(label));
+    }
+
+    /** Adds an entry to those known in this filter. */
+    public boolean addEntry(Entry entry) {
         boolean result = false;
-        Set<GraphJCell> labelledCells = this.labelCellMap.get(label);
-        if (labelledCells == null) {
-            this.labelCellMap.put(label, new HashSet<GraphJCell>());
-            this.selected.add(label);
+        Set<GraphJCell> cells = this.entryCellMap.get(entry);
+        if (cells == null) {
+            this.entryCellMap.put(entry, new HashSet<GraphJCell>());
+            this.selected.add(entry);
             result = true;
         }
         return result;
     }
 
     /** Returns the set of all labels known to this filter. */
-    public Set<Label> getLabels() {
-        return this.labelCellMap.keySet();
+    public Set<Entry> getEntries() {
+        return this.entryCellMap.keySet();
     }
 
     /** 
      * Sets the selection status of a given label, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void setSelected(Label label, boolean selected) {
+    public void setSelected(Entry label, boolean selected) {
         Set<GraphJCell> changedCells = getSelection(label, selected);
         notifyIfNonempty(changedCells);
     }
@@ -164,9 +180,9 @@ public class LabelFilter extends Observable {
      * Sets the selection status of a given set of labels, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void setSelected(Collection<Label> labels, boolean selected) {
+    public void setSelected(Collection<Entry> labels, boolean selected) {
         Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
-        for (Label label : labels) {
+        for (Entry label : labels) {
             changedCells.addAll(getSelection(label, selected));
         }
         notifyIfNonempty(changedCells);
@@ -176,7 +192,7 @@ public class LabelFilter extends Observable {
      * Flips the selection status of a given label, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void changeSelected(Label label) {
+    public void changeSelected(Entry label) {
         Set<GraphJCell> changedCells = getSelection(label, !isSelected(label));
         notifyIfNonempty(changedCells);
     }
@@ -185,9 +201,9 @@ public class LabelFilter extends Observable {
      * Flips the selection status of a given set of labels, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void changeSelected(Collection<Label> labels) {
+    public void changeSelected(Collection<Entry> labels) {
         Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
-        for (Label label : labels) {
+        for (Entry label : labels) {
             changedCells.addAll(getSelection(label, !isSelected(label)));
         }
         notifyIfNonempty(changedCells);
@@ -197,10 +213,10 @@ public class LabelFilter extends Observable {
      * Sets the selection status of a given label, and 
      * returns the corresponding set of {@link GraphJCell}s.
      */
-    private Set<GraphJCell> getSelection(Label label, boolean selected) {
-        assert this.labelCellMap.containsKey(label) : String.format(
-            "Label %s unknown in map %s", label, this.labelCellMap);
-        Set<GraphJCell> result = this.labelCellMap.get(label);
+    private Set<GraphJCell> getSelection(Entry label, boolean selected) {
+        assert this.entryCellMap.containsKey(label) : String.format(
+            "Label %s unknown in map %s", label, this.entryCellMap);
+        Set<GraphJCell> result = this.entryCellMap.get(label);
         if (selected) {
             this.selected.add(label);
         } else {
@@ -221,16 +237,123 @@ public class LabelFilter extends Observable {
     }
 
     /** Indicates if a given label is currently selected. */
-    public boolean isSelected(Label label) {
-        //        assert this.labelCellMap.containsKey(label) : String.format(
-        //            "Label %s unknown in map %s", label, this.labelCellMap);
-        return !this.labelCellMap.containsKey(label)
-            || this.selected.contains(label);
+    public boolean isSelected(Entry entry) {
+        return !this.entryCellMap.containsKey(entry)
+            || this.selected.contains(entry);
+    }
+
+    /** Constructs a filter entry from a given object. */
+    public Entry createEntry(Label label) {
+        return new LabelEntry(label);
     }
 
     /** Set of currently selected (i.e., visible) labels. */
-    private final Set<Label> selected = new HashSet<Label>();
+    private final Set<Entry> selected = new HashSet<Entry>();
     /** Mapping from labels to {@link GraphJCell}s bearing that label. */
-    private final Map<Label,Set<GraphJCell>> labelCellMap =
-        new HashMap<Label,Set<GraphJCell>>();
+    private final Map<Entry,Set<GraphJCell>> entryCellMap =
+        new HashMap<Entry,Set<GraphJCell>>();
+
+    /** Type of the keys in a label filter. */
+    public static interface Entry extends Comparable<Entry> {
+        /** Retrieves the label of the entry. */
+        public Label getLabel();
+    }
+
+    /** Filter entry wrapping a label. */
+    public static class LabelEntry implements Entry {
+        /** Constructs a fresh label entry from a given label. */
+        public LabelEntry(Label label) {
+            this.label = label;
+        }
+
+        @Override
+        public Label getLabel() {
+            return this.label;
+        }
+
+        @Override
+        public int compareTo(Entry o) {
+            assert o instanceof LabelEntry;
+            return getLabel().compareTo(o.getLabel());
+        }
+
+        @Override
+        public int hashCode() {
+            return this.label.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof LabelEntry)) {
+                return false;
+            }
+            LabelEntry other = (LabelEntry) obj;
+            return this.label.equals(other.label);
+        }
+
+        @Override
+        public String toString() {
+            return this.label.toString();
+        }
+
+        /** The label wrapped in this entry. */
+        private final Label label;
+    }
+
+    /** Filter entry wrapping a label. */
+    public static class TypeEntry implements Entry {
+        /** Constructs a fresh label entry from a given label. */
+        public TypeEntry(TypeElement element) {
+            this.element = element;
+        }
+
+        /** Returns the type element wrapped in this entry. */
+        public TypeElement getElement() {
+            return this.element;
+        }
+
+        @Override
+        public Label getLabel() {
+            return this.element.label();
+        }
+
+        @Override
+        public int compareTo(Entry o) {
+            assert o instanceof LabelEntry;
+            return getElement().compareTo(((TypeEntry) o).getElement());
+        }
+
+        @Override
+        public int hashCode() {
+            return this.element.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof LabelEntry)) {
+                return false;
+            }
+            TypeEntry other = (TypeEntry) obj;
+            return this.element.equals(other.element);
+        }
+
+        @Override
+        public String toString() {
+            return this.element.toString();
+        }
+
+        private final TypeElement element;
+    }
 }

@@ -21,7 +21,7 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface TypeElement {
+public interface TypeElement extends Element {
     /** 
      * Returns the type label of this type element.
      * Note that for type edges, the label does not completely determine

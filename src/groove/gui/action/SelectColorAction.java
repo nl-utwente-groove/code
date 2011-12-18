@@ -63,6 +63,40 @@ public class SelectColorAction extends SimulatorAction implements
         }
     }
 
+    /** Checks if in a given JGraph a type label is selected. */
+    private void checkJGraph(GraphJGraph jGraph) {
+        this.label = null;
+        Object[] selection = jGraph.getSelectionCells();
+        if (selection != null) {
+            choose: for (Object cell : selection) {
+                for (Label label : ((GraphJCell) cell).getListLabels()) {
+                    if (label instanceof TypeLabel && label.isNodeType()) {
+                        this.label = (TypeLabel) label;
+                        break choose;
+                    }
+                }
+            }
+        }
+        refresh();
+    }
+
+    /** Checks if in a given {@link LabelTree} a type label is selected. */
+    private void checkLabelTree(LabelTree tree) {
+        this.label = null;
+        TreePath[] selection = tree.getSelectionPaths();
+        if (selection != null) {
+            for (TreePath path : selection) {
+                Label label =
+                    ((LabelTree.LabelTreeNode) path.getLastPathComponent()).getEntry().getLabel();
+                if (label instanceof TypeLabel && label.isNodeType()) {
+                    this.label = (TypeLabel) label;
+                    break;
+                }
+            }
+        }
+        refresh();
+    }
+
     @Override
     public void execute() {
         Color initColour =
@@ -113,49 +147,15 @@ public class SelectColorAction extends SimulatorAction implements
         }
     }
 
-    /** Sets {@link #label} based on the {@link GraphJGraph} selection. */
-    @Override
-    public void valueChanged(GraphSelectionEvent e) {
-        checkJGraph((GraphJGraph) e.getSource());
-    }
-
-    /** Checks if in a given JGraph a type label is selected. */
-    private void checkJGraph(GraphJGraph jGraph) {
-        this.label = null;
-        Object[] selection = jGraph.getSelectionCells();
-        if (selection != null) {
-            choose: for (Object cell : selection) {
-                for (Label label : ((GraphJCell) cell).getListLabels()) {
-                    if (label instanceof TypeLabel && label.isNodeType()) {
-                        this.label = (TypeLabel) label;
-                        break choose;
-                    }
-                }
-            }
-        }
-        refresh();
-    }
-
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         checkLabelTree((LabelTree) e.getSource());
     }
 
-    /** Checks if in a given {@link LabelTree} a type label is selected. */
-    private void checkLabelTree(LabelTree tree) {
-        this.label = null;
-        TreePath[] selection = tree.getSelectionPaths();
-        if (selection != null) {
-            for (TreePath path : selection) {
-                Label label =
-                    ((LabelTree.LabelTreeNode) path.getLastPathComponent()).getLabel();
-                if (label instanceof TypeLabel && label.isNodeType()) {
-                    this.label = (TypeLabel) label;
-                    break;
-                }
-            }
-        }
-        refresh();
+    /** Sets {@link #label} based on the {@link GraphJGraph} selection. */
+    @Override
+    public void valueChanged(GraphSelectionEvent e) {
+        checkJGraph((GraphJGraph) e.getSource());
     }
 
     @Override

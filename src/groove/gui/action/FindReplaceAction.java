@@ -120,7 +120,7 @@ public class FindReplaceAction extends SimulatorAction implements
         TreePath[] selection = ((LabelTree) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
             Label selectedLabel =
-                ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getLabel();
+                ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getEntry().getLabel();
             if (selectedLabel instanceof TypeLabel) {
                 this.oldLabel = (TypeLabel) selectedLabel;
             }
