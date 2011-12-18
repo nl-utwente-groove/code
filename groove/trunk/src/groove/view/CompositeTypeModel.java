@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
@@ -55,7 +57,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
 
     /** Returns a mapping from names to type graphs,
      * which together make up the combined type model. */
-    public Map<String,TypeGraph> getTypeGraphMap() {
+    public SortedMap<String,TypeGraph> getTypeGraphMap() {
         synchronise();
         return this.typeGraphMap;
     }
@@ -82,6 +84,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         // first test if there is something to be done
         if (this.typeModelMap.isEmpty()) {
             result = getImplicitTypeGraph();
+            this.typeGraphMap.put(result.getName(), result);
         } else {
             result = new TypeGraph("combined type");
             // There are no errors in each of the models, try to compose the
@@ -197,8 +200,8 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     /** Mapping from active type names to corresponding type models. */
     private final Map<String,TypeModel> typeModelMap =
         new HashMap<String,TypeModel>();
-    private final Map<String,TypeGraph> typeGraphMap =
-        new HashMap<String,TypeGraph>();
+    private final SortedMap<String,TypeGraph> typeGraphMap =
+        new TreeMap<String,TypeGraph>();
     /** The implicit type graph. */
     private TypeGraph implicitTypeGraph;
 }

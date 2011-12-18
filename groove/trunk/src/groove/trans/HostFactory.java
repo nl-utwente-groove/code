@@ -54,6 +54,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     /** This implementation creates a host node with top type. */
     @Override
     public HostNode createNode(int nr) {
+        assert !this.typeFactory.hasGraph()
+            || this.typeFactory.getGraph().isImplicit();
         return createNode(nr, this.typeFactory.getTopNode());
     }
 
