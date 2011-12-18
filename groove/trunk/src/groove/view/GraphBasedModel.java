@@ -22,7 +22,10 @@ import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
 import groove.graph.GraphProperties;
 import groove.graph.Node;
+import groove.graph.TypeEdge;
+import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -75,9 +78,19 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
 
     /**
      * Returns the set of labels occurring in this resource.
+     * This method never returns {@code null}, and does a best-effort computation
+     * even if the resource contains errors.
      * @return the set of labels occurring in the resource.
      */
     abstract public Set<TypeLabel> getLabels();
+
+    /** 
+     * Returns a mapping from elements of the source aspect graph to their corresponding
+     * types.
+     * @return a mapping from the elements of {@link #getSource()} to types in the
+     * associated type graph, or {@code null} if {@link #hasErrors()} holds 
+     */
+    abstract public groove.view.GraphBasedModel.TypeModelMap getTypeMap();
 
     /** 
      * Transfers a collection of errors according to the
@@ -133,6 +146,25 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
         public Map<AspectEdge,E> edgeMap() {
             return (Map<AspectEdge,E>) super.edgeMap();
         }
+    }
 
+    /** Mapping from aspect graph elements to type graph elements. */
+    public static class TypeModelMap extends ModelMap<TypeNode,TypeEdge> {
+        /**
+         * Creates a new, empty map.
+         */
+        public TypeModelMap(TypeFactory factory) {
+            super(factory);
+        }
+
+        @Override
+        public TypeFactory getFactory() {
+            return (TypeFactory) super.getFactory();
+        }
+
+        @Override
+        public TypeModelMap newMap() {
+            return new TypeModelMap(getFactory());
+        }
     }
 }

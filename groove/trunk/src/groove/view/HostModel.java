@@ -80,6 +80,12 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return this.hostModelMap;
     }
 
+    @Override
+    public TypeModelMap getTypeMap() {
+        synchronise();
+        return this.typeMap;
+    }
+
     /** Returns the set of labels used in this graph. */
     @Override
     public Set<TypeLabel> getLabels() {
@@ -143,6 +149,19 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             throw new FormatException(GraphInfo.getErrors(result));
         }
         this.hostModelMap = modelPlusMap.two();
+        this.typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
+        for (Map.Entry<AspectNode,HostNode> nodeEntry : this.hostModelMap.nodeMap().entrySet()) {
+            this.typeMap.putNode(nodeEntry.getKey(),
+                nodeEntry.getValue().getType());
+        }
+        for (Map.Entry<AspectEdge,HostEdge> edgeEntry : this.hostModelMap.edgeMap().entrySet()) {
+            HostEdge hostEdge = edgeEntry.getValue();
+            // hostEdge may be null if the key is a node type and the graph is explicitly typed
+            if (hostEdge != null) {
+                this.typeMap.putEdge(edgeEntry.getKey(),
+                    edgeEntry.getValue().getType());
+            }
+        }
         return result;
     }
 
@@ -278,8 +297,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         elementMap.putEdge(modelEdge, hostEdge);
     }
 
-    /** Map from model to resource nodes. */
+    /** Map from source model to resource nodes. */
     private HostModelMap hostModelMap;
+    /** Map from source model to types. */
+    private TypeModelMap typeMap;
     /** The normalised source model. */
     private AspectGraph normalSource;
     /** Set of labels occurring in this graph. */

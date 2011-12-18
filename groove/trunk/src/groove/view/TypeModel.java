@@ -64,6 +64,11 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         return this.modelMap;
     }
 
+    @Override
+    public TypeModelMap getTypeMap() {
+        return getMap();
+    }
+
     /** 
      * Returns the set of labels used in this graph.
      * @return the set of labels, or {@code null} if the model could not be computed 
@@ -256,24 +261,4 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     /** Map from model to resource nodes. */
     private TypeModelMap modelMap;
-
-    /** Mapping from aspect graph elements to type graph elements. */
-    public static class TypeModelMap extends ModelMap<TypeNode,TypeEdge> {
-        /**
-         * Creates a new, empty map.
-         */
-        public TypeModelMap(TypeFactory factory) {
-            super(factory);
-        }
-
-        @Override
-        public TypeFactory getFactory() {
-            return (TypeFactory) super.getFactory();
-        }
-
-        @Override
-        public TypeModelMap newMap() {
-            return new TypeModelMap(getFactory());
-        }
-    }
 }
