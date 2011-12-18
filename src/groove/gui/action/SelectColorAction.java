@@ -5,6 +5,7 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.GraphTab;
 import groove.gui.LabelTree;
+import groove.gui.LabelTree.LabelTreeNode;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
@@ -86,11 +87,15 @@ public class SelectColorAction extends SimulatorAction implements
         TreePath[] selection = tree.getSelectionPaths();
         if (selection != null) {
             for (TreePath path : selection) {
-                Label label =
-                    ((LabelTree.LabelTreeNode) path.getLastPathComponent()).getEntry().getLabel();
-                if (label instanceof TypeLabel && label.isNodeType()) {
-                    this.label = (TypeLabel) label;
-                    break;
+                Object treeNode = path.getLastPathComponent();
+                if (treeNode instanceof LabelTreeNode) {
+                    Label selectedLabel =
+                        ((LabelTreeNode) treeNode).getEntry().getLabel();
+                    if (selectedLabel instanceof TypeLabel
+                        && selectedLabel.isNodeType()) {
+                        this.label = (TypeLabel) selectedLabel;
+                        break;
+                    }
                 }
             }
         }

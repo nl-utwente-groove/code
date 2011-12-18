@@ -22,6 +22,7 @@ import groove.gui.GraphTab;
 import groove.gui.Icons;
 import groove.gui.JGraphPanel;
 import groove.gui.LabelTree;
+import groove.gui.LabelTree.LabelTreeNode;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
@@ -119,10 +120,13 @@ public class FindReplaceAction extends SimulatorAction implements
         this.oldLabel = null;
         TreePath[] selection = ((LabelTree) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
-            Label selectedLabel =
-                ((LabelTree.LabelTreeNode) selection[0].getLastPathComponent()).getEntry().getLabel();
-            if (selectedLabel instanceof TypeLabel) {
-                this.oldLabel = (TypeLabel) selectedLabel;
+            Object treeNode = selection[0].getLastPathComponent();
+            if (treeNode instanceof LabelTreeNode) {
+                Label selectedLabel =
+                    ((LabelTreeNode) treeNode).getEntry().getLabel();
+                if (selectedLabel instanceof TypeLabel) {
+                    this.oldLabel = (TypeLabel) selectedLabel;
+                }
             }
         }
     }

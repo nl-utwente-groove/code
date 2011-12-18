@@ -71,9 +71,17 @@
                 <string>235 274 25 14</string>
             </attr>
         </node>
-        <edge to="n9" from="n9">
+        <edge to="n1" from="n1">
             <attr name="label">
                 <string>place</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n1">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 428 433 514 374 514 102 369 68 11</string>
             </attr>
         </edge>
         <edge to="n1" from="n8">
@@ -81,7 +89,12 @@
                 <string>out</string>
             </attr>
         </edge>
-        <edge to="n10" from="n10">
+        <edge to="n8" from="n8">
+            <attr name="label">
+                <string>transition</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
             <attr name="label">
                 <string>token</string>
             </attr>
@@ -91,7 +104,50 @@
                 <string>out</string>
             </attr>
         </edge>
+        <edge to="n3" from="n13">
+            <attr name="label">
+                <string>out</string>
+            </attr>
+        </edge>
         <edge to="n13" from="n13">
+            <attr name="label">
+                <string>transition</string>
+            </attr>
+        </edge>
+        <edge to="n10" from="n10">
+            <attr name="label">
+                <string>token</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n9">
+            <attr name="label">
+                <string>place</string>
+            </attr>
+        </edge>
+        <edge to="n12" from="n9">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge to="n11" from="n7">
+            <attr name="label">
+                <string>mark</string>
+            </attr>
+            <attr name="layout">
+                <string>714 8 135 134 72 186 11</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n7">
+            <attr name="label">
+                <string>place</string>
+            </attr>
+        </edge>
+        <edge to="n13" from="n7">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n6">
             <attr name="label">
                 <string>transition</string>
             </attr>
@@ -106,9 +162,9 @@
                 <string>mark</string>
             </attr>
         </edge>
-        <edge to="n12" from="n9">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>in</string>
+                <string>place</string>
             </attr>
         </edge>
         <edge to="n13" from="n2">
@@ -116,19 +172,27 @@
                 <string>in</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n6" from="n0">
             <attr name="label">
-                <string>token</string>
+                <string>in</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 95 450 14 384 14 126 127 64 11</string>
             </attr>
         </edge>
-        <edge to="n7" from="n7">
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>place</string>
             </attr>
         </edge>
-        <edge to="n3" from="n13">
+        <edge to="n2" from="n5">
             <attr name="label">
                 <string>out</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>transition</string>
             </attr>
         </edge>
         <edge to="n11" from="n11">
@@ -136,19 +200,9 @@
                 <string>token</string>
             </attr>
         </edge>
-        <edge to="n13" from="n7">
+        <edge to="n12" from="n12">
             <attr name="label">
-                <string>in</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>place</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>place</string>
+                <string>transition</string>
             </attr>
         </edge>
         <edge to="n0" from="n12">
@@ -161,68 +215,14 @@
                 <string>place</string>
             </attr>
         </edge>
-        <edge to="n5" from="n5">
-            <attr name="label">
-                <string>transition</string>
-            </attr>
-        </edge>
-        <edge to="n8" from="n8">
-            <attr name="label">
-                <string>transition</string>
-            </attr>
-        </edge>
-        <edge to="n10" from="n3">
-            <attr name="label">
-                <string>mark</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n5">
-            <attr name="label">
-                <string>out</string>
-            </attr>
-        </edge>
-        <edge to="n12" from="n12">
-            <attr name="label">
-                <string>transition</string>
-            </attr>
-        </edge>
         <edge to="n8" from="n3">
             <attr name="label">
                 <string>in</string>
             </attr>
         </edge>
-        <edge to="n6" from="n6">
-            <attr name="label">
-                <string>transition</string>
-            </attr>
-        </edge>
-        <edge to="n11" from="n7">
+        <edge to="n10" from="n3">
             <attr name="label">
                 <string>mark</string>
-            </attr>
-            <attr name="layout">
-                <string>714 8 135 134 72 186 11</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n1">
-            <attr name="label">
-                <string>in</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 428 433 514 374 514 102 369 68 11</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>place</string>
-            </attr>
-        </edge>
-        <edge to="n6" from="n0">
-            <attr name="label">
-                <string>in</string>
-            </attr>
-            <attr name="layout">
-                <string>500 0 95 450 14 384 14 126 127 64 11</string>
             </attr>
         </edge>
     </graph>

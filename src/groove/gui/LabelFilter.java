@@ -180,9 +180,9 @@ public class LabelFilter extends Observable {
      * Sets the selection status of a given set of labels, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void setSelected(Collection<Entry> labels, boolean selected) {
+    public void setSelected(Collection<Entry> entries, boolean selected) {
         Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
-        for (Entry label : labels) {
+        for (Entry label : entries) {
             changedCells.addAll(getSelection(label, selected));
         }
         notifyIfNonempty(changedCells);
@@ -236,10 +236,22 @@ public class LabelFilter extends Observable {
         }
     }
 
-    /** Indicates if a given label is currently selected. */
+    /** Indicates if a given entry is currently selected. */
     public boolean isSelected(Entry entry) {
         return !this.entryCellMap.containsKey(entry)
             || this.selected.contains(entry);
+    }
+
+    /** Indicates if at least one of a given set of entries is currently selected. */
+    public boolean isSelected(Set<Entry> entries) {
+        boolean result = false;
+        for (Entry entry : entries) {
+            if (isSelected(entry)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /** Constructs a filter entry from a given object. */

@@ -58,15 +58,6 @@ public class TypeNode implements Node, TypeElement {
         assert result || getNumber() != ((TypeNode) obj).getNumber()
             && !label().equals(((TypeNode) obj).label());
         return result;
-        //        if (this == obj) {
-        //            return true;
-        //        }
-        //        if (!(obj instanceof TypeNode)) {
-        //            return false;
-        //        }
-        //        TypeNode other = (TypeNode) obj;
-        //        return other.getNumber() == getNumber()
-        //            && other.label().equals(label());
     }
 
     @Override
@@ -87,7 +78,7 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public int compareTo(Element obj) {
         if (obj instanceof TypeNode) {
-            return getNumber() - ((TypeNode) obj).getNumber();
+            return label().compareTo(((TypeNode) obj).label());
         } else {
             assert obj instanceof TypeEdge;
             // nodes come before edges with the node as source

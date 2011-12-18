@@ -21,7 +21,6 @@ import groove.algebra.Constant;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.rel.MatrixAutomaton;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
@@ -90,7 +89,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeNode otherTypeNode = (TypeNode) otherNode;
             TypeNode image = addNode(otherTypeNode.label());
             image.setAbstract(otherTypeNode.isAbstract());
-            image.setColor(otherTypeNode.getColor());
+            if (otherTypeNode.getColor() != null) {
+                image.setColor(otherTypeNode.getColor());
+            }
             image.setLabelPattern(otherTypeNode.getLabelPattern());
             boolean imported = image.isImported() && otherTypeNode.isImported();
             image.setImported(imported);
@@ -296,7 +297,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             // propagate colours
             Color nodeColour = node.getColor();
             if (nodeColour != null) {
-                Set<TypeNode> propagatees = this.nodeSubtypeMap.get(node);
+                Set<TypeNode> propagatees =
+                    new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
                     TypeNode subNode = subNodeIter.next();
@@ -311,7 +313,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             // propagate label patterns
             LabelPattern nodePattern = node.getLabelPattern();
             if (nodePattern != null) {
-                Set<TypeNode> propagatees = this.nodeSubtypeMap.get(node);
+                Set<TypeNode> propagatees =
+                    new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
                     TypeNode subNode = subNodeIter.next();
@@ -471,10 +474,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     // the saturated type graph
                     Set<HostNode> startNodes =
                         Collections.<HostNode>singleton(getSaturationNodeMap().get(
-                            sourceType.label()));
+                            sourceType));
                     Set<HostNode> endNodes =
                         Collections.<HostNode>singleton(getSaturationNodeMap().get(
-                            targetType.label()));
+                            targetType));
                     if (checkLabel.getAutomaton(this).getMatches(
                         getSaturation(), startNodes, endNodes).isEmpty()) {
                         errors.add(new FormatError(
@@ -784,7 +787,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         Map<TypeNode,Set<TypeNode>> connectMap =
             new HashMap<TypeNode,Set<TypeNode>>();
         for (TypeNode typeNode : nodeSet()) {
-            HostNode nodeImage = result.addNode();
+            HostNode nodeImage =
+                result.getFactory().createNode(typeNode.label());
+            result.addNode(nodeImage);
             typeNodeMap.put(typeNode, nodeImage);
             connectMap.put(typeNode, new HashSet<TypeNode>());
         }
@@ -817,19 +822,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
             }
         }
-        for (Map.Entry<TypeNode,Set<TypeNode>> connectEntry : connectMap.entrySet()) {
-            for (TypeNode targetType : connectEntry.getValue()) {
-                HostNode source = typeNodeMap.get(connectEntry.getKey());
-                HostNode target = typeNodeMap.get(targetType);
-                result.addEdge(source,
-                    MatrixAutomaton.getDummyLabel(EdgeRole.BINARY), target);
-            }
-        }
-        for (TypeNode flaggedType : flaggedNodes) {
-            HostNode source = typeNodeMap.get(flaggedType);
-            result.addEdge(source,
-                MatrixAutomaton.getDummyLabel(EdgeRole.FLAG), source);
-        }
+        //        for (Map.Entry<TypeNode,Set<TypeNode>> connectEntry : connectMap.entrySet()) {
+        //            for (TypeNode targetType : connectEntry.getValue()) {
+        //                HostNode source = typeNodeMap.get(connectEntry.getKey());
+        //                HostNode target = typeNodeMap.get(targetType);
+        //                result.addEdge(source,
+        //                    MatrixAutomaton.getDummyLabel(EdgeRole.BINARY), target);
+        //            }
+        //        }
+        //        for (TypeNode flaggedType : flaggedNodes) {
+        //            HostNode source = typeNodeMap.get(flaggedType);
+        //            result.addEdge(source,
+        //                MatrixAutomaton.getDummyLabel(EdgeRole.FLAG), source);
+        //        }
         this.saturationNodeMap = typeNodeMap;
         this.saturation = result;
     }

@@ -53,6 +53,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -134,7 +135,7 @@ final public class AspectJGraph extends GraphJGraph {
      * Returns a map from names to subsets of labels.
      * This can be used to filter labels.
      */
-    public final Map<String,TypeGraph> getTypeGraphMap() {
+    public final SortedMap<String,TypeGraph> getTypeGraphMap() {
         return this.typeGraphMap;
     }
 
@@ -563,7 +564,7 @@ final public class AspectJGraph extends GraphJGraph {
     /** Set of all labels and subtypes in the graph. */
     private TypeGraph typeGraph;
     /** Mapping from names to sub-label stores. */
-    private Map<String,TypeGraph> typeGraphMap;
+    private SortedMap<String,TypeGraph> typeGraphMap;
     /** Flag indicating that the graph is in the process of inserting an element. */
     private boolean inserting;
     /** Map from line style names to corresponding actions. */
