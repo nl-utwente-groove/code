@@ -205,11 +205,12 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         if (!simple && ruleLabel.isMatchable()) {
             AspectKind kind = getKind();
             assert kind.isRole();
-            if (kind.inRHS() && !kind.inLHS() && !ruleLabel.isEmpty()) {
+            if (kind.isCreator() && !ruleLabel.isEmpty()) {
                 throw new FormatException(
                     "Regular expression label %s not allowed in creators",
                     ruleLabel, this);
-            } else if (kind.inLHS() && !kind.inRHS()) {
+            } else if (kind.isEraser() && !source().getKind().isEraser()
+                && !target().getKind().isEraser()) {
                 throw new FormatException(
                     "Regular expression label %s not allowed in erasers",
                     ruleLabel, this);
