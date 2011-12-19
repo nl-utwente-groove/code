@@ -274,12 +274,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     @Override
     public void setFixed() {
         super.setFixed();
-        // build abstract edge subtype map
+        // build edge subtype map and fill them reflexively
         for (TypeEdge edge : edgeSet()) {
+            Set<TypeEdge> subtypes = new HashSet<TypeEdge>();
+            subtypes.add(edge);
+            this.edgeSubtypeMap.put(edge, subtypes);
+            Set<TypeEdge> supertypes = new HashSet<TypeEdge>();
+            supertypes.add(edge);
+            this.edgeSupertypeMap.put(edge, supertypes);
+        }
+        // add the relations from abstract edge types to subtypes and back
+        for (TypeEdge edge : edgeSet()) {
+            Set<TypeEdge> subtypes = this.edgeSubtypeMap.get(edge);
             if (edge.isAbstract()) {
-                Set<TypeEdge> subtypes = new HashSet<TypeEdge>();
-                subtypes.add(edge);
-                this.edgeSubtypeMap.put(edge, subtypes);
                 Set<TypeNode> sourceSubnodes =
                     this.nodeSubtypeMap.get(edge.source());
                 Set<TypeNode> targetSubnodes =
@@ -288,6 +295,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     if (sourceSubnodes.contains(subEdge.source())
                         && targetSubnodes.contains(subEdge.target())) {
                         subtypes.add(subEdge);
+                        this.edgeSupertypeMap.get(subEdge).add(edge);
                     }
                 }
             }
@@ -299,6 +307,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (nodeColour != null) {
                 Set<TypeNode> propagatees =
                     new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
+                propagatees.remove(node);
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
                     TypeNode subNode = subNodeIter.next();
@@ -315,6 +324,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (nodePattern != null) {
                 Set<TypeNode> propagatees =
                     new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
+                propagatees.remove(node);
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
                     TypeNode subNode = subNodeIter.next();
@@ -879,9 +889,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return this.edgeSubtypeMap.get(edge);
     }
 
-    /** Returns the set of subtypes of a given node type. */
+    /** Returns the set of supertypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
         return this.nodeSupertypeMap.get(node);
+    }
+
+    /** Returns the set of supertypes of a given edge type. */
+    public Set<TypeEdge> getSupertypes(TypeEdge edge) {
+        return this.edgeSupertypeMap.get(edge);
     }
 
     /**
@@ -985,6 +1000,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     */
     private final Map<TypeEdge,Set<TypeEdge>> edgeSubtypeMap =
         new HashMap<TypeEdge,Set<TypeEdge>>();
+    /**
+    * Mapping from edge types to abstract edge supertypes.
+    * Built at the moment of fixing the type graph.
+    */
+    private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap =
+        new HashMap<TypeEdge,Set<TypeEdge>>();
+
     /** Set of all labels occurring in the type graph. */
 
     private Set<TypeLabel> labels;

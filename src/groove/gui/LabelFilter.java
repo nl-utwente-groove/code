@@ -16,9 +16,17 @@
  */
 package groove.gui;
 
+import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
+import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJVertex;
+import groove.view.aspect.AspectEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,14 +38,23 @@ import java.util.Observable;
 import java.util.Set;
 
 /**
- * Class that maintains a set of filtered labels
+ * Class that maintains a set of filtered entries
  * (either edge labels or type elements) as well as an inverse
  * mapping of those labels to {@link GraphJCell}s bearing 
- * the labels.
+ * the entries.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class LabelFilter extends Observable {
+    /** 
+     * Indicates if the filter is label- or type-based.
+     * @return {@code true} if the filter is label-based; {@code false}
+     * if it is type-based.
+     */
+    public boolean isLabelBased() {
+        return this.labelBased;
+    }
+
     /** Clears the inverse mapping from labels to {@link GraphJCell}s. */
     public void clearJCells() {
         for (Set<GraphJCell> jCellSet : this.entryCellMap.values()) {
@@ -48,30 +65,59 @@ public class LabelFilter extends Observable {
     /** Retrieves the filter entries on a given jCell. */
     public Set<Entry> getEntries(GraphJCell jCell) {
         Set<Entry> result = new HashSet<LabelFilter.Entry>();
-        for (Label label : jCell.getListLabels()) {
-            result.add(createEntry(label));
+        // we only add a special entry for a node itself
+        // if it is not explicitly typed and has no edge self-labels
+        Element nodeKey = null;
+        for (Element key : jCell.getKeys()) {
+            if (isNodeKey(key)) {
+                nodeKey = key;
+            } else if (key instanceof TypeNode) {
+                for (TypeNode superType : ((TypeNode) key).getSupertypes()) {
+                    result.add(getEntry(superType));
+                }
+            } else {
+                result.add(getEntry(key));
+            }
+        }
+        if (result.isEmpty() && nodeKey != null) {
+            result.add(getEntry(nodeKey));
         }
         return result;
     }
 
+    /** 
+     * Tests if a given key stands for a node itself, rather than an
+     * explicit label on the node. 
+     */
+    private boolean isNodeKey(Element key) {
+        boolean isNodeEntry;
+        if (key instanceof TypeNode) {
+            isNodeEntry = ((TypeNode) key).isTopType();
+        } else if (key instanceof Edge) {
+            isNodeEntry = ((Edge) key).label().equals(TypeLabel.NODE);
+        } else {
+            isNodeEntry = true;
+        }
+        return isNodeEntry;
+    }
+
     /** Adds a {@link GraphJCell} to the inverse mapping. 
-     * @return {@code true} if any labels were removed
+     * @return {@code true} if any labels were added
      */
     public boolean addJCell(GraphJCell jCell) {
         boolean result = false;
-        for (Label label : jCell.getListLabels()) {
-            result |= addToLabels(jCell, label);
+        for (Entry entry : getEntries(jCell)) {
+            result |= addToEntries(jCell, entry);
         }
         return result;
     }
 
     /**
-     * Adds a cell-label pair to the label map. If the label does not yet exist
-     * in the map, inserts it. The return value indicates if the label had to be
-     * created.
+     * Adds a cell-entry pair to the entry map. If the entry does not yet exist
+     * in the map, inserts it.
+     * @return {@code true} if a new entry was created
      */
-    private boolean addToLabels(GraphJCell jCell, Label label) {
-        Entry entry = createEntry(label);
+    private boolean addToEntries(GraphJCell jCell, Entry entry) {
         boolean result = addEntry(entry);
         Set<GraphJCell> currentCells = this.entryCellMap.get(entry);
         currentCells.add(jCell);
@@ -80,17 +126,17 @@ public class LabelFilter extends Observable {
 
     /** 
      * Removes a {@link GraphJCell} from the inverse mapping.
-     * @return {@code true} if any labels were removed
+     * @return {@code true} if any entries were removed
      */
     public boolean removeJCell(GraphJCell jCell) {
         boolean result = false;
-        Iterator<Map.Entry<Entry,Set<GraphJCell>>> labelIter =
+        Iterator<Map.Entry<Entry,Set<GraphJCell>>> cellMapIter =
             this.entryCellMap.entrySet().iterator();
-        while (labelIter.hasNext()) {
-            Map.Entry<Entry,Set<GraphJCell>> labelEntry = labelIter.next();
-            Set<GraphJCell> cellSet = labelEntry.getValue();
+        while (cellMapIter.hasNext()) {
+            Map.Entry<Entry,Set<GraphJCell>> cellMapEntry = cellMapIter.next();
+            Set<GraphJCell> cellSet = cellMapEntry.getValue();
             if (cellSet.remove(jCell) && cellSet.isEmpty()) {
-                labelIter.remove();
+                cellMapIter.remove();
                 result = true;
             }
         }
@@ -103,27 +149,27 @@ public class LabelFilter extends Observable {
      */
     public boolean modifyJCell(GraphJCell jCell) {
         boolean result = false;
-        Set<Label> newLabelSet = new HashSet<Label>(jCell.getListLabels());
+        Set<Entry> newEntrySet = new HashSet<Entry>(getEntries(jCell));
         // go over the existing label map
-        Iterator<Map.Entry<Entry,Set<GraphJCell>>> labelIter =
+        Iterator<Map.Entry<Entry,Set<GraphJCell>>> cellMapIter =
             this.entryCellMap.entrySet().iterator();
-        while (labelIter.hasNext()) {
-            Map.Entry<Entry,Set<GraphJCell>> labelEntry = labelIter.next();
-            Entry label = labelEntry.getKey();
-            Set<GraphJCell> cellSet = labelEntry.getValue();
-            if (newLabelSet.remove(label)) {
+        while (cellMapIter.hasNext()) {
+            Map.Entry<Entry,Set<GraphJCell>> cellMapEntry = cellMapIter.next();
+            Entry entry = cellMapEntry.getKey();
+            Set<GraphJCell> cellSet = cellMapEntry.getValue();
+            if (newEntrySet.remove(entry)) {
                 // the cell should be in the set
                 cellSet.add(jCell);
             } else if (cellSet.remove(jCell) && cellSet.isEmpty()) {
                 // the cell was in the set but shouldn't have been,
                 // and the set is now empty
-                labelIter.remove();
+                cellMapIter.remove();
                 result = true;
             }
         }
         // any new labels left over were not in the label map; add them
-        for (Label label : newLabelSet) {
-            addToLabels(jCell, label);
+        for (Entry key : newEntrySet) {
+            addToEntries(jCell, key);
         }
         return result;
     }
@@ -139,19 +185,28 @@ public class LabelFilter extends Observable {
         return jCells != null && !jCells.isEmpty();
     }
 
-    /** Clears the entire filter. */
-    public void clear() {
+    /** 
+     * Clears the entire filter, and resets it to label- or type-based.
+     * @param labelBased if {@code true}, the filter becomes label-based;
+     * otherwise it becomes type-based
+     */
+    public void clear(boolean labelBased) {
         this.selected.clear();
         this.entryCellMap.clear();
-    }
-
-    /** Adds a label entry to those known in this filter. */
-    public boolean addLabel(Label label) {
-        return addEntry(createEntry(label));
+        this.labelEntryMap.clear();
+        this.nodeTypeEntryMap.clear();
+        this.edgeTypeEntryMap.clear();
+        this.typeGraph = null;
+        this.labelBased = labelBased;
     }
 
     /** Adds an entry to those known in this filter. */
-    public boolean addEntry(Entry entry) {
+    public boolean addEntry(Element key) {
+        return addEntry(getEntry(key));
+    }
+
+    /** Adds an entry to those known in this filter. */
+    private boolean addEntry(Entry entry) {
         boolean result = false;
         Set<GraphJCell> cells = this.entryCellMap.get(entry);
         if (cells == null) {
@@ -192,8 +247,8 @@ public class LabelFilter extends Observable {
      * Flips the selection status of a given label, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void changeSelected(Entry label) {
-        Set<GraphJCell> changedCells = getSelection(label, !isSelected(label));
+    public void changeSelected(Entry entry) {
+        Set<GraphJCell> changedCells = getSelection(entry, !isSelected(entry));
         notifyIfNonempty(changedCells);
     }
 
@@ -201,10 +256,10 @@ public class LabelFilter extends Observable {
      * Flips the selection status of a given set of labels, and notifies
      * the observers of the changed {@link GraphJCell}s.
      */
-    public void changeSelected(Collection<Entry> labels) {
+    public void changeSelected(Collection<Entry> entries) {
         Set<GraphJCell> changedCells = new HashSet<GraphJCell>();
-        for (Entry label : labels) {
-            changedCells.addAll(getSelection(label, !isSelected(label)));
+        for (Entry entry : entries) {
+            changedCells.addAll(getSelection(entry, !isSelected(entry)));
         }
         notifyIfNonempty(changedCells);
     }
@@ -213,16 +268,18 @@ public class LabelFilter extends Observable {
      * Sets the selection status of a given label, and 
      * returns the corresponding set of {@link GraphJCell}s.
      */
-    private Set<GraphJCell> getSelection(Entry label, boolean selected) {
-        assert this.entryCellMap.containsKey(label) : String.format(
-            "Label %s unknown in map %s", label, this.entryCellMap);
-        Set<GraphJCell> result = this.entryCellMap.get(label);
-        if (selected) {
-            this.selected.add(label);
+    private Set<GraphJCell> getSelection(Entry entry, boolean selected) {
+        assert this.entryCellMap.containsKey(entry) : String.format(
+            "Label %s unknown in map %s", entry, this.entryCellMap);
+        Set<GraphJCell> result = this.entryCellMap.get(entry);
+        if (result == null) {
+            result = Collections.<GraphJCell>emptySet();
+        } else if (selected) {
+            this.selected.add(entry);
         } else {
-            this.selected.remove(label);
+            this.selected.remove(entry);
         }
-        return result == null ? Collections.<GraphJCell>emptySet() : result;
+        return result;
     }
 
     /** 
@@ -254,9 +311,76 @@ public class LabelFilter extends Observable {
         return result;
     }
 
+    /** Lazily creates and returns a filter entry based on a given element. */
+    public Entry getEntry(Element element) {
+        Entry result;
+        if (isLabelBased()) {
+            Label key;
+            if (element instanceof TypeElement) {
+                key = ((TypeElement) element).label();
+            } else if (element instanceof AspectEdge) {
+                key = ((AspectEdge) element).getDisplayLabel();
+            } else if (element instanceof Edge) {
+                key = ((Edge) element).label();
+            } else {
+                key = GraphJVertex.NO_LABEL;
+            }
+            LabelEntry labelResult = this.labelEntryMap.get(key);
+            if (labelResult == null) {
+                this.labelEntryMap.put(key, labelResult = createEntry(key));
+            }
+            result = labelResult;
+        } else if (element instanceof TypeNode) {
+            TypeElement key = (TypeElement) element;
+            TypeLabel keyLabel = ((TypeNode) element).label();
+            TypeEntry typeResult = this.nodeTypeEntryMap.get(keyLabel);
+            if (typeResult == null) {
+                this.nodeTypeEntryMap.put(keyLabel, typeResult =
+                    createEntry(key));
+            }
+            result = typeResult;
+        } else {
+            TypeEdge key = (TypeEdge) element;
+            TypeLabel nodeKeyLabel = key.source().label();
+            Map<TypeLabel,TypeEntry> entryMap =
+                this.edgeTypeEntryMap.get(nodeKeyLabel);
+            if (entryMap == null) {
+                this.edgeTypeEntryMap.put(nodeKeyLabel, entryMap =
+                    new HashMap<TypeLabel,LabelFilter.TypeEntry>());
+            }
+            TypeLabel edgeKeyLabel = key.label();
+            TypeEntry typeResult = entryMap.get(edgeKeyLabel);
+            if (typeResult == null) {
+                entryMap.put(edgeKeyLabel, typeResult = createEntry(key));
+            }
+            result = typeResult;
+        }
+        return result;
+    }
+
     /** Constructs a filter entry from a given object. */
-    public Entry createEntry(Label label) {
+    private LabelEntry createEntry(Label label) {
+        assert isLabelBased();
         return new LabelEntry(label);
+    }
+
+    /** Constructs a filter entry from a given object. */
+    private TypeEntry createEntry(TypeElement type) {
+        assert !isLabelBased();
+        TypeEntry result = new TypeEntry(type);
+        assert isTypeGraphConsistent(result);
+        return result;
+    }
+
+    /** Helper method to check that all type entries are based on the same type graph. */
+    private boolean isTypeGraphConsistent(TypeEntry entry) {
+        TypeGraph typeGraph = entry.getType().getGraph();
+        if (this.typeGraph == null) {
+            this.typeGraph = typeGraph;
+            return true;
+        } else {
+            return this.typeGraph == typeGraph;
+        }
     }
 
     /** Set of currently selected (i.e., visible) labels. */
@@ -264,6 +388,19 @@ public class LabelFilter extends Observable {
     /** Mapping from labels to {@link GraphJCell}s bearing that label. */
     private final Map<Entry,Set<GraphJCell>> entryCellMap =
         new HashMap<Entry,Set<GraphJCell>>();
+    /** Mapping from known labels to corresponding label entries. */
+    private final Map<Label,LabelEntry> labelEntryMap =
+        new HashMap<Label,LabelFilter.LabelEntry>();
+    /** Mapping from known node type labels to corresponding node type entries. */
+    private final Map<TypeLabel,TypeEntry> nodeTypeEntryMap =
+        new HashMap<TypeLabel,LabelFilter.TypeEntry>();
+    /** Mapping from known node type labels and edge type labels to corresponding edge type entries. */
+    private final Map<TypeLabel,Map<TypeLabel,TypeEntry>> edgeTypeEntryMap =
+        new HashMap<TypeLabel,Map<TypeLabel,TypeEntry>>();
+    /** Flag indicating if the filter is label-based. */
+    private boolean labelBased = true;
+    /** Field used to test consistency of the type entries. */
+    private TypeGraph typeGraph;
 
     /** Type of the keys in a label filter. */
     public static interface Entry extends Comparable<Entry> {
@@ -321,29 +458,29 @@ public class LabelFilter extends Observable {
     /** Filter entry wrapping a label. */
     public static class TypeEntry implements Entry {
         /** Constructs a fresh label entry from a given label. */
-        public TypeEntry(TypeElement element) {
-            this.element = element;
+        public TypeEntry(TypeElement type) {
+            this.type = type;
         }
 
         /** Returns the type element wrapped in this entry. */
-        public TypeElement getElement() {
-            return this.element;
+        public TypeElement getType() {
+            return this.type;
         }
 
         @Override
         public Label getLabel() {
-            return this.element.label();
+            return this.type.label();
         }
 
         @Override
         public int compareTo(Entry o) {
-            assert o instanceof LabelEntry;
-            return getElement().compareTo(((TypeEntry) o).getElement());
+            assert o instanceof TypeEntry;
+            return getType().compareTo(((TypeEntry) o).getType());
         }
 
         @Override
         public int hashCode() {
-            return this.element.hashCode();
+            return this.type.hashCode();
         }
 
         @Override
@@ -351,21 +488,28 @@ public class LabelFilter extends Observable {
             if (this == obj) {
                 return true;
             }
-            if (obj == null) {
+            if (!(obj instanceof TypeEntry)) {
                 return false;
             }
-            if (!(obj instanceof LabelEntry)) {
-                return false;
-            }
+            // test for label equality to avoid 
+            // comparing type elements from different type graphs
             TypeEntry other = (TypeEntry) obj;
-            return this.element.equals(other.element);
+            if (!this.type.label().equals(other.type.label())) {
+                return false;
+            }
+            if (this.type instanceof TypeNode) {
+                return true;
+            }
+            TypeNode mySource = ((TypeEdge) this.type).source();
+            TypeNode otherSource = ((TypeEdge) other.type).source();
+            return mySource.label().equals(otherSource.label());
         }
 
         @Override
         public String toString() {
-            return this.element.toString();
+            return this.type.toString();
         }
 
-        private final TypeElement element;
+        private final TypeElement type;
     }
 }

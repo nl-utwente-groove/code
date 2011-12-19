@@ -6,11 +6,11 @@ import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
-import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -20,9 +20,9 @@ import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.io.Util;
-import groove.trans.RuleLabel;
 import groove.util.Colors;
 import groove.view.FormatError;
+import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -225,19 +225,19 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public Collection<? extends Label> getListLabels() {
+    public Collection<Element> getKeys() {
         updateCachedValues();
-        return this.listLabels;
+        return this.treeEntries;
     }
 
     /** 
-     * Updates the cached values of {@link #lines} and {@link #listLabels},
+     * Updates the cached values of {@link #lines} and {@link #treeEntries},
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
         if (isModelModified() || this.lines == null) {
             this.lines = computeLines();
-            this.listLabels = computeListLabels();
+            this.treeEntries = computeKeys();
         }
     }
 
@@ -471,53 +471,50 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     /** Recomputes the set of list labels for this aspect node. */
-    private Collection<? extends Label> computeListLabels() {
+    private Collection<Element> computeKeys() {
         getNode().testFixed(true);
-        Collection<Label> result;
+        Collection<Element> result;
         //        if (hasError()) {
         //            result = getUserObject().toLabels();
         //        } else
         if (this.aspect.isMeta()) {
-            return Collections.emptySet();
+            result = Collections.emptySet();
         } else {
-            result = new ArrayList<Label>();
+            result = new ArrayList<Element>();
+            TypeModelMap typeMap =
+                getJGraph().getModel().getResourceModel().getTypeMap();
+            result.add(typeMap == null ? getNode() : typeMap.getNode(getNode()));
             for (Edge edge : getJVertexLabels()) {
-                result.addAll(getListLabels(edge));
-            }
-            Aspect attrAspect = getNode().getAttrAspect();
-            if (attrAspect.getKind().hasSignature()) {
-                TypeFactory factory = getJGraph().getTypeGraph().getFactory();
-                if (attrAspect.hasContent()) {
-                    result.add(factory.createLabel(attrAspect.getContentString()));
-                } else {
-                    result.add(factory.createLabel(EdgeRole.NODE_TYPE,
-                        attrAspect.getKind().getName()));
+                Edge key = getKey(edge);
+                if (key != null) {
+                    result.add(key);
                 }
             }
+            //            Aspect attrAspect = getNode().getAttrAspect();
+            //            if (attrAspect.getKind().hasSignature()) {
+            //                TypeFactory factory = getJGraph().getTypeGraph().getFactory();
+            //                if (attrAspect.hasContent()) {
+            //                    result.add(factory.createLabel(attrAspect.getContentString()));
+            //                } else {
+            //                    result.add(factory.createLabel(EdgeRole.NODE_TYPE,
+            //                        attrAspect.getKind().getName()));
+            //                }
+            //            }
             for (AspectEdge edge : getExtraSelfEdges()) {
-                result.addAll(getListLabels(edge));
-            }
-            if (result.isEmpty()) {
-                result.add(NO_LABEL);
+                Edge key = getKey(edge);
+                if (key != null) {
+                    result.add(key);
+                }
             }
         }
         return result;
     }
 
     @Override
-    protected Set<? extends Label> getListLabels(Edge edge) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        Set<? extends Label> result;
-        Label label = aspectEdge.getDisplayLabel();
-        if (label instanceof RuleLabel && ((RuleLabel) label).isMatchable()) {
-            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
-            if (result.isEmpty()) {
-                result = Collections.singleton(NO_LABEL);
-            }
-        } else {
-            result = Collections.singleton(label);
-        }
-        return result;
+    protected Edge getKey(Edge edge) {
+        TypeModelMap typeMap =
+            getJGraph().getModel().getResourceModel().getTypeMap();
+        return typeMap == null ? edge : typeMap.getEdge((AspectEdge) edge);
     }
 
     @Override
@@ -696,8 +693,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** Cached lines. */
     private List<StringBuilder> lines;
-    /** Cached list labels. */
-    private Collection<? extends Label> listLabels;
+    /** Cached tree entries. */
+    private Collection<Element> treeEntries;
     /** Model modification count at the last time the lines were computed. */
     private int lastModelModCount;
     /** The role of the underlying rule node. */

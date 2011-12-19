@@ -18,7 +18,7 @@ package groove.abstraction.neigh.gui.jgraph;
 
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.Label;
+import groove.graph.Element;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JAttr;
 
@@ -72,7 +72,7 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
     }
 
     @Override
-    public Collection<? extends Label> getListLabels() {
+    public Collection<? extends Element> getKeys() {
         return Collections.emptyList();
     }
 

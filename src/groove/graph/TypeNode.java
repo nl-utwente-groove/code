@@ -17,6 +17,8 @@
 package groove.graph;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Node in a type graph.
@@ -52,10 +54,11 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public boolean equals(Object obj) {
         // only type nodes from the same type graph may be compared
-        assert getGraph() == ((TypeNode) obj).getGraph();
+        assert getGraph() == ((TypeElement) obj).getGraph();
         boolean result = this == obj;
         // object equality should imply equal numbers and type labels
-        assert result || getNumber() != ((TypeNode) obj).getNumber()
+        assert result || obj instanceof TypeEdge
+            || getNumber() != ((TypeNode) obj).getNumber()
             && !label().equals(((TypeNode) obj).label());
         return result;
     }
@@ -148,6 +151,29 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public TypeGraph getGraph() {
         return this.graph;
+    }
+
+    @Override
+    public boolean hasGraph() {
+        return getGraph() != null;
+    }
+
+    @Override
+    public Set<TypeNode> getSubtypes() {
+        if (hasGraph()) {
+            return getGraph().getSubtypes(this);
+        } else {
+            return Collections.singleton(this);
+        }
+    }
+
+    @Override
+    public Set<TypeNode> getSupertypes() {
+        if (hasGraph()) {
+            return getGraph().getSupertypes(this);
+        } else {
+            return Collections.singleton(this);
+        }
     }
 
     /** Tests if another type satisfies the constraints of this one.

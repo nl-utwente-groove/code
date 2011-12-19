@@ -1,11 +1,13 @@
 package groove.gui.action;
 
+import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.gui.GraphTab;
 import groove.gui.LabelTree;
-import groove.gui.LabelTree.LabelTreeNode;
+import groove.gui.LabelTree.EntryNode;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
@@ -70,9 +72,9 @@ public class SelectColorAction extends SimulatorAction implements
         Object[] selection = jGraph.getSelectionCells();
         if (selection != null) {
             choose: for (Object cell : selection) {
-                for (Label label : ((GraphJCell) cell).getListLabels()) {
-                    if (label instanceof TypeLabel && label.isNodeType()) {
-                        this.label = (TypeLabel) label;
+                for (Element entry : ((GraphJCell) cell).getKeys()) {
+                    if (entry instanceof TypeNode) {
+                        this.label = ((TypeNode) entry).label();
                         break choose;
                     }
                 }
@@ -88,9 +90,9 @@ public class SelectColorAction extends SimulatorAction implements
         if (selection != null) {
             for (TreePath path : selection) {
                 Object treeNode = path.getLastPathComponent();
-                if (treeNode instanceof LabelTreeNode) {
+                if (treeNode instanceof EntryNode) {
                     Label selectedLabel =
-                        ((LabelTreeNode) treeNode).getEntry().getLabel();
+                        ((EntryNode) treeNode).getEntry().getLabel();
                     if (selectedLabel instanceof TypeLabel
                         && selectedLabel.isNodeType()) {
                         this.label = (TypeLabel) selectedLabel;

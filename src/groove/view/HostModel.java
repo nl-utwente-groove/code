@@ -37,6 +37,7 @@ import groove.util.Pair;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectGraph.AspectGraphMorphism;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
@@ -125,7 +126,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            this.normalSource = getSource().normalise();
+            this.normalMap = new AspectGraphMorphism(getSource().getRole());
+            this.normalSource = getSource().normalise(this.normalMap);
         }
         return this.normalSource;
     }
@@ -154,12 +156,14 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             this.typeMap.putNode(nodeEntry.getKey(),
                 nodeEntry.getValue().getType());
         }
-        for (Map.Entry<AspectEdge,HostEdge> edgeEntry : this.hostModelMap.edgeMap().entrySet()) {
-            HostEdge hostEdge = edgeEntry.getValue();
-            // hostEdge may be null if the key is a node type and the graph is explicitly typed
+        for (AspectEdge sourceEdge : getSource().edgeSet()) {
+            AspectEdge normalEdge = this.normalMap.getEdge(sourceEdge);
+            if (normalEdge == null) {
+                normalEdge = sourceEdge;
+            }
+            HostEdge hostEdge = this.hostModelMap.getEdge(normalEdge);
             if (hostEdge != null) {
-                this.typeMap.putEdge(edgeEntry.getKey(),
-                    edgeEntry.getValue().getType());
+                this.typeMap.putEdge(sourceEdge, hostEdge.getType());
             }
         }
         return result;
@@ -219,9 +223,17 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     newElementMap.putNode(nodeEntry.getKey(),
                         typing.getNode(nodeEntry.getValue()));
                 }
-                for (Map.Entry<AspectEdge,HostEdge> edgeEntry : elementMap.edgeMap().entrySet()) {
-                    newElementMap.putEdge(edgeEntry.getKey(),
-                        typing.getEdge(edgeEntry.getValue()));
+                // factor the edges through the normalisation mapping
+                for (AspectEdge sourceEdge : getSource().edgeSet()) {
+                    AspectEdge normalEdge = this.normalMap.getEdge(sourceEdge);
+                    if (normalEdge == null) {
+                        normalEdge = sourceEdge;
+                    }
+                    HostEdge hostEdge = elementMap.getEdge(normalEdge);
+                    if (hostEdge != null) {
+                        newElementMap.putEdge(normalEdge,
+                            typing.getEdge(hostEdge));
+                    }
                 }
                 elementMap = newElementMap;
             } catch (FormatException e) {
@@ -303,6 +315,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     private TypeModelMap typeMap;
     /** The normalised source model. */
     private AspectGraph normalSource;
+    /** Mapping from the source to the normal source. */
+    private AspectGraphMorphism normalMap;
     /** Set of labels occurring in this graph. */
     private Set<TypeLabel> labelSet;
     /** The attribute element factory for this model. */

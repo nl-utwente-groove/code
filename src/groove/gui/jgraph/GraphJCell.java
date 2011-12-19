@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.EdgeRole;
-import groove.graph.Label;
+import groove.graph.Element;
 import groove.graph.TypeLabel;
 
 import java.io.Serializable;
@@ -54,10 +54,10 @@ public interface GraphJCell extends GraphCell, Serializable {
     public boolean isVisible();
 
     /**
-     * Returns the set of labels to be associated with this cell in a label
-     * list.
+     * Returns the set of keys to be associated with this cell in a label
+     * tree.
      */
-    public abstract Collection<? extends Label> getListLabels();
+    public abstract Collection<? extends Element> getKeys();
 
     /** Indicates if this cell is currently layed-out. */
     boolean isLayoutable();

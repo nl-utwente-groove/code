@@ -358,7 +358,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     private AspectGraph getNormalSource() {
         if (this.normalSource == null) {
-            this.normalSource = getSource().normalise();
+            this.normalSource = getSource().normalise(null);
             if (NORMALISE_DEBUG) {
                 GraphPreviewDialog.showGraph(this.normalSource);
             }

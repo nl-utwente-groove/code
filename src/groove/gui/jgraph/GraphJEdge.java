@@ -19,7 +19,7 @@ package groove.gui.jgraph;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.Element;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
@@ -80,7 +80,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     @Override
     public String toString() {
         return String.format("%s with labels %s", getClass().getName(),
-            getListLabels());
+            getKeys());
     }
 
     /** 
@@ -273,7 +273,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * This implementation calls {@link #getLine(Edge)} on all edges in
      * {@link #getEdges()} that are not being filtered by the model
-     * according to {@link GraphJGraph#isFiltering(Label)}.
+     * according to {@link GraphJGraph#isFiltering(Element)}.
      */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
@@ -289,18 +289,12 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** 
      * Tests if a given edge is currently being filtered.
      * This is the case if at least one of the list labels on it
-     * (as returned by {@link #getListLabels()})
+     * (as returned by {@link #getKeys()})
      * is being filtered.
      */
     final protected boolean isFiltered(Edge edge) {
-        boolean result = false;
-        for (Label label : getListLabels(edge)) {
-            if (getJGraph().isFiltering(label)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        Edge entry = getKey(edge);
+        return entry != null && getJGraph().isFiltering(entry);
     }
 
     /**
@@ -313,25 +307,32 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     }
 
     /**
-     * This implementation calls {@link #getListLabels(Edge)} on all edges in
+     * This implementation calls {@link #getKey(Edge)} on all edges in
      * {@link #getEdges()}.
      */
-    public Collection<? extends Label> getListLabels() {
-        List<Label> result = new ArrayList<Label>();
+    public Collection<Edge> getKeys() {
+        List<Edge> result = new ArrayList<Edge>();
         for (Edge edge : getEdges()) {
-            result.addAll(getListLabels(edge));
+            Edge entry = getKey(edge);
+            if (entry != null) {
+                result.add(entry);
+            }
         }
         return result;
     }
 
-    /** Returns the listable labels on a given edge. */
-    public Set<? extends Label> getListLabels(Edge edge) {
-        return Collections.singleton(edge.label());
+    /** 
+     * Returns the tree entry for a given graph edge.
+     * @return the entry foe {@code edge}; if {@code null}, the edge
+     * has no corresponding tree entry 
+     */
+    public Edge getKey(Edge edge) {
+        return edge;
     }
 
     StringBuilder getEdgeDescription() {
         StringBuilder result = getEdgeKindDescription();
-        if (getListLabels().size() > 1) {
+        if (getKeys().size() > 1) {
             HTMLConverter.toUppercase(result, false);
             result.insert(0, "Multiple ");
             result.append("s");
@@ -363,9 +364,9 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      */
     String getLabelDescription() {
         StringBuffer result = new StringBuffer();
-        String[] displayedLabels = new String[getListLabels().size()];
+        String[] displayedLabels = new String[getKeys().size()];
         int labelIndex = 0;
-        for (Object label : getListLabels()) {
+        for (Object label : getKeys()) {
             displayedLabels[labelIndex] = STRONG_TAG.on(label.toString(), true);
             labelIndex++;
         }

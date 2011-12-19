@@ -19,7 +19,7 @@ package groove.gui.jgraph;
 import static groove.graph.EdgeRole.BINARY;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
-import groove.graph.Label;
+import groove.graph.Element;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
 
@@ -158,12 +158,10 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     protected boolean isFiltered() {
         boolean result = true;
-        for (Label label : getListLabels()) {
-            if (getJGraph().isFiltering(label)) {
-                if (label.isNodeType()) {
-                    result = true;
-                    break;
-                }
+        for (Element entry : getKeys()) {
+            if (getJGraph().isFiltering(entry)) {
+                result = true;
+                break;
             } else {
                 result = false;
             }
@@ -205,18 +203,12 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /** 
      * Tests if a given edge is currently being filtered.
      * This is the case if at least one of the list labels on it
-     * (as returned by {@link #getListLabels()})
+     * (as returned by {@link #getKeys()})
      * is being filtered.
      */
     final protected boolean isFiltered(Edge edge) {
-        boolean result = false;
-        for (Label label : getListLabels(edge)) {
-            if (getJGraph().isFiltering(label)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        Edge key = getKey(edge);
+        return key != null && getJGraph().isFiltering(key);
     }
 
     /** 
@@ -234,20 +226,21 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * a constant, followed by the self-edge labels and data-edge labels; or
      * {@link GraphJCell#NO_LABEL} if the result would otherwise be empty.
      */
-    public Collection<? extends Label> getListLabels() {
-        Collection<Label> result = new ArrayList<Label>();
+    public Collection<Element> getKeys() {
+        Collection<Element> result = new ArrayList<Element>();
         for (Edge edge : getJVertexLabels()) {
-            result.addAll(getListLabels(edge));
+            Edge key = getKey(edge);
+            if (key != null) {
+                result.add(key);
+            }
         }
-        if (getJVertexLabels().isEmpty()) {
-            result.add(NO_LABEL);
-        }
+        result.add(getNode());
         return result;
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    protected Set<? extends Label> getListLabels(Edge edge) {
-        return Collections.singleton(edge.label());
+    protected Edge getKey(Edge edge) {
+        return edge;
     }
 
     /**
@@ -300,7 +293,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     @Override
     public String toString() {
         return String.format("JVertex %d with labels %s", getNumber(),
-            getListLabels());
+            getKeys());
     }
 
     /**

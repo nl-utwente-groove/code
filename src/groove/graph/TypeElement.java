@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import java.util.Set;
+
 /** Superinterface for {@link TypeNode} and {@link TypeEdge}.
  * 
  * @author Arend Rensink
@@ -35,4 +37,15 @@ public interface TypeElement extends Element {
      * @return the associated type graph, or {@code null} if there is none.
      */
     public TypeGraph getGraph();
+
+    /** Indicates if this type element has an associated type graph.
+     * @see #getGraph() 
+     */
+    public boolean hasGraph();
+
+    /** Returns the (reflexively and transitively closed) set of subtypes of this type element. */
+    public Set<? extends TypeElement> getSubtypes();
+
+    /** Returns the (reflexively and transitively closed) set of supertypes of this type element. */
+    public Set<? extends TypeElement> getSupertypes();
 }

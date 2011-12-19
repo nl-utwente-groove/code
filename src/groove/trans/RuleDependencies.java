@@ -533,11 +533,7 @@ public class RuleDependencies {
                 }
             }
         } else {
-            if (edgeType.isAbstract()) {
-                result.addAll(this.typeGraph.getSubtypes(edgeType));
-            } else {
-                result.add(edgeType);
-            }
+            result.addAll(this.typeGraph.getSubtypes(edgeType));
         }
         return result;
     }
