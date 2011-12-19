@@ -51,7 +51,7 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     protected Set<HostNode> nodes = null;
 
-    protected Set<HostNode> participatingNodes = new TreeHashSet<HostNode>();
+    protected Object auxiliaryData = null;
 
     /**
      * For single-edge path matches this variable holds 
@@ -72,8 +72,6 @@ public class RetePathMatch extends AbstractReteMatch {
         this.hashCode = edge.hashCode();
         this.pathLength = 1;
         this.endpoints = new HostNode[] {edge.source(), edge.target()};
-        this.participatingNodes.add(edge.source());
-        this.participatingNodes.add(edge.target());
         this.associatedEdge = edge;
         this.valuation = new Valuation();
     }
@@ -94,7 +92,6 @@ public class RetePathMatch extends AbstractReteMatch {
         this.pathLength = subMatch.pathLength;
         this.valuation = subMatch.valuation;
         this.associatedEdge = subMatch.associatedEdge;
-        this.participatingNodes = subMatch.participatingNodes;
         subMatch.getSuperMatches().add(this);
     }
 
@@ -132,15 +129,12 @@ public class RetePathMatch extends AbstractReteMatch {
     /**
      * @return The nodes participating in this path
      */
-    public Set<HostNode> getParticipatingNodes() {
-        return this.participatingNodes;
+    public Object getAuxiliaryData() {
+        return this.auxiliaryData;
     }
 
-    /**
-     * @return Utility method for {@link #getParticipatingNodes().size()}
-     */
-    public int getNodeCount() {
-        return this.participatingNodes.size();
+    public void setAuxiliaryData(Object value) {
+        this.auxiliaryData = value;
     }
 
     @Override
@@ -248,8 +242,6 @@ public class RetePathMatch extends AbstractReteMatch {
                     new HostNode[] {this.endpoints[0], mEndpoints[1]};
                 result.pathLength = this.pathLength + (m).pathLength;
                 result.valuation = (valuation != emptyMap) ? valuation : null;
-                result.participatingNodes.addAll(this.participatingNodes);
-                result.participatingNodes.addAll(m.participatingNodes);
                 hashCode();
                 this.getSuperMatches().add(result);
                 m.getSuperMatches().add(result);
@@ -271,7 +263,6 @@ public class RetePathMatch extends AbstractReteMatch {
             new HostNode[] {this.endpoints[1], this.endpoints[0]};
         result.pathLength = this.pathLength;
         result.valuation = this.valuation;
-        result.participatingNodes = this.participatingNodes;
         result.hashCode(); //refresh hash code
         this.getSuperMatches().add(result);
         return result;
@@ -324,7 +315,6 @@ public class RetePathMatch extends AbstractReteMatch {
         result.endpoints = m.endpoints;
         result.associatedEdge = m.associatedEdge;
         result.nodes = m.nodes;
-        result.participatingNodes = m.participatingNodes;
         result.pathLength = m.pathLength;
         result.specialPrefix = m.specialPrefix;
         result.valuation = m.valuation;

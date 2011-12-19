@@ -233,6 +233,22 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
+    /**
+     * Testing closure's sufficient coverage
+     */
+    public void testDynamicRegExp5() {
+        GraphGrammar g = loadGrammar("basic-regexp.gps", "g5");
+        ReteSearchEngine eng = new ReteSearchEngine(g);
+        ReteNetwork network = eng.getNetwork();
+        network.processGraph(g.getStartGraph());
+        for (ProductionNode pn : network.getProductionNodes()) {
+            Set<ReteSimpleMatch> rmList = pn.getConflictSet();
+            if (pn.getProductionRule().getName().toString().equals("closure")) {
+                assertEquals(pn.toString(), 3, rmList.size());
+            }
+        }
+    }
+
     private void testNetworkStructure(ReteNetwork network) {
         for (ConditionChecker cc : network.getConditonCheckerNodes()) {
             checkBilateralConnectivity(cc);
