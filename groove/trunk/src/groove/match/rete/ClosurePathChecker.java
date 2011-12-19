@@ -19,6 +19,7 @@ package groove.match.rete;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
 import groove.rel.RegExpr;
 import groove.rel.RegExpr.Star;
+import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
 import java.util.List;
@@ -82,19 +83,19 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         Set<RetePathMatch> resultingNewMatches =
             new TreeHashSet<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
-            if (loopBackMatch.getNodeCount() == loopBackMatch.getPathLength() + 1) {
-                this.rightMemory.add(loopBackMatch);
-                loopBackMatch.addContainerCollection(this.rightMemory);
-                for (RetePathMatch left : this.leftMemory) {
-                    if (this.test(left, loopBackMatch)) {
-                        RetePathMatch combined =
-                            this.construct(left, loopBackMatch);
-                        if (combined != null) {
-                            resultingNewMatches.add(combined);
-                        }
+
+            this.rightMemory.add(loopBackMatch);
+            loopBackMatch.addContainerCollection(this.rightMemory);
+            for (RetePathMatch left : this.leftMemory) {
+                if (this.test(left, loopBackMatch)) {
+                    RetePathMatch combined =
+                        this.construct(left, loopBackMatch);
+                    if (combined != null) {
+                        resultingNewMatches.add(combined);
                     }
                 }
             }
+
         }
         if (resultingNewMatches.size() > 0) {
             passDownMatches(resultingNewMatches);
@@ -108,7 +109,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     private void receiveNewIncomingMatch(ReteNetworkNode source,
             RetePathMatch newMatch) {
         Set<RetePathMatch> resultingMatches = new TreeHashSet<RetePathMatch>();
-        resultingMatches.add(new RetePathMatch(this, newMatch));
+        RetePathMatch m = new RetePathMatch(this, newMatch);
+        m.setAuxiliaryData(new ClosureInfo(newMatch));
+        resultingMatches.add(m);
         if (!newMatch.start().equals(newMatch.end())) {
             this.leftMemory.add(newMatch);
             newMatch.addContainerCollection(this.leftMemory);
@@ -154,12 +157,23 @@ public class ClosurePathChecker extends AbstractPathChecker implements
      * rules of the associated operator.
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
-        if (!left.isEmpty() && !right.isEmpty()) {
-            return left.concatenate(this, right, false);
-        } else if (!left.isEmpty()) {
-            return left.reoriginate(this);
+        assert !right.isEmpty();
+        if (!left.isEmpty()) {
+            assert (right.getOrigin() == this)
+                && (right.getAuxiliaryData() != null)
+                && (right.getAuxiliaryData() instanceof ClosureInfo);
+            ClosureInfo ci1 = new ClosureInfo(left);
+            ClosureInfo ci2 = (ClosureInfo) right.getAuxiliaryData();
+            ClosureInfo combinedInfo = ClosureInfo.combine(ci1, ci2);
+            if (!combinedInfo.isIndicatingCycle()) {
+                RetePathMatch result = left.concatenate(this, right, false);
+                result.setAuxiliaryData(combinedInfo);
+                return result;
+            } else {
+                return null;
+            }
         } else {
-            return right.reoriginate(this);
+            return null;
         }
     }
 
@@ -201,4 +215,58 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         // Do nothing        
     }
 
+    /**
+     * Contains information about the number of 
+     * closures and the set of relevant nodes modulo
+     * the base of the closure that participate in a path.
+     * 
+     * This is used by the ClosurePathChecker to decide
+     * if a path is required to be among the sets of
+     * paths covered by this checker or not, to make sure
+     * the closure computation terminates.
+     * 
+     * @author Arash Jalali
+     * @version $Revision $
+     */
+    protected static class ClosureInfo {
+        private int closureLength = 0;
+        private Set<HostNode> relevantNodes = new TreeHashSet<HostNode>();
+
+        /**
+         * Used internally
+         */
+        protected ClosureInfo() {
+            //Nothing
+        }
+
+        /**
+         * Creates info for the base of a closure 
+         */
+        public ClosureInfo(RetePathMatch closureBaseMatch) {
+            this.closureLength = 1;
+            this.relevantNodes.add(closureBaseMatch.start());
+            this.relevantNodes.add(closureBaseMatch.end());
+        }
+
+        /**
+         * Combines the info for two presumably
+         * info records belonging to two closure matches
+         * that are to be concatenated.
+         */
+        public static ClosureInfo combine(ClosureInfo ci1, ClosureInfo ci2) {
+            ClosureInfo result = new ClosureInfo();
+            result.closureLength = ci1.closureLength + ci2.closureLength;
+            result.relevantNodes.addAll(ci1.relevantNodes);
+            result.relevantNodes.addAll(ci2.relevantNodes);
+            return result;
+        }
+
+        /**
+         * Indicates if this closure info is indicative of
+         * the formation of a cycle of closures.
+         */
+        public boolean isIndicatingCycle() {
+            return this.closureLength + 1 != this.relevantNodes.size();
+        }
+    }
 }
