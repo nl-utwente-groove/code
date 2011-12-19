@@ -132,7 +132,7 @@ public class ExplorationTest {
     /** Tests the regexpr sample. */
     @Test
     public void testRegExpr() {
-        testExploration("regexpr.gps", 16, 48);
+        testExploration("regexpr.gps", "start", "bfs", 16, 48);
         testExploration("regexpr.gps", "start", "rete", 16, 48);
     }
 

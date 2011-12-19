@@ -177,12 +177,14 @@ public class ClosurePathChecker extends AbstractPathChecker implements
 
     @Override
     public void clear() {
+        super.clear();
         this.leftMemory.clear();
         this.rightMemory.clear();
     }
 
     @Override
     public List<? extends Object> initialize() {
+        super.initialize();
         if (this.getExpression().isStar()) {
             passDownMatchToSuccessors(this.emptyMatch);
         }

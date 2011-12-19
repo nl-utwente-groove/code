@@ -211,6 +211,12 @@ public class RetePathMatch extends AbstractReteMatch {
                 m.getOrigin())));
     }
 
+    public boolean equivalentWith(RetePathMatch m) {
+        return this.equals(m)
+            || ((m != null) && this.start() == m.start()
+                && this.end() == m.end() && this.valuation.equals(m.valuation));
+    }
+
     /**
      * Concatenates this match object with another path match object.
      * 
@@ -304,6 +310,26 @@ public class RetePathMatch extends AbstractReteMatch {
             this.pathLength,
             ((AbstractPathChecker) this.getOrigin()).getExpression().toString(),
             this.valuation.toString());
+    }
+
+    /**
+     * Creates a duplicate of a given path match. This
+     * duplicate is used by a path-checker's match cache.
+     * @param m
+     * @return A path match that is the replica of <code>m</code>
+     * except for the domino history. Its domino history is empty
+     */
+    public static RetePathMatch duplicate(RetePathMatch m) {
+        RetePathMatch result = new RetePathMatch(m.getOrigin());
+        result.endpoints = m.endpoints;
+        result.associatedEdge = m.associatedEdge;
+        result.nodes = m.nodes;
+        result.participatingNodes = m.participatingNodes;
+        result.pathLength = m.pathLength;
+        result.specialPrefix = m.specialPrefix;
+        result.valuation = m.valuation;
+        result.hashCode = m.hashCode;
+        return result;
     }
 
     /**
