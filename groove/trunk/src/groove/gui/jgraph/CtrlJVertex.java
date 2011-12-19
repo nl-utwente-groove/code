@@ -62,6 +62,12 @@ public class CtrlJVertex extends GraphJVertex {
         return getNode().getAut().getFinal().equals(getNode());
     }
 
+    @Override
+    protected boolean isFiltered() {
+        boolean result = super.isFiltered();
+        return result;
+    }
+
     /**
      * This implementation adds special attributes for the start state, open
      * states, final states, and the active state.

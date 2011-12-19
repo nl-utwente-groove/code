@@ -5,7 +5,6 @@ import static groove.view.aspect.AspectKind.DEFAULT;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
@@ -15,6 +14,7 @@ import groove.trans.RuleLabel;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphBasedModel;
+import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
@@ -247,19 +247,19 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public Collection<? extends Label> getListLabels() {
+    public Collection<Edge> getKeys() {
         updateCachedValues();
-        return this.listLabels;
+        return this.treeEntries;
     }
 
     /** 
-     * Updates the cached values of {@link #lines} and {@link #listLabels},
+     * Updates the cached values of {@link #lines} and {@link #treeEntries},
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
         if (isModelModified() || this.lines == null) {
             this.lines = computeLines();
-            this.listLabels = computeListLabels();
+            this.treeEntries = computeKeys();
         }
     }
 
@@ -303,27 +303,24 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return result;
     }
 
-    /** Recomputes the set of list labels for this aspect node. */
-    private Collection<? extends Label> computeListLabels() {
-        //        if (hasError()) {
-        //            return getUserObject().toLabels();
-        //        } else 
+    /** Recomputes the set of keys for this aspect node. */
+    private Collection<Edge> computeKeys() {
         if (this.aspect.isMeta()) {
             return Collections.emptySet();
         } else {
-            return super.getListLabels();
+            return super.getKeys();
         }
     }
 
     @Override
-    public Set<? extends Label> getListLabels(Edge edge) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        Set<? extends Label> result;
-        Label label = aspectEdge.getRuleLabel();
-        if (label != null && ((RuleLabel) label).isMatchable()) {
-            result = ((RuleLabel) label).getMatchExpr().getTypeLabels();
+    public Edge getKey(Edge edge) {
+        Edge result;
+        TypeModelMap typeMap =
+            getJGraph().getModel().getResourceModel().getTypeMap();
+        if (typeMap != null) {
+            result = typeMap.getEdge((AspectEdge) edge);
         } else {
-            result = Collections.singleton(aspectEdge.getDisplayLabel());
+            result = edge;
         }
         return result;
     }
@@ -492,8 +489,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Cached lines. */
     private List<StringBuilder> lines;
-    /** Cached list labels. */
-    private Collection<? extends Label> listLabels;
+    /** Cached tree entries. */
+    private Collection<Edge> treeEntries;
     /** Model modification count at the last time the lines were computed. */
     private int lastModelModCount;
     private AspectKind aspect;

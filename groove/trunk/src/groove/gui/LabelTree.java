@@ -19,17 +19,22 @@ package groove.gui;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import groove.graph.Element;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.gui.LabelFilter.Entry;
+import groove.gui.LabelFilter.TypeEntry;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.GraphJVertex;
 import groove.io.HTMLConverter;
 
 import java.awt.Color;
@@ -226,17 +231,21 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         this.jModel = getJGraph().getModel();
         if (this.typeGraph != getTypeGraph()) {
             this.typeGraph = getTypeGraph();
-            getFilter().clear();
+            getFilter().clear(
+                this.typeGraph == null || this.typeGraph.isImplicit());
         } else {
             getFilter().clearJCells();
         }
         if (this.jModel == null) {
-            getFilter().clear();
+            getFilter().clear(true);
         } else {
             this.jModel.addGraphModelListener(this);
             if (getTypeGraph() != null) {
-                for (Label label : getTypeGraph().getLabels()) {
-                    getFilter().addLabel(label);
+                for (TypeNode node : getTypeGraph().nodeSet()) {
+                    getFilter().addEntry(node);
+                }
+                for (TypeEdge edge : getTypeGraph().edgeSet()) {
+                    getFilter().addEntry(edge);
                 }
             }
             for (int i = 0; i < this.jModel.getRootCount(); i++) {
@@ -330,11 +339,10 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
-                TreeNode treeNode =
-                    (TreeNode) selectedPath.getLastPathComponent();
-                if (treeNode instanceof LabelTreeNode) {
-                    Entry label = ((LabelTreeNode) treeNode).getEntry();
-                    Set<GraphJCell> occurrences = getFilter().getJCells(label);
+                Object treeNode = selectedPath.getLastPathComponent();
+                if (treeNode instanceof EntryNode) {
+                    Entry entry = ((EntryNode) treeNode).getEntry();
+                    Set<GraphJCell> occurrences = getFilter().getJCells(entry);
                     if (occurrences != null) {
                         emphSet.addAll(occurrences);
                     }
@@ -365,18 +373,22 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         clearSelection();
         // clear the list
         getTopNode().removeAllChildren();
-        List<TreeNode> newNodes;
-        SortedMap<String,TypeGraph> typeGraphMap = getTypeGraphMap();
-        if (typeGraphMap == null || getTypeGraph().isImplicit()) {
-            newNodes = updateTreeFromLabels();
-        } else {
-            newNodes = updateTreeFromTypeGraph(typeGraphMap);
-        }
+        List<TreeNode> newNodes =
+            getFilter().isLabelBased() ? updateTreeFromLabels()
+                    : updateTreeFromTypeGraph();
         getModel().reload(getTopNode());
         // expand those paths that were not collapsed before
         for (TreeNode newNode : newNodes) {
-            if (!collapsedNodes.contains(newNode)) {
-                expandPath(new TreePath(newNode.getPath()));
+            boolean expand = true;
+            TreePath path = new TreePath(newNode.getPath());
+            for (Object node : path.getPath()) {
+                if (collapsedNodes.contains(node)) {
+                    expand = false;
+                    break;
+                }
+            }
+            if (expand) {
+                expandPath(path);
             }
         }
         addTreeSelectionListener(this);
@@ -388,47 +400,59 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         Set<Entry> entries = new TreeSet<Entry>(getFilter().getEntries());
         for (Entry entry : entries) {
             if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                LabelTreeNode labelNode = new LabelTreeNode(entry, true);
+                EntryNode labelNode = new EntryNode(entry, true);
                 getTopNode().add(labelNode);
             }
         }
         return result;
     }
 
-    /** Updates the tree from the information in a type graph map. */
-    private List<TreeNode> updateTreeFromTypeGraph(
-            SortedMap<String,TypeGraph> typeGraphMap) {
+    /** Updates the tree from the information in the type graph map. */
+    private List<TreeNode> updateTreeFromTypeGraph() {
         List<TreeNode> newNodes = new ArrayList<TreeNode>();
-        for (Map.Entry<String,TypeGraph> typeGraphEntry : typeGraphMap.entrySet()) {
-            String name = typeGraphEntry.getKey();
-            TypeGraph typeGraph = typeGraphEntry.getValue();
-            DefaultMutableTreeNode topNode;
-            if (typeGraphMap.size() > 1) {
-                TypeGraphTreeNode typeGraphNode =
-                    new TypeGraphTreeNode(name, typeGraph);
+        SortedMap<String,TypeGraph> typeGraphMap = getTypeGraphMap();
+        if (typeGraphMap.size() == 1) {
+            String name = typeGraphMap.firstKey();
+            newNodes = updateTreeFromTypeGraph(getTopNode(), name);
+        } else if (this.jModel.getGraph().getRole() == GraphRole.TYPE) {
+            newNodes =
+                updateTreeFromTypeGraph(getTopNode(),
+                    this.jModel.getGraph().getName());
+        } else {
+            newNodes = new ArrayList<TreeNode>();
+            for (Map.Entry<String,TypeGraph> typeGraphEntry : typeGraphMap.entrySet()) {
+                String name = typeGraphEntry.getKey();
+                TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(name);
                 getTopNode().add(typeGraphNode);
                 newNodes.add(typeGraphNode);
-                topNode = typeGraphNode;
-            } else {
-                topNode = getTopNode();
+                newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode, name));
             }
-            for (TypeNode node : new TreeSet<TypeNode>(typeGraph.nodeSet())) {
-                Entry entry = getFilter().createEntry(node.label());
-                if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                    LabelTreeNode labelNode = new LabelTreeNode(entry, true);
-                    topNode.add(labelNode);
-                    newNodes.add(labelNode);
-                    addRelatedTypes(labelNode, isShowsSubtypes()
-                            ? this.typeGraph.getDirectSubtypeMap()
-                            : this.typeGraph.getDirectSupertypeMap(), newNodes);
-                    for (TypeEdge edge : new TreeSet<TypeEdge>(
-                        typeGraph.outEdgeSet(node))) {
-                        Entry edgeEntry = getFilter().createEntry(edge.label());
-                        LabelTreeNode edgeLabelNode =
-                            new LabelTreeNode(edgeEntry, true);
-                        labelNode.add(edgeLabelNode);
-                        newNodes.add(edgeLabelNode);
-                    }
+        }
+        return newNodes;
+    }
+
+    /** Updates the tree from the information in a given type graph. */
+    private List<TreeNode> updateTreeFromTypeGraph(
+            DefaultMutableTreeNode topNode, String name) {
+        TypeGraph typeGraph = getTypeGraphMap().get(name);
+        List<TreeNode> newNodes = new ArrayList<TreeNode>();
+        // mapping from type nodes to related types (in the combined type graph)
+        Map<TypeNode,Set<TypeNode>> relatedMap =
+            isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
+                    : getTypeGraph().getDirectSupertypeMap();
+        for (TypeNode node : new TreeSet<TypeNode>(typeGraph.nodeSet())) {
+            Entry entry = getFilter().getEntry(node);
+            if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
+                EntryNode nodeTypeNode = new EntryNode(entry, true);
+                topNode.add(nodeTypeNode);
+                newNodes.add(nodeTypeNode);
+                addRelatedTypes(typeGraph, nodeTypeNode, relatedMap, newNodes);
+                for (TypeEdge edge : new TreeSet<TypeEdge>(
+                    typeGraph.outEdgeSet(node))) {
+                    Entry edgeEntry = getFilter().getEntry(edge);
+                    EntryNode edgeTypeNode = new EntryNode(edgeEntry, true);
+                    nodeTypeNode.add(edgeTypeNode);
+                    newNodes.add(edgeTypeNode);
                 }
             }
         }
@@ -438,24 +462,30 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /**
      * Recursively adds related types to a given label node.
      * Only first level subtypes are added.
+     * @param typeGraph partial type graph from which the related types are taken
+     * @param typeNode tree node for the key type
+     * @param map mapping from key types to related node type (in the combined type graph)
+     * @param newNodes set that collects all newly created tree nodes  
      */
-    private void addRelatedTypes(LabelTreeNode labelNode,
+    private void addRelatedTypes(TypeGraph typeGraph, EntryNode typeNode,
             Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
-        Label label = labelNode.getEntry().getLabel();
-        TypeNode type = getTypeGraph().getNode(label);
+        TypeNode type = (TypeNode) ((TypeEntry) typeNode.getEntry()).getType();
         Set<TypeNode> relatedTypes = map.get(type);
         assert relatedTypes != null : String.format(
-            "Label '%s' does not occur in label store '%s'", label,
+            "Node type '%s' does not occur in type graph '%s'", type,
             map.keySet());
         for (TypeNode relType : relatedTypes) {
-            LabelTreeNode typeNode = new LabelTreeNode(relType.label(), false);
-            labelNode.add(typeNode);
-            if (newNodes != null) {
-                newNodes.add(labelNode);
+            // test if the node type label exists in the partial type graph
+            if (typeGraph.getLabels().contains(relType.label())) {
+                EntryNode subTypeNode = new EntryNode(relType, false);
+                typeNode.add(subTypeNode);
+                if (newNodes != null) {
+                    newNodes.add(typeNode);
+                }
+                // change last parameter to newNodes if subtypes should be added
+                // to arbitrary depth
+                addRelatedTypes(typeGraph, subTypeNode, map, null);
             }
-            // change last parameter to newNodes if subtypes should be added
-            // to arbitrary depth
-            addRelatedTypes(typeNode, map, null);
         }
     }
 
@@ -495,8 +525,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     @Override
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        if (value instanceof LabelTreeNode) {
-            return getText(((LabelTreeNode) value).getEntry().getLabel());
+        if (value instanceof EntryNode) {
+            return getText(((EntryNode) value).getEntry());
         } else if (value instanceof TypeGraphTreeNode) {
             StringBuilder result = new StringBuilder();
             result.append("Type graph '");
@@ -514,10 +544,11 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * Returns an HTML-formatted string indicating how a label should be
      * displayed.
      */
-    private String getText(Label label) {
+    private String getText(Entry entry) {
         StringBuilder text = new StringBuilder();
+        Label label = entry.getLabel();
         boolean specialLabelColour = false;
-        if (label.equals(GraphJCell.NO_LABEL)) {
+        if (label.equals(TypeLabel.NODE) || label.equals(GraphJVertex.NO_LABEL)) {
             text.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
         } else if (label.text().length() == 0) {
@@ -529,7 +560,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         if (specialLabelColour) {
             HTMLConverter.createColorTag(SPECIAL_COLOR).on(text);
         }
-        if (isFiltered(label)) {
+        if (isFiltered(entry)) {
             HTMLConverter.STRIKETHROUGH_TAG.on(text);
         }
         return HTML_TAG.on(text).toString();
@@ -541,10 +572,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /** Indicates if a given label is currently filtered. */
-    public boolean isFiltered(Label label) {
+    public boolean isFiltered(Element element) {
+        return isFiltered(getFilter().getEntry(element));
+    }
+
+    /** Indicates if a given tree entry is currently filtered. */
+    private boolean isFiltered(Entry entry) {
         synchroniseModel();
-        return isFiltering()
-            && !getFilter().isSelected(getFilter().createEntry(label));
+        return isFiltering() && !getFilter().isSelected(entry);
     }
 
     /**
@@ -615,15 +650,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /** Colour HTML tag for the foreground colour of special labels. */
     private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 
-    /** Tree node wrapping a label. */
-    public class LabelTreeNode extends TreeNode {
+    /** Tree node wrapping a filter entry. */
+    public class EntryNode extends TreeNode {
         /**
-         * Constructs a new node, for a given label.
-         * @param label The label wrapped in this node
+         * Constructs a new node, for a given type element.
+         * @param key the key element wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        LabelTreeNode(Label label, boolean topNode) {
-            this(getFilter().createEntry(label), topNode);
+        EntryNode(TypeElement key, boolean topNode) {
+            this(getFilter().getEntry(key), topNode);
         }
 
         /**
@@ -631,7 +666,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
          * @param entry The label wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        LabelTreeNode(Entry entry, boolean topNode) {
+        EntryNode(Entry entry, boolean topNode) {
             this.entry = entry;
             this.topNode = topNode;
         }
@@ -646,10 +681,10 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof LabelTreeNode)) {
+            if (!(obj instanceof EntryNode)) {
                 return false;
             }
-            LabelTreeNode other = (LabelTreeNode) obj;
+            EntryNode other = (EntryNode) obj;
             return this.entry.equals(other.entry);
         }
 
@@ -693,12 +728,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         /**
          * Constructs a new node, for a given type graph.
          * @param name name of the type graph
-         * @param typeGraph the type graph
          */
-        TypeGraphTreeNode(String name, TypeGraph typeGraph) {
+        TypeGraphTreeNode(String name) {
             this.name = name;
+            TypeGraph typeGraph = getTypeGraphMap().get(name);
             for (TypeNode node : typeGraph.nodeSet()) {
-                this.entries.add(getFilter().createEntry(node.label()));
+                this.entries.add(getFilter().getEntry(node));
+            }
+            for (TypeEdge edge : typeGraph.edgeSet()) {
+                this.entries.add(getFilter().getEntry(edge));
             }
         }
 
@@ -761,9 +799,11 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 TreePath path =
                     getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
-                    Entry entry =
-                        ((LabelTreeNode) path.getLastPathComponent()).getEntry();
-                    getFilter().changeSelected(entry);
+                    Object treeNode = path.getLastPathComponent();
+                    if (treeNode instanceof EntryNode) {
+                        Entry entry = ((EntryNode) treeNode).getEntry();
+                        getFilter().changeSelected(entry);
+                    }
                 }
             }
         }
@@ -780,9 +820,9 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         FilterAction(Object[] cells) {
             super(Options.FILTER_ACTION_NAME);
             this.filter = true;
-            this.labels = new ArrayList<Entry>();
+            this.entries = new ArrayList<Entry>();
             for (Object cell : cells) {
-                this.labels.addAll(getFilter().getEntries((GraphJCell) cell));
+                this.entries.addAll(getFilter().getEntries((GraphJCell) cell));
             }
         }
 
@@ -790,21 +830,21 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             super(filter ? Options.FILTER_ACTION_NAME
                     : Options.UNFILTER_ACTION_NAME);
             this.filter = filter;
-            this.labels = new ArrayList<Entry>();
+            this.entries = new ArrayList<Entry>();
             for (TreePath path : cells) {
                 Object treeNode = path.getLastPathComponent();
-                if (treeNode instanceof LabelTreeNode) {
-                    this.labels.add(((LabelTreeNode) treeNode).getEntry());
+                if (treeNode instanceof EntryNode) {
+                    this.entries.add(((EntryNode) treeNode).getEntry());
                 }
             }
         }
 
         public void actionPerformed(ActionEvent e) {
-            getFilter().setSelected(this.labels, !this.filter);
+            getFilter().setSelected(this.entries, !this.filter);
         }
 
         private final boolean filter;
-        private final Collection<Entry> labels;
+        private final Collection<Entry> entries;
     }
 
     /** Action changing the show mode to showing subtypes or supertypes. */
@@ -886,17 +926,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                     leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
-            LabelTreeNode labelTreeNode = null;
-            if (getTreeNode() instanceof LabelTreeNode) {
-                labelTreeNode = (LabelTreeNode) getTreeNode();
-            }
-            if (labelTreeNode != null && !labelTreeNode.isTopNode()) {
-                labelIcon = LabelTree.getModeIcon(isShowsSubtypes());
-            }
-            getInner().setIcon(labelIcon);
-            // set tool tip text
-            if (labelTreeNode != null) {
-                Entry entry = labelTreeNode.getEntry();
+            Entry entry = null;
+            boolean topNode = false;
+            if (getTreeNode() instanceof EntryNode) {
+                entry = ((EntryNode) getTreeNode()).getEntry();
+                topNode = ((EntryNode) getTreeNode()).isTopNode();
+                if (!topNode) {
+                    labelIcon = LabelTree.getModeIcon(isShowsSubtypes());
+                }
+                // set tool tip text
                 StringBuilder toolTipText = new StringBuilder();
                 Set<GraphJCell> occurrences = getFilter().getJCells(entry);
                 int count = occurrences == null ? 0 : occurrences.size();
@@ -919,16 +957,19 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
                 }
                 // set node colour
-                Label label = entry.getLabel();
-                if (label instanceof TypeLabel && label.isNodeType()) {
-                    TypeGraph typeGraph = getTypeGraph();
+                if (entry instanceof TypeEntry) {
+                    TypeElement typeElement = ((TypeEntry) entry).getType();
                     TypeNode typeNode =
-                        typeGraph != null ? typeGraph.getNode(label) : null;
-                    if (typeNode != null && typeNode.getColor() != null) {
-                        getInner().setForeground(typeNode.getColor());
+                        typeElement instanceof TypeNode
+                                ? (TypeNode) typeElement
+                                : ((TypeEdge) typeElement).source();
+                    Color color = typeNode.getColor();
+                    if (color != null) {
+                        getInner().setForeground(color);
                     }
                 }
             }
+            getInner().setIcon(labelIcon);
             return result;
         }
     }

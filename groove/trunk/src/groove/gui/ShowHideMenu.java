@@ -519,7 +519,7 @@ public class ShowHideMenu extends JMenu {
         protected boolean isInvolved(GraphJCell cell) {
             // return getLabel(cell) != null && getLabel(cell).equals(label) ==
             // include;
-            return cell.getListLabels().contains(this.label);
+            return cell.getKeys().contains(this.label);
         }
 
         /**
@@ -689,7 +689,7 @@ public class ShowHideMenu extends JMenu {
         protected boolean isInvolved(GraphJCell jCell) {
             boolean result = false;
             for (String label : this.labels) {
-                result |= jCell.getListLabels().contains(label);
+                result |= jCell.getKeys().contains(label);
                 if (result) {
                     break;
                 }

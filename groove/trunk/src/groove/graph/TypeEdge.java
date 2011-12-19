@@ -16,6 +16,9 @@
  */
 package groove.graph;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Edges used in type graphs.
  * @author Arend Rensink
@@ -86,6 +89,29 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
     @Override
     public TypeGraph getGraph() {
         return this.graph;
+    }
+
+    @Override
+    public boolean hasGraph() {
+        return getGraph() != null;
+    }
+
+    @Override
+    public Set<TypeEdge> getSubtypes() {
+        if (hasGraph()) {
+            return getGraph().getSubtypes(this);
+        } else {
+            return Collections.singleton(this);
+        }
+    }
+
+    @Override
+    public Set<TypeEdge> getSupertypes() {
+        if (hasGraph()) {
+            return getGraph().getSupertypes(this);
+        } else {
+            return Collections.singleton(this);
+        }
     }
 
     /** The type graph with which this edge is associated. */

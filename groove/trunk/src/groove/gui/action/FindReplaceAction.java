@@ -16,13 +16,15 @@
  */
 package groove.gui.action;
 
+import groove.graph.Element;
 import groove.graph.Label;
+import groove.graph.TypeElement;
 import groove.graph.TypeLabel;
 import groove.gui.GraphTab;
 import groove.gui.Icons;
 import groove.gui.JGraphPanel;
 import groove.gui.LabelTree;
-import groove.gui.LabelTree.LabelTreeNode;
+import groove.gui.LabelTree.EntryNode;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
@@ -104,12 +106,12 @@ public class FindReplaceAction extends SimulatorAction implements
         this.oldLabel = null;
         Object[] selection = ((GraphJGraph) e.getSource()).getSelectionCells();
         if (selection != null && selection.length > 0) {
-            Collection<? extends Label> selectedLabels =
-                ((GraphJCell) selection[0]).getListLabels();
-            if (selectedLabels.size() > 0) {
-                Label selectedLabel = selectedLabels.iterator().next();
-                if (selectedLabel instanceof TypeLabel) {
-                    this.oldLabel = (TypeLabel) selectedLabel;
+            Collection<? extends Element> selectedEntries =
+                ((GraphJCell) selection[0]).getKeys();
+            if (selectedEntries.size() > 0) {
+                Element selectedEntry = selectedEntries.iterator().next();
+                if (selectedEntry instanceof TypeElement) {
+                    this.oldLabel = ((TypeElement) selectedEntry).label();
                 }
             }
         }
@@ -121,9 +123,9 @@ public class FindReplaceAction extends SimulatorAction implements
         TreePath[] selection = ((LabelTree) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
             Object treeNode = selection[0].getLastPathComponent();
-            if (treeNode instanceof LabelTreeNode) {
+            if (treeNode instanceof EntryNode) {
                 Label selectedLabel =
-                    ((LabelTreeNode) treeNode).getEntry().getLabel();
+                    ((EntryNode) treeNode).getEntry().getLabel();
                 if (selectedLabel instanceof TypeLabel) {
                     this.oldLabel = (TypeLabel) selectedLabel;
                 }

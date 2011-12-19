@@ -20,9 +20,9 @@ import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.LabelTree;
 import groove.gui.Options;
@@ -137,8 +137,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * Indicates if a given label is currently being filtered from view. This is
      * the case if it is in the set of filtered labels.
      */
-    public boolean isFiltering(Label label) {
-        return getLabelTree().isFiltered(label);
+    public boolean isFiltering(Element element) {
+        return getLabelTree().isFiltered(element);
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */

@@ -252,21 +252,27 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * An aspect graph is normalised if all {@link AspectKind#LET} and
      * {@link AspectKind#TEST} edges have been substituted by explicit
      * attribute elements.
+     * @param map mapping from the replaced elements of this graph to their
+     * counterparts in the normalised graph; may be {@code null}
      */
-    public AspectGraph normalise() {
+    public AspectGraph normalise(AspectGraphMorphism map) {
         AspectGraph result;
         if (this.normal) {
             result = this;
         } else {
             result = clone();
-            result.doNormalise();
+            result.doNormalise(map);
             result.setFixed();
         }
         return result;
     }
 
-    /** Normalises this (non-fixed) aspect graph. */
-    private void doNormalise() {
+    /** 
+     * Normalises this (non-fixed) aspect graph.
+     * @param map mapping from the replaced elements of this graph to their
+     * counterparts in the normalised graph; may be {@code null}
+     */
+    private void doNormalise(AspectGraphMorphism map) {
         assert !isFixed();
         // identify and remove let- and test-edges
         Set<AspectEdge> letEdges = new HashSet<AspectEdge>();
@@ -285,7 +291,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         List<FormatError> errors = new ArrayList<FormatError>();
         for (AspectEdge edge : letEdges) {
             try {
-                addAssignment(edge.source(), edge.getAssign());
+                AspectEdge normalisedEdge =
+                    addAssignment(edge.source(), edge.getAssign());
+                if (map != null) {
+                    map.putEdge(edge, normalisedEdge);
+                }
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
@@ -322,7 +332,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /**
      * Adds the structure corresponding to an assignment.
      */
-    private void addAssignment(AspectNode source, Assignment assign)
+    private AspectEdge addAssignment(AspectNode source, Assignment assign)
         throws FormatException {
         // add the expression structure
         AspectNode target = addExpression(source, assign.getRhs());
@@ -331,7 +341,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             getRole() == RULE ? AspectKind.CREATOR.getPrefix()
                 + assign.getLhs() : assign.getLhs();
         AspectLabel assignLabel = parser.parse(assignLabelText, getRole());
-        addEdge(source, assignLabel, target);
+        AspectEdge result = addEdge(source, assignLabel, target);
         if (getRole() == RULE && !source.getKind().isCreator()) {
             // add an eraser edge for the old value 
             AspectNode oldTarget =
@@ -346,6 +356,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     AspectKind.ERASER.getPrefix() + assign.getLhs(), getRole());
             addEdge(source, assignLabel, oldTarget);
         }
+        return result;
     }
 
     /**
@@ -851,7 +862,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
     }
 
-    private static class AspectGraphMorphism extends
+    /** Mapping from one aspect graph to another. */
+    public static class AspectGraphMorphism extends
             Morphism<AspectNode,AspectEdge> {
         /** Constructs a new, empty map. */
         public AspectGraphMorphism(GraphRole graphRole) {

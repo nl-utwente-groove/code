@@ -109,7 +109,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
                     name);
             if (graph != null) {
                 if (DEBUG) {
-                    GraphPreviewDialog.showGraph(graph.normalise());
+                    GraphPreviewDialog.showGraph(graph.normalise(null));
                 }
                 this.jModelMap.put(name, jModel =
                     getEditArea().getJGraph().newModel());
