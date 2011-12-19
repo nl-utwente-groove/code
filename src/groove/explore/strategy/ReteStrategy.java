@@ -78,6 +78,7 @@ public class ReteStrategy extends AbstractStrategy {
         this.rete = new ReteSearchEngine(gts.getGrammar());
         this.oldEngine = MatcherFactory.instance().getEngine();
         MatcherFactory.instance().setEngine(this.rete);
+        //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
     }
 
     /**

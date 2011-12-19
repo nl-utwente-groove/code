@@ -121,11 +121,13 @@ public abstract class SingleEdgePathChecker extends AbstractPathChecker
 
     @Override
     public List<? extends Object> initialize() {
+        super.initialize();
         return null;
     }
 
     @Override
     public void clear() {
+        super.clear();
         this.memory.clear();
     }
 

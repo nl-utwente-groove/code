@@ -91,10 +91,12 @@ public class EmptyPathChecker extends AbstractPathChecker implements
     @Override
     public void clear() {
         //Left empty. Nothing to do.
+        super.clear();
     }
 
     @Override
     public List<? extends Object> initialize() {
+        super.initialize();
         passDownMatchToSuccessors(this.emptyMatch);
         return null;
     }
