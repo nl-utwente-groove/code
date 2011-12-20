@@ -83,19 +83,18 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         Set<RetePathMatch> resultingNewMatches =
             new TreeHashSet<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
-
-            this.rightMemory.add(loopBackMatch);
-            loopBackMatch.addContainerCollection(this.rightMemory);
-            for (RetePathMatch left : this.leftMemory) {
-                if (this.test(left, loopBackMatch)) {
-                    RetePathMatch combined =
-                        this.construct(left, loopBackMatch);
-                    if (combined != null) {
-                        resultingNewMatches.add(combined);
+            if (!loopBackMatch.hasLoop()) {
+                this.rightMemory.add(loopBackMatch);
+                loopBackMatch.addContainerCollection(this.rightMemory);
+                for (RetePathMatch left : this.leftMemory) {
+                    if (this.test(left, loopBackMatch)) {
+                        RetePathMatch combined = construct(left, loopBackMatch);
+                        if (combined != null && !combined.hasLoop()) {
+                            resultingNewMatches.add(combined);
+                        }
                     }
                 }
             }
-
         }
         if (resultingNewMatches.size() > 0) {
             passDownMatches(resultingNewMatches);
@@ -117,8 +116,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             newMatch.addContainerCollection(this.leftMemory);
             for (RetePathMatch right : this.rightMemory) {
                 if (this.test(newMatch, right)) {
-                    RetePathMatch combined = this.construct(newMatch, right);
-                    if (combined != null) {
+                    RetePathMatch combined = construct(newMatch, right);
+                    if (combined != null && !combined.hasLoop()) {
                         resultingMatches.add(combined);
                     }
                 }
