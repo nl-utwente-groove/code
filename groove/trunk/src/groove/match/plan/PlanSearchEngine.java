@@ -335,8 +335,8 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
-                    unmatchedNodes.remove(edge.source());
-                    unmatchedNodes.remove(edge.target());
+                    // end nodes are only matched if the item is not negated
+                    unmatchedNodes.removeAll(edgeItem.bindsNodes());
                 }
             }
             // finally a search item per remaining node
