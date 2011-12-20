@@ -19,6 +19,7 @@ package groove.match.rete;
 import groove.rel.Valuation;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
+import groove.trans.RuleToHostMap;
 import groove.util.TreeHashSet;
 
 import java.util.Set;
@@ -35,8 +36,12 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     protected int pathLength = 0;
 
-    private final HostNode source;
-    private final HostNode target;
+    /**
+     * Array consisting of the start
+     * and end nodes of the path at indices 0, and 1
+     * respectively.
+     */
+    protected HostNode[] endpoints = null;
 
     /**
      * Lazily evaluated set of nodes returned by the method
@@ -46,8 +51,6 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     protected Set<HostNode> nodes = null;
 
-    /** The set of relevant nodes in between the sequential fragments of a closure match. */
-    protected Set<HostNode> participatingNodes = new TreeHashSet<HostNode>();
     protected Object auxiliaryData = null;
 
     /**
@@ -56,11 +59,8 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     protected HostEdge associatedEdge = null;
 
-    private RetePathMatch(ReteNetworkNode origin, HostNode source,
-            HostNode target) {
+    private RetePathMatch(ReteNetworkNode origin) {
         super(origin, false);
-        this.source = source;
-        this.target = target;
         this.valuation = new Valuation();
     }
 
@@ -68,10 +68,10 @@ public class RetePathMatch extends AbstractReteMatch {
      * @param origin The regular-expression path checker node generating this  
      */
     public RetePathMatch(ReteNetworkNode origin, HostEdge edge) {
-        this(origin, edge.source(), edge.target());
+        super(origin, false);
         this.hashCode = edge.hashCode();
         this.pathLength = 1;
-        //        this.endpoints = new HostNode[] {edge.source(), edge.target()};
+        this.endpoints = new HostNode[] {edge.source(), edge.target()};
         this.associatedEdge = edge;
         this.valuation = new Valuation();
     }
@@ -87,8 +87,8 @@ public class RetePathMatch extends AbstractReteMatch {
      * @param subMatch The given path match based on which a new one is to be created.
      */
     protected RetePathMatch(ReteNetworkNode origin, RetePathMatch subMatch) {
-        this(origin, subMatch.source, subMatch.target);
-        //        this.endpoints = subMatch.endpoints;
+        super(origin, false);
+        this.endpoints = subMatch.endpoints;
         this.pathLength = subMatch.pathLength;
         this.valuation = subMatch.valuation;
         this.associatedEdge = subMatch.associatedEdge;
@@ -117,18 +117,13 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     public Set<HostNode> getNodes() {
-        //        assert (this.endpoints != null) && (this.endpoints.length == 2);
+        assert (this.endpoints != null) && (this.endpoints.length == 2);
         if (this.nodes == null) {
             this.nodes = new TreeHashSet<HostNode>();
-            this.nodes.add(this.source);
-            this.nodes.add(this.target);
+            this.nodes.add(this.endpoints[0]);
+            this.nodes.add(this.endpoints[1]);
         }
         return this.nodes;
-    }
-
-    /** Indicates if this match loops through a participating node. */
-    public boolean hasLoop() {
-        return this.participatingNodes.size() <= getPathLength();
     }
 
     /**
@@ -144,15 +139,15 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     public int hashCode() {
-        //        assert this.endpoints != null;
+        assert this.endpoints != null;
         if (this.hashCode == 0) {
-            this.hashCode = this.source.hashCode();
+            this.hashCode = this.endpoints[0].hashCode();
             boolean neg = this.hashCode < 0;
             this.hashCode <<= 1;
             if (neg) {
                 this.hashCode |= 1;
             }
-            this.hashCode += this.target.hashCode();
+            this.hashCode += this.endpoints[1].hashCode();
         }
         return this.hashCode;
     }
@@ -162,22 +157,24 @@ public class RetePathMatch extends AbstractReteMatch {
         return 2;
     }
 
+    private RuleToHostMap equivalentMap = null;
+
     /**
      * Compares this instance with an instance of the {@link RetePathMatch} class.
      */
     public int compareTo(RetePathMatch m) {
-        //        HostNode[] thisList = this.endpoints;
-        //        HostNode[] mList = m.endpoints;
+        HostNode[] thisList = this.endpoints;
+        HostNode[] mList = m.endpoints;
 
         int result = this.hashCode() - m.hashCode();
         if (result == 0) {
-            //            int thisSize = this.size();
-            //            for (int i = 0; (i < thisSize) && (result == 0); i++) {
-            //                result = thisList[i].compareTo(mList[i]);
-            //            }
-            result = this.source.compareTo(m.source);
+            int thisSize = this.size();
+            for (int i = 0; (i < thisSize) && (result == 0); i++) {
+                result = thisList[i].compareTo(mList[i]);
+            }
+            result = thisList[0].compareTo(mList[0]);
             if (result == 0) {
-                result = this.target.compareTo(m.target);
+                result = thisList[1].compareTo(mList[1]);
             }
         }
         return result;
@@ -208,6 +205,12 @@ public class RetePathMatch extends AbstractReteMatch {
                 m.getOrigin())));
     }
 
+    public boolean equivalentWith(RetePathMatch m) {
+        return this.equals(m)
+            || ((m != null) && this.start() == m.start()
+                && this.end() == m.end() && this.valuation.equals(m.valuation));
+    }
+
     /**
      * Concatenates this match object with another path match object.
      * 
@@ -226,16 +229,17 @@ public class RetePathMatch extends AbstractReteMatch {
     public RetePathMatch concatenate(ReteNetworkNode origin, RetePathMatch m,
             boolean copyPrefix) {
         RetePathMatch result = null;
-        //        HostNode[] mEndpoints = m.endpoints;
-        if (this.target.equals(m.source)) {
+        HostNode[] mEndpoints = m.endpoints;
+        if (this.endpoints[1].equals(mEndpoints[0])) {
             Valuation valuation = this.mergeValuationsWith(m);
             if (valuation != null) {
-                result = new RetePathMatch(origin, this.source, m.target);
+                result = new RetePathMatch(origin);
                 if (copyPrefix) {
                     result.specialPrefix =
                         (m.specialPrefix != null) ? m.specialPrefix : m;
                 }
-                //                    new HostNode[] {this.endpoints[0], mEndpoints[1]};
+                result.endpoints =
+                    new HostNode[] {this.endpoints[0], mEndpoints[1]};
                 result.pathLength = this.pathLength + (m).pathLength;
                 result.valuation = (valuation != emptyMap) ? valuation : null;
                 hashCode();
@@ -254,10 +258,9 @@ public class RetePathMatch extends AbstractReteMatch {
      * @return The inverted path match. 
      */
     public RetePathMatch inverse(ReteNetworkNode origin) {
-        RetePathMatch result =
-            new RetePathMatch(origin, this.target, this.source);
-        //        result.endpoints =
-        //            new HostNode[] {this.endpoints[1], this.endpoints[0]};
+        RetePathMatch result = new RetePathMatch(origin);
+        result.endpoints =
+            new HostNode[] {this.endpoints[1], this.endpoints[0]};
         result.pathLength = this.pathLength;
         result.valuation = this.valuation;
         result.hashCode(); //refresh hash code
@@ -269,16 +272,16 @@ public class RetePathMatch extends AbstractReteMatch {
      * @return The start node of the path associated with this match object
      */
     public HostNode start() {
-        //        assert (this.endpoints != null) && (this.endpoints.length >= 1);
-        return this.source;
+        assert (this.endpoints != null) && (this.endpoints.length >= 1);
+        return this.endpoints[0];
     }
 
     /**
      * @return The end node of the path associated with this match object
      */
     public HostNode end() {
-        //        assert (this.endpoints != null) && (this.endpoints.length == 2);
-        return this.target;
+        assert (this.endpoints != null) && (this.endpoints.length == 2);
+        return this.endpoints[1];
     }
 
     /**
@@ -303,13 +306,13 @@ public class RetePathMatch extends AbstractReteMatch {
     /**
      * Creates a duplicate of a given path match. This
      * duplicate is used by a path-checker's match cache.
-     * @param m the match to duplicate
+     * @param m
      * @return A path match that is the replica of <code>m</code>
      * except for the domino history. Its domino history is empty
      */
     public static RetePathMatch duplicate(RetePathMatch m) {
-        RetePathMatch result =
-            new RetePathMatch(m.getOrigin(), m.source, m.target);
+        RetePathMatch result = new RetePathMatch(m.getOrigin());
+        result.endpoints = m.endpoints;
         result.associatedEdge = m.associatedEdge;
         result.nodes = m.nodes;
         result.pathLength = m.pathLength;
@@ -326,13 +329,22 @@ public class RetePathMatch extends AbstractReteMatch {
      * @version $Revision $
      */
     public static class EmptyPathMatch extends RetePathMatch {
+
+        /**
+         * the empty units array is purposely set to the length of 2
+         * so that inverse operations would be possible.
+         * 
+         */
+        private static HostNode[] emptyUnits = new HostNode[] {null, null};
+
         /**
          * Creates a generic empty match for a given n-node as origin.
          * 
          * @param origin The n-node that produces/has produced this match.
          */
         public EmptyPathMatch(ReteNetworkNode origin) {
-            super(origin, null, null);
+            super(origin);
+            this.endpoints = emptyUnits;
         }
 
         /**
@@ -340,11 +352,12 @@ public class RetePathMatch extends AbstractReteMatch {
          * for merging an abstract empty match with an 
          * ordinary match of type {@link ReteSimpleMatch}.
          * 
-         * @param origin the n-node that this match belongs to
-         * @param n the node associated with the empty match
+         * @param origin
+         * @param n
          */
         public EmptyPathMatch(ReteNetworkNode origin, HostNode n) {
-            super(origin, n, n);
+            super(origin);
+            this.endpoints = new HostNode[] {n, n};
         }
 
         /**
