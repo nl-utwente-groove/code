@@ -96,6 +96,11 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |=
                 item instanceof ConditionSearchItem
                     && ((ConditionSearchItem) item).getCondition().getOp() == Op.FORALL;
+            // EZ says: when working in minimal search mode, everything is
+            // relevant. This is true even if the sub-tree is formed only of
+            // readers and NACs because the pre-match checks on multiplicities
+            // may fail and we want to properly backtrack and continue the search.
+            relevant |= this.searchMode == SearchMode.MINIMAL;
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
@@ -199,10 +204,15 @@ public class PlanSearchEngine extends SearchEngine {
             } else {
                 this.used = true;
             }
+            boolean injective =
+                this.condition.getSystemProperties().isInjective();
+            if (this.searchMode != NORMAL) {
+                // Ignore grammar injectivity property if we are non-normal
+                // search mode.
+                injective = false;
+            }
             SearchPlan result =
-                new SearchPlan(this.condition, seedNodes, seedEdges,
-                    this.searchMode != NORMAL
-                        || this.condition.getSystemProperties().isInjective());
+                new SearchPlan(this.condition, seedNodes, seedEdges, injective);
             Collection<AbstractSearchItem> items =
                 computeSearchItems(seedNodes, seedEdges);
             while (!items.isEmpty()) {

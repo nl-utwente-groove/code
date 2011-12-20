@@ -35,6 +35,9 @@ import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine.SearchMode;
+import groove.match.plan.PlanSearchEngine;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -292,6 +295,11 @@ public final class Materialisation {
         return this.matchedRule.isModifying();
     }
 
+    /** Basic inspection method. */
+    private boolean hasNACs() {
+        return !this.matchedRule.getCondition().getSubConditions().isEmpty();
+    }
+
     /** Basic getter method. */
     public int getStage() {
         return this.stage;
@@ -463,6 +471,22 @@ public final class Materialisation {
         for (HostEdge edgeToRemove : edgesToRemove) {
             this.morph.removeEdge(edgeToRemove);
         }
+    }
+
+    private boolean violatesNACs() {
+        boolean result = false;
+        if (this.hasNACs()) {
+            // Make sure that the search engine is set to NORMAL mode because
+            // now we want to check the whole rule.
+            MatcherFactory.instance().setEngine(
+                PlanSearchEngine.getInstance(SearchMode.NORMAL));
+            // Compute the final matches.
+            // EZ says: this is OK...
+            result = this.matchedRule.getMatch(this.shape, null) == null;
+            // ... but this throws an exception.
+            //result = this.matchedRule.getMatch(this.shape, this.match) != null;
+        }
+        return result;
     }
 
     /**
@@ -1070,7 +1094,12 @@ public final class Materialisation {
             mat.updateShapeMorphism();
             assert mat.isShapeMorphConsistent();
             assert mat.getShape().isInvariantOK();
-            return super.add(mat);
+            if (!mat.violatesNACs()) {
+                return super.add(mat);
+            } else {
+                // This materialisation violates some NAC, drop it.
+                return false;
+            }
         }
     }
 
