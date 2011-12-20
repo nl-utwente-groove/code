@@ -25,6 +25,7 @@ import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -32,7 +33,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.trans.BasicEvent;
@@ -1104,7 +1104,7 @@ public final class Materialisation {
         }
     }*/
 
-    /*public static void main(String args[]) {
+    public static void main(String args[]) {
         //String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         String DIRECTORY = "junit/abstraction/euler-counting.gps/";
         Parameters.setNodeMultBound(1);
@@ -1134,9 +1134,9 @@ public final class Materialisation {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/euler-counting.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
@@ -1168,18 +1168,31 @@ public final class Materialisation {
             System.out.println(dfsMats.size());
             System.out.println(bfsMats.size());
 
+            Materialisation dfsMat = dfsMats.iterator().next();
+            Shape dfsShape = dfsMat.getShape();
+            dfsShape.reduce();
+            //ShapePreviewDialog.showShape(dfsShape);
             for (Materialisation dfsMat : dfsMats) {
                 Shape dfsShape = dfsMat.getShape();
-                for (Materialisation bfsMat : bfsMats) {
-                    Shape bfsShape = bfsMat.getShape();
+            int i = 1;
+            for (Materialisation bfsMat : bfsMats) {
+                Shape bfsShape = bfsMat.getShape();
+                result = checker.compareShapes(dfsShape, bfsShape).one();
+                System.out.println("Comparison: " + result);
+                if (i == 4) {
+                    ShapePreviewDialog.showShape(bfsShape);
+                    bfsShape.reduce();
+                    ShapePreviewDialog.showShape(bfsShape);
                     result = checker.compareShapes(dfsShape, bfsShape).one();
                     System.out.println("Comparison: " + result);
                 }
+                i++;
+            }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }
