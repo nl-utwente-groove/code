@@ -20,6 +20,7 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Element;
+import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -179,14 +180,27 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         return this.jGraph;
     }
 
-    /** Convenience method to return the type graph of the jGraph. */
-    TypeGraph getTypeGraph() {
-        return getJGraph() instanceof AspectJGraph
-                ? ((AspectJGraph) getJGraph()).getTypeGraph() : null;
+    /** 
+     * Convenience method to return the type graph of the grammar,
+     * or the graph in the jModel if that is a type graph. 
+     */
+    private TypeGraph getTypeGraph() {
+        TypeGraph result = null;
+        if (getJGraph() instanceof AspectJGraph) {
+            Graph<?,?> modelGraph =
+                getJGraph().getModel() == null ? null
+                        : getJGraph().getModel().getGraph();
+            if (modelGraph instanceof TypeGraph) {
+                result = (TypeGraph) modelGraph;
+            } else {
+                result = ((AspectJGraph) getJGraph()).getTypeGraph();
+            }
+        }
+        return result;
     }
 
     /** Convenience method to return the type graph map of the jGraph. */
-    SortedMap<String,TypeGraph> getTypeGraphMap() {
+    private SortedMap<String,TypeGraph> getTypeGraphMap() {
         return getJGraph() instanceof AspectJGraph
                 ? ((AspectJGraph) getJGraph()).getTypeGraphMap() : null;
     }
@@ -214,7 +228,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * if the jModel has changed.
      */
     private void synchroniseModel() {
-        if (this.jModel != getJGraph().getModel()) {
+        if (this.jModel != getJGraph().getModel()
+            || this.typeGraph != getTypeGraph()) {
             updateModel();
         }
     }
@@ -275,10 +290,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
-        GraphModelEvent.GraphModelChange change = e.getChange();
-        changed = processRegularEdit(change, changed);
-        if (changed) {
-            updateTree();
+        if (getTypeGraph() != this.typeGraph) {
+            updateModel();
+        } else {
+            GraphModelEvent.GraphModelChange change = e.getChange();
+            changed = processRegularEdit(change, changed);
+            if (changed) {
+                updateTree();
+            }
         }
     }
 
@@ -411,13 +430,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     private List<TreeNode> updateTreeFromTypeGraph() {
         List<TreeNode> newNodes = new ArrayList<TreeNode>();
         SortedMap<String,TypeGraph> typeGraphMap = getTypeGraphMap();
-        if (typeGraphMap.size() == 1) {
-            String name = typeGraphMap.firstKey();
-            newNodes = updateTreeFromTypeGraph(getTopNode(), name);
-        } else if (this.jModel.getGraph().getRole() == GraphRole.TYPE) {
+        if (this.jModel.getGraph().getRole() == GraphRole.TYPE) {
+            newNodes = updateTreeFromTypeGraph(getTopNode(), getTypeGraph());
+        } else if (typeGraphMap.size() == 1) {
             newNodes =
                 updateTreeFromTypeGraph(getTopNode(),
-                    this.jModel.getGraph().getName());
+                    typeGraphMap.values().iterator().next());
         } else {
             newNodes = new ArrayList<TreeNode>();
             for (Map.Entry<String,TypeGraph> typeGraphEntry : typeGraphMap.entrySet()) {
@@ -425,7 +443,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(name);
                 getTopNode().add(typeGraphNode);
                 newNodes.add(typeGraphNode);
-                newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode, name));
+                newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode,
+                    getTypeGraphMap().get(name)));
             }
         }
         return newNodes;
@@ -433,8 +452,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
     /** Updates the tree from the information in a given type graph. */
     private List<TreeNode> updateTreeFromTypeGraph(
-            DefaultMutableTreeNode topNode, String name) {
-        TypeGraph typeGraph = getTypeGraphMap().get(name);
+            DefaultMutableTreeNode topNode, TypeGraph typeGraph) {
         List<TreeNode> newNodes = new ArrayList<TreeNode>();
         // mapping from type nodes to related types (in the combined type graph)
         Map<TypeNode,Set<TypeNode>> relatedMap =
