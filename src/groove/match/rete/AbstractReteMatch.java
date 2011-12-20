@@ -29,9 +29,8 @@ import groove.trans.RuleToHostMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -350,30 +349,12 @@ public abstract class AbstractReteMatch implements VarMap {
      * @return A new valuation map that is the result of consistent union of both,
      * <code>null</code> if there is a conflict.
      */
-    protected Valuation mergeValuationsWith(AbstractReteMatch m) {
-        Valuation result = null;
-        Valuation v1 = this.getValuation();
-        Valuation v2 = m.getValuation();
-        if ((v1 != null) && (v2 != null)) {
-            Map<LabelVar,TypeEdge> vSmall = (v1.size() < v2.size()) ? v1 : v2;
-            Map<LabelVar,TypeEdge> vBig = (vSmall == v1) ? v2 : v1;
-            result = new Valuation(v1.size() + v2.size());
-            for (Entry<LabelVar,TypeEdge> e : vSmall.entrySet()) {
-                if (!vBig.get(e.getKey()).equals(e.getValue())) {
-                    result = null;
-                    break;
-                } else {
-                    result.put(e.getKey(), e.getValue());
-                }
-            }
-            if (result != null) {
-                result.putAll(vBig);
-            }
-        } else if ((v1 != null) || (v2 != null)) {
-            Map<LabelVar,TypeEdge> v = (v1 != null) ? v1 : v2;
-            result = new Valuation(v);
+    protected Valuation getMergedValuation(AbstractReteMatch m) {
+        Valuation result;
+        if (this.valuation == null) {
+            result = m.valuation == null ? emptyMap : m.valuation;
         } else {
-            result = emptyMap;
+            result = this.valuation.getMerger(m.valuation);
         }
         return result;
     }
@@ -389,23 +370,11 @@ public abstract class AbstractReteMatch implements VarMap {
      * there is a binding conflict, i.e. more than one value is bound
      * to the same variable. 
      */
-    protected static Valuation mergeValuations(AbstractReteMatch[] matches) {
+    protected static Valuation getMergedValuation(AbstractReteMatch[] matches) {
         Valuation result = emptyMap;
         for (int i = 0; (i < matches.length) && (result != null); i++) {
             Valuation v = matches[i].getValuation();
-            if (v != null) {
-                if (result == emptyMap) {
-                    result = new Valuation();
-                }
-                for (Entry<LabelVar,TypeEdge> e : v.entrySet()) {
-                    if (!result.get(e.getKey()).equals(e.getValue())) {
-                        result = null;
-                        break;
-                    } else {
-                        result.put(e.getKey(), e.getValue());
-                    }
-                }
-            }
+            result = result.getMerger(v);
         }
         return result;
     }

@@ -32,6 +32,7 @@ import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.rel.RegExpr;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.DefaultRuleNode;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -45,7 +46,6 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
-import groove.trans.Condition.Op;
 import groove.util.TreeHashSet;
 
 import java.io.File;
@@ -144,7 +144,6 @@ public class ReteNetwork {
      *  
      * @param condition The condition to processed and added to the RETE network.
      */
-    @SuppressWarnings("unchecked")
     private void addConditionToNetwork(Condition condition,
             ConditionChecker parent) {
         ConditionChecker result = null;
@@ -191,18 +190,18 @@ public class ReteNetwork {
                         for (ReteNetworkNode suc : m.getNNode().getSuccessors()) {
                             if (suc instanceof SubgraphCheckerNode) {
                                 ReteNetworkNode other =
-                                    ((SubgraphCheckerNode) suc).getOtherAntecedent(m.getNNode());
+                                    ((SubgraphCheckerNode<?,?>) suc).getOtherAntecedent(m.getNNode());
                                 ReteStaticMapping otherM =
                                     openList.getFirstMappingFor(other, m);
                                 if ((otherM != null)
                                     && !toBeDeleted.containsNNode(other)
-                                    && ((SubgraphCheckerNode) suc).checksValidSubgraph(
+                                    && ((SubgraphCheckerNode<?,?>) suc).checksValidSubgraph(
                                         m, otherM)) {
                                     toBeDeleted.add(m);
                                     toBeDeleted.add(otherM);
                                     ReteStaticMapping sucMapping =
                                         ReteStaticMapping.combine(m, otherM,
-                                            (SubgraphCheckerNode) suc);
+                                            (SubgraphCheckerNode<?,?>) suc);
 
                                     openList.add(sucMapping);
                                     changes = true;
@@ -252,6 +251,7 @@ public class ReteNetwork {
                             m1 = m2;
                             m2 = temp;
                         }
+                        @SuppressWarnings("rawtypes")
                         SubgraphCheckerNode sgc =
                             (m2.getNNode() instanceof QuantifierCountChecker)
                                     ? new QuantifierCountSubgraphChecker(this,
@@ -402,7 +402,6 @@ public class ReteNetwork {
      * @return The static mapping of the n-node created to join the
      *         given antecedents. 
      */
-    @SuppressWarnings("unchecked")
     private ReteStaticMapping createDisjointJoin(
             List<ReteStaticMapping> antecedents) {
         ReteStaticMapping disjointMerge = null;
@@ -424,6 +423,7 @@ public class ReteNetwork {
         //If there are only two disjoint components
         //merge them with an ordinary subgraph-checker
         if (scratchList.size() == 2) {
+            @SuppressWarnings("rawtypes")
             SubgraphCheckerNode sgc =
                 new SubgraphCheckerNode(this, scratchList.get(0),
                     scratchList.get(1));
@@ -540,9 +540,9 @@ public class ReteNetwork {
             RegExpr exp = e.label().getMatchExpr();
             ReteStaticMapping m1 = openList.get(0);
             AbstractPathChecker pc =
-                this.pathCheckerFactory.getPathCheckerFor((exp.isNeg())
-                        ? exp.getNegOperand() : exp, exp.isEmpty()
-                    || e.source() == e.target());
+                this.pathCheckerFactory.getPathCheckerFor(
+                    (exp.isNeg()) ? exp.getNegOperand() : exp, exp.isEmpty()
+                        || e.source() == e.target());
             ReteStaticMapping m2 =
                 new ReteStaticMapping(pc, new RuleElement[] {e});
             if (exp.isNeg()) {
@@ -789,8 +789,6 @@ public class ReteNetwork {
      * @param positiveConditionChecker This is the condition-checker for the positive
      *        condition that has negative sub-conditions.
      */
-
-    @SuppressWarnings("unchecked")
     private void processNacs(ReteStaticMapping lastSubgraphMapping,
             Set<Condition> nacs, ConditionChecker positiveConditionChecker) {
 
@@ -841,7 +839,7 @@ public class ReteNetwork {
                 if (m2 == null) {
                     m2 = pickTheNextLargestCheckerNode(openList, byPassList);
                 }
-                SubgraphCheckerNode sg =
+                SubgraphCheckerNode<?,?> sg =
                     SubgraphCheckerNode.create(this, m1, m2, true);
                 m1 = ReteStaticMapping.combine(m1, m2, sg);
                 openList.set(0, m1);
@@ -1428,9 +1426,8 @@ public class ReteNetwork {
 
         }
 
-        @SuppressWarnings("unchecked")
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
-                ReteStaticMapping otherMap, SubgraphCheckerNode suc) {
+                ReteStaticMapping otherMap, SubgraphCheckerNode<?,?> suc) {
             assert oneMap.getNNode().getSuccessors().contains(suc)
                 && otherMap.getNNode().getSuccessors().contains(suc);
             ReteStaticMapping left =
@@ -1473,10 +1470,9 @@ public class ReteNetwork {
             return result;
         }
 
-        @SuppressWarnings("unchecked")
         public static ReteStaticMapping combine(ReteStaticMapping oneMap,
                 ReteStaticMapping otherMap,
-                NegativeFilterSubgraphCheckerNode suc) {
+                NegativeFilterSubgraphCheckerNode<?,?> suc) {
 
             ReteStaticMapping left =
                 suc.getAntecedents().get(0).equals(oneMap.getNNode()) ? oneMap

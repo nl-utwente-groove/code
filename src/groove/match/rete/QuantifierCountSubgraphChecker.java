@@ -267,8 +267,7 @@ public class QuantifierCountSubgraphChecker extends
          * Creates a join-strategy for a particular subgraph-checker
          * whose right antecedent is a quantifier counter node
          */
-        @SuppressWarnings("unchecked")
-        public JoinWithCountStrategy(SubgraphCheckerNode sgChecker) {
+        public JoinWithCountStrategy(SubgraphCheckerNode<?,?> sgChecker) {
             super(sgChecker);
             assert !(sgChecker.getAntecedents().get(0) instanceof QuantifierCountChecker)
                 && (sgChecker.getAntecedents().get(1) instanceof QuantifierCountChecker);
