@@ -20,10 +20,11 @@ import groove.match.rete.RetePathMatch.EmptyPathMatch;
 import groove.rel.RegExpr;
 import groove.rel.RegExpr.Star;
 import groove.trans.HostNode;
-import groove.util.TreeHashSet;
+import groove.trans.HostNodeSet;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import com.sun.org.apache.xpath.internal.operations.Plus;
 
@@ -41,12 +42,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     /**
      * The memory for incoming matches coming from the antecedent.
      */
-    protected TreeHashSet<RetePathMatch> leftMemory = null;
+    protected List<RetePathMatch> leftMemory = null;
 
     /**
      * The memory for loop-back matches received from oneself
      */
-    protected TreeHashSet<RetePathMatch> rightMemory = null;
+    protected List<RetePathMatch> rightMemory = null;
 
     /**
      * Creates a Path-checker note that performs sequencing-closure, i.e.
@@ -64,8 +65,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         if (expression.isStar()) {
             this.getOwner().getState().subscribe(this);
         }
-        this.leftMemory = new TreeHashSet<RetePathMatch>();
-        this.rightMemory = new TreeHashSet<RetePathMatch>();
+        this.leftMemory = new LinkedList<RetePathMatch>();
+        this.rightMemory = new LinkedList<RetePathMatch>();
     }
 
     @Override
@@ -78,10 +79,35 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         receiveNewIncomingMatch(source, newMatch);
     }
 
-    private void receiveLoopBackMatches(Set<RetePathMatch> loopBackMatches,
-            int recursionCounter) {
-        Set<RetePathMatch> resultingNewMatches =
-            new TreeHashSet<RetePathMatch>();
+    private void altReceiveLoopBackMatches(
+            Collection<RetePathMatch> loopBackMatches) {
+        List<RetePathMatch> resultingNewMatches =
+            new LinkedList<RetePathMatch>();
+        for (RetePathMatch loopBackMatch : loopBackMatches) {
+            this.rightMemory.add(loopBackMatch);
+            loopBackMatch.addContainerCollection(this.rightMemory);
+            for (RetePathMatch left : this.rightMemory) {
+                if (test(left, loopBackMatch)) {
+                    RetePathMatch combined = construct(left, loopBackMatch);
+                    if (combined != null) {
+                        resultingNewMatches.add(combined);
+                    }
+                }
+            }
+        }
+        if (resultingNewMatches.size() > 0) {
+            passDownMatches(resultingNewMatches);
+            for (RetePathMatch newMatch : resultingNewMatches) {
+                this.rightMemory.add(newMatch);
+                newMatch.addContainerCollection(this.rightMemory);
+            }
+        }
+    }
+
+    private void receiveLoopBackMatches(
+            Collection<RetePathMatch> loopBackMatches, int recursionCounter) {
+        List<RetePathMatch> resultingNewMatches =
+            new LinkedList<RetePathMatch>();
         for (RetePathMatch loopBackMatch : loopBackMatches) {
             this.rightMemory.add(loopBackMatch);
             loopBackMatch.addContainerCollection(this.rightMemory);
@@ -106,9 +132,9 @@ public class ClosurePathChecker extends AbstractPathChecker implements
 
     private void receiveNewIncomingMatch(ReteNetworkNode source,
             RetePathMatch newMatch) {
-        Set<RetePathMatch> resultingMatches = new TreeHashSet<RetePathMatch>();
+        List<RetePathMatch> resultingMatches = new LinkedList<RetePathMatch>();
         RetePathMatch m = new RetePathMatch(this, newMatch);
-        m.setClosureInfo(new ClosureInfo(newMatch));
+        m.setClosureInfo(new ClosureInfo(m));
         resultingMatches.add(m);
         if (newMatch.start().equals(newMatch.end())) {
             passDownMatches(resultingMatches);
@@ -127,11 +153,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
             if (!this.loop) {
                 receiveLoopBackMatches(resultingMatches,
                     this.getOwner().getState().getHostGraph().nodeCount());
+                //                altReceiveLoopBackMatches(resultingMatches);
             }
         }
     }
 
-    private void passDownMatches(Set<RetePathMatch> theMatches) {
+    private void passDownMatches(Collection<RetePathMatch> theMatches) {
         for (RetePathMatch m : theMatches) {
             if (!this.loop || (m.isEmpty() || m.start() == m.end())) {
                 passDownMatchToSuccessors(m);
@@ -224,21 +251,31 @@ public class ClosurePathChecker extends AbstractPathChecker implements
      * @version $Revision $
      */
     protected static class ClosureInfo {
-        private Set<HostNode> relevantNodes = new TreeHashSet<HostNode>();
+        /** The network node to which this closure belongs. */
+        private final ReteNetworkNode origin;
+        /** Set of relevant nodes, excluding the final node. */
+        private final HostNodeSet relevantNodes;
+        /** The end node of the path. */
+        private final HostNode end;
 
         /**
          * Used internally
          */
-        protected ClosureInfo() {
-            //Nothing
+        protected ClosureInfo(ClosureInfo original) {
+            this.origin = original.origin;
+            this.relevantNodes = new HostNodeSet(original.relevantNodes);
+            this.end = original.end;
         }
 
         /**
          * Creates info for the base of a closure 
          */
         public ClosureInfo(RetePathMatch closureBaseMatch) {
+            this.origin = closureBaseMatch.getOrigin();
+            this.relevantNodes = new HostNodeSet();
             this.relevantNodes.add(closureBaseMatch.start());
-            this.relevantNodes.add(closureBaseMatch.end());
+            this.end = closureBaseMatch.end();
+            closureBaseMatch.getOrigin();
         }
 
         /**
@@ -249,11 +286,43 @@ public class ClosurePathChecker extends AbstractPathChecker implements
          */
         public ClosureInfo getExtension(RetePathMatch left) {
             ClosureInfo result = null;
-            HostNode newNode = left.start();
-            if (!this.relevantNodes.contains(newNode)) {
-                result = new ClosureInfo();
-                result.relevantNodes.addAll(this.relevantNodes);
-                result.relevantNodes.add(left.start());
+            if (left.getOrigin() == this.origin) {
+                // the extending match is also a match of this path checker, so
+                // all relevant nodes of the match are also relevant for this closure
+                ClosureInfo other = left.getClosureInfo();
+                result = new ClosureInfo(this);
+                for (HostNode newNode : other.relevantNodes) {
+                    if (!result.relevantNodes.add(newNode)) {
+                        result = null;
+                        break;
+                    }
+                }
+            } else {
+                // the extending match is not a match of this path checker
+                // but of its left antecedent
+                HostNode newNode = left.start();
+                if (newNode != this.end
+                    && !this.relevantNodes.contains(newNode)) {
+                    result = new ClosureInfo(this);
+                    result.relevantNodes.add(left.start());
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns an info object containing the nodes of this one
+         * plus the nodes of a another closure concatenated to the left.
+         * @return an extended info object, or {@code null} if the
+         * result has a cycle
+         */
+        public ClosureInfo getExtension(ClosureInfo left) {
+            ClosureInfo result = new ClosureInfo(this);
+            for (HostNode newNode : left.relevantNodes) {
+                if (!result.relevantNodes.add(newNode)) {
+                    result = null;
+                    break;
+                }
             }
             return result;
         }
