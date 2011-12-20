@@ -38,13 +38,13 @@ import java.util.Set;
  */
 public abstract class AbstractReteMatch implements VarMap {
 
-    private boolean injective = false;
+    private final boolean injective;
 
     /**
      * The origin determines the pattern (and the associated lookup table)
      * that this match is an instance of.
      */
-    private ReteNetworkNode origin = null;
+    private final ReteNetworkNode origin;
 
     /**
      * A special prefix match is one that whose units are 

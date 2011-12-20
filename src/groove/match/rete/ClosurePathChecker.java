@@ -21,10 +21,12 @@ import groove.rel.RegExpr;
 import groove.rel.RegExpr.Star;
 import groove.trans.HostNode;
 import groove.trans.HostNodeSet;
+import groove.util.TreeHashSet;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.sun.org.apache.xpath.internal.operations.Plus;
 
@@ -42,12 +44,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     /**
      * The memory for incoming matches coming from the antecedent.
      */
-    protected List<RetePathMatch> leftMemory = null;
+    protected Set<RetePathMatch> leftMemory = null;
 
     /**
      * The memory for loop-back matches received from oneself
      */
-    protected List<RetePathMatch> rightMemory = null;
+    protected Set<RetePathMatch> rightMemory = null;
 
     /**
      * Creates a Path-checker note that performs sequencing-closure, i.e.
@@ -65,8 +67,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         if (expression.isStar()) {
             this.getOwner().getState().subscribe(this);
         }
-        this.leftMemory = new LinkedList<RetePathMatch>();
-        this.rightMemory = new LinkedList<RetePathMatch>();
+        this.leftMemory = new TreeHashSet<RetePathMatch>();
+        this.rightMemory = new TreeHashSet<RetePathMatch>();
     }
 
     @Override
