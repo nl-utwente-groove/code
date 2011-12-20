@@ -17,16 +17,17 @@
 package groove.match.rete;
 
 import groove.rel.RegExpr;
-import groove.rel.Valuation;
 import groove.rel.RegExpr.Empty;
 import groove.rel.RegExpr.Neg;
 import groove.rel.RegExpr.Star;
+import groove.rel.Valuation;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.util.Duo;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,6 +138,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
         return "- Path-checker for: " + this.getExpression().toString();
     }
 
+    /** Indicates if path matches must have the same start and end node. */
     public boolean isLoop() {
         return this.loop;
     }
@@ -213,44 +215,12 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
         }
     }
 
-    protected static class EndPointPair {
-        private HostNode start;
-        private HostNode end;
-
-        private int hashCode = 0;
-
+    /** Pair of host nodes, serving as a key in the path match cache. */
+    protected static class EndPointPair extends Duo<HostNode> {
+        /** Constructs a new pair from a given match. */
         public EndPointPair(RetePathMatch pm) {
+            super(pm.start(), pm.end());
             assert !pm.isEmpty();
-            this.start = pm.start();
-            this.end = pm.end();
-        }
-
-        @Override
-        public int hashCode() {
-            assert this.start != null && this.end != null;
-            if (this.hashCode == 0) {
-                this.hashCode = this.start.hashCode();
-                boolean neg = this.hashCode < 0;
-                this.hashCode <<= 1;
-                if (neg) {
-                    this.hashCode |= 1;
-                }
-                this.hashCode += this.end.hashCode();
-            }
-            return this.hashCode;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return (o != null) && (o instanceof EndPointPair)
-                && (((EndPointPair) o).start == this.start)
-                && (((EndPointPair) o).end == this.end);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("(%s,%s)", this.start.toString(),
-                this.end.toString());
         }
     }
 

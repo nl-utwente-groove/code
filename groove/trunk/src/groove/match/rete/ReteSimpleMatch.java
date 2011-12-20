@@ -289,54 +289,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         return result;
     }
 
-    /**
-     * Merges an array matches into one match in the order appearing in the array. 
-     * 
-     * If the matches conflict, this method will fail. A conflict constitutes
-     * a variable-binding conflict among the sub-matches, or violation of injectivity 
-     * if the resulting merge is meant to be an injective match.
-     *   
-     * @param origin The n-node that is to be set as the origin of the resulting merge.  
-     * @param subMatches the array of sub-matches
-     * @param injective Specifies if this is an injectively found match.      
-     * @return A newly created match object containing the merge of all the subMatches
-     * if they do not conflict, {@literal null} otherwise. 
-     */
-
-    public static ReteSimpleMatch merge(ReteNetworkNode origin,
-            AbstractReteMatch[] subMatches, boolean injective) {
-        ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
-        TreeHashSet<HostNode> nodes =
-            (injective) ? new TreeHashSet<HostNode>() : null;
-        Valuation valuation = AbstractReteMatch.mergeValuations(subMatches);
-        if (valuation != null) {
-            int k = 0;
-            for (int i = 0; i < subMatches.length; i++) {
-                Object[] subMatchUnits = subMatches[i].getAllUnits();
-                if (injective) {
-                    for (HostNode n : subMatches[i].getNodes()) {
-                        if (nodes.put(n) != null) {
-                            return null;
-                        }
-                    }
-                }
-                for (int j = 0; j < subMatchUnits.length; j++) {
-                    result.units[k++] = subMatchUnits[j];
-                }
-                subMatches[i].getSuperMatches().add(result);
-            }
-            assert k == origin.getPattern().length;
-
-            assert subMatches[0].hashCode() != 0;
-            result.refreshHashCode(subMatches[0].hashCode(),
-                subMatches[0].getAllUnits().length);
-            result.valuation = (valuation == emptyMap) ? null : valuation;
-        } else {
-            result = null;
-        }
-        return result;
-    }
-
     private RuleToHostMap equivalentMap = null;
 
     /**
@@ -392,6 +344,54 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         return sb.toString();
     }
 
+    /**
+     * Merges an array matches into one match in the order appearing in the array. 
+     * 
+     * If the matches conflict, this method will fail. A conflict constitutes
+     * a variable-binding conflict among the sub-matches, or violation of injectivity 
+     * if the resulting merge is meant to be an injective match.
+     *   
+     * @param origin The n-node that is to be set as the origin of the resulting merge.  
+     * @param subMatches the array of sub-matches
+     * @param injective Specifies if this is an injectively found match.      
+     * @return A newly created match object containing the merge of all the subMatches
+     * if they do not conflict, {@literal null} otherwise. 
+     */
+    
+    public static ReteSimpleMatch merge(ReteNetworkNode origin,
+            AbstractReteMatch[] subMatches, boolean injective) {
+        ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
+        TreeHashSet<HostNode> nodes =
+            (injective) ? new TreeHashSet<HostNode>() : null;
+        Valuation valuation = AbstractReteMatch.getMergedValuation(subMatches);
+        if (valuation != null) {
+            int k = 0;
+            for (int i = 0; i < subMatches.length; i++) {
+                Object[] subMatchUnits = subMatches[i].getAllUnits();
+                if (injective) {
+                    for (HostNode n : subMatches[i].getNodes()) {
+                        if (nodes.put(n) != null) {
+                            return null;
+                        }
+                    }
+                }
+                for (int j = 0; j < subMatchUnits.length; j++) {
+                    result.units[k++] = subMatchUnits[j];
+                }
+                subMatches[i].getSuperMatches().add(result);
+            }
+            assert k == origin.getPattern().length;
+    
+            assert subMatches[0].hashCode() != 0;
+            result.refreshHashCode(subMatches[0].hashCode(),
+                subMatches[0].getAllUnits().length);
+            result.valuation = (valuation == emptyMap) ? null : valuation;
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
     /*
     @Override
     public AbstractReteMatch merge(ReteNetworkNode origin, AbstractReteMatch m,
@@ -424,7 +424,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
-        Valuation valuation = m1.mergeValuationsWith(m2);
+        Valuation valuation = m1.getMergedValuation(m2);
         if (valuation != null) {
             result = new ReteSimpleMatch(origin, injective);
             Object[] units1 = m1.getAllUnits();
@@ -474,7 +474,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean copyPrefix) {
 
         ReteSimpleMatch result = null;
-        Valuation valuation = m1.mergeValuationsWith(m2);
+        Valuation valuation = m1.getMergedValuation(m2);
         if (valuation != null) {
             Object[] m1Units = m1.getAllUnits();
             result = new ReteSimpleMatch(origin, injective);
@@ -556,7 +556,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
          * @param owner The {@link QuantifierCountChecker} n-node this match
          *              belongs to.
          * @param value The zero value node for this dummy match. 
-         * @exception {@link IllegalArgumentException} is raised if 
+         * @throws IllegalArgumentException is raised if 
          *            the <code>value</code> parameter does not
          *            represent a zero.
          */

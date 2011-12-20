@@ -73,9 +73,9 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      */
     protected RuleElement[] pattern;
 
-    //This flag indicates if the special prefix link of matches coming
-    //the left antecedent should be copied for the combined matches
-    //that are passed down the network.
+    /** This flag indicates if the special prefix link of matches coming
+     * the left antecedent should be copied for the combined matches
+     * that are passed down the network. */
     protected boolean shouldPreservePrefix = false;
 
     /**
@@ -674,15 +674,12 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
          * The subgraph-checker node to which this join strategy belongs
          */
 
-        @SuppressWarnings("unchecked")
-        protected SubgraphCheckerNode subgraphChecker;
+        protected SubgraphCheckerNode<?,?> subgraphChecker;
 
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-
-        @SuppressWarnings("unchecked")
-        public AbstractSimpleTestJoinStrategy(SubgraphCheckerNode sgChecker) {
+        public AbstractSimpleTestJoinStrategy(SubgraphCheckerNode<?,?> sgChecker) {
             this.subgraphChecker = sgChecker;
         }
 
@@ -792,9 +789,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         /**
          * @param sgChecker The subgraph-checker node to which this strategy belongs
          */
-
-        @SuppressWarnings("unchecked")
-        public AbstractJoinWithPathStrategy(SubgraphCheckerNode sgChecker) {
+        public AbstractJoinWithPathStrategy(SubgraphCheckerNode<?,?> sgChecker) {
             super(sgChecker);
             for (int i = 0; i < sgChecker.fastEqualityLookupTable.length; i++) {
                 int[] equality = sgChecker.fastEqualityLookupTable[i];
@@ -931,9 +926,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      *        coming the left antecedent should be copied for the combined matches that 
      *        are passed down the network.
      */
-
-    @SuppressWarnings("unchecked")
-    public static SubgraphCheckerNode create(ReteNetwork network,
+    public static SubgraphCheckerNode<?,?> create(ReteNetwork network,
             ReteStaticMapping left, ReteStaticMapping right, boolean keepPrefix) {
         if ((left.getNNode() instanceof AbstractPathChecker)
             && (right.getNNode() instanceof AbstractPathChecker)) {

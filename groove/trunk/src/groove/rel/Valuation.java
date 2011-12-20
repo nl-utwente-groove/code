@@ -20,6 +20,7 @@ import groove.graph.TypeEdge;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Valuation of label variables in terms of type edges.
@@ -40,6 +41,29 @@ public class Valuation extends LinkedHashMap<LabelVar,TypeEdge> {
     /** Constructor initialising the valuation to a given one. */
     public Valuation(Map<LabelVar,TypeEdge> m) {
         super(m);
+    }
+
+    /**
+     * Returns a merger of this valuation with another, if the two do not
+     * conflict on any value.
+     * @param other the other valuation
+     * @return A new valuation map that is the result of consistent union of both,
+     * <code>null</code> if there is a conflict.
+     */
+    public Valuation getMerger(Valuation other) {
+        Valuation result = new Valuation(this);
+        if (other != null) {
+            for (Entry<LabelVar,TypeEdge> e : other.entrySet()) {
+                LabelVar key = e.getKey();
+                TypeEdge newValue = e.getValue();
+                TypeEdge oldValue = result.put(key, newValue);
+                if (oldValue != null && !oldValue.equals(newValue)) {
+                    result = null;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** The empty valuation. */
