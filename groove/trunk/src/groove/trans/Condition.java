@@ -23,7 +23,6 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 import groove.io.HTMLConverter;
 import groove.io.Util;
-import groove.trans.Condition.Op;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;

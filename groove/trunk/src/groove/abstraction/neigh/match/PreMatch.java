@@ -27,6 +27,9 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.TypeLabel;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine.SearchMode;
+import groove.match.plan.PlanSearchEngine;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -71,6 +74,12 @@ public final class PreMatch {
      */
     public static Set<Proof> getPreMatches(final Shape shape, Rule rule) {
         assert shape.getTypeGraph() == rule.getTypeGraph();
+
+        // Make sure that the search engine is set to minimal mode. This is
+        // needed when we have rules with NACs.
+        MatcherFactory.instance().setEngine(
+            PlanSearchEngine.getInstance(SearchMode.MINIMAL));
+
         Set<Proof> preMatches = new MyHashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
         rule.traverseMatches(shape, null,
@@ -80,6 +89,7 @@ public final class PreMatch {
                     return isValidPreMatch(shape, value);
                 }
             }));
+
         return preMatches;
     }
 
@@ -100,7 +110,7 @@ public final class PreMatch {
     // EZ says: This method can certainly be optimised, however from the CPU
     // profiling we saw that this is far from being a bottle neck in the
     // execution time, so we leave it as it is for now.
-    private static boolean isValidPreMatch(Shape shape, Proof match) {
+    public static boolean isValidPreMatch(Shape shape, Proof match) {
         RuleToShapeMap map = (RuleToShapeMap) match.getPatternMap();
 
         // Since we have non-injective matching of the LHS of the rule
