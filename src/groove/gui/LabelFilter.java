@@ -313,7 +313,7 @@ public class LabelFilter extends Observable {
 
     /** Lazily creates and returns a filter entry based on a given element. */
     public Entry getEntry(Element element) {
-        Entry result;
+        Entry result = null;
         if (isLabelBased()) {
             Label key;
             if (element instanceof TypeElement) {
@@ -339,7 +339,7 @@ public class LabelFilter extends Observable {
                     createEntry(key));
             }
             result = typeResult;
-        } else {
+        } else if (element instanceof TypeEdge) {
             TypeEdge key = (TypeEdge) element;
             TypeLabel nodeKeyLabel = key.source().label();
             Map<TypeLabel,TypeEntry> entryMap =
