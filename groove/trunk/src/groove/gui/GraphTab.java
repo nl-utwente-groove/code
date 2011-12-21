@@ -141,7 +141,6 @@ final public class GraphTab extends ResourceTab implements MainTab {
      */
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
-        getJGraph().updateGrammar(grammar);
         setResource(getName());
     }
 

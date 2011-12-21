@@ -32,9 +32,11 @@ import org.jgraph.graph.GraphCell;
  * @version $Revision$
  */
 public interface GraphJCell extends GraphCell, Serializable {
-
-    /** Returns the model with which this cell is associated. */
+    /** Returns the fixed jGraph on which this jCell is displayed. */
     public GraphJGraph getJGraph();
+
+    /** Returns the fixed jModel to which this jCell belongs. */
+    public GraphJModel<?,?> getJModel();
 
     /**
      * Returns the complete text that should be displayed upon the cell. This is

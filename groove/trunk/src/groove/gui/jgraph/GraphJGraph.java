@@ -1452,8 +1452,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
         AttrJGraph(final AttributeFactory factory) {
             super(null, false);
             this.factory = factory;
-            this.jVertexPrototype = new AttrJVertex(null);
-            this.jEdgePrototype = new AttrJEdge();
+            this.jVertexPrototype = new AttrJVertex(null, null);
+            this.jEdgePrototype = new AttrJEdge(null);
         }
 
         @Override
@@ -1471,13 +1471,13 @@ public class GraphJGraph extends org.jgraph.JGraph {
             /**
              * Creates a new instance.
              */
-            public AttrJVertex(Node node) {
-                super(AttrJGraph.this, node);
+            public AttrJVertex(GraphJModel<?,?> jModel, Node node) {
+                super(AttrJGraph.this, jModel, node);
             }
 
             @Override
-            public GraphJVertex newJVertex(Node node) {
-                return new AttrJVertex(node);
+            public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
+                return new AttrJVertex(jModel, node);
             }
 
             @Override
@@ -1498,20 +1498,20 @@ public class GraphJGraph extends org.jgraph.JGraph {
             /**
              * Constructor for a prototype.
              */
-            private AttrJEdge() {
-                super(AttrJGraph.this);
+            private AttrJEdge(GraphJModel<?,?> jModel) {
+                super(AttrJGraph.this, jModel);
             }
 
             /**
              * Creates a new instance.
              */
-            public AttrJEdge(Edge edge) {
-                super(AttrJGraph.this, edge);
+            public AttrJEdge(GraphJModel<?,?> jModel, Edge edge) {
+                super(AttrJGraph.this, jModel, edge);
             }
 
             @Override
-            public GraphJEdge newJEdge(Edge edge) {
-                return new AttrJEdge(edge);
+            public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
+                return new AttrJEdge(jModel, edge);
             }
 
             @Override

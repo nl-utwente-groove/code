@@ -373,7 +373,7 @@ public class GrammarModel implements Observer {
         GraphGrammar result = new GraphGrammar(getName());
         List<FormatError> errors = new ArrayList<FormatError>();
         // Construct the composite type graph
-        result.setTypeGraph(getTypeGraph(), getTypeModel().getTypeGraphMap());
+        result.setTypeGraph(getTypeGraph());
         errors.addAll(getTypeModel().getErrors());
         // set rules
         for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {

@@ -261,7 +261,6 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         } else {
             startSimulation(getSimulatorModel().getGts());
         }
-        getJGraph().updateGrammar(grammar);
     }
 
     private void startSimulation(GTS gts) {

@@ -44,23 +44,30 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
-    protected GraphJEdge(GraphJGraph jGraph) {
+    protected GraphJEdge(GraphJGraph jGraph, GraphJModel<?,?> jModel) {
         this.jGraph = jGraph;
+        this.jModel = jModel;
     }
 
     /**
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    protected GraphJEdge(GraphJGraph jGraph, Edge edge) {
-        this(jGraph);
+    protected GraphJEdge(GraphJGraph jGraph, GraphJModel<?,?> jModel, Edge edge) {
+        this(jGraph, jModel);
         this.source = edge.source();
         this.target = edge.target();
         this.edges.add(edge);
     }
 
+    @Override
     public GraphJGraph getJGraph() {
         return this.jGraph;
+    }
+
+    @Override
+    public GraphJModel<?,?> getJModel() {
+        return this.jModel;
     }
 
     /**
@@ -135,8 +142,8 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
-    public GraphJEdge newJEdge(Edge edge) {
-        return new GraphJEdge(getJGraph(), edge);
+    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
+        return new GraphJEdge(getJGraph(), jModel, edge);
     }
 
     /**
@@ -387,14 +394,16 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge> edges = new TreeSet<Edge>();
 
-    /** The jgraph that displays this edge. */
+    /** The fixed jGraph that displays this edge. */
     private final GraphJGraph jGraph;
+    /** The fixed jModel to which this edge belongs. */
+    private final GraphJModel<?,?> jModel;
     private boolean layoutable;
     private boolean grayedOut;
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static GraphJEdge getPrototype(GraphJGraph jGraph) {
-        return new GraphJEdge(jGraph);
+        return new GraphJEdge(jGraph, null);
     }
 
     /**

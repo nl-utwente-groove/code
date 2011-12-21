@@ -41,16 +41,16 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * Creates an uninitialised instance.
      * @param jGraph the {@link GraphJGraph} in which this JEdge will be used.
      */
-    public AspectJEdge(AspectJGraph jGraph) {
-        super(jGraph);
+    public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel) {
+        super(jGraph, jModel);
         setUserObject(null);
         this.aspect = DEFAULT;
         refreshAttributes();
     }
 
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
-    public AspectJEdge(AspectJGraph jGraph, AspectEdge edge) {
-        super(jGraph, edge);
+    public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel, AspectEdge edge) {
+        super(jGraph, jModel, edge);
         setUserObject(null);
         this.aspect = edge.getKind();
         this.errors.addAll(edge.getErrors());
@@ -60,6 +60,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public AspectJGraph getJGraph() {
         return (AspectJGraph) super.getJGraph();
+    }
+
+    @Override
+    public AspectJModel getJModel() {
+        return (AspectJModel) super.getJModel();
     }
 
     @Override
@@ -116,11 +121,12 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public AspectJEdge newJEdge(Edge edge) {
+    public AspectJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         if (edge == null) {
-            return new AspectJEdge(getJGraph());
+            return new AspectJEdge(getJGraph(), (AspectJModel) jModel);
         } else {
-            return new AspectJEdge(getJGraph(), (AspectEdge) edge);
+            return new AspectJEdge(getJGraph(), (AspectJModel) jModel,
+                (AspectEdge) edge);
         }
     }
 
@@ -182,7 +188,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                 ((AspectJVertex) getTargetVertex()).getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
-                (GraphBasedModel) getJGraph().getModel().getResourceModel();
+                (GraphBasedModel) getJModel().getResourceModel();
             try {
                 result =
                     pattern.getLabel(
@@ -265,13 +271,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Reports if the model has been modified since the last call to this method. */
     private boolean isJModelModified() {
-        AspectJModel jModel = getJGraph().getModel();
-        int jModelModCount = jModel.getModificationCount();
-        boolean result =
-            this.lastJModel != jModel
-                || this.lastJModelModCount != jModelModCount;
+        assert getJModel() == getJGraph().getModel();
+        int jModelModCount = getJModel().getModificationCount();
+        boolean result = this.lastJModelModCount != jModelModCount;
         if (result) {
-            this.lastJModel = jModel;
             this.lastJModelModCount = jModelModCount;
         }
         return result;
@@ -319,8 +322,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public Edge getKey(Edge edge) {
         Edge result;
-        TypeModelMap typeMap =
-            getJGraph().getModel().getResourceModel().getTypeMap();
+        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
         if (typeMap != null) {
             result = typeMap.getEdge((AspectEdge) edge);
         } else {
@@ -494,8 +496,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Edge> keys;
-    /** Underlying jModel the last times the cached lines were computed. */
-    private AspectJModel lastJModel;
     /** Model modification count at the last time the lines were computed. */
     private int lastJModelModCount;
     private AspectKind aspect;
@@ -506,7 +506,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Returns a prototype {@link AspectJEdge} for a given {@link AspectJGraph}. */
     public static AspectJEdge getPrototype(AspectJGraph jGraph) {
-        return new AspectJEdge(jGraph);
+        return new AspectJEdge(jGraph, null);
     }
 
     /** Permille fractional distance of in multiplicity label from source node. */

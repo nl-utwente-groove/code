@@ -20,6 +20,7 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.graph.Edge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJModel;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
@@ -35,12 +36,12 @@ public class ShapeJEdge extends GraphJEdge {
     private boolean mainSrc;
     private boolean mainTgt;
 
-    private ShapeJEdge(ShapeJGraph jGraph) {
-        super(jGraph);
+    private ShapeJEdge(ShapeJGraph jGraph, ShapeJModel jModel) {
+        super(jGraph, jModel);
     }
 
-    private ShapeJEdge(ShapeJGraph jGraph, ShapeEdge edge) {
-        super(jGraph, edge);
+    private ShapeJEdge(ShapeJGraph jGraph, ShapeJModel jModel, ShapeEdge edge) {
+        super(jGraph, jModel, edge);
         this.mainSrc = false;
         this.mainTgt = false;
     }
@@ -55,9 +56,10 @@ public class ShapeJEdge extends GraphJEdge {
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
     @Override
-    public GraphJEdge newJEdge(Edge edge) {
+    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         assert edge instanceof ShapeEdge;
-        return new ShapeJEdge(getJGraph(), (ShapeEdge) edge);
+        return new ShapeJEdge(getJGraph(), (ShapeJModel) jModel,
+            (ShapeEdge) edge);
     }
 
     /** Toggles the mainSrc flag. */
@@ -88,6 +90,6 @@ public class ShapeJEdge extends GraphJEdge {
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static ShapeJEdge getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJEdge(jGraph);
+        return new ShapeJEdge(jGraph, null);
     }
 }

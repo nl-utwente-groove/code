@@ -322,7 +322,7 @@ public class LabelFilter extends Observable {
      * @return {@code true} if {@code jCell} is filtered
      */
     public boolean isFiltered(GraphJCell jCell, boolean showUnfilteredEdges) {
-        boolean result = false;
+        boolean result;
         boolean hasUnfilteredElements = false;
         boolean hasFilteredNodeTypes = false;
         Set<Entry> entrySet = getEntries(jCell);
@@ -338,8 +338,10 @@ public class LabelFilter extends Observable {
         }
         if (hasFilteredNodeTypes && !showUnfilteredEdges) {
             result = true;
+        } else if (hasUnfilteredElements) {
+            result = false;
         } else {
-            result = !hasUnfilteredElements;
+            result = !entrySet.isEmpty();
         }
         return result;
     }
@@ -394,6 +396,7 @@ public class LabelFilter extends Observable {
     /** Constructs a filter entry from a given object. */
     private LabelEntry createEntry(Label label) {
         assert isLabelBased();
+        assert this.typeGraph == null;
         return new LabelEntry(label);
     }
 

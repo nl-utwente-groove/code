@@ -46,8 +46,9 @@ import org.jgraph.graph.GraphConstants;
  */
 public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
-    public AspectJVertex(AspectJGraph jGraph, AspectNode node) {
-        super(jGraph, node);
+    public AspectJVertex(AspectJGraph jGraph, AspectJModel jModel,
+            AspectNode node) {
+        super(jGraph, jModel, node);
         setUserObject(null);
         if (node != null) {
             this.aspect = node.getKind();
@@ -58,6 +59,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public AspectJGraph getJGraph() {
         return (AspectJGraph) super.getJGraph();
+    }
+
+    @Override
+    public AspectJModel getJModel() {
+        return (AspectJModel) super.getJModel();
     }
 
     @Override
@@ -93,8 +99,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public AspectJVertex newJVertex(Node node) {
-        return new AspectJVertex(getJGraph(), (AspectNode) node);
+    public AspectJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
+        return new AspectJVertex(getJGraph(), (AspectJModel) jModel,
+            (AspectNode) node);
     }
 
     @Override
@@ -137,7 +144,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      */
     private TypeNode getNodeType() {
         TypeNode result = null;
-        TypeGraph typeGraph = getJGraph().getTypeGraph();
+        TypeGraph typeGraph = getJModel().getTypeGraph();
         if (!typeGraph.isImplicit()) {
             for (AspectEdge edge : getJVertexLabels()) {
                 if (edge.getRole() == EdgeRole.NODE_TYPE) {
@@ -243,13 +250,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** Reports if the model has been modified since the last call to this method. */
     private boolean isJModelModified() {
-        AspectJModel jModel = getJGraph().getModel();
-        int jModelModCount = jModel.getModificationCount();
-        boolean result =
-            this.lastJModel != jModel
-                || this.lastJModelModCount != jModelModCount;
+        assert getJModel() == getJGraph().getModel();
+        int jModelModCount = getJModel().getModificationCount();
+        boolean result = this.lastJModelModCount != jModelModCount;
         if (result) {
-            this.lastJModel = jModel;
             this.lastJModelModCount = jModelModCount;
         }
         return result;
@@ -502,15 +506,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected Node getNodeKey() {
-        TypeModelMap typeMap =
-            getJGraph().getModel().getResourceModel().getTypeMap();
+        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
         return typeMap == null ? getNode() : typeMap.getNode(getNode());
     }
 
     @Override
     protected Edge getKey(Edge edge) {
-        TypeModelMap typeMap =
-            getJGraph().getModel().getResourceModel().getTypeMap();
+        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
         return typeMap == null ? edge : typeMap.getEdge((AspectEdge) edge);
     }
 
@@ -713,8 +715,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Element> keys;
-    /** Underlying jModel the last times the cached lines were computed. */
-    private AspectJModel lastJModel;
     /** Model modification count at the last time the lines were computed. */
     private int lastJModelModCount;
     /** The role of the underlying rule node. */
@@ -724,7 +724,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** Returns a prototype {@link AspectJVertex} for a given {@link AspectJGraph}. */
     public static AspectJVertex getPrototype(AspectJGraph jGraph) {
-        return new AspectJVertex(jGraph, null);
+        return new AspectJVertex(jGraph, null, null);
     }
 
     static private final String ASSIGN_TEXT = " = ";

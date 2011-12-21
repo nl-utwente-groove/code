@@ -16,8 +16,8 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     /**
      * Constructor for a prototype object of this class.
      */
-    LTSJEdge(LTSJGraph jGraph) {
-        super(jGraph);
+    LTSJEdge(LTSJGraph jGraph, LTSJModel jModel) {
+        super(jGraph, jModel);
         this.visible = true;
     }
 
@@ -25,8 +25,8 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
      */
-    LTSJEdge(LTSJGraph jGraph, GraphTransition edge) {
-        super(jGraph, edge);
+    LTSJEdge(LTSJGraph jGraph, LTSJModel jModel, GraphTransition edge) {
+        super(jGraph, jModel, edge);
         this.visible = true;
     }
 
@@ -41,8 +41,9 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     }
 
     @Override
-    public GraphJEdge newJEdge(Edge edge) {
-        return new LTSJEdge(getJGraph(), (GraphTransition) edge);
+    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
+        return new LTSJEdge(getJGraph(), (LTSJModel) jModel,
+            (GraphTransition) edge);
     }
 
     @Override
@@ -123,7 +124,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
     public static LTSJEdge getPrototype(LTSJGraph jGraph) {
-        return new LTSJEdge(jGraph);
+        return new LTSJEdge(jGraph, null);
     }
 
     public void setVisible(boolean visible) {

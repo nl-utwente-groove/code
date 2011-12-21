@@ -23,13 +23,16 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.graph.TypeGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.Groove;
 import groove.view.FormatError;
+import groove.view.FormatException;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
+import groove.view.TypeModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -208,6 +211,28 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             this.resourceCount = getModificationCount();
         }
         return this.resource;
+    }
+
+    /** Returns the type graph associated with this jModel, if any. */
+    public TypeGraph getTypeGraph() {
+        if (this.typeGraph == null
+            || this.typeGraphCount != getModificationCount()) {
+            TypeGraph result;
+            GraphBasedModel<?> resourceModel = getResourceModel();
+            if (resourceModel instanceof TypeModel) {
+                try {
+                    result = ((TypeModel) resourceModel).toResource();
+                } catch (FormatException e) {
+                    result =
+                        TypeGraph.createImplicitType(resourceModel.getLabels());
+                }
+            } else {
+                result = this.grammar.getTypeGraph();
+            }
+            this.typeGraph = result;
+            this.typeGraphCount = getModificationCount();
+        }
+        return this.typeGraph;
     }
 
     /** 
@@ -408,10 +433,14 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated system properties. */
     private final GrammarModel grammar;
-    /** The modification count at which {@code resource} was created. */
+    /** The modification count at which {@link #resource} was created. */
     private int resourceCount;
     /** The resource model of the graph being edited. */
     private GraphBasedModel<?> resource;
+    /** The modification count at which {@link #typeGraph} was created. */
+    private int typeGraphCount;
+    /** The type graph of the graph being edited. */
+    private TypeGraph typeGraph;
     /** Counter of the number of times this model has been updated. */
     private int modificationCount;
     /** Properties map of the graph being displayed or edited. */

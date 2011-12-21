@@ -18,6 +18,7 @@ package groove.graph;
 
 import static groove.graph.GraphRole.TYPE;
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -39,12 +40,15 @@ import groove.view.FormatException;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -84,6 +88,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      */
     public Map<TypeNode,TypeNode> add(TypeGraph other) throws FormatException {
         testFixed(false);
+        Set<TypeNode> newNodes = new HashSet<TypeNode>();
+        Set<TypeEdge> newEdges = new HashSet<TypeEdge>();
         Map<TypeNode,TypeNode> otherToThis = new HashMap<TypeNode,TypeNode>();
         for (Node otherNode : other.nodeSet()) {
             TypeNode otherTypeNode = (TypeNode) otherNode;
@@ -100,6 +106,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             } else {
                 this.imports.remove(image);
             }
+            if (!otherTypeNode.isImported()) {
+                newNodes.add(image);
+            }
             otherToThis.put(otherTypeNode, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
@@ -109,6 +118,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             image.setInMult(otherEdge.getInMult());
             image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
+            newEdges.add(image);
         }
         for (Map.Entry<TypeNode,Set<TypeNode>> entry : other.nodeDirectSupertypeMap.entrySet()) {
             for (TypeNode supertype : entry.getValue()) {
@@ -116,6 +126,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     otherToThis.get(supertype));
             }
         }
+        this.componentMap.put(other.getName(), new Sub(other.getName(),
+            newNodes, newEdges));
         return otherToThis;
     }
 
@@ -955,6 +967,24 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    /**
+     * Returns the (possibly empty) mapping from component type graphs
+     * to the elements defined therein.
+     * The map is only nonempty if this is a composite type graph, filled
+     * through calls of {@link #add(TypeGraph)}.
+     */
+    public SortedMap<String,Sub> getComponentMap() {
+        return Collections.unmodifiableSortedMap(this.componentMap);
+    }
+
+    /** Indicates if this is a composite type graph,
+     * filled through calls of {@link #add(TypeGraph)}.
+     * @see #getComponentMap()
+     */
+    public boolean isComposite() {
+        return !this.componentMap.isEmpty();
+    }
+
     @Override
     protected boolean isTypeCorrect(Node node) {
         return node instanceof TypeNode;
@@ -1016,9 +1046,34 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     private final Map<TypeEdge,Set<TypeEdge>> edgeSupertypeMap =
         new HashMap<TypeEdge,Set<TypeEdge>>();
 
-    /** Set of all labels occurring in the type graph. */
+    /** Mapping from component type graph names to the type elements in this type graph. */
+    private final SortedMap<String,Sub> componentMap =
+        new TreeMap<String,Sub>();
 
+    /** Set of all labels occurring in the type graph. */
     private Set<TypeLabel> labels;
+
+    /** Creates an implicit type graph for a given set of labels. */
+    public static TypeGraph createImplicitType(Set<TypeLabel> labels) {
+        TypeGraph result = new TypeGraph("implicit type graph", true);
+        TypeFactory factory = result.getFactory();
+        TypeNode top = factory.getTopNode();
+        result.addNode(top);
+        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+            result.addNode(factory.getDataType(sigKind));
+        }
+        for (TypeLabel label : labels) {
+            if (label.isBinary()) {
+                for (TypeNode target : result.nodeSet()) {
+                    result.addEdge(top, label, target);
+                }
+            } else {
+                result.addEdge(top, label, top);
+            }
+        }
+        result.setFixed();
+        return result;
+    }
 
     /** Class holding a mapping from type nodes to sets of type nodes. */
     private static class NodeTypeMap extends HashMap<TypeNode,Set<TypeNode>> {
@@ -1042,5 +1097,35 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
 
         private final boolean reflexive;
+    }
+
+    /** Component type graph. */
+    public static class Sub {
+        /** Constructs a component type entry. */
+        public Sub(String name, Set<TypeNode> nodes, Set<TypeEdge> edges) {
+            super();
+            this.name = name;
+            this.nodes = nodes;
+            this.edges = edges;
+        }
+
+        /** Returns the name of the component. */
+        public String getName() {
+            return this.name;
+        }
+
+        /** Returns the set of nodes of the component. */
+        public Set<TypeNode> getNodes() {
+            return this.nodes;
+        }
+
+        /** Returns the set of edges of the component. */
+        public Set<TypeEdge> getEdges() {
+            return this.edges;
+        }
+
+        private final String name;
+        private final Set<TypeNode> nodes;
+        private final Set<TypeEdge> edges;
     }
 }

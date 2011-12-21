@@ -14,16 +14,16 @@ import groove.util.Groove;
  */
 public class CtrlJEdge extends GraphJEdge {
     /** Constructor for a prototype object. */
-    CtrlJEdge(CtrlJGraph jGraph) {
-        super(jGraph);
+    CtrlJEdge(CtrlJGraph jGraph, GraphJModel<?,?> jModel) {
+        super(jGraph, jModel);
     }
 
     /**
      * Creates a new instance from a given edge (required to be a
      * {@link GraphTransition}).
      */
-    CtrlJEdge(CtrlJGraph jGraph, CtrlTransition edge) {
-        super(jGraph, edge);
+    CtrlJEdge(CtrlJGraph jGraph, GraphJModel<?,?> jModel, CtrlTransition edge) {
+        super(jGraph, jModel, edge);
     }
 
     @Override
@@ -32,8 +32,8 @@ public class CtrlJEdge extends GraphJEdge {
     }
 
     @Override
-    public CtrlJEdge newJEdge(Edge edge) {
-        return new CtrlJEdge(getJGraph(), (CtrlTransition) edge);
+    public CtrlJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
+        return new CtrlJEdge(getJGraph(), jModel, (CtrlTransition) edge);
     }
 
     @Override
@@ -81,6 +81,6 @@ public class CtrlJEdge extends GraphJEdge {
 
     /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
     public static CtrlJEdge getPrototype(CtrlJGraph jGraph) {
-        return new CtrlJEdge(jGraph);
+        return new CtrlJEdge(jGraph, null);
     }
 }

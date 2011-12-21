@@ -18,14 +18,12 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
-import static groove.trans.ResourceKind.RULE;
 import static groove.view.aspect.AspectKind.ADDER;
 import static groove.view.aspect.AspectKind.CREATOR;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.gui.DisplayKind;
 import groove.gui.Options;
 import groove.gui.RuleLevelTree;
@@ -36,7 +34,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.ResourceKind;
 import groove.util.Colors;
-import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
@@ -53,7 +50,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -113,38 +109,7 @@ final public class AspectJGraph extends GraphJGraph {
     @Override
     public AspectJModel newModel() {
         return new AspectJModel(AspectJVertex.getPrototype(this),
-            AspectJEdge.getPrototype(this), getGrammar());
-    }
-
-    /**
-     * Notifies the graph that the grammar has changed.
-     * This may affect the errors in the model.
-     */
-    public void updateGrammar(GrammarModel grammar) {
-        this.typeGraph = grammar.getTypeGraph();
-        this.typeGraphMap = grammar.getTypeModel().getTypeGraphMap();
-        AspectJModel model = getModel();
-        if (model != null) {
-            model.syncGraph();
-            getGraphLayoutCache().reload();
-            refresh();
-        }
-    }
-
-    /**
-     * Returns a map from names to subsets of labels.
-     * This can be used to filter labels.
-     */
-    public final SortedMap<String,TypeGraph> getTypeGraphMap() {
-        return this.typeGraphMap;
-    }
-
-    /**
-     * Returns the set of labels and subtypes in the graph. May be
-     * <code>null</code>.
-     */
-    public final TypeGraph getTypeGraph() {
-        return this.typeGraph;
+            AspectJEdge.getPrototype(this), getSimulatorModel().getGrammar());
     }
 
     /**
@@ -193,12 +158,6 @@ final public class AspectJGraph extends GraphJGraph {
         return this.editing && getMode() != PREVIEW_MODE;
     }
 
-    /** Convenience method to retrieve the grammar view from the simulator. */
-    private GrammarModel getGrammar() {
-        return getSimulatorModel() == null ? null
-                : getSimulatorModel().getGrammar();
-    }
-
     /** 
      * Indicates if the graph being displayed is a graph state.
      */
@@ -219,12 +178,6 @@ final public class AspectJGraph extends GraphJGraph {
         switch (getGraphRole()) {
         case HOST:
             result.add(getActions().getApplyTransitionAction());
-            result.addSeparator();
-            break;
-        case RULE:
-            JMenu setRuleMenu = createSetRuleMenu();
-            setRuleMenu.setEnabled(getGrammar() != null);
-            result.add(setRuleMenu);
             result.addSeparator();
             break;
         }
@@ -287,36 +240,6 @@ final public class AspectJGraph extends GraphJGraph {
             result.add(createLineStyleMenu());
         }
         return result;
-    }
-
-    /**
-     * Computes and returns a menu that allows setting the display to another
-     * rule.
-     */
-    private JMenu createSetRuleMenu() {
-        // add actions to set the rule display to each production rule
-        JMenu setMenu = new JMenu("Set rule to") {
-            @Override
-            public void menuSelectionChanged(boolean selected) {
-                super.menuSelectionChanged(selected);
-                if (selected) {
-                    removeAll();
-                    for (String ruleName : getGrammar().getNames(RULE)) {
-                        add(createSetRuleAction(ruleName));
-                    }
-                }
-            }
-        };
-        return setMenu;
-    }
-
-    /** Action to change the display to a given (named) rule. */
-    private Action createSetRuleAction(final String ruleName) {
-        return new AbstractAction(ruleName) {
-            public void actionPerformed(ActionEvent evt) {
-                getSimulatorModel().doSelect(RULE, ruleName);
-            }
-        };
     }
 
     @Override
@@ -561,10 +484,6 @@ final public class AspectJGraph extends GraphJGraph {
     private final GraphRole graphRole;
     /** The JTree of rule levels, if any. */
     private RuleLevelTree levelTree;
-    /** Set of all labels and subtypes in the graph. */
-    private TypeGraph typeGraph;
-    /** Mapping from names to sub-label stores. */
-    private SortedMap<String,TypeGraph> typeGraphMap;
     /** Flag indicating that the graph is in the process of inserting an element. */
     private boolean inserting;
     /** Map from line style names to corresponding actions. */

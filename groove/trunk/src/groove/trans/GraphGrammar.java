@@ -281,22 +281,14 @@ public class GraphGrammar {
 
     /** Sets the type for this grammar.
      * @param type the combined type graph
-     * @param typeMap the constituent type subgraphs; is {@code null} if 
-     * the type graph is implicit
      */
-    public final void setTypeGraph(TypeGraph type, Map<String,TypeGraph> typeMap) {
+    public final void setTypeGraph(TypeGraph type) {
         this.typeGraph = type;
-        this.typeMap = typeMap;
     }
 
     /** Returns the labels and subtypes of this rule system. */
     public final TypeGraph getTypeGraph() {
         return this.typeGraph;
-    }
-
-    /** Returns the set of constituent type subgraphs of this grammar. */
-    public final Map<String,TypeGraph> getTypeMap() {
-        return this.typeMap;
     }
 
     /**
@@ -423,8 +415,6 @@ public class GraphGrammar {
      * @see #getRules()
      */
     private Collection<Rule> ruleSet;
-    /** Set of constituent type graphs. Is {@code null} iff {@link #typeGraph} is implicit. */
-    private Map<String,TypeGraph> typeMap;
     /**
      * The properties bundle of this rule system.
      */
