@@ -220,8 +220,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 result = typing.createImage(result.getName());
                 HostModelMap newElementMap = elementMap.newMap();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
-                    newElementMap.putNode(nodeEntry.getKey(),
-                        typing.getNode(nodeEntry.getValue()));
+                    HostNode typedNode = typing.getNode(nodeEntry.getValue());
+                    if (typedNode != null) {
+                        newElementMap.putNode(nodeEntry.getKey(), typedNode);
+                    }
                 }
                 // factor the edges through the normalisation mapping
                 for (AspectEdge sourceEdge : getSource().edgeSet()) {

@@ -578,7 +578,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         if (specialLabelColour) {
             HTMLConverter.createColorTag(SPECIAL_COLOR).on(text);
         }
-        if (isFiltered(entry)) {
+        if (!getFilter().isSelected(entry)) {
             HTMLConverter.STRIKETHROUGH_TAG.on(text);
         }
         return HTML_TAG.on(text).toString();
@@ -589,15 +589,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         return this.filtering;
     }
 
-    /** Indicates if a given label is currently filtered. */
-    public boolean isFiltered(Element element) {
-        return isFiltered(getFilter().getEntry(element));
+    /** Indicates if a given jCell is entirely filtered. */
+    public boolean isFiltered(GraphJCell jCell, boolean showUnfilteredEdges) {
+        synchroniseModel();
+        return isFiltering()
+            && getFilter().isFiltered(jCell, showUnfilteredEdges);
     }
 
-    /** Indicates if a given tree entry is currently filtered. */
-    private boolean isFiltered(Entry entry) {
+    /** Indicates if a given key is entirely filtered. */
+    public boolean isFiltered(Element key) {
         synchroniseModel();
-        return isFiltering() && !getFilter().isSelected(entry);
+        return isFiltering()
+            && !getFilter().isSelected(getFilter().getEntry(key));
     }
 
     /**

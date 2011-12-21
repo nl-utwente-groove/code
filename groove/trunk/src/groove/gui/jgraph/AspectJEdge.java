@@ -336,19 +336,18 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * and value nodes are not shown.
      */
     public boolean isSourceLabel() {
-        //        if (hasError()) {
-        //            return false;
-        //        }
         if (getJGraph().isShowValueNodes()) {
+            return false;
+        }
+        if (getSourceNode().getAttrKind().hasSignature()) {
             return false;
         }
         if (this.aspect.isRole() || this.aspect == AspectKind.NESTED) {
             // we're in a rule graph; watch for parameters and variable nodes
             return getTargetNode().getAttrAspect().hasContent()
                 && !getTargetNode().hasParam();
-        } else {
-            return getTargetNode().getAttrKind().hasSignature();
         }
+        return getTargetNode().getAttrKind().hasSignature();
     }
 
     @Override

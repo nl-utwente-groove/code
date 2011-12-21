@@ -403,8 +403,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     }
                     // check if the type graph actually has the primitive type
                     if (!nodeSet().contains(image.getType())) {
-                        throw new FormatException("Undeclared type %s",
-                            image.getType());
+                        throw new FormatException(
+                            "Data type %s not used in type graph",
+                            image.getType(), node);
                     }
                 } else if (isImplicit()) {
                     image = ruleFactory.createNode(node.getNumber());

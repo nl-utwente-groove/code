@@ -131,8 +131,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     @Override
     public boolean isVisible() {
-        return !isFiltered() || getJGraph().isShowUnfilteredEdges()
-            && hasVisibleIncidentEdge();
+        return !getJGraph().isFiltering(this)
+            || getJGraph().isShowUnfilteredEdges() && hasVisibleIncidentEdge();
     }
 
     /**
@@ -144,7 +144,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     protected boolean hasVisibleIncidentEdge() {
         boolean result = false;
         for (Object jEdge : getPort().getEdges()) {
-            if (!((GraphJEdge) jEdge).getLines().isEmpty()) {
+            if (!getJGraph().isFiltering((GraphJEdge) jEdge)) {
                 result = true;
                 break;
             }
