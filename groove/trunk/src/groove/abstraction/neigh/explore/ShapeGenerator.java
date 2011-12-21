@@ -19,7 +19,6 @@ package groove.abstraction.neigh.explore;
 import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Parameters;
-import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.explore.Exploration;
 import groove.explore.Generator;
@@ -151,11 +150,6 @@ public final class ShapeGenerator extends CommandLineTool {
         }
         this.exploration =
             new Exploration(strategy, new Serialized("final"), 0);
-        if (getVerbosity() == 2) {
-            ShapeMatchApplier.DEBUG = true;
-        } else {
-            ShapeMatchApplier.DEBUG = false;
-        }
     }
 
     /**
