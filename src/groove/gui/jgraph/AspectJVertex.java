@@ -33,7 +33,6 @@ import groove.view.aspect.AspectParser;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -477,41 +476,34 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** Recomputes the set of list labels for this aspect node. */
     private Collection<Element> computeKeys() {
         getNode().testFixed(true);
-        Collection<Element> result;
-        //        if (hasError()) {
-        //            result = getUserObject().toLabels();
-        //        } else
-        if (this.aspect.isMeta()) {
-            result = Collections.emptySet();
-        } else {
-            result = new ArrayList<Element>();
-            TypeModelMap typeMap =
-                getJGraph().getModel().getResourceModel().getTypeMap();
-            result.add(typeMap == null ? getNode() : typeMap.getNode(getNode()));
+        Collection<Element> result = new ArrayList<Element>();
+        if (!this.aspect.isMeta()) {
             for (Edge edge : getJVertexLabels()) {
                 Edge key = getKey(edge);
                 if (key != null) {
                     result.add(key);
                 }
             }
-            //            Aspect attrAspect = getNode().getAttrAspect();
-            //            if (attrAspect.getKind().hasSignature()) {
-            //                TypeFactory factory = getJGraph().getTypeGraph().getFactory();
-            //                if (attrAspect.hasContent()) {
-            //                    result.add(factory.createLabel(attrAspect.getContentString()));
-            //                } else {
-            //                    result.add(factory.createLabel(EdgeRole.NODE_TYPE,
-            //                        attrAspect.getKind().getName()));
-            //                }
-            //            }
             for (AspectEdge edge : getExtraSelfEdges()) {
                 Edge key = getKey(edge);
                 if (key != null) {
                     result.add(key);
                 }
             }
+            Node nodeKey = getNodeKey();
+            if (result.isEmpty() || nodeKey instanceof TypeNode
+                && !((TypeNode) nodeKey).isTopType()) {
+                result.add(nodeKey);
+            }
         }
         return result;
+    }
+
+    @Override
+    protected Node getNodeKey() {
+        TypeModelMap typeMap =
+            getJGraph().getModel().getResourceModel().getTypeMap();
+        return typeMap == null ? getNode() : typeMap.getNode(getNode());
     }
 
     @Override

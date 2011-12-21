@@ -153,17 +153,18 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     /**
-     * Indicates if all list labels on this node are filtered (and therefore
-     * invisible), or at least one node type is filtered.
+     * Indicates if all keys on this node are filtered,
+     * or at least one node type edge is filtered.
      */
     protected boolean isFiltered() {
         boolean result = true;
-        for (Element entry : getKeys()) {
-            if (getJGraph().isFiltering(entry)) {
+        for (Element key : getKeys()) {
+            if (!getJGraph().isFiltering(key)) {
+                result = false;
+            } else if (key instanceof Node || key instanceof Edge
+                && ((Edge) key).label().isNodeType()) {
                 result = true;
                 break;
-            } else {
-                result = false;
             }
         }
         return result;
@@ -234,8 +235,15 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
                 result.add(key);
             }
         }
-        result.add(getNode());
+        if (result.isEmpty()) {
+            result.add(getNodeKey());
+        }
         return result;
+    }
+
+    /** Returns the key associated with the node itself. */
+    protected Node getNodeKey() {
+        return getNode();
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
