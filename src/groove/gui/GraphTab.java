@@ -111,8 +111,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
                 }
-                this.jModelMap.put(name, jModel =
-                    getEditArea().getJGraph().newModel());
+                this.jModelMap.put(name, jModel = getJGraph().newModel());
                 jModel.loadGraph(graph);
             }
         }

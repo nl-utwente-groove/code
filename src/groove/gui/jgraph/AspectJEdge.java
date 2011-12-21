@@ -249,26 +249,30 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public Collection<Edge> getKeys() {
         updateCachedValues();
-        return this.treeEntries;
+        return this.keys;
     }
 
     /** 
-     * Updates the cached values of {@link #lines} and {@link #treeEntries},
+     * Updates the cached values of {@link #lines} and {@link #keys},
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (isModelModified() || this.lines == null) {
+        if (isJModelModified()) {
+            this.keys = computeKeys();
             this.lines = computeLines();
-            this.treeEntries = computeKeys();
         }
     }
 
     /** Reports if the model has been modified since the last call to this method. */
-    private boolean isModelModified() {
-        int modelModCount = getJGraph().getModel().getModificationCount();
-        boolean result = (modelModCount != this.lastModelModCount);
+    private boolean isJModelModified() {
+        AspectJModel jModel = getJGraph().getModel();
+        int jModelModCount = jModel.getModificationCount();
+        boolean result =
+            this.lastJModel != jModel
+                || this.lastJModelModCount != jModelModCount;
         if (result) {
-            this.lastModelModCount = modelModCount;
+            this.lastJModel = jModel;
+            this.lastJModelModCount = jModelModCount;
         }
         return result;
     }
@@ -490,9 +494,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** Cached lines. */
     private List<StringBuilder> lines;
     /** Cached tree entries. */
-    private Collection<Edge> treeEntries;
+    private Collection<Edge> keys;
+    /** Underlying jModel the last times the cached lines were computed. */
+    private AspectJModel lastJModel;
     /** Model modification count at the last time the lines were computed. */
-    private int lastModelModCount;
+    private int lastJModelModCount;
     private AspectKind aspect;
 
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
