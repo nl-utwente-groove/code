@@ -52,7 +52,7 @@ public final class ShapeMatchApplier extends MatchApplier {
     // ------------------------------------------------------------------------
 
     /** Debug flag. If set to true, text will be printed in stdout. */
-    public static boolean DEBUG = false;
+    private static boolean DEBUG = false;
     /** Debug flag. If set to true, the shapes will be shown in a dialog. */
     private static final boolean USE_GUI = false;
 
