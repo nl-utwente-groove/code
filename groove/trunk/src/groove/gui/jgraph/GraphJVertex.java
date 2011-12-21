@@ -159,24 +159,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return result;
     }
 
-    /**
-     * Indicates if all keys on this node are filtered,
-     * or at least one node type edge is filtered.
-     */
-    protected boolean isFiltered() {
-        boolean result = true;
-        for (Element key : getKeys()) {
-            if (!getJGraph().isFiltering(key)) {
-                result = false;
-            } else if (key instanceof Node || key instanceof Edge
-                && ((Edge) key).label().isNodeType()) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
     /** This implementation adds the data edges to the super result. */
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = new LinkedList<StringBuilder>();

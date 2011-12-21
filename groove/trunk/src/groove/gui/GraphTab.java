@@ -2,8 +2,8 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.GraphPreviewDialog;
@@ -183,7 +183,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
             addRefreshListener(SHOW_ASPECTS_OPTION);
             addRefreshListener(SHOW_NODE_IDS_OPTION);
             addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            addRefreshListener(SHOW_LTS_OPTION);
+            addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
         }
 
         @Override

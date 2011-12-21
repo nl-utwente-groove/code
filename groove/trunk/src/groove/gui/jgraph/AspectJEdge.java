@@ -11,6 +11,8 @@ import groove.io.HTMLConverter;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleLabel;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Tracker;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GraphBasedModel;
@@ -43,6 +45,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      */
     public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel) {
         super(jGraph, jModel);
+        this.jModelTracker =
+            jModel == null ? ChangeCount.DUMMY_TRACKER
+                    : jModel.getModCount().createTracker();
         setUserObject(null);
         this.aspect = DEFAULT;
         refreshAttributes();
@@ -51,6 +56,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
     public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel, AspectEdge edge) {
         super(jGraph, jModel, edge);
+        this.jModelTracker =
+            jModel == null ? ChangeCount.DUMMY_TRACKER
+                    : jModel.getModCount().createTracker();
         setUserObject(null);
         this.aspect = edge.getKind();
         this.errors.addAll(edge.getErrors());
@@ -263,21 +271,10 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (isJModelModified()) {
+        if (this.jModelTracker.isStale()) {
             this.keys = computeKeys();
             this.lines = computeLines();
         }
-    }
-
-    /** Reports if the model has been modified since the last call to this method. */
-    private boolean isJModelModified() {
-        assert getJModel() == getJGraph().getModel();
-        int jModelModCount = getJModel().getModificationCount();
-        boolean result = this.lastJModelModCount != jModelModCount;
-        if (result) {
-            this.lastJModelModCount = jModelModCount;
-        }
-        return result;
     }
 
     /** Recomputes the set of node lines for this aspect node. */
@@ -496,8 +493,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Edge> keys;
-    /** Model modification count at the last time the lines were computed. */
-    private int lastJModelModCount;
+    /** JModel modification tracker. */
+    private final Tracker jModelTracker;
     private AspectKind aspect;
 
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();

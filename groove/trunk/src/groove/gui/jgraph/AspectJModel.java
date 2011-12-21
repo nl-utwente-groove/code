@@ -27,6 +27,8 @@ import groove.graph.TypeGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.Groove;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Derived;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -107,7 +109,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         loadViewErrors();
         this.properties = GraphInfo.getProperties(graph, false);
-        increaseModificationCount();
+        this.jModelModCount.increase();
+        this.graphModCount.increase();
         setLoading(false);
     }
 
@@ -168,7 +171,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setProperties(graph, getProperties());
         graph.setFixed();
         setGraph(graph, nodeJVertexMap, edgeJCellMap);
-        increaseModificationCount();
+        this.jModelModCount.increase();
+        this.graphModCount.increase();
         loadViewErrors();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
@@ -205,34 +209,12 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Returns an up-to-date resource model for the graph being edited here. */
     public GraphBasedModel<?> getResourceModel() {
-        if (this.resource == null
-            || this.resourceCount != getModificationCount()) {
-            this.resource = this.grammar.createGraphModel(getGraph());
-            this.resourceCount = getModificationCount();
-        }
-        return this.resource;
+        return this.resource.getValue();
     }
 
     /** Returns the type graph associated with this jModel, if any. */
     public TypeGraph getTypeGraph() {
-        if (this.typeGraph == null
-            || this.typeGraphCount != getModificationCount()) {
-            TypeGraph result;
-            GraphBasedModel<?> resourceModel = getResourceModel();
-            if (resourceModel instanceof TypeModel) {
-                try {
-                    result = ((TypeModel) resourceModel).toResource();
-                } catch (FormatException e) {
-                    result =
-                        TypeGraph.createImplicitType(resourceModel.getLabels());
-                }
-            } else {
-                result = this.grammar.getTypeGraph();
-            }
-            this.typeGraph = result;
-            this.typeGraphCount = getModificationCount();
-        }
-        return this.typeGraph;
+        return this.typeGraph.getValue();
     }
 
     /** 
@@ -297,21 +279,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** 
-     * Returns a counter that is increased upon every modification
-     * to the model. This allows listeners to determine when cached
-     * values should be refreshed.
-     */
-    final int getModificationCount() {
-        return this.modificationCount;
-    }
-
     /**
-     * Increases the number of times the model has been modified.
-     * @see #getModificationCount()
+     * Returns a modification counter of this jModel.
      */
-    final void increaseModificationCount() {
-        this.modificationCount++;
+    final ChangeCount getModCount() {
+        return this.jModelModCount;
     }
 
     /** 
@@ -433,16 +405,41 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** The associated system properties. */
     private final GrammarModel grammar;
-    /** The modification count at which {@link #resource} was created. */
-    private int resourceCount;
+    /** Counter of the modifications to the jModel. */
+    private final ChangeCount jModelModCount = new ChangeCount();
+    /** Counter of the modifications to the graph. */
+    private final ChangeCount graphModCount = new ChangeCount();
+
     /** The resource model of the graph being edited. */
-    private GraphBasedModel<?> resource;
-    /** The modification count at which {@link #typeGraph} was created. */
-    private int typeGraphCount;
+    private Derived<GraphBasedModel<?>> resource =
+        new Derived<GraphBasedModel<?>>(this.graphModCount) {
+            @Override
+            protected GraphBasedModel<?> computeValue() {
+                return AspectJModel.this.grammar.createGraphModel(getGraph());
+            }
+        };
+
     /** The type graph of the graph being edited. */
-    private TypeGraph typeGraph;
-    /** Counter of the number of times this model has been updated. */
-    private int modificationCount;
+    private Derived<TypeGraph> typeGraph = new Derived<TypeGraph>(
+        this.graphModCount) {
+        @Override
+        protected TypeGraph computeValue() {
+            TypeGraph result;
+            GraphBasedModel<?> resourceModel = getResourceModel();
+            if (resourceModel instanceof TypeModel) {
+                try {
+                    result = ((TypeModel) resourceModel).toResource();
+                } catch (FormatException e) {
+                    result =
+                        TypeGraph.createImplicitType(resourceModel.getLabels());
+                }
+            } else {
+                result = AspectJModel.this.grammar.getTypeGraph();
+            }
+            return result;
+        }
+    };
+
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
     /** Mapping from errors to affected cells. */
