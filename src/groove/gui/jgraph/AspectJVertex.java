@@ -22,6 +22,8 @@ import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.io.Util;
 import groove.util.Colors;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Tracker;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.Aspect;
@@ -49,6 +51,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public AspectJVertex(AspectJGraph jGraph, AspectJModel jModel,
             AspectNode node) {
         super(jGraph, jModel, node);
+        this.jModelTracker =
+            jModel == null ? ChangeCount.DUMMY_TRACKER
+                    : jModel.getModCount().createTracker();
         setUserObject(null);
         if (node != null) {
             this.aspect = node.getKind();
@@ -242,21 +247,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (isJModelModified()) {
+        if (this.jModelTracker.isStale()) {
             this.keys = computeKeys();
             this.lines = computeLines();
         }
-    }
-
-    /** Reports if the model has been modified since the last call to this method. */
-    private boolean isJModelModified() {
-        assert getJModel() == getJGraph().getModel();
-        int jModelModCount = getJModel().getModificationCount();
-        boolean result = this.lastJModelModCount != jModelModCount;
-        if (result) {
-            this.lastJModelModCount = jModelModCount;
-        }
-        return result;
     }
 
     /** Recomputes the set of node lines for this aspect node. */
@@ -517,28 +511,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public boolean isFiltered() {
-        if (this.aspect == REMARK) {
-            return false;
-        }
-        if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
-            return false;
-        }
-        if (super.isFiltered()) {
-            return true;
-        }
-        // in addition, value nodes or data type nodes may be filtered
-        if (getJGraph().isShowValueNodes()) {
-            return false;
-        }
-        Aspect attr = getNode().getAttrAspect();
-        if (!attr.getKind().hasSignature()) {
-            return false;
-        }
-        return getNode().getGraphRole() == GraphRole.TYPE || attr.hasContent();
-    }
-
-    @Override
     public boolean isVisible() {
         // remark nodes are always visible
         if (this.aspect == REMARK) {
@@ -715,8 +687,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Element> keys;
-    /** Model modification count at the last time the lines were computed. */
-    private int lastJModelModCount;
+    /** JModel modification tracker. */
+    private final Tracker jModelTracker;
     /** The role of the underlying rule node. */
     private AspectKind aspect;
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();

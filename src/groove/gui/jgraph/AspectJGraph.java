@@ -149,7 +149,7 @@ final public class AspectJGraph extends GraphJGraph {
     public void refreshCells(Collection<? extends GraphJCell> jCellSet) {
         // tell the model it has been modified,
         // so refreshing actually changes the cell outlook
-        getModel().increaseModificationCount();
+        getModel().getModCount().increase();
         super.refreshCells(jCellSet);
     }
 

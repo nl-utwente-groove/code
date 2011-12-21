@@ -293,17 +293,6 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return result;
     }
 
-    /** 
-     * Tests if a given edge is currently being filtered.
-     * This is the case if at least one of the list labels on it
-     * (as returned by {@link #getKeys()})
-     * is being filtered.
-     */
-    final protected boolean isFiltered(Edge edge) {
-        Edge key = getKey(edge);
-        return key != null && getJGraph().isFiltering(key);
-    }
-
     /**
      * Callback method to retrieve the line (as it should appear in an 
      * edge label) from a given edge.
