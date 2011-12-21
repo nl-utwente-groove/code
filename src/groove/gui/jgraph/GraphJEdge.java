@@ -215,7 +215,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         if (getTargetVertex() == null || !getTargetVertex().isVisible()) {
             return false;
         }
-        return !getLines().isEmpty();
+        return !getJGraph().isFiltering(this);
     }
 
     /**
@@ -279,7 +279,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         for (Edge edge : getEdges()) {
             // only add edges that have an unfiltered label
-            if (!isFiltered(edge)) {
+            if (!getJGraph().isFiltering(edge)) {
                 result.add(getLine(edge));
             }
         }
@@ -293,8 +293,8 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * is being filtered.
      */
     final protected boolean isFiltered(Edge edge) {
-        Edge entry = getKey(edge);
-        return entry != null && getJGraph().isFiltering(entry);
+        Edge key = getKey(edge);
+        return key != null && getJGraph().isFiltering(key);
     }
 
     /**

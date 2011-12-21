@@ -16,6 +16,7 @@ import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+import groove.gui.RuleLevelTree;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
@@ -537,14 +538,35 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     public boolean isVisible() {
-        boolean result = true;
-        if (getJGraph().getLevelTree() != null) {
-            result = getJGraph().getLevelTree().isVisible(this);
+        // remark nodes are always visible
+        if (this.aspect == REMARK) {
+            return true;
         }
-        if (result) {
-            result = super.isVisible();
+        // anything explicitly filtered by the level tree is not visible
+        RuleLevelTree levelTree = getJGraph().getLevelTree();
+        if (levelTree != null && !levelTree.isVisible(this)) {
+            return false;
         }
-        return result;
+        // parameter nodes, quantifiers and error nodes are always visible
+        if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
+            return true;
+        }
+        // anything declared invisible by the super method is not visible
+        if (!super.isVisible()) {
+            return false;
+        }
+        Aspect attr = getNode().getAttrAspect();
+        // explicit product nodes should be visible
+        if (!attr.getKind().hasSignature()) {
+            return true;
+        }
+        // in addition, value nodes or data type nodes may be filtered
+        if (getJGraph().isShowValueNodes()) {
+            return true;
+        }
+        // we are now sure that the underlying node has a data type;
+        // only variable nodes should be shown
+        return getNode().getGraphRole() != GraphRole.TYPE && !attr.hasContent();
     }
 
     @Override

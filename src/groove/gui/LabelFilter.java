@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
@@ -57,13 +56,24 @@ public class LabelFilter extends Observable {
 
     /** Clears the inverse mapping from labels to {@link GraphJCell}s. */
     public void clearJCells() {
-        for (Set<GraphJCell> jCellSet : this.entryCellMap.values()) {
+        for (Set<GraphJCell> jCellSet : this.entryJCellMap.values()) {
             jCellSet.clear();
         }
+        this.jCellEntryMap.clear();
     }
 
-    /** Retrieves the filter entries on a given jCell. */
+    /** Returns the filter entries on a given jCell. */
     public Set<Entry> getEntries(GraphJCell jCell) {
+        Set<Entry> result = this.jCellEntryMap.get(jCell);
+        if (result == null) {
+            addJCell(jCell);
+            result = this.jCellEntryMap.get(jCell);
+        }
+        return result;
+    }
+
+    /** Computes the filter entries for a given jCell. */
+    private Set<Entry> computeEntries(GraphJCell jCell) {
         Set<Entry> result = new HashSet<LabelFilter.Entry>();
         // we only add a special entry for a node itself
         // if it is not explicitly typed and has no edge self-labels
@@ -90,37 +100,36 @@ public class LabelFilter extends Observable {
      * explicit label on the node. 
      */
     private boolean isNodeKey(Element key) {
-        boolean isNodeEntry;
+        boolean result;
         if (key instanceof TypeNode) {
-            isNodeEntry = ((TypeNode) key).isTopType();
+            result = ((TypeNode) key).isTopType();
         } else if (key instanceof Edge) {
-            isNodeEntry = ((Edge) key).label().equals(TypeLabel.NODE);
+            result = ((Edge) key).label().equals(TypeLabel.NODE);
         } else {
-            isNodeEntry = true;
-        }
-        return isNodeEntry;
-    }
-
-    /** Adds a {@link GraphJCell} to the inverse mapping. 
-     * @return {@code true} if any labels were added
-     */
-    public boolean addJCell(GraphJCell jCell) {
-        boolean result = false;
-        for (Entry entry : getEntries(jCell)) {
-            result |= addToEntries(jCell, entry);
+            result = true;
         }
         return result;
     }
 
     /**
-     * Adds a cell-entry pair to the entry map. If the entry does not yet exist
-     * in the map, inserts it.
-     * @return {@code true} if a new entry was created
+     * Adds a {@link GraphJCell} and all corresponding entries to the filter.
+     * @return {@code true} if any entries were added
      */
-    private boolean addToEntries(GraphJCell jCell, Entry entry) {
-        boolean result = addEntry(entry);
-        Set<GraphJCell> currentCells = this.entryCellMap.get(entry);
-        currentCells.add(jCell);
+    public boolean addJCell(GraphJCell jCell) {
+        boolean result = false;
+        if (this.jCellEntryMap.containsKey(jCell)) {
+            // a known cell; modify rather than add
+            result = modifyJCell(jCell);
+        } else {
+            // a new cell; add it to the map
+            Set<Entry> entries = computeEntries(jCell);
+            this.jCellEntryMap.put(jCell, entries);
+            // also modify the inverse map
+            for (Entry entry : entries) {
+                result |= addEntry(entry);
+                this.entryJCellMap.get(entry).add(jCell);
+            }
+        }
         return result;
     }
 
@@ -130,14 +139,10 @@ public class LabelFilter extends Observable {
      */
     public boolean removeJCell(GraphJCell jCell) {
         boolean result = false;
-        Iterator<Map.Entry<Entry,Set<GraphJCell>>> cellMapIter =
-            this.entryCellMap.entrySet().iterator();
-        while (cellMapIter.hasNext()) {
-            Map.Entry<Entry,Set<GraphJCell>> cellMapEntry = cellMapIter.next();
-            Set<GraphJCell> cellSet = cellMapEntry.getValue();
-            if (cellSet.remove(jCell) && cellSet.isEmpty()) {
-                cellMapIter.remove();
-                result = true;
+        Set<Entry> jCellEntries = this.jCellEntryMap.remove(jCell);
+        if (jCellEntries != null) {
+            for (Entry jCellEntry : jCellEntries) {
+                this.entryJCellMap.get(jCellEntry).remove(jCell);
             }
         }
         return result;
@@ -145,41 +150,35 @@ public class LabelFilter extends Observable {
 
     /**
      * Modifies the inverse mapping for a given {@link GraphJCell}.
-     * @return {@code true} if any labels were added or removed
+     * @return {@code true} if any entries were added or removed
      */
     public boolean modifyJCell(GraphJCell jCell) {
+        assert this.jCellEntryMap.containsKey(jCell);
         boolean result = false;
-        Set<Entry> newEntrySet = new HashSet<Entry>(getEntries(jCell));
-        // go over the existing label map
-        Iterator<Map.Entry<Entry,Set<GraphJCell>>> cellMapIter =
-            this.entryCellMap.entrySet().iterator();
-        while (cellMapIter.hasNext()) {
-            Map.Entry<Entry,Set<GraphJCell>> cellMapEntry = cellMapIter.next();
-            Entry entry = cellMapEntry.getKey();
-            Set<GraphJCell> cellSet = cellMapEntry.getValue();
-            if (newEntrySet.remove(entry)) {
-                // the cell should be in the set
-                cellSet.add(jCell);
-            } else if (cellSet.remove(jCell) && cellSet.isEmpty()) {
-                // the cell was in the set but shouldn't have been,
-                // and the set is now empty
-                cellMapIter.remove();
-                result = true;
+        Set<Entry> newEntrySet = computeEntries(jCell);
+        Set<Entry> oldEntrySet = this.jCellEntryMap.put(jCell, newEntrySet);
+        // remove the obsolete entries
+        for (Entry oldEntry : oldEntrySet) {
+            if (!newEntrySet.contains(oldEntry)) {
+                this.entryJCellMap.get(oldEntry).remove(jCell);
             }
         }
-        // any new labels left over were not in the label map; add them
-        for (Entry key : newEntrySet) {
-            addToEntries(jCell, key);
+        // add the new entries
+        for (Entry newEntry : newEntrySet) {
+            if (!oldEntrySet.contains(newEntry)) {
+                result |= addEntry(newEntry);
+                this.entryJCellMap.get(newEntry).add(jCell);
+            }
         }
         return result;
     }
 
-    /** Returns the set of {@link GraphJCell}s bearing a given label. */
+    /** Returns the set of {@link GraphJCell}s for a given entry. */
     public Set<GraphJCell> getJCells(Entry entry) {
-        return this.entryCellMap.get(entry);
+        return this.entryJCellMap.get(entry);
     }
 
-    /** Indicates if there is at least one {@link GraphJCell} bearing a given label. */
+    /** Indicates if there is at least one {@link GraphJCell} with a given entry. */
     public boolean hasJCells(Entry entry) {
         Set<GraphJCell> jCells = getJCells(entry);
         return jCells != null && !jCells.isEmpty();
@@ -192,7 +191,8 @@ public class LabelFilter extends Observable {
      */
     public void clear(boolean labelBased) {
         this.selected.clear();
-        this.entryCellMap.clear();
+        this.entryJCellMap.clear();
+        this.jCellEntryMap.clear();
         this.labelEntryMap.clear();
         this.nodeTypeEntryMap.clear();
         this.edgeTypeEntryMap.clear();
@@ -208,18 +208,18 @@ public class LabelFilter extends Observable {
     /** Adds an entry to those known in this filter. */
     private boolean addEntry(Entry entry) {
         boolean result = false;
-        Set<GraphJCell> cells = this.entryCellMap.get(entry);
+        Set<GraphJCell> cells = this.entryJCellMap.get(entry);
         if (cells == null) {
-            this.entryCellMap.put(entry, new HashSet<GraphJCell>());
+            this.entryJCellMap.put(entry, new HashSet<GraphJCell>());
             this.selected.add(entry);
             result = true;
         }
         return result;
     }
 
-    /** Returns the set of all labels known to this filter. */
+    /** Returns the set of all entries known to this filter. */
     public Set<Entry> getEntries() {
-        return this.entryCellMap.keySet();
+        return this.entryJCellMap.keySet();
     }
 
     /** 
@@ -265,13 +265,13 @@ public class LabelFilter extends Observable {
     }
 
     /** 
-     * Sets the selection status of a given label, and 
+     * Sets the selection status of a given entry, and 
      * returns the corresponding set of {@link GraphJCell}s.
      */
     private Set<GraphJCell> getSelection(Entry entry, boolean selected) {
-        assert this.entryCellMap.containsKey(entry) : String.format(
-            "Label %s unknown in map %s", entry, this.entryCellMap);
-        Set<GraphJCell> result = this.entryCellMap.get(entry);
+        assert this.entryJCellMap.containsKey(entry) : String.format(
+            "Label %s unknown in map %s", entry, this.entryJCellMap);
+        Set<GraphJCell> result = this.entryJCellMap.get(entry);
         if (result == null) {
             result = Collections.<GraphJCell>emptySet();
         } else if (selected) {
@@ -295,7 +295,7 @@ public class LabelFilter extends Observable {
 
     /** Indicates if a given entry is currently selected. */
     public boolean isSelected(Entry entry) {
-        return !this.entryCellMap.containsKey(entry)
+        return !this.entryJCellMap.containsKey(entry)
             || this.selected.contains(entry);
     }
 
@@ -307,6 +307,39 @@ public class LabelFilter extends Observable {
                 result = true;
                 break;
             }
+        }
+        return result;
+    }
+
+    /** 
+     * Indicates if a given jCell is currently filtered,
+     * according to the entry selection.
+     * This is the case if a node type entry is unselected, and either unfiltered
+     * edges need not be shown or all or all edge entries are also unselected.
+     * @param jCell the jCell for which the test is performed
+     * @param showUnfilteredEdges if {@code true}, the jCell is only filtered
+     * if all entries are unselected
+     * @return {@code true} if {@code jCell} is filtered
+     */
+    public boolean isFiltered(GraphJCell jCell, boolean showUnfilteredEdges) {
+        boolean result = false;
+        boolean hasUnfilteredElements = false;
+        boolean hasFilteredNodeTypes = false;
+        Set<Entry> entrySet = getEntries(jCell);
+        for (Entry entry : entrySet) {
+            if (isSelected(entry)) {
+                hasUnfilteredElements = true;
+            } else {
+                // the entry is unselected
+                if (entry.getLabel().isNodeType()) {
+                    hasFilteredNodeTypes = true;
+                }
+            }
+        }
+        if (hasFilteredNodeTypes && !showUnfilteredEdges) {
+            result = true;
+        } else {
+            result = !hasUnfilteredElements;
         }
         return result;
     }
@@ -385,9 +418,12 @@ public class LabelFilter extends Observable {
 
     /** Set of currently selected (i.e., visible) labels. */
     private final Set<Entry> selected = new HashSet<Entry>();
-    /** Mapping from labels to {@link GraphJCell}s bearing that label. */
-    private final Map<Entry,Set<GraphJCell>> entryCellMap =
+    /** Mapping from entries to {@link GraphJCell}s with that entry. */
+    private final Map<Entry,Set<GraphJCell>> entryJCellMap =
         new HashMap<Entry,Set<GraphJCell>>();
+    /** Inverse mapping of {@link #entryJCellMap}. */
+    private final Map<GraphJCell,Set<Entry>> jCellEntryMap =
+        new HashMap<GraphJCell,Set<Entry>>();
     /** Mapping from known labels to corresponding label entries. */
     private final Map<Label,LabelEntry> labelEntryMap =
         new HashMap<Label,LabelFilter.LabelEntry>();

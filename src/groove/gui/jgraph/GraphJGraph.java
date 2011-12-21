@@ -134,11 +134,19 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Indicates if a given label is currently being filtered from view. This is
+     * Indicates if a given jCell key is currently being filtered from view. This is
      * the case if it is in the set of filtered labels.
      */
-    public boolean isFiltering(Element element) {
-        return getLabelTree().isFiltered(element);
+    public boolean isFiltering(GraphJCell jCell) {
+        return getLabelTree().isFiltered(jCell, isShowUnfilteredEdges());
+    }
+
+    /**
+     * Indicates if a given jCell is currently being filtered from view. This is
+     * the case if it is in the set of filtered labels.
+     */
+    public boolean isFiltering(Element jCellKey) {
+        return getLabelTree().isFiltered(jCellKey);
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */
