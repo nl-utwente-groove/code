@@ -3,8 +3,6 @@ package groove.view;
 import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
-import groove.algebra.SignatureKind;
-import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -17,8 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /** Class to store the models that are used to compose the type graph. */
 public class CompositeTypeModel extends ResourceModel<TypeGraph> {
@@ -55,19 +51,11 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         }
     }
 
-    /** Returns a mapping from names to type graphs,
-     * which together make up the combined type model. */
-    public SortedMap<String,TypeGraph> getTypeGraphMap() {
-        synchronise();
-        return this.typeGraphMap;
-    }
-
     @Override
     TypeGraph compute() throws FormatException {
         TypeGraph result = null;
         Collection<FormatError> errors = createErrors();
         this.typeModelMap.clear();
-        this.typeGraphMap.clear();
         for (ResourceModel<?> typeModel : getGrammar().getResourceSet(TYPE)) {
             if (typeModel.isEnabled()) {
                 this.typeModelMap.put(typeModel.getName(),
@@ -84,7 +72,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         // first test if there is something to be done
         if (this.typeModelMap.isEmpty()) {
             result = getImplicitTypeGraph();
-            this.typeGraphMap.put(result.getName(), result);
         } else {
             result = new TypeGraph("combined type");
             // There are no errors in each of the models, try to compose the
@@ -96,7 +83,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             for (TypeModel model : this.typeModelMap.values()) {
                 try {
                     TypeGraph graph = model.toResource();
-                    this.typeGraphMap.put(model.getName(), graph);
                     Map<TypeNode,TypeNode> map = result.add(graph);
                     for (TypeNode node : graph.getImports()) {
                         importNodes.put(node, map.get(node));
@@ -125,8 +111,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         if (errors.isEmpty()) {
             return result;
         } else {
-            this.typeGraphMap.clear();
-            this.typeGraphMap.put(getName(), getImplicitTypeGraph());
             throw new FormatException(errors);
         }
     }
@@ -136,30 +120,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     private TypeGraph getImplicitTypeGraph() {
         if (this.implicitTypeGraph == null) {
-            this.implicitTypeGraph = computeImplicitType();
+            this.implicitTypeGraph = TypeGraph.createImplicitType(getLabels());
         }
         return this.implicitTypeGraph;
-    }
-
-    private TypeGraph computeImplicitType() {
-        TypeGraph result = new TypeGraph("implicit type graph", true);
-        TypeFactory factory = result.getFactory();
-        TypeNode top = factory.getTopNode();
-        result.addNode(top);
-        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-            result.addNode(factory.getDataType(sigKind));
-        }
-        for (TypeLabel label : getLabels()) {
-            if (label.isBinary()) {
-                for (TypeNode target : result.nodeSet()) {
-                    result.addEdge(top, label, target);
-                }
-            } else {
-                result.addEdge(top, label, top);
-            }
-        }
-        result.setFixed();
-        return result;
     }
 
     @Override
@@ -200,8 +163,6 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     /** Mapping from active type names to corresponding type models. */
     private final Map<String,TypeModel> typeModelMap =
         new HashMap<String,TypeModel>();
-    private final SortedMap<String,TypeGraph> typeGraphMap =
-        new TreeMap<String,TypeGraph>();
     /** The implicit type graph. */
     private TypeGraph implicitTypeGraph;
 }

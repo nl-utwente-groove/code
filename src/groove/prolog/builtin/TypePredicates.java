@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 package groove.prolog.builtin;
 
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipPars;
 
 /** Type-related Groove predicates. 
  * Documentation reading guide:
@@ -54,16 +54,10 @@ public class TypePredicates extends GroovePredicates {
     }
 
     @Signature({"String", "?"})
-    @ToolTipBody("Cycles over the set of availeble (active) type graph names.")
+    @ToolTipBody("Cycles over the set of available (active) type graph names.")
     @ToolTipPars("Name of an active type graph")
     public void type_graph_name_1() {
         s(":-build_in(type_graph_name/1,'groove.prolog.builtin.type.Predicate_type_graph_name').");
-    }
-
-    @Signature({"Name", "TypeGraph", "+?"})
-    @ToolTipBody("Establishes the relation between type graph names and (active) type graphs.")
-    public void type_graph_2() {
-        s(":-build_in(type_graph/2,'groove.prolog.builtin.type.Predicate_type_graph').");
     }
 
     // DERIVED PREDICATES
@@ -72,7 +66,8 @@ public class TypePredicates extends GroovePredicates {
     @ToolTipBody({
         "Retrieves the direct subtype relation, as defined in a given type graph.",
         "The type labels are given as Strings"})
-    @ToolTipPars({"Type graph object", "Subtype label text", "Supertype label text"})
+    @ToolTipPars({"Type graph object", "Subtype label text",
+        "Supertype label text"})
     public void direct_subtype_label_3() {
         s("direct_subtype_label(TG,A,B) :- label(A,AL), label(B,BL), direct_subtype(TG,AL,BL).");
     }
@@ -81,7 +76,8 @@ public class TypePredicates extends GroovePredicates {
     @ToolTipBody({
         "Retrieves the recursively and transitively closed subtype relation, as defined in a given type graph.",
         "The type labels are given as Strings"})
-    @ToolTipPars({"Type graph object", "Subtype label text", "Supertype label text"})
+    @ToolTipPars({"Type graph object", "Subtype label text",
+        "Supertype label text"})
     public void subtype_label_3() {
         s("subtype_label(TG,A,B) :- label(A,AL), label(B,BL), subtype(TG,AL,BL).");
     }

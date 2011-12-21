@@ -103,7 +103,6 @@ final public class GraphEditorTab extends ResourceTab implements
         super(parent);
         this.role = role;
         this.jgraph = new AspectJGraph(getSimulator(), parent.getKind(), true);
-        this.jgraph.updateGrammar(getSimulatorModel().getGrammar());
         setFocusCycleRoot(true);
         // start is called from the constructor;
         // this may go wrong in case of subclassing
@@ -211,7 +210,6 @@ final public class GraphEditorTab extends ResourceTab implements
         if (graphModel == null) {
             dispose();
         } else if (isDirty() || getGraph() == graphModel.getSource()) {
-            getJGraph().updateGrammar(grammar);
             // check if the properties have changed
             GraphProperties properties =
                 GraphInfo.getProperties(graphModel.getSource(), false);

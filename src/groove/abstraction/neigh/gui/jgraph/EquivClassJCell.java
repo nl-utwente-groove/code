@@ -37,10 +37,13 @@ import org.jgraph.graph.GraphConstants;
 public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
 
     private boolean layoutable;
-    private ShapeJGraph jgraph;
+    private final ShapeJGraph jgraph;
+    private final ShapeJModel jModel;
 
-    private EquivClassJCell(ShapeJGraph jgraph, EquivClass<ShapeNode> ec) {
+    private EquivClassJCell(ShapeJGraph jgraph, ShapeJModel jModel,
+            EquivClass<ShapeNode> ec) {
         this.jgraph = jgraph;
+        this.jModel = jModel;
         this.setUserObject(ec);
         this.setAttributes(this.createAttributes());
     }
@@ -54,6 +57,11 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
     @Override
     public ShapeJGraph getJGraph() {
         return this.jgraph;
+    }
+
+    @Override
+    public ShapeJModel getJModel() {
+        return this.jModel;
     }
 
     @Override
@@ -119,8 +127,8 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link EquivClassJCell} of the same type as this one. 
      */
-    public EquivClassJCell newJCell(EquivClass<ShapeNode> ec) {
-        return new EquivClassJCell(getJGraph(), ec);
+    public EquivClassJCell newJCell(ShapeJModel jModel, EquivClass<ShapeNode> ec) {
+        return new EquivClassJCell(getJGraph(), jModel, ec);
     }
 
     /**
@@ -149,6 +157,6 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
 
     /** Returns a prototype {@link EquivClassJCell} for a given {@link ShapeJGraph}. */
     public static EquivClassJCell getPrototype(ShapeJGraph jGraph) {
-        return new EquivClassJCell(jGraph, null);
+        return new EquivClassJCell(jGraph, null, null);
     }
 }

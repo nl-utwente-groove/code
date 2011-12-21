@@ -44,7 +44,7 @@ public class Predicate_type_graph_name extends GraphPrologCode {
             }
 
             Set<String> typeNames =
-                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeMap().keySet();
+                ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getTypeGraph().getComponentMap().keySet();
 
             if (typeNames == null) {
                 return FAIL;

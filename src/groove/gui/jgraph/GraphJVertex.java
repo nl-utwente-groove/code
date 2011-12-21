@@ -51,15 +51,22 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    protected GraphJVertex(GraphJGraph jGraph, Node node) {
+    protected GraphJVertex(GraphJGraph jGraph, GraphJModel<?,?> jModel,
+            Node node) {
         this.jGraph = jGraph;
+        this.jModel = jModel;
         add(new DefaultPort());
         this.node = node;
     }
 
-    /** Returns the {@link GraphJGraph} associated with this vertex. */
+    @Override
     public GraphJGraph getJGraph() {
         return this.jGraph;
+    }
+
+    @Override
+    public GraphJModel<?,?> getJModel() {
+        return this.jModel;
     }
 
     /**
@@ -85,8 +92,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
-    public GraphJVertex newJVertex(Node node) {
-        return new GraphJVertex(getJGraph(), node);
+    public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
+        return new GraphJVertex(getJGraph(), jModel, node);
     }
 
     /**
@@ -391,7 +398,10 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return null;
     }
 
+    /** The fixed jGraph on which this jVertex is displayed. */
     private final GraphJGraph jGraph;
+    /** The fixed jModel to which this jVertex belongs. */
+    private final GraphJModel<?,?> jModel;
     private boolean layoutable;
     private boolean grayedOut;
     /** Explicitly set foreground colour. */
@@ -403,6 +413,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     /** Returns a prototype {@link GraphJVertex} for a given {@link GraphJGraph}. */
     public static GraphJVertex getPrototype(GraphJGraph jGraph) {
-        return new GraphJVertex(jGraph, null);
+        return new GraphJVertex(jGraph, null, null);
     }
 }

@@ -416,7 +416,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */
     protected GraphJEdge createJEdge(E edge) {
-        return this.jEdgeProt.newJEdge(edge);
+        return this.jEdgeProt.newJEdge(this, edge);
     }
 
     /**
@@ -426,7 +426,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * @ensure <tt>result.getNode().equals(node)</tt>
      */
     protected GraphJVertex createJVertex(N node) {
-        return this.jVertexProt.newJVertex(node);
+        return this.jVertexProt.newJVertex(this, node);
     }
 
     /**

@@ -20,7 +20,6 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -50,7 +49,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -186,23 +184,11 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     private TypeGraph getTypeGraph() {
         TypeGraph result = null;
-        if (getJGraph() instanceof AspectJGraph) {
-            Graph<?,?> modelGraph =
-                getJGraph().getModel() == null ? null
-                        : getJGraph().getModel().getGraph();
-            if (modelGraph instanceof TypeGraph) {
-                result = (TypeGraph) modelGraph;
-            } else {
-                result = ((AspectJGraph) getJGraph()).getTypeGraph();
-            }
+        if (getJGraph() instanceof AspectJGraph
+            && getJGraph().getModel() != null) {
+            result = ((AspectJGraph) getJGraph()).getModel().getTypeGraph();
         }
         return result;
-    }
-
-    /** Convenience method to return the type graph map of the jGraph. */
-    private SortedMap<String,TypeGraph> getTypeGraphMap() {
-        return getJGraph() instanceof AspectJGraph
-                ? ((AspectJGraph) getJGraph()).getTypeGraphMap() : null;
     }
 
     /** Returns the label filter associated with this label tree. */
@@ -429,22 +415,26 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /** Updates the tree from the information in the type graph map. */
     private List<TreeNode> updateTreeFromTypeGraph() {
         List<TreeNode> newNodes = new ArrayList<TreeNode>();
-        SortedMap<String,TypeGraph> typeGraphMap = getTypeGraphMap();
+        Collection<TypeGraph.Sub> typeGraphMap =
+            getTypeGraph().getComponentMap().values();
         if (this.jModel.getGraph().getRole() == GraphRole.TYPE) {
-            newNodes = updateTreeFromTypeGraph(getTopNode(), getTypeGraph());
-        } else if (typeGraphMap.size() == 1) {
             newNodes =
-                updateTreeFromTypeGraph(getTopNode(),
-                    typeGraphMap.values().iterator().next());
+                updateTreeFromTypeGraph(getTopNode(), getTypeGraph().nodeSet(),
+                    getTypeGraph().edgeSet());
+        } else if (typeGraphMap.size() == 1) {
+            TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
+            newNodes =
+                updateTreeFromTypeGraph(getTopNode(), subTypeGraph.getNodes(),
+                    subTypeGraph.getEdges());
         } else {
             newNodes = new ArrayList<TreeNode>();
-            for (Map.Entry<String,TypeGraph> typeGraphEntry : typeGraphMap.entrySet()) {
-                String name = typeGraphEntry.getKey();
-                TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(name);
+            for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
+                TypeGraphTreeNode typeGraphNode =
+                    new TypeGraphTreeNode(subTypeGraph);
                 getTopNode().add(typeGraphNode);
                 newNodes.add(typeGraphNode);
                 newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode,
-                    getTypeGraphMap().get(name)));
+                    subTypeGraph.getNodes(), subTypeGraph.getEdges()));
             }
         }
         return newNodes;
@@ -452,25 +442,28 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
     /** Updates the tree from the information in a given type graph. */
     private List<TreeNode> updateTreeFromTypeGraph(
-            DefaultMutableTreeNode topNode, TypeGraph typeGraph) {
+            DefaultMutableTreeNode topNode, Set<? extends TypeNode> typeNodes,
+            Set<? extends TypeEdge> typeEdges) {
         List<TreeNode> newNodes = new ArrayList<TreeNode>();
         // mapping from type nodes to related types (in the combined type graph)
         Map<TypeNode,Set<TypeNode>> relatedMap =
             isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
                     : getTypeGraph().getDirectSupertypeMap();
-        for (TypeNode node : new TreeSet<TypeNode>(typeGraph.nodeSet())) {
+        for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
             Entry entry = getFilter().getEntry(node);
             if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
                 EntryNode nodeTypeNode = new EntryNode(entry, true);
                 topNode.add(nodeTypeNode);
                 newNodes.add(nodeTypeNode);
-                addRelatedTypes(typeGraph, nodeTypeNode, relatedMap, newNodes);
+                addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, newNodes);
                 for (TypeEdge edge : new TreeSet<TypeEdge>(
-                    typeGraph.outEdgeSet(node))) {
-                    Entry edgeEntry = getFilter().getEntry(edge);
-                    EntryNode edgeTypeNode = new EntryNode(edgeEntry, true);
-                    nodeTypeNode.add(edgeTypeNode);
-                    newNodes.add(edgeTypeNode);
+                    getTypeGraph().outEdgeSet(node))) {
+                    if (typeEdges.contains(edge)) {
+                        Entry edgeEntry = getFilter().getEntry(edge);
+                        EntryNode edgeTypeNode = new EntryNode(edgeEntry, true);
+                        nodeTypeNode.add(edgeTypeNode);
+                        newNodes.add(edgeTypeNode);
+                    }
                 }
             }
         }
@@ -480,13 +473,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /**
      * Recursively adds related types to a given label node.
      * Only first level subtypes are added.
-     * @param typeGraph partial type graph from which the related types are taken
+     * @param typeNodes set of type nodes from which the related types are taken
      * @param typeNode tree node for the key type
      * @param map mapping from key types to related node type (in the combined type graph)
      * @param newNodes set that collects all newly created tree nodes  
      */
-    private void addRelatedTypes(TypeGraph typeGraph, EntryNode typeNode,
-            Map<TypeNode,Set<TypeNode>> map, List<TreeNode> newNodes) {
+    private void addRelatedTypes(Set<? extends TypeNode> typeNodes,
+            EntryNode typeNode, Map<TypeNode,Set<TypeNode>> map,
+            List<TreeNode> newNodes) {
         TypeNode type = (TypeNode) ((TypeEntry) typeNode.getEntry()).getType();
         Set<TypeNode> relatedTypes = map.get(type);
         assert relatedTypes != null : String.format(
@@ -494,7 +488,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             map.keySet());
         for (TypeNode relType : relatedTypes) {
             // test if the node type label exists in the partial type graph
-            if (typeGraph.getLabels().contains(relType.label())) {
+            if (typeNodes.contains(relType)) {
                 EntryNode subTypeNode = new EntryNode(relType, false);
                 typeNode.add(subTypeNode);
                 if (newNodes != null) {
@@ -502,7 +496,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 }
                 // change last parameter to newNodes if subtypes should be added
                 // to arbitrary depth
-                addRelatedTypes(typeGraph, subTypeNode, map, null);
+                addRelatedTypes(typeNodes, subTypeNode, map, null);
             }
         }
     }
@@ -747,16 +741,15 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /** Tree node wrapping a type graph. */
     public class TypeGraphTreeNode extends TreeNode {
         /**
-         * Constructs a new node, for a given type graph.
-         * @param name name of the type graph
+         * Constructs a new node, for a given type graph component
+         * @param subTypeGraph the type graph component
          */
-        TypeGraphTreeNode(String name) {
-            this.name = name;
-            TypeGraph typeGraph = getTypeGraphMap().get(name);
-            for (TypeNode node : typeGraph.nodeSet()) {
+        TypeGraphTreeNode(TypeGraph.Sub subTypeGraph) {
+            this.name = subTypeGraph.getName();
+            for (TypeNode node : subTypeGraph.getNodes()) {
                 this.entries.add(getFilter().getEntry(node));
             }
-            for (TypeEdge edge : typeGraph.edgeSet()) {
+            for (TypeEdge edge : subTypeGraph.getEdges()) {
                 this.entries.add(getFilter().getEntry(edge));
             }
         }

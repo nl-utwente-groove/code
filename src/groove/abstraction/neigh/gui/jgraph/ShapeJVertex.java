@@ -22,6 +22,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Node;
 import groove.graph.TypeNode;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.io.HTMLConverter;
 
@@ -37,8 +38,8 @@ import java.util.List;
 public class ShapeJVertex extends GraphJVertex {
 
     // Private constructor. Use the prototype.
-    private ShapeJVertex(ShapeJGraph jGraph, ShapeNode node) {
-        super(jGraph, node);
+    private ShapeJVertex(ShapeJGraph jGraph, ShapeJModel jModel, ShapeNode node) {
+        super(jGraph, jModel, node);
         // Remove the default port that was added by the super constructor.
         this.remove(0);
     }
@@ -54,8 +55,9 @@ public class ShapeJVertex extends GraphJVertex {
     }
 
     @Override
-    public ShapeJVertex newJVertex(Node node) {
-        return new ShapeJVertex(getJGraph(), (ShapeNode) node);
+    public ShapeJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
+        return new ShapeJVertex(getJGraph(), (ShapeJModel) jModel,
+            (ShapeNode) node);
     }
 
     @Override
@@ -92,7 +94,7 @@ public class ShapeJVertex extends GraphJVertex {
 
     /** Returns a prototype {@link ShapeJVertex} for a given {@link ShapeJGraph}. */
     public static ShapeJVertex getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJVertex(jGraph, null);
+        return new ShapeJVertex(jGraph, null, null);
     }
 
 }
