@@ -401,6 +401,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                             ruleFactory.createVariableNode(varNode.getNumber(),
                                 constant);
                     }
+                    // check if the type graph actually has the primitive type
+                    if (!nodeSet().contains(image.getType())) {
+                        throw new FormatException("Undeclared type %s",
+                            image.getType());
+                    }
                 } else if (isImplicit()) {
                     image = ruleFactory.createNode(node.getNumber());
                 } else {
@@ -754,10 +759,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Tests if two nodes have a common subtype. */
     private boolean hasCommonSubtype(TypeNode node1, TypeNode node2) {
         // check for common subtypes
-        Set<TypeNode> sub1 = new HashSet<TypeNode>(getSubtypes(node1));
+        Set<TypeNode> sub1 = getSubtypes(node1);
+        assert sub1 != null : String.format(
+            "Node type %s does not exist in type graph %s", node1, this);
         Set<TypeNode> sub2 = getSubtypes(node2);
-        assert sub2 != null;
-        return sub1.removeAll(sub2);
+        assert sub2 != null : String.format(
+            "Node type %s does not exist in type graph %s", node2, this);
+        return new HashSet<TypeNode>(sub1).removeAll(sub2);
     }
 
     /**
