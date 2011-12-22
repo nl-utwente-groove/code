@@ -45,14 +45,14 @@ import java.util.Set;
 public class Matcher implements SearchStrategy {
     /** Constructs a fresh instance of this strategy, for a given
      * condition and sets of seeded (i.e., pre-matched) nodes and edges.
-     * @param factory the matcher factory that has created this matcher object
+     * @param engine the engine to be used in the matcher
      * @param condition the condition that the strategy will find matches for
      * @param seedNodes set of nodes that will be pre-matched when the strategy is invoked
      * @param seedEdges set of nodes that will be pre-matched when the strategy is invoked
      */
-    public Matcher(MatcherFactory factory, Condition condition,
+    public Matcher(SearchEngine engine, Condition condition,
             Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
-        this.factory = factory;
+        this.engine = engine;
         this.condition = condition;
         if (seedNodes == null && condition.getOp().hasPattern()) {
             seedNodes = condition.getInputNodes();
@@ -60,6 +60,18 @@ public class Matcher implements SearchStrategy {
         }
         this.seedNodes = seedNodes;
         this.seedEdges = seedEdges;
+    }
+
+    /** Constructs a fresh instance of this strategy, for a given
+     * condition and sets of seeded (i.e., pre-matched) nodes and edges.
+     * @param factory the matcher factory that has created this matcher object
+     * @param condition the condition that the strategy will find matches for
+     * @param seedNodes set of nodes that will be pre-matched when the strategy is invoked
+     * @param seedEdges set of nodes that will be pre-matched when the strategy is invoked
+     */
+    public Matcher(MatcherFactory factory, Condition condition,
+            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
+        this(factory.getEngine(), condition, seedNodes, seedEdges);
     }
 
     /** 
@@ -132,7 +144,7 @@ public class Matcher implements SearchStrategy {
 
     @Override
     public SearchEngine getEngine() {
-        return this.factory.getEngine();
+        return this.engine;
     }
 
     /** 
@@ -216,7 +228,7 @@ public class Matcher implements SearchStrategy {
         return this.inner;
     }
 
-    private final MatcherFactory factory;
+    private final SearchEngine engine;
     private final Condition condition;
     private final Collection<RuleNode> seedNodes;
     private final Collection<RuleEdge> seedEdges;

@@ -59,6 +59,8 @@ public abstract class SearchEngine {
         /** 
          * Only regular expressions are checked; match injectivity is not checked.
          */
-        REGEXPR
+        REGEXPR,
+        /** Binary NACs are treated as positive; injectivity is checked. */
+        REVERSE
     }
 }

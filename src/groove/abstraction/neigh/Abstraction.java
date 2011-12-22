@@ -16,7 +16,11 @@
  */
 package groove.abstraction.neigh;
 
+import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine.SearchMode;
+import groove.match.plan.PlanSearchEngine;
 import groove.trans.MinimalAnchorFactory;
 import groove.trans.Rule;
 
@@ -32,10 +36,18 @@ public final class Abstraction {
     public static void initialise() {
         Multiplicity.initMultStore();
         Rule.setAnchorFactory(NeighAnchorFactory.getInstance());
+        // Make sure that the search engine is set to minimal mode. This is
+        // needed when we have rules with NACs.
+        MatcherFactory.instance().setEngine(
+            PlanSearchEngine.getInstance(SearchMode.MINIMAL));
+        ReverseMatcherStore.initialise();
     }
 
     /** Leaves abstraction mode. */
     public static void terminate() {
         Rule.setAnchorFactory(MinimalAnchorFactory.getInstance());
+        MatcherFactory.instance().setEngine(
+            PlanSearchEngine.getInstance(SearchMode.NORMAL));
+        ReverseMatcherStore.terminate();
     }
 }

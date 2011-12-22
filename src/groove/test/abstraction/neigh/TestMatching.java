@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -233,6 +234,35 @@ public class TestMatching {
         Proof preMatch = preMatches.iterator().next();
         Set<Materialisation> mats =
             Materialisation.getMaterialisations(shape4, preMatch);
-        assertTrue(mats.isEmpty());
+        assertEquals(1, mats.size());
+    }
+
+    @Test
+    public void testNAC5() {
+        HostGraph graph4 = null;
+        try {
+            graph4 = view.getHostModel("test-nac-4").toResource();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+
+        Parameters.setEdgeMultBound(2);
+        Multiplicity.initMultStore();
+
+        Shape shape4 = Shape.createShape(graph4);
+        Rule rule = grammar.getRule("test-nac-4");
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape4, rule);
+        assertEquals(1, preMatches.size());
+        Proof preMatch = preMatches.iterator().next();
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape4, preMatch);
+        assertEquals(0, mats.size());
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
     }
 }
