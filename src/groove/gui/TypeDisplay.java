@@ -19,6 +19,8 @@ package groove.gui;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
+import javax.swing.JComponent;
+
 /**
  * Panel that holds the type display and type graph editors.
  * @author Arend Rensink
@@ -27,7 +29,7 @@ import groove.trans.ResourceKind;
 final public class TypeDisplay extends ResourceDisplay {
 
     // The displayed tree of host graphs.
-    // private final MyResourceTree tree;
+    private final MyResourceTree tree;
 
     /**
      * Constructs a panel for a given simulator.
@@ -35,7 +37,7 @@ final public class TypeDisplay extends ResourceDisplay {
     public TypeDisplay(Simulator simulator) {
         super(simulator, ResourceKind.TYPE);
         installListeners();
-        // this.tree = new MyResourceTree();
+        this.tree = new MyResourceTree();
     }
 
     @Override
@@ -50,7 +52,6 @@ final public class TypeDisplay extends ResourceDisplay {
         }
     }
 
-    /*
     @Override
     protected void resetList() {
         this.tree.suspendListeners();
@@ -80,5 +81,4 @@ final public class TypeDisplay extends ResourceDisplay {
             }
         }
     }
-    */
 }
