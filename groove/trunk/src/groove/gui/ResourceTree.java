@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -128,8 +129,13 @@ public class ResourceTree extends JTree implements SimulatorListener {
     /**
      * Loads a grammar, by adding all the corresponding resources to the
      * local tree. The resources are sorted before they are added.
+     * Returns all the newly created {@link TreeNode}s.
      */
-    private void loadGrammar(GrammarModel grammar) {
+    private Set<DefaultMutableTreeNode> loadGrammar(GrammarModel grammar) {
+        // allocate result
+        Set<DefaultMutableTreeNode> result =
+            new HashSet<DefaultMutableTreeNode>();
+
         // get all resources, and store them in the sorted FolderTree
         FolderTree ftree = new FolderTree();
         for (String resource : grammar.getNames(this.resourceKind)) {
@@ -137,21 +143,68 @@ public class ResourceTree extends JTree implements SimulatorListener {
         }
 
         // store all FolderTree items in this.root
-        ftree.store(this.root);
+        ftree.store(this.root, "", result);
+
+        // return result
+        return result;
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
+
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
+            // remember the visible and selected resources (+paths)
+            Set<String> visible = new HashSet<String>();
+            Set<String> selected =
+                getSimulatorModel().getSelectSet(this.resourceKind);
+            for (int i = 0; i < getRowCount(); i++) {
+                TreePath path = getPathForRow(i);
+                TreeNode node = (TreeNode) path.getLastPathComponent();
+                if (node instanceof ResourceNode) {
+                    ResourceNode rnode = (ResourceNode) node;
+                    visible.add(rnode.getResourceName());
+                } else if (node instanceof PathNode) {
+                    PathNode pnode = (PathNode) node;
+                    visible.add(pnode.getPathName());
+                }
+            }
+
+            // build new tree
             this.root.removeAllChildren();
             GrammarModel grammar = source.getGrammar();
             if (grammar != null) {
-                loadGrammar(grammar);
+                Set<DefaultMutableTreeNode> created = loadGrammar(grammar);
+                this.tree.reload(this.root);
+
+                // expand/select all the previously expanded/selected nodes
+                for (DefaultMutableTreeNode node : created) {
+                    if (node instanceof ResourceNode) {
+                        String name = ((ResourceNode) node).getResourceName();
+                        if (visible.contains(name) || selected.contains(name)) {
+                            TreePath path = new TreePath(node.getPath());
+                            expandPath(path.getParentPath());
+                            if (getSimulatorModel().getSelectSet(
+                                this.resourceKind).contains(name)) {
+                                addSelectionPath(path);
+                            }
+                            if (selected.contains(name)) {
+                                addSelectionPath(path);
+                            }
+                        }
+                    } else if (node instanceof PathNode) {
+                        String name = ((PathNode) node).getPathName();
+                        if (visible.contains(name)) {
+                            TreePath path = new TreePath(node.getPath());
+                            expandPath(path.getParentPath());
+                        }
+                    }
+                }
+
+                // store new tree and refresh display
+                refresh(source.getState());
             }
-            this.tree.reload(this.root);
-            refresh(source.getState());
         }
         activateListeners();
     }
@@ -486,13 +539,13 @@ public class ResourceTree extends JTree implements SimulatorListener {
      */
     public class PathNode extends DefaultMutableTreeNode {
 
-        // The (local) name of the path.
+        // The (full) name of the path.
         private final String pathName;
 
         /** Default constructor. */
-        public PathNode(String pathName) {
-            super(pathName, true);
-            this.pathName = pathName;
+        public PathNode(String fullName, String shortName) {
+            super(shortName, true);
+            this.pathName = fullName;
         }
 
         /** Getter for the resource name. */
@@ -516,12 +569,12 @@ public class ResourceTree extends JTree implements SimulatorListener {
         public final TreeMap<String,FolderTree> folders;
 
         // The resources that are stores directly at this level.
-        public final TreeMap<String,String> resources;
+        public final TreeSet<String> resources;
 
         /** Create a new (empty) FolderTree. */
         public FolderTree() {
             this.folders = new TreeMap<String,FolderTree>();
-            this.resources = new TreeMap<String,String>();
+            this.resources = new TreeSet<String>();
         }
 
         /** Insert a new resource in the tree. */
@@ -533,7 +586,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
         /** Local indexes insert. */
         private void insert(int index, String[] components, String resource) {
             if (index == components.length - 1) {
-                this.resources.put(components[index], resource);
+                this.resources.add(components[index]);
             } else {
                 FolderTree folder = this.folders.get(components[index]);
                 if (folder == null) {
@@ -544,17 +597,33 @@ public class ResourceTree extends JTree implements SimulatorListener {
             }
         }
 
-        /** Add all tree resources to a DefaultMutableTreeNode. */
-        public void store(DefaultMutableTreeNode root) {
+        /** 
+         * Adds all tree resources to a DefaultMutableTreeNode (with the given
+         * path). Also collects the created {@link TreeNode}s.
+         */
+        public void store(DefaultMutableTreeNode root, String path,
+                Set<DefaultMutableTreeNode> created) {
             for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
-                PathNode path = new PathNode(entry.getKey());
-                entry.getValue().store(path);
-                root.add(path);
+                String subpath = extendPath(path, entry.getKey());
+                PathNode node = new PathNode(subpath, entry.getKey());
+                entry.getValue().store(node, subpath, created);
+                created.add(node);
+                root.add(node);
             }
-            for (Map.Entry<String,String> entry : this.resources.entrySet()) {
-                ResourceNode leaf =
-                    new ResourceNode(entry.getValue(), entry.getKey());
+            for (String resource : this.resources) {
+                String fullName = extendPath(path, resource);
+                ResourceNode leaf = new ResourceNode(fullName, resource);
+                created.add(leaf);
                 root.add(leaf);
+            }
+        }
+
+        /** Extend a path string with a new subpath. */
+        private String extendPath(String path, String child) {
+            if (path.equals("")) {
+                return child;
+            } else {
+                return path + "." + child;
             }
         }
 
