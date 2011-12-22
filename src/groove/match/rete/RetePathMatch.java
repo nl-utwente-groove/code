@@ -37,23 +37,24 @@ public class RetePathMatch extends AbstractReteMatch {
      * Determines the length of the path (number of edges)
      * represented by this match.
      */
-    protected int pathLength = 0;
-
+    private int pathLength = 0;
     /**
      * Lazily evaluated set of nodes returned by the method
      * {@link #getNodes()}.
      * 
      * Warning: The lazy evaluation is not thread-safe.
      */
-    protected Set<HostNode> nodes = null;
+    private Set<HostNode> nodes = null;
     /** Additional information in case this match is for a closure. */
-    protected ClosureInfo auxiliaryData = null;
+    private ClosureInfo closureInfo = null;
 
     /**
      * For single-edge path matches this variable holds 
      * a reference to the associated host edge for equality checking. 
      */
-    protected HostEdge associatedEdge = null;
+    private HostEdge associatedEdge = null;
+    /** Cache key for this path match. */
+    private Key key;
 
     private RetePathMatch(ReteNetworkNode origin, HostNode start, HostNode end) {
         super(origin, false);
@@ -125,14 +126,14 @@ public class RetePathMatch extends AbstractReteMatch {
      * @return The additional information in case this match is for a closure
      */
     public ClosureInfo getClosureInfo() {
-        return this.auxiliaryData;
+        return this.closureInfo;
     }
 
     /**
      * Initialises the information object for the case this matches a closure
      */
     public void setClosureInfo(ClosureInfo value) {
-        this.auxiliaryData = value;
+        this.closureInfo = value;
     }
 
     @Override
@@ -283,6 +284,14 @@ public class RetePathMatch extends AbstractReteMatch {
             this.valuation.toString());
     }
 
+    /** Returns a cache key for this path match. */
+    public Key getCacheKey() {
+        if (this.key == null) {
+            this.key = new Key(this);
+        }
+        return this.key;
+    }
+
     /**
      * Creates a duplicate of a given path match. This
      * duplicate is used by a path-checker's match cache.
@@ -383,5 +392,65 @@ public class RetePathMatch extends AbstractReteMatch {
                 ((AbstractPathChecker) this.getOrigin()).getExpression().toString());
         }
 
+    }
+
+    private static class Key {
+        /** Constructs a key for a given path match. */
+        public Key(RetePathMatch pm) {
+            this.start = pm.start();
+            this.end = pm.end();
+            this.valuation = pm.getValuation();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.end.hashCode();
+            result = prime * result + this.start.hashCode();
+            result =
+                prime
+                    * result
+                    + ((this.valuation == null) ? 0 : this.valuation.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Key other = (Key) obj;
+            if (!this.end.equals(other.end)) {
+                return false;
+            }
+            if (!this.start.equals(other.start)) {
+                return false;
+            }
+            if (this.valuation == null) {
+                if (other.valuation != null) {
+                    return false;
+                }
+            } else if (!this.valuation.equals(other.valuation)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "Key [start=" + this.start + ", end=" + this.end
+                + ", valuation=" + this.valuation + "]";
+        }
+
+        private final HostNode start;
+        private final HostNode end;
+        private final Valuation valuation;
     }
 }

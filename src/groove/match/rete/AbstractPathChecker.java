@@ -20,19 +20,14 @@ import groove.rel.RegExpr;
 import groove.rel.RegExpr.Empty;
 import groove.rel.RegExpr.Neg;
 import groove.rel.RegExpr.Star;
-import groove.rel.Valuation;
-import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.util.Duo;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -57,7 +52,8 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
      */
     protected final boolean loop;
 
-    protected final PathMatchCache cache;
+    /** Cache of representative path matches. */
+    private final PathMatchCache cache;
 
     /**
      * Creates a path checker node based on a given regular expression 
@@ -151,21 +147,20 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
     @Override
     protected void passDownMatchToSuccessors(AbstractReteMatch m) {
         ReteNetworkNode previous = null;
-        int repeatedSuccessorIndex = 0;
+        int repeatCount = 0;
 
-        CacheEntry ent = null;
+        RetePathMatch ent = null;
         if (!((RetePathMatch) m).isEmpty()) {
             ent = this.cache.addMatch((RetePathMatch) m);
         }
         for (ReteNetworkNode n : this.getSuccessors()) {
 
-            repeatedSuccessorIndex =
-                (n != previous) ? 0 : (repeatedSuccessorIndex + 1);
+            repeatCount = (n != previous) ? 0 : (repeatCount + 1);
             if ((n instanceof AbstractPathChecker)
                 || ((RetePathMatch) m).isEmpty()) {
-                n.receive(this, repeatedSuccessorIndex, m);
-            } else if (ent.count == 1) {
-                n.receive(this, repeatedSuccessorIndex, ent.representative);
+                n.receive(this, repeatCount, m);
+            } else if (ent != null) {
+                n.receive(this, repeatCount, ent);
             }
             previous = n;
         }
@@ -191,19 +186,45 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
         //Do nothing        
     }
 
+    /**
+     * Entry in the path match cache, holding a representative match and a
+     * count of the number of comparable instances.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
     protected static class CacheEntry {
-        protected RetePathMatch representative;
-        protected int count;
+        private final RetePathMatch representative;
+        private int count;
 
+        /** Constructs a new cache entry, for a given path match representative.
+         * The count is initially set to 1. 
+         */
         public CacheEntry(RetePathMatch rep) {
             this.representative = rep;
-            this.count = 0;
+            this.count = 1;
         }
 
+        /** Increments the count of this entry. */
+        public void increment() {
+            this.count++;
+        }
+
+        /** 
+         * Decrements the count of this entry.
+         * @return {@code true} if the count is now 0
+         */
+        public boolean decrement() {
+            assert this.count >= 0;
+            this.count--;
+            return this.count == 0;
+        }
+
+        /** Returns the number of matches corresponding to this cache entry. */
         public int getCount() {
             return this.count;
         }
 
+        /** Returns the representative match of this cache entry. */
         public RetePathMatch getRepresentative() {
             return this.representative;
         }
@@ -211,16 +232,7 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
         @Override
         public String toString() {
             return String.format("Cache Entry key for %s. count: %d",
-                new EndPointPair(this.representative), this.count);
-        }
-    }
-
-    /** Pair of host nodes, serving as a key in the path match cache. */
-    protected static class EndPointPair extends Duo<HostNode> {
-        /** Constructs a new pair from a given match. */
-        public EndPointPair(RetePathMatch pm) {
-            super(pm.start(), pm.end());
-            assert !pm.isEmpty();
+                this.representative.getCacheKey(), this.count);
         }
     }
 
@@ -237,81 +249,61 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
      */
     public static class PathMatchCache implements DominoEventListener {
 
-        private HashMap<EndPointPair,Set<CacheEntry>> entries =
-            new HashMap<EndPointPair,Set<CacheEntry>>();
+        private HashMap<Object,CacheEntry> entries =
+            new HashMap<Object,CacheEntry>();
 
         @Override
         public void matchRemoved(AbstractReteMatch match) {
-            CacheEntry ent = this.removeMatch((RetePathMatch) match);
-            if (ent.count == 0) {
-                ent.representative.dominoDelete(null);
+            RetePathMatch pm = this.removeMatch((RetePathMatch) match);
+            if (pm != null) {
+                pm.dominoDelete(null);
             }
         }
 
+        /** Clears the cache. */
         public void clear() {
             this.entries.clear();
         }
 
         /**
          * Adds a path match to the cache.
-         * 
-         * @param pm
-         * @return The number of patches with the same
-         * start and end nodes as <code>pm</code> (including 
-         * <code>pm</code>).
+         * Returns the added path match if it is the first with
+         * the given key, or {@code null} otherwise.
+         * @param pm the match to be added
+         * @return Either {@code pm} or {@code null}, depending
+         * on whether {@code pm} is the first path match with the 
+         * given key.
          */
-        public CacheEntry addMatch(RetePathMatch pm) {
-            EndPointPair pair = new EndPointPair(pm);
-            Set<CacheEntry> ents = this.entries.get(pair);
-            CacheEntry ent = findEntryWithCompatibleValuation(ents, pm);
-            if (ents == null) {
-                ents = new HashSet<CacheEntry>();
-                this.entries.put(pair, ents);
-            }
-            if (ent == null) {
-                ent = new CacheEntry(RetePathMatch.duplicate(pm));
-                ents.add(ent);
+        public RetePathMatch addMatch(RetePathMatch pm) {
+            RetePathMatch result = null;
+            Object pair = pm.getCacheKey();
+            CacheEntry entry = this.entries.get(pair);
+            if (entry == null) {
+                result = pm;
+                this.entries.put(pair, entry = new CacheEntry(pm));
+            } else {
+                entry.increment();
             }
             pm.addDominoListener(this);
-            ent.count++;
-            return ent;
-        }
-
-        private CacheEntry findEntryWithCompatibleValuation(
-                Set<CacheEntry> ents, RetePathMatch pm) {
-            CacheEntry result = null;
-            Valuation v = pm.getValuation();
-            if (ents != null) {
-                for (CacheEntry e : ents) {
-                    Valuation vr = e.representative.getValuation();
-                    if (vr == v
-                        || ((v != null) && (vr != null) && v.equals(vr))) {
-                        result = e;
-                        break;
-                    }
-                }
-            }
             return result;
         }
 
         /**
-         * Removes a match from the cache
-         * @param pm
+         * Removes a match from the cache.
+         * @param pm the match to be removed
+         * @return the representative path match, if the last instance was removed;
+         * {@code null} otherwise
          */
-        public CacheEntry removeMatch(RetePathMatch pm) {
-            EndPointPair pair = new EndPointPair(pm);
-            Set<CacheEntry> ents = this.entries.get(pair);
-            assert ents != null;
-            CacheEntry ent = findEntryWithCompatibleValuation(ents, pm);
-            assert ent != null;
-            ent.count--;
-            if (ent.count == 0) {
-                ents.remove(ent);
-                if (ents.isEmpty()) {
-                    this.entries.remove(pair);
-                }
+        public RetePathMatch removeMatch(RetePathMatch pm) {
+            RetePathMatch result = null;
+            Object pair = pm.getCacheKey();
+            CacheEntry entry = this.entries.get(pair);
+            assert entry != null;
+            if (entry.decrement()) {
+                this.entries.remove(pair);
+                result = entry.getRepresentative();
             }
-            return ent;
+            return result;
         }
 
         @Override
