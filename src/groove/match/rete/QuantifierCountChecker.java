@@ -22,11 +22,11 @@ import groove.graph.algebra.VariableNode;
 import groove.match.TreeMatch;
 import groove.match.rete.ReteSimpleMatch.ReteCountMatch;
 import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.trans.Condition.Op;
 import groove.util.TreeHashSet;
 import groove.util.Visitor.Collector;
 

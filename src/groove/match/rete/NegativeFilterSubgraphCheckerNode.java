@@ -109,7 +109,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             AbstractReteMatch subgraph) {
-        receiveAndProcess(source, repeatIndex, subgraph);
+        receiveAndProcess(source, repeatIndex == 0, subgraph);
     }
 
     //TODO ARASH: remove this once on-demand is properly implemented for this
@@ -126,7 +126,7 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
     }
 
     @Override
-    protected boolean unbufferMatch(ReteNetworkNode source, int repeatIndex,
+    protected boolean unbufferMatch(ReteNetworkNode source, boolean first,
             AbstractReteMatch subgraph) {
         return false;
     }
@@ -140,10 +140,10 @@ public class NegativeFilterSubgraphCheckerNode<LeftMatchType extends AbstractRet
 
     @SuppressWarnings("unchecked")
     @Override
-    protected int receiveAndProcess(ReteNetworkNode source, int repeatIndex,
+    protected int receiveAndProcess(ReteNetworkNode source, boolean first,
             AbstractReteMatch subgraph) {
         int result = 0;
-        if (isLeftAntecedent(source, repeatIndex)) {
+        if (isLeftAntecedent(source, first)) {
             result = receivePositiveMatch((LeftMatchType) subgraph);
         } else {
             result = receiveNegativeMatch(source, (RightMatchType) subgraph);

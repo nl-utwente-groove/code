@@ -88,10 +88,10 @@ public class QuantifierCountSubgraphChecker extends
     }
 
     @Override
-    protected int receiveAndProcess(ReteNetworkNode source, int repeatIndex,
+    protected int receiveAndProcess(ReteNetworkNode source, boolean first,
             AbstractReteMatch match) {
-        if (isLeftAntecedent(source, repeatIndex)) {
-            return receiveLeftMatch(source, repeatIndex, match);
+        if (isLeftAntecedent(source, first)) {
+            return receiveLeftMatch(source, first, match);
         } else {
             return receiveRightMatch((ReteCountMatch) match);
         }
@@ -136,7 +136,7 @@ public class QuantifierCountSubgraphChecker extends
         return result;
     }
 
-    private int receiveLeftMatch(ReteNetworkNode source, int repeatIndex,
+    private int receiveLeftMatch(ReteNetworkNode source, boolean first,
             AbstractReteMatch left) {
         int result = 0;
         if (isCountBindingPossible()) {
@@ -261,7 +261,7 @@ public class QuantifierCountSubgraphChecker extends
          * because a dummy count match does not actually contain
          * the node images of any particular anchor. 
          */
-        final int[][] leftAnchorLookup;
+        final LookupEntry[] leftAnchorLookup;
 
         /**
          * Creates a join-strategy for a particular subgraph-checker
@@ -273,12 +273,16 @@ public class QuantifierCountSubgraphChecker extends
                 && (sgChecker.getAntecedents().get(1) instanceof QuantifierCountChecker);
             QuantifierCountChecker qcc =
                 (QuantifierCountChecker) sgChecker.getAntecedents().get(1);
-            this.leftAnchorLookup = new int[qcc.getPattern().length - 1][2];
-            for (int i = 0; i < this.subgraphChecker.fastEqualityLookupTable.length; i++) {
-                int[] lookupEntry =
-                    this.subgraphChecker.fastEqualityLookupTable[i];
-                this.leftAnchorLookup[lookupEntry[2]][0] = lookupEntry[0];
-                this.leftAnchorLookup[lookupEntry[2]][1] = lookupEntry[1];
+            this.leftAnchorLookup =
+                new LookupEntry[qcc.getPattern().length - 1];
+            LookupEntry[] leftTable = this.subgraphChecker.getLeftLookupTable();
+            LookupEntry[] rightTable =
+                this.subgraphChecker.getRightLookupTable();
+            for (int i = 0; i < leftTable.length; i++) {
+                LookupEntry leftEntry = leftTable[i];
+                LookupEntry rightEntry = rightTable[i];
+                this.leftAnchorLookup[rightEntry.getPos()] =
+                    leftEntry;
             }
         }
 

@@ -28,6 +28,7 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.VariableNode;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
+import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.rel.RegExpr;
@@ -1384,8 +1385,8 @@ public class ReteNetwork {
         // inside the <code>elements</code> array and the integer at index  1
         // is -1 for node element, 0 for the source of edge elements and 1
         // for the target of edge elements.
-        private HashMap<RuleNode,int[]> nodeLookupMap =
-            new HashMap<RuleNode,int[]>();
+        private HashMap<RuleNode,LookupEntry> nodeLookupMap =
+            new HashMap<RuleNode,LookupEntry>();
 
         /**
          * 
@@ -1400,12 +1401,12 @@ public class ReteNetwork {
                 if (this.elements[i] instanceof RuleEdge) {
                     RuleNode n1 = ((RuleEdge) this.elements[i]).source();
                     RuleNode n2 = ((RuleEdge) this.elements[i]).target();
-                    this.nodeLookupMap.put(n1, new int[] {i, 0});
-                    this.nodeLookupMap.put(n2, new int[] {i, 1});
+                    this.nodeLookupMap.put(n1, new LookupEntry(i, Role.SOURCE));
+                    this.nodeLookupMap.put(n2, new LookupEntry(i, Role.TARGET));
                 } else {
                     assert (this.elements[i] instanceof RuleNode);
                     this.nodeLookupMap.put((RuleNode) this.elements[i],
-                        new int[] {i, -1});
+                        new LookupEntry(i, Role.NODE));
                 }
             }
             assert reteNode.getPattern().length == mappedTo.length;
@@ -1545,7 +1546,7 @@ public class ReteNetwork {
          * returns {@literal null} if <code>n</code> does not occur in the list of
          * elements of this mapping.
          */
-        public int[] locateNode(RuleNode n) {
+        public LookupEntry locateNode(RuleNode n) {
             return this.nodeLookupMap.get(n);
         }
 

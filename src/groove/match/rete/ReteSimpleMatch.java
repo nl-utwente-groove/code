@@ -178,21 +178,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * @return The {@link HostNode} object in the host graph to which <code>n</code> is mapped.
      */
     public HostNode getNode(RuleNode n) {
-        int[] index = this.getOrigin().getPatternLookupTable().getNode(n);
-        HostNode result = lookupNode(index);
-        return result;
-    }
-
-    private HostNode lookupNode(int[] index) {
-        HostNode result = null;
-        if ((index != null) && (index[0] >= 0)) {
-            result =
-                (index[1] != -1) ? ((index[1] == 0)
-                        ? ((HostEdge) this.units[index[0]]).source()
-                        : ((HostEdge) this.units[index[0]]).target())
-                        : (HostNode) this.units[index[0]];
-        }
-        return result;
+        LookupEntry entry = getOrigin().getPatternLookupTable().getNode(n);
+        return (HostNode) entry.lookup(this.units);
     }
 
     @Override
@@ -357,7 +344,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * @return A newly created match object containing the merge of all the subMatches
      * if they do not conflict, {@literal null} otherwise. 
      */
-    
+
     public static ReteSimpleMatch merge(ReteNetworkNode origin,
             AbstractReteMatch[] subMatches, boolean injective) {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
@@ -381,7 +368,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                 subMatches[i].getSuperMatches().add(result);
             }
             assert k == origin.getPattern().length;
-    
+
             assert subMatches[0].hashCode() != 0;
             result.refreshHashCode(subMatches[0].hashCode(),
                 subMatches[0].getAllUnits().length);
@@ -631,7 +618,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
          */
         public ReteSimpleMatch dummyMerge(ReteNetworkNode origin,
                 AbstractReteMatch leftMatch, boolean copyPrefix,
-                int[][] mergeLookupTable) {
+                LookupEntry[] mergeLookupTable) {
             assert this.dummy;
             ReteSimpleMatch result =
                 new ReteSimpleMatch(origin, origin.getOwner().isInjective());
@@ -641,20 +628,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                 result.units[i] = leftUnits[i];
             }
             for (; i < leftUnits.length + this.units.length - 1; i++) {
-                int[] pos = mergeLookupTable[i - leftUnits.length];
-                Object u = leftUnits[pos[0]];
-                if (u instanceof HostNode) {
-                    result.units[i] = u;
-                } else if (u instanceof HostEdge) {
-                    result.units[i] =
-                        pos[1] == 0 ? ((HostEdge) u).source()
-                                : ((HostEdge) u).target();
-                } else { // u instance of RetePathMatch
-                    assert u instanceof RetePathMatch;
-                    result.units[i] =
-                        pos[1] == 0 ? ((RetePathMatch) u).start()
-                                : ((RetePathMatch) u).end();
-                }
+                LookupEntry pos = mergeLookupTable[i - leftUnits.length];
+                result.units[i] = pos.lookup(leftUnits);
             }
             result.units[result.units.length - 1] =
                 this.units[this.units.length - 1];
