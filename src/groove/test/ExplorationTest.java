@@ -136,6 +136,15 @@ public class ExplorationTest {
         testExploration("regexpr.gps", "start", "rete", 16, 48);
     }
 
+    /** Tests the As-and-Bs grammar meant to test path-match cache behavior  sample. */
+    @Test
+    public void testAsAndBs() {
+        testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "bfs",
+            8240, 44774);
+        testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "rete",
+            8240, 44774);
+    }
+
     /** Tests the lose-nodes sample. */
     @Test
     public void testLooseNodes() {
