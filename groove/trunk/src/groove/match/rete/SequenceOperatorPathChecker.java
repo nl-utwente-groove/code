@@ -17,7 +17,9 @@
 package groove.match.rete;
 
 import groove.rel.RegExpr;
-import groove.util.TreeHashSet;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents sequencing path operator that combines two
@@ -26,9 +28,8 @@ import groove.util.TreeHashSet;
  * @version $Revision $
  */
 public class SequenceOperatorPathChecker extends AbstractPathChecker {
-
-    private TreeHashSet<RetePathMatch> leftMemory = null;
-    private TreeHashSet<RetePathMatch> rightMemory = null;
+    private final Set<RetePathMatch> leftMemory;
+    private final Set<RetePathMatch> rightMemory;
 
     /**
      * Creates a path checker node that performs sequencing of matches
@@ -38,15 +39,15 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
     public SequenceOperatorPathChecker(ReteNetwork network, RegExpr expression,
             boolean isLoop) {
         super(network, expression, isLoop);
-        this.leftMemory = new TreeHashSet<RetePathMatch>();
-        this.rightMemory = new TreeHashSet<RetePathMatch>();
+        this.leftMemory = new HashSet<RetePathMatch>();
+        this.rightMemory = new HashSet<RetePathMatch>();
     }
 
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             RetePathMatch newMatch) {
-        TreeHashSet<RetePathMatch> memory;
-        TreeHashSet<RetePathMatch> otherMemory;
+        Set<RetePathMatch> memory;
+        Set<RetePathMatch> otherMemory;
 
         if (this.getAntecedents().get(0) != this.getAntecedents().get(1)) {
             memory =

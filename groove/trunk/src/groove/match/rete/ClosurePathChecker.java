@@ -44,12 +44,12 @@ public class ClosurePathChecker extends AbstractPathChecker implements
     /**
      * The memory for incoming matches coming from the antecedent.
      */
-    protected Set<RetePathMatch> leftMemory = null;
+    private final Set<RetePathMatch> leftMemory;
 
     /**
      * The memory for loop-back matches received from oneself
      */
-    protected Set<RetePathMatch> rightMemory = null;
+    private final Set<RetePathMatch> rightMemory;
 
     /**
      * Creates a Path-checker note that performs sequencing-closure, i.e.

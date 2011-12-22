@@ -26,13 +26,13 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -58,7 +58,7 @@ public abstract class AbstractReteMatch implements VarMap {
 
     private boolean deleted = false;
 
-    private Collection<AbstractReteMatch> superMatches =
+    private final Collection<AbstractReteMatch> superMatches =
         new ArrayList<AbstractReteMatch>();
     /**
      * These are the matches that have participated in
@@ -67,12 +67,12 @@ public abstract class AbstractReteMatch implements VarMap {
      * from the list of <code>superMatches</codes>
      * of those who have not participated in a domino delete.
      */
-    private Set<AbstractReteMatch> subMatches =
-        new TreeHashSet<AbstractReteMatch>();
+    private final Set<AbstractReteMatch> subMatches =
+        new HashSet<AbstractReteMatch>();
 
-    private Collection<Collection<? extends AbstractReteMatch>> containerCollections =
+    private final Collection<Collection<? extends AbstractReteMatch>> containerCollections =
         new ArrayList<Collection<? extends AbstractReteMatch>>();
-    private List<DominoEventListener> dominoListeners =
+    private final List<DominoEventListener> dominoListeners =
         new ArrayList<DominoEventListener>();
 
     /**
@@ -255,7 +255,6 @@ public abstract class AbstractReteMatch implements VarMap {
                     m.dominoDelete(this);
                 }
             }
-            this.superMatches = null;
 
             for (Collection<? extends AbstractReteMatch> c : this.containerCollections) {
                 c.remove(this);
