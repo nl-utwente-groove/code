@@ -279,8 +279,8 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
             Object pair = pm.getCacheKey();
             CacheEntry entry = this.entries.get(pair);
             if (entry == null) {
-                result = pm;
-                this.entries.put(pair, entry = new CacheEntry(pm));
+                result = RetePathMatch.duplicate(pm);
+                this.entries.put(pair, entry = new CacheEntry(result));
             } else {
                 entry.increment();
             }

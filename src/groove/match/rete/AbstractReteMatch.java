@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -250,12 +250,12 @@ public abstract class AbstractReteMatch implements VarMap {
                     m.superMatches.remove(this);
                 }
             }
+            this.subMatches.clear();
             for (AbstractReteMatch m : this.superMatches) {
                 if (!m.isDeleted()) {
                     m.dominoDelete(this);
                 }
             }
-
             for (Collection<? extends AbstractReteMatch> c : this.containerCollections) {
                 c.remove(this);
             }
