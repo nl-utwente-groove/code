@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
@@ -132,31 +133,13 @@ public abstract class AbstractReteMatch implements VarMap {
             }
         }
         if (result) {
-            for (RuleNode n : anchorMap.nodeMap().keySet()) {
-                int[] idx = lookup.getNode(n);
+            for (Entry<RuleNode,? extends HostNode> n : anchorMap.nodeMap().entrySet()) {
+                LookupEntry idx = lookup.getNode(n.getKey());
                 if (idx != null) {
-                    Object e = units[idx[0]];
-                    if (e instanceof HostNode) {
-                        if (!e.equals(anchorMap.getNode(n))) {
-                            result = false;
-                            break;
-                        }
-                    } else if (e instanceof HostEdge) {
-                        HostNode n1 =
-                            (idx[1] == 0) ? ((HostEdge) e).source()
-                                    : ((HostEdge) e).target();
-                        if (!n1.equals(anchorMap.getNode(n))) {
-                            result = false;
-                            break;
-                        }
-                    } else { //a path match unit
-                        HostNode n1 =
-                            (idx[1] == 0) ? ((RetePathMatch) e).start()
-                                    : ((RetePathMatch) e).end();
-                        if (!n1.equals(anchorMap.getNode(n))) {
-                            result = false;
-                            break;
-                        }
+                    Node actual = idx.lookup(units);
+                    if (!actual.equals(n.getValue())) {
+                        result = false;
+                        break;
                     }
                 }
             }

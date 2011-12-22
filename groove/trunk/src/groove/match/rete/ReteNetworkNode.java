@@ -39,29 +39,10 @@ public abstract class ReteNetworkNode {
         new ArrayList<ReteNetworkNode>();
 
     /**
-     * The represents the mode in which a RETE network should operate under
-     * in run-time when it is fed with edges of a graph.  
-     * @author Arash Jalali
-     * @version $Revision $
-     */
-    public enum Action {
-        /**
-         * <code>ADD</code> means edges fed into the RETE network must be
-         * added to the conflict set.
-         */
-        ADD,
-        /**
-        * <code>REMOVE</code> means edges fed into the RETE network must be
-        * removed from the conflict set.
-        */
-        REMOVE
-    }
-
-    /**
      * A look up table that allows fast querying about the 
      * pattern that an n-node finds matches for.
      */
-    protected LookupTable patternLookupTable;
+    private LookupTable patternLookupTable;
 
     /**
      * Flag indicating if this n-node's run-time state
@@ -72,7 +53,7 @@ public abstract class ReteNetworkNode {
      * The value of this field is only meaningful if 
      * {@link ReteNetwork#isInOnDemandMode()} returns <code>true</code>.
      */
-    protected boolean isUpToDate = true;
+    private boolean isUpToDate = true;
 
     /**
      * @return The pattern of elements this n-node finds matches for.
@@ -280,6 +261,25 @@ public abstract class ReteNetworkNode {
             previous = n;
         }
 
+    }
+
+    /**
+     * The represents the mode in which a RETE network should operate under
+     * in run-time when it is fed with edges of a graph.  
+     * @author Arash Jalali
+     * @version $Revision $
+     */
+    public static enum Action {
+        /**
+         * <code>ADD</code> means edges fed into the RETE network must be
+         * added to the conflict set.
+         */
+        ADD,
+        /**
+        * <code>REMOVE</code> means edges fed into the RETE network must be
+        * removed from the conflict set.
+        */
+        REMOVE
     }
 
 }

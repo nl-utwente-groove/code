@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.graph.Node;
+import groove.match.rete.LookupEntry.Role;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
@@ -30,7 +30,11 @@ import java.util.HashMap;
  * @version $Revision $
  */
 public class LookupTable {
-    private HashMap<RuleElement,int[]> table = new HashMap<RuleElement,int[]>();
+    final private HashMap<RuleNode,LookupEntry> nodeTable =
+        new HashMap<RuleNode,LookupEntry>();
+
+    final private HashMap<RuleEdge,Integer> edgeTable =
+        new HashMap<RuleEdge,Integer>();
 
     /**
      * Creates a lookup table from the pattern of elements of a RETE node
@@ -39,14 +43,17 @@ public class LookupTable {
     public LookupTable(ReteNetworkNode nnode) {
         RuleElement[] pattern = nnode.getPattern();
         for (int i = 0; i < pattern.length; i++) {
-            if (pattern[i] instanceof RuleNode) {
-                this.table.put(pattern[i], new int[] {i, -1});
+            RuleElement elem = pattern[i];
+            if (elem instanceof RuleNode) {
+                this.nodeTable.put((RuleNode) elem, new LookupEntry(i,
+                    Role.NODE));
             } else if (pattern[i] instanceof RuleEdge) {
-                this.table.put(pattern[i], new int[] {i, 0});
-                this.table.put(((RuleEdge) pattern[i]).source(), new int[] {i,
-                    0});
-                this.table.put(((RuleEdge) pattern[i]).target(), new int[] {i,
-                    1});
+                RuleEdge edge = (RuleEdge) elem;
+                this.edgeTable.put(edge, i);
+                this.nodeTable.put(edge.source(), new LookupEntry(i,
+                    Role.SOURCE));
+                this.nodeTable.put(edge.target(), new LookupEntry(i,
+                    Role.TARGET));
             }
         }
     }
@@ -56,22 +63,19 @@ public class LookupTable {
      * is defined in the lookup table, -1 if it's not.
      */
     public int getEdge(RuleEdge e) {
-        int[] res = this.table.get(e);
-        if (res != null) {
-            return res[0];
-        } else {
-            return -1;
-        }
+        Integer result = this.edgeTable.get(e);
+        return result == null ? -1 : result;
     }
 
     /**
-     * @return if <code>n</code> is defined  an array of <code>int</code> with size of 2,
-     * with element at index 0 pointing to the cell in a match's units array, 
-     * and the second specifying if the the node is in the source of in the target(0=source, 
-     * 1=target) of the edge. The second integer is -1 if the match unit at that position is 
-     * a node match. If <code>n</code> is not defined, the return value is <code>null</code>. 
+     * Returns a lookup entry for a given rule node.
+     * If <code>n</code> is defined, the result consists of the
+     * index of the defining element for the node in a pattern or match array,
+     * and the second indicates if the defining element is a node, or an edge
+     * of which the required node is the source or target. 
+     * If <code>n</code> is not defined, the return value is <code>null</code>. 
      */
-    public int[] getNode(Node n) {
-        return this.table.get(n);
+    public LookupEntry getNode(RuleNode n) {
+        return this.nodeTable.get(n);
     }
 }

@@ -19,15 +19,14 @@ package groove.match.rete;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
 import groove.algebra.Operator;
-import groove.graph.Node;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.trans.HostEdge;
 import groove.trans.HostElement;
-import groove.trans.HostNode;
 import groove.trans.RuleElement;
+import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +43,7 @@ public class DataOperatorChecker extends ReteNetworkNode {
     private Operator operator;
     private Operation operation;
     private boolean dataCreator = false;
-    private List<int[]> argumentLocator = new ArrayList<int[]>();
+    private List<LookupEntry> argumentLocator = new ArrayList<LookupEntry>();
 
     /**
      * Creates a data operator checker that takes a match from its antecedent
@@ -124,26 +123,8 @@ public class DataOperatorChecker extends ReteNetworkNode {
         //
         List<Object> arguments = new ArrayList<Object>();
         for (int i = 0; i < this.argumentLocator.size(); i++) {
-            int[] pos = this.argumentLocator.get(i);
-            Object e = matchUnits[pos[0]];
-            ValueNode vn;
-            if (e instanceof HostEdge) {
-                HostNode n =
-                    (pos[1] == 0) ? ((HostEdge) e).source()
-                            : ((HostEdge) e).target();
-                assert n instanceof ValueNode;
-                vn = (ValueNode) n;
-            } else if (e instanceof HostNode) {
-                assert e instanceof ValueNode;
-                vn = (ValueNode) e;
-            } else { //e instance of RetePathMatch
-                HostNode n =
-                    (pos[1] == 0) ? ((RetePathMatch) e).start()
-                            : ((RetePathMatch) e).end();
-                assert n instanceof ValueNode;
-                vn = (ValueNode) n;
-
-            }
+            LookupEntry entry = this.argumentLocator.get(i);
+            ValueNode vn = (ValueNode) entry.lookup(matchUnits);
             arguments.add(vn.getValue());
         }
 
@@ -166,25 +147,12 @@ public class DataOperatorChecker extends ReteNetworkNode {
                 this.operation.getResultAlgebra().getSymbol(outcome).equals(
                     opResultVarNode.getConstant().getSymbol());
         } else {
-            int[] pos =
+            LookupEntry entry =
                 this.getAntecedents().get(0).getPatternLookupTable().getNode(
-                    (Node) this.pattern[this.pattern.length - 1]);
-            Object e = matchUnits[pos[0]];
-            HostNode n;
-            if (e instanceof HostNode) {
-                n = (HostNode) e;
-            } else if (e instanceof HostEdge) {
-                n =
-                    (pos[1] == 0) ? ((HostEdge) e).source()
-                            : ((HostEdge) e).target();
-            } else { //e instance of RetePathMatch
-                n =
-                    (pos[1] == 0) ? ((RetePathMatch) e).start()
-                            : ((RetePathMatch) e).end();
-            }
-            assert n instanceof ValueNode;
-            if (((ValueNode) n).getValue().equals(outcome)) {
-                resultValueNode = (ValueNode) n;
+                    (RuleNode) this.pattern[this.pattern.length - 1]);
+            ValueNode n = (ValueNode) entry.lookup(matchUnits);
+            if (n.getValue().equals(outcome)) {
+                resultValueNode = n;
                 passDown = true;
             }
         }
@@ -213,13 +181,14 @@ public class DataOperatorChecker extends ReteNetworkNode {
                 + "\n");
         }
         for (int i = 0; i < this.argumentLocator.size(); i++) {
-            int[] pos = this.argumentLocator.get(i);
-            if (pos[1] != -1) {
+            LookupEntry entry = this.argumentLocator.get(i);
+            if (entry.getRole() != Role.NODE) {
                 sb.append(String.format("-- argument[%d]=element[%d]%s\n", i,
-                    pos[0], pos[1] == 0 ? ".source" : ".target"));
+                    entry.getPos(), entry.getRole() == Role.SOURCE ? ".source"
+                            : ".target"));
             } else {
                 sb.append(String.format("-- argument[%d]=element[%d]\n", i,
-                    pos[0]));
+                    entry.getPos()));
             }
         }
         return sb.toString();
