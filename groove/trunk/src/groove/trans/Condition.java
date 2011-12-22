@@ -571,6 +571,31 @@ public class Condition implements Fixable {
         return this.rule;
     }
 
+    /**
+     * Returns a new condition object that is the reverse of this one. Hence,
+     * a NAC becomes a Positive Application Condition.
+     * Used in the abstraction code.
+     * Fails in an assertion if this condition is not a NAC.s 
+     */
+    public Condition reverse() {
+        assert getOp() == Op.NOT;
+        Condition result =
+            new Condition(getName(), Op.EXISTS, getPattern(), getRoot(),
+                getSystemProperties());
+        if (getTypeGraph() != null) {
+            result.setTypeGraph(getTypeGraph());
+        }
+        if (isFixed()) {
+            try {
+                result.setFixed();
+            } catch (FormatException e) {
+                // Cannot happen since we already had a fixed condition.
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
     /** The operator of this condition. */
     private final Op op;
     /**

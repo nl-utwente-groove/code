@@ -28,6 +28,7 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
+import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -35,9 +36,8 @@ import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
-import groove.match.MatcherFactory;
-import groove.match.SearchEngine.SearchMode;
-import groove.match.plan.PlanSearchEngine;
+import groove.match.Matcher;
+import groove.match.TreeMatch;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
@@ -49,12 +49,16 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.util.Pair;
+import groove.util.Property;
+import groove.util.Visitor;
+import groove.util.Visitor.Finder;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -474,19 +478,22 @@ public final class Materialisation {
     }
 
     private boolean violatesNACs() {
-        boolean result = false;
         if (this.hasNACs()) {
-            // Make sure that the search engine is set to NORMAL mode because
-            // now we want to check the whole rule.
-            MatcherFactory.instance().setEngine(
-                PlanSearchEngine.getInstance(SearchMode.NORMAL));
-            // Compute the final matches.
-            // EZ says: this is OK...
-            result = this.matchedRule.getMatch(this.shape, null) == null;
-            // ... but this throws an exception.
-            //result = this.matchedRule.getMatch(this.shape, this.match) != null;
+            Matcher matcher = ReverseMatcherStore.getMatcher(this.matchedRule);
+            TreeMatch nacMatch = matcher.find(this.shape, this.match);
+            if (nacMatch != null) {
+                final Shape shape = this.shape;
+                Finder<Proof> finder = Visitor.newFinder(new Property<Proof>() {
+                    @Override
+                    public boolean isSatisfied(Proof value) {
+                        return hasConcreteMatch(shape, value);
+                    }
+                });
+                nacMatch.traverseProofs(finder);
+                return finder.found();
+            }
         }
-        return result;
+        return false;
     }
 
     /**
@@ -527,6 +534,49 @@ public final class Materialisation {
             result = this.originalShape;
         }
         return new Pair<Shape,RuleEvent>(result, event);
+    }
+
+    /** Special checker for NAC matches. */
+    private static boolean hasConcreteMatch(Shape shape, Proof proof) {
+        Collection<Proof> subProofs = proof.getSubProofs();
+        if (subProofs.isEmpty()) {
+            // In this case we have NACs but they are embedded in the main proof.
+            // This happens when we only have an NegatedSearchItem.
+            return hasConcreteMatch(shape,
+                (RuleToShapeMap) proof.getPatternMap());
+        } else {
+            boolean result = false;
+            for (Proof subProof : subProofs) {
+                result =
+                    hasConcreteMatch(shape,
+                        (RuleToShapeMap) subProof.getPatternMap());
+                if (result) {
+                    break;
+                }
+            }
+            return result;
+        }
+
+    }
+
+    /** Checks if the image of the given map in the given shape is concrete. */
+    private static boolean hasConcreteMatch(Shape shape, RuleToShapeMap map) {
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        // The match was injective so we can use the values of the node map
+        // directly, no need to call nodeMapValueSet().
+        for (ShapeNode nodeS : map.nodeMap().values()) {
+            if (!shape.getNodeMult(nodeS).equals(one)) {
+                return false;
+            }
+        }
+        for (ShapeEdge edgeS : map.edgeMap().values()) {
+            if (edgeS.label().isBinary()) {
+                if (!shape.isEdgeConcrete(edgeS)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

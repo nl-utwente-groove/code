@@ -206,10 +206,13 @@ public class PlanSearchEngine extends SearchEngine {
             }
             boolean injective =
                 this.condition.getSystemProperties().isInjective();
-            if (this.searchMode != NORMAL) {
-                // Ignore grammar injectivity property if we are non-normal
-                // search mode.
+            if (this.searchMode == SearchMode.MINIMAL
+                || this.searchMode == SearchMode.REGEXPR) {
+                // We don't want injectivity in these modes.
                 injective = false;
+            } else if (this.searchMode == SearchMode.REVERSE) {
+                // We always want injectivity in this mode.
+                injective = true;
             }
             SearchPlan result =
                 new SearchPlan(this.condition, seedNodes, seedEdges, injective);
@@ -287,11 +290,21 @@ public class PlanSearchEngine extends SearchEngine {
                                     embargoEdge.target(), false);
                         }
                     } else {
-                        item =
-                            createNegatedSearchItem(createEdgeSearchItem(embargoEdge));
+                        AbstractSearchItem edgeSearchItem =
+                            createEdgeSearchItem(embargoEdge);
+                        if (this.searchMode == SearchMode.REVERSE) {
+                            item = edgeSearchItem;
+                        } else {
+                            item = createNegatedSearchItem(edgeSearchItem);
+                        }
                     }
                 } else {
-                    item = new ConditionSearchItem(subCondition);
+                    if (this.searchMode == SearchMode.REVERSE
+                        && subCondition.getOp() == Op.NOT) {
+                        item = new ConditionSearchItem(subCondition.reverse());
+                    } else {
+                        item = new ConditionSearchItem(subCondition);
+                    }
                 }
                 if (item != null) {
                     result.add(item);
