@@ -24,7 +24,6 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
-import groove.util.TreeHashSet;
 
 import java.util.HashSet;
 import java.util.List;
@@ -41,26 +40,25 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     /**
      * left on-demand buffer
      */
-    protected TreeHashSet<LeftMatchType> leftOnDemandBuffer =
-        new TreeHashSet<LeftMatchType>();
+    protected HashSet<LeftMatchType> leftOnDemandBuffer =
+        new HashSet<LeftMatchType>();
 
     /**
      * memory containing the matches received from the left antecedent
      */
-    protected TreeHashSet<LeftMatchType> leftMemory =
-        new TreeHashSet<LeftMatchType>();
+    protected HashSet<LeftMatchType> leftMemory = new HashSet<LeftMatchType>();
 
     /**
      * left on-demand buffer
      */
-    protected TreeHashSet<RightMatchType> rightOnDemandBuffer =
-        new TreeHashSet<RightMatchType>();
+    protected HashSet<RightMatchType> rightOnDemandBuffer =
+        new HashSet<RightMatchType>();
 
     /**
      * memory containing the matches received from the right antecedent
      */
-    protected TreeHashSet<RightMatchType> rightMemory =
-        new TreeHashSet<RightMatchType>();
+    protected HashSet<RightMatchType> rightMemory =
+        new HashSet<RightMatchType>();
 
     /**
      * This is a fast lookup table for equality checking of left and
@@ -271,7 +269,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     }
 
     private <E extends AbstractReteMatch> boolean unbufferMatch(
-            ReteNetworkNode source, TreeHashSet<E> memory, E match) {
+            ReteNetworkNode source, HashSet<E> memory, E match) {
         assert !match.isDeleted();
         boolean result = memory.remove(match);
         if (result) {
@@ -300,7 +298,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
      * Buffers the given match in the given ondemand buffer
      */
     protected <E extends AbstractReteMatch> void bufferMatch(
-            ReteNetworkNode source, TreeHashSet<E> memory, E match) {
+            ReteNetworkNode source, HashSet<E> memory, E match) {
         memory.add(match);
         match.addContainerCollection(memory);
         this.invalidate();
@@ -357,16 +355,16 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     protected int receiveAndProcess(ReteNetworkNode source, boolean first,
             AbstractReteMatch subgraph) {
         int result = 0;
-        TreeHashSet<AbstractReteMatch> memory;
-        TreeHashSet<AbstractReteMatch> otherMemory;
+        HashSet<AbstractReteMatch> memory;
+        HashSet<AbstractReteMatch> otherMemory;
         boolean sourceIsLeft = isLeftAntecedent(source, first);
 
         memory =
-            (TreeHashSet<AbstractReteMatch>) (sourceIsLeft ? this.leftMemory
+            (HashSet<AbstractReteMatch>) (sourceIsLeft ? this.leftMemory
                     : this.rightMemory);
 
         otherMemory =
-            (TreeHashSet<AbstractReteMatch>) ((memory == this.leftMemory)
+            (HashSet<AbstractReteMatch>) ((memory == this.leftMemory)
                     ? this.rightMemory : this.leftMemory);
 
         memory.add(subgraph);
@@ -612,7 +610,7 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
         int result = 0;
         if (!this.isUpToDate()) {
             if (this.getOwner().isInOnDemandMode()) {
-                TreeHashSet<? extends AbstractReteMatch> theBuffer;
+                HashSet<? extends AbstractReteMatch> theBuffer;
                 ReteNetworkNode theAntecedent;
                 theBuffer = this.rightOnDemandBuffer;
                 theAntecedent = this.getAntecedents().get(1);

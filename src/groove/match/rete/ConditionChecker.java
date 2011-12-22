@@ -67,8 +67,7 @@ public class ConditionChecker extends ReteNetworkNode implements
      * used if the matches are stored in the tree-liked index structure of
      * the {@link #conflictSetSearchTree}.
      */
-    protected Set<ReteSimpleMatch> conflictSet =
-        new TreeHashSet<ReteSimpleMatch>();
+    protected Set<ReteSimpleMatch> conflictSet = new HashSet<ReteSimpleMatch>();
 
     /**
      * A bag structure that keeps the record of number of times (one or more)
