@@ -21,9 +21,9 @@ import groove.rel.RegExpr;
 import groove.rel.RegExpr.Star;
 import groove.trans.HostNode;
 import groove.trans.HostNodeSet;
-import groove.util.TreeHashSet;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -67,8 +67,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         if (expression.isStar()) {
             this.getOwner().getState().subscribe(this);
         }
-        this.leftMemory = new TreeHashSet<RetePathMatch>();
-        this.rightMemory = new TreeHashSet<RetePathMatch>();
+        this.leftMemory = new HashSet<RetePathMatch>();
+        this.rightMemory = new HashSet<RetePathMatch>();
     }
 
     @Override

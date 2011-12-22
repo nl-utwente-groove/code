@@ -120,8 +120,8 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
     @Override
     public boolean equals(ReteNetworkNode node) {
         return (this == node)
-            || ((node instanceof WildcardPathChecker)
-                && this.getOwner().equals(node.getOwner()) && this.expression.equals(((WildcardPathChecker) node).getExpression()));
+            || ((node instanceof AbstractPathChecker)
+                && this.getOwner().equals(node.getOwner()) && this.expression.equals(((AbstractPathChecker) node).getExpression()));
     }
 
     @Override

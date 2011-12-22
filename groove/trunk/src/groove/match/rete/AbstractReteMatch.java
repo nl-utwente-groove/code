@@ -84,7 +84,7 @@ public abstract class AbstractReteMatch implements VarMap {
      * Calculated hashCode. 0 means it is not yet calculated
      * due to lazy evaluation based on the constituting units
      */
-    protected int hashCode = 0;
+    private int hashCode = 0;
 
     /**
      * Basic constructor to be used by subclasses as basic initializer of
@@ -393,42 +393,29 @@ public abstract class AbstractReteMatch implements VarMap {
     }
 
     @Override
-    public synchronized int hashCode() {
+    final public synchronized int hashCode() {
         if (this.hashCode == 0) {
-            refreshHashCode();
+            int result = computeHashCode();
+            this.hashCode = result == 0 ? 1 : result;
         }
         return this.hashCode;
     }
 
     /**
-     * Recalculates the hash code given an initial pre-calculated value for a
-     * given number of prefix match units.
-     * 
-     * @param initialHash The hash-code pre-calculated up to <code>initialIndex</code>-th
-     *        match in the units.
-     * @param initialIndex The number of initial match units that can be skipped
-     */
-    protected void refreshHashCode(int initialHash, int initialIndex) {
-        this.hashCode = initialHash;
-        int l = this.getAllUnits().length;
-        Object[] theUnits = this.getAllUnits();
-        for (int i = initialIndex; i < l; i++) {
-            if (i > 0) {
-                boolean neg = this.hashCode < 0;
-                this.hashCode <<= 1;
-                if (neg) {
-                    this.hashCode |= 1;
-                }
-            }
-            this.hashCode += theUnits[i].hashCode();
-        }
-    }
-
-    /**
      * Completely recalculates the hash code from scratch.
      */
-    protected void refreshHashCode() {
-        refreshHashCode(0, 0);
+    protected int computeHashCode() {
+        int prime = 31;
+        int result = getOrigin().hashCode();
+        Object[] units = getAllUnits();
+        int length = units.length;
+        for (int i = 0; i < length; i++) {
+            Object unit = units[i];
+            if (unit != this) {
+                result = prime * result + units[i].hashCode();
+            }
+        }
+        return result;
     }
 
     @Override

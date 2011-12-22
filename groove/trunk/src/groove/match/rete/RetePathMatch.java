@@ -68,7 +68,6 @@ public class RetePathMatch extends AbstractReteMatch {
      */
     public RetePathMatch(ReteNetworkNode origin, HostEdge edge) {
         this(origin, edge.source(), edge.target());
-        this.hashCode = edge.hashCode();
         this.pathLength = 1;
         this.associatedEdge = edge;
         this.valuation = new Valuation();
@@ -137,22 +136,6 @@ public class RetePathMatch extends AbstractReteMatch {
     }
 
     @Override
-    public int hashCode() {
-        if (this.hashCode == 0) {
-            int PRIME = 31;
-            int result = this.start.hashCode();
-            result = PRIME * result + this.end.hashCode();
-            result = PRIME * result + getOrigin().hashCode();
-            result = PRIME * result + getPathLength();
-            if (this.associatedEdge != null) {
-                result = PRIME * result + this.associatedEdge.hashCode();
-            }
-            this.hashCode = result == 0 ? 1 : result;
-        }
-        return this.hashCode;
-    }
-
-    @Override
     public int size() {
         return 1;
     }
@@ -182,6 +165,8 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     public boolean equals(Object o) {
+        // we only want to equate path matches that are the same object
+        // or are only one step long with the same associated edge image
         if (this == o) {
             return true;
         }
@@ -189,14 +174,23 @@ public class RetePathMatch extends AbstractReteMatch {
             return false;
         }
         RetePathMatch other = (RetePathMatch) o;
-        if (this.pathLength * other.pathLength != 1) {
-            return false;
-        }
-        if (!this.getOrigin().equals(other.getOrigin())) {
+        if (this.pathLength != 1 || other.pathLength != 1) {
             return false;
         }
         return (this.associatedEdge != null)
             && this.associatedEdge.equals(other.associatedEdge);
+    }
+
+    @Override
+    protected int computeHashCode() {
+        // hashcode computation reflects strong equality
+        int result;
+        if (this.pathLength == 1 && this.associatedEdge != null) {
+            result = this.associatedEdge.hashCode();
+        } else {
+            result = System.identityHashCode(this);
+        }
+        return result;
     }
 
     /**
@@ -306,7 +300,6 @@ public class RetePathMatch extends AbstractReteMatch {
         result.pathLength = m.pathLength;
         result.specialPrefix = m.specialPrefix;
         result.valuation = m.valuation;
-        result.hashCode = m.hashCode;
         return result;
     }
 
@@ -375,11 +368,6 @@ public class RetePathMatch extends AbstractReteMatch {
         }
 
         @Override
-        public int hashCode() {
-            return this.getOrigin().hashCode();
-        }
-
-        @Override
         public boolean equals(Object o) {
             return (o instanceof EmptyPathMatch)
                 && this.getOrigin() == ((EmptyPathMatch) o).getOrigin();
@@ -397,6 +385,8 @@ public class RetePathMatch extends AbstractReteMatch {
     private static class Key {
         /** Constructs a key for a given path match. */
         public Key(RetePathMatch pm) {
+            assert pm.start() != null && pm.end() != null
+                || pm instanceof EmptyPathMatch;
             this.start = pm.start();
             this.end = pm.end();
             this.valuation = pm.getValuation();
@@ -406,8 +396,11 @@ public class RetePathMatch extends AbstractReteMatch {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + this.end.hashCode();
-            result = prime * result + this.start.hashCode();
+            result =
+                prime * result + (this.end == null ? 0 : this.end.hashCode());
+            result =
+                prime * result
+                    + (this.start == null ? 0 : this.start.hashCode());
             result =
                 prime
                     * result
@@ -427,10 +420,18 @@ public class RetePathMatch extends AbstractReteMatch {
                 return false;
             }
             Key other = (Key) obj;
-            if (!this.end.equals(other.end)) {
+            if (this.end == null) {
+                if (other.end != null) {
+                    return false;
+                }
+            } else if (!this.end.equals(other.end)) {
                 return false;
             }
-            if (!this.start.equals(other.start)) {
+            if (this.start == null) {
+                if (other.start != null) {
+                    return false;
+                }
+            } else if (!this.start.equals(other.start)) {
                 return false;
             }
             if (this.valuation == null) {

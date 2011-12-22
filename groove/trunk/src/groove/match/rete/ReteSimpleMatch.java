@@ -37,7 +37,7 @@ import java.util.Set;
 public class ReteSimpleMatch extends AbstractReteMatch {
 
     /** Host graph elements. */
-    protected Object[] units;
+    private Object[] units;
     /**
      * This is the set of nodes (host nodes) in this match.
      * It is only of use in injective matching so it will be
@@ -113,7 +113,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean injective) {
         this(origin, injective);
         this.units[0] = match;
-        this.hashCode = match.hashCode();
     }
 
     /**
@@ -130,7 +129,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             LabelVar variable, boolean injective) {
         this(origin, injective);
         this.units[0] = match;
-        this.hashCode = match.hashCode();
         this.valuation = new Valuation();
         this.valuation.put(variable, match.getType());
     }
@@ -146,7 +144,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             boolean injective) {
         this(origin, injective);
         this.units[0] = match;
-        this.hashCode = match.hashCode();
     }
 
     /**
@@ -212,32 +209,24 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         return (index != -1) ? (HostEdge) this.units[index] : null;
     }
 
-    /**
-     * @param m A given match
-     * @return <code>true</code> if this object is equal to <code>m</code>, i.e.
-     * if they both refer to the same object or if they have the same origin,
-     * and the exact array of elements in their array of {@link #units} with the exact
-     * same order. Otherwise, <code>m</code> is considered unequal to the current object
-     * and the return value will be <code>null</code>. 
-     */
-    public boolean equals(ReteSimpleMatch m) {
-        boolean result;
-        if ((m != null) && (this.getOrigin() == m.getOrigin())
-            && (this.hashCode() == m.hashCode())) {
-            result = (m == this) || (this.compareToForEquality(m));
-        } else {
-            result = false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        assert (this.hashCode() == m.hashCode())
-            || !this.compareToForEquality(m);
-        return result;
-    }
-
-    private boolean compareToForEquality(AbstractReteMatch m) {
+        if (!(o instanceof ReteSimpleMatch)) {
+            return false;
+        }
+        ReteSimpleMatch m = (ReteSimpleMatch) o;
+        if (hashCode() != m.hashCode()) {
+            return false;
+        }
+        if (getOrigin() != m.getOrigin()) {
+            return false;
+        }
         Object[] thisList = this.getAllUnits();
         Object[] mList = m.getAllUnits();
         boolean result = mList.length == thisList.length;
-
         if (result) {
             int thisSize = this.size();
             for (int i = 0; i < thisSize; i++) {
@@ -249,12 +238,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
         }
         return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return (o instanceof ReteSimpleMatch)
-            && this.equals((ReteSimpleMatch) o);
     }
 
     /**
@@ -371,9 +354,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
             assert k == origin.getPattern().length;
 
-            assert subMatches[0].hashCode() != 0;
-            result.refreshHashCode(subMatches[0].hashCode(),
-                subMatches[0].getAllUnits().length);
             result.valuation = (valuation == emptyMap) ? null : valuation;
         } else {
             result = null;
@@ -432,8 +412,6 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                 result.units[i] = units2[i - units1.length];
             }
 
-            assert m1.hashCode != 0;
-            result.refreshHashCode(m1.hashCode, units1.length);
             m1.addSuperMatch(result);
             m2.addSuperMatch(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
@@ -529,13 +507,14 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         public ReteCountMatch(ReteNetworkNode owner, HostNode[] anchors,
                 ValueNode value) {
             super(owner, owner.getOwner().isInjective());
+            Object[] myUnits = getAllUnits();
             assert (owner instanceof QuantifierCountChecker)
                 && (anchors.length + 1 == owner.getPattern().length);
             this.dummy = false;
             for (int i = 0; i < anchors.length; i++) {
-                this.units[i] = anchors[i];
+                myUnits[i] = anchors[i];
             }
-            this.units[this.units.length - 1] = value;
+            myUnits[size() - 1] = value;
         }
 
         /**
@@ -552,8 +531,9 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         public ReteCountMatch(ReteNetworkNode owner, ValueNode value) {
             super(owner, owner.getOwner().isInjective());
             this.dummy = true;
-            for (int i = 0; i < this.units.length - 1; i++) {
-                this.units[i] = value;
+            Object[] myUnits = getAllUnits();
+            for (int i = 0; i < size() - 1; i++) {
+                myUnits[i] = value;
             }
             if (!value.getValue().equals(0)) {
                 throw new IllegalArgumentException(
@@ -561,7 +541,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                         "The given value for the wildcard match must be zero. It is now %s",
                         value.getValue().toString()));
             } else {
-                this.units[this.units.length - 1] = value;
+                myUnits[size() - 1] = value;
             }
         }
 
@@ -586,7 +566,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
          * this match represents 
          */
         public ValueNode getValue() {
-            return (ValueNode) this.units[this.units.length - 1];
+            return (ValueNode) getAllUnits()[size() - 1];
         }
 
         @Override
@@ -624,17 +604,18 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             assert this.dummy;
             ReteSimpleMatch result =
                 new ReteSimpleMatch(origin, origin.getOwner().isInjective());
+            Object[] resultUnits = result.getAllUnits();
             Object[] leftUnits = leftMatch.getAllUnits();
+            Object[] myUnits = getAllUnits();
             int i = 0;
             for (; i < leftUnits.length; i++) {
-                result.units[i] = leftUnits[i];
+                resultUnits[i] = leftUnits[i];
             }
-            for (; i < leftUnits.length + this.units.length - 1; i++) {
+            for (; i < leftUnits.length + size() - 1; i++) {
                 LookupEntry pos = mergeLookupTable[i - leftUnits.length];
-                result.units[i] = pos.lookup(leftUnits);
+                resultUnits[i] = pos.lookup(leftUnits);
             }
-            result.units[result.units.length - 1] =
-                this.units[this.units.length - 1];
+            resultUnits[result.size() - 1] = myUnits[size() - 1];
             if (copyPrefix) {
                 result.specialPrefix =
                     (leftMatch.specialPrefix != null) ? leftMatch.specialPrefix
