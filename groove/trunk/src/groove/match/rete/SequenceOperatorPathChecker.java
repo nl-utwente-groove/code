@@ -17,8 +17,9 @@
 package groove.match.rete;
 
 import groove.rel.RegExpr;
+import groove.trans.HostNode;
+import groove.util.MapSet;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -28,8 +29,23 @@ import java.util.Set;
  * @version $Revision $
  */
 public class SequenceOperatorPathChecker extends AbstractPathChecker {
-    private final Set<RetePathMatch> leftMemory;
-    private final Set<RetePathMatch> rightMemory;
+    /** Mapping from target nodes to matches of the left hand operand. */
+    private final MapSet<HostNode,RetePathMatch> leftMemory =
+        new MapSet<HostNode,RetePathMatch>() {
+            @Override
+            protected HostNode getKey(Object value) {
+                return ((RetePathMatch) value).end();
+            }
+        };
+    private RetePathMatch leftEmpty;
+    private final MapSet<HostNode,RetePathMatch> rightMemory =
+        new MapSet<HostNode,RetePathMatch>() {
+            @Override
+            protected HostNode getKey(Object value) {
+                return ((RetePathMatch) value).start();
+            }
+        };
+    private RetePathMatch rightEmpty;
 
     /**
      * Creates a path checker node that performs sequencing of matches
@@ -39,41 +55,77 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
     public SequenceOperatorPathChecker(ReteNetwork network, RegExpr expression,
             boolean isLoop) {
         super(network, expression, isLoop);
-        this.leftMemory = new HashSet<RetePathMatch>();
-        this.rightMemory = new HashSet<RetePathMatch>();
     }
 
     @Override
     public void receive(ReteNetworkNode source, int repeatIndex,
             RetePathMatch newMatch) {
-        Set<RetePathMatch> memory;
-        Set<RetePathMatch> otherMemory;
-
+        // determine if the new match is from the left or right ancestor
+        boolean fromLeft;
         if (this.getAntecedents().get(0) != this.getAntecedents().get(1)) {
-            memory =
-                (this.getAntecedents().get(0) == source) ? this.leftMemory
-                        : this.rightMemory;
-
+            fromLeft = (this.getAntecedents().get(0) == source);
         } else {
-            memory = (repeatIndex == 0) ? this.leftMemory : this.rightMemory;
+            fromLeft = (repeatIndex == 0);
         }
-        otherMemory =
-            (memory == this.leftMemory) ? this.rightMemory : this.leftMemory;
-
-        memory.add(newMatch);
-        newMatch.addContainerCollection(memory);
-        for (RetePathMatch gOther : otherMemory) {
-            RetePathMatch left =
-                (memory == this.leftMemory) ? newMatch : gOther;
-            RetePathMatch right = (left == newMatch) ? gOther : newMatch;
-
-            if (this.test(left, right)) {
-                RetePathMatch combined = construct(left, right);
-                if ((combined != null)
-                    && (!isLoop() || combined.isEmpty() || combined.start() == combined.end())) {
-                    passDownMatchToSuccessors(combined);
-                }
+        if (fromLeft) {
+            newMatch.addContainerCollection(this.leftMemory);
+            if (newMatch.isEmpty()) {
+                assert this.leftEmpty == null;
+                this.leftEmpty = newMatch;
+                constructAndPassDown(true, newMatch, this.rightMemory);
+            } else {
+                this.leftMemory.add(newMatch);
+                constructAndPassDown(true, newMatch,
+                    this.rightMemory.get(newMatch.end()));
             }
+        } else {
+            newMatch.addContainerCollection(this.rightMemory);
+            if (newMatch.isEmpty()) {
+                assert this.rightEmpty == null;
+                this.rightEmpty = newMatch;
+                constructAndPassDown(false, newMatch, this.leftMemory);
+            } else {
+                this.rightMemory.add(newMatch);
+                constructAndPassDown(false, newMatch,
+                    this.leftMemory.get(newMatch.start()));
+            }
+        }
+    }
+
+    /** 
+     * Combines a new match with each of a set of old matches, and the empty match if present.
+     * Sends the combined match to all successor n-nodes
+     * @param fromLeft if {@code true}, the new match is from the left antecedent
+     * @param newMatch the new match
+     * @param oldMatches the set of existing matches; may be {@code null}
+     */
+    private void constructAndPassDown(boolean fromLeft, RetePathMatch newMatch,
+            Set<RetePathMatch> oldMatches) {
+        if (oldMatches != null) {
+            for (RetePathMatch oldMatch : oldMatches) {
+                constructAndPassDown(fromLeft, newMatch, oldMatch);
+            }
+        }
+        RetePathMatch empty = fromLeft ? this.rightEmpty : this.leftEmpty;
+        if (empty != null) {
+            constructAndPassDown(fromLeft, newMatch, empty);
+        }
+    }
+
+    /** 
+     * Combines a new match with a given old match.
+     * Sends the combined match to all successor n-nodes
+     * @param fromLeft if {@code true}, the new match is from the left antecedent
+     * @param newMatch the new match
+     * @param oldMatch the existing match
+     */
+    private void constructAndPassDown(boolean fromLeft, RetePathMatch newMatch,
+            RetePathMatch oldMatch) {
+        RetePathMatch left = fromLeft ? newMatch : oldMatch;
+        RetePathMatch right = fromLeft ? oldMatch : newMatch;
+        RetePathMatch combined = construct(left, right);
+        if (combined != null) {
+            passDownMatchToSuccessors(combined);
         }
     }
 
@@ -91,16 +143,30 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
     }
 
     /**
-     * @return combines the left and right matches according the 
+     * Combines the left and right matches according the 
      * rules of the associated operator.
+     * @return a combined match, or {@code null} if the left and right operands
+     * do not combine to a valid match  
      */
     protected RetePathMatch construct(RetePathMatch left, RetePathMatch right) {
-        if (!left.isEmpty() && !right.isEmpty()) {
-            return left.concatenate(this, right, false);
-        } else if (!left.isEmpty()) {
-            return left.reoriginate(this);
+        if (left.isEmpty()) {
+            if (isLoop() && !right.isEmpty() && right.start() != right.end()) {
+                return null;
+            } else {
+                return right.reoriginate(this);
+            }
+        } else if (right.isEmpty()) {
+            if (isLoop() && left.start() != left.end()) {
+                return null;
+            } else {
+                return left.reoriginate(this);
+            }
         } else {
-            return right.reoriginate(this);
+            if (isLoop() && left.start() != right.end()) {
+                return null;
+            } else {
+                return left.concatenate(this, right, false);
+            }
         }
     }
 
@@ -115,5 +181,4 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
         //TODO ARASH: implement the demand-based update
         return false;
     }
-
 }
