@@ -20,6 +20,7 @@ import groove.rel.RegExpr;
 import groove.trans.HostNode;
 import groove.util.MapSet;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,7 +29,8 @@ import java.util.Set;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class SequenceOperatorPathChecker extends AbstractPathChecker {
+public class SequenceOperatorPathChecker extends AbstractPathChecker implements
+        ReteStateSubscriber {
     /** Mapping from target nodes to matches of the left hand operand. */
     private final MapSet<HostNode,RetePathMatch> leftMemory =
         new MapSet<HostNode,RetePathMatch>() {
@@ -181,4 +183,30 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker {
         //TODO ARASH: implement the demand-based update
         return false;
     }
+
+    @Override
+    public void clear() {
+        super.clear();
+        this.leftEmpty = null;
+        this.rightEmpty = null;
+        this.leftMemory.clear();
+        this.rightMemory.clear();
+    }
+
+    @Override
+    public List<? extends Object> initialize() {
+        super.initialize();
+        return null;
+    }
+
+    @Override
+    public void updateBegin() {
+        // Do nothing        
+    }
+
+    @Override
+    public void updateEnd() {
+        // Do nothing        
+    }
+
 }
