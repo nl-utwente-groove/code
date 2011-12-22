@@ -16,7 +16,6 @@
  */
 package groove.util;
 
-
 /**
  * Implements a generic pair of values.
  * @author Arend Rensink
@@ -82,6 +81,9 @@ public class Pair<T,U> implements Fixable {
      */
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         return obj instanceof Pair<?,?> && equalsOne((Pair<?,?>) obj)
             && equalsTwo((Pair<?,?>) obj);
     }
