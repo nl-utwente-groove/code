@@ -89,7 +89,7 @@ public class RetePathMatch extends AbstractReteMatch {
         this.pathLength = subMatch.pathLength;
         this.valuation = subMatch.valuation;
         this.associatedEdge = subMatch.associatedEdge;
-        subMatch.getSuperMatches().add(this);
+        subMatch.addSuperMatch(this);
     }
 
     /**
@@ -154,7 +154,7 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     public int size() {
-        return 2;
+        return 1;
     }
 
     /**
@@ -228,8 +228,8 @@ public class RetePathMatch extends AbstractReteMatch {
                 result.pathLength = this.pathLength + (m).pathLength;
                 result.valuation = (valuation != emptyMap) ? valuation : null;
                 hashCode();
-                this.getSuperMatches().add(result);
-                m.getSuperMatches().add(result);
+                this.addSuperMatch(result);
+                m.addSuperMatch(result);
             }
         }
         return result;
@@ -247,7 +247,7 @@ public class RetePathMatch extends AbstractReteMatch {
         result.pathLength = this.pathLength;
         result.valuation = this.valuation;
         result.hashCode(); //refresh hash code
-        this.getSuperMatches().add(result);
+        this.addSuperMatch(result);
         return result;
     }
 

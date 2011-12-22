@@ -26,12 +26,13 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
+import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * @author Arash Jalali
@@ -59,6 +60,16 @@ public abstract class AbstractReteMatch implements VarMap {
 
     private Collection<AbstractReteMatch> superMatches =
         new ArrayList<AbstractReteMatch>();
+    /**
+     * These are the matches that have participated in
+     * building this one. We need these
+     * to remove a domino-deleted match
+     * from the list of <code>superMatches</codes>
+     * of those who have not participated in a domino delete.
+     */
+    private Set<AbstractReteMatch> subMatches =
+        new TreeHashSet<AbstractReteMatch>();
+
     private Collection<Collection<? extends AbstractReteMatch>> containerCollections =
         new ArrayList<Collection<? extends AbstractReteMatch>>();
     private List<DominoEventListener> dominoListeners =
@@ -214,12 +225,14 @@ public abstract class AbstractReteMatch implements VarMap {
     public abstract Set<HostNode> getNodes();
 
     /**
-     * 
-     * @return The collection of matches made of combining this match 
-     * and something else.
+     * Adds a match to the list of supermatches for this one
+     * and adds itself to the list of submatches of
+     * the given supermatch as well.  
      */
-    protected Collection<AbstractReteMatch> getSuperMatches() {
-        return this.superMatches;
+    public void addSuperMatch(AbstractReteMatch theSuperMatch) {
+        this.superMatches.add(theSuperMatch);
+        theSuperMatch.subMatches.add(this);
+
     }
 
     /**
@@ -232,6 +245,11 @@ public abstract class AbstractReteMatch implements VarMap {
     public synchronized void dominoDelete(AbstractReteMatch callerSubMatch) {
         if (!this.isDeleted()) {
             this.markDeleted();
+            for (AbstractReteMatch m : this.subMatches) {
+                if ((!m.isDeleted()) && (m != callerSubMatch)) {
+                    m.superMatches.remove(this);
+                }
+            }
             for (AbstractReteMatch m : this.superMatches) {
                 if (!m.isDeleted()) {
                     m.dominoDelete(this);

@@ -55,7 +55,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             AbstractReteMatch subMatch) {
         this(origin, injective);
         this.specialPrefix = subMatch.specialPrefix;
-        subMatch.getSuperMatches().add(this);
+        subMatch.addSuperMatch(this);
         assert origin.getPattern().length == subMatch.getOrigin().getPattern().length;
         this.units = subMatch.getAllUnits();
         this.valuation = subMatch.valuation;
@@ -78,7 +78,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
         assert unitsToAppend.length + subMatchUnits.length == origin.getPattern().length;
         this.specialPrefix = subMatch.specialPrefix;
         this.valuation = subMatch.valuation;
-        subMatch.getSuperMatches().add(this);
+        subMatch.addSuperMatch(this);
         this.units = new Object[subMatchUnits.length + unitsToAppend.length];
         for (int i = 0; i < subMatchUnits.length; i++) {
             this.units[i] = subMatchUnits[i];
@@ -236,14 +236,16 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     private boolean compareToForEquality(AbstractReteMatch m) {
         Object[] thisList = this.getAllUnits();
         Object[] mList = m.getAllUnits();
-        boolean result = true;
+        boolean result = mList.length == thisList.length;
 
-        int thisSize = this.size();
-        for (int i = 0; i < thisSize; i++) {
-            if (thisList[i] != mList[i]) {
-                assert !thisList[i].equals(mList[i]);
-                result = false;
-                break;
+        if (result) {
+            int thisSize = this.size();
+            for (int i = 0; i < thisSize; i++) {
+                if (thisList[i] != mList[i]) {
+                    assert !thisList[i].equals(mList[i]);
+                    result = false;
+                    break;
+                }
             }
         }
         return result;
@@ -365,7 +367,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
                 for (int j = 0; j < subMatchUnits.length; j++) {
                     result.units[k++] = subMatchUnits[j];
                 }
-                subMatches[i].getSuperMatches().add(result);
+                subMatches[i].addSuperMatch(result);
             }
             assert k == origin.getPattern().length;
 
@@ -432,8 +434,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
 
             assert m1.hashCode != 0;
             result.refreshHashCode(m1.hashCode, units1.length);
-            m1.getSuperMatches().add(result);
-            m2.getSuperMatches().add(result);
+            m1.addSuperMatch(result);
+            m2.addSuperMatch(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
         }
         return result;
@@ -481,8 +483,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
 
             result.hashCode();
-            m1.getSuperMatches().add(result);
-            m2.getSuperMatches().add(result);
+            m1.addSuperMatch(result);
+            m2.addSuperMatch(result);
             result.valuation = (valuation != emptyMap) ? valuation : null;
         }
         return result;
@@ -640,8 +642,8 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             }
 
             result.hashCode();
-            this.getSuperMatches().add(result);
-            leftMatch.getSuperMatches().add(result);
+            this.addSuperMatch(result);
+            leftMatch.addSuperMatch(result);
             result.valuation = leftMatch.valuation;
             return result;
         }
