@@ -483,10 +483,12 @@ public final class Materialisation {
             TreeMatch nacMatch = matcher.find(this.shape, this.match);
             if (nacMatch != null) {
                 final Shape shape = this.shape;
+                final boolean extended =
+                    !this.match.equals(nacMatch.getPatternMap());
                 Finder<Proof> finder = Visitor.newFinder(new Property<Proof>() {
                     @Override
                     public boolean isSatisfied(Proof value) {
-                        return hasConcreteMatch(shape, value);
+                        return hasConcreteMatch(shape, value, extended);
                     }
                 });
                 nacMatch.traverseProofs(finder);
@@ -537,13 +539,17 @@ public final class Materialisation {
     }
 
     /** Special checker for NAC matches. */
-    private static boolean hasConcreteMatch(Shape shape, Proof proof) {
+    static boolean hasConcreteMatch(Shape shape, Proof proof, boolean extended) {
         Collection<Proof> subProofs = proof.getSubProofs();
         if (subProofs.isEmpty()) {
-            // In this case we have NACs but they are embedded in the main proof.
-            // This happens when we only have an NegatedSearchItem.
-            return hasConcreteMatch(shape,
-                (RuleToShapeMap) proof.getPatternMap());
+            if (extended) {
+                // In this case we have NACs but they are embedded in the main proof.
+                // This happens when we only have an NegatedSearchItem.
+                return hasConcreteMatch(shape,
+                    (RuleToShapeMap) proof.getPatternMap());
+            } else {
+                return false;
+            }
         } else {
             boolean result = false;
             for (Proof subProof : subProofs) {
@@ -556,11 +562,10 @@ public final class Materialisation {
             }
             return result;
         }
-
     }
 
     /** Checks if the image of the given map in the given shape is concrete. */
-    private static boolean hasConcreteMatch(Shape shape, RuleToShapeMap map) {
+    static boolean hasConcreteMatch(Shape shape, RuleToShapeMap map) {
         Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // The match was injective so we can use the values of the node map
         // directly, no need to call nodeMapValueSet().
