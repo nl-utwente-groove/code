@@ -22,6 +22,8 @@ import groove.algebra.SignatureKind;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
@@ -36,6 +38,7 @@ import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.view.FormatError;
 import groove.view.FormatException;
+import groove.view.PostApplicationError;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -524,8 +527,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     }
 
-    // TODO
-    // edge multiplicity check to be moved to a HostGraph method
     /**
      * Attempts to find a typing for a given host graph.
      * @param source the rule graph to be typed
@@ -613,12 +614,31 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
             }
         }
-        verifyMultiplicity(source, inCounts, true, errors);
-        verifyMultiplicity(source, outCounts, false, errors);
+        verifyCountedMultiplicity(source, inCounts, true, errors);
+        verifyCountedMultiplicity(source, outCounts, false, errors);
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
         return morphism;
+    }
+
+    /**
+     * Analyze a {@link GraphState} (without any given edge counts) for
+     * multiplicity errors. The errors are  recorded in the argument {@link GTS}.
+     * If an error is found, the state is closed.
+     */
+    public void verifyUncountedMultiplicities(GraphState state) {
+        // TODO
+        // System.err.println("Multiplicity check for state " + state);
+        //        for (TypeEdge type : edgeSet()) {
+        //            Multiplicity inMult = type.getInMult();
+        //            Multiplicity outMult = type.getOutMult();
+        //            if (inMult != null || outMult != null) {
+        //                for (HostEdge edge : state.getGraph().edgeSet()) {
+        //                    System.err.println(edge.label() + " - " + type.label());
+        //                }
+        //            }
+        //        }
     }
 
     /**
@@ -643,12 +663,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /**
-     * Verify counted multiplicity. The <code>inOrOut</code> argument indicates
-     * whether the 'in' (value <code>true</code>) or 'out' (value <code>false
-     * </code>) multiplicity must be verified. Problems are stored in the
-     * argument set of {@link FormatError}s. 
+     * Verify multiplicity, assuming that per node the number of edges of a
+     * certain type have been counted (as done by {@link #analyzeHost}).
+     * The <code>inOrOut</code> argument indicates whether the 'in'
+     * (value <code>true</code>) or 'out' (value <code>false</code>)
+     * multiplicity must be verified. Problems are added to the argument set
+     * of errors. 
      */
-    private void verifyMultiplicity(HostGraph source,
+    private void verifyCountedMultiplicity(HostGraph source,
             Map<HostNode,Map<TypeEdge,Integer>> counts, boolean inOrOut,
             Set<FormatError> errors) {
         for (Map.Entry<HostNode,Map<TypeEdge,Integer>> entry1 : counts.entrySet()) {
@@ -658,17 +680,25 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                             : entry2.getKey().getOutMult();
                 int count = entry2.getValue();
                 if (!mult.inRange(count)) {
-                    String msg =
-                        "the " + (inOrOut ? "in" : "out")
-                            + " multiplicity of edge '"
-                            + entry2.getKey().label()
-                            + "' in node '%s' is out of range (got: " + count
-                            + "; expected: " + mult.one() + ".."
-                            + (mult.isUnbounded() ? "*" : mult.two()) + ")";
-                    errors.add(new FormatError(msg, entry1.getKey(), source));
+                    errors.add(multError(entry1.getKey(), entry2.getKey(),
+                        count, mult, inOrOut, source));
                 }
             }
         }
+    }
+
+    /**
+     * Produce the {@link PostApplicationError} for a failed multiplicity
+     * check in the given source (graph).
+     */
+    private PostApplicationError multError(HostNode node, TypeEdge edgeType,
+            int count, Multiplicity mult, boolean inOrOut, Object source) {
+        String msg =
+            (inOrOut ? "in" : "out") + " multiplicity of edge '"
+                + edgeType.label() + "' in node '%s' is out of range (got: "
+                + count + "; expected: " + mult.one() + ".."
+                + (mult.isUnbounded() ? "*" : mult.two()) + ")";
+        return new PostApplicationError(msg, node, source);
     }
 
     /**

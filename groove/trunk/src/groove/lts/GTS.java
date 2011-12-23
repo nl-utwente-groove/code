@@ -40,6 +40,7 @@ import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
+import groove.view.PostApplicationError;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
@@ -65,9 +66,12 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     private static int spuriousTransitionCount;
 
+    /** Post application errors of states in the GTS. */
+    private final Map<GraphState,Set<PostApplicationError>> postErrors;
+
     /**
-     * Returns the number of confluent diamonds found during generation.
-     */
+    * Returns the number of confluent diamonds found during generation.
+    */
     public static int getSpuriousTransitionCount() {
         return spuriousTransitionCount;
     }
@@ -87,6 +91,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         grammar.testFixed(true);
         this.grammar = grammar;
         this.record = new SystemRecord(this);
+        this.postErrors = new HashMap<GraphState,Set<PostApplicationError>>();
     }
 
     /** Initialises the start state and corresponding host factory. */
@@ -291,6 +296,21 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         return ((GraphState) node).getTransitionSet();
     }
 
+    /** Checks if this GTS has a state with a post application error. */
+    public boolean hasPostError() {
+        return !this.postErrors.isEmpty();
+    }
+
+    /** Adds a {@link PostApplicationError} of a {@link GraphState}. */
+    public void addPostError(GraphState state, PostApplicationError error) {
+        Set<PostApplicationError> errors = this.postErrors.get(state);
+        if (errors == null) {
+            errors = new HashSet<PostApplicationError>();
+        }
+        errors.add(error);
+        this.postErrors.put(state, errors);
+    }
+
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     public Set<? extends GraphState> nodeSet() {
@@ -384,6 +404,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         GraphState result = getStateSet().put(newState);
         if (result == null) {
             fireAddNode(newState);
+            getGrammar().getTypeGraph().verifyUncountedMultiplicities(newState);
         }
         return result;
     }
