@@ -230,10 +230,8 @@ public final class ShapeGenerator extends CommandLineTool {
             println("Node bound:\t" + Parameters.getNodeMultBound()
                 + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
             println("Timestamp:\t" + this.invocationTime);
-            if (getVerbosity() == MEDIUM_VERBOSITY) {
-                print("\nProgress:\n\n");
-                getGTS().addLTSListener(new GenerateProgressMonitor());
-            }
+            print("\nProgress:\n\n");
+            getGTS().addLTSListener(new GenerateProgressMonitor());
         }
         this.explorationStats.start();
         try {
