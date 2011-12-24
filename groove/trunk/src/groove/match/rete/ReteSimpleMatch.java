@@ -55,10 +55,10 @@ public class ReteSimpleMatch extends AbstractReteMatch {
             AbstractReteMatch subMatch) {
         this(origin, injective);
         this.specialPrefix = subMatch.specialPrefix;
-        subMatch.addSuperMatch(this);
         assert origin.getPattern().length == subMatch.getOrigin().getPattern().length;
         this.units = subMatch.getAllUnits();
         this.valuation = subMatch.valuation;
+        subMatch.addSuperMatch(this);
     }
 
     /**

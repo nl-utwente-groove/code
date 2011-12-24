@@ -81,11 +81,4 @@ public class TypePredicates extends GroovePredicates {
     public void subtype_label_3() {
         s("subtype_label(TG,A,B) :- label(A,AL), label(B,BL), subtype(TG,AL,BL).");
     }
-
-    @Signature({"TypeGraph", "?"})
-    @ToolTipBody("Cycles over the set of availeble (active) type graphs.")
-    @ToolTipPars("Active type graph object")
-    public void type_graph_1() {
-        s("type_graph(TG) :- type_graph_name(L), type_graph(L,TG).");
-    }
 }
