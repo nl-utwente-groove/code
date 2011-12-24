@@ -43,6 +43,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -292,14 +293,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     private boolean processRegularEdit(GraphModelEvent.GraphModelChange change,
             boolean changed) {
-        Map<?,?> changeMap = change.getAttributes();
-        if (changeMap != null) {
-            for (Object changeEntry : changeMap.entrySet()) {
-                Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
-                if (isListable(obj)) {
-                    changed |= getFilter().modifyJCell((GraphJCell) obj);
-                }
-            }
+        // insertions double as changes, so we do insertions first
+        // and remove them from the change map
+        Map<Object,Object> changeMap = new HashMap<Object,Object>();
+        Map<?,?> storedChange = change.getAttributes();
+        if (storedChange != null) {
+            changeMap.putAll(storedChange);
         }
         // added cells mean added labels
         Object[] addedArray = change.getInserted();
@@ -310,6 +309,13 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 if (isListable(element)) {
                     changed |= getFilter().addJCell((GraphJCell) element);
                 }
+                changeMap.remove(element);
+            }
+        }
+        for (Object changeEntry : changeMap.entrySet()) {
+            Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
+            if (isListable(obj)) {
+                changed |= getFilter().modifyJCell((GraphJCell) obj);
             }
         }
         // removed cells mean removed labels

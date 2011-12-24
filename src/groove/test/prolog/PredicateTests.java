@@ -333,8 +333,6 @@ public class PredicateTests {
         success("composite_type_graph(G), is_graph(G)");
 
         // Test type_graph_name, active_type_graph_name, type_graph
-        success("type_graph_name(TGN), type_graph(TG), is_graph(TG)");
-        // succ("active_type_graph_name(TGN), type_graph(TG), is_graph(TG)");
         success("type_graph_name('type')");
         failure("type_graph_name('test')");
         // succ("active_type_graph_name('type')");
@@ -355,12 +353,6 @@ public class PredicateTests {
      */
     @Test
     public void testDerivedType() {
-        // Test type_graph
-        success("type_graph(TG)");
-
-        // Test active_type_graph
-        //succ("active_type_graph(TG)");
-
         // Test subtype_label
         success("composite_type_graph(TG), subtype_label(TG,'type:D','type:A')");
 

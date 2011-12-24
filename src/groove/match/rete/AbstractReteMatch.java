@@ -29,10 +29,9 @@ import groove.trans.RuleToHostMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -58,7 +57,7 @@ public abstract class AbstractReteMatch implements VarMap {
 
     private boolean deleted = false;
 
-    private final Collection<AbstractReteMatch> superMatches =
+    private final List<AbstractReteMatch> superMatches =
         new ArrayList<AbstractReteMatch>();
     /**
      * These are the matches that have participated in
@@ -67,8 +66,8 @@ public abstract class AbstractReteMatch implements VarMap {
      * from the list of <code>superMatches</codes>
      * of those who have not participated in a domino delete.
      */
-    private final Set<AbstractReteMatch> subMatches =
-        new HashSet<AbstractReteMatch>();
+    private final List<AbstractReteMatch> subMatches =
+        new ArrayList<AbstractReteMatch>();
 
     private final Collection<Collection<? extends AbstractReteMatch>> containerCollections =
         new ArrayList<Collection<? extends AbstractReteMatch>>();
@@ -411,7 +410,7 @@ public abstract class AbstractReteMatch implements VarMap {
         for (int i = 0; i < length; i++) {
             Object unit = units[i];
             if (unit != this) {
-                result = prime * result + units[i].hashCode();
+                result = prime * result + unit.hashCode();
             }
         }
         return result;
