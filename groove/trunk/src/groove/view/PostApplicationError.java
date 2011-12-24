@@ -16,19 +16,22 @@
  */
 package groove.view;
 
-import groove.trans.HostNode;
+import groove.lts.GTS;
+import groove.lts.GraphState;
 
-/** Dummy implementation to avoid compilation errors. */
+/**
+ * A {@link PostApplicationError} is an error of a {@link GraphState} that is
+ * detected <b>after</b> a match has been applied. A state with such an error
+ * is still added to the {@link GTS}, but the presence of the problem is
+ * recorded in the GTS.
+ * 
+ * @author Maarten de Mol
+ */
 public class PostApplicationError extends FormatError {
 
-    /** */
-    public PostApplicationError(String msg, HostNode node, Object source) {
-        super(msg);
-    }
-
-    /** */
-    public void add(FormatError error) {
-        // Dummy...
+    /** Default constructor. Only relays to {@link FormatError}. */
+    public PostApplicationError(String message, Object... parameters) {
+        super(message, parameters);
     }
 
 }
