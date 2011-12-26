@@ -157,7 +157,25 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
 
                 };
 
+        } else if (left.getNNode() instanceof AbstractPathChecker) {
+            this.joinStrategy =
+                (JoinStrategy<LeftMatchType,RightMatchType>) new AbstractSimpleTestJoinStrategy<RetePathMatch,AbstractReteMatch>(
+                    this) {
+
+                    @Override
+                    public AbstractReteMatch construct(RetePathMatch left,
+                            AbstractReteMatch right) {
+
+                        return ReteSimpleMatch.merge(this.subgraphChecker,
+                            left, right,
+                            this.subgraphChecker.getOwner().isInjective(),
+                            this.subgraphChecker.shouldPreservePrefix);
+                    }
+
+                };
+
         } else {
+
             throw new UnsupportedOperationException(String.format(
                 "Left is of type %s and right is of type %s",
                 left.getNNode().getClass().toString(),
