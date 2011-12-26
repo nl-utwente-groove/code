@@ -70,23 +70,23 @@ public class SequenceOperatorPathChecker extends AbstractPathChecker implements
             fromLeft = (repeatIndex == 0);
         }
         if (fromLeft) {
-            newMatch.addContainerCollection(this.leftMemory);
             if (newMatch.isEmpty()) {
                 assert this.leftEmpty == null;
                 this.leftEmpty = newMatch;
                 constructAndPassDown(true, newMatch, this.rightMemory);
             } else {
+                newMatch.addContainerCollection(this.leftMemory);
                 this.leftMemory.add(newMatch);
                 constructAndPassDown(true, newMatch,
                     this.rightMemory.get(newMatch.end()));
             }
         } else {
-            newMatch.addContainerCollection(this.rightMemory);
             if (newMatch.isEmpty()) {
                 assert this.rightEmpty == null;
                 this.rightEmpty = newMatch;
                 constructAndPassDown(false, newMatch, this.leftMemory);
             } else {
+                newMatch.addContainerCollection(this.rightMemory);
                 this.rightMemory.add(newMatch);
                 constructAndPassDown(false, newMatch,
                     this.leftMemory.get(newMatch.start()));
