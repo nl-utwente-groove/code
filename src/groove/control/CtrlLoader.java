@@ -115,7 +115,12 @@ public class CtrlLoader {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            return this.builder.run(tree, namespace).normalise();
+            CtrlAut aut = this.builder.run(tree, namespace);
+            errors = this.builder.getErrors();
+            if (!errors.isEmpty()) {
+                throw new FormatException(errors);
+            }
+            return aut.normalise();
         } catch (RecognitionException re) {
             throw new FormatException(re.getMessage(), re.line,
                 re.charPositionInLine);

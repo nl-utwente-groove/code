@@ -42,10 +42,13 @@ public class CtrlState implements Node {
     /**
      * Creates a control state with a given number.
      * @param aut the automaton for which this state is created
+     * @param nr state number
+     * @param action optional transaction name of which this is a transient state
      */
-    public CtrlState(CtrlAut aut, int nr) {
+    public CtrlState(CtrlAut aut, String action, int nr) {
         this.aut = aut;
         this.stateNumber = nr;
+        this.action = action;
     }
 
     /** Returns the control automaton to which this state belongs. */
@@ -99,8 +102,21 @@ public class CtrlState implements Node {
         return this.stateNumber;
     }
 
-    /** Internal number to identify the state. */
-    private final int stateNumber;
+    /** 
+     * Indicates if this is a transient control state.
+     * A control state is transient if there is a transaction underway.
+     */
+    public boolean isTransient() {
+        return this.action != null;
+    }
+
+    /** 
+     * Returns the (optional) name of a transaction of which this
+     * is a transient state. 
+     */
+    public String getAction() {
+        return this.action;
+    }
 
     @Override
     public String toString() {
@@ -149,10 +165,6 @@ public class CtrlState implements Node {
         return result;
     }
 
-    /** Mapping from rules to outgoing transitions. */
-    private final Map<Rule,CtrlTransition> outTransitions =
-        new HashMap<Rule,CtrlTransition>();
-
     /**
      * Returns the set of bound variables in this state.
      */
@@ -178,9 +190,6 @@ public class CtrlState implements Node {
         this.boundVars.addAll(new TreeSet<CtrlVar>(variables));
     }
 
-    /** The collection of bound variables of this control state. */
-    private List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
-
     /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
     public CtrlSchedule getSchedule() {
         if (this.schedule == null) {
@@ -195,21 +204,27 @@ public class CtrlState implements Node {
         return this.schedule;
     }
 
-    /** 
-     * HACK HACK HACK
-     * Goes through the schedule, on the basis of the assumption that the
-     * given set of rules are the only ones that have a match, and reports if 
-     * there is a successful schedule along the way.
+    /** Sets a guard under which the transient status is exited. */
+    public Collection<CtrlCall> getExitGuard() {
+        return this.exitGuard;
+    }
+
+    /**
+     * Indicates if this state can exit its transient status under
+     * some exit guard.
+     * @see #getExitGuard()
      */
-    public boolean isSuccess(Set<Rule> matchedRules) {
-        CtrlSchedule schedule = getSchedule();
-        boolean result = schedule.isSuccess();
-        while (!schedule.isFinished() && !result) {
-            Rule rule = schedule.getTransition().getRule();
-            schedule = schedule.next(matchedRules.contains(rule));
-            result = schedule.isSuccess();
-        }
-        return result;
+    public boolean hasExitGuard() {
+        return getExitGuard() != null;
+    }
+
+    /** 
+     * An optional guard under which the transient status of this
+     * control state is lifted; i.e., the transaction is completed.
+     */
+    public void setExitGuard(Collection<CtrlCall> exitGuard) {
+        assert isTransient() && this.exitGuard == null;
+        this.exitGuard = exitGuard;
     }
 
     /** Computes a map from control calls to transitions disabled by those calls. */
@@ -284,8 +299,14 @@ public class CtrlState implements Node {
                 break;
             }
         }
+        boolean isTransient = isTransient();
+        if (hasExitGuard()) {
+            Set<CtrlCall> guard = new HashSet<CtrlCall>(getExitGuard());
+            guard.removeAll(triedCalls);
+            isTransient = !guard.isEmpty();
+        }
         CtrlSchedule result =
-            new CtrlSchedule(this, trans, triedCalls, success);
+            new CtrlSchedule(this, trans, triedCalls, success, isTransient);
         if (trans != null) {
             Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
             newTriedCalls.add(trans.getCall());
@@ -306,6 +327,17 @@ public class CtrlState implements Node {
         return result;
     }
 
+    /** Internal number to identify the state. */
+    private final int stateNumber;
+    /** Mapping from rules to outgoing transitions. */
+    private final Map<Rule,CtrlTransition> outTransitions =
+        new HashMap<Rule,CtrlTransition>();
+    /** The collection of bound variables of this control state. */
+    private final List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
+    /** Optional name of a transaction of which this is a transient state. */
+    private final String action;
+    /** If the state is transient, an optional guard under which the transient status is exited. */
+    private Collection<CtrlCall> exitGuard;
     /** The schedule for trying the outgoing transitions of this state. */
     private CtrlSchedule schedule;
     /** Map from calls to transitions disabled by their success. */

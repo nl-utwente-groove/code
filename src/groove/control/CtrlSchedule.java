@@ -22,9 +22,11 @@ import java.util.Set;
 
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
-    /** Constructs an initially empty schedule. */
+    /** Constructs an initially empty schedule. 
+     * @param isTransient if {@code true}, the schedule is part of a transaction
+     */
     public CtrlSchedule(CtrlState state, CtrlTransition trans,
-            Set<CtrlCall> triedCalls, boolean success) {
+            Set<CtrlCall> triedCalls, boolean success, boolean isTransient) {
         this.state = state;
         this.trans = trans;
         if (trans != null) {
@@ -36,6 +38,8 @@ public class CtrlSchedule {
             }
         }
         this.success = success;
+        assert !isTransient || state.isTransient();
+        this.isTransient = isTransient;
     }
 
     /** Indicates if this node signals the end of the schedule. */
@@ -46,6 +50,13 @@ public class CtrlSchedule {
     /** Indicates if this schedule represents a success state. */
     public boolean isSuccess() {
         return this.success;
+    }
+
+    /**
+     * Indicates if this schedule is part of a transaction.
+     */
+    public boolean isTransient() {
+        return this.isTransient;
     }
 
     /** Returns the currently scheduled transition.
@@ -111,6 +122,9 @@ public class CtrlSchedule {
             if (isSuccess()) {
                 result.append("; success");
             }
+            if (isTransient()) {
+                result.append("; transient");
+            }
             result.append("\n");
             if (this.succNext == this.failNext) {
                 if (!this.succNext.isFinished() || this.succNext.isSuccess()) {
@@ -142,4 +156,8 @@ public class CtrlSchedule {
     private CtrlSchedule failNext;
     /** Flag indicating if this schedule represents a success state. */
     private final boolean success;
+    /** 
+     * Flag indicating if this schedule is part of a transaction.
+     */
+    private final boolean isTransient;
 }

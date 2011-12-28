@@ -139,29 +139,33 @@ public class JVertexView extends VertexView {
      * Callback method indicating that a certain vertex is a data vertex (and so
      * should be rendered differently).
      */
-    private VertexShape getVertexShape() {
-        GraphRole graphRole = GraphRole.NONE;
-        AspectKind attrKind = AspectKind.DEFAULT;
-        if (getCell() instanceof AspectJVertex) {
-            AspectNode node = ((AspectJVertex) getCell()).getNode();
-            graphRole = node.getGraphRole();
-            attrKind = node.getAttrKind();
-        } else if (getCell() instanceof LTSJVertex) {
-            graphRole = GraphRole.LTS;
+    private JVertexShape getVertexShape() {
+        JVertexShape result = JAttr.getVertexShape(getCell().getAttributes());
+        if (result == null) {
+            GraphRole graphRole = GraphRole.NONE;
+            AspectKind attrKind = AspectKind.DEFAULT;
+            if (getCell() instanceof AspectJVertex) {
+                AspectNode node = ((AspectJVertex) getCell()).getNode();
+                graphRole = node.getGraphRole();
+                attrKind = node.getAttrKind();
+            } else if (getCell() instanceof LTSJVertex) {
+                graphRole = GraphRole.LTS;
+            }
+            if (isEdge()) {
+                return JVertexShape.ELLIPSE;
+            } else if (graphRole == GraphRole.TYPE) {
+                return JVertexShape.RECTANGLE;
+            } else if (graphRole == GraphRole.LTS) {
+                return JVertexShape.OVAL;
+            } else if (attrKind.hasSignature()) {
+                return JVertexShape.ELLIPSE;
+            } else if (attrKind == PRODUCT) {
+                return JVertexShape.DIAMOND;
+            } else {
+                return JVertexShape.ROUNDED;
+            }
         }
-        if (isEdge()) {
-            return VertexShape.ELLIPSE;
-        } else if (graphRole == GraphRole.TYPE) {
-            return VertexShape.RECTANGLE;
-        } else if (graphRole == GraphRole.LTS) {
-            return VertexShape.OVAL;
-        } else if (attrKind.hasSignature()) {
-            return VertexShape.ELLIPSE;
-        } else if (attrKind == PRODUCT) {
-            return VertexShape.DIAMOND;
-        } else {
-            return VertexShape.ROUNDED;
-        }
+        return result;
     }
 
     /** Stores the insets value for this view. */
@@ -532,11 +536,6 @@ public class JVertexView extends VertexView {
 
     static {
         PortView.allowPortMagic = false;
-    }
-
-    /** Enumeration of special vertex shapes. */
-    private enum VertexShape {
-        ROUNDED, ELLIPSE, DIAMOND, RECTANGLE, OVAL;
     }
 
     /** HTML tag for the text display font. */

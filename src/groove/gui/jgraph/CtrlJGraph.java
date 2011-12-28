@@ -106,16 +106,18 @@ public class CtrlJGraph extends GraphJGraph {
     static public final JAttr.AttributeMap CONTROL_NODE_ATTR;
     /** The start node attributes of the control automaton */
     static public final JAttr.AttributeMap CONTROL_START_NODE_ATTR;
-    /** The sucess node attributes of the control automaton */
+    /** The success node attributes of the control automaton */
     static public final JAttr.AttributeMap CONTROL_SUCCESS_NODE_ATTR;
+    /** The transient node attributes of the control automaton */
+    static public final JAttr.AttributeMap CONTROL_TRANSIENT_NODE_ATTR;
     /** The default edge attributes of the control automaton */
     static public final JAttr.AttributeMap CONTROL_EDGE_ATTR;
-    /** The internal lambda edge attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_LAMBDA_EDGE_ATTR;
-    /** The internal lambda edge attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_FAILURE_EDGE_ATTR;
-    /** The procedure edge attributes of the control automaton automaton */
-    static public final JAttr.AttributeMap CONTROL_SHAPE_EDGE_ATTR;
+    /** The edge attributes for transient-exiting edges of the control automaton */
+    static public final JAttr.AttributeMap CONTROL_EXIT_EDGE_ATTR;
+    /** The guarded edge attributes of the control automaton */
+    static public final JAttr.AttributeMap CONTROL_OMEGA_EDGE_ATTR;
+    /** The edge attributes for guarded transient-exiting edges of the control automaton */
+    static public final JAttr.AttributeMap CONTROL_OMEGA_EXIT_EDGE_ATTR;
 
     static {
         JAttr ctrlValues = new JAttr() {
@@ -133,6 +135,11 @@ public class CtrlJGraph extends GraphJGraph {
                 this.backColour = Color.green;
             }
         }.getNodeAttrs();
+        CONTROL_TRANSIENT_NODE_ATTR = new JAttr() {
+            {
+                this.shape = JVertexShape.DIAMOND;
+            }
+        }.getNodeAttrs();
         CONTROL_SUCCESS_NODE_ATTR = new JAttr() {
             {
                 this.borderColour = Color.RED;
@@ -143,20 +150,22 @@ public class CtrlJGraph extends GraphJGraph {
         }.getNodeAttrs();
 
         // special edges
-        CONTROL_LAMBDA_EDGE_ATTR = new JAttr() {
-            {
-                this.lineColour = Color.GREEN;
-            }
-        }.getEdgeAttrs();
-        CONTROL_FAILURE_EDGE_ATTR = new JAttr() {
+        CONTROL_OMEGA_EDGE_ATTR = new JAttr() {
             {
                 this.lineColour = Color.RED;
+                this.foreColour = Color.RED;
             }
         }.getEdgeAttrs();
-        CONTROL_SHAPE_EDGE_ATTR = new JAttr() {
+        CONTROL_EXIT_EDGE_ATTR = new JAttr() {
             {
-                this.font = ITALIC_FONT;
-                this.lineColour = Color.GRAY;
+                this.lineBegin = GraphConstants.ARROW_DOUBLELINE;
+            }
+        }.getEdgeAttrs();
+        CONTROL_OMEGA_EXIT_EDGE_ATTR = new JAttr() {
+            {
+                this.lineColour = Color.RED;
+                this.foreColour = Color.RED;
+                this.lineBegin = GraphConstants.ARROW_DOUBLELINE;
             }
         }.getEdgeAttrs();
     }

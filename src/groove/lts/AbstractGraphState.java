@@ -234,11 +234,12 @@ abstract public class AbstractGraphState extends
     }
 
     public boolean isClosed() {
-        return isCacheCollectable();
+        return (this.status & CLOSED_MASK) != 0;
     }
 
     public boolean setClosed(boolean complete) {
         if (!isClosed()) {
+            this.status |= CLOSED_MASK;
             setStoredTransitionStubs(getCachedTransitionStubs());
             setCacheCollectable();
             updateClosed();
@@ -255,6 +256,35 @@ abstract public class AbstractGraphState extends
 
     /** Callback method to notify that the state was closed. */
     abstract protected void updateClosed();
+
+    @Override
+    public boolean setError() {
+        boolean result = !isError();
+        this.status |= ERROR_MASK;
+        return result;
+    }
+
+    @Override
+    public boolean isError() {
+        return (this.status & ERROR_MASK) != 0;
+    }
+
+    @Override
+    public boolean isTransient() {
+        return getSchedule().isTransient();
+    }
+
+    @Override
+    public boolean setAbsent() {
+        boolean result = !isAbsent();
+        this.status |= ABSENT_MASK;
+        return result;
+    }
+
+    @Override
+    public boolean isAbsent() {
+        return (this.status & ABSENT_MASK) != 0;
+    }
 
     /**
      * Retrieves a frozen representation of the graph, in the form of all nodes
@@ -382,6 +412,13 @@ abstract public class AbstractGraphState extends
         return this.schedule;
     }
 
+    /**
+     * The number of this Node.
+     * 
+     * @invariant nr < nrNodes
+     */
+    private final int nr;
+
     /** The underlying control state, if any. */
     private CtrlSchedule schedule;
 
@@ -393,12 +430,9 @@ abstract public class AbstractGraphState extends
      * faster way to reconstruct the graph of this state.
      */
     private HostElement[] frozenGraph;
-    /**
-     * The number of this Node.
-     * 
-     * @invariant nr < nrNodes
-     */
-    private final int nr;
+
+    /** Field holding status flags of the state. */
+    private int status;
 
     /** Returns the total number of fixed delta graphs. */
     static public int getFrozenGraphCount() {
@@ -408,8 +442,16 @@ abstract public class AbstractGraphState extends
     /** The total number of delta graphs frozen. */
     static private int frozenGraphCount;
 
+    /** Status mask for the closedness property. */
+    private static final int CLOSED_MASK = 0x1;
+    /** Status mask for the error property. */
+    private static final int ERROR_MASK = 0x2;
+    /** Status mask for the absentee property. */
+    private static final int ABSENT_MASK = 0x4;
+
     /** Constant empty array of out transition, shared for memory efficiency. */
     private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new GraphTransitionStub[0];
-    static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];
+    /** Fixed empty array of (created) nodes. */
+    private static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];
 }

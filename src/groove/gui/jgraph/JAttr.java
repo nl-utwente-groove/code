@@ -97,6 +97,8 @@ public class JAttr {
     boolean opaque = true;
     /** Edge (dis)connectability; defaults to {@code true} */
     boolean connectable = true;
+    /** The shape of a vertex. */
+    JVertexShape shape = null;
 
     /** Creates the attributes common to nodes and edges. */
     private AttributeMap getAttrs() {
@@ -124,6 +126,9 @@ public class JAttr {
         }
         if (this.dash != null) {
             GraphConstants.setDashPattern(result, this.dash);
+        }
+        if (this.shape != null) {
+            result.put(SHAPE_KEY, this.shape);
         }
         GraphConstants.setLineBegin(result, this.lineBegin);
         GraphConstants.setLineEnd(result, this.lineEnd);
@@ -399,6 +404,8 @@ public class JAttr {
      * Gradient paint looks better, but there is a performance hit. 
      */
     static final private boolean GRADIENT_PAINT = false;
+    /** Key value for vertex shapes in the attribute map. */
+    static public String SHAPE_KEY = "vertexShape";
 
     /** Creates a stroke with a given line width and dash pattern. */
     public static Stroke createStroke(float width, float[] dash) {
@@ -520,6 +527,12 @@ public class JAttr {
     private static Border createNodeBorder(Border border, boolean emph) {
         return new CompoundBorder(border, emph ? EMPH_INSET_BORDER
                 : EMPTY_INSET_BORDER);
+    }
+
+    /** Returns the vertex shape value in a given attribute map. if any. */
+    public static JVertexShape getVertexShape(
+            org.jgraph.graph.AttributeMap attrs) {
+        return (JVertexShape) attrs.get(SHAPE_KEY);
     }
 
     /** Specialised class to avoid casting for {@link #clone()}. */

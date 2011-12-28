@@ -17,10 +17,12 @@
 package groove.control.parse;
 
 import groove.algebra.AlgebraFamily;
+import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.parse.Namespace.Kind;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
@@ -120,39 +122,41 @@ public class CtrlHelper {
     }
 
     /** 
-     * Attempts to add a function declaration with a given name.
-     * Checks for overlap with the previously declared functions and rules.
+     * Attempts to add a function or transaction declaration with a given name.
+     * Checks for overlap with the previously declared names.
      * @return {@code true} if no rule or function with the name of this one was
      * already declared; {@code false} otherwise
      */
-    boolean declareFunction(Tree functionTree) {
+    boolean declareName(Tree functionTree) {
         boolean result = false;
-        assert functionTree.getType() == CtrlParser.FUNCTION
+        assert (functionTree.getType() == CtrlParser.FUNCTION || functionTree.getType() == CtrlParser.RULE)
             && functionTree.getChildCount() == 2;
         String name = functionTree.getChild(0).getText();
-        if (this.namespace.hasRule(name)) {
+        if (this.namespace.hasName(name)) {
             emitErrorMessage(functionTree,
-                "Duplicate rule name: Rule %s already defined", name);
-        } else if (this.namespace.hasFunction(name)) {
-            emitErrorMessage(functionTree,
-                "Duplicate name: Function %s already defined", name);
+                "Duplicate name: Rule %s already defined", name);
         } else {
-            this.namespace.addFunction(name, new ArrayList<CtrlPar.Var>());
+            Kind kind =
+                functionTree.getType() == CtrlParser.FUNCTION ? Kind.FUNCTION
+                        : Kind.ACTION;
+            this.namespace.addName(kind, name, new ArrayList<CtrlPar.Var>());
             result = true;
         }
         return result;
     }
 
     /** Sets the current function name to a given value. */
-    void startFunction(MyTree nameTree) {
-        assert this.currentFunction == null;
-        this.currentFunction = nameTree.getText();
+    void startBody(MyTree nameTree, Kind kind) {
+        assert this.currentName == null;
+        this.currentName = nameTree.getText();
+        this.currentKind = kind;
     }
 
     /** Sets the current function name to {@code null}. */
-    void endFunction() {
-        assert this.currentFunction != null;
-        this.currentFunction = null;
+    void endBody() {
+        assert this.currentName != null;
+        this.currentName = null;
+        this.currentKind = null;
     }
 
     /** Reorders the functions according to their dependencies. */
@@ -194,11 +198,13 @@ public class CtrlHelper {
 
     /** Prefixes a given name with the current function name, if any. */
     private String toLocalName(String name) {
-        return this.currentFunction == null ? name : this.currentFunction + "."
-            + name;
+        return this.currentName == null ? name : this.currentName + "." + name;
     }
 
-    private String currentFunction;
+    /** The function or transaction name currently processed. */
+    private String currentName;
+    /** The kind ofr {@link #currentName}. */
+    private Kind currentKind;
 
     boolean declareVar(Tree nameTree, MyTree typeTree) {
         boolean result = true;
@@ -308,13 +314,14 @@ public class CtrlHelper {
             }
             if (checkCall(callTree, name, args)) {
                 // create the (rule or function) call
-                if (this.namespace.hasRule(name)) {
+                Kind kind = this.namespace.getKind(name);
+                if (kind == Kind.RULE) {
                     result = new CtrlCall(this.namespace.useRule(name), args);
                 } else {
                     // it's a function call
-                    result = new CtrlCall(name, args);
-                    if (this.currentFunction != null) {
-                        addDependency(this.currentFunction, name);
+                    result = new CtrlCall(kind, name, args);
+                    if (this.currentName != null) {
+                        addDependency(this.currentName, name);
                     }
                 }
                 callTree.setCtrlCall(result);
@@ -324,10 +331,18 @@ public class CtrlHelper {
     }
 
     void checkAny(MyTree anyTree) {
+        if (this.currentKind == Kind.ACTION) {
+            emitErrorMessage(anyTree,
+                "'any' may not be used in a transactional rule");
+        }
         checkGroupCall(anyTree, this.namespace.getAllRules());
     }
 
     void checkOther(MyTree otherTree) {
+        if (this.currentKind == Kind.ACTION) {
+            emitErrorMessage(otherTree,
+                "'other' may not be used in a transactional rule");
+        }
         Set<String> unusedRules =
             new HashSet<String>(this.namespace.getAllRules());
         unusedRules.removeAll(this.namespace.getUsedRules());
@@ -345,21 +360,21 @@ public class CtrlHelper {
      * the declared signature.
      */
     private boolean checkCall(MyTree callTree, String name, List<CtrlPar> args) {
-        List<CtrlPar.Var> sig = this.namespace.getSig(name);
-        boolean isRule = this.namespace.hasRule(name);
-        String ruleOrFunction = isRule ? "Rule" : "Function";
+        Kind kind = this.namespace.getKind(name);
+        List<CtrlPar.Var> sig =
+            kind == null ? null : this.namespace.getSig(name);
         boolean result = sig != null;
         if (!result) {
             emitErrorMessage(callTree, "No function or rule %s defined", name);
         } else if (args == null) {
-            result = isRule;
+            result = kind == Kind.RULE;
             for (int i = 0; result && i < sig.size(); i++) {
                 result = sig.get(i).compatibleWith(new CtrlPar.Wild());
             }
             if (!result) {
                 String message = "%s %s%s not applicable without arguments";
                 String ruleSig = toTypeString(sig);
-                emitErrorMessage(callTree, message, ruleOrFunction, name,
+                emitErrorMessage(callTree, message, kind.getName(true), name,
                     ruleSig);
             }
         } else {
@@ -371,7 +386,7 @@ public class CtrlHelper {
                 String message = "%s %s%s not applicable for arguments %s";
                 String callSig = toTypeString(args);
                 String ruleSig = toTypeString(sig);
-                emitErrorMessage(callTree, message, ruleOrFunction, name,
+                emitErrorMessage(callTree, message, kind.getName(true), name,
                     ruleSig, callSig);
             }
         }
@@ -425,6 +440,20 @@ public class CtrlHelper {
         dependencies.add(to);
     }
 
+    /** 
+     * Tests if a given control automaton is suitable as body of a 
+     * transaction.
+     */
+    boolean checkActionBody(MyTree actionTree, String name, CtrlAut aut) {
+        boolean result = true;
+        if (!aut.isEndDeterministic()) {
+            emitErrorMessage(actionTree,
+                "Rule transaction '%s' must terminate deterministically", name);
+            result = false;
+        }
+        return result;
+    }
+
     /** Namespace to enter the declared functions. */
     private final Namespace namespace;
     /** The algebra family to be used for constant arguments. */
@@ -433,6 +462,7 @@ public class CtrlHelper {
     private final List<FormatError> errors = new ArrayList<FormatError>();
     /** The symbol table holding the local variable declarations. */
     private final SymbolTable symbolTable = new SymbolTable();
+    /** Mapping from function names to other functions being invoked from it. */
     private final Map<String,Set<String>> dependencyMap =
         new HashMap<String,Set<String>>();
     /** Set of currently initialised variables. */

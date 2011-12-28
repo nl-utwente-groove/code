@@ -11,8 +11,6 @@ import groove.lts.GraphTransition;
 
 import java.util.List;
 
-import org.jgraph.graph.AttributeMap;
-
 /**
  * JVertex class that describes the underlying node as a graph state.
  * @author Arend Rensink
@@ -99,6 +97,13 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     /**
+     * @return true if the state is transient.
+     */
+    public boolean isTransient() {
+        return getNode().isTransient();
+    }
+
+    /**
      * @return true if the state is final.
      */
     public boolean isFinal() {
@@ -161,21 +166,25 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * @see LTSJGraph#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result;
+    protected JAttr.AttributeMap createAttributes() {
+        JAttr.AttributeMap result;
         if (isResult()) {
-            result = LTSJGraph.LTS_RESULT_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_RESULT_NODE_ATTR;
         } else if (isStart()) {
-            result = LTSJGraph.LTS_START_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_START_NODE_ATTR;
         } else if (!isClosed()) {
-            result = LTSJGraph.LTS_OPEN_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_OPEN_NODE_ATTR;
         } else if (isFinal()) {
-            result = LTSJGraph.LTS_FINAL_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_FINAL_NODE_ATTR;
         } else {
-            result = LTSJGraph.LTS_NODE_ATTR.clone();
+            result = LTSJGraph.LTS_NODE_ATTR;
         }
+        result = result.clone();
         if (isActive()) {
             result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
+        }
+        if (isTransient()) {
+            result.applyMap(LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
         }
         return result;
     }

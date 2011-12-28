@@ -71,12 +71,17 @@ public class CtrlJEdge extends GraphJEdge {
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result;
-        if (!(getEdge()).label().getGuard().isEmpty()) {
-            result = CtrlJGraph.CONTROL_FAILURE_EDGE_ATTR.clone();
+        boolean omega = getEdge().getCall().isOmega();
+        if (getEdge().isExitsTransient()) {
+            result =
+                omega ? CtrlJGraph.CONTROL_OMEGA_EXIT_EDGE_ATTR
+                        : CtrlJGraph.CONTROL_EXIT_EDGE_ATTR;
         } else {
-            result = CtrlJGraph.CONTROL_EDGE_ATTR.clone();
+            result =
+                omega ? CtrlJGraph.CONTROL_OMEGA_EDGE_ATTR
+                        : CtrlJGraph.CONTROL_EDGE_ATTR;
         }
-        return result;
+        return result.clone();
     }
 
     /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */

@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
+import groove.control.parse.Namespace.Kind;
 import groove.trans.Rule;
 import groove.util.Groove;
 
@@ -32,19 +33,23 @@ import java.util.Map;
  */
 public class CtrlCall {
     /** Constructor for the singleton success call. */
-    private CtrlCall() {
+    private CtrlCall(Kind kind, String name) {
+        this.kind = kind;
+        this.name = name;
         this.rule = null;
-        this.function = null;
         this.args = null;
     }
 
     /**
-     * Constructs a call for a given function and list of arguments.
-     * @param function the name of the function to be called; non-{@code null}
-     * @param args list of arguments for the call; non-{@code null}
+     * Constructs a call for a given function or transaction and list of arguments.
+     * @param name the name of the function to be called; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null}
+     * for a transaction call
      */
-    public CtrlCall(String function, List<CtrlPar> args) {
-        this.function = function;
+    public CtrlCall(Kind kind, String name, List<CtrlPar> args) {
+        assert kind != null && kind != Kind.RULE;
+        this.kind = kind;
+        this.name = name;
         this.rule = null;
         this.args = args;
     }
@@ -52,12 +57,13 @@ public class CtrlCall {
     /**
      * Constructs an instantiated call for a given rule and list of arguments.
      * @param rule the rule to be called; non-{@code null}
-     * @param args list of arguments for the call; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null}
      */
     public CtrlCall(Rule rule, List<CtrlPar> args) {
+        this.kind = Kind.RULE;
+        this.name = rule.getName();
         this.args = args;
         this.rule = rule;
-        this.function = null;
         assert ruleInputSatisfied();
     }
 
@@ -82,10 +88,8 @@ public class CtrlCall {
             CtrlCall other = (CtrlCall) obj;
             if (isOmega()) {
                 result = other == this;
-            } else if (isRule()) {
-                result = getRule().equals(other.getRule());
-            } else if (isFunction()) {
-                result = getFunction().equals(other.getFunction());
+            } else {
+                result = getName().equals(other.getName());
             }
             if (getArgs() == null) {
                 result &= other.getArgs() == null;
@@ -98,14 +102,7 @@ public class CtrlCall {
 
     @Override
     public int hashCode() {
-        int result = 0;
-        if (isFunction()) {
-            result = getFunction().hashCode();
-        } else if (isOmega()) {
-            result = super.hashCode();
-        } else if (isRule()) {
-            result = getRule().hashCode();
-        }
+        int result = getName().hashCode();
         if (getArgs() != null) {
             result ^= getArgs().hashCode();
         }
@@ -130,32 +127,6 @@ public class CtrlCall {
     }
 
     /**
-     * Indicates if this is a (non-omega) rule call.
-     */
-    public boolean isRule() {
-        return this.rule != null;
-    }
-
-    /**
-     * Indicates if this is a function call.
-     */
-    public boolean isFunction() {
-        return this.function != null;
-    }
-
-    /** Returns the name of the called function or the invoked rule. */
-    public String getName() {
-        if (isFunction()) {
-            return getFunction();
-        } else if (isOmega()) {
-            return OMEGA_NAME;
-        } else {
-            assert isRule();
-            return getRule().getName();
-        }
-    }
-
-    /**
      * Returns a new control call, based on the rule or function of
      * this call but with replaced arguments.
      * @param args the arguments of the new call
@@ -163,13 +134,12 @@ public class CtrlCall {
     public CtrlCall copy(List<CtrlPar> args) {
         assert args == null || args.size() == getArgs().size();
         CtrlCall result;
-        if (isFunction()) {
-            result = new CtrlCall(getFunction(), args);
-        } else if (isOmega()) {
+        if (isOmega()) {
             result = this;
-        } else {
-            assert isRule();
+        } else if (getKind() == Kind.RULE) {
             result = new CtrlCall(getRule(), args);
+        } else {
+            result = new CtrlCall(getKind(), getName(), args);
         }
         return result;
     }
@@ -232,6 +202,14 @@ public class CtrlCall {
     private Map<CtrlVar,Integer> inVars;
     private Map<CtrlVar,Integer> outVars;
 
+    /** Returns the kind of object being called. */
+    public Kind getKind() {
+        return this.kind;
+    }
+
+    /** The kind of object being called. */
+    private final Kind kind;
+
     /** 
      * Returns the arguments of the call.
      * @return the list of arguments; or {@code null} if this is an omega call
@@ -269,19 +247,19 @@ public class CtrlCall {
      * omega call.
      * @see #isOmega()
      */
-    public final String getFunction() {
-        return this.function;
+    public final String getName() {
+        return this.name;
     }
 
     /** The name of the function being called; non-{@code null}. */
-    private final String function;
+    private final String name;
 
+    /** Name of the omega rule (which models termination). */
+    public static final String OMEGA_NAME = "\u03A9";
     /**
      * A special call, indicating that the control program is successful.
      * Can be seen as a call to a rule that always matches and makes no changes.
      */
-    public static final CtrlCall OMEGA = new CtrlCall();
+    public static final CtrlCall OMEGA = new CtrlCall(Kind.RULE, OMEGA_NAME);
 
-    /** Name of the omega rule (which models termination). */
-    public static final String OMEGA_NAME = "\u03A9";
 }
