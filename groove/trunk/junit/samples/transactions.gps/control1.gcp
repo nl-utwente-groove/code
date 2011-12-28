@@ -1,0 +1,8 @@
+rule ab() {
+  choice {
+    try a;
+  } or {
+    b;
+  }
+  b;
+}
