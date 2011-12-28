@@ -3,6 +3,7 @@ package groove.gui.jgraph;
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
 import groove.graph.Node;
+import groove.io.HTMLConverter;
 
 import java.util.List;
 
@@ -49,6 +50,13 @@ public class CtrlJVertex extends GraphJVertex {
             sb.append(boundVars.toString());
             result.add(sb);
         }
+        if (isTransient()) {
+            StringBuilder action = new StringBuilder();
+            action.append(HTMLConverter.toHtml('<'));
+            action.append(getNode().getAction());
+            action.append(HTMLConverter.toHtml('>'));
+            result.add(action);
+        }
         return result;
     }
 
@@ -60,6 +68,11 @@ public class CtrlJVertex extends GraphJVertex {
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
         return getNode().getAut().getFinal().equals(getNode());
+    }
+
+    /** Indicates if this jVertex corresponds to a transient control state. */
+    public boolean isTransient() {
+        return getNode().isTransient();
     }
 
     /**
@@ -78,6 +91,8 @@ public class CtrlJVertex extends GraphJVertex {
             result = CtrlJGraph.CONTROL_START_NODE_ATTR.clone();
         } else if (isFinal()) {
             result = CtrlJGraph.CONTROL_SUCCESS_NODE_ATTR.clone();
+        } else if (isTransient()) {
+            result = CtrlJGraph.CONTROL_TRANSIENT_NODE_ATTR.clone();
         } else {
             result = CtrlJGraph.CONTROL_NODE_ATTR.clone();
         }

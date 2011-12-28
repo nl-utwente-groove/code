@@ -10,6 +10,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.control.parse.Namespace.Kind;
 import groove.trans.Rule;
 import groove.algebra.AlgebraFamily;
 import groove.view.FormatError;
@@ -49,7 +50,23 @@ import java.util.HashMap;
 }
 
 program 
-  :  ^(PROGRAM functions block) 
+  : ^(PROGRAM actions functions block) 
+    { if ($block.tree.getChildCount() == 0) {
+          helper.checkAny($PROGRAM);
+      }
+    }
+  ;
+
+actions
+  : ^(ACTIONS action*)
+  ;
+
+action
+  : ^( RULE ID
+       { helper.startBody($ID, Kind.ACTION); } 
+       block
+       { helper.endBody(); } 
+     )
   ;
 
 functions
@@ -59,9 +76,9 @@ functions
 
 function
   : ^( FUNCTION ID
-       { helper.startFunction($ID); } 
+       { helper.startBody($ID, Kind.FUNCTION); } 
        block
-       { helper.endFunction(); } 
+       { helper.endBody(); } 
      )
   ;
   

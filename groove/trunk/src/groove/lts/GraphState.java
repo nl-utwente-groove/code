@@ -45,7 +45,7 @@ public interface GraphState extends Node {
     /** Returns the (non-{@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
 
-    /** Returns the (possibly {@code null}) control schedule associated with this state. */
+    /** Returns the (non-{@code null}) control schedule associated with this state. */
     public CtrlSchedule getSchedule();
 
     /** Sets a new control schedule for this state. */
@@ -104,10 +104,12 @@ public interface GraphState extends Node {
     public boolean containsTransition(GraphTransition transition);
 
     /**
-     * Tests if this state is fully explored, i.e., all outgoing transitions
-     * have been generated.
+     * Returns a list of values for the bound variables of
+     * the control state.
+     * @see #getCtrlState()
+     * @see CtrlState#getBoundVars()
      */
-    public boolean isClosed();
+    public HostNode[] getBoundNodes();
 
     /**
      * Closes this state. This announces that no more outgoing transitions will
@@ -121,7 +123,39 @@ public interface GraphState extends Node {
     public boolean setClosed(boolean finished);
 
     /**
-     * Returns a list of values of the bound variables.
+     * Tests if this state is fully explored, i.e., all outgoing transitions
+     * have been generated.
      */
-    public HostNode[] getBoundNodes();
+    public boolean isClosed();
+
+    /** 
+     * Declares this state to be an error state.
+     * The return value indicates if the error status was changed as
+     * a result of this call.
+     * @return if {@code false}, the state was already known to be an error state
+     */
+    public boolean setError();
+
+    /** Indicates if this is an error state. */
+    public boolean isError();
+
+    /** 
+     * Indicates if this is a transient state.
+     * This is the case if and only if the associated control state is transient.
+     * @see #getCtrlState()
+     */
+    public boolean isTransient();
+
+    /** 
+     * Declares this state to be absent from the state space.
+     * An state is absent if after exploration it turns out that a correctness
+     * condition is violated.
+     * The return value indicates if the absentee status was changed as
+     * a result of this call.
+     * @return if {@code false}, the state was already known to be absent
+     */
+    public boolean setAbsent();
+
+    /** Indicates if this state is not properly part of the state space. */
+    public boolean isAbsent();
 }

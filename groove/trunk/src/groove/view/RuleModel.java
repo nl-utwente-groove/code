@@ -2124,7 +2124,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             boolean outOnly = paramKind == PARAM_OUT;
             if (inOnly && !hasControl) {
                 throw new FormatException(
-                    "Parameter '%d' is a required input, but no control is in use",
+                    "Parameter '%d' is a required input, but control is not enabled",
                     nr, node);
             }
             RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);

@@ -7,13 +7,13 @@ options {
 }
 
 tokens {
+  ACTIONS;
   ARG;
   ARGS;
 	BLOCK;
 	CALL;
   DO_WHILE;
   DO_UNTIL;
-	FUNCTION;
 	FUNCTIONS;
 	PROGRAM;
 	VAR;
@@ -28,6 +28,7 @@ import java.util.LinkedList;
 @header {
 package groove.control.parse;
 import groove.control.*;
+import groove.control.parse.Namespace.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.view.FormatError;
 import java.util.LinkedList;
@@ -64,15 +65,25 @@ import java.util.LinkedList;
     }
 }
 
-// PARSER rules
+// PARSER ACTIONS
 
 /** @H Main program. */
 program
-  : //@S ( function | stat )*
-    //@B Main program, consisting of optional top-level statements and
-    //@B control function definitions. 
-    (function|stat)*
-    -> ^(PROGRAM ^(FUNCTIONS function*) ^(BLOCK stat*))
+  : //@S ( function | action | stat )*
+    //@B Main program, consisting of optional top-level statements,
+    //@B control function definitions and transaction rule definitions.
+    (function|action|stat)* EOF
+    -> ^(PROGRAM ^(ACTIONS action*) ^(FUNCTIONS function*) ^(BLOCK stat*))
+  ;
+
+/** @H Transaction rule declaration.
+  * @B During exploration, the body is treated as an atomic transaction.
+  */
+action
+  : //@S RULE name LPAR RPAR block
+    //@B Declares an atomic rule %s, with body %s.
+    RULE^ ID LPAR! RPAR! block
+    { helper.declareName($RULE.tree); }
   ;
 
 /** @H Function declaration.
@@ -83,7 +94,7 @@ function
   : //@S FUNCTION name LPAR RPAR block
     //@B Declares the function %s, with body %s.
     FUNCTION^ ID LPAR! RPAR! block
-    { helper.declareFunction($FUNCTION.tree); }
+    { helper.declareName($FUNCTION.tree); }
   ;
 
 /** @H Statement block. */
@@ -301,7 +312,7 @@ var_type
 	  REAL
 	;
 	
-// LEXER rules
+// LEXER RULES
 
 ALAP     : 'alap';
 ANY		   : 'any';
@@ -318,6 +329,7 @@ OR       : 'or';
 OTHER    : 'other';
 OUT	     : 'out';
 REAL     : 'real';
+RULE     : 'rule';
 STAR     : 'star';
 STRING   : 'string';
 TRY      : 'try';

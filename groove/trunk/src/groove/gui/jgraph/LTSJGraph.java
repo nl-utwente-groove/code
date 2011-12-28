@@ -292,6 +292,8 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     static public final JAttr.AttributeMap LTS_RESULT_NODE_ATTR;
     /** The default edge attributes of the LTS */
     static public final JAttr.AttributeMap LTS_EDGE_ATTR;
+    /** Transient node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_NODE_TRANSIENT_CHANGE;
     /** Active node attributes of the LTS */
     static public final JAttr.AttributeMap LTS_NODE_ACTIVE_CHANGE;
     /** Active edge attributes of the LTS */
@@ -341,6 +343,14 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         };
         LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs().diff(LTS_NODE_ATTR);
         LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
+        // active LTS nodes and edges
+        JAttr ltsTransient = new JAttr() {
+            {
+                this.shape = JVertexShape.DIAMOND;
+            }
+        };
+        LTS_NODE_TRANSIENT_CHANGE =
+            ltsTransient.getNodeAttrs().diff(LTS_NODE_ATTR);
     }
 
     /**
