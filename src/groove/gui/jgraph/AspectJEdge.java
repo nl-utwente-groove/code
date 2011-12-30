@@ -45,11 +45,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      */
     public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel) {
         super(jGraph, jModel);
-        this.jModelTracker =
-            jModel == null ? ChangeCount.DUMMY_TRACKER
-                    : jModel.getModCount().createTracker();
         setUserObject(null);
         this.aspect = DEFAULT;
+        resetTracker();
         refreshAttributes();
     }
 
@@ -125,6 +123,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     public AspectJEdge clone() {
         AspectJEdge result = (AspectJEdge) super.clone();
         result.errors = new ArrayList<FormatError>();
+        result.extraErrors = new ArrayList<FormatError>();
+        result.resetTracker();
         return result;
     }
 
@@ -489,12 +489,24 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
+    /** 
+     * Sets the {@link #jModelTracker} to a fresh value.
+     * This is delegated to a separate method because it needs
+     * to be invoked upon cloning as well as in the constructor.
+     * @see #clone()
+     */
+    private void resetTracker() {
+        this.jModelTracker =
+            getJModel() == null ? ChangeCount.DUMMY_TRACKER
+                    : getJModel().getModCount().createTracker();
+    }
+
     /** Cached lines. */
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Edge> keys;
     /** JModel modification tracker. */
-    private final Tracker jModelTracker;
+    private Tracker jModelTracker;
     private AspectKind aspect;
 
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();

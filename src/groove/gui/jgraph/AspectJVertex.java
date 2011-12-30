@@ -21,9 +21,9 @@ import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.io.Util;
-import groove.util.Colors;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
+import groove.util.Colors;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.Aspect;
@@ -51,14 +51,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public AspectJVertex(AspectJGraph jGraph, AspectJModel jModel,
             AspectNode node) {
         super(jGraph, jModel, node);
-        this.jModelTracker =
-            jModel == null ? ChangeCount.DUMMY_TRACKER
-                    : jModel.getModCount().createTracker();
         setUserObject(null);
         if (node != null) {
             this.aspect = node.getKind();
             this.errors.addAll(node.getErrors());
         }
+        resetTracker();
     }
 
     @Override
@@ -100,6 +98,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public AspectJVertex clone() {
         AspectJVertex result = (AspectJVertex) super.clone();
         result.errors = new ArrayList<FormatError>();
+        result.extraErrors = new ArrayList<FormatError>();
+        result.resetTracker();
         return result;
     }
 
@@ -683,12 +683,24 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
+    /** 
+     * Sets the {@link #jModelTracker} to a fresh value.
+     * This is delegated to a separate method because it needs
+     * to be invoked upon cloning as well as in the constructor.
+     * @see #clone()
+     */
+    private void resetTracker() {
+        this.jModelTracker =
+            getJModel() == null ? ChangeCount.DUMMY_TRACKER
+                    : getJModel().getModCount().createTracker();
+    }
+
     /** Cached lines. */
     private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Element> keys;
     /** JModel modification tracker. */
-    private final Tracker jModelTracker;
+    private Tracker jModelTracker;
     /** The role of the underlying rule node. */
     private AspectKind aspect;
     private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
