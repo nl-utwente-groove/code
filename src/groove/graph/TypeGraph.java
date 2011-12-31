@@ -24,7 +24,10 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.DefaultHostGraph;
+import groove.rel.LabelVar;
+import groove.rel.RegExpr;
+import groove.rel.RegExprTyper;
+import groove.rel.RegExprTyper.Result;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
@@ -36,6 +39,7 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.util.Property;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.PostApplicationError;
@@ -397,7 +401,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         RuleFactory ruleFactory =
             parentTyping == null ? RuleFactory.newInstance(this)
                     : parentTyping.getFactory();
-        RuleGraphMorphism morphism = new RuleGraphMorphism(ruleFactory);
+        RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
         for (RuleNode node : source.nodeSet()) {
             try {
@@ -453,78 +457,181 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         }
                     }
                 }
-                morphism.putNode(node, image);
+                result.putNode(node, image);
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
         }
+        // separate the edges
+        // label variable edges
+        Set<RuleEdge> varEdges = new HashSet<RuleEdge>();
+        // other regular expression edges
+        Set<RuleEdge> otherEdges = new HashSet<RuleEdge>();
+        // all others (except already processed node types)
+        Set<RuleEdge> simpleEdges = new HashSet<RuleEdge>();
         for (RuleEdge edge : source.edgeSet()) {
-            RuleLabel edgeLabel = edge.label();
+            // only consider edges for which source and target are typed
+            // which may fail to hold due to a previous error
+            if (result.containsNodeKey(edge.source())
+                && result.containsNodeKey(edge.target())) {
+                RuleLabel edgeLabel = edge.label();
+                if (edgeLabel.isAtom() || edgeLabel.isSharp()) {
+                    if (!edgeLabel.isNodeType() || isImplicit()) {
+                        simpleEdges.add(edge);
+                    }
+                } else if (edgeLabel.getWildcardId() != null) {
+                    varEdges.add(edge);
+                } else {
+                    otherEdges.add(edge);
+                }
+            }
+        }
+        // collect the variable typing information
+        Map<LabelVar,Set<? extends TypeElement>> varTyping =
+            new HashMap<LabelVar,Set<? extends TypeElement>>();
+        // extract the info from the parent typing
+        if (parentTyping != null) {
+            for (RuleEdge parentVarEdge : parentTyping.edgeMap().values()) {
+                LabelVar var = parentVarEdge.label().getWildcardId();
+                if (var != null) {
+                    varTyping.put(
+                        var,
+                        new HashSet<TypeElement>(
+                            parentVarEdge.getWildcardTypes()));
+                }
+            }
+        }
+        for (RuleEdge varEdge : varEdges) {
+            Set<TypeNode> sourceTypes =
+                getMatchingTypes(result.getNode(varEdge.source()));
+            Set<TypeNode> targetTypes =
+                getMatchingTypes(result.getNode(varEdge.target()));
+            RuleLabel edgeLabel = varEdge.label();
+            Set<? extends TypeElement> varImages;
             if (edgeLabel.isNodeType() && !isImplicit()) {
-                // we already dealt with node types
-                continue;
+                varImages = sourceTypes;
+            } else {
+                // find all edge types between source and target
+                Set<TypeEdge> edgeImages = new HashSet<TypeEdge>();
+                for (TypeNode sourceType : sourceTypes) {
+                    for (TypeEdge edge : getTypeEdges(sourceType, null,
+                        edgeLabel.getRole())) {
+                        if (edge.getRole() == edgeLabel.getRole()
+                            && targetTypes.contains(edge.target())) {
+                            edgeImages.add(edge);
+                        }
+                    }
+                }
+                varImages = edgeImages;
             }
-            RuleNode sourceKey = edge.source();
-            RuleNode targetKey = edge.target();
-            RuleNode sourceImage = morphism.getNode(sourceKey);
-            RuleNode targetImage = morphism.getNode(targetKey);
-            if (sourceImage == null || targetImage == null) {
-                // this must be due to an untyped node
-                // which was already reported as an error
-                continue;
+            LabelVar var = edgeLabel.getWildcardId();
+            Property<TypeLabel> guard = edgeLabel.getWildcardGuard();
+            if (guard != null) {
+                Iterator<? extends TypeElement> imageIter =
+                    varImages.iterator();
+                while (imageIter.hasNext()) {
+                    if (!guard.isSatisfied(imageIter.next().label())) {
+                        imageIter.remove();
+                    }
+                }
             }
+            Set<? extends TypeElement> types = varTyping.get(var);
+            if (types != null) {
+                varImages.retainAll(types);
+            }
+            varTyping.put(var, varImages);
+            if (varImages.isEmpty()) {
+                errors.add(new FormatError("Label variable %s cannot be typed",
+                    var, varEdge));
+            }
+        }
+        // now push the wildcard types into the result morphism
+        for (RuleEdge varEdge : varEdges) {
+            RuleEdge image =
+                ruleFactory.createEdge(result.getNode(varEdge.source()),
+                    varEdge.label(), result.getNode(varEdge.target()));
+            image.setWildcardTypes(varTyping.get(image.label().getWildcardId()));
+            result.putEdge(varEdge, image);
+        }
+        // do the non-regular expression edges
+        for (RuleEdge edge : simpleEdges) {
+            RuleLabel edgeLabel = edge.label();
+            RuleNode sourceImage = result.getNode(edge.source());
+            RuleNode targetImage = result.getNode(edge.target());
             TypeNode sourceType = sourceImage.getType();
             TypeNode targetType = targetImage.getType();
-            TypeEdge typeEdge = null;
-            if (edgeLabel.isAtom()) {
-                typeEdge =
-                    getTypeEdge(sourceType, edgeLabel.getTypeLabel(),
-                        targetType, false);
-                if (typeEdge == null) {
-                    errors.add(new FormatError("%s-node has unknown %s-%s",
-                        sourceType, edgeLabel, edge.getRole().getDescription(
-                            false), edge.source()));
-                } else {
-                    morphism.putEdge(edge, ruleFactory.createEdge(sourceImage,
-                        edgeLabel, targetImage));
-                }
+            TypeEdge typeEdge =
+                getTypeEdge(sourceType, edgeLabel.getTypeLabel(), targetType,
+                    false);
+            if (typeEdge == null) {
+                errors.add(new FormatError("%s-node has unknown %s-%s",
+                    sourceType, edgeLabel,
+                    edge.getRole().getDescription(false), edge));
             } else {
-                RuleLabel checkLabel =
-                    edgeLabel.isNeg() ? edgeLabel.getNegOperand().toLabel()
-                            : edgeLabel;
-                if (checkLabel.isEmpty()) {
-                    // this is a (possibly negative) comparison of nodes
-                    // which can only be correct if they have a common subtype
-                    if (!hasCommonSubtype(sourceType, targetType)) {
-                        errors.add(new FormatError(
-                            "Node types %s and %s have no common subtypes",
-                            sourceType, targetType, sourceKey, targetKey));
-                    }
-                } else if (checkLabel.getMatchExpr() != null && !isImplicit()) {
-                    // this is a regular expression, which is matched against
-                    // the saturated type graph
-                    Set<HostNode> startNodes =
-                        Collections.<HostNode>singleton(getSaturationNodeMap().get(
-                            sourceType));
-                    Set<HostNode> endNodes =
-                        Collections.<HostNode>singleton(getSaturationNodeMap().get(
-                            targetType));
-                    if (checkLabel.getAutomaton(this).getMatches(
-                        getSaturation(), startNodes, endNodes).isEmpty()) {
-                        errors.add(new FormatError(
-                            "Regular expression '%s' not matched by path in type graph",
-                            checkLabel, source, edge));
-                    }
-                }
-                morphism.putEdge(edge,
+                result.putEdge(edge,
                     ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
             }
+        }
+        RegExprTyper regExprTyper = new RegExprTyper(this, varTyping);
+        for (RuleEdge edge : otherEdges) {
+            RuleLabel edgeLabel = edge.label();
+            RuleNode sourceImage = result.getNode(edge.source());
+            RuleNode targetImage = result.getNode(edge.target());
+            RuleLabel checkLabel =
+                edgeLabel.isNeg() ? edgeLabel.getNegOperand().toLabel()
+                        : edgeLabel;
+            if (checkLabel.isMatchable()) {
+                RegExpr expr = checkLabel.getMatchExpr();
+                Result typeResult = expr.apply(regExprTyper);
+                if (typeResult.hasErrors()) {
+                    for (FormatError error : typeResult.getErrors()) {
+                        errors.add(new FormatError(error, edge));
+                    }
+                } else {
+                    // check if source and target type fit
+                    boolean fit = false;
+                    Set<TypeNode> targetTypes =
+                        new HashSet<TypeNode>(getMatchingTypes(targetImage));
+                    for (TypeNode sourceType : getMatchingTypes(sourceImage)) {
+                        Set<TypeNode> resultTargetTypes =
+                            typeResult.getAll(sourceType);
+                        if (resultTargetTypes != null
+                            && targetTypes.removeAll(resultTargetTypes)) {
+                            fit = true;
+                            break;
+                        }
+                    }
+                    if (!fit) {
+                        errors.add(new FormatError(
+                            "No %s-path exists between %s and %s", checkLabel,
+                            sourceImage.getType(), targetImage.getType(), edge));
+                    }
+                }
+            }
+            result.putEdge(edge,
+                ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
         }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
-        return morphism;
+        return result;
 
+    }
+
+    /** 
+     * Returns a fresh set of all type nodes that may be matched
+     * by a given (typed) rule node.
+     * These are either only the rule node type itself, or all subtypes,
+     * depending on whether the rule node is sharp or not.
+     */
+    private Set<TypeNode> getMatchingTypes(RuleNode node) {
+        Set<TypeNode> result = new HashSet<TypeNode>();
+        if (node.isSharp()) {
+            result.add(node.getType());
+        } else {
+            result.addAll(getSubtypes(node.getType()));
+        }
+        return result;
     }
 
     /**
@@ -731,8 +838,49 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /**
-     * Returns the type edge for a given source and target node types and 
-     * edge label, or {@code null} if the edge label does not occur for the
+     * Returns the set of type edges for a given source and target node type,
+     * or one of their supertypes.
+     * @param sourceType the minimal source type for the required edges; if {@code null}, the
+     * source type is unconstrained
+     * @param targetType the minimal target type for the required edges; if {@code null}, the
+     * target type is unconstrained
+     * @param role the role of the edges to be looked up
+     */
+    private Set<TypeEdge> getTypeEdges(TypeNode sourceType,
+            TypeNode targetType, EdgeRole role) {
+        Set<TypeEdge> result = new HashSet<TypeEdge>();
+        boolean sourceFixed = sourceType != null;
+        boolean targetFixed = targetType != null;
+        Set<TypeNode> derivedSourceTypes =
+            sourceFixed ? getSupertypes(sourceType) : null;
+        Set<TypeNode> derivedTargetTypes =
+            targetFixed ? getSupertypes(targetType) : null;
+        if (sourceFixed) {
+            if (derivedSourceTypes != null
+                && (!targetFixed || derivedTargetTypes != null)) {
+                for (TypeNode derivedSourceType : derivedSourceTypes) {
+                    for (TypeEdge edge : outEdgeSet(derivedSourceType)) {
+                        if (!targetFixed
+                            || derivedTargetTypes.contains(edge.target())) {
+                            result.add(edge);
+                        }
+                    }
+                }
+            }
+        } else {
+            assert targetFixed;
+            if (derivedTargetTypes != null) {
+                for (TypeNode derivedTargetType : derivedTargetTypes) {
+                    result.addAll(inEdgeSet(derivedTargetType));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the (most concrete) type edge for a given source and target node type
+     * and edge label, or {@code null} if the edge label does not occur for the
      * node type or any of its supertypes.
      * @param precise if {@code true}, the source and target types must be observed
      * precisely; otherwise, supertypes are allowed
@@ -740,24 +888,22 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label,
             TypeNode targetType, boolean precise) {
         TypeEdge result = null;
-        Set<TypeNode> sourceSupertypes =
-            precise ? Collections.singleton(sourceType)
-                    : getSupertypes(sourceType);
-        Set<TypeNode> targetSupertypes =
-            precise ? Collections.singleton(targetType)
-                    : getSupertypes(targetType);
-        if (sourceSupertypes != null && targetSupertypes != null) {
-            for (TypeEdge edge : labelEdgeSet(label)) {
-                if (sourceSupertypes.contains(edge.source())
-                    && targetSupertypes.contains(edge.target())) {
-                    // try to find a concrete type
-                    if (result == null || result.isAbstract()) {
-                        result = edge;
-                        // if we've found a concrete type, we're done
-                        if (!result.isAbstract()) {
-                            break;
-                        }
-                    }
+        for (TypeEdge edge : getTypeEdges(sourceType, targetType,
+            label.getRole())) {
+            if (precise
+                && !(edge.source().equals(sourceType) && edge.target().equals(
+                    targetType))) {
+                continue;
+            }
+            if (!edge.label().equals(label)) {
+                continue;
+            }
+            // try to find a concrete type
+            if (result == null || result.isAbstract()) {
+                result = edge;
+                // if we've found a concrete type, we're done
+                if (!result.isAbstract()) {
+                    break;
                 }
             }
         }
@@ -810,100 +956,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             "Node type %s does not exist in type graph %s", node2, this);
         return new HashSet<TypeNode>(sub1).removeAll(sub2);
     }
-
-    /**
-     * Returns the saturated type graph. This is used for checking regular
-     * expressions.
-     */
-    private Map<TypeNode,HostNode> getSaturationNodeMap() {
-        if (this.saturationNodeMap == null) {
-            initSaturation();
-        }
-        return this.saturationNodeMap;
-    }
-
-    /**
-     * Returns the saturated type graph. This is used for checking regular
-     * expressions.
-     */
-    private HostGraph getSaturation() {
-        if (this.saturation == null) {
-            initSaturation();
-        }
-        return this.saturation;
-    }
-
-    /**
-     * Computes the saturated type graph.
-     * @see #getSaturation()
-     */
-    private void initSaturation() {
-        testFixed(true);
-        HostGraph result =
-            new DefaultHostGraph(getName(), HostFactory.newInstance(this));
-        Map<TypeNode,HostNode> typeNodeMap = new HashMap<TypeNode,HostNode>();
-        /* Inverse subtyping-saturated set of flag-bearing node types. */
-        Set<TypeNode> flaggedNodes = new HashSet<TypeNode>();
-        /* Inverse subtype-saturated mapping from node types to all outgoing binary edge neighbours. */
-        Map<TypeNode,Set<TypeNode>> connectMap =
-            new HashMap<TypeNode,Set<TypeNode>>();
-        for (TypeNode typeNode : nodeSet()) {
-            HostNode nodeImage =
-                result.getFactory().createNode(typeNode.label());
-            result.addNode(nodeImage);
-            typeNodeMap.put(typeNode, nodeImage);
-            connectMap.put(typeNode, new HashSet<TypeNode>());
-        }
-        for (TypeEdge typeEdge : edgeSet()) {
-            TypeLabel edgeType = typeEdge.label();
-            TypeNode sourceType = typeEdge.source();
-            TypeNode targetType = typeEdge.target();
-            if (edgeType.isBinary()) {
-                for (TypeNode sourceSubtype : getSubtypes(sourceType)) {
-                    for (TypeNode targetSubtype : getSubtypes(targetType)) {
-                        result.addEdge(typeNodeMap.get(sourceSubtype),
-                            edgeType, typeNodeMap.get(targetSubtype));
-                    }
-                }
-                if (connectMap.get(sourceType).add(targetType)) {
-                    for (TypeNode sourceSuperType : getSupertypes(sourceType)) {
-                        connectMap.get(sourceSuperType).addAll(
-                            getSupertypes(targetType));
-                    }
-                }
-            } else {
-                for (TypeNode sourceSubtype : getSubtypes(sourceType)) {
-                    result.addEdge(typeNodeMap.get(sourceSubtype), edgeType,
-                        typeNodeMap.get(sourceSubtype));
-                }
-                if (edgeType.isFlag() && flaggedNodes.add(sourceType)) {
-                    for (TypeNode sourceSuperType : getSupertypes(sourceType)) {
-                        flaggedNodes.add(sourceSuperType);
-                    }
-                }
-            }
-        }
-        //        for (Map.Entry<TypeNode,Set<TypeNode>> connectEntry : connectMap.entrySet()) {
-        //            for (TypeNode targetType : connectEntry.getValue()) {
-        //                HostNode source = typeNodeMap.get(connectEntry.getKey());
-        //                HostNode target = typeNodeMap.get(targetType);
-        //                result.addEdge(source,
-        //                    MatrixAutomaton.getDummyLabel(EdgeRole.BINARY), target);
-        //            }
-        //        }
-        //        for (TypeNode flaggedType : flaggedNodes) {
-        //            HostNode source = typeNodeMap.get(flaggedType);
-        //            result.addEdge(source,
-        //                MatrixAutomaton.getDummyLabel(EdgeRole.FLAG), source);
-        //        }
-        this.saturationNodeMap = typeNodeMap;
-        this.saturation = result;
-    }
-
-    /** Mapping from type nodes to saturation graph nodes. */
-    private Map<TypeNode,HostNode> saturationNodeMap;
-    /** Saturation of the type graph, for checking regular expressions. */
-    private HostGraph saturation;
 
     /** Returns the set of all type labels occurring in the type graph. */
     public Set<TypeLabel> getLabels() {
