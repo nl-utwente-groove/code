@@ -49,6 +49,12 @@ public class TypeCheckTest {
         test("shadow");
     }
 
+    /** Tests regular expression typing. */
+    @Test
+    public void testRegExpr() {
+        test("regexpr");
+    }
+
     /** Tests for regression. */
     @Test
     public void testRegression() {

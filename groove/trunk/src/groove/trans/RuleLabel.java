@@ -105,9 +105,11 @@ public class RuleLabel extends AbstractLabel {
             result = getOperator().getName();
         } else if (isArgument()) {
             result = "" + Util.LC_PI + getArgument();
-        } else {
+        } else if (isAtom() || isSharp() || isWildcard()) {
             result = getMatchExpr().toString();
             result = EdgeRole.parseLabel(result).two();
+        } else {
+            result = getMatchExpr().toString();
         }
         return result;
     }

@@ -74,7 +74,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return createEdge(source, createLabel(text), target);
     }
 
-    /** Creates an edge with the given source, label and target. */
+    /** Gets the appropriate type edge from the type factory. */
     @Override
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
         RuleLabel ruleLabel = (RuleLabel) label;

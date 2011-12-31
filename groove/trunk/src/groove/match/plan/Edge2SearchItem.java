@@ -46,6 +46,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         // the label may actually be an arbitrary regular expression
         assert edge.label().isSharp() || edge.label().isAtom()
             || edge.label().isWildcard();
+        assert edge.getType() != null;
         this.edge = edge;
         this.type = edge.getType();
         this.source = edge.source();
