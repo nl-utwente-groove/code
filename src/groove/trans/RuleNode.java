@@ -21,6 +21,8 @@ import groove.graph.Node;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 
+import java.util.Set;
+
 /**
  * Supertype of all nodes that can occur in a {@link RuleGraph}.
  * These are {@link DefaultNode}s and {@link ProductNode}s (or
@@ -29,8 +31,8 @@ import groove.graph.algebra.ProductNode;
  * @version $Revision $
  */
 public interface RuleNode extends Node, RuleElement {
-    /** Returns the type of the rule node, or {@code null} if
-     * the rule node is untyped. */
+    /** Specialises the return type. */
+    @Override
     public TypeNode getType();
 
     /** 
@@ -38,4 +40,8 @@ public interface RuleNode extends Node, RuleElement {
      * Returns {@code false} if the node is untyped.
      */
     public boolean isSharp();
+
+    /** Specialises the return type. */
+    @Override
+    public Set<TypeNode> getMatchingTypes();
 }

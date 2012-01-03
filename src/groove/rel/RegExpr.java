@@ -29,12 +29,12 @@ import groove.annotation.ToolTipHeader;
 import groove.annotation.ToolTipPars;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.Property;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -121,7 +121,7 @@ abstract public class RegExpr { // implements VarSetSupport {
      * If this is a {@link RegExpr.Wildcard}, returns the guard of the wildcard,
      * if any; otherwise returns <code>null</code>.
      */
-    public Property<TypeLabel> getWildcardGuard() {
+    public TypeGuard getWildcardGuard() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getGuard();
         } else {
@@ -651,20 +651,6 @@ abstract public class RegExpr { // implements VarSetSupport {
      */
     public static Sharp sharp(TypeLabel typeLabel) {
         return new Sharp(typeLabel);
-    }
-
-    /**
-     * Creates and returns a wildcard regular expression.
-     */
-    public static Wildcard wildcard() {
-        return new Wildcard();
-    }
-
-    /**
-     * Creates and returns a named wildcard regular expression.
-     */
-    public static Wildcard wildcard(String text) {
-        return new Wildcard(text, null);
     }
 
     /**
@@ -1407,37 +1393,30 @@ abstract public class RegExpr { // implements VarSetSupport {
         "the optional wildcard variable name",
         "comma-separated list of labels, either containing or excluding the matched label"})
     static public class Wildcard extends Constant {
-        /** Creates an instance without variable identifier. */
-        public Wildcard() {
-            super("" + WILDCARD_OPERATOR, WILDCARD_SYMBOLIC_NAME);
+        /** Creates an prototype instance. */
+        Wildcard() {
+            this(null);
         }
 
         /**
          * Constructs a wildcard expression with a given (possibly {@code null}) 
          * identifier and (possibly {@code null}) label constraint.
          */
-        private Wildcard(String identifier, LabelConstraint constraint) {
-            this();
-            this.identifier = identifier;
-            this.guard = constraint;
+        private Wildcard(TypeGuard guard) {
+            super("" + WILDCARD_OPERATOR, WILDCARD_SYMBOLIC_NAME);
+            this.guard = guard;
         }
 
         @Override
         public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-            LabelConstraint newConstraint = null;
-            if (this.guard != null) {
-                newConstraint = this.guard.relabel(oldLabel, newLabel);
-            }
-            return newConstraint == null ? this : newInstance(this.identifier,
-                newConstraint);
+            TypeGuard newGuard = null;
+            newGuard = this.guard.relabel(oldLabel, newLabel);
+            return newGuard == this.guard ? this : newInstance(newGuard);
         }
 
         @Override
         public Set<TypeLabel> getTypeLabels() {
-            Set<TypeLabel> result = null;
-            if (this.guard != null) {
-                result = this.guard.getLabels();
-            }
+            Set<TypeLabel> result = this.guard.getLabels();
             if (result == null) {
                 result = Collections.emptySet();
             }
@@ -1461,16 +1440,12 @@ abstract public class RegExpr { // implements VarSetSupport {
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            if (this.guard != null) {
-                result.append(this.guard.getKind().getPrefix());
-            }
+            result.append(getGuard().getKind().getPrefix());
             result.append(super.toString());
-            if (getIdentifier() != null) {
-                result.append(getIdentifier());
+            if (getLabelVar() != null) {
+                result.append(getLabelVar().getName());
             }
-            if (getGuard() != null) {
-                result.append(getGuard());
-            }
+            result.append(getGuard());
             return result.toString();
         }
 
@@ -1485,13 +1460,14 @@ abstract public class RegExpr { // implements VarSetSupport {
             }
             result.append(getSymbol());
             if (this.guard != null) {
-                String type = this.guard.kind.getPrefix();
+                String type = this.guard.getKind().getPrefix();
                 if (!type.isEmpty()) {
                     result.append(" ");
                     result.append(type.subSequence(0, type.length() - 1));
                 }
                 if (this.guard.getLabels() != null) {
-                    result.append(this.guard.negated ? " not in " : " from ");
+                    result.append(this.guard.isNegated() ? " not in "
+                            : " from ");
                     result.append(Groove.toString(this.guard.getLabels().toArray()));
                 }
             }
@@ -1501,7 +1477,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         /**
          * Returns the optional guard of this wildcard expression.
          */
-        public LabelConstraint getGuard() {
+        public TypeGuard getGuard() {
             return this.guard;
         }
 
@@ -1514,7 +1490,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Returns the optional identifier of this wildcard expression.
          */
         public String getIdentifier() {
-            return this.identifier;
+            return getLabelVar() == null ? null : getLabelVar().getName();
         }
 
         /**
@@ -1522,11 +1498,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * The variable is the identifier combined with the constraint kind.
          */
         public LabelVar getLabelVar() {
-            if (this.labelVar == null && getIdentifier() != null) {
-                this.labelVar =
-                    new LabelVar(getIdentifier(), getGuard().getKind());
-            }
-            return this.labelVar;
+            return this.guard.getVar();
         }
 
         /**
@@ -1557,7 +1529,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             EdgeRole kind = parsedPrefix.one();
             // parse the identifier and constraint expression
             String identifier = null;
-            LabelConstraint constraint = new LabelConstraint(kind);
+            String parameter = null;
             if (!text.isEmpty()) {
                 // decompose text into identifier and label list
                 Pair<String,List<String>> operand = ExprParser.parseExpr(text);
@@ -1566,11 +1538,9 @@ abstract public class RegExpr { // implements VarSetSupport {
                 if (subStringCount > 1) {
                     throw error;
                 } else if (subStringCount == 1) {
-                    String parameter = operand.two().iterator().next();
+                    parameter = operand.two().iterator().next();
                     if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length() - 1) {
                         throw error;
-                    } else {
-                        setConstraint(constraint, parameter);
                     }
                     identifier =
                         identifier.substring(0, identifier.length() - 1);
@@ -1582,7 +1552,13 @@ abstract public class RegExpr { // implements VarSetSupport {
                         "Invalid wildcard identifier '%s'", text);
                 }
             }
-            return newInstance(identifier, constraint);
+            LabelVar var =
+                identifier == null ? null : new LabelVar(identifier, kind);
+            TypeGuard constraint = new TypeGuard(var, kind);
+            if (parameter != null) {
+                setConstraint(constraint, parameter);
+            }
+            return newInstance(constraint);
         }
 
         /**
@@ -1592,21 +1568,20 @@ abstract public class RegExpr { // implements VarSetSupport {
          * @throws FormatException if <code>parameter</code> is not correctly
          *         formed as a constraint.
          */
-        private void setConstraint(LabelConstraint constraint, String parameter)
+        private void setConstraint(TypeGuard constraint, String parameter)
             throws FormatException {
             String constraintList =
-                ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN,
-                    CONSTRAINT_CLOSE);
+                ExprParser.toTrimmed(parameter, TypeGuard.OPEN, TypeGuard.CLOSE);
             if (constraintList == null) {
                 throw new FormatException("Invalid constraint parameter '%s'",
                     parameter);
             }
-            boolean negated = constraintList.indexOf(CONSTRAINT_NEGATOR) == 0;
+            boolean negated = constraintList.indexOf(TypeGuard.NEGATOR) == 0;
             if (negated) {
                 constraintList = constraintList.substring(1);
             }
             String[] constraintParts =
-                ExprParser.splitExpr(constraintList, "" + CONSTRAINT_SEPARATOR,
+                ExprParser.splitExpr(constraintList, "" + TypeGuard.SEPARATOR,
                     ExprParser.INFIX_POSITION);
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'",
@@ -1640,9 +1615,8 @@ abstract public class RegExpr { // implements VarSetSupport {
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
-        protected Wildcard newInstance(String identifier,
-                LabelConstraint constraint) {
-            return new Wildcard(identifier, constraint);
+        protected Wildcard newInstance(TypeGuard constraint) {
+            return new Wildcard(constraint);
         }
 
         /** This implementation returns a {@link Wildcard}. */
@@ -1656,124 +1630,8 @@ abstract public class RegExpr { // implements VarSetSupport {
             return false;
         }
 
-        /** The (optional) constraint for this wildcard. */
-        private LabelConstraint guard;
-
-        /** The (optional) identifier for this wildcard. */
-        private String identifier;
-
-        /** The (optional) label variable derived from the identifier and label kind. */
-        private LabelVar labelVar;
-
-        /** Opening bracket of a wildcard constraint. */
-        static private final char CONSTRAINT_OPEN = '[';
-        /** Closing bracket of a wildcard constraint. */
-        static private final char CONSTRAINT_CLOSE = ']';
-        /** Character to indicate negation of a constraint. */
-        static private final char CONSTRAINT_NEGATOR = '^';
-        /** Character to separate constraint parts. */
-        static private final char CONSTRAINT_SEPARATOR = ',';
-
-        /** Constraint testing if a label is of a correct type and is or is not in a predefined set of labels. */
-        public static class LabelConstraint extends Property<TypeLabel> {
-            /** Constructs a new constraint.
-             * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
-             */
-            LabelConstraint(EdgeRole kind) {
-                this.kind = kind;
-            }
-
-            /** 
-             * Sets the set of labels to test for.
-             * @param textList List of labels which membership is tested; may be {@code null} if only the label type is tested for
-             * @param negated if {@code true}, satisfaction is defined as presence in {@code textList}; otherwise as absence
-             */
-            public void setLabels(List<String> textList, boolean negated) {
-                this.textList = textList;
-                this.labelSet = new HashSet<TypeLabel>();
-                for (String text : textList) {
-                    this.labelSet.add(TypeLabel.createLabel(this.kind, text));
-                }
-                this.negated = negated;
-            }
-
-            /**
-             * Returns a copy of this label constraint with given label replaced
-             * by another. Returns this constraint if the old label does not
-             * occur.
-             * @param oldLabel the label to be replaced
-             * @param newLabel the new value for {@code oldLabel}
-             * @return a copy of this constraint with the old label replaced by
-             *         the new, or this constraint itself if the old label did
-             *         not occur.
-             */
-            public LabelConstraint relabel(Label oldLabel, Label newLabel) {
-                LabelConstraint result = this;
-                if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
-                    int index = this.textList.indexOf(oldLabel.text());
-                    List<String> newTextList =
-                        new ArrayList<String>(this.textList);
-                    if (newLabel.getRole() == this.kind) {
-                        newTextList.set(index, newLabel.text());
-                    } else {
-                        newTextList.remove(index);
-                    }
-                    result = new LabelConstraint(this.kind);
-                }
-                return result;
-            }
-
-            /**
-             * Returns the (possibly {@code null}) set of labels occurring in this label constraint.
-             * @see RegExpr#getTypeLabels()
-             */
-            public Set<TypeLabel> getLabels() {
-                return this.labelSet;
-            }
-
-            /**
-             * Determines if this label constraint is a negative constraint 
-             * like [^a,b,c].
-             */
-            public boolean isNegated() {
-                return this.negated;
-            }
-
-            @Override
-            public boolean isSatisfied(TypeLabel value) {
-                return this.kind == value.getRole()
-                    && (this.labelSet == null || this.negated != this.labelSet.contains(value));
-            }
-
-            @Override
-            public String toString() {
-                String result = "";
-                if (this.labelSet != null) {
-                    result += CONSTRAINT_OPEN;
-                    if (this.negated) {
-                        result += CONSTRAINT_NEGATOR;
-                    }
-                    result =
-                        Groove.toString(this.textList.toArray(), result, ""
-                            + CONSTRAINT_CLOSE, "" + CONSTRAINT_SEPARATOR);
-                }
-                return result;
-            }
-
-            /** Returns the kind of labels accepted by this constraint. */
-            public EdgeRole getKind() {
-                return this.kind;
-            }
-
-            /** The list of strings indicating the labels to be matched. */
-            private List<String> textList;
-            /** The set of labels to be tested for inclusion. */
-            private Set<TypeLabel> labelSet;
-            /** Flag indicating if we are testing for absence or presence. */
-            private boolean negated;
-            /** The type of label we are testing for. See {@link Label#getRole()} */
-            private final EdgeRole kind;
-        }
+        /** The label constraint for this wildcard expression. */
+        private final TypeGuard guard;
     }
 
     /**

@@ -50,6 +50,9 @@ class SeedSearchItem extends AbstractSearchItem {
         this.nodes = new HashSet<RuleNode>(nodes);
         this.edges = new HashSet<RuleEdge>(edges);
         this.vars = new HashSet<LabelVar>();
+        for (RuleNode node : nodes) {
+            this.vars.addAll(VarSupport.getAllVars(node));
+        }
         for (RuleEdge edge : edges) {
             this.vars.addAll(VarSupport.getAllVars(edge));
         }
@@ -133,7 +136,8 @@ class SeedSearchItem extends AbstractSearchItem {
         return String.format("Check %s", elementList);
     }
 
-    public Record createRecord(groove.match.plan.PlanSearchStrategy.Search search) {
+    public Record createRecord(
+            groove.match.plan.PlanSearchStrategy.Search search) {
         assert allElementsMatched(search) : String.format(
             "Elements %s not pre-matched", this.unmatched);
         return new DummyRecord();

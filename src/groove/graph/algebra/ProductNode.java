@@ -18,13 +18,17 @@ package groove.graph.algebra;
 
 import groove.graph.AbstractNode;
 import groove.graph.EdgeRole;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Instances of this class represent tuples of data values on which one can
@@ -100,8 +104,23 @@ public class ProductNode extends AbstractNode implements RuleNode {
     }
 
     @Override
+    public List<LabelVar> getTypeVars() {
+        return EMPTY_VAR_LIST;
+    }
+
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return EMPTY_GUARD_LIST;
+    }
+
+    @Override
     public boolean isSharp() {
         return true;
+    }
+
+    @Override
+    public Set<TypeNode> getMatchingTypes() {
+        return Collections.emptySet();
     }
 
     /**
@@ -118,4 +137,10 @@ public class ProductNode extends AbstractNode implements RuleNode {
     @SuppressWarnings("unused")
     static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(
         EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
+    /** Predefined empty list of label variables. */
+    static private final List<LabelVar> EMPTY_VAR_LIST =
+        Collections.emptyList();
+    /** Predefined empty list of type guards. */
+    static private final List<TypeGuard> EMPTY_GUARD_LIST =
+        Collections.emptyList();
 }

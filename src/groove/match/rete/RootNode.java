@@ -124,8 +124,7 @@ public class RootNode extends ReteNetworkNode {
         if (nodeCheckers == null) {
             nodeCheckers = new TreeHashSet<DefaultNodeChecker>();
             //copy the node checkers of supertypes here
-            for (TypeNode superType : nnode.getType().getGraph().getSubtypes(
-                nnode.getType())) {
+            for (TypeNode superType : nnode.getType().getSubtypes()) {
                 Collection<DefaultNodeChecker> ncs =
                     this.defaultNodeCheckers.get(superType);
                 if (ncs != null) {
@@ -137,8 +136,7 @@ public class RootNode extends ReteNetworkNode {
             nodeCheckers.add(nnode);
         }
         //put yourself in the list of checker for subtypes too
-        for (TypeNode subType : nnode.getType().getGraph().getSubtypes(
-            nnode.getType())) {
+        for (TypeNode subType : nnode.getType().getSubtypes()) {
             Collection<DefaultNodeChecker> ncs =
                 this.defaultNodeCheckers.get(subType);
             if ((ncs != null) && !ncs.contains(nnode)) {

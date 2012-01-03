@@ -16,7 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ import java.util.Map.Entry;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Valuation extends LinkedHashMap<LabelVar,TypeEdge> {
+public class Valuation extends LinkedHashMap<LabelVar,TypeElement> {
     /** Constructor for an initially empty valuation. */
     public Valuation() {
         super();
@@ -39,7 +39,7 @@ public class Valuation extends LinkedHashMap<LabelVar,TypeEdge> {
     }
 
     /** Constructor initialising the valuation to a given one. */
-    public Valuation(Map<LabelVar,TypeEdge> m) {
+    public Valuation(Map<LabelVar,TypeElement> m) {
         super(m);
     }
 
@@ -53,10 +53,10 @@ public class Valuation extends LinkedHashMap<LabelVar,TypeEdge> {
     public Valuation getMerger(Valuation other) {
         Valuation result = new Valuation(this);
         if (other != null) {
-            for (Entry<LabelVar,TypeEdge> e : other.entrySet()) {
+            for (Entry<LabelVar,TypeElement> e : other.entrySet()) {
                 LabelVar key = e.getKey();
-                TypeEdge newValue = e.getValue();
-                TypeEdge oldValue = result.put(key, newValue);
+                TypeElement newValue = e.getValue();
+                TypeElement oldValue = result.put(key, newValue);
                 if (oldValue != null && !oldValue.equals(newValue)) {
                     result = null;
                     break;

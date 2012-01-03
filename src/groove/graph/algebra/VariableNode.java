@@ -19,8 +19,14 @@ package groove.graph.algebra;
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
+import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
 import groove.trans.RuleNode;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Nodes used to represent attribute variables in rules and conditions.
@@ -109,6 +115,21 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     @Override
+    public List<LabelVar> getTypeVars() {
+        return EMPTY_VAR_LIST;
+    }
+
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return EMPTY_GUARD_LIST;
+    }
+
+    @Override
+    public Set<TypeNode> getMatchingTypes() {
+        return Collections.singleton(this.type);
+    }
+
+    @Override
     public boolean isSharp() {
         return true;
     }
@@ -122,4 +143,10 @@ public class VariableNode extends AbstractNode implements RuleNode {
 
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";
+    /** Predefined empty list of type guards. */
+    static private final List<TypeGuard> EMPTY_GUARD_LIST =
+        Collections.emptyList();
+    /** Predefined empty list of label variables. */
+    static private final List<LabelVar> EMPTY_VAR_LIST =
+        Collections.emptyList();
 }

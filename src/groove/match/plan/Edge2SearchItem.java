@@ -46,7 +46,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         // the label may actually be an arbitrary regular expression
         assert edge.label().isSharp() || edge.label().isAtom()
             || edge.label().isWildcard();
-        assert edge.getType() != null;
+        assert edge.getType() != null || edge.label().isWildcard();
         this.edge = edge;
         this.type = edge.getType();
         this.source = edge.source();
@@ -136,7 +136,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     }
 
     /**
-     * This method returns the hash code of the label as rating.
+     * This method returns the hash code of the edge label as rating.
      */
     @Override
     int getRating() {
@@ -263,8 +263,8 @@ class Edge2SearchItem extends AbstractSearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
-            this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
+            this.sourceSeed = this.search.getNodeSeed(this.sourceIx);
+            this.targetSeed = this.search.getNodeSeed(this.targetIx);
         }
 
         @Override
@@ -299,14 +299,14 @@ class Edge2SearchItem extends AbstractSearchItem {
          * end node images.
          */
         private HostEdge getEdgeImage() {
-            HostNode sourceFind = this.sourcePreMatch;
+            HostNode sourceFind = this.sourceSeed;
             if (sourceFind == null) {
                 sourceFind = this.search.getNode(this.sourceIx);
             }
             assert sourceFind != null : String.format(
                 "Source node of %s has not been found",
                 Edge2SearchItem.this.edge);
-            HostNode targetFind = this.targetPreMatch;
+            HostNode targetFind = this.targetSeed;
             if (targetFind == null) {
                 targetFind = this.search.getNode(this.targetIx);
             }
@@ -328,9 +328,9 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched (fixed) source image, if any. */
-        private HostNode sourcePreMatch;
+        private HostNode sourceSeed;
         /** The pre-matched (fixed) target image, if any. */
-        private HostNode targetPreMatch;
+        private HostNode targetSeed;
         /** The index of the edge in the search. */
         private final int edgeIx;
         /** The index of the source in the search. */

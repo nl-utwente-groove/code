@@ -16,8 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.TypeEdge;
-
+import groove.graph.TypeElement;
 
 /**
  * Add-on interface that specifies support for mapping variables (given by
@@ -36,13 +35,13 @@ public interface VarMap {
      * if the variable does not occur in the source or has no value in the
      * morphism.
      */
-    TypeEdge getVar(LabelVar var);
+    TypeElement getVar(LabelVar var);
 
     /**
      * Inserts a value at a given variable. Returns the old value for the
      * variable, if any.
      */
-    TypeEdge putVar(LabelVar var, TypeEdge value);
+    TypeElement putVar(LabelVar var, TypeElement value);
 
     /**
      * Copies a given valuation mapping into this one.

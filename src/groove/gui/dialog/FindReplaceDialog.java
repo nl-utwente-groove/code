@@ -145,7 +145,7 @@ public class FindReplaceDialog {
             TypeLabel oldLabel = getOldLabel();
             if (result.equals(oldLabel)) {
                 throw new FormatException("Old and new labels coincide");
-            } else if (!this.typeGraph.isImplicit() && oldLabel.isNodeType()
+            } else if (this.typeGraph.isNodeType(oldLabel)
                 && result.isNodeType()) {
                 TypeNode oldType = this.typeGraph.getNode(oldLabel);
                 TypeNode newType = this.typeGraph.getNode(result);

@@ -16,7 +16,6 @@
  */
 package groove.rel;
 
-import groove.graph.EdgeRole;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
@@ -109,7 +108,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     public Result computeAtom(Atom expr) {
         Result result = new Result();
         TypeLabel typeLabel = expr.toTypeLabel();
-        if (typeLabel.isNodeType() && !this.typeGraph.isImplicit()) {
+        if (this.typeGraph.isNodeType(typeLabel)) {
             for (TypeNode subType : this.typeGraph.getNode(typeLabel).getSubtypes()) {
                 result.add(subType, subType);
             }
@@ -131,13 +130,13 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     public Result computeSharp(Sharp expr) {
         Result result = new Result();
         TypeLabel typeLabel = expr.getSharpLabel();
-        if (this.typeGraph.isImplicit()) {
-            for (TypeEdge edgeType : this.typeGraph.labelEdgeSet(typeLabel)) {
-                result.add(edgeType.source(), edgeType.target());
-            }
-        } else {
+        if (this.typeGraph.isNodeType(typeLabel)) {
             for (TypeNode subType : this.typeGraph.getNode(typeLabel).getSubtypes()) {
                 result.add(subType, subType);
+            }
+        } else {
+            for (TypeEdge edgeType : this.typeGraph.labelEdgeSet(typeLabel)) {
+                result.add(edgeType.source(), edgeType.target());
             }
         }
         if (result.isEmpty()) {
@@ -149,8 +148,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     @Override
     public Result computeWildcard(Wildcard expr) {
         Result result;
-        if (expr.getKind() == EdgeRole.NODE_TYPE
-            && !this.typeGraph.isImplicit()) {
+        if (this.typeGraph.isNodeType(expr.getKind())) {
             result = computeNodeWildcard(expr);
         } else {
             result = computeEdgeWildcard(expr);

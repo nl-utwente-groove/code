@@ -19,7 +19,7 @@ package groove.trans;
 import groove.graph.ElementMap;
 import groove.graph.InversableElementMap;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
@@ -47,8 +47,12 @@ public class RuleToHostMap extends
     }
 
     @Override
-    public HostNode putNode(RuleNode key, HostNode layout) {
-        return super.putNode(key, layout);
+    public HostNode putNode(RuleNode key, HostNode image) {
+        HostNode result = super.putNode(key, image);
+        for (LabelVar var : key.getTypeVars()) {
+            putVar(var, image.getType());
+        }
+        return result;
     }
 
     /**
@@ -80,11 +84,11 @@ public class RuleToHostMap extends
         return this.valuation;
     }
 
-    public TypeEdge getVar(LabelVar var) {
+    public TypeElement getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
-    public TypeEdge putVar(LabelVar var, TypeEdge value) {
+    public TypeElement putVar(LabelVar var, TypeElement value) {
         return this.valuation.put(var, value);
     }
 

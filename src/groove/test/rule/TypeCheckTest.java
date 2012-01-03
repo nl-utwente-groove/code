@@ -55,6 +55,12 @@ public class TypeCheckTest {
         test("regexpr");
     }
 
+    /** Tests wildcard expression typing. */
+    @Test
+    public void testWildcards() {
+        test("wildcards");
+    }
+
     /** Tests for regression. */
     @Test
     public void testRegression() {

@@ -18,11 +18,15 @@ package groove.trans;
 
 import groove.graph.AbstractEdge;
 import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
+import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
+import groove.rel.LabelVar;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,8 +42,38 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
     protected RuleEdge(RuleNode source, RuleLabel label, TypeEdge type,
             RuleNode target) {
         super(source, label, target);
-        assert type != null || label.getTypeLabel() == null;
+        assert label.getTypeLabel() == null
+            || label.getTypeLabel().equals(type.label());
         this.type = type;
+        TypeGuard guard = label.getWildcardGuard();
+        if (guard != null) {
+            this.typeGuards = Collections.singletonList(guard);
+            if (label.getWildcardId() == null) {
+                this.typeVars = Collections.emptyList();
+            } else {
+                this.typeVars =
+                    Collections.singletonList(label.getWildcardId());
+            }
+            TypeGraph typeGraph = source.getType().getGraph();
+            if (typeGraph != null) {
+                this.matchingTypes = new HashSet<TypeEdge>();
+                for (TypeEdge typeEdge : typeGraph.edgeSet()) {
+                    if (guard.isSatisfied(typeEdge.label())) {
+                        this.matchingTypes.add(typeEdge);
+                    }
+                }
+            } else {
+                this.matchingTypes = Collections.emptySet();
+            }
+        } else if (type == null) {
+            this.matchingTypes = Collections.emptySet();
+            this.typeGuards = Collections.emptyList();
+            this.typeVars = Collections.emptyList();
+        } else {
+            this.matchingTypes = new HashSet<TypeEdge>(type.getSubtypes());
+            this.typeGuards = Collections.emptyList();
+            this.typeVars = Collections.emptyList();
+        }
     }
 
     /** 
@@ -55,18 +89,33 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
      * Returns the optional set of possible edge types,
      * if the label of this edge is a wildcard.
      */
-    public Set<TypeElement> getWildcardTypes() {
-        return this.wildcardTypes;
+    @Override
+    public Set<TypeEdge> getMatchingTypes() {
+        return this.matchingTypes;
+    }
+
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return this.typeGuards;
+    }
+
+    @Override
+    public List<LabelVar> getTypeVars() {
+        return this.typeVars;
     }
 
     /** Sets the possible types of a wildcard edge. */
-    public void setWildcardTypes(Set<? extends TypeElement> wildcardTypes) {
+    public void setWildcardTypes(Set<TypeEdge> wildcardTypes) {
         assert this.label.isWildcard();
-        this.wildcardTypes = new HashSet<TypeElement>(wildcardTypes);
+        this.matchingTypes.retainAll(wildcardTypes);
     }
 
     /** The edge type of this rule edge. */
     private final TypeEdge type;
+    /** Possibly empty list of label variables. */
+    private final List<LabelVar> typeVars;
+    /** Possibly empty list of label variables. */
+    private final List<TypeGuard> typeGuards;
     /** Set of possible edge types, if the label is a wildcard. */
-    private Set<TypeElement> wildcardTypes;
+    private final Set<TypeEdge> matchingTypes;
 }

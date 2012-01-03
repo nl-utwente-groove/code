@@ -17,7 +17,16 @@
 package groove.trans;
 
 import groove.graph.AbstractNode;
+import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
@@ -32,11 +41,45 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
      * @param type the node type; may be {@code null}
      * @param sharp if {@code true}, the node is sharply typed
      */
-    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp) {
+    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp,
+            List<TypeGuard> typeGuards) {
         super(nr);
         assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
         this.sharp = sharp;
+        if (typeGuards == null) {
+            this.typeGuards = Collections.emptyList();
+            this.typeVars = Collections.emptyList();
+            this.matchingTypes = type.getSubtypes();
+        } else {
+            this.typeGuards = new ArrayList<TypeGuard>(typeGuards);
+            this.typeVars = new ArrayList<LabelVar>(typeGuards.size());
+            this.matchingTypes = new HashSet<TypeNode>();
+            if (sharp) {
+                this.matchingTypes.add(type);
+            } else {
+                this.matchingTypes.addAll(type.getSubtypes());
+            }
+            // restrict the matching types to those that satisfy all label guards
+            for (TypeGuard guard : typeGuards) {
+                if (guard.getVar() != null) {
+                    this.typeVars.add(guard.getVar());
+                }
+                Iterator<TypeNode> typeIter = this.matchingTypes.iterator();
+                while (typeIter.hasNext()) {
+                    boolean typeOk = false;
+                    for (TypeNode superType : typeIter.next().getSupertypes()) {
+                        if (guard.isSatisfied(superType.label())) {
+                            typeOk = true;
+                            break;
+                        }
+                    }
+                    if (!typeOk) {
+                        typeIter.remove();
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -45,18 +88,18 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
             return false;
         }
         DefaultRuleNode other = (DefaultRuleNode) obj;
-        if (getType() != null) {
-            return getType().equals(other.getType());
-        } else {
+        if (getType() == null) {
             return other.getType() == null;
+        } else {
+            return getType().equals(other.getType());
         }
     }
 
     @Override
     protected int computeHashCode() {
         int result = super.computeHashCode();
+        int prime = 31;
         if (getType() != null) {
-            int prime = 31;
             result = prime * result + getType().hashCode();
         }
         return result;
@@ -74,6 +117,23 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
         return this.type;
     }
 
+    @Override
+    public List<LabelVar> getTypeVars() {
+        return this.typeVars;
+    }
+
+    /** 
+     * Returns the set of type guards associated with this rule node.
+     * @return the set of guards; not {@code null} but possibly empty
+     */
+    public List<TypeGuard> getTypeGuards() {
+        return this.typeGuards;
+    }
+
+    public Set<TypeNode> getMatchingTypes() {
+        return this.matchingTypes;
+    }
+
     public boolean isSharp() {
         return this.sharp;
     }
@@ -82,4 +142,10 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
     private final boolean sharp;
     /** The (possibly {@code null}) type of this rule node. */
     private final TypeNode type;
+    /** The list of type guards associated with this node. */
+    private final List<TypeGuard> typeGuards;
+    /** The list of label variables derived from {@link #typeGuards}. */
+    private final List<LabelVar> typeVars;
+    /** The set of matching node types. */
+    private final Set<TypeNode> matchingTypes;
 }

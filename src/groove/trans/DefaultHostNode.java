@@ -46,10 +46,13 @@ public class DefaultHostNode extends AbstractNode implements HostNode {
 
     @Override
     public boolean equals(Object obj) {
-        boolean result = super.equals(obj);
-        // equal nodes should have identical types
-        assert !result || getType() == ((DefaultHostNode) obj).getType();
-        return result;
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        return getType() == ((DefaultHostNode) obj).getType();
     }
 
     /**

@@ -1030,7 +1030,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Returns an array of variables that are used in eraser or creator edges.
+     * Returns an array of variables that are used in erasers or creators.
      */
     final Set<LabelVar> getModifierVars() {
         if (this.modifierVars == null) {
@@ -1040,15 +1040,18 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Computes the set of variables occurring in creator or eraser edges.
+     * Computes the set of variables occurring in creators or erasers.
      */
     private Set<LabelVar> computeModifierVars() {
         Set<LabelVar> result = new HashSet<LabelVar>();
-        // add the variables of creator edges
+        // add the variables of creators
         result.addAll(VarSupport.getAllVars(getCreatorGraph()));
-        // add the variables of eraser edges
-        for (RuleEdge eraserEdge : getEraserEdges()) {
-            result.addAll(VarSupport.getAllVars(eraserEdge));
+        // add the variables of erasers
+        for (RuleNode eraser : getEraserNodes()) {
+            result.addAll(VarSupport.getAllVars(eraser));
+        }
+        for (RuleEdge eraser : getEraserEdges()) {
+            result.addAll(VarSupport.getAllVars(eraser));
         }
         return result;
     }
@@ -1165,7 +1168,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Computes the variables occurring in RHS edges.
+     * Computes the variables occurring in RHS nodes and edges.
      */
     private LabelVar[] computeCreatorVars() {
         Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
@@ -1175,6 +1178,10 @@ public class Rule implements Fixable, Comparable<Rule> {
             if (creatorVar != null) {
                 creatorVarSet.add(creatorVar);
             }
+        }
+        for (int i = 0; i < getCreatorNodes().length; i++) {
+            RuleNode creatorNode = getCreatorNodes()[i];
+            creatorVarSet.addAll(creatorNode.getTypeVars());
         }
         return creatorVarSet.toArray(new LabelVar[creatorVarSet.size()]);
     }
@@ -1293,25 +1300,6 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Array of LHS edges that bind variables. An edge is said to bind a
-     * variable if it carries a regular expression which, when it matches, must
-     * provide a value for at least one variable.
-     */
-    final RuleEdge[] getSimpleVarEdges() {
-        if (this.varEdges == null) {
-            this.varEdges = computeSimpleVarEdges();
-        }
-        return this.varEdges;
-    }
-
-    /**
-     * Computes the set of variable-binding edges occurring in the lhs.
-     */
-    private RuleEdge[] computeSimpleVarEdges() {
-        return VarSupport.getSimpleVarEdges(lhs()).toArray(new RuleEdge[0]);
-    }
-
-    /**
      * Returns the properties of the rule.
      */
     public GraphProperties getRuleProperties() {
@@ -1418,10 +1406,6 @@ public class Rule implements Fixable, Comparable<Rule> {
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
     private RuleEdge[] eraserNonAnchorEdges;
-    /**
-     * The lhs edges containing bound variables.
-     */
-    private RuleEdge[] varEdges;
     /**
      * The lhs nodes that are end points of eraser or creator edges or mergers,
      * either in this rule or one of its sub-rules.

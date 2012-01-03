@@ -20,13 +20,13 @@ import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.io.Util;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
-import groove.util.Property;
 
 import java.util.List;
 
@@ -251,7 +251,7 @@ public class RuleLabel extends AbstractLabel {
      * {@link groove.rel.RegExpr.Wildcard}, returns the constraint of the wildcard, if any.
      * Returns <code>null</code> in all other cases.
      */
-    public Property<TypeLabel> getWildcardGuard() {
+    public TypeGuard getWildcardGuard() {
         RegExpr regExpr = getMatchExpr();
         return regExpr == null ? null : regExpr.getWildcardGuard();
     }
