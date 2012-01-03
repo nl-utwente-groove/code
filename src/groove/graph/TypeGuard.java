@@ -32,9 +32,10 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeGuard extends Property<TypeLabel> {
+public class TypeGuard extends Property<TypeElement> {
     /**
      * Constructs a new constraint.
+     * @param var the label variable associated with the constraint
      * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
      */
     public TypeGuard(LabelVar var, EdgeRole kind) {
@@ -42,14 +43,14 @@ public class TypeGuard extends Property<TypeLabel> {
         this.kind = kind;
     }
 
-    /** Indicates if this guard has a label variable. */
-    public boolean hasVar() {
-        return getVar() != null;
-    }
-
     /** Returns the optional type variable associated with this guard. */
     public LabelVar getVar() {
         return this.var;
+    }
+
+    /** Indicates if this guard has a named label variable. */
+    public boolean isNamed() {
+        return getVar().hasName();
     }
 
     /** Returns the kind of labels accepted by this constraint. */
@@ -114,9 +115,24 @@ public class TypeGuard extends Property<TypeLabel> {
     }
 
     @Override
-    public boolean isSatisfied(TypeLabel value) {
-        return this.kind == value.getRole()
-            && (this.labelSet == null || this.negated != this.labelSet.contains(value));
+    public boolean isSatisfied(TypeElement type) {
+        if (this.kind != ((type instanceof TypeNode) ? EdgeRole.NODE_TYPE
+                : ((TypeEdge) type).getRole())) {
+            return false;
+        }
+        if (this.labelSet == null) {
+            return true;
+        }
+        boolean valueFound = this.labelSet.contains(type.label());
+        if (!valueFound) {
+            for (TypeElement superType : type.getSupertypes()) {
+                if (this.labelSet.contains(superType.label())) {
+                    valueFound = true;
+                    break;
+                }
+            }
+        }
+        return this.negated != valueFound;
     }
 
     @Override

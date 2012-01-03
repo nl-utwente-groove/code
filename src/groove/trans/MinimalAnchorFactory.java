@@ -18,12 +18,10 @@ package groove.trans;
 
 import groove.control.CtrlPar;
 import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -47,10 +45,11 @@ public class MinimalAnchorFactory implements AnchorFactory<Rule> {
      * initialised already.
      */
     public RuleGraph newAnchor(Rule rule) {
-        RuleGraph result = rule.lhs().newGraph(rule.getName() + "-anchor");
+        RuleGraph lhs = rule.lhs();
+        RuleGraph result = lhs.newGraph(rule.getName() + "-anchor");
         Set<RuleNode> colorNodes =
             new HashSet<RuleNode>(rule.getColorMap().keySet());
-        colorNodes.retainAll(rule.lhs().nodeSet());
+        colorNodes.retainAll(lhs.nodeSet());
         result.addNodeSet(colorNodes);
         result.addNodeSet(Arrays.asList(rule.getEraserNodes()));
         if (rule.isTop()) {
@@ -65,24 +64,22 @@ public class MinimalAnchorFactory implements AnchorFactory<Rule> {
                 }
             }
         }
-        // set of variables that need to be matched by variable-binding anchor elements
-        Set<LabelVar> modifierVars =
-            new HashSet<LabelVar>(Arrays.asList(rule.getCreatorVars()));
         for (RuleEdge eraserEdge : rule.getEraserEdges()) {
             result.addEdge(eraserEdge);
-            modifierVars.removeAll(VarSupport.getBoundVars(eraserEdge));
         }
-        Map<LabelVar,Set<RuleElement>> varBinders =
-            VarSupport.getVarBinders(rule.lhs());
-        for (LabelVar var : modifierVars) {
-            RuleElement binder = varBinders.get(var).iterator().next();
+        result.addNodeSet(rule.getModifierEnds());
+        // set of variables that need to be matched by variable-binding anchor elements
+        Set<LabelVar> creatorVars =
+            new HashSet<LabelVar>(Arrays.asList(rule.getCreatorVars()));
+        creatorVars.removeAll(result.getBoundVars());
+        for (LabelVar var : creatorVars) {
+            RuleElement binder = lhs.getBinders(var).iterator().next();
             if (binder instanceof RuleNode) {
                 result.addNode((RuleNode) binder);
             } else {
                 result.addEdge((RuleEdge) binder);
             }
         }
-        result.addNodeSet(rule.getModifierEnds());
         return result;
     }
 

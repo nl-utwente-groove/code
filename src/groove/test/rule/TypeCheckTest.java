@@ -111,6 +111,7 @@ public class TypeCheckTest {
             model.toResource();
             Assert.fail(kindName + " " + modelName + " has no errors");
         } catch (NullPointerException e) {
+            e.printStackTrace();
             Assert.fail(kindName + " " + modelName + " does not exist");
         } catch (FormatException e) {
             // do nothing; this is the expected case

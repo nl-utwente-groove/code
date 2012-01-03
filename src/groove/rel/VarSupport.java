@@ -17,6 +17,7 @@
 
 package groove.rel;
 
+import groove.graph.TypeGuard;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleGraph;
@@ -46,14 +47,16 @@ public class VarSupport {
      * {@link RegExpr#allVarSet()}; otherwise, it is the empty set.
      */
     static public Collection<LabelVar> getAllVars(RuleElement element) {
-        Collection<LabelVar> result = Collections.emptySet();
+        Collection<LabelVar> result;
         if (element instanceof RuleEdge) {
             RuleLabel label = ((RuleEdge) element).label();
             if (label.isMatchable()) {
                 result = label.getMatchExpr().allVarSet();
+            } else {
+                result = Collections.emptySet();
             }
         } else {
-            result = ((RuleNode) element).getTypeVars();
+            result = getBoundVars(element);
         }
         return result;
     }
@@ -75,19 +78,14 @@ public class VarSupport {
     }
 
     /**
-     * Returns the set of variables bound by a given edge. If the edge is has a
+     * Returns the set of variables bound by a given edge. If the edge has a
      * {@link RuleLabel}, this is the result of
      * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
      */
     static public Collection<LabelVar> getBoundVars(RuleElement element) {
-        Collection<LabelVar> result = Collections.emptySet();
-        if (element instanceof RuleEdge) {
-            RuleLabel label = ((RuleEdge) element).label();
-            if (label.isMatchable()) {
-                result = label.getMatchExpr().boundVarSet();
-            }
-        } else {
-            result = ((RuleNode) element).getTypeVars();
+        Collection<LabelVar> result = new HashSet<LabelVar>();
+        for (TypeGuard guard : element.getTypeGuards()) {
+            result.add(guard.getVar());
         }
         return result;
     }
@@ -143,21 +141,6 @@ public class VarSupport {
                     result.put(boundVar, binders = new HashSet<RuleElement>());
                 }
                 binders.add(binder);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a map from variables in a graph to edges that have them as a
-     * named wildcard.
-     */
-    static public Map<LabelVar,RuleEdge> getSimpleVarBinders(RuleGraph graph) {
-        Map<LabelVar,RuleEdge> result = new HashMap<LabelVar,RuleEdge>();
-        for (RuleEdge binder : graph.edgeSet()) {
-            LabelVar id = binder.label().getWildcardId();
-            if (id != null) {
-                result.put(id, binder);
             }
         }
         return result;

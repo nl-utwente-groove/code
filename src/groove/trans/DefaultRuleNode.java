@@ -19,12 +19,10 @@ package groove.trans;
 import groove.graph.AbstractNode;
 import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
-import groove.rel.LabelVar;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -49,11 +47,9 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
         this.sharp = sharp;
         if (typeGuards == null) {
             this.typeGuards = Collections.emptyList();
-            this.typeVars = Collections.emptyList();
             this.matchingTypes = type.getSubtypes();
         } else {
             this.typeGuards = new ArrayList<TypeGuard>(typeGuards);
-            this.typeVars = new ArrayList<LabelVar>(typeGuards.size());
             this.matchingTypes = new HashSet<TypeNode>();
             if (sharp) {
                 this.matchingTypes.add(type);
@@ -62,22 +58,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
             }
             // restrict the matching types to those that satisfy all label guards
             for (TypeGuard guard : typeGuards) {
-                if (guard.getVar() != null) {
-                    this.typeVars.add(guard.getVar());
-                }
-                Iterator<TypeNode> typeIter = this.matchingTypes.iterator();
-                while (typeIter.hasNext()) {
-                    boolean typeOk = false;
-                    for (TypeNode superType : typeIter.next().getSupertypes()) {
-                        if (guard.isSatisfied(superType.label())) {
-                            typeOk = true;
-                            break;
-                        }
-                    }
-                    if (!typeOk) {
-                        typeIter.remove();
-                    }
-                }
+                guard.filter(this.matchingTypes);
             }
         }
     }
@@ -117,11 +98,6 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
         return this.type;
     }
 
-    @Override
-    public List<LabelVar> getTypeVars() {
-        return this.typeVars;
-    }
-
     /** 
      * Returns the set of type guards associated with this rule node.
      * @return the set of guards; not {@code null} but possibly empty
@@ -144,8 +120,6 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
     private final TypeNode type;
     /** The list of type guards associated with this node. */
     private final List<TypeGuard> typeGuards;
-    /** The list of label variables derived from {@link #typeGuards}. */
-    private final List<LabelVar> typeVars;
     /** The set of matching node types. */
     private final Set<TypeNode> matchingTypes;
 }

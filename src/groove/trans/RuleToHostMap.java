@@ -20,6 +20,7 @@ import groove.graph.ElementMap;
 import groove.graph.InversableElementMap;
 import groove.graph.Label;
 import groove.graph.TypeElement;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
@@ -49,8 +50,8 @@ public class RuleToHostMap extends
     @Override
     public HostNode putNode(RuleNode key, HostNode image) {
         HostNode result = super.putNode(key, image);
-        for (LabelVar var : key.getTypeVars()) {
-            putVar(var, image.getType());
+        for (TypeGuard guard : key.getTypeGuards()) {
+            putVar(guard.getVar(), image.getType());
         }
         return result;
     }
@@ -65,12 +66,12 @@ public class RuleToHostMap extends
         RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel result;
         if (ruleLabel.isWildcard()) {
-            LabelVar var = ruleLabel.getWildcardId();
-            if (var == null) {
+            TypeGuard guard = ruleLabel.getWildcardGuard();
+            if (!guard.isNamed()) {
                 throw new IllegalArgumentException(String.format(
                     "Label %s cannot be mapped", ruleLabel));
             } else {
-                result = getVar(var).label();
+                result = getVar(guard.getVar()).label();
             }
         } else {
             assert ruleLabel.isSharp() || ruleLabel.isAtom() : String.format(

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="test">
+    <graph edgemode="directed" edgeids="false" role="rule" id="ERR-create-unnamed-edge">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -9,32 +12,27 @@
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>430 162 15 15</string>
+                <string>59 107 34 46</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>420 248 23 15</string>
+                <string>182 109 34 46</string>
             </attr>
         </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>283 162 15 15</string>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:A</string>
             </attr>
-        </node>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>new:?</string>
+            </attr>
+        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>not:</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n2">
-            <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n2">
-            <attr name="label">
-                <string>del:a</string>
+                <string>type:B</string>
             </attr>
         </edge>
     </graph>

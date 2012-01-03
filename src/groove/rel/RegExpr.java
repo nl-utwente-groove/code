@@ -107,7 +107,7 @@ abstract public class RegExpr { // implements VarSetSupport {
 
     /**
      * If this is a {@link RegExpr.Wildcard}, returns the identifier of the
-     * wildcard, if any; otherwise returns <code>null</code>.
+     * wildcard; otherwise returns <code>null</code>.
      */
     public LabelVar getWildcardId() {
         if (this instanceof Wildcard) {
@@ -353,14 +353,14 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
-     * Returns the set of all variables occurring as identifiers in
+     * Returns the set of all named variables occurring as identifiers in
      * {@link Wildcard}-subexpressions, in the order of the sub-expressions.
      */
     public Set<LabelVar> allVarSet() {
         // by making a linked set we make sure the order is preserved
         // and yet no identifier occurs more than once
         Set<LabelVar> result = new LinkedHashSet<LabelVar>();
-        if (getWildcardId() != null) {
+        if (getWildcardId() != null && getWildcardId().hasName()) {
             result.add(getWildcardId());
         } else {
             for (RegExpr operand : getOperands()) {
@@ -371,14 +371,14 @@ abstract public class RegExpr { // implements VarSetSupport {
     }
 
     /**
-     * Returns the list of variables <i>bound</i> by this regular expression. A
+     * Returns the list of named variables <i>bound</i> by this regular expression. A
      * variable is bound if the expression cannot be matched without providing a
      * value for it.
      * @see #allVarSet()
      */
     public Set<LabelVar> boundVarSet() {
         Set<LabelVar> result = new LinkedHashSet<LabelVar>();
-        if (getWildcardId() != null) {
+        if (getWildcardId() != null && getWildcardId().hasName()) {
             result.add(getWildcardId());
         } else if (isChoice()) {
             Iterator<RegExpr> operands = getOperands().iterator();
@@ -1442,9 +1442,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             StringBuilder result = new StringBuilder();
             result.append(getGuard().getKind().getPrefix());
             result.append(super.toString());
-            if (getLabelVar() != null) {
-                result.append(getLabelVar().getName());
-            }
+            result.append(getLabelVar().getName());
             result.append(getGuard());
             return result.toString();
         }
@@ -1490,7 +1488,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          * Returns the optional identifier of this wildcard expression.
          */
         public String getIdentifier() {
-            return getLabelVar() == null ? null : getLabelVar().getName();
+            return getLabelVar().getName();
         }
 
         /**
@@ -1553,7 +1551,8 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
             }
             LabelVar var =
-                identifier == null ? null : new LabelVar(identifier, kind);
+                identifier == null ? new LabelVar(kind) : new LabelVar(
+                    identifier, kind);
             TypeGuard constraint = new TypeGuard(var, kind);
             if (parameter != null) {
                 setConstraint(constraint, parameter);

@@ -24,12 +24,12 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleLabel;
-import groove.util.Property;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -207,7 +207,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 derivedLabels.add(element.label());
             }
             if (label.isWildcard()) {
-                derivedLabels.add(DUMMY_LABELS.get(label.getWildcardKind()));
+                derivedLabels.add(DUMMY_LABELS.get(label.getWildcardGuard().getKind()));
             }
             Map<TypeLabel,Set<RegEdge>>[][] nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
@@ -297,49 +297,56 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
 
     public boolean accepts(List<String> word) {
         assert isFixed();
+        assert this.typeGraph.isImplicit();
         if (word.isEmpty()) {
             return isAcceptsEmptyWord();
         } else {
             // keep the set of current matches (initially the start node)
-            Map<RegNode,HashMap<LabelVar,String>> matchSet =
+            Map<RegNode,HashMap<LabelVar,TypeElement>> matchSet =
                 Collections.singletonMap(getStartNode(),
-                    new HashMap<LabelVar,String>());
+                    new HashMap<LabelVar,TypeElement>());
             boolean accepts = false;
             // go through the word
             for (int index = 0; !accepts && !matchSet.isEmpty()
                 && index < word.size(); index++) {
                 boolean lastIndex = index == word.size() - 1;
-                Map<RegNode,HashMap<LabelVar,String>> newMatchSet =
-                    new HashMap<RegNode,HashMap<LabelVar,String>>();
-                Iterator<? extends Map.Entry<RegNode,HashMap<LabelVar,String>>> matchIter =
+                TypeEdge letter = getLetter(word.get(index));
+                Map<RegNode,HashMap<LabelVar,TypeElement>> newMatchSet =
+                    new HashMap<RegNode,HashMap<LabelVar,TypeElement>>();
+                Iterator<? extends Map.Entry<RegNode,HashMap<LabelVar,TypeElement>>> matchIter =
                     matchSet.entrySet().iterator();
                 while (!accepts && matchIter.hasNext()) {
-                    Map.Entry<RegNode,HashMap<LabelVar,String>> matchEntry =
+                    Map.Entry<RegNode,HashMap<LabelVar,TypeElement>> matchEntry =
                         matchIter.next();
                     RegNode match = matchEntry.getKey();
-                    HashMap<LabelVar,String> idMap = matchEntry.getValue();
+                    HashMap<LabelVar,TypeElement> idMap = matchEntry.getValue();
                     Iterator<? extends RegEdge> outEdgeIter =
                         outEdgeSet(match).iterator();
                     while (!accepts && outEdgeIter.hasNext()) {
                         RegEdge outEdge = outEdgeIter.next();
                         RuleLabel label = outEdge.label();
-                        LabelVar wildcardId = label.getWildcardId();
                         boolean labelOK;
-                        if (wildcardId == null) {
-                            labelOK =
-                                label.isWildcard()
-                                    || label.text().equals(word.get(index));
+                        if (label.isInv()) {
+                            labelOK = false;
+                        } else if (label.isWildcard()) {
+                            TypeGuard guard = label.getWildcardGuard();
+                            labelOK = guard.isSatisfied(letter);
+                            if (guard.isNamed()) {
+                                idMap =
+                                    new HashMap<LabelVar,TypeElement>(idMap);
+                                TypeElement oldIdValue =
+                                    idMap.put(guard.getVar(), letter);
+                                labelOK =
+                                    oldIdValue == null
+                                        || oldIdValue.equals(letter);
+                            }
                         } else {
-                            idMap = new HashMap<LabelVar,String>(idMap);
-                            String oldIdValue =
-                                idMap.put(wildcardId, label.text());
                             labelOK =
-                                oldIdValue == null
-                                    || oldIdValue.equals(label.text());
+                                label.getTypeLabel().equals(letter.label());
                         }
                         if (labelOK) {
                             // if we're at the last index, we don't have to
-                            // build the new mtch set
+                            // build the new match set
                             if (lastIndex) {
                                 accepts = outEdge.target().equals(getEndNode());
                             } else {
@@ -351,6 +358,16 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 matchSet = newMatchSet;
             }
             return accepts;
+        }
+    }
+
+    private TypeEdge getLetter(String text) {
+        TypeLabel label = TypeLabel.createLabel(text);
+        Set<? extends TypeEdge> letters = this.typeGraph.labelEdgeSet(label);
+        if (letters == null || letters.size() != 1) {
+            return null;
+        } else {
+            return letters.iterator().next();
         }
     }
 
@@ -963,18 +980,17 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         RuleLabel edgeLabel = getLabel(keyEdgeIndex);
                         boolean labelOk = true;
                         if (edgeLabel.isWildcard() && type instanceof TypeEdge) {
-                            Property<TypeLabel> constraint =
-                                edgeLabel.getWildcardGuard();
-                            if (constraint != null) {
-                                labelOk = constraint.isSatisfied(type.label());
+                            TypeGuard guard = edgeLabel.getWildcardGuard();
+                            if (guard != null) {
+                                labelOk = guard.isSatisfied(type);
                             }
-                            LabelVar id = edgeLabel.getWildcardId();
-                            if (labelOk && id != null) {
+                            if (labelOk && guard.isNamed()) {
+                                LabelVar var = guard.getVar();
                                 // we have a wildcard id; let's look it up
-                                TypeElement oldLabel = valuation.get(id);
+                                TypeElement oldLabel = valuation.get(var);
                                 if (oldLabel == null) {
                                     valuation = new Valuation(valuation);
-                                    valuation.put(id, type);
+                                    valuation.put(var, type);
                                 } else {
                                     // it's a know id; check its value
                                     labelOk = oldLabel.equals(type);

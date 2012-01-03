@@ -21,7 +21,6 @@ import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
 import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
-import groove.rel.LabelVar;
 import groove.trans.RuleNode;
 
 import java.util.Collections;
@@ -115,11 +114,6 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     @Override
-    public List<LabelVar> getTypeVars() {
-        return EMPTY_VAR_LIST;
-    }
-
-    @Override
     public List<TypeGuard> getTypeGuards() {
         return EMPTY_GUARD_LIST;
     }
@@ -145,8 +139,5 @@ public class VariableNode extends AbstractNode implements RuleNode {
     static public final String TO_STRING_PREFIX = "x";
     /** Predefined empty list of type guards. */
     static private final List<TypeGuard> EMPTY_GUARD_LIST =
-        Collections.emptyList();
-    /** Predefined empty list of label variables. */
-    static private final List<LabelVar> EMPTY_VAR_LIST =
         Collections.emptyList();
 }

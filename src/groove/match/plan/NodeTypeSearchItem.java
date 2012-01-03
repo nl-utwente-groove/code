@@ -52,7 +52,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         this.type = node.getType();
         this.typeVars = new ArrayList<LabelVar>();
         for (TypeGuard guard : node.getTypeGuards()) {
-            if (guard.hasVar()) {
+            if (guard.getVar().hasName()) {
                 this.typeVars.add(guard.getVar());
             }
         }
@@ -208,11 +208,6 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             result =
                 NodeTypeSearchItem.this.source.getMatchingTypes().contains(
                     sourceType);
-            //            if (NodeTypeSearchItem.this.sharpType) {
-            //                result = NodeTypeSearchItem.this.type == sourceType;
-            //            } else {
-            //                result = NodeTypeSearchItem.this.subtypes.contains(sourceType);
-            //            }
             for (int vi = 0; result && vi < this.varFound.length; vi++) {
                 int varIx = NodeTypeSearchItem.this.varIxs[vi];
                 TypeElement varFind = this.search.getVar(varIx);

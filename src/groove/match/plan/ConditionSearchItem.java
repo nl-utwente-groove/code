@@ -25,7 +25,6 @@ import groove.match.MatcherFactory;
 import groove.match.TreeMatch;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.HostNode;
@@ -62,7 +61,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                     SignatureKind.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
-            this.neededVars = VarSupport.getAllVars(this.rootGraph);
+            this.neededVars = this.rootGraph.getAllVars();
             this.positive = condition.isPositive();
             this.countNode = condition.getCountNode();
             this.boundNodes =
@@ -147,7 +146,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
             }
             this.varIxMap = new HashMap<LabelVar,Integer>();
-            for (LabelVar var : VarSupport.getAllVars(this.rootGraph)) {
+            for (LabelVar var : this.rootGraph.getAllVars()) {
                 this.varIxMap.put(var, strategy.getVarIx(var));
             }
             if (this.countNode != null) {

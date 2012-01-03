@@ -23,7 +23,6 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.io.Util;
-import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
@@ -227,28 +226,8 @@ public class RuleLabel extends AbstractLabel {
     }
 
     /**
-     * Returns the identifier of the expression wildcard, if any.
-     * Returns <code>null</code> otherwise.
-     */
-    public LabelVar getWildcardId() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? null : regExpr.getWildcardId();
-    }
-
-    /**
      * If this label wraps a
-     * {@link groove.rel.RegExpr.Wildcard}, returns the kind of label the wildcard
-     * matches against.
-     * Returns {@code -1} otherwise.
-     */
-    public EdgeRole getWildcardKind() {
-        RegExpr regExpr = getMatchExpr();
-        return regExpr == null ? null : regExpr.getWildcardKind();
-    }
-
-    /**
-     * If this label wraps a
-     * {@link groove.rel.RegExpr.Wildcard}, returns the constraint of the wildcard, if any.
+     * {@link groove.rel.RegExpr.Wildcard}, returns the guard of the wildcard.
      * Returns <code>null</code> in all other cases.
      */
     public TypeGuard getWildcardGuard() {

@@ -26,20 +26,56 @@ import groove.graph.EdgeRole;
  * @version $Revision $
  */
 public class LabelVar {
+    /** 
+     * Private constructor initialising all fields
+     * @param nr number of the new variable; 0 unless the name is empty
+     * @param name non-{@code null} name of the new variable
+     * @param kind label kind of the variable
+     */
+    private LabelVar(int nr, String name, EdgeRole kind) {
+        this.nr = nr;
+        this.name = name;
+        this.kind = kind;
+        assert name != null;
+    }
+
     /**
      * Constructs a label variable from a given name and kind.
-     * @param name name of the label variable; non-{@code null}
+     * @param name name of the label variable; non-{@code null} and nonempty
      * @param kind kind of the label variable.
      */
     public LabelVar(String name, EdgeRole kind) {
-        super();
-        this.name = name;
-        this.kind = kind;
+        this(0, name, kind);
+        assert !name.isEmpty();
     }
 
-    /** Returns the name of the variable. */
+    /**
+     * Constructs a fresh unnamed label variable of a give label kind.
+     * @param kind kind of the label variable.
+     */
+    public LabelVar(EdgeRole kind) {
+        this(++unnamedLabelCounter, "", kind);
+    }
+
+    /** 
+     * Indicates if this variable has a nonempty name.
+     */
+    public final boolean hasName() {
+        return this.name.length() > 0;
+    }
+
+    /** 
+     * Returns the name of the variable.
+     * Note that the name alone does not uniquely identify the variable,
+     * as there may be multiple unnamed variables; see {@link #getKey()} 
+     */
     public final String getName() {
         return this.name;
+    }
+
+    /** Returns an identifying key for this variable. */
+    public final String getKey() {
+        return getName() + "-" + this.nr;
     }
 
     /** 
@@ -51,17 +87,12 @@ public class LabelVar {
 
     @Override
     public String toString() {
-        return this.name;
+        return RegExpr.WILDCARD_OPERATOR + getName();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + this.kind.hashCode();
-        result =
-            prime * result + ((this.name == null) ? 0 : this.name.hashCode());
-        return result;
+        return getKey().hashCode() ^ getKind().hashCode();
     }
 
     @Override
@@ -79,18 +110,16 @@ public class LabelVar {
         if (this.kind != other.kind) {
             return false;
         }
-        if (this.name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!this.name.equals(other.name)) {
-            return false;
-        }
-        return true;
+        return getKey().equals(other.getKey());
     }
 
+    /** The number of the label variable; 0 unless the name is empty. */
+    private final int nr;
     /** The name of the label variable. */
     private final String name;
     /** The kind of the label variable. */
     private final EdgeRole kind;
+
+    /** Counter used to make unnamed labels unique. */
+    private static int unnamedLabelCounter;
 }

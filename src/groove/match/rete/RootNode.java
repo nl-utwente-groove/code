@@ -179,7 +179,7 @@ public class RootNode extends ReteNetworkNode {
         if (edgeCheckers != null) {
 
             for (EdgeCheckerNode ec : edgeCheckers) {
-                assert ec.isAcceptingLabel(elem.label());
+                assert ec.isAcceptingLabel(elem.getType());
                 ec.receiveEdge(this, elem, action);
             }
         }
@@ -188,7 +188,7 @@ public class RootNode extends ReteNetworkNode {
             ec.receiveEdge(this, elem, action);
         }
         for (EdgeCheckerNode ec : this.otherEdgeCheckers) {
-            if (ec.isAcceptingLabel(elem.label())) {
+            if (ec.isAcceptingLabel(elem.getType())) {
                 ec.receiveEdge(this, elem, action);
             }
         }
