@@ -21,6 +21,7 @@ import groove.explore.result.Result;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
+import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
@@ -311,6 +312,28 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         this.postErrors.put(state, errors);
     }
 
+    /** Adds a set of {@link PostApplicationError}s of a {@link GraphState}. */
+    public void addPostErrors(GraphState state, Set<PostApplicationError> errors) {
+        Set<PostApplicationError> old = this.postErrors.get(state);
+        if (old == null) {
+            // warning: errors set is shared, so make clone first
+            Set<PostApplicationError> clone =
+                new HashSet<PostApplicationError>(errors);
+            this.postErrors.put(state, clone);
+        } else {
+            errors.addAll(old);
+        }
+    }
+
+    /** 
+     * Gets the {@link PostApplicationError}s that are associated with a
+     * {@link GraphState}. May return <code>null</code> if the state has no
+     * errors.
+     */
+    public Set<? extends PostApplicationError> getPostErrors(GraphState state) {
+        return this.postErrors.get(state);
+    }
+
     // ----------------------- OBJECT OVERRIDES ------------------------
 
     public Set<? extends GraphState> nodeSet() {
@@ -400,12 +423,25 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public GraphState addState(GraphState newState) {
+
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
+
+        // if not 
         if (result == null) {
+            // first check the validity of edge multiplicities ...
+            EdgeMultiplicityVerifier counts =
+                getGrammar().getTypeGraph().getDefaultEdgeCounts();
+            counts.reset();
+            counts.count(newState.getGraph());
+            if (!counts.check(newState)) {
+                addPostErrors(newState, counts.getErrors());
+            }
+
+            // ... and then add it
             fireAddNode(newState);
-            getGrammar().getTypeGraph().verifyUncountedMultiplicities(newState);
         }
+
         return result;
     }
 
