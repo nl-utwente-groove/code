@@ -34,6 +34,7 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
+import groove.gui.list.ErrorListPanel;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -49,6 +50,7 @@ import groove.trans.Proof;
 import groove.trans.RuleApplication;
 import groove.trans.RuleNode;
 import groove.view.GrammarModel;
+import groove.view.PostApplicationError;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -65,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Icon;
+import javax.swing.JSplitPane;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -82,17 +85,27 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     // --------------------- INSTANCE DEFINITIONS ----------------------
 
     /**
-     * Constructs a new state panel.
+     * Constructs a new state panel, which may or may not be inside a
+     * {@link StateErrorTab}.
      */
-    public StateTab(LTSDisplay display) {
+    public StateTab(LTSDisplay display, StateErrorTab errorTab) {
         super(
             new AspectJGraph(display.getSimulator(), display.getKind(), false),
             true);
         this.display = display;
+        this.errorTab = errorTab;
+        this.errors = new HashSet<PostApplicationError>();
         initialise();
         setBorder(null);
         setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().setToolTipEnabled(true);
+    }
+
+    /**
+     * Constructs a new state panel without an error panel.
+     */
+    public StateTab(LTSDisplay display) {
+        this(display, null);
     }
 
     @Override
@@ -307,6 +320,14 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         clearSelectedMatch(true);
         setJModel(state == null ? null : getAspectJModel(state));
         getTabLabel().setTitle(getTitle());
+        getErrors().clear();
+        if (state != null && state.getGTS().getPostErrors(state) != null) {
+            getErrors().addAll(state.getGTS().getPostErrors(state));
+        }
+        if (getStateErrorTab() != null) {
+            getTabLabel().setError(!getErrors().isEmpty());
+            getStateErrorTab().updateErrors();
+        }
     }
 
     /** 
@@ -335,7 +356,11 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     @Override
     protected String getStatusText() {
         StringBuilder result = new StringBuilder();
-        result.append(FRAME_NAME);
+        if (getErrors().isEmpty()) {
+            result.append(FRAME_NAME);
+        } else {
+            result.append(ERROR_FRAME_NAME);
+        }
         if (getSimulatorModel().getState() != null) {
             result.append(": ");
             result.append(HTMLConverter.STRONG_TAG.on(getSimulatorModel().getState().toString()));
@@ -593,6 +618,16 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         return result;
     }
 
+    /** Getter for the surrounding error tab. */
+    public StateErrorTab getStateErrorTab() {
+        return this.errorTab;
+    }
+
+    /** Getter for the errors of the current state. */
+    public Set<PostApplicationError> getErrors() {
+        return this.errors;
+    }
+
     private final LTSDisplay display;
     /**
      * Mapping from graphs to the corresponding graph models.
@@ -618,5 +653,65 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     public static final String NO_STATE_TEXT = "No state";
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
+    /** Display name of this panel in case of errors. */
+    public static final String ERROR_FRAME_NAME = "Errors in current state";
+    /** Surrounding error tab. */
+    private final StateErrorTab errorTab;
+    /** Errors of the current state. */
+    private final Set<PostApplicationError> errors;
+
+    // ========================================================================
+    // LOCAL CLASS: StateErrorPanel
+    // ========================================================================
+
+    /**
+     * A {@link StateErrorTab} is the combination of an error panel and a
+     * {@link StateTab}.
+     */
+    public static class StateErrorTab extends JSplitPane {
+
+        // The error panel.
+        private ErrorListPanel errorPanel = new ErrorListPanel(null);
+
+        // The state tab.
+        private StateTab stateTab;
+
+        /** Default constructor. */
+        public StateErrorTab(LTSDisplay display) {
+            super(JSplitPane.VERTICAL_SPLIT);
+            this.stateTab = new StateTab(display, this);
+            setLeftComponent(this.stateTab);
+            setRightComponent(this.errorPanel);
+            setDividerSize(0);
+            setContinuousLayout(true);
+            setResizeWeight(0.9);
+            resetToPreferredSizes();
+            setBorder(null);
+        }
+
+        /** Getter for the error panel. */
+        public ErrorListPanel getErrorPanel() {
+            return this.errorPanel;
+        }
+
+        /** Getter for the state tab. */
+        public StateTab getStateTab() {
+            return this.stateTab;
+        }
+
+        /**
+         * Displays a list of type errors for the currently displayed graph
+         * state, or hides the error panel if the list is empty.
+         */
+        public void updateErrors() {
+            getErrorPanel().setEntries(getStateTab().getErrors());
+            setBottomComponent(getErrorPanel());
+            if (!getStateTab().getErrors().isEmpty()) {
+                resetToPreferredSizes();
+            } else {
+                remove(getErrorPanel());
+            }
+        }
+    }
 
 }

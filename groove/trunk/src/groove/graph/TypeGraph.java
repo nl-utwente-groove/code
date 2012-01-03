@@ -22,8 +22,6 @@ import groove.algebra.SignatureKind;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.lts.GTS;
-import groove.lts.GraphState;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.rel.RegExprTyper;
@@ -44,7 +42,6 @@ import groove.util.CollectionOfCollections;
 import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.FormatException;
-import groove.view.PostApplicationError;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -631,10 +628,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         HostFactory hostFactory = HostFactory.newInstance(this);
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
-        Map<HostNode,Map<TypeEdge,Integer>> inCounts =
-            new HashMap<HostNode,Map<TypeEdge,Integer>>();
-        Map<HostNode,Map<TypeEdge,Integer>> outCounts =
-            new HashMap<HostNode,Map<TypeEdge,Integer>>();
+        EdgeMultiplicityVerifier counts = new EdgeMultiplicityVerifier(this);
         for (HostNode node : source.nodeSet()) {
             try {
                 HostNode image;
@@ -665,6 +659,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         }
                         image =
                             hostFactory.createNode(node.getNumber(), nodeType);
+                        counts.count(source, node, nodeType);
                     }
                 }
                 morphism.putNode(node, image);
@@ -705,99 +700,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             } else {
                 morphism.putEdge(edge,
                     hostFactory.createEdge(sourceImage, edgeType, targetImage));
-                if (typeEdge.getOutMult() != null) {
-                    countTypeEdge(outCounts, edge.source(), typeEdge);
-                }
-                if (typeEdge.getInMult() != null) {
-                    countTypeEdge(inCounts, edge.target(), typeEdge);
-                }
             }
         }
-        verifyCountedMultiplicity(source, inCounts, true, errors);
-        verifyCountedMultiplicity(source, outCounts, false, errors);
+        if (!counts.check(source)) {
+            errors.addAll(counts.getErrors());
+        }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
         }
         return morphism;
-    }
-
-    /**
-     * Analyze a {@link GraphState} (without any given edge counts) for
-     * multiplicity errors. The errors are  recorded in the argument {@link GTS}.
-     * If an error is found, the state is closed.
-     */
-    public void verifyUncountedMultiplicities(GraphState state) {
-        // TODO
-        // System.err.println("Multiplicity check for state " + state);
-        //        for (TypeEdge type : edgeSet()) {
-        //            Multiplicity inMult = type.getInMult();
-        //            Multiplicity outMult = type.getOutMult();
-        //            if (inMult != null || outMult != null) {
-        //                for (HostEdge edge : state.getGraph().edgeSet()) {
-        //                    System.err.println(edge.label() + " - " + type.label());
-        //                }
-        //            }
-        //        }
-    }
-
-    /**
-     * Count the occurrence of an edge type relative to a host node.
-     */
-    private void countTypeEdge(Map<HostNode,Map<TypeEdge,Integer>> counts,
-            HostNode node, TypeEdge type) {
-        Map<TypeEdge,Integer> nmap = counts.get(node);
-        if (nmap == null) {
-            nmap = new HashMap<TypeEdge,Integer>();
-            nmap.put(type, 1);
-            counts.put(node, nmap);
-            return;
-        }
-        Integer oldCount = nmap.get(type);
-        if (oldCount == null) {
-            nmap.put(type, 1);
-        } else {
-            nmap.put(type, oldCount + 1);
-        }
-        counts.put(node, nmap);
-    }
-
-    /**
-     * Verify multiplicity, assuming that per node the number of edges of a
-     * certain type have been counted (as done by {@link #analyzeHost}).
-     * The <code>inOrOut</code> argument indicates whether the 'in'
-     * (value <code>true</code>) or 'out' (value <code>false</code>)
-     * multiplicity must be verified. Problems are added to the argument set
-     * of errors. 
-     */
-    private void verifyCountedMultiplicity(HostGraph source,
-            Map<HostNode,Map<TypeEdge,Integer>> counts, boolean inOrOut,
-            Set<FormatError> errors) {
-        for (Map.Entry<HostNode,Map<TypeEdge,Integer>> entry1 : counts.entrySet()) {
-            for (Map.Entry<TypeEdge,Integer> entry2 : entry1.getValue().entrySet()) {
-                Multiplicity mult =
-                    inOrOut ? entry2.getKey().getInMult()
-                            : entry2.getKey().getOutMult();
-                int count = entry2.getValue();
-                if (!mult.inRange(count)) {
-                    errors.add(multError(entry1.getKey(), entry2.getKey(),
-                        count, mult, inOrOut, source));
-                }
-            }
-        }
-    }
-
-    /**
-     * Produce the {@link PostApplicationError} for a failed multiplicity
-     * check in the given source (graph).
-     */
-    private PostApplicationError multError(HostNode node, TypeEdge edgeType,
-            int count, Multiplicity mult, boolean inOrOut, Object source) {
-        String msg =
-            (inOrOut ? "in" : "out") + " multiplicity of edge '"
-                + edgeType.label() + "' in node '%s' is out of range (got: "
-                + count + "; expected: " + mult.one() + ".."
-                + (mult.isUnbounded() ? "*" : mult.two()) + ")";
-        return new PostApplicationError(msg, node, source);
     }
 
     /**
@@ -1168,6 +1079,22 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return Collections.unmodifiableSortedMap(this.componentMap);
     }
 
+    /**
+     * Gets the default {@link EdgeMultiplicityVerifier} object that is associated with this
+     * type graph. For a fixed type graph, the previously stored object is
+     * used. For a non fixed type graph, a new object is always created.
+     */
+    public EdgeMultiplicityVerifier getDefaultEdgeCounts() {
+        if (isFixed()) {
+            if (this.previousCounts == null) {
+                this.previousCounts = new EdgeMultiplicityVerifier(this);
+            }
+            return this.previousCounts;
+        } else {
+            return new EdgeMultiplicityVerifier(this);
+        }
+    }
+
     /** Indicates if this is a composite type graph,
      * filled through calls of {@link #add(TypeGraph)}.
      * @see #getComponentMap()
@@ -1243,6 +1170,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Set of all labels occurring in the type graph. */
     private Set<TypeLabel> labels;
+
+    /** The previously created {@link EdgeMultiplicityVerifier} object for this type graph. */
+    private EdgeMultiplicityVerifier previousCounts = null;
 
     /** Creates an implicit type graph for a given set of labels. */
     public static TypeGraph createImplicitType(Set<TypeLabel> labels) {
