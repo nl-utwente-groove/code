@@ -535,9 +535,16 @@ final public class BasicEvent extends
                 added = new ArrayList<HostNode>();
             }
             for (int i = 0; i < count; i++) {
-                result[i] =
-                    createNode(i, creatorNodes[i].getType().label(),
-                        sourceNodes, added);
+                TypeLabel label;
+                if (creatorNodes[i].getTypeVars().isEmpty()) {
+                    label = creatorNodes[i].getType().label();
+                } else {
+                    // get the type from the image of the first label variable
+                    label =
+                        getCoanchorMap().getVar(
+                            creatorNodes[i].getTypeVars().get(0)).label();
+                }
+                result[i] = createNode(i, label, sourceNodes, added);
             }
         }
         // normalise the result to a previously stored instance

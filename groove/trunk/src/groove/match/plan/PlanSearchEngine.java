@@ -334,18 +334,19 @@ public class PlanSearchEngine extends SearchEngine {
                 seedEdges = Collections.emptySet();
             }
             if (!seedNodes.isEmpty() || !seedEdges.isEmpty()) {
-                AbstractSearchItem preMatchItem =
+                AbstractSearchItem seedItem =
                     new SeedSearchItem(seedNodes, seedEdges);
-                result.add(preMatchItem);
-                unmatchedNodes.removeAll(preMatchItem.bindsNodes());
-                unmatchedEdges.removeAll(preMatchItem.bindsEdges());
+                result.add(seedItem);
+                unmatchedNodes.removeAll(seedItem.bindsNodes());
+                unmatchedEdges.removeAll(seedItem.bindsEdges());
             }
-            // match all the value nodes explicitly
+            // match all the value nodes and guard-carrying nodes explicitly
             Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.iterator();
             while (unmatchedNodeIter.hasNext()) {
                 RuleNode node = unmatchedNodeIter.next();
                 if (node instanceof VariableNode
-                    && ((VariableNode) node).getConstant() != null) {
+                    && ((VariableNode) node).getConstant() != null
+                    || !node.getTypeGuards().isEmpty()) {
                     AbstractSearchItem nodeItem = createNodeSearchItem(node);
                     if (nodeItem != null) {
                         result.add(nodeItem);
@@ -358,8 +359,18 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
-                    // end nodes are only matched if the item is not negated
-                    unmatchedNodes.removeAll(edgeItem.bindsNodes());
+                    // end nodes are only matched if the item is not negated and
+                    // types are not specialised
+                    RuleNode source = edge.source();
+                    if (edgeItem.bindsNodes().contains(source)
+                        && (edge.getType() == null || edge.getType().source() == source.getType())) {
+                        unmatchedNodes.remove(source);
+                    }
+                    RuleNode target = edge.target();
+                    if (edgeItem.bindsNodes().contains(target)
+                        && (edge.getType() == null || edge.getType().target() == target.getType())) {
+                        unmatchedNodes.remove(target);
+                    }
                 }
             }
             // finally a search item per remaining node
@@ -438,6 +449,7 @@ public class PlanSearchEngine extends SearchEngine {
                 result =
                     createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (label.getWildcardId() != null) {
+                assert !this.typeGraph.isNodeType(edge);
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isWildcard()) {
                 result = new WildcardEdgeSearchItem(edge);
@@ -777,10 +789,6 @@ public class PlanSearchEngine extends SearchEngine {
                 return result;
             }
             result++;
-            //            if (itemClass == VariableNodeSearchItem.class) {
-            //                return result;
-            //            }
-            //            result++;
             if (itemClass == SeedSearchItem.class) {
                 return result;
             }

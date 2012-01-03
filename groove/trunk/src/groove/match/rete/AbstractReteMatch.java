@@ -17,7 +17,7 @@
 package groove.match.rete;
 
 import groove.graph.Node;
-import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
 import groove.rel.VarMap;
@@ -422,7 +422,7 @@ public abstract class AbstractReteMatch implements VarMap {
     }
 
     @Override
-    public TypeEdge getVar(LabelVar var) {
+    public TypeElement getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
@@ -432,7 +432,7 @@ public abstract class AbstractReteMatch implements VarMap {
     }
 
     @Override
-    public TypeEdge putVar(LabelVar var, TypeEdge value) {
+    public TypeElement putVar(LabelVar var, TypeElement value) {
         return this.valuation.put(var, value);
     }
 }

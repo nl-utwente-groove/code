@@ -22,6 +22,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
+import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
@@ -68,32 +69,32 @@ import java.util.Set;
  */
 public class ReteNetwork {
     private final String grammarName;
-    private RootNode root;
+    private final TypeGraph typeGraph;
+    private final boolean injective;
+    private final RootNode root;
 
     //Due to typing, RETE now can have many node checkers, one for each
     //type of node occurring as an isolated node
-    private HashMap<TypeNode,DefaultNodeChecker> defaultNodeCheckers =
+    private final HashMap<TypeNode,DefaultNodeChecker> defaultNodeCheckers =
         new HashMap<TypeNode,DefaultNodeChecker>();
 
-    private HashMap<Rule,ProductionNode> productionNodes =
+    private final HashMap<Rule,ProductionNode> productionNodes =
         new HashMap<Rule,ProductionNode>();
 
-    private HashMap<Condition,ConditionChecker> conditionCheckerNodes =
+    private final HashMap<Condition,ConditionChecker> conditionCheckerNodes =
         new HashMap<Condition,ConditionChecker>();
 
-    private ArrayList<CompositeConditionChecker> compositeConditionCheckerNodes =
+    private final ArrayList<CompositeConditionChecker> compositeConditionCheckerNodes =
         new ArrayList<CompositeConditionChecker>();
 
-    private HashMap<Constant,ValueNodeChecker> valueNodeCheckerNodes =
+    private final HashMap<Constant,ValueNodeChecker> valueNodeCheckerNodes =
         new HashMap<Constant,ValueNodeChecker>();
 
-    private HashMap<Condition,QuantifierCountChecker> quantifierCountCheckerNodes =
+    private final HashMap<Condition,QuantifierCountChecker> quantifierCountCheckerNodes =
         new HashMap<Condition,QuantifierCountChecker>();
 
-    private PathCheckerFactory pathCheckerFactory =
+    private final PathCheckerFactory pathCheckerFactory =
         new PathCheckerFactory(this);
-
-    private boolean injective = false;
 
     private ReteState state;
 
@@ -105,7 +106,7 @@ public class ReteNetwork {
      */
     private boolean updating = false;
 
-    private ReteSearchEngine ownerEngine = null;
+    private final ReteSearchEngine ownerEngine;
 
     /**
      * Creates a RETE network and initializes its state by processing the
@@ -118,6 +119,7 @@ public class ReteNetwork {
     public ReteNetwork(ReteSearchEngine engine, GraphGrammar g,
             boolean enableInjectivity) {
         this.grammarName = g.getName();
+        this.typeGraph = g.getTypeGraph();
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
         this.state = new ReteState(this);
@@ -726,10 +728,11 @@ public class ReteNetwork {
                         rfact.createVariableNode(maxNodeNr++, vn.getSignature()));
                 }
             } else {
+                DefaultRuleNode dn = (DefaultRuleNode) n;
                 result.nodeMap().put(
-                    n,
-                    rfact.createNode(maxNodeNr++, n.getType().label(),
-                        n.isSharp()));
+                    dn,
+                    rfact.createNode(maxNodeNr++, dn.getType().label(),
+                        n.isSharp(), dn.getTypeGuards()));
             }
 
         }
@@ -1000,6 +1003,11 @@ public class ReteNetwork {
      */
     public RootNode getRoot() {
         return this.root;
+    }
+
+    /** Returns the associated type graph of the graph grammar. */
+    public TypeGraph getTypeGraph() {
+        return this.typeGraph;
     }
 
     /**

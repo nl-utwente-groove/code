@@ -786,13 +786,6 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     /** Text of the dummy labels {@link #DUMMY_LABELS}. */
     static private final String DUMMY_LABEL_TEXT = "\u0000";
 
-    /** Returns the dummy label for a given label kind.
-     *  The dummy labels can be used to match wildcards in case there is no proper match for them. 
-     */
-    static public TypeLabel getDummyLabel(EdgeRole kind) {
-        return DUMMY_LABELS.get(kind);
-    }
-
     /** 
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
@@ -978,10 +971,10 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                             LabelVar id = edgeLabel.getWildcardId();
                             if (labelOk && id != null) {
                                 // we have a wildcard id; let's look it up
-                                TypeEdge oldLabel = valuation.get(id);
+                                TypeElement oldLabel = valuation.get(id);
                                 if (oldLabel == null) {
                                     valuation = new Valuation(valuation);
-                                    valuation.put(id, (TypeEdge) type);
+                                    valuation.put(id, type);
                                 } else {
                                     // it's a know id; check its value
                                     labelOk = oldLabel.equals(type);

@@ -17,6 +17,12 @@
 package groove.trans;
 
 import groove.graph.Element;
+import groove.graph.TypeElement;
+import groove.graph.TypeGuard;
+import groove.rel.LabelVar;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Type of (node and edge) elements that may appear in a {@link RuleGraph}.
@@ -25,5 +31,20 @@ import groove.graph.Element;
  * @version $Revision $
  */
 public interface RuleElement extends Element {
-    // no added functionality
+    /** Returns the type of this rule element. */
+    public TypeElement getType();
+
+    /** Returns the collection of label variables associated with this rule element. */
+    public List<LabelVar> getTypeVars();
+
+    /** Returns the collection of type guards associated with this rule element. */
+    public List<TypeGuard> getTypeGuards();
+
+    /** 
+     * Returns the set of type elements that are valid matches of this rule element.
+     * This is typically the set of subtypes of {@link #getType()}, but it may be 
+     * further constrained by type variables.
+     * @see #getType()
+     */
+    public Set<? extends TypeElement> getMatchingTypes();
 }

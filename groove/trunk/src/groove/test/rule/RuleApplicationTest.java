@@ -74,6 +74,12 @@ public class RuleApplicationTest {
         test("mergers");
     }
 
+    /** Tests the rules in the regexpr grammar. */
+    @Test
+    public void testRegexpr() {
+        test("regexpr");
+    }
+
     /** Tests the rules in the embargoes grammar. */
     @Test
     public void testEmbargoes() {

@@ -4,6 +4,7 @@ import groove.algebra.SignatureKind;
 import groove.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -122,6 +123,11 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     /** Returns the default type node for a given data signature. */
     public TypeNode getDataType(SignatureKind signature) {
         return this.dataTypeMap.get(signature);
+    }
+
+    /** Returns the default type node for a given data signature. */
+    public Collection<TypeNode> getDataTypes() {
+        return this.dataTypeMap.values();
     }
 
     /** Indicates if this factory is backed up by a type graph. */

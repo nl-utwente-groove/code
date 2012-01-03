@@ -150,12 +150,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private TypeNode getNodeType() {
         TypeNode result = null;
         TypeGraph typeGraph = getJModel().getTypeGraph();
-        if (!typeGraph.isImplicit()) {
-            for (AspectEdge edge : getJVertexLabels()) {
-                if (edge.getRole() == EdgeRole.NODE_TYPE) {
-                    result = typeGraph.getNode(edge.getTypeLabel());
-                    break;
-                }
+        for (AspectEdge edge : getJVertexLabels()) {
+            if (typeGraph.isNodeType(edge)) {
+                result = typeGraph.getNode(edge.getTypeLabel());
+                break;
             }
         }
         return result == null ? typeGraph.getFactory().getTopNode() : result;

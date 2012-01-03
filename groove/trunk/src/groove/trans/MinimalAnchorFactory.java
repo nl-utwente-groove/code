@@ -23,6 +23,7 @@ import groove.rel.VarSupport;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -64,18 +65,21 @@ public class MinimalAnchorFactory implements AnchorFactory<Rule> {
                 }
             }
         }
-        // set of variables that need to be matched by variable-binding anchor edges
+        // set of variables that need to be matched by variable-binding anchor elements
         Set<LabelVar> modifierVars =
-            new HashSet<LabelVar>(rule.getModifierVars());
+            new HashSet<LabelVar>(Arrays.asList(rule.getCreatorVars()));
         for (RuleEdge eraserEdge : rule.getEraserEdges()) {
             result.addEdge(eraserEdge);
             modifierVars.removeAll(VarSupport.getBoundVars(eraserEdge));
         }
-        if (!modifierVars.isEmpty()) {
-            for (RuleEdge edge : rule.lhs().edgeSet()) {
-                if (new HashSet<LabelVar>(modifierVars).removeAll(VarSupport.getBoundVars(edge))) {
-                    result.addEdge(edge);
-                }
+        Map<LabelVar,Set<RuleElement>> varBinders =
+            VarSupport.getVarBinders(rule.lhs());
+        for (LabelVar var : modifierVars) {
+            RuleElement binder = varBinders.get(var).iterator().next();
+            if (binder instanceof RuleNode) {
+                result.addNode((RuleNode) binder);
+            } else {
+                result.addEdge((RuleEdge) binder);
             }
         }
         result.addNodeSet(rule.getModifierEnds());

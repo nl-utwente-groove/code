@@ -17,6 +17,7 @@
 package groove.util;
 
 import java.util.AbstractCollection;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -36,6 +37,14 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
     public CollectionOfCollections(
             Collection<? extends Collection<? extends T>> collections) {
         this.collections = collections;
+    }
+
+    /**
+     * Constructs a new collection of collections.
+     * @require <tt>collections \subseteq Collection</tt>
+     */
+    public CollectionOfCollections(Collection<? extends T>... collections) {
+        this(Arrays.asList(collections));
     }
 
     @Override

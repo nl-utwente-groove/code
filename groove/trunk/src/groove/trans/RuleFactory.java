@@ -23,12 +23,15 @@ import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
+
+import java.util.List;
 
 /** Factory class for graph elements. */
 public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
@@ -39,14 +42,15 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
 
     /** This implementation creates a node with top node type. */
     public RuleNode createNode(int nr) {
-        return createNode(nr, TypeLabel.NODE, true);
+        return createNode(nr, TypeLabel.NODE, true, null);
     }
 
-    /** Creates a node with a given number. */
-    public RuleNode createNode(int nr, TypeLabel typeLabel, boolean sharp) {
+    /** Factory method for a default rule node. */
+    public DefaultRuleNode createNode(int nr, TypeLabel typeLabel,
+            boolean sharp, List<TypeGuard> typeGuards) {
         updateMaxNodeNr(nr);
         TypeNode type = this.typeFactory.getNode(typeLabel);
-        return new DefaultRuleNode(nr, type, sharp);
+        return new DefaultRuleNode(nr, type, sharp, typeGuards);
     }
 
     /** Creates a variable node for a given data signature, and with a given node number. */

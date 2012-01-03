@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
+import groove.graph.TypeGuard;
 import groove.rel.RegExpr.Wildcard;
-import groove.rel.RegExpr.Wildcard.LabelConstraint;
 import groove.trans.HostEdge;
 
 /**
@@ -27,12 +27,12 @@ import groove.trans.HostEdge;
  * @author Arash Jalali
  * @version $Revision $
  */
-public class WildcardPathChecker extends SingleEdgePathChecker {
+public class WildcardEdgePathChecker extends SingleEdgePathChecker {
 
     /**
      * Creates a checker node for a given wild-card expression 
      */
-    public WildcardPathChecker(ReteNetwork network, Wildcard expression,
+    public WildcardEdgePathChecker(ReteNetwork network, Wildcard expression,
             boolean isLoop) {
         super(network, expression, isLoop);
     }
@@ -53,8 +53,7 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
 
     @Override
     public void receive(ReteNetworkNode source, HostEdge gEdge, Action action) {
-        if ((this.getGuard() == null)
-            || (this.getGuard().isSatisfied(gEdge.label()))) {
+        if (!isGuarded() || getGuard().isSatisfied(gEdge.label())) {
             super.receive(source, gEdge, action);
         }
     }
@@ -62,8 +61,8 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
     @Override
     public boolean equals(ReteNetworkNode node) {
         return (this == node)
-            || ((node instanceof WildcardPathChecker)
-                && this.getOwner().equals(node.getOwner()) && this.expression.equals(((WildcardPathChecker) node).getExpression()));
+            || ((node instanceof WildcardEdgePathChecker)
+                && this.getOwner().equals(node.getOwner()) && this.expression.equals(((WildcardEdgePathChecker) node).getExpression()));
     }
 
     /**
@@ -71,15 +70,15 @@ public class WildcardPathChecker extends SingleEdgePathChecker {
      * n-node is guarded.
      */
     public boolean isGuarded() {
-        return ((Wildcard) this.getExpression()).getGuard() != null;
+        return getGuard() != null;
     }
 
     /**
      * Returns the constraint associated with this n-node's wild-card
-     * @return an instance of the {@link LabelConstraint} object, or 
+     * @return an instance of the {@link TypeGuard} object, or 
      * <code>null</code> if this n-node's wild-card is not guarded.
      */
-    public LabelConstraint getGuard() {
+    public TypeGuard getGuard() {
         return ((Wildcard) this.getExpression()).getGuard();
     }
 

@@ -16,18 +16,23 @@
  */
 package groove.match.plan;
 
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
 import groove.match.plan.PlanSearchStrategy.Search;
+import groove.rel.LabelVar;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,6 +50,12 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         assert node.getType().getGraph() == typeGraph;
         this.source = node;
         this.type = node.getType();
+        this.typeVars = new ArrayList<LabelVar>();
+        for (TypeGuard guard : node.getTypeGuards()) {
+            if (guard.hasVar()) {
+                this.typeVars.add(guard.getVar());
+            }
+        }
         this.boundNodes = new HashSet<RuleNode>(Arrays.asList(node));
         this.subtypes = typeGraph.getSubtypes(this.type);
         this.sharpType =
@@ -53,21 +64,21 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Returns the end nodes of the edge.
+     * Returns the node for which this item tests.
      */
     @Override
     public Collection<RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
-    /** Returns the singleton set consisting of the matched edge. */
+    /** Returns the empty set. */
     @Override
     public Collection<RuleEdge> bindsEdges() {
         return Collections.emptySet();
     }
 
     /**
-     * Returns the edge for which this item tests.
+     * Returns the node for which this item tests.
      */
     public RuleNode getNode() {
         return this.source;
@@ -80,7 +91,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * This implementation first attempts to compare edge labels and ends, if
+     * This implementation first attempts to compare node type labels, if
      * the other search item is also an {@link NodeTypeSearchItem}; otherwise,
      * it delegates to super.
      */
@@ -98,17 +109,16 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     public void activate(PlanSearchStrategy strategy) {
-        // one would like the following assertion,
-        // but since negative search items for the same edge also reserve the
-        // index, the assertion may fail in case of a positive and negative test
-        // on the same edge (stupid!)
-        // assert !strategy.isEdgeFound(edge);
         this.sourceFound = strategy.isNodeFound(this.source);
         this.sourceIx = strategy.getNodeIx(this.source);
+        this.varIxs = new int[this.typeVars.size()];
+        for (int i = 0; i < this.varIxs.length; i++) {
+            this.varIxs[i] = strategy.getVarIx(this.typeVars.get(i));
+        }
     }
 
     /**
-     * This method returns the hash code of the label as rating.
+     * This method returns the hash code of the node type as rating.
      */
     @Override
     int getRating() {
@@ -154,11 +164,15 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     final RuleNode source;
     /** The type label to be matched. */
     final TypeNode type;
+    /** Type variables in the rule node. */
+    final List<LabelVar> typeVars;
     /** The set of end nodes of this edge. */
     private final Set<RuleNode> boundNodes;
 
     /** The index of the source in the search. */
     int sourceIx;
+    /** The indices of the label variables in the search. */
+    int[] varIxs;
     /** Indicates if the source is found before this item is invoked. */
     boolean sourceFound;
     /** The collection of subtypes of this node type. */
@@ -177,6 +191,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         public NodeTypeSingularRecord(Search search, int sourceIx) {
             super(search);
             this.sourceIx = sourceIx;
+            this.varFound = new boolean[NodeTypeSearchItem.this.varIxs.length];
         }
 
         @Override
@@ -190,13 +205,24 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             boolean result = false;
             this.image = computeImage();
             TypeNode sourceType = this.image.getType();
-            if (NodeTypeSearchItem.this.sharpType) {
-                result = NodeTypeSearchItem.this.type == sourceType;
-            } else {
-                result = NodeTypeSearchItem.this.subtypes.contains(sourceType);
+            result =
+                NodeTypeSearchItem.this.source.getMatchingTypes().contains(
+                    sourceType);
+            //            if (NodeTypeSearchItem.this.sharpType) {
+            //                result = NodeTypeSearchItem.this.type == sourceType;
+            //            } else {
+            //                result = NodeTypeSearchItem.this.subtypes.contains(sourceType);
+            //            }
+            for (int vi = 0; result && vi < this.varFound.length; vi++) {
+                int varIx = NodeTypeSearchItem.this.varIxs[vi];
+                TypeElement varFind = this.search.getVar(varIx);
+                boolean varFound = this.varFound[vi] = varFind != null;
+                if (varFound) {
+                    result = varFind == sourceType;
+                }
             }
             if (result) {
-                write();
+                result = write();
             }
             return result;
         }
@@ -204,11 +230,30 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         void erase() {
             this.search.putNode(this.sourceIx, null);
+            for (int vi = 0; vi < this.varFound.length; vi++) {
+                if (!this.varFound[vi]) {
+                    this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], null);
+                }
+            }
         }
 
         @Override
         final boolean write() {
-            return this.search.putNode(this.sourceIx, this.image);
+            boolean result = true;
+            for (int vi = 0; result && vi < this.varFound.length; vi++) {
+                if (!this.varFound[vi]) {
+                    result =
+                        this.search.putVar(NodeTypeSearchItem.this.varIxs[vi],
+                            this.image.getType());
+                }
+            }
+            if (result) {
+                result = this.search.putNode(this.sourceIx, this.image);
+            }
+            if (!result) {
+                erase();
+            }
+            return result;
         }
 
         /**
@@ -229,6 +274,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         private HostNode sourcePreMatch;
         /** The index of the source in the search. */
         private final int sourceIx;
+        /** Previously found images for the type variables. */
+        private final boolean[] varFound;
         /** The previously found type, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
         private HostNode image;
     }
@@ -247,6 +294,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
             super(search);
             this.sourceIx = sourceIx;
             this.sourceFound = sourceFound;
+            this.varFind =
+                new TypeElement[NodeTypeSearchItem.this.varIxs.length];
         }
 
         @Override
@@ -263,29 +312,56 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                 assert this.sourceFind != null : String.format(
                     "Node %s not found", NodeTypeSearchItem.this.source);
             }
+            for (int vi = 0; vi < this.varFind.length; vi++) {
+                int varIx = NodeTypeSearchItem.this.varIxs[vi];
+                this.varFind[vi] = this.search.getVar(varIx);
+            }
             initImages();
         }
 
         @Override
         boolean write(HostNode image) {
-            if (NodeTypeSearchItem.this.sharpType
-                && NodeTypeSearchItem.this.type != image.getType()
-                || !NodeTypeSearchItem.this.subtypes.contains(image.getType())) {
+            if (!NodeTypeSearchItem.this.source.getMatchingTypes().contains(
+                image.getType())) {
                 return false;
             }
-            if (this.sourceFind == null) {
-                if (!this.search.putNode(this.sourceIx, image)) {
-                    return false;
+            boolean result = true;
+            int vi;
+            for (vi = 0; result && vi < this.varFind.length; vi++) {
+                int varIx = NodeTypeSearchItem.this.varIxs[vi];
+                TypeElement varFind = this.varFind[vi];
+                if (varFind != null) {
+                    result = varFind == image.getType();
+                } else {
+                    result = this.search.putVar(varIx, image.getType());
                 }
             }
-            this.selected = image;
-            return true;
+            if (result && this.sourceFind == null) {
+                result = this.search.putNode(this.sourceIx, image);
+            }
+            if (result) {
+                this.selected = image;
+            } else {
+                // roll back the variable assignment
+                for (vi--; vi >= 0; vi--) {
+                    if (this.varFind[vi] == null) {
+                        this.search.putVar(NodeTypeSearchItem.this.varIxs[vi],
+                            null);
+                    }
+                }
+            }
+            return result;
         }
 
         @Override
         void erase() {
             if (this.sourceFind == null) {
                 this.search.putNode(this.sourceIx, null);
+            }
+            for (int vi = 0; vi < this.varFind.length; vi++) {
+                if (this.varFind[vi] == null) {
+                    this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], null);
+                }
             }
             this.selected = null;
         }
@@ -313,6 +389,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         final private int sourceIx;
         /** Indicates if the source is found before this item is invoked. */
         final private boolean sourceFound;
+        /** Images for the type variables found during {@link #init()}. */
+        private final TypeElement[] varFind;
 
         private HostNode sourcePreMatch;
 

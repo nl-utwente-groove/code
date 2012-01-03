@@ -116,8 +116,14 @@ public class PathCheckerFactory {
             this.owner.getRoot().addSuccessor(result);
         } else if (exp.isWildcard()) {
             operands = Collections.emptyList();
-            result =
-                new WildcardPathChecker(this.owner, (Wildcard) exp, isLoop);
+            if (this.owner.getTypeGraph().isNodeType(exp.getWildcardKind())) {
+                // node type variables not yet supported
+                throw new UnsupportedOperationException();
+            } else {
+                result =
+                    new WildcardEdgePathChecker(this.owner, (Wildcard) exp,
+                        isLoop);
+            }
             this.owner.getRoot().addSuccessor(result);
         }
 

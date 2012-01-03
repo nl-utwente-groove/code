@@ -1,7 +1,7 @@
 /* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
 package groove.match.plan;
 
-import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
@@ -209,7 +209,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         boolean find() {
             Valuation valuation = new Valuation();
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeEdge image =
+                TypeElement image =
                     this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 valuation.put(var, image);
@@ -282,7 +282,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
             this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeEdge image =
+                TypeElement image =
                     this.search.getVarSeed(RegExprEdgeSearchItem.this.varIxMap.get(var));
                 assert image != null;
                 this.valuation.put(var, image);
@@ -343,7 +343,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                     }
                 }
                 if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
-                    Map<LabelVar,TypeEdge> valuation = image.getValuation();
+                    Map<LabelVar,TypeElement> valuation = image.getValuation();
                     for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
                         this.search.putVar(
                             RegExprEdgeSearchItem.this.varIxMap.get(var),

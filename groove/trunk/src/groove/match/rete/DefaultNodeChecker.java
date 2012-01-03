@@ -24,7 +24,6 @@ import groove.trans.RuleNode;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,8 +45,6 @@ public class DefaultNodeChecker extends NodeChecker implements
     private TreeHashSet<ReteSimpleMatch> memory =
         new TreeHashSet<ReteSimpleMatch>();
 
-    /** The collection of subtypes of this node type. */
-    final Collection<TypeNode> subtypes;
     /** Flag indicating if the node type has non-trivial subtypes. */
     final boolean sharpType;
     /** The type label to be matched. */
@@ -72,10 +69,7 @@ public class DefaultNodeChecker extends NodeChecker implements
         super(network);
         this.pattern[0] = node;
         this.type = node.getType();
-        this.subtypes = node.getType().getGraph().getSubtypes(this.type);
-        this.sharpType =
-            node.isSharp() || this.subtypes == null
-                || this.subtypes.size() == 1;
+        this.sharpType = node.isSharp() || this.type.getSubtypes().size() == 1;
         this.getOwner().getState().subscribe(this);
     }
 

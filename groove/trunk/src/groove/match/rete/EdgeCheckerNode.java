@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.algebra.Constant;
 import groove.graph.TypeEdge;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
@@ -25,7 +26,6 @@ import groove.graph.algebra.VariableNode;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
-import groove.rel.RegExpr.Wildcard.LabelConstraint;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
@@ -231,7 +231,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * and if the wildcard is positive.
      */
     public boolean isPositiveWildcard() {
-        LabelConstraint lc =
+        TypeGuard lc =
             ((RegExpr.Wildcard) this.edge.label().getMatchExpr()).getGuard();
         return this.isWildcardEdge() && (lc == null || !lc.isNegated());
     }
