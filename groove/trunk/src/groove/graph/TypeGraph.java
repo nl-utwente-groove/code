@@ -32,13 +32,11 @@ import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.util.CollectionOfCollections;
 import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -416,36 +414,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         RuleFactory ruleFactory = parentTyping.getFactory();
         RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
-        // extract the variable guards from the parent typing
-        // and the source edges
-        Map<LabelVar,Set<? extends TypeElement>> varTyping =
-            new HashMap<LabelVar,Set<? extends TypeElement>>();
-        @SuppressWarnings("unchecked")
-        Collection<RuleElement> elements =
-            new CollectionOfCollections<RuleElement>(
-                parentTyping.nodeMap().values(),
-                parentTyping.edgeMap().values(), source.edgeSet());
-        // extract the node variable typing from the parent typing
-        // and the source edges
-        for (RuleElement element : elements) {
-            for (TypeGuard guard : element.getTypeGuards()) {
-                if (guard.hasVar()) {
-                    LabelVar var = guard.getVar();
-                    Set<? extends TypeElement> types = varTyping.get(var);
-                    if (types == null) {
-                        if (isNodeType(var.getKind())) {
-                            types =
-                                new HashSet<TypeElement>(
-                                    element instanceof RuleNode
-                                            ? ((RuleNode) element).getMatchingTypes()
-                                            : nodeSet());
-                        } else {
-                            types = new HashSet<TypeElement>(edgeSet());
-                        }
-                        varTyping.put(var, types);
-                    }
-                    filter(guard, types);
+        // extract the variable types from the parent typing
+        result.copyVarTyping(parentTyping);
+        // extract additional node variable typing from the source edges
+        for (RuleEdge edge : source.edgeSet()) {
+            if (isNodeType(edge) && edge.label().isWildcard()) {
+                TypeGuard guard = edge.label().getWildcardGuard();
+                LabelVar var = guard.getVar();
+                Set<? extends TypeElement> types = result.getVarTypes(var);
+                if (types == null) {
+                    types = new HashSet<TypeElement>(nodeSet());
                 }
+                guard.filter(types);
+                result.addVarTypes(var, types);
             }
         }
         // determine the node types
@@ -478,7 +459,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     // get the type from the parent typing or from the node type edges
                     RuleNode parentImage = parentTyping.getNode(node);
                     image =
-                        createRuleNode(parentTyping, source, node, varTyping);
+                        createRuleNode(parentTyping, source, node,
+                            result.getVarTyping());
                     if (parentImage != null) {
                         TypeNode parentType = parentImage.getType();
                         if (!isSubtype(image.getType(), parentType)) {
@@ -510,7 +492,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 RuleLabel edgeLabel = edge.label();
                 if (edgeLabel.isAtom() || edgeLabel.isSharp()) {
                     simpleEdges.add(edge);
-                } else if (edgeLabel.getWildcardId() != null) {
+                } else if (edgeLabel.isWildcard()) {
                     varEdges.add(edge);
                 } else if (edgeLabel.isMatchable()) {
                     regExprEdges.add(edge);
@@ -524,14 +506,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             RuleEdge image =
                 ruleFactory.createEdge(result.getNode(varEdge.source()),
                     varEdge.label(), result.getNode(varEdge.target()));
+            Set<? extends TypeElement> matchingTypes = image.getMatchingTypes();
             for (TypeGuard guard : image.getTypeGuards()) {
-                if (guard.hasVar()) {
-                    image.getMatchingTypes().retainAll(
-                        varTyping.get(guard.getVar()));
-                }
+                matchingTypes.retainAll(result.addVarTypes(guard.getVar(),
+                    matchingTypes));
             }
             if (image.getMatchingTypes().isEmpty()) {
-                errors.add(new FormatError("Non-existent edge type %s",
+                errors.add(new FormatError("Inconsistent %s type %s",
+                    image.label().getRole().getDescription(false),
                     image.label(), varEdge));
             }
             result.putEdge(varEdge, image);
@@ -556,7 +538,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         for (RuleEdge edge : otherEdges) {
             result.putEdge(edge, edge);
         }
-        RegExprTyper regExprTyper = new RegExprTyper(this, varTyping);
+        RegExprTyper regExprTyper =
+            new RegExprTyper(this, result.getVarTyping());
         for (RuleEdge edge : regExprEdges) {
             RuleLabel edgeLabel = edge.label();
             RuleNode sourceImage = result.getNode(edge.source());
@@ -598,6 +581,99 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         }
         return result;
 
+    }
+
+    /** 
+     * Creates a rule node with a type to be determined by a list
+     * of typing edges.
+     * @param varTyping predetermined typing of the variable edges
+     * @param graph the source graph
+     * @param node the node for which we want an image
+     * @return a non-{@code null} node with number {@code nr} and type
+     * determined by {@code typingEdges}
+     * @throws FormatException if no unambiguous node type can be derived 
+     */
+    private RuleNode createRuleNode(RuleGraphMorphism parentTyping,
+            RuleGraph graph, RuleNode node,
+            Map<LabelVar,Set<? extends TypeElement>> varTyping)
+        throws FormatException {
+        List<TypeGuard> typeGuards = new ArrayList<TypeGuard>();
+        Set<LabelVar> labelVars = new HashSet<LabelVar>();
+        RuleNode parentImage = parentTyping.getNode(node);
+        Set<TypeNode> validTypes =
+            new HashSet<TypeNode>(parentImage == null ? nodeSet()
+                    : parentImage.getMatchingTypes());
+        validTypes.removeAll(this.factory.getDataTypes());
+        TypeNode type = null;
+        boolean sharp = false;
+        for (RuleEdge edge : graph.outEdgeSet(node)) {
+            if (!edge.label().isNodeType()) {
+                continue;
+            }
+            TypeGuard guard = edge.label().getWildcardGuard();
+            if (guard != null) {
+                typeGuards.add(guard);
+                labelVars.add(guard.getVar());
+            } else {
+                TypeLabel typeLabel = edge.label().getTypeLabel();
+                assert typeLabel != null;
+                if (type == null) {
+                    type = getNode(typeLabel);
+                    sharp = edge.label().isSharp();
+                    if (type == null) {
+                        throw new FormatException("Unknown node type %s",
+                            typeLabel, edge);
+                    }
+                } else {
+                    throw new FormatException("Duplicate node types %s and %s",
+                        type.label(), typeLabel, node);
+                }
+            }
+        }
+        // apply the known type guards for the label variables on this node
+        for (LabelVar var : labelVars) {
+            validTypes.retainAll(varTyping.get(var));
+        }
+        // push the constraints back to the variables
+        for (LabelVar var : labelVars) {
+            varTyping.get(var).retainAll(validTypes);
+        }
+        if (validTypes.isEmpty()) {
+            String constraints =
+                Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
+            throw new FormatException("Inconsistent type constraint%s %s",
+                typeGuards.size() == 1 ? "" : "s", constraints, node);
+        }
+        if (type == null) {
+            if (parentImage == null && typeGuards.isEmpty()) {
+                throw new FormatException("Untyped node", node);
+            }
+            // find a maximal element w.r.t. subtyping
+            type = getLub(validTypes);
+            if (type == null) {
+                throw new FormatException(
+                    "Ambiguous typing: %s do not have least common supertype",
+                    validTypes, node);
+            }
+        } else {
+            validTypes.retainAll(type.getSubtypes());
+            // again push the constraints back to the variables
+            for (LabelVar var : labelVars) {
+                varTyping.get(var).retainAll(validTypes);
+            }
+            if (validTypes.isEmpty()) {
+                String constraints =
+                    Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
+                throw new FormatException(
+                    "Node type %s conflicts with type constraint%s %s", type,
+                    typeGuards.size() == 1 ? "" : "s", constraints, node);
+            }
+        }
+        RuleNode result =
+            parentTyping.getFactory().createNode(node.getNumber(),
+                type.label(), sharp, typeGuards);
+        result.getMatchingTypes().retainAll(validTypes);
+        return result;
     }
 
     /** 
@@ -727,104 +803,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 result.add(edge);
             }
         }
-        return result;
-    }
-
-    /** Removes from a set of type elements those that satisfy a given property.
-     * @param candidates the (non-{@code null}) set of elements. This set will be modified
-     * @param guard the property to be tested; may be {@code null}, in which case
-     * nothing is removed
-     */
-    private void filter(TypeGuard guard, Set<? extends TypeElement> candidates) {
-        Iterator<? extends TypeElement> iter = candidates.iterator();
-        while (iter.hasNext()) {
-            if (!guard.isSatisfied(iter.next().label())) {
-                iter.remove();
-            }
-        }
-    }
-
-    /** 
-     * Creates a rule node with a type to be determined by a list
-     * of typing edges.
-     * @param varTyping predetermined typing of the variable edges
-     * @param graph the source graph
-     * @param node the node for which we want an image
-     * @return a non-{@code null} node with number {@code nr} and type
-     * determined by {@code typingEdges}
-     * @throws FormatException if no unambiguous node type can be derived 
-     */
-    private RuleNode createRuleNode(RuleGraphMorphism parentTyping,
-            RuleGraph graph, RuleNode node,
-            Map<LabelVar,Set<? extends TypeElement>> varTyping)
-        throws FormatException {
-        List<TypeGuard> typeGuards = new ArrayList<TypeGuard>();
-        Set<LabelVar> labelVars = new HashSet<LabelVar>();
-        RuleNode parentImage = parentTyping.getNode(node);
-        Set<TypeNode> validTypes =
-            new HashSet<TypeNode>(parentImage == null ? nodeSet()
-                    : parentImage.getMatchingTypes());
-        validTypes.removeAll(this.factory.getDataTypes());
-        TypeNode type = null;
-        boolean sharp = false;
-        for (RuleEdge edge : graph.outEdgeSet(node)) {
-            if (!edge.label().isNodeType()) {
-                continue;
-            }
-            TypeGuard guard = edge.label().getWildcardGuard();
-            if (guard != null) {
-                typeGuards.add(guard);
-                if (guard.hasVar()) {
-                    labelVars.add(guard.getVar());
-                } else {
-                    filter(guard, validTypes);
-                }
-            } else {
-                TypeLabel typeLabel = edge.label().getTypeLabel();
-                assert typeLabel != null;
-                if (type == null) {
-                    type = getNode(typeLabel);
-                    sharp = edge.label().isSharp();
-                    if (type == null) {
-                        throw new FormatException("Unknown node type %s",
-                            typeLabel, edge);
-                    }
-                } else {
-                    throw new FormatException("Duplicate node types %s and %s",
-                        type.label(), typeLabel, node);
-                }
-            }
-        }
-        // apply the known type guards for the label variables on this node
-        for (LabelVar var : labelVars) {
-            validTypes.retainAll(varTyping.get(var));
-        }
-        if (validTypes.isEmpty()) {
-            String constraints =
-                Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
-            throw new FormatException("Inconsistent type constraint%s %s",
-                typeGuards.size() == 1 ? "" : "s", constraints, node);
-        }
-        if (type == null) {
-            // find a maximal element w.r.t. subtyping
-            type = getLub(validTypes);
-            if (type == null) {
-                throw new FormatException("Ambiguously typed node", node);
-            }
-        } else {
-            validTypes.retainAll(type.getSubtypes());
-            if (validTypes.isEmpty()) {
-                String constraints =
-                    Groove.toString(typeGuards.toArray(), "", "", ", ", " and ");
-                throw new FormatException(
-                    "Node type %s conflicts with type constraint%s %s", type,
-                    typeGuards.size() == 1 ? "" : "s", constraints, node);
-            }
-        }
-        RuleNode result =
-            parentTyping.getFactory().createNode(node.getNumber(),
-                type.label(), sharp, typeGuards);
-        result.getMatchingTypes().retainAll(validTypes);
         return result;
     }
 
@@ -1006,12 +984,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (isNodeType(label)) {
                 result.addAll(nodeSet());
             } else {
-                for (TypeEdge typeEdge : edgeSet()) {
-                    if (typeEdge.getRole() == label.getWildcardKind()) {
-                        result.add(typeEdge);
-                    }
-                }
+                result.addAll(edgeSet());
             }
+            label.getWildcardGuard().filter(result);
         } else if (label.isSharp()) {
             if (isNodeType(label)) {
                 result.add(getNode(label));

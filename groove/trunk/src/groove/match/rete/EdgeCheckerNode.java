@@ -18,8 +18,8 @@ package groove.match.rete;
 
 import groove.algebra.Constant;
 import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeGuard;
-import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -178,9 +178,9 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
         //condition 1: node types for end-points of the patter and host edge must be compatible
         //condition 2: labels must match <-- commented out because we check this in the root
         //condition 3: if this is an edge checker for a loop then e should also be a loop
-        assert (this.isWildcardEdge() && this.edge.label().getMatchExpr().getWildcardGuard().isSatisfied(
-            e.label()))
-            || (this.edge.label().text().equals(e.label().text()));
+        assert isWildcardEdge()
+                ? this.edge.label().getMatchExpr().getWildcardGuard().isSatisfied(
+                    e.getType()) : this.edge.getType().equals(e.getType());
 
         return (this.type == null || this.type.subsumes(e.getType()))
             && checkSourceType(e.source()) && checkTargetType(e.target())
@@ -250,10 +250,10 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * @return <code>true</code> if this edge-checker accepts 
      * the given label (either by exact matching or through wild-card matching)
      */
-    public boolean isAcceptingLabel(TypeLabel l) {
+    public boolean isAcceptingLabel(TypeElement e) {
         RuleLabel rl = this.edge.label();
-        return (this.isWildcardEdge() && rl.getWildcardGuard().isSatisfied(l))
-            || rl.text().equals(l.text());
+        return isWildcardEdge() ? rl.getWildcardGuard().isSatisfied(e)
+                : this.edge.getType().equals(e);
     }
 
     /**
@@ -341,7 +341,8 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
     private void sendDownReceivedEdge(HostEdge gEdge, Action action) {
 
         LabelVar variable =
-            this.isWildcardEdge() ? this.edge.label().getWildcardId() : null;
+            this.isWildcardEdge()
+                    ? this.edge.label().getWildcardGuard().getVar() : null;
 
         ReteSimpleMatch m;
         if (variable != null) {

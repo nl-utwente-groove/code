@@ -18,7 +18,7 @@ package groove.match.plan;
 
 import groove.rel.LabelVar;
 import groove.trans.Condition;
-import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -32,16 +32,13 @@ import java.util.Set;
 public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** 
      * Constructs a search plan with given injectivity. 
+     * @param seed subgraph whose image is pre-matched before invoking the search plan
      * @param injective flag indicating that the match should be injective
-     * @param seedNodes nodes whose image is pre-matched before invoking the search plan
-     * @param seedEdges edges whose image is pre-matched before invoking the search plan
      */
-    public SearchPlan(Condition condition, Collection<RuleNode> seedNodes,
-            Collection<RuleEdge> seedEdges, boolean injective) {
+    public SearchPlan(Condition condition, RuleGraph seed, boolean injective) {
         this.condition = condition;
         this.injective = injective;
-        this.seedNodes = seedNodes;
-        this.seedEdges = seedEdges;
+        this.seed = seed;
     }
 
     /** Returns the condition for which this is the search plan. */
@@ -49,14 +46,9 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         return this.condition;
     }
 
-    /** Returns the seed nodes for this search plan. */
-    public final Collection<RuleNode> getSeedNodes() {
-        return this.seedNodes;
-    }
-
-    /** Returns the seed edges for this search plan. */
-    public final Collection<RuleEdge> getSeedEdges() {
-        return this.seedEdges;
+    /** Returns the (non-{@code null}) seed for this search plan. */
+    public final RuleGraph getSeed() {
+        return this.seed;
     }
 
     /** Constructs dependency information, in addition to appending the search item. */
@@ -149,10 +141,8 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
 
     /** The condition for which this is the search plan. */
     private final Condition condition;
-    /** The collection of nodes whose image is pre-matched before invoking the search plan. */
-    private final Collection<RuleNode> seedNodes;
-    /** The collection of edges whose image is pre-matched before invoking the search plan. */
-    private final Collection<RuleEdge> seedEdges;
+    /** The subgraph whose image is pre-matched before invoking the search plan. */
+    private final RuleGraph seed;
     /** Direct dependencies of all search plan items. */
     private final List<Integer> dependencies = new ArrayList<Integer>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */

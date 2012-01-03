@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.DefaultNode;
 import groove.graph.Node;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.rel.LabelVar;
@@ -536,13 +537,13 @@ final public class BasicEvent extends
             }
             for (int i = 0; i < count; i++) {
                 TypeLabel label;
-                if (creatorNodes[i].getTypeVars().isEmpty()) {
+                if (creatorNodes[i].getTypeGuards().isEmpty()) {
                     label = creatorNodes[i].getType().label();
                 } else {
                     // get the type from the image of the first label variable
                     label =
                         getCoanchorMap().getVar(
-                            creatorNodes[i].getTypeVars().get(0)).label();
+                            creatorNodes[i].getTypeGuards().get(0).getVar()).label();
                 }
                 result[i] = createNode(i, label, sourceNodes, added);
             }
@@ -805,9 +806,9 @@ final public class BasicEvent extends
                     (HostEdge) anchorImage[anchorNodes.length + i];
                 result.putNode(key.source(), edgeImage.source());
                 result.putNode(key.target(), edgeImage.target());
-                LabelVar var = key.label().getWildcardId();
-                if (var != null) {
-                    result.putVar(var, edgeImage.getType());
+                TypeGuard guard = key.label().getWildcardGuard();
+                if (guard != null && guard.isNamed()) {
+                    result.putVar(guard.getVar(), edgeImage.getType());
                 }
                 result.putEdge(key, edgeImage);
             }

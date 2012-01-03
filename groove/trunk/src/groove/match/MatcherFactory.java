@@ -18,10 +18,7 @@ package groove.match;
 
 import groove.match.plan.PlanSearchEngine;
 import groove.trans.Condition;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
-
-import java.util.Collection;
+import groove.trans.RuleGraph;
 
 /**
  * A factory for matchers.
@@ -60,13 +57,12 @@ public class MatcherFactory {
 
     /** Creates a matcher for a given condition and default seeds. */
     public Matcher createMatcher(Condition condition) {
-        return createMatcher(condition, null, null);
+        return createMatcher(condition, null);
     }
 
     /** Creates a matcher for a given condition and explicitly specified seeds. */
-    public Matcher createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
-        return new Matcher(this, condition, seedNodes, seedEdges);
+    public Matcher createMatcher(Condition condition, RuleGraph seed) {
+        return new Matcher(this, condition, seed);
     }
 
     /** The currently set search engine. */

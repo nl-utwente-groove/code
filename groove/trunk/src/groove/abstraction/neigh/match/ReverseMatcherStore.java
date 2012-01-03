@@ -23,10 +23,7 @@ import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
 import groove.trans.Condition;
 import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -83,9 +80,7 @@ public final class ReverseMatcherStore {
             MatcherFactory factory = MatcherFactory.instance();
             factory.setEngine(engine);
             Condition condition = rule.getCondition();
-            Collection<RuleNode> seedNodes = rule.lhs().nodeSet();
-            Collection<RuleEdge> seedEdges = rule.lhs().edgeSet();
-            result = factory.createMatcher(condition, seedNodes, seedEdges);
+            result = factory.createMatcher(condition, rule.lhs());
             store.put(rule, result);
         }
         return result;

@@ -22,7 +22,6 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.algebra.ArgumentEdge;
 import groove.graph.algebra.OperatorEdge;
-import groove.rel.LabelVar;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,31 +47,26 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
         TypeGuard guard = label.getWildcardGuard();
         if (guard != null) {
             this.typeGuards = Collections.singletonList(guard);
-            if (label.getWildcardId() == null) {
-                this.typeVars = Collections.emptyList();
-            } else {
-                this.typeVars =
-                    Collections.singletonList(label.getWildcardId());
-            }
             TypeGraph typeGraph = source.getType().getGraph();
-            if (typeGraph != null) {
+            if (typeGraph == null) {
+                this.matchingTypes = Collections.emptySet();
+            } else {
                 this.matchingTypes = new HashSet<TypeEdge>();
                 for (TypeEdge typeEdge : typeGraph.edgeSet()) {
-                    if (guard.isSatisfied(typeEdge.label())) {
+                    if (typeEdge.source().getSubtypes().contains(
+                        source.getType())
+                        && typeEdge.target().getSubtypes().contains(
+                            target.getType()) && guard.isSatisfied(typeEdge)) {
                         this.matchingTypes.add(typeEdge);
                     }
                 }
-            } else {
-                this.matchingTypes = Collections.emptySet();
             }
         } else if (type == null) {
             this.matchingTypes = Collections.emptySet();
             this.typeGuards = Collections.emptyList();
-            this.typeVars = Collections.emptyList();
         } else {
             this.matchingTypes = new HashSet<TypeEdge>(type.getSubtypes());
             this.typeGuards = Collections.emptyList();
-            this.typeVars = Collections.emptyList();
         }
     }
 
@@ -99,11 +93,6 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
         return this.typeGuards;
     }
 
-    @Override
-    public List<LabelVar> getTypeVars() {
-        return this.typeVars;
-    }
-
     /** Sets the possible types of a wildcard edge. */
     public void setWildcardTypes(Set<TypeEdge> wildcardTypes) {
         assert this.label.isWildcard();
@@ -112,8 +101,6 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
 
     /** The edge type of this rule edge. */
     private final TypeEdge type;
-    /** Possibly empty list of label variables. */
-    private final List<LabelVar> typeVars;
     /** Possibly empty list of label variables. */
     private final List<TypeGuard> typeGuards;
     /** Set of possible edge types, if the label is a wildcard. */

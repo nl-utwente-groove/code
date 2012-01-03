@@ -18,7 +18,9 @@ package groove.util;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -55,6 +57,21 @@ abstract public class Property<S> {
      * <code>S</code>.
      */
     abstract public boolean isSatisfied(S value);
+
+    /** 
+     * Removes from a given set all values that do not satisfy this property.
+     * @param collection the set to be filtered; will be modified as a result of this call
+     * @return the parameter {@code collection} 
+     */
+    public <C extends Collection<? extends S>> C filter(C collection) {
+        Iterator<? extends S> iter = collection.iterator();
+        while (iter.hasNext()) {
+            if (!isSatisfied(iter.next())) {
+                iter.remove();
+            }
+        }
+        return collection;
+    }
 
     /**
      * Indicates if this property can be edited.

@@ -21,8 +21,8 @@ import groove.graph.algebra.OperatorEdge;
 import groove.graph.algebra.ProductNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 import groove.trans.RuleEdge;
+import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -43,19 +43,12 @@ class SeedSearchItem extends AbstractSearchItem {
     /**
      * Creates an instance with given sets of pre-matched nodes, edges and
      * variables.
-     * @param nodes the set of pre-matched nodes; not <code>null</code>
-     * @param edges the set of pre-matched edges; not <code>null</code>
+     * @param seed the set of pre-matched nodes; not <code>null</code>
      */
-    SeedSearchItem(Collection<RuleNode> nodes, Collection<RuleEdge> edges) {
-        this.nodes = new HashSet<RuleNode>(nodes);
-        this.edges = new HashSet<RuleEdge>(edges);
-        this.vars = new HashSet<LabelVar>();
-        for (RuleNode node : nodes) {
-            this.vars.addAll(VarSupport.getAllVars(node));
-        }
-        for (RuleEdge edge : edges) {
-            this.vars.addAll(VarSupport.getAllVars(edge));
-        }
+    SeedSearchItem(RuleGraph seed) {
+        this.nodes = new HashSet<RuleNode>(seed.nodeSet());
+        this.edges = new HashSet<RuleEdge>(seed.edgeSet());
+        this.vars = new HashSet<LabelVar>(seed.getAllVars());
     }
 
     /** This implementation returns the set of pre-matched edges. */

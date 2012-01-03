@@ -17,10 +17,8 @@
 package groove.match;
 
 import groove.trans.Condition;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
+import groove.trans.RuleGraph;
 
-import java.util.Collection;
 
 /**
  * This is the common interface among factory classes that generate
@@ -36,15 +34,12 @@ public abstract class SearchEngine {
      * account that a certain set of nodes and edges has been matched already.
      * @param condition the condition for which a search plan is to be
      *        constructed
-     * @param seedNodes the nodes of the condition that have been matched
-     *        already; if <code>null</code>, the condition's pattern map values
-     *        are used
-     * @param seedEdges the edges of the condition that have been matched
+     * @param seed the nodes of the condition that have been matched
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
      */
     public abstract SearchStrategy createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges);
+            RuleGraph seed);
 
     /** 
      * Value determining what is actually checked in the search.

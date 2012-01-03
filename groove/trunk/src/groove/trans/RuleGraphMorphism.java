@@ -16,7 +16,15 @@
  */
 package groove.trans;
 
+import groove.graph.ElementMap;
 import groove.graph.Morphism;
+import groove.graph.TypeElement;
+import groove.rel.LabelVar;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Mapping between {@link RuleGraph} elements.
@@ -43,11 +51,58 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
 
     @Override
     public RuleGraphMorphism clone() {
-        return (RuleGraphMorphism) super.clone();
+        RuleGraphMorphism result = (RuleGraphMorphism) super.clone();
+        // deep copy the variable typing
+        result.varTyping = new HashMap<LabelVar,Set<? extends TypeElement>>();
+        result.copyVarTyping(this);
+        return result;
+    }
+
+    @Override
+    public void putAll(ElementMap<RuleNode,RuleEdge,RuleNode,RuleEdge> other) {
+        assert other instanceof RuleGraphMorphism;
+        super.putAll(other);
+        copyVarTyping((RuleGraphMorphism) other);
     }
 
     @Override
     public RuleGraphMorphism newMap() {
         return new RuleGraphMorphism(getFactory());
     }
+
+    /** 
+     * Adds a mapping from a label variable to a set of possible types for that variable.
+     * Constrains the previously stored set if there is one.
+     * @return the (constrained) set of possible types
+     */
+    public Set<? extends TypeElement> addVarTypes(LabelVar var,
+            Set<? extends TypeElement> types) {
+        Set<? extends TypeElement> result = this.varTyping.get(var);
+        if (result == null) {
+            this.varTyping.put(var, result = new HashSet<TypeElement>(types));
+        } else {
+            result.retainAll(types);
+        }
+        return result;
+    }
+
+    /** Returns the types allowed for a given label variable. */
+    public Set<? extends TypeElement> getVarTypes(LabelVar var) {
+        return this.varTyping.get(var);
+    }
+
+    /** Returns mapping from label variables to types. */
+    public Map<LabelVar,Set<? extends TypeElement>> getVarTyping() {
+        return this.varTyping;
+    }
+
+    /** Copies the variable typing map from another morphism to this one. */
+    public void copyVarTyping(RuleGraphMorphism other) {
+        for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : other.varTyping.entrySet()) {
+            addVarTypes(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private Map<LabelVar,Set<? extends TypeElement>> varTyping =
+        new HashMap<LabelVar,Set<? extends TypeElement>>();
 }

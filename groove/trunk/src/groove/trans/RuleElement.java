@@ -19,7 +19,6 @@ package groove.trans;
 import groove.graph.Element;
 import groove.graph.TypeElement;
 import groove.graph.TypeGuard;
-import groove.rel.LabelVar;
 
 import java.util.List;
 import java.util.Set;
@@ -34,10 +33,7 @@ public interface RuleElement extends Element {
     /** Returns the type of this rule element. */
     public TypeElement getType();
 
-    /** Returns the collection of label variables associated with this rule element. */
-    public List<LabelVar> getTypeVars();
-
-    /** Returns the collection of type guards associated with this rule element. */
+    /** Returns the collection of (named) type guards associated with this rule element. */
     public List<TypeGuard> getTypeGuards();
 
     /** 

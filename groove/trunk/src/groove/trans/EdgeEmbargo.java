@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.rel.LabelVar;
 import groove.util.Groove;
 
 /**
@@ -33,6 +34,11 @@ public class EdgeEmbargo extends Condition {
         getPattern().addEdge(embargoEdge);
         getRoot().addNode(embargoEdge.source());
         getRoot().addNode(embargoEdge.target());
+        for (LabelVar var : getPattern().getAllVars()) {
+            if (context.containsVar(var)) {
+                getRoot().addVar(var);
+            }
+        }
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);

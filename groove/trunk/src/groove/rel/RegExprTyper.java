@@ -19,6 +19,7 @@ package groove.rel;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.rel.RegExpr.Atom;
@@ -32,14 +33,12 @@ import groove.rel.RegExpr.Sharp;
 import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
 import groove.rel.RegExprTyper.Result;
-import groove.util.Property;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,21 +163,13 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
         Set<TypeNode> candidates = new HashSet<TypeNode>();
-        if (var == null) {
-            candidates.addAll(this.typeGraph.nodeSet());
-        } else {
+        if (var.hasName()) {
             candidates.addAll((Collection<TypeNode>) this.varTyping.get(var));
+        } else {
+            candidates.addAll(this.typeGraph.nodeSet());
         }
-        Property<TypeLabel> guard = expr.getWildcardGuard();
-        if (guard != null) {
-            Iterator<? extends TypeNode> iter = candidates.iterator();
-            while (iter.hasNext()) {
-                if (!guard.isSatisfied(iter.next().label())) {
-                    iter.remove();
-                }
-            }
-        }
-        for (TypeNode typeNode : candidates) {
+        TypeGuard guard = expr.getWildcardGuard();
+        for (TypeNode typeNode : guard.filter(candidates)) {
             result.add(typeNode, typeNode);
         }
         return result;
@@ -189,25 +180,13 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         Result result = new Result();
         LabelVar var = expr.getWildcardId();
         Set<TypeEdge> candidates = new HashSet<TypeEdge>();
-        if (var == null) {
-            for (TypeEdge typeEdge : this.typeGraph.edgeSet()) {
-                if (typeEdge.getRole() == expr.getKind()) {
-                    candidates.add(typeEdge);
-                }
-            }
-        } else {
+        if (var.hasName()) {
             candidates.addAll((Collection<TypeEdge>) this.varTyping.get(var));
+        } else {
+            candidates.addAll(this.typeGraph.edgeSet());
         }
-        Property<TypeLabel> guard = expr.getWildcardGuard();
-        if (guard != null) {
-            Iterator<TypeEdge> iter = candidates.iterator();
-            while (iter.hasNext()) {
-                if (!guard.isSatisfied(iter.next().label())) {
-                    iter.remove();
-                }
-            }
-        }
-        for (TypeEdge typeEdge : candidates) {
+        TypeGuard guard = expr.getWildcardGuard();
+        for (TypeEdge typeEdge : guard.filter(candidates)) {
             Set<TypeNode> targetTypes = typeEdge.target().getSubtypes();
             for (TypeNode sourceType : typeEdge.source().getSubtypes()) {
                 result.add(sourceType, targetTypes);

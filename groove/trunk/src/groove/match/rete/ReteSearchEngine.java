@@ -24,11 +24,9 @@ import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
+import groove.trans.RuleGraph;
 import groove.util.Reporter;
 
-import java.util.Collection;
 
 /**
  * Objects of this class create {@link ReteSearchStrategy} instances
@@ -100,7 +98,7 @@ public class ReteSearchEngine extends SearchEngine {
 
     @Override
     public synchronized ReteSearchStrategy createMatcher(Condition condition,
-            Collection<RuleNode> seedNodes, Collection<RuleEdge> seedEdges) {
+            RuleGraph seed) {
         //TODO: ARASH: What about the seed nodes and edges?
         return new ReteSearchStrategy(this, condition);
     }

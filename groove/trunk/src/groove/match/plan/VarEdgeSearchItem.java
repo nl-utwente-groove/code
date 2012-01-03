@@ -18,7 +18,7 @@ package groove.match.plan;
 
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
-import groove.graph.TypeLabel;
+import groove.graph.TypeGuard;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
 import groove.trans.HostEdge;
@@ -42,8 +42,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      */
     public VarEdgeSearchItem(RuleEdge edge) {
         super(edge);
-        this.var = edge.label().getWildcardId();
         this.guard = edge.label().getWildcardGuard();
+        this.var = this.guard.getVar();
         this.boundVars = Collections.singleton(this.var);
         assert this.var != null : String.format(
             "Edge %s is not a variable edge", edge);
@@ -61,13 +61,17 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     @Override
     public void activate(PlanSearchStrategy strategy) {
         super.activate(strategy);
-        this.varFound = strategy.isVarFound(this.var);
-        this.varIx = strategy.getVarIx(this.var);
+        if (this.var.hasName()) {
+            this.varFound = strategy.isVarFound(this.var);
+            this.varIx = strategy.getVarIx(this.var);
+        } else {
+            this.varIx = -1;
+        }
     }
 
     @Override
     boolean isSingular(Search search) {
-        return super.isSingular(search)
+        return super.isSingular(search) && this.varIx >= 0
             && (this.varFound || search.getVarSeed(this.varIx) != null);
     }
 
@@ -85,9 +89,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     }
 
     boolean isGuardSatisfied(TypeElement type) {
-        return type.label().getRole() == this.var.getKind()
-            && this.guard == null
-            || this.guard.isSatisfied(type.label());
+        return this.guard.isSatisfied(type);
     }
 
     /** The variable bound in the wildcard (not <code>null</code>). */
@@ -102,7 +104,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     boolean varFound;
 
     /** The constraint on the variable valuation, if any. */
-    private final groove.util.Property<TypeLabel> guard;
+    private final TypeGuard guard;
 
     private class VarEdgeSingularRecord extends Edge2SingularRecord {
         /**
@@ -139,7 +141,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         }
 
         private TypeEdge varSeed;
-        /** The index of {@link #var} in the result. */
+        /** The (non-negative) index of {@link #var} in the result. */
         private final int varIx;
     }
 
@@ -157,7 +159,9 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.varSeed = (TypeEdge) this.search.getVarSeed(this.varIx);
+            if (this.varIx >= 0) {
+                this.varSeed = (TypeEdge) this.search.getVarSeed(this.varIx);
+            }
         }
 
         @Override
@@ -196,9 +200,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         @Override
         boolean write(HostEdge image) {
             boolean result =
-                isGuardSatisfied(image.getType())
-                    && super.write(image);
-            if (result && this.varFind == null) {
+                isGuardSatisfied(image.getType()) && super.write(image);
+            if (result && this.varFind == null && this.varIx >= 0) {
                 result = this.search.putVar(this.varIx, image.getType());
             }
             return result;
@@ -207,7 +210,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         @Override
         void erase() {
             super.erase();
-            if (this.varFind == null) {
+            if (this.varFind == null && this.varIx >= 0) {
                 this.search.putVar(this.varIx, null);
             }
         }
@@ -216,7 +219,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
          * The pre-matched variable image, if any.
          */
         private TypeEdge varSeed;
-        /** The index of {@link #var} in the result. */
+        /** The index of {@link #var} in the result; negative if the variable is unnamed. */
         private final int varIx;
         /**
          * Flag indicating that {@link #var} is matched before this item is

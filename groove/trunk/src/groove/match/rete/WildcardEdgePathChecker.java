@@ -53,7 +53,7 @@ public class WildcardEdgePathChecker extends SingleEdgePathChecker {
 
     @Override
     public void receive(ReteNetworkNode source, HostEdge gEdge, Action action) {
-        if (!isGuarded() || getGuard().isSatisfied(gEdge.label())) {
+        if (!isGuarded() || getGuard().isSatisfied(gEdge.getType())) {
             super.receive(source, gEdge, action);
         }
     }

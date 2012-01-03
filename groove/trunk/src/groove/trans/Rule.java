@@ -22,6 +22,7 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.graph.GraphProperties;
 import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchStrategy;
@@ -503,15 +504,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     public Matcher getEventMatcher() {
         if (this.eventMatcher == null) {
-            // add the anchor edge ends to the seed nodes
-            List<RuleNode> anchorNodes =
-                new ArrayList<RuleNode>(Arrays.asList(getAnchorNodes()));
-            List<RuleEdge> anchorEdges = Arrays.asList(getAnchorEdges());
-            for (RuleEdge edge : anchorEdges) {
-                anchorNodes.add(edge.source());
-                anchorNodes.add(edge.target());
-            }
-            this.eventMatcher = createMatcher(anchorNodes, anchorEdges);
+            this.eventMatcher = createMatcher(getAnchor());
         }
         return this.eventMatcher;
     }
@@ -519,12 +512,12 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Returns the match strategy for the target
      * pattern. First creates the strategy using 
-     * {@link #createMatcher(Collection,Collection)} if that
+     * {@link #createMatcher(RuleGraph)} if that
      * has not been done.
      * 
      * @param seedMap mapping from the seed elements to a host graph.
      * 
-     * @see #createMatcher(Collection, Collection)
+     * @see #createMatcher(RuleGraph)
      */
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
@@ -541,11 +534,9 @@ public class Rule implements Fixable, Comparable<Rule> {
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
-                this.matcherMap.put(
-                    initPars,
-                    result =
-                        createMatcher(seedMap.nodeMap().keySet(),
-                            seedMap.edgeMap().keySet()));
+                RuleGraph seed = new RuleGraph("seed-" + initPars);
+                seed.addNodeSet(seedMap.nodeMap().keySet());
+                this.matcherMap.put(initPars, result = createMatcher(seed));
             }
         } else {
             result = getMatcher();
@@ -556,13 +547,11 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Returns a (precomputed) match strategy for the target
      * pattern, given a seed map.
-     * @see #createMatcher(Collection, Collection)
+     * @see #createMatcher(RuleGraph)
      */
     public Matcher getMatcher() {
         if (this.matcher == null) {
-            this.matcher =
-                createMatcher(this.condition.getRoot().nodeSet(),
-                    this.condition.getRoot().edgeSet());
+            this.matcher = createMatcher(this.condition.getRoot());
         }
         return this.matcher;
     }
@@ -571,14 +560,11 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Callback method to create a match strategy. Typically invoked once, at
      * the first invocation of {@link #getMatcher()}. This implementation
      * retrieves its value from {@link #getMatcherFactory()}.
-     * @param seedNodes the pre-matched rule nodes
-     * @param seedEdges the pre-matched rule edges
+     * @param seed the pre-matched subgraph
      */
-    private Matcher createMatcher(Collection<RuleNode> seedNodes,
-            Collection<RuleEdge> seedEdges) {
+    private Matcher createMatcher(RuleGraph seed) {
         testFixed(true);
-        return getMatcherFactory().createMatcher(getCondition(), seedNodes,
-            seedEdges);
+        return getMatcherFactory().createMatcher(getCondition(), seed);
     }
 
     /** Returns a matcher factory, tuned to the properties of this condition. */
@@ -657,6 +643,14 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.colorMap;
     }
 
+    /** Returns the anchor graph. */
+    public RuleGraph getAnchor() {
+        if (this.anchor == null) {
+            initAnchor();
+        }
+        return this.anchor;
+    }
+
     /** Returns the anchor nodes. */
     public RuleNode[] getAnchorNodes() {
         if (this.anchorNodes == null) {
@@ -677,10 +671,10 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Initialises the anchor nodes and edges for this rule.
      */
     private void initAnchor() {
-        RuleGraph anchor = anchorFactory.newAnchor(this);
-        Set<RuleNode> nodeResult = new TreeSet<RuleNode>(anchor.nodeSet());
+        this.anchor = anchorFactory.newAnchor(this);
+        Set<RuleNode> nodeResult = new TreeSet<RuleNode>(this.anchor.nodeSet());
         this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
-        Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(anchor.edgeSet());
+        Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(this.anchor.edgeSet());
         this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
     }
 
@@ -1173,17 +1167,19 @@ public class Rule implements Fixable, Comparable<Rule> {
     private LabelVar[] computeCreatorVars() {
         Set<LabelVar> creatorVarSet = new HashSet<LabelVar>();
         for (int i = 0; i < getCreatorEdges().length; i++) {
-            RuleEdge creatorEdge = getCreatorEdges()[i];
-            LabelVar creatorVar = creatorEdge.label().getWildcardId();
-            if (creatorVar != null) {
-                creatorVarSet.add(creatorVar);
-            }
+            addCreatorVar(creatorVarSet, getCreatorEdges()[i]);
         }
         for (int i = 0; i < getCreatorNodes().length; i++) {
-            RuleNode creatorNode = getCreatorNodes()[i];
-            creatorVarSet.addAll(creatorNode.getTypeVars());
+            addCreatorVar(creatorVarSet, getCreatorNodes()[i]);
         }
         return creatorVarSet.toArray(new LabelVar[creatorVarSet.size()]);
+    }
+
+    private void addCreatorVar(Set<LabelVar> creatorVarSet,
+            RuleElement creatorEdge) {
+        for (TypeGuard guard : creatorEdge.getTypeGuards()) {
+            creatorVarSet.add(guard.getVar());
+        }
     }
 
     /**
@@ -1394,6 +1390,8 @@ public class Rule implements Fixable, Comparable<Rule> {
      * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
      */
     private RuleEdge[] eraserEdges;
+    /** The anchor graph. */
+    private RuleGraph anchor;
     /**
      * The set of anchor nodes of this rule.
      */

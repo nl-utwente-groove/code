@@ -31,6 +31,7 @@ import groove.control.CtrlVar;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphProperties;
 import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -39,13 +40,12 @@ import groove.graph.algebra.VariableNode;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
-import groove.rel.VarSupport;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
+import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
@@ -386,8 +386,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
     static private final boolean NORMALISE_DEBUG = false;
-    /** Flag for switching on old restrictions on the use of variables. */
-    static private final boolean LIMIT_VARS = false;
 
     /**
      * Class encoding an index in a tree, consisting of a list of indices at
@@ -1004,6 +1002,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 // they are not yet there
                 addNodeToParents(modelEdge.source());
                 addNodeToParents(modelEdge.target());
+                // add variables
+                RuleLabel ruleLabel = modelEdge.getRuleLabel();
+                if (ruleLabel != null && ruleLabel.isMatchable()) {
+                    for (LabelVar var : ruleLabel.getMatchExpr().allVarSet()) {
+                        if (!parentBindsVar(var)) {
+                            this.modelVars.add(var);
+                        }
+                    }
+                }
             }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(modelEdge)) {
@@ -1016,6 +1023,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** Initialises the match count for this (universal) level. */
         public void setMatchCount(AspectNode matchCount) {
             this.matchCountNode = matchCount;
+        }
+
+        /** 
+         * Retrieves a binder for a given variable from this
+         * level or the closest parent, if there is a binder. 
+         * Adds the binding to {@link #modelVars} and {@link #modelEdges}.
+         */
+        private boolean parentBindsVar(LabelVar var) {
+            boolean result = this.modelVars.contains(var);
+            if (!result && !this.index.isTopLevel()) {
+                result = this.parent.parentBindsVar(var);
+                if (result) {
+                    this.modelVars.add(var);
+                }
+            }
+            return result;
         }
 
         /**
@@ -1067,12 +1090,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 // (there is currently no way to do this only when required)
                 // as well as  all node type labels
                 // to enable correct typing at sublevels
-                RuleLabel varLabel = ((AspectEdge) elem).getRuleLabel();
-                if (varLabel != null) {
-                    result =
-                        varLabel.getWildcardId() != null
-                            || getType().isNodeType(varLabel);
-                }
+                //                RuleLabel varLabel = ((AspectEdge) elem).getRuleLabel();
+                //                if (varLabel != null) {
+                //                    result = getType().isNodeType(varLabel);
+                //                }
             }
             return result;
         }
@@ -1103,6 +1124,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         final Set<AspectNode> modelNodes = new HashSet<AspectNode>();
         /** Set of model edges on this level. */
         final Set<AspectEdge> modelEdges = new HashSet<AspectEdge>();
+        /** Set of label variables used on this level. */
+        final Set<LabelVar> modelVars = new HashSet<LabelVar>();
         /** The model node registering the match count. */
         AspectNode matchCountNode;
     }
@@ -1157,6 +1180,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     errors.addAll(exc.getErrors());
                 }
             }
+            for (LabelVar modelVar : origin.modelVars) {
+                processVar(modelVar);
+            }
             try {
                 this.nacs.addAll(computeNacs());
             } catch (FormatException exc) {
@@ -1167,6 +1193,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
+        }
+
+        private void processVar(LabelVar modelVar) {
+            this.lhs.addVar(modelVar);
         }
 
         /**
@@ -1343,58 +1373,27 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * Checks if all label variables are bound
          */
         private void checkVariables(Collection<FormatError> errors) {
-            // check if label variables are bound
-            Set<LabelVar> boundVars =
-                VarSupport.getVarBinders(this.lhs).keySet();
-            Set<RuleElement> lhsVarElements =
-                VarSupport.getVarElements(this.lhs);
-            Set<RuleElement> rhsVarElements =
-                VarSupport.getVarElements(this.rhs);
-            Set<RuleElement> varElements =
-                new HashSet<RuleElement>(lhsVarElements);
-            varElements.addAll(rhsVarElements);
-            varElements.addAll(this.nacEdgeSet);
+            Set<LabelVar> allVars = new HashSet<LabelVar>();
+            allVars.addAll(this.lhs.getAllVars());
+            allVars.addAll(this.rhs.getAllVars());
+            for (RuleGraph nac : this.nacs) {
+                allVars.addAll(nac.getAllVars());
+            }
             Map<String,LabelVar> varNames = new HashMap<String,LabelVar>();
-            for (RuleElement varElement : varElements) {
-                Collection<LabelVar> edgeVars =
-                    VarSupport.getAllVars(varElement);
-                // check for name overlap
-                for (LabelVar var : edgeVars) {
-                    String varName = var.getName();
-                    LabelVar oldVar = varNames.put(varName, var);
-                    if (oldVar != null && !var.equals(oldVar)) {
-                        errors.add(new FormatError(
-                            "Duplicate variable name '%s' for different label types",
-                            varName));
-                    }
-                }
-                edgeVars.removeAll(boundVars);
-                for (LabelVar var : edgeVars) {
+            for (LabelVar var : allVars) {
+                LabelVar oldVar = varNames.put(var.getKey(), var);
+                if (oldVar != null && !oldVar.equals(var)) {
                     errors.add(new FormatError(
-                        "Variable '%s' not bound on left hand side", var,
-                        varElement));
+                        "Duplicate variable '%s' for %s and %s labels", var,
+                        var.getKind().getDescription(false),
+                        oldVar.getKind().getDescription(false)));
                 }
             }
-            if (!getType().isImplicit()) {
-                // check use of variables
-                if (LIMIT_VARS) {
-                    lhsVarElements.removeAll(this.mid.edgeSet());
-                    for (RuleElement eraserVarElement : lhsVarElements) {
-                        for (LabelVar var : VarSupport.getAllVars(eraserVarElement)) {
-                            errors.add(new FormatError(
-                                "Typed rule cannot contain variable eraser '%s'",
-                                var, eraserVarElement));
-                        }
-                    }
-                    rhsVarElements.removeAll(this.mid.edgeSet());
-                    for (RuleElement creatorVarElement : rhsVarElements) {
-                        for (LabelVar var : VarSupport.getAllVars(creatorVarElement)) {
-                            errors.add(new FormatError(
-                                "Typed rule cannot contain variable creator '%s'",
-                                var, creatorVarElement));
-                        }
-                    }
-                }
+            allVars.removeAll(this.lhs.getBoundVars());
+            if (!allVars.isEmpty()) {
+                errors.add(new FormatError("Unassigned label variable%s %s",
+                    allVars.size() == 1 ? "" : "s", Groove.toString(
+                        allVars.toArray(), "", "", ", ", " and ")));
             }
         }
 
@@ -1570,11 +1569,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             // type the RHS taking the typing of the LHS into account
             // to allow use of the typed label variables
-            RuleGraphMorphism rhsParentTypeMap =
-                new RuleGraphMorphism(this.factory);
-            rhsParentTypeMap.putAll(parentTypeMap);
-            rhsParentTypeMap.putAll(this.typeMap);
-            this.rhs = toTypedGraph(origin.rhs, rhsParentTypeMap, this.typeMap);
+            RuleGraphMorphism lhsTypeMap = new RuleGraphMorphism(this.factory);
+            lhsTypeMap.putAll(parentTypeMap);
+            lhsTypeMap.putAll(this.typeMap);
+            this.rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
+            // check against label type restrictions in RHS
+            for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap.getVarTyping().entrySet()) {
+                LabelVar var = entry.getKey();
+                Set<? extends TypeElement> lhsTypes = entry.getValue();
+                lhsTypes.removeAll(this.typeMap.getVarTypes(var));
+                if (!lhsTypes.isEmpty()) {
+                    this.errors.add(new FormatError(
+                        "Invalid %s type%s %s for creator variable %s",
+                        var.getKind().getDescription(false),
+                        lhsTypes.size() == 1 ? "" : "s", Groove.toString(
+                            lhsTypes.toArray(), "", "", ", "), var));
+                }
+            }
             // check for correct type specialisation
             try {
                 Set<RuleNode> parentNodes = new HashSet<RuleNode>();
@@ -1625,7 +1636,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 if (typeMap != null) {
                     typeMap.putAll(typing);
                 }
-                // create the result graph and update the global type map
                 for (Map.Entry<RuleNode,RuleNode> nodeEntry : typing.nodeMap().entrySet()) {
                     RuleNode key = nodeEntry.getKey();
                     RuleNode image = nodeEntry.getValue();
@@ -1647,6 +1657,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         this.globalTypeMap.putEdge(key, globalImage = image);
                     }
                     result.addEdge(globalImage);
+                }
+                // add the remainder of the variables
+                for (LabelVar var : graph.getBoundVars()) {
+                    result.addBoundVar(var);
                 }
             } catch (FormatException e) {
                 this.errors.addAll(e.getErrors());
@@ -1835,17 +1849,23 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * Returns a rule graph that forms the intersection of the rule elements
          * of this and the parent level.
          */
-        private RuleGraph getIntersection(RuleGraph parentLhs, RuleGraph myLhs) {
+        private RuleGraph getIntersection(RuleGraph parentGraph,
+                RuleGraph myGraph) {
             RuleGraph result =
-                parentLhs.newGraph(getName() + "-" + getIndex() + "-root");
-            for (RuleNode node : parentLhs.nodeSet()) {
-                if (myLhs.containsNode(node)) {
+                parentGraph.newGraph(getName() + "-" + getIndex() + "-root");
+            for (RuleNode node : parentGraph.nodeSet()) {
+                if (myGraph.containsNode(node)) {
                     result.addNode(node);
                 }
             }
-            for (RuleEdge edge : parentLhs.edgeSet()) {
-                if (myLhs.containsEdge(edge)) {
+            for (RuleEdge edge : parentGraph.edgeSet()) {
+                if (myGraph.containsEdge(edge)) {
                     result.addEdge(edge);
+                }
+            }
+            for (LabelVar var : parentGraph.getAllVars()) {
+                if (myGraph.containsVar(var)) {
+                    result.addVar(var);
                 }
             }
             return result;
@@ -1867,57 +1887,29 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             // they are characterised by the fact that there is precisely 1
             // element
             // in the nacElemSet, which is an edge
-            if (nac.nodeCount() == 2 && nac.edgeCount() == 1) {
+            if (nac.edgeCount() == 1) {
                 RuleEdge embargoEdge = nac.edgeSet().iterator().next();
-                if (lhs.containsNode(embargoEdge.source())
-                    && lhs.containsNode(embargoEdge.target())
-                    && VarSupport.getAllVars(embargoEdge).isEmpty()) {
+                Set<RuleNode> ends =
+                    new HashSet<RuleNode>(Arrays.asList(embargoEdge.source(),
+                        embargoEdge.target()));
+                if (nac.nodeSet().equals(ends)
+                    && lhs.nodeSet().containsAll(ends)
+                    && nac.getAllVars().isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
                 }
             }
             if (result == null) {
                 // if we're here it means we couldn't make an embargo
-                result = createNAC(nac);
-                RuleGraph nacPattern = result.getPattern();
-                // if the rule is injective, add all lhs nodes to the NAC pattern
+                // if the rule is injective, add all non-data lhs nodes to the NAC pattern
                 if (isInjective()) {
                     for (RuleNode node : lhs.nodeSet()) {
-                        if (!(node instanceof VariableNode)
-                            && !(node instanceof ProductNode)) {
-                            nacPattern.addNode(node);
+                        if (node instanceof DefaultRuleNode) {
+                            nac.addNode(node);
                         }
                     }
                 }
-                // for every free variable, if it is bound in the LHS,
-                // add a single binder to the NAC pattern
-                Map<LabelVar,Set<RuleElement>> lhsVarBinders =
-                    VarSupport.getVarBinders(lhs);
-                for (LabelVar nacVar : VarSupport.getAllVars(nac)) {
-                    if (lhsVarBinders.containsKey(nacVar)) {
-                        RuleElement nacVarBinder =
-                            lhsVarBinders.get(nacVar).iterator().next();
-                        // add the element as seed to the NAC
-                        if (nacVarBinder instanceof RuleEdge) {
-                            nacPattern.addEdge((RuleEdge) nacVarBinder);
-                        } else {
-                            nacPattern.addNode((RuleNode) nacVarBinder);
-                        }
-                    }
-                }
-                // set the nac root graph to the intersection of
-                // the nac pattern and the lhs
-                RuleGraph nacRoot = result.getRoot();
-                for (RuleNode nacNode : nacPattern.nodeSet()) {
-                    if (lhs.containsNode(nacNode)) {
-                        nacRoot.addNode(nacNode);
-                    }
-                }
-                for (RuleEdge nacEdge : nacPattern.edgeSet()) {
-                    if (lhs.containsEdge(nacEdge)) {
-                        nacRoot.addEdge(nacEdge);
-                    }
-                }
+                result = createNAC(lhs, nac);
             }
             result.setFixed();
             return result;
@@ -1941,10 +1933,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * @return the new {@link groove.trans.Condition}
          * @see #toResource()
          */
-        private Condition createNAC(RuleGraph nac) {
+        private Condition createNAC(RuleGraph lhs, RuleGraph nac) {
             String name = nac.getName();
-            return new Condition(name, Condition.Op.NOT, nac, null,
-                getSystemProperties());
+            return new Condition(name, Condition.Op.NOT, nac, getIntersection(
+                lhs, nac), getSystemProperties());
         }
 
         /**
