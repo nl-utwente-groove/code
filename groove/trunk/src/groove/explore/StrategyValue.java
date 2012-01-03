@@ -5,6 +5,7 @@ import groove.abstraction.neigh.explore.strategy.ShapeDFSStrategy;
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
+import groove.explore.encode.EncodedHostName;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedLtlProperty;
 import groove.explore.encode.EncodedRuleMode;
@@ -37,6 +38,7 @@ import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
+import groove.explore.strategy.RemoteStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
 import groove.explore.strategy.ReteRandomLinearStrategy;
 import groove.explore.strategy.ReteStrategy;
@@ -127,7 +129,10 @@ public enum StrategyValue implements ParsableValue {
             "This strategy is used for abstract state space exploration."),
     /** Shape exploration strategy. */
     SHAPE_DFS("shapedfs", "Shape Depth-First Exploration",
-            "This strategy is used for abstract state space exploration.");
+            "This strategy is used for abstract state space exploration."),
+    /** Remote strategy. */
+    REMOTE("remote", "Remote Exploration",
+            "This strategy obtains the exploration strategy from a remote server. Still under construction. The statespace is explored using the Depth-First Strategy and the resulting GTS is sent to the host as an LTS.");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -348,6 +353,18 @@ public enum StrategyValue implements ParsableValue {
                     return new ShapeDFSStrategy();
                 }
             };
+        case REMOTE:
+            return new MyTemplate1<String>(new PAll("host"), "host",
+                    new EncodedHostName()) {
+
+                    @Override
+                    public Strategy create(String host) {
+                        RemoteStrategy strategy =
+                            new RemoteStrategy();
+                        strategy.setHost(host);
+                        return strategy;
+                    }
+                };
 
         default:
             // we can't come here
