@@ -427,8 +427,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         // see if isomorphic graph is already in the LTS
         GraphState result = getStateSet().put(newState);
 
-        // if not 
+        // if not ... 
         if (result == null) {
+
             // first check the validity of edge multiplicities ...
             EdgeMultiplicityVerifier counts =
                 getGrammar().getTypeGraph().getDefaultEdgeCounts();
@@ -436,10 +437,13 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             counts.count(newState.getGraph());
             if (!counts.check(newState)) {
                 addPostErrors(newState, counts.getErrors());
+                newState.setClosed(false);
+                newState.setError();
             }
 
-            // ... and then add it
+            // and then add it to the GTS 
             fireAddNode(newState);
+
         }
 
         return result;
