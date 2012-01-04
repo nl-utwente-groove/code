@@ -139,7 +139,7 @@ public class LinearStrategy extends AbstractStrategy {
 
         @Override
         public void addUpdate(GTS shape, GraphState state) {
-            if (this.newState == null) {
+            if (!state.isClosed() && this.newState == null) {
                 this.newState = state;
             }
         }

@@ -63,7 +63,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     private class ExploreListener extends GTSAdapter {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            putInPool(state);
+            if (!state.isClosed()) {
+                putInPool(state);
+            }
         }
     }
 }

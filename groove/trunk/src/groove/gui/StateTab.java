@@ -321,12 +321,12 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         setJModel(state == null ? null : getAspectJModel(state));
         getTabLabel().setTitle(getTitle());
         getErrors().clear();
-        if (state != null && state.getGTS().getPostErrors(state) != null) {
+        if (state != null && state.isError()) {
             getErrors().addAll(state.getGTS().getPostErrors(state));
         }
+        getTabLabel().setError(state != null && state.isError());
         if (getStateErrorTab() != null) {
-            getTabLabel().setError(!getErrors().isEmpty());
-            getStateErrorTab().updateErrors();
+            getStateErrorTab().updateErrors(state);
         }
     }
 
@@ -703,10 +703,10 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
          * Displays a list of type errors for the currently displayed graph
          * state, or hides the error panel if the list is empty.
          */
-        public void updateErrors() {
+        public void updateErrors(GraphState state) {
             getErrorPanel().setEntries(getStateTab().getErrors());
             setBottomComponent(getErrorPanel());
-            if (!getStateTab().getErrors().isEmpty()) {
+            if (state != null && state.isError()) {
                 resetToPreferredSizes();
             } else {
                 remove(getErrorPanel());

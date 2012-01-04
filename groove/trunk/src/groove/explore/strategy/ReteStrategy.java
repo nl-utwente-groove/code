@@ -156,7 +156,9 @@ public class ReteStrategy extends AbstractStrategy {
     private class ExploreListener extends GTSAdapter {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            ReteStrategy.this.newStates.add(state);
+            if (!state.isClosed()) {
+                ReteStrategy.this.newStates.add(state);
+            }
         }
     }
 
