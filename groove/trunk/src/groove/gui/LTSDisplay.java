@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.StateTab.StateErrorTab;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJGraph;
@@ -57,7 +56,7 @@ public class LTSDisplay extends Display {
     @Override
     protected JTabbedPane createTabPane() {
         JTabbedPane result = new JTabbedPane(JTabbedPane.BOTTOM);
-        result.add(getStateErrorTab());
+        result.add(getStateTab());
         result.setTabComponentAt(0, getStateTab().getTabLabel());
         result.add(getLTSTab());
         result.setTabComponentAt(1, getLTSTab().getTabLabel());
@@ -184,15 +183,10 @@ public class LTSDisplay extends Display {
 
     /** Returns the state tab on this display. */
     public StateTab getStateTab() {
-        return getStateErrorTab().getStateTab();
-    }
-
-    /** Returns the state error tab on this display. */
-    public StateErrorTab getStateErrorTab() {
-        if (this.stateErrorTab == null) {
-            this.stateErrorTab = new StateErrorTab(this);
+        if (this.stateTab == null) {
+            this.stateTab = new StateTab(this);
         }
-        return this.stateErrorTab;
+        return this.stateTab;
     }
 
     /** Returns the LTS' JGraph. */
@@ -206,7 +200,7 @@ public class LTSDisplay extends Display {
     }
 
     private LTSTab ltsTab;
-    private StateErrorTab stateErrorTab;
+    private StateTab stateTab;
     /** Window for the state tab when it is detached. */
     private DisplayWindow stateWindow;
 
