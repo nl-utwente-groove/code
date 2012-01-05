@@ -30,6 +30,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.layout.SpringUtilities;
+import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.awt.Color;
@@ -194,7 +195,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         setVisible(true);
     }
 
-    /*
+    /**
      * The close dialog action. Disposes dialog and resets DismissDelay of the
      * ToolTipManager.
      */
@@ -205,7 +206,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
 
     /**
      * The start action. Gets the current selection (strategy, acceptor and
-     * result), constructs an exploration out of its, and then starts a 
+     * result), constructs an exploration out of it, and then starts a 
      * new exploration for it.
      */
     private void startExploration() {
@@ -218,9 +219,22 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
      * result), constructs an exploration out of its, and then runs it.
      */
     private void doExploration() {
-        closeDialog();
-        this.simulator.getActions().getExploreAction().explore(
-            createExploration(), true, true);
+        try {
+            getSimulatorModel().setExploration(createExploration());
+            closeDialog();
+            this.simulator.getActions().getExploreAction().explore(true, true);
+        } catch (FormatException exc) {
+            showError(exc);
+        }
+    }
+
+    /**
+     * Displays an error dialog for a {@link FormatException} that was caused
+     * by parsing an (invalid) exploration.
+     */
+    private void showError(FormatException exc) {
+        new ErrorDialog(this.simulator.getFrame(),
+            "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
     }
 
     /** Returns an exploration created on the basis of the current settings in this dialog. */
@@ -236,10 +250,14 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
      */
     private void setDefaultExploration() {
         try {
-            getSimulatorModel().doSetDefaultExploration(createExploration());
+            Exploration exploration = createExploration();
+            exploration.test(getGrammar().toGrammar());
+            getSimulatorModel().doSetDefaultExploration(exploration);
             this.strategyEditor.refresh();
             this.acceptorEditor.refresh();
-        } catch (IOException e) {
+        } catch (FormatException exc) {
+            showError(exc);
+        } catch (IOException exc) {
             // do nothing
         }
     }
