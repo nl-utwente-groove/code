@@ -20,6 +20,7 @@ import groove.lts.GraphState;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.view.FormatException;
 import groove.view.PostApplicationError;
 
 import java.util.HashMap;
@@ -36,9 +37,8 @@ import java.util.Set;
 public class EdgeMultiplicityVerifier {
 
     // The multiplicity verifiers of the type graph.
-    // The first TypeLabel is for the TypeNode, the second for the TypeEdge.
-    private final Map<TypeLabel,Map<TypeLabel,MultiplicityVerifier>> inVerifyMap;
-    private final Map<TypeLabel,Map<TypeLabel,MultiplicityVerifier>> outVerifyMap;
+    private final Map<TypeNode,Map<TypeEdge,MultiplicityVerifier>> inVerifyMap;
+    private final Map<TypeNode,Map<TypeEdge,MultiplicityVerifier>> outVerifyMap;
     private final Set<MultiplicityVerifier> verifiers;
 
     // The errors that were the result of the last verification.
@@ -52,9 +52,9 @@ public class EdgeMultiplicityVerifier {
 
         // initialize fields
         this.inVerifyMap =
-            new HashMap<TypeLabel,Map<TypeLabel,MultiplicityVerifier>>();
+            new HashMap<TypeNode,Map<TypeEdge,MultiplicityVerifier>>();
         this.outVerifyMap =
-            new HashMap<TypeLabel,Map<TypeLabel,MultiplicityVerifier>>();
+            new HashMap<TypeNode,Map<TypeEdge,MultiplicityVerifier>>();
         this.verifiers = new HashSet<MultiplicityVerifier>();
         this.errors = new HashSet<PostApplicationError>();
 
@@ -82,17 +82,17 @@ public class EdgeMultiplicityVerifier {
     /** Adds a verifier to a verifier map. */
     private void mapVerifier(TypeNode node, TypeEdge edge,
             MultiplicityVerifier verifier,
-            Map<TypeLabel,Map<TypeLabel,MultiplicityVerifier>> map) {
+            Map<TypeNode,Map<TypeEdge,MultiplicityVerifier>> map) {
 
         // add to outer level map
-        Map<TypeLabel,MultiplicityVerifier> innerMap = map.get(node.label());
+        Map<TypeEdge,MultiplicityVerifier> innerMap = map.get(node);
         if (innerMap == null) {
-            innerMap = new HashMap<TypeLabel,MultiplicityVerifier>();
-            map.put(node.label(), innerMap);
+            innerMap = new HashMap<TypeEdge,MultiplicityVerifier>();
+            map.put(node, innerMap);
         }
 
         // add to inner level map
-        innerMap.put(edge.label(), verifier);
+        innerMap.put(edge, verifier);
     }
 
     /** Reset all verifiers and clear all stored errors. */
@@ -105,21 +105,20 @@ public class EdgeMultiplicityVerifier {
 
     /** 
      * Count all the edges (that have a multiplicity restriction) of a single
-     * {@link HostNode} in a given {@link HostGraph}. The type label of the
-     * node type of the node must be given as an explicit argument.
+     * {@link HostNode} in a given {@link HostGraph}.
      */
-    public void count(HostGraph graph, HostNode node, TypeLabel nodeType) {
+    private void count(HostGraph graph, HostNode node) {
 
         // count in edges, if necessary
-        Map<TypeLabel,MultiplicityVerifier> inMap =
-            this.inVerifyMap.get(nodeType);
+        Map<TypeEdge,MultiplicityVerifier> inMap =
+            this.inVerifyMap.get(node.getType());
         if (inMap != null) {
             count(node, graph.inEdgeSet(node), inMap);
         }
 
         // count out edges, if necessary
-        Map<TypeLabel,MultiplicityVerifier> outMap =
-            this.outVerifyMap.get(nodeType);
+        Map<TypeEdge,MultiplicityVerifier> outMap =
+            this.outVerifyMap.get(node.getType());
         if (outMap != null) {
             count(node, graph.outEdgeSet(node), outMap);
         }
@@ -127,7 +126,7 @@ public class EdgeMultiplicityVerifier {
 
     /** Count all given edges of a node in the given map. */
     private void count(HostNode node, Set<? extends HostEdge> edges,
-            Map<TypeLabel,MultiplicityVerifier> map) {
+            Map<TypeEdge,MultiplicityVerifier> map) {
 
         // create a node counter for each verifier
         for (MultiplicityVerifier verifier : map.values()) {
@@ -136,7 +135,7 @@ public class EdgeMultiplicityVerifier {
 
         // increase the appropriate node counter for each edge
         for (HostEdge edge : edges) {
-            MultiplicityVerifier verifier = map.get(edge.getType().label());
+            MultiplicityVerifier verifier = map.get(edge.getType());
             if (verifier != null) {
                 verifier.incNodeCounter(node);
             }
@@ -152,7 +151,7 @@ public class EdgeMultiplicityVerifier {
     public void count(HostGraph graph) {
         if (!this.verifiers.isEmpty()) {
             for (HostNode node : graph.nodeSet()) {
-                count(graph, node, node.getType().label());
+                count(graph, node);
             }
         }
     }
@@ -167,12 +166,17 @@ public class EdgeMultiplicityVerifier {
         for (MultiplicityVerifier verifier : this.verifiers) {
             verifier.checkCounters(source);
         }
-        return this.errors.isEmpty();
+        return !hasError();
     }
 
-    /** Getter for the stored errors. */
+    /** Getter for the stored errors. Creates a fresh clone. */
     public Set<PostApplicationError> getErrors() {
-        return this.errors;
+        return new HashSet<PostApplicationError>(this.errors);
+    }
+
+    /** Checks if there is a stored error. */
+    public boolean hasError() {
+        return !this.errors.isEmpty();
     }
 
     /**
@@ -195,6 +199,20 @@ public class EdgeMultiplicityVerifier {
                 + "; required: " + mult.one() + ".."
                 + (mult.isUnbounded() ? "*" : mult.two()) + ")";
         return new PostApplicationError(msg, node, source);
+    }
+
+    /**
+     * Checks the edge multiplicities of a given {@link HostGraph} in the
+     * context of a given {@link TypeGraph}.
+     */
+    public static void verifyMultiplicities(HostGraph graph, TypeGraph typeGraph)
+        throws FormatException {
+        EdgeMultiplicityVerifier verifier =
+            new EdgeMultiplicityVerifier(typeGraph);
+        verifier.count(graph);
+        if (!verifier.check(graph)) {
+            throw new FormatException(verifier.getErrors());
+        }
     }
 
     // ========================================================================

@@ -704,7 +704,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         HostFactory hostFactory = HostFactory.newInstance(this);
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         Set<FormatError> errors = new TreeSet<FormatError>();
-        EdgeMultiplicityVerifier counts = new EdgeMultiplicityVerifier(this);
         for (HostNode node : source.nodeSet()) {
             try {
                 HostNode image;
@@ -735,7 +734,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         }
                         image =
                             hostFactory.createNode(node.getNumber(), nodeType);
-                        counts.count(source, node, nodeType);
                     }
                 }
                 morphism.putNode(node, image);
@@ -777,9 +775,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 morphism.putEdge(edge,
                     hostFactory.createEdge(sourceImage, edgeType, targetImage));
             }
-        }
-        if (!counts.check(source)) {
-            errors.addAll(counts.getErrors());
         }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
@@ -1054,22 +1049,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         return Collections.unmodifiableSortedMap(this.componentMap);
     }
 
-    /**
-     * Gets the default {@link EdgeMultiplicityVerifier} object that is associated with this
-     * type graph. For a fixed type graph, the previously stored object is
-     * used. For a non fixed type graph, a new object is always created.
-     */
-    public EdgeMultiplicityVerifier getDefaultEdgeCounts() {
-        if (isFixed()) {
-            if (this.previousCounts == null) {
-                this.previousCounts = new EdgeMultiplicityVerifier(this);
-            }
-            return this.previousCounts;
-        } else {
-            return new EdgeMultiplicityVerifier(this);
-        }
-    }
-
     /** Indicates if this is a composite type graph,
      * filled through calls of {@link #add(TypeGraph)}.
      * @see #getComponentMap()
@@ -1145,9 +1124,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Set of all labels occurring in the type graph. */
     private Set<TypeLabel> labels;
-
-    /** The previously created {@link EdgeMultiplicityVerifier} object for this type graph. */
-    private EdgeMultiplicityVerifier previousCounts = null;
 
     /** Creates an implicit type graph for a given set of labels. */
     public static TypeGraph createImplicitType(Set<TypeLabel> labels) {

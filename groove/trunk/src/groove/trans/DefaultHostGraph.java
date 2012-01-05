@@ -19,6 +19,7 @@ package groove.trans;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.graph.Edge;
+import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -156,7 +157,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        return typeGraph.analyzeHost(this).createImage(getName());
+        HostGraph result = typeGraph.analyzeHost(this).createImage(getName());
+        EdgeMultiplicityVerifier.verifyMultiplicities(result, typeGraph);
+        return result;
     }
 
     public HostToAspectMap toAspectMap() {

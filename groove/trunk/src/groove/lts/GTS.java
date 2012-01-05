@@ -70,6 +70,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Post application errors of states in the GTS. */
     private final Map<GraphState,Set<PostApplicationError>> postErrors;
 
+    /** The edge verifiers associated with the (constant) type graph. */
+    private final EdgeMultiplicityVerifier verifier;
+
     /**
     * Returns the number of confluent diamonds found during generation.
     */
@@ -93,6 +96,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         this.grammar = grammar;
         this.record = new SystemRecord(this);
         this.postErrors = new HashMap<GraphState,Set<PostApplicationError>>();
+        this.verifier = new EdgeMultiplicityVerifier(grammar.getTypeGraph());
     }
 
     /** Initialises the start state and corresponding host factory. */
@@ -316,10 +320,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     public void addPostErrors(GraphState state, Set<PostApplicationError> errors) {
         Set<PostApplicationError> old = this.postErrors.get(state);
         if (old == null) {
-            // warning: errors set is shared, so make clone first
-            Set<PostApplicationError> clone =
-                new HashSet<PostApplicationError>(errors);
-            this.postErrors.put(state, clone);
+            this.postErrors.put(state, errors);
         } else {
             errors.addAll(old);
         }
@@ -431,12 +432,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         if (result == null) {
 
             // first check the validity of edge multiplicities ...
-            EdgeMultiplicityVerifier counts =
-                getGrammar().getTypeGraph().getDefaultEdgeCounts();
-            counts.reset();
-            counts.count(newState.getGraph());
-            if (!counts.check(newState)) {
-                addPostErrors(newState, counts.getErrors());
+            this.verifier.reset();
+            this.verifier.count(newState.getGraph());
+            if (!this.verifier.check(newState)) {
+                addPostErrors(newState, this.verifier.getErrors());
                 newState.setClosed(false);
                 newState.setError();
             }

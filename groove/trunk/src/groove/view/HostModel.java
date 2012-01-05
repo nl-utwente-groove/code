@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
+import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.TypeGraph;
@@ -238,6 +239,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                     }
                 }
                 elementMap = newElementMap;
+                EdgeMultiplicityVerifier.verifyMultiplicities(result, type);
             } catch (FormatException e) {
                 // compute inverse element map
                 Map<Element,Element> inverseMap =
