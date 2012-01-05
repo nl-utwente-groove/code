@@ -60,19 +60,13 @@ public class ExploreAction extends SimulatorAction {
     }
 
     /**
-     * Run a given exploration. Can be called from outside the Simulator.
-     * @param exploration the exploration strategy to be used
+     * Run the exploration stored in the {@link SimulatorModel}. Can be called
+     * from outside the Simulator.
      * @param setResult if {@code true}, the result of the exploration will be set in the GTS
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void explore(Exploration exploration, boolean setResult,
-            boolean emphasise) {
-        try {
-            getSimulatorModel().setExploration(exploration);
-        } catch (FormatException e) {
-            // fail silently
-            return;
-        }
+    public void explore(boolean setResult, boolean emphasise) {
+        Exploration exploration = getSimulatorModel().getExploration();
         LTSJModel ltsJModel = getLtsDisplay().getLtsModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
@@ -113,6 +107,23 @@ public class ExploreAction extends SimulatorAction {
         if (isAnimated() && exploration.getLastState() != null) {
             getSimulatorModel().setState(exploration.getLastState());
         }
+    }
+
+    /**
+     * Run a given exploration. Can be called from outside the Simulator.
+     * @param exploration the exploration strategy to be used
+     * @param setResult if {@code true}, the result of the exploration will be set in the GTS
+     * @param emphasise if {@code true}, the result of the exploration will be emphasised
+     */
+    public void explore(Exploration exploration, boolean setResult,
+            boolean emphasise) {
+        try {
+            getSimulatorModel().setExploration(exploration);
+        } catch (FormatException e) {
+            // fail silently
+            return;
+        }
+        explore(setResult, emphasise);
     }
 
     @Override
