@@ -32,6 +32,7 @@ import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
@@ -49,6 +50,7 @@ import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.RuleApplication;
 import groove.trans.RuleNode;
+import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -58,11 +60,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.Icon;
@@ -129,8 +134,24 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             this.errorPanel = new ErrorListPanel("Errors in state graph");
+            this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
+    }
+
+    /** Creates the listener of the error panel. */
+    private Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg != null) {
+                    GraphJCell errorCell = getJModel().getErrorMap().get(arg);
+                    if (errorCell != null) {
+                        getJGraph().setSelectionCell(errorCell);
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -343,10 +364,17 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     /** Changes the display to a given state. */
     public void displayState(GraphState state) {
         clearSelectedMatch(true);
-        setJModel(state == null ? null : getAspectJModel(state));
+        Collection<? extends FormatError> errors = null;
+        if (state == null) {
+            setJModel(null);
+        } else {
+            AspectJModel model = getAspectJModel(state);
+            setJModel(model);
+            errors = model.getResourceModel().getErrors();
+        }
         getTabLabel().setTitle(getTitle());
         if (state != null && state.isError()) {
-            getErrorPanel().setEntries(state.getGTS().getPostErrors(state));
+            getErrorPanel().setEntries(errors);
             getMainPane().setBottomComponent(getErrorPanel());
             getMainPane().resetToPreferredSizes();
             getTabLabel().setError(true);
