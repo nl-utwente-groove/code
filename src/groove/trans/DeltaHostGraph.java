@@ -20,6 +20,7 @@ import static groove.graph.GraphRole.HOST;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.Edge;
+import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -462,7 +463,9 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        return typeGraph.analyzeHost(this).createImage(getName());
+        HostGraph result = typeGraph.analyzeHost(this).createImage(getName());
+        EdgeMultiplicityVerifier.verifyMultiplicities(result, typeGraph);
+        return result;
     }
 
     @Override
