@@ -290,6 +290,8 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     static public final JAttr.AttributeMap LTS_FINAL_NODE_ATTR;
     /** Result node attributes */
     static public final JAttr.AttributeMap LTS_RESULT_NODE_ATTR;
+    /** Error node attributes */
+    static public final JAttr.AttributeMap LTS_ERROR_NODE_ATTR;
     /** The default edge attributes of the LTS */
     static public final JAttr.AttributeMap LTS_EDGE_ATTR;
     /** Transient node attributes of the LTS */
@@ -330,6 +332,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         LTS_RESULT_NODE_ATTR = new JAttr() {
             {
                 this.backColour = Colors.findColor("255 165 0");
+            }
+        }.getNodeAttrs();
+        LTS_ERROR_NODE_ATTR = new JAttr() {
+            {
+                this.backColour = JAttr.ERROR_SELECT_BACKGROUND;
+                this.lineColour = JAttr.ERROR_SELECT_FOREGROUND;
             }
         }.getNodeAttrs();
 

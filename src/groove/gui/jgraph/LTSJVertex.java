@@ -82,6 +82,13 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     /**
+     * @return true if the state is an error state.
+     */
+    public boolean isError() {
+        return getNode().isError();
+    }
+
+    /**
      * @return true if the state is a start state.
      */
     public boolean isStart() {
@@ -168,7 +175,9 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     @Override
     protected JAttr.AttributeMap createAttributes() {
         JAttr.AttributeMap result;
-        if (isResult()) {
+        if (isError()) {
+            result = LTSJGraph.LTS_ERROR_NODE_ATTR;
+        } else if (isResult()) {
             result = LTSJGraph.LTS_RESULT_NODE_ATTR;
         } else if (isStart()) {
             result = LTSJGraph.LTS_START_NODE_ATTR;
