@@ -67,7 +67,7 @@ public class RemoteStrategy extends AbstractStrategy {
           Iterator<GraphTransition> edgeIter = node.getTransitionIter();
           while(edgeIter.hasNext()) {
             GraphTransition edge = edgeIter.next();
-            message += "["+node.getCtrlState().getNumber()+",\""+edge.label().text()+"\","+edge.target().getCtrlState().getNumber()+"],";
+            message += "["+node.getNumber()+",\""+edge.label().text()+"\","+edge.target().getNumber()+"],";
           }
         }
         message = message.substring(0, message.length()-1)+"]";
@@ -85,9 +85,9 @@ public class RemoteStrategy extends AbstractStrategy {
           conn.setReadTimeout(10000);
           conn.setRequestProperty("Content-Type","application/json");
           
-          conn.connect();
-          
           System.out.println(message);
+          
+          conn.connect();
           
           OutputStreamWriter out = new OutputStreamWriter(
                                   conn.getOutputStream());
