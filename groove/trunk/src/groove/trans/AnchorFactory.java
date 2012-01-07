@@ -22,9 +22,9 @@ package groove.trans;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AnchorFactory<R extends Rule> {
+public interface AnchorFactory {
     /**
-     * Factory method to create the anchors for a given rule.
+     * Factory method to create the anchor for a given rule.
      */
-    public RuleGraph newAnchor(R rule);
+    public Anchor newAnchor(Rule rule);
 }

@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.trans.AnchorKind;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -112,6 +114,11 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
         } else {
             return Collections.singleton(this);
         }
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.LABEL;
     }
 
     /** The type graph with which this edge is associated. */

@@ -26,9 +26,9 @@ import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.Groove;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Derived;
+import groove.util.Groove;
 import groove.view.FormatError;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -201,7 +201,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 if (errorCell != null) {
                     this.errorMap.put(error, errorCell);
                     errorCell.addExtraError(error);
-                    break;
                 }
             }
         }

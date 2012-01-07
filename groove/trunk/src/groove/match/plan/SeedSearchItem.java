@@ -16,16 +16,13 @@
  */
 package groove.match.plan;
 
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
+import groove.trans.Anchor;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,28 +42,31 @@ class SeedSearchItem extends AbstractSearchItem {
      * variables.
      * @param seed the set of pre-matched nodes; not <code>null</code>
      */
-    SeedSearchItem(RuleGraph seed) {
-        this.nodes = new HashSet<RuleNode>(seed.nodeSet());
-        this.edges = new HashSet<RuleEdge>(seed.edgeSet());
-        this.vars = new HashSet<LabelVar>(seed.getAllVars());
+    SeedSearchItem(Anchor seed) {
+        this.seed = seed;
+        this.boundNodes =
+            Arrays.asList(seed.nodeSet().toArray(new RuleNode[0]));
+        this.boundEdges =
+            Arrays.asList(seed.edgeSet().toArray(new RuleEdge[0]));
+        this.boundVars = Arrays.asList(seed.varSet().toArray(new LabelVar[0]));
     }
 
     /** This implementation returns the set of pre-matched edges. */
     @Override
-    public Collection<RuleEdge> bindsEdges() {
-        return this.edges;
+    public Collection<? extends RuleEdge> bindsEdges() {
+        return this.boundEdges;
     }
 
     /** This implementation returns the set of pre-matched nodes. */
     @Override
-    public Collection<RuleNode> bindsNodes() {
-        return this.nodes;
+    public Collection<? extends RuleNode> bindsNodes() {
+        return this.boundNodes;
     }
 
     /** This implementation returns the set of pre-matched variables. */
     @Override
     public Collection<LabelVar> bindsVars() {
-        return this.vars;
+        return this.boundVars;
     }
 
     /**
@@ -79,54 +79,28 @@ class SeedSearchItem extends AbstractSearchItem {
 
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
-        for (RuleNode node : this.nodes) {
+        for (RuleNode node : this.boundNodes) {
             assert !strategy.isNodeFound(node) : String.format(
                 "Node %s is not fresh", node);
-            if (isSeeded(node)) {
-                this.nodeIxMap.put(node, strategy.getNodeIx(node));
-            }
+            this.nodeIxMap.put(node, strategy.getNodeIx(node));
         }
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
-        for (RuleEdge edge : this.edges) {
+        for (RuleEdge edge : this.boundEdges) {
             assert !strategy.isEdgeFound(edge) : String.format(
                 "Edge %s is not fresh", edge);
-            if (isSeeded(edge)) {
-                this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
-            }
+            this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
-        for (LabelVar var : this.vars) {
+        for (LabelVar var : this.boundVars) {
             assert !strategy.isVarFound(var) : String.format(
                 "Variable %s is not fresh", var);
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
 
-    /**
-     * Tests is a give node can serve proper seed, in the sense that it is
-     * matched to an actual host graph node. This fails to hold for
-     * {@link ProductNode}s.
-     */
-    private boolean isSeeded(RuleNode node) {
-        return !(node instanceof ProductNode);
-    }
-
-    /**
-     * Tests is a give edge is a proper seed, in the sense that it is matched
-     * to an actual host graph edge. This fails to hold for {@link ArgumentEdge}s
-     * and {@link OperatorEdge}s.
-     */
-    private boolean isSeeded(RuleEdge edge) {
-        return !(edge instanceof ArgumentEdge || edge instanceof OperatorEdge);
-    }
-
     @Override
     public String toString() {
-        List<Object> elementList = new ArrayList<Object>();
-        elementList.addAll(this.nodes);
-        elementList.addAll(this.edges);
-        elementList.addAll(this.vars);
-        return String.format("Check %s", elementList);
+        return String.format("Check %s", this.seed);
     }
 
     public Record createRecord(
@@ -158,24 +132,23 @@ class SeedSearchItem extends AbstractSearchItem {
         return this.unmatched.isEmpty();
     }
 
-    /** The set of pre-matched nodes. */
-    private final Set<RuleNode> nodes;
-    /** The set of pre-matched edges. */
-    private final Set<RuleEdge> edges;
-    /** The set of pre-matched variables. */
-    private final Set<LabelVar> vars;
+    /** The collection of pre-matched elements. */
+    private final Anchor seed;
+    private final List<RuleNode> boundNodes;
+    private final List<RuleEdge> boundEdges;
+    private final List<LabelVar> boundVars;
     /**
-     * Mapping from pre-matched nodes (in {@link #nodes}) to their indices in
+     * Mapping from seeded nodes to their indices in
      * the result.
      */
     private Map<RuleNode,Integer> nodeIxMap;
     /**
-     * Mapping from pre-matched edges (in {@link #edges}) to their indices in
+     * Mapping from seeded edges to their indices in
      * the result.
      */
     private Map<RuleEdge,Integer> edgeIxMap;
     /**
-     * Mapping from pre-matched variables (in {@link #vars}) to their indices
+     * Mapping from seeded variables to their indices
      * in the result.
      */
     private Map<LabelVar,Integer> varIxMap;

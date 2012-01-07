@@ -26,8 +26,11 @@ import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
+import groove.trans.Anchor;
+import groove.trans.AnchorKey;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
+import groove.trans.DefaultRuleEdge;
 import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
 import groove.trans.RuleEdge;
@@ -39,7 +42,6 @@ import groove.util.Bag;
 import groove.util.HashBag;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -73,23 +75,20 @@ public class PlanSearchEngine extends SearchEngine {
     }
 
     @Override
-    public PlanSearchStrategy createMatcher(Condition condition, RuleGraph seed) {
-        Set<RuleNode> anchorNodes = new HashSet<RuleNode>();
-        Set<RuleEdge> anchorEdges = new HashSet<RuleEdge>();
+    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed) {
+        Set<AnchorKey> anchorKeys = new HashSet<AnchorKey>();
         if (condition.hasRule()) {
-            anchorNodes.addAll(Arrays.asList(condition.getRule().getAnchorNodes()));
-            anchorEdges.addAll(Arrays.asList(condition.getRule().getAnchorEdges()));
+            anchorKeys.addAll(condition.getRule().getAnchor());
         }
         PlanData planData = new PlanData(condition, this.searchMode);
         if (seed == null) {
-            seed =
-                condition.getPattern().newGraph(
-                    "Empty seed for " + condition.getName());
+            seed = new Anchor();
         }
         SearchPlan plan = planData.getPlan(seed);
         for (AbstractSearchItem item : plan) {
-            boolean relevant = anchorNodes.removeAll(item.bindsNodes());
-            relevant |= anchorEdges.removeAll(item.bindsEdges());
+            boolean relevant = anchorKeys.removeAll(item.bindsNodes());
+            relevant |= anchorKeys.removeAll(item.bindsEdges());
+            relevant |= anchorKeys.removeAll(item.bindsVars());
             // universal conditions need to find all matches, so everything is relevant
             relevant |= condition.getOp() == Op.FORALL;
             // universal conditions may result in a tree match that does
@@ -179,7 +178,7 @@ public class PlanSearchEngine extends SearchEngine {
                 this.remainingEdges =
                     new LinkedHashSet<RuleEdge>(graph.edgeSet());
                 this.remainingVars =
-                    new LinkedHashSet<LabelVar>(graph.getAllVars());
+                    new LinkedHashSet<LabelVar>(graph.varSet());
                 this.algebraFamily =
                     AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
             } else {
@@ -194,7 +193,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Creates and returns a search plan on the basis of the given data.
          * @param seed the pre-matched subgraph; non-{@code null}
          */
-        public SearchPlan getPlan(RuleGraph seed) {
+        public SearchPlan getPlan(Anchor seed) {
             if (this.used) {
                 throw new IllegalStateException(
                     "Method getPlan() was already called");
@@ -263,7 +262,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the pre-matched subgraph
          */
-        Collection<AbstractSearchItem> computeSearchItems(RuleGraph seed) {
+        Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
             if (this.condition.hasPattern()) {
@@ -310,7 +309,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the set of pre-matched nodes
          */
-        Collection<AbstractSearchItem> computePatternSearchItems(RuleGraph seed) {
+        Collection<AbstractSearchItem> computePatternSearchItems(Anchor seed) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
             Set<RuleNode> unmatchedNodes =
@@ -319,7 +318,7 @@ public class PlanSearchEngine extends SearchEngine {
                 new LinkedHashSet<RuleEdge>(this.remainingEdges);
             // first a single search item for the pre-matched elements
             if (seed == null) {
-                seed = new RuleGraph("seed");
+                seed = new Anchor();
             }
             if (!seed.isEmpty()) {
                 AbstractSearchItem seedItem = new SeedSearchItem(seed);
@@ -366,7 +365,7 @@ public class PlanSearchEngine extends SearchEngine {
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
                         || ((VariableNode) node).getConstant() != null
-                        || seed.containsNode(node) : String.format(
+                        || seed.nodeSet().contains(node) : String.format(
                         "Variable node '%s' should be among anchors %s", node,
                         seed);
                     result.add(nodeItem);
@@ -437,11 +436,11 @@ public class PlanSearchEngine extends SearchEngine {
                     createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (label.getWildcardGuard() != null) {
                 assert !this.typeGraph.isNodeType(edge);
-                result = new VarEdgeSearchItem(edge);
+                result = new VarEdgeSearchItem((DefaultRuleEdge) edge);
             } else if (label.isEmpty()) {
                 result = new EqualitySearchItem(source, target, true);
             } else if (label.isSharp() || label.isAtom()) {
-                result = new Edge2SearchItem(edge);
+                result = new Edge2SearchItem((DefaultRuleEdge) edge);
             } else if (label.isOperator()) {
                 assert this.searchMode == NORMAL;
                 result =
@@ -522,7 +521,7 @@ public class PlanSearchEngine extends SearchEngine {
          */
         private Collection<Comparator<SearchItem>> comparators;
         /**
-         * Flag determining if {@link #getPlan(RuleGraph)} was
+         * Flag determining if {@link #getPlan(Anchor)} was
          * already called.
          */
         private boolean used;

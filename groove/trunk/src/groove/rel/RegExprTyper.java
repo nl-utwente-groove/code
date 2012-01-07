@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -320,14 +321,17 @@ public class RegExprTyper implements RegExprCalculator<Result> {
          */
         private boolean intersect(Result other) {
             boolean result = false;
-            for (Map.Entry<TypeNode,Set<TypeNode>> entry : this.map.entrySet()) {
+            Iterator<Map.Entry<TypeNode,Set<TypeNode>>> entryIter =
+                this.map.entrySet().iterator();
+            while (entryIter.hasNext()) {
+                Map.Entry<TypeNode,Set<TypeNode>> entry = entryIter.next();
                 TypeNode left = entry.getKey();
                 Set<TypeNode> otherRight = other.getAll(left);
                 if (otherRight != null) {
                     Set<TypeNode> right = entry.getValue();
                     result |= right.retainAll(otherRight);
                     if (right.isEmpty()) {
-                        this.map.remove(left);
+                        entryIter.remove();
                     }
                 }
             }

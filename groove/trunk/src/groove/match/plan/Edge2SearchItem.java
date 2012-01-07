@@ -20,6 +20,7 @@ import groove.graph.TypeEdge;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.plan.PlanSearchStrategy.Search;
+import groove.trans.DefaultRuleEdge;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -41,7 +42,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Creates a search item for a given binary edge.
      * @param edge the edge to be matched
      */
-    public Edge2SearchItem(RuleEdge edge) {
+    public Edge2SearchItem(DefaultRuleEdge edge) {
         // as this is subclassed by VarEdgeSearchItem,
         // the label may actually be an arbitrary regular expression
         assert edge.label().isSharp() || edge.label().isAtom()
@@ -69,14 +70,14 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Returns the end nodes of the edge.
      */
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
     /** Returns the singleton set consisting of the matched edge. */
     @Override
-    public Collection<RuleEdge> bindsEdges() {
-        return Collections.singleton(this.edge);
+    public Collection<? extends RuleEdge> bindsEdges() {
+        return Collections.singleton((RuleEdge) this.edge);
     }
 
     /**
@@ -162,11 +163,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Indicates if the edge has a singular image in the search. */
     boolean isSingular(Search search) {
-        boolean sourceSingular =
-            this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
-        boolean targetSingular =
-            this.targetFound || search.getNodeSeed(this.targetIx) != null;
-        return sourceSingular && targetSingular;
+        return this.sourceFound && this.targetFound;
     }
 
     /** Creates a record for the case the image is singular. */
@@ -203,7 +200,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     /**
      * The edge for which this search item is to find an image.
      */
-    final RuleEdge edge;
+    final DefaultRuleEdge edge;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final TypeEdge type;
     /**

@@ -21,6 +21,7 @@ import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
+import groove.trans.Anchor;
 import groove.trans.Condition;
 import groove.trans.Rule;
 
@@ -80,7 +81,7 @@ public final class ReverseMatcherStore {
             MatcherFactory factory = MatcherFactory.instance();
             factory.setEngine(engine);
             Condition condition = rule.getCondition();
-            result = factory.createMatcher(condition, rule.lhs());
+            result = factory.createMatcher(condition, new Anchor(rule.lhs()));
             store.put(rule, result);
         }
         return result;

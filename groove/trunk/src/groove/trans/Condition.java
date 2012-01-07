@@ -220,8 +220,8 @@ public class Condition implements Fixable {
     }
 
     /**
-     * Adds a sub-condition to this graph condition.
-     * The sub-condition should already be fixed.
+     * Adds a subcondition to this graph condition.
+     * The subcondition should already be fixed.
      * @param condition the condition to be added
      * @see #getSubConditions()
      */
@@ -241,6 +241,21 @@ public class Condition implements Fixable {
                 getRule().addSubRule(subRule);
             }
         }
+    }
+
+    /**
+     * Tests if any of the rules in this condition (or one of its subconditions)
+     * is modifying.
+     */
+    boolean hasModifyingSubrule() {
+        boolean result = false;
+        for (Rule rule : getTopRules()) {
+            if (rule.isModifying()) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /** Returns the collection of top-level (sub)rules of this condition.

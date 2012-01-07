@@ -21,11 +21,11 @@ import groove.graph.EdgeRole;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -108,13 +108,18 @@ public class ProductNode extends AbstractNode implements RuleNode {
     }
 
     @Override
+    public Set<LabelVar> getVars() {
+        return EMPTY_VAR_SET;
+    }
+
+    @Override
     public boolean isSharp() {
         return true;
     }
 
     @Override
     public Set<TypeNode> getMatchingTypes() {
-        return Collections.emptySet();
+        return EMPTY_MATCH_SET;
     }
 
     /**
@@ -131,7 +136,4 @@ public class ProductNode extends AbstractNode implements RuleNode {
     @SuppressWarnings("unused")
     static private final TypeLabel PROD_LABEL = TypeLabel.createLabel(
         EdgeRole.NODE_TYPE, "" + TIMES_CHAR);
-    /** Predefined empty list of type guards. */
-    static private final List<TypeGuard> EMPTY_GUARD_LIST =
-        Collections.emptyList();
 }

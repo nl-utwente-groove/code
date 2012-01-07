@@ -17,8 +17,9 @@
 package groove.match;
 
 import groove.match.plan.PlanSearchEngine;
+import groove.trans.Anchor;
 import groove.trans.Condition;
-import groove.trans.RuleGraph;
+
 
 /**
  * A factory for matchers.
@@ -61,7 +62,7 @@ public class MatcherFactory {
     }
 
     /** Creates a matcher for a given condition and explicitly specified seeds. */
-    public Matcher createMatcher(Condition condition, RuleGraph seed) {
+    public Matcher createMatcher(Condition condition, Anchor seed) {
         return new Matcher(this, condition, seed);
     }
 

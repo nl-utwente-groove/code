@@ -61,7 +61,7 @@ public class CompositeEvent extends
     }
 
     @Override
-    public HostElement getAnchorImage(int i) {
+    public AnchorValue getAnchorImage(int i) {
         return this.eventArray[0].getAnchorImage(i);
     }
 

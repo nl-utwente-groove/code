@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.trans.AnchorKind;
+
 import java.awt.Color;
 import java.util.Collections;
 import java.util.Set;
@@ -191,6 +193,11 @@ public class TypeNode implements Node, TypeElement {
             return !strict && getGraph() != null
                 && getGraph().isSubtype(other, this);
         }
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.LABEL;
     }
 
     /** The type graph with which this node is associated. */

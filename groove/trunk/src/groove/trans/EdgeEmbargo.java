@@ -34,7 +34,7 @@ public class EdgeEmbargo extends Condition {
         getPattern().addEdge(embargoEdge);
         getRoot().addNode(embargoEdge.source());
         getRoot().addNode(embargoEdge.target());
-        for (LabelVar var : getPattern().getAllVars()) {
+        for (LabelVar var : getPattern().varSet()) {
             if (context.containsVar(var)) {
                 getRoot().addVar(var);
             }

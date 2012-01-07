@@ -23,11 +23,14 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.io.Util;
+import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a label corresponding to a regular expression.
@@ -362,6 +365,15 @@ public class RuleLabel extends AbstractLabel {
     /** Returns the argument number wrapped in this label, if any. */
     public int getArgument() {
         return this.argNr;
+    }
+
+    /** Returns the set of label variables occurring in this label. */
+    public Set<LabelVar> allVarSet() {
+        if (isMatchable()) {
+            return getMatchExpr().allVarSet();
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     /** The underlying regular expression, if any. */

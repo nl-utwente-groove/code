@@ -46,6 +46,7 @@ import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleElement;
 import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
@@ -567,8 +568,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             SortedSet<Index> indexSet = buildTree();
             this.level1Map = buildLevels1(indexSet);
             RuleModelMap untypedModelMap = new RuleModelMap();
-            SortedMap<Index,Level2> level2Map =
-                buildLevels2(this.level1Map, untypedModelMap);
+            SortedMap<Index,Level2> level2Map;
+            try {
+                level2Map = buildLevels2(this.level1Map, untypedModelMap);
+            } catch (FormatException e) {
+                throw new FormatException(transferErrors(e.getErrors(),
+                    untypedModelMap));
+            }
             RuleFactory typedFactory = RuleModel.this.ruleFactory;
             RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
             try {
@@ -756,6 +762,27 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
+            }
+            Map<LabelVar,Set<AspectEdge>> modelVarMap =
+                new HashMap<LabelVar,Set<AspectEdge>>();
+            for (Level1 level : result.values()) {
+                modelVarMap.putAll(level.modelVars);
+            }
+            Map<String,LabelVar> nameVarMap = new HashMap<String,LabelVar>();
+            for (Map.Entry<LabelVar,Set<AspectEdge>> varEntry : modelVarMap.entrySet()) {
+                LabelVar var = varEntry.getKey();
+                LabelVar oldVar = nameVarMap.put(var.getName(), var);
+                if (oldVar != null && !oldVar.equals(var)) {
+                    errors.add(new FormatError(
+                        "Duplicate variable '%s' for %s and %s labels", var,
+                        var.getKind().getDescription(false),
+                        oldVar.getKind().getDescription(false),
+                        varEntry.getValue().toArray(),
+                        modelVarMap.get(oldVar).toArray()));
+                }
+            }
+            for (Level1 level : result.values()) {
+                level.setFixed();
             }
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
@@ -1003,14 +1030,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 addNodeToParents(modelEdge.source());
                 addNodeToParents(modelEdge.target());
                 // add variables
-                RuleLabel ruleLabel = modelEdge.getRuleLabel();
-                if (ruleLabel != null && ruleLabel.isMatchable()) {
-                    for (LabelVar var : ruleLabel.getMatchExpr().allVarSet()) {
-                        if (!parentBindsVar(var)) {
-                            this.modelVars.add(var);
-                        }
-                    }
-                }
+                addToVars(modelEdge);
             }
             // put the edge on the sublevels, if it is supposed to be there
             if (isForNextLevel(modelEdge)) {
@@ -1020,25 +1040,24 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
         }
 
+        /** Adds the variables of a given aspect edge to the variable map. */
+        private void addToVars(AspectEdge modelEdge) {
+            RuleLabel ruleLabel = modelEdge.getRuleLabel();
+            if (ruleLabel != null) {
+                for (LabelVar var : ruleLabel.allVarSet()) {
+                    Set<AspectEdge> binders = this.modelVars.get(var);
+                    if (binders == null) {
+                        this.modelVars.put(var, binders =
+                            new HashSet<AspectEdge>());
+                    }
+                    binders.add(modelEdge);
+                }
+            }
+        }
+
         /** Initialises the match count for this (universal) level. */
         public void setMatchCount(AspectNode matchCount) {
             this.matchCountNode = matchCount;
-        }
-
-        /** 
-         * Retrieves a binder for a given variable from this
-         * level or the closest parent, if there is a binder. 
-         * Adds the binding to {@link #modelVars} and {@link #modelEdges}.
-         */
-        private boolean parentBindsVar(LabelVar var) {
-            boolean result = this.modelVars.contains(var);
-            if (!result && !this.index.isTopLevel()) {
-                result = this.parent.parentBindsVar(var);
-                if (result) {
-                    this.modelVars.add(var);
-                }
-            }
-            return result;
         }
 
         /**
@@ -1114,6 +1133,33 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return getIndex().compareTo(o.getIndex());
         }
 
+        /**
+         * Does some post-processing after all elements have been added
+         * to this and the parent levels.
+         */
+        public void setFixed() {
+            if (this.parent != null) {
+                for (LabelVar var : this.modelVars.keySet()) {
+                    this.parent.testParentBinding(var);
+                }
+            }
+        }
+
+        /** Tests if a given variable is already bound at this or a parent
+         * level and, if so, adds it to the {@link #modelVars} at the intermediate 
+         * levels.
+         */
+        private boolean testParentBinding(LabelVar var) {
+            boolean result = this.modelVars.containsKey(var);
+            if (!result && this.parent != null) {
+                result = this.parent.testParentBinding(var);
+                if (result) {
+                    this.modelVars.put(var, new HashSet<AspectEdge>());
+                }
+            }
+            return result;
+        }
+
         /** Index of this level. */
         final Index index;
         /** Parent level; {@code null} if this is the top level. */
@@ -1125,7 +1171,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** Set of model edges on this level. */
         final Set<AspectEdge> modelEdges = new HashSet<AspectEdge>();
         /** Set of label variables used on this level. */
-        final Set<LabelVar> modelVars = new HashSet<LabelVar>();
+        final Map<LabelVar,Set<AspectEdge>> modelVars =
+            new HashMap<LabelVar,Set<AspectEdge>>();
         /** The model node registering the match count. */
         AspectNode matchCountNode;
     }
@@ -1180,13 +1227,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     errors.addAll(exc.getErrors());
                 }
             }
-            for (LabelVar modelVar : origin.modelVars) {
+            for (LabelVar modelVar : origin.modelVars.keySet()) {
                 processVar(modelVar);
             }
             try {
                 this.nacs.addAll(computeNacs());
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
+            }
+            if (!index.isTopLevel()) {
+                this.parentVars.addAll(origin.parent.modelVars.keySet());
             }
             checkAttributes(errors);
             checkVariables(errors);
@@ -1373,27 +1423,31 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * Checks if all label variables are bound
          */
         private void checkVariables(Collection<FormatError> errors) {
-            Set<LabelVar> allVars = new HashSet<LabelVar>();
-            allVars.addAll(this.lhs.getAllVars());
-            allVars.addAll(this.rhs.getAllVars());
+            Map<LabelVar,Set<RuleElement>> allVars =
+                new HashMap<LabelVar,Set<RuleElement>>();
+            allVars.putAll(this.lhs.varMap());
+            allVars.putAll(this.rhs.varMap());
             for (RuleGraph nac : this.nacs) {
-                allVars.addAll(nac.getAllVars());
+                allVars.putAll(nac.varMap());
             }
             Map<String,LabelVar> varNames = new HashMap<String,LabelVar>();
-            for (LabelVar var : allVars) {
+            for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
+                LabelVar var = varEntry.getKey();
                 LabelVar oldVar = varNames.put(var.getKey(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
                     errors.add(new FormatError(
                         "Duplicate variable '%s' for %s and %s labels", var,
                         var.getKind().getDescription(false),
-                        oldVar.getKind().getDescription(false)));
+                        oldVar.getKind().getDescription(false),
+                        varEntry.getValue().toArray()));
                 }
             }
-            allVars.removeAll(this.lhs.getBoundVars());
-            if (!allVars.isEmpty()) {
-                errors.add(new FormatError("Unassigned label variable%s %s",
-                    allVars.size() == 1 ? "" : "s", Groove.toString(
-                        allVars.toArray(), "", "", ", ", " and ")));
+            allVars.keySet().removeAll(this.lhs.getBoundVars());
+            allVars.keySet().removeAll(this.parentVars);
+            for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
+                LabelVar var = varEntry.getKey();
+                errors.add(new FormatError("Unassigned label variable %s", var,
+                    varEntry.getValue().toArray()));
             }
         }
 
@@ -1546,6 +1600,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private final Set<RuleEdge> nacEdgeSet = new HashSet<RuleEdge>();
         /** Collection of NAC graphs. */
         private final List<RuleGraph> nacs = new ArrayList<RuleGraph>();
+        /** Variables bound at the parent level. */
+        private final Set<LabelVar> parentVars = new HashSet<LabelVar>();
     }
 
     /**
@@ -1576,6 +1632,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             // check against label type restrictions in RHS
             for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap.getVarTyping().entrySet()) {
                 LabelVar var = entry.getKey();
+                if (!this.typeMap.getVarTyping().containsKey(var)) {
+                    continue;
+                }
                 Set<? extends TypeElement> lhsTypes = entry.getValue();
                 lhsTypes.removeAll(this.typeMap.getVarTypes(var));
                 if (!lhsTypes.isEmpty()) {
@@ -1658,10 +1717,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     }
                     result.addEdge(globalImage);
                 }
-                // add the remainder of the variables
-                for (LabelVar var : graph.getBoundVars()) {
-                    result.addBoundVar(var);
-                }
+                result.addVarSet(graph.varSet());
             } catch (FormatException e) {
                 this.errors.addAll(e.getErrors());
             }
@@ -1863,7 +1919,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     result.addEdge(edge);
                 }
             }
-            for (LabelVar var : parentGraph.getAllVars()) {
+            for (LabelVar var : parentGraph.varSet()) {
                 if (myGraph.containsVar(var)) {
                     result.addVar(var);
                 }
@@ -1894,7 +1950,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         embargoEdge.target()));
                 if (nac.nodeSet().equals(ends)
                     && lhs.nodeSet().containsAll(ends)
-                    && nac.getAllVars().isEmpty()) {
+                    && nac.varSet().isEmpty()) {
                     // this is supposed to be an edge embargo
                     result = createEdgeEmbargo(lhs, embargoEdge);
                 }

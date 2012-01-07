@@ -62,7 +62,7 @@ public interface SearchItem extends Comparable<SearchItem> {
      * Returns the collection of nodes for which this search item will find a
      * matching when activated.
      */
-    Collection<RuleNode> bindsNodes();
+    Collection<? extends RuleNode> bindsNodes();
 
     /**
      * Returns the collection of label variables that should already be matched
@@ -80,7 +80,7 @@ public interface SearchItem extends Comparable<SearchItem> {
      * Returns the collection of edges for which this search item will find a
      * matching.
      */
-    Collection<RuleEdge> bindsEdges();
+    Collection<? extends RuleEdge> bindsEdges();
 
     /**
      * Indicates if this item tests for nodes without actually binding them.

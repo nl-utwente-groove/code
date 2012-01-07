@@ -108,6 +108,47 @@ public class RuleToHostMap extends
         }
     }
 
+    /** 
+     * Inserts an anchor key-value pair into the map.
+     * @return the old value for {@code key}
+     */
+    public AnchorValue put(AnchorKey key, AnchorValue value) {
+        AnchorValue result = null;
+        switch (key.getAnchorKind()) {
+        case NODE:
+            result = putNode(AnchorKind.node(key), AnchorKind.node(value));
+            break;
+        case EDGE:
+            result = putEdge(AnchorKind.edge(key), AnchorKind.edge(value));
+            break;
+        case LABEL:
+            result = putVar(AnchorKind.label(key), AnchorKind.label(value));
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
+    /** Returns the anchor value to which a given anchor key is mapped. */
+    public AnchorValue get(AnchorKey key) {
+        AnchorValue result = null;
+        switch (key.getAnchorKind()) {
+        case NODE:
+            result = getNode(AnchorKind.node(key));
+            break;
+        case EDGE:
+            result = getEdge(AnchorKind.edge(key));
+            break;
+        case LABEL:
+            result = getVar(AnchorKind.label(key));
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
     /**
      * This implementation returns a {@link RuleToHostMap}.}
      */

@@ -27,7 +27,7 @@ import groove.graph.algebra.ValueNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostNode extends Node, HostElement {
+public interface HostNode extends Node, HostElement, AnchorValue {
     /** Returns the type of the host node, or {@code null} if
      * the host node is untyped. */
     public TypeNode getType();

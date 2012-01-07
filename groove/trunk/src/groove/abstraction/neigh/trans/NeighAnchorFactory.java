@@ -17,10 +17,10 @@
 package groove.abstraction.neigh.trans;
 
 import groove.abstraction.neigh.Parameters;
+import groove.trans.Anchor;
 import groove.trans.AnchorFactory;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import java.util.Arrays;
  * 
  * @author Eduardo Zambon
  */
-public final class NeighAnchorFactory implements AnchorFactory<Rule> {
+public final class NeighAnchorFactory implements AnchorFactory {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -71,11 +71,11 @@ public final class NeighAnchorFactory implements AnchorFactory<Rule> {
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
-    public RuleGraph newAnchor(Rule rule) {
+    public Anchor newAnchor(Rule rule) {
         // EZ says: for simplicity this method assumes that the abstraction
         // radius is one.
         assert Parameters.getAbsRadius() == 1;
-        RuleGraph result = rule.lhs().newGraph(rule.getName() + "-anchor");
+        Anchor result = new Anchor();
         // List of nodes that need to be in a singleton equivalence class
         // after materialisation.
         ArrayList<RuleNode> singularNodes = new ArrayList<RuleNode>();
@@ -83,9 +83,11 @@ public final class NeighAnchorFactory implements AnchorFactory<Rule> {
         singularNodes.addAll(rule.getModifierEnds());
         // Everything that is within radius distance of the singular nodes
         // is also part of the anchor.
+        result.addKeys(singularNodes);
         for (RuleNode singularNode : singularNodes) {
-            for (RuleEdge incidentEdge : rule.lhs().edgeSet(singularNode)) {
-                result.addEdge(incidentEdge);
+            for (RuleEdge edge : rule.lhs().edgeSet(singularNode)) {
+                result.addKey(edge.source());
+                result.addKey(edge.target());
             }
         }
         return result;

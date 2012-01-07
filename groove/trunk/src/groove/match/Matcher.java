@@ -19,12 +19,12 @@ package groove.match;
 
 import groove.rel.LabelVar;
 import groove.rel.Valuation;
+import groove.trans.Anchor;
 import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Visitor;
@@ -51,14 +51,14 @@ public class Matcher implements SearchStrategy {
      * @param condition the condition that the strategy will find matches for
      * @param seed graph that will be pre-matched when the strategy is invoked
      */
-    public Matcher(SearchEngine engine, Condition condition, RuleGraph seed) {
+    public Matcher(SearchEngine engine, Condition condition, Anchor seed) {
         this.engine = engine;
         this.condition = condition;
         if (seed == null && condition.getOp().hasPattern()) {
-            seed = new RuleGraph("seed");
-            seed.addNodeSet(condition.getInputNodes());
-            seed.addEdgeSet(condition.getRoot().edgeSet());
-            seed.addVarSet(condition.getRoot().getAllVars());
+            seed = new Anchor();
+            seed.addKeys(condition.getInputNodes());
+            seed.addKeys(condition.getRoot().edgeSet());
+            seed.addAll(condition.getRoot().varSet());
         }
         this.seed = seed;
     }
@@ -69,7 +69,7 @@ public class Matcher implements SearchStrategy {
      * @param condition the condition that the strategy will find matches for
      * @param seed set of nodes that will be pre-matched when the strategy is invoked
      */
-    public Matcher(MatcherFactory factory, Condition condition, RuleGraph seed) {
+    public Matcher(MatcherFactory factory, Condition condition, Anchor seed) {
         this(factory.getEngine(), condition, seed);
     }
 
@@ -132,7 +132,7 @@ public class Matcher implements SearchStrategy {
     }
 
     /** Returns the subgraph that should be pre-matched when this strategy is invoked. */
-    public final RuleGraph getSeed() {
+    public final Anchor getSeed() {
         return this.seed;
     }
 
@@ -156,13 +156,9 @@ public class Matcher implements SearchStrategy {
         throws IllegalArgumentException {
         if (seedMap == null) {
             // the seed map is null, so there should not be any seed nodes or edges 
-            if (this.seed != null && !this.seed.nodeSet().isEmpty()) {
-                throw new IllegalArgumentException("Unmatched seed nodes: "
-                    + this.seed.nodeSet());
-            }
-            if (this.seed != null && !this.seed.edgeSet().isEmpty()) {
-                throw new IllegalArgumentException("Unmatched seed edges: "
-                    + this.seed.edgeSet());
+            if (this.seed != null && !this.seed.isEmpty()) {
+                throw new IllegalArgumentException("Unmatched seed keys: "
+                    + this.seed);
             }
         } else {
             if (!seedMap.nodeMap().keySet().equals(this.seed.nodeSet())) {
@@ -206,18 +202,18 @@ public class Matcher implements SearchStrategy {
                         "Spurious edge seeding: " + seedEdgeMap);
                 }
             }
-            if (!seedMap.getValuation().keySet().equals(this.seed.getAllVars())) {
+            if (!seedMap.getValuation().keySet().equals(this.seed.varSet())) {
                 Set<LabelVar> seedVars =
-                    new HashSet<LabelVar>(this.seed.getAllVars());
+                    new HashSet<LabelVar>(this.seed.varSet());
                 seedVars.removeAll(seedMap.getValuation().keySet());
                 if (!seedVars.isEmpty()) {
                     throw new IllegalArgumentException(
                         "Unmatched seed variables: " + seedVars);
                 }
                 Valuation seedValuation = new Valuation(seedMap.getValuation());
-                seedValuation.keySet().removeAll(this.seed.getAllVars());
+                seedValuation.keySet().removeAll(this.seed.varSet());
                 seedValuation.keySet().retainAll(
-                    getCondition().getPattern().getAllVars());
+                    getCondition().getPattern().varSet());
                 if (!seedVars.isEmpty()) {
                     throw new IllegalArgumentException(
                         "Spurious variable seeding: " + seedValuation);
@@ -241,7 +237,7 @@ public class Matcher implements SearchStrategy {
 
     private final SearchEngine engine;
     private final Condition condition;
-    private final RuleGraph seed;
+    private final Anchor seed;
 
     private SearchStrategy inner;
     /** Reusable finder for {@link #find(HostGraph, RuleToHostMap)}. */

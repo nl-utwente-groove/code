@@ -17,6 +17,8 @@
 package groove.rel;
 
 import groove.graph.EdgeRole;
+import groove.trans.AnchorKey;
+import groove.trans.AnchorKind;
 
 /**
  * Encodes a label variable (which may occur in a wildcard expression).
@@ -25,7 +27,7 @@ import groove.graph.EdgeRole;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LabelVar {
+public class LabelVar implements AnchorKey {
     /** 
      * Private constructor initialising all fields
      * @param nr number of the new variable; 0 unless the name is empty
@@ -83,6 +85,11 @@ public class LabelVar {
      */
     public final EdgeRole getKind() {
         return this.kind;
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.LABEL;
     }
 
     @Override

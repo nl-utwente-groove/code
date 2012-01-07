@@ -61,7 +61,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                     SignatureKind.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
-            this.neededVars = this.rootGraph.getAllVars();
+            this.neededVars = this.rootGraph.varSet();
             this.positive = condition.isPositive();
             this.countNode = condition.getCountNode();
             this.boundNodes =
@@ -89,7 +89,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 
@@ -146,7 +146,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 this.edgeIxMap.put(edge, strategy.getEdgeIx(edge));
             }
             this.varIxMap = new HashMap<LabelVar,Integer>();
-            for (LabelVar var : this.rootGraph.getAllVars()) {
+            for (LabelVar var : this.rootGraph.varSet()) {
                 this.varIxMap.put(var, strategy.getVarIx(var));
             }
             if (this.countNode != null) {

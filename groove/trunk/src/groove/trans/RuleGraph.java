@@ -106,8 +106,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
         boolean result = super.addEdgeWithoutCheck(edge);
         if (result) {
             addBinders(edge);
-            if (edge.label().isMatchable()) {
-                this.allVars.addAll(edge.label().getMatchExpr().allVarSet());
+            for (LabelVar var : edge.label().allVarSet()) {
+                addKey(this.varMap, var).add(edge);
             }
         }
         return result;
@@ -115,71 +115,69 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
 
     @Override
     public String toString() {
-        return super.toString() + "; Variables: " + getAllVars();
+        return super.toString() + "; Variables: " + varSet();
     }
 
     /** Adds a given rule element to the variable binding map. */
     private void addBinders(RuleElement element) {
         for (TypeGuard guard : element.getTypeGuards()) {
             LabelVar var = guard.getVar();
-            createBinders(var).add(element);
-            this.allVars.add(var);
+            addKey(this.varMap, var).add(element);
+            addKey(this.binderMap, var).add(element);
         }
     }
 
-    /** 
-     * Adds a variable to those bound in this graph.
-     * This is to declare that the variable is bound by the condition root. 
-     */
-    public boolean addBoundVar(LabelVar var) {
-        boolean result = !this.binderMap.containsKey(var);
-        if (result) {
-            createBinders(var);
-            return this.allVars.add(var);
-        }
-        return result;
-    }
-
-    /** Returns the set of (named) variables bound by elements of this graph or by the root. */
+    /** Returns the set of (named) variables bound by elements of this graph. */
     public Set<LabelVar> getBoundVars() {
         return this.binderMap.keySet();
     }
 
-    /** Adds a variable to those known in this graph. */
-    public boolean addVar(LabelVar var) {
-        return this.allVars.add(var);
-    }
-
-    /** Adds a set of variables to those known in this graph. */
-    public boolean addVarSet(Collection<LabelVar> varSet) {
-        return this.allVars.addAll(varSet);
-    }
-
-    /** Tests if a label variable is known in this graph. */
-    public boolean containsVar(LabelVar var) {
-        return this.allVars.contains(var);
-    }
-
-    /** Returns the set of all (named) variables known in this graph. */
-    public Set<LabelVar> getAllVars() {
-        return this.allVars;
-    }
-
     /**
      * Returns the set of elements that bind a given label variable.
-     * If the set is empty, the variable is used but not bound in this graph.
-     * @return the set of binders for {@code var}, or {@code null} if {@code var}
+     * @return the (non-empty) set of binders for {@code var}, or {@code null} if {@code var}
      * is not a known variable in this graph
      */
     public Set<RuleElement> getBinders(LabelVar var) {
         return this.binderMap.get(var);
     }
 
+    /** Adds a variable to those known in this graph. */
+    public boolean addVar(LabelVar var) {
+        boolean result = !this.varMap.containsKey(var);
+        addKey(this.varMap, var);
+        return result;
+    }
+
+    /** Adds a set of variables to those known in this graph. */
+    public boolean addVarSet(Collection<LabelVar> varSet) {
+        boolean result = false;
+        for (LabelVar var : varSet) {
+            result |= addVar(var);
+        }
+        return result;
+    }
+
+    /** Tests if a label variable is known in this graph. */
+    public boolean containsVar(LabelVar var) {
+        return this.varMap.containsKey(var);
+    }
+
+    /** Returns the set of all (named) variables known in this graph. */
+    public Set<LabelVar> varSet() {
+        return this.varMap.keySet();
+    }
+
+    /** Returns the mapping of all (named) variables known in this graph to elements on which they occur. */
+    public Map<LabelVar,Set<RuleElement>> varMap() {
+        return this.varMap;
+    }
+
     /** Lazily creates and returns the set of binders for a given label variable. */
-    private Set<RuleElement> createBinders(LabelVar var) {
-        Set<RuleElement> result = this.binderMap.get(var);
+    private Set<RuleElement> addKey(Map<LabelVar,Set<RuleElement>> map,
+            LabelVar var) {
+        Set<RuleElement> result = map.get(var);
         if (result == null) {
-            this.binderMap.put(var, result = new HashSet<RuleElement>());
+            map.put(var, result = new HashSet<RuleElement>());
         }
         return result;
     }
@@ -188,6 +186,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     private final Map<LabelVar,Set<RuleElement>> binderMap =
         new HashMap<LabelVar,Set<RuleElement>>();
     /** Set of all known variables. */
-    private final Set<LabelVar> allVars = new HashSet<LabelVar>();
+    private final Map<LabelVar,Set<RuleElement>> varMap =
+        new HashMap<LabelVar,Set<RuleElement>>();
     private final RuleFactory factory;
 }

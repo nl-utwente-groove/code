@@ -18,13 +18,13 @@ package groove.match.rete;
 
 import groove.match.SearchEngine;
 import groove.match.rete.ReteNetworkNode.Action;
+import groove.trans.Anchor;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
 import groove.trans.GraphGrammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.RuleGraph;
 import groove.util.Reporter;
 
 
@@ -98,7 +98,7 @@ public class ReteSearchEngine extends SearchEngine {
 
     @Override
     public synchronized ReteSearchStrategy createMatcher(Condition condition,
-            RuleGraph seed) {
+            Anchor seed) {
         //TODO: ARASH: What about the seed nodes and edges?
         return new ReteSearchStrategy(this, condition);
     }

@@ -19,6 +19,7 @@ package groove.trans;
 import groove.graph.AbstractNode;
 import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 2971 $
  */
-public class DefaultRuleNode extends AbstractNode implements RuleNode {
+public class DefaultRuleNode extends AbstractNode implements RuleNode,
+        AnchorKey {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * @param nr the number for this node
@@ -106,6 +108,20 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
         return this.typeGuards;
     }
 
+    @Override
+    public Set<LabelVar> getVars() {
+        Set<LabelVar> result = this.vars;
+        if (result == null) {
+            result = this.vars = new HashSet<LabelVar>();
+            for (TypeGuard guard : getTypeGuards()) {
+                if (guard.isNamed()) {
+                    result.add(guard.getVar());
+                }
+            }
+        }
+        return result;
+    }
+
     public Set<TypeNode> getMatchingTypes() {
         return this.matchingTypes;
     }
@@ -114,12 +130,19 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode {
         return this.sharp;
     }
 
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.NODE;
+    }
+
     /** Flag indicating if this node is sharply typed. */
     private final boolean sharp;
     /** The (possibly {@code null}) type of this rule node. */
     private final TypeNode type;
     /** The list of type guards associated with this node. */
     private final List<TypeGuard> typeGuards;
+    /** The (named) label variables involved in the type guards. */
+    private Set<LabelVar> vars;
     /** The set of matching node types. */
     private final Set<TypeNode> matchingTypes;
 }
