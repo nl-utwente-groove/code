@@ -16,8 +16,8 @@
  */
 package groove.match;
 
+import groove.trans.Anchor;
 import groove.trans.Condition;
-import groove.trans.RuleGraph;
 
 
 /**
@@ -39,7 +39,7 @@ public abstract class SearchEngine {
      *        are used
      */
     public abstract SearchStrategy createMatcher(Condition condition,
-            RuleGraph seed);
+            Anchor seed);
 
     /** 
      * Value determining what is actually checked in the search.

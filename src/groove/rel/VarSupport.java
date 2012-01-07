@@ -26,7 +26,6 @@ import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,11 +49,7 @@ public class VarSupport {
         Collection<LabelVar> result;
         if (element instanceof RuleEdge) {
             RuleLabel label = ((RuleEdge) element).label();
-            if (label.isMatchable()) {
-                result = label.getMatchExpr().allVarSet();
-            } else {
-                result = Collections.emptySet();
-            }
+            result = label.allVarSet();
         } else {
             result = getBoundVars(element);
         }

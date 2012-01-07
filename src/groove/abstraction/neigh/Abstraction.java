@@ -21,7 +21,7 @@ import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
-import groove.trans.MinimalAnchorFactory;
+import groove.trans.DefaultAnchorFactory;
 import groove.trans.Rule;
 
 /**
@@ -45,7 +45,7 @@ public final class Abstraction {
 
     /** Leaves abstraction mode. */
     public static void terminate() {
-        Rule.setAnchorFactory(MinimalAnchorFactory.getInstance());
+        Rule.setAnchorFactory(DefaultAnchorFactory.getInstance());
         MatcherFactory.instance().setEngine(
             PlanSearchEngine.getInstance(SearchMode.NORMAL));
         ReverseMatcherStore.terminate();

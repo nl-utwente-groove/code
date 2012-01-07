@@ -42,6 +42,11 @@
                 <string>new:</string>
             </attr>
         </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>?y</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:?x</string>
@@ -50,11 +55,6 @@
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>new:flag:a</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n0">
-            <attr name="label">
-                <string>?y</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">

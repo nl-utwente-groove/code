@@ -65,7 +65,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
      * @see #getNode()
      */
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 

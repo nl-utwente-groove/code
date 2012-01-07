@@ -21,6 +21,9 @@ import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
 import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
+import groove.rel.LabelVar;
+import groove.trans.AnchorKey;
+import groove.trans.AnchorKind;
 import groove.trans.RuleNode;
 
 import java.util.Collections;
@@ -32,7 +35,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
  */
-public class VariableNode extends AbstractNode implements RuleNode {
+public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
     /**
      * Constructs a (numbered) typed variable node.
      */
@@ -114,8 +117,18 @@ public class VariableNode extends AbstractNode implements RuleNode {
     }
 
     @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.NODE;
+    }
+
+    @Override
     public List<TypeGuard> getTypeGuards() {
         return EMPTY_GUARD_LIST;
+    }
+
+    @Override
+    public Set<LabelVar> getVars() {
+        return EMPTY_VAR_SET;
     }
 
     @Override
@@ -140,4 +153,6 @@ public class VariableNode extends AbstractNode implements RuleNode {
     /** Predefined empty list of type guards. */
     static private final List<TypeGuard> EMPTY_GUARD_LIST =
         Collections.emptyList();
+    /** Predefined empty list of type guards. */
+    static private final Set<LabelVar> EMPTY_VAR_SET = Collections.emptySet();
 }

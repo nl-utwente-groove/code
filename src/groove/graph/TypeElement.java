@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import groove.trans.AnchorValue;
+
 import java.util.Set;
 
 /** Superinterface for {@link TypeNode} and {@link TypeEdge}.
@@ -23,7 +25,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface TypeElement extends Element {
+public interface TypeElement extends Element, AnchorValue {
     /** 
      * Returns the type label of this type element.
      * Note that for type edges, the label does not completely determine

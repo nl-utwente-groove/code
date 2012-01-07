@@ -39,7 +39,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return Collections.emptySet();
     }
 
@@ -53,7 +53,7 @@ abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<RuleEdge> bindsEdges() {
+    public Collection<? extends RuleEdge> bindsEdges() {
         return Collections.emptySet();
     }
 
@@ -245,11 +245,6 @@ abstract class AbstractSearchItem implements SearchItem {
             return this.state == State.EMPTY;
         }
 
-        /**
-         * Calls {@link #reset()} and returns <code>false</code> if
-         * {@link #next()} was successful at the last call; otherwise, delegates
-         * to {@link #write()}.
-         */
         final public boolean next() {
             State nextState = null;
             switch (this.state) {
@@ -257,6 +252,7 @@ abstract class AbstractSearchItem implements SearchItem {
                 nextState = find() ? State.FOUND : State.EMPTY;
                 break;
             case FOUND:
+                erase();
                 nextState = State.FULL;
                 break;
             case EMPTY:

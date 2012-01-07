@@ -68,5 +68,10 @@ public class DefaultHostNode extends AbstractNode implements HostNode {
         return this.type;
     }
 
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.NODE;
+    }
+
     private final TypeNode type;
 }

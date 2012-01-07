@@ -126,6 +126,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     public JMenu createExportMenu() {
         JMenu result = new JMenu();
         result.add(getActions().getSaveLTSAsAction());
+        result.add(getActions().getSaveStateAction());
         addMenuItems(result, super.createExportMenu());
         return result;
     }

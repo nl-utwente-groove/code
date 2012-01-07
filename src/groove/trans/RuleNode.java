@@ -21,6 +21,7 @@ import groove.graph.Node;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ProductNode;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -44,4 +45,7 @@ public interface RuleNode extends Node, RuleElement {
     /** Specialises the return type. */
     @Override
     public Set<TypeNode> getMatchingTypes();
+
+    /** Fixed global empty set of matching types. */
+    final static Set<TypeNode> EMPTY_MATCH_SET = Collections.emptySet();
 }

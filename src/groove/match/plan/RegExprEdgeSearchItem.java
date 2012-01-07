@@ -91,7 +91,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
 
     /** This implementation returns the empty set. */
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 

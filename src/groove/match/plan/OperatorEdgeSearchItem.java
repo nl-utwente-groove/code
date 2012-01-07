@@ -76,7 +76,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
      * edge.
      */
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
     }
 

@@ -18,7 +18,6 @@ package groove.match.plan;
 
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
-import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
@@ -28,10 +27,8 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,32 +45,32 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      */
     public NodeTypeSearchItem(RuleNode node, TypeGraph typeGraph) {
         assert node.getType().getGraph() == typeGraph;
-        this.source = node;
+        this.node = node;
         this.type = node.getType();
-        this.typeVars = new ArrayList<LabelVar>();
-        for (TypeGuard guard : node.getTypeGuards()) {
-            if (guard.getVar().hasName()) {
-                this.typeVars.add(guard.getVar());
-            }
-        }
-        this.boundNodes = new HashSet<RuleNode>(Arrays.asList(node));
-        this.subtypes = typeGraph.getSubtypes(this.type);
-        this.sharpType =
-            node.isSharp() || this.subtypes == null
-                || this.subtypes.size() == 1;
+        this.boundVars = new ArrayList<LabelVar>(node.getVars());
+        this.boundNodes = Collections.singleton(node);
+        this.matchingTypes = node.getMatchingTypes();
     }
 
     /**
      * Returns the node for which this item tests.
      */
     @Override
-    public Collection<RuleNode> bindsNodes() {
+    public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
+    }
+
+    /**
+     * Returns the variables on this node.
+     */
+    @Override
+    public Collection<LabelVar> bindsVars() {
+        return this.boundVars;
     }
 
     /** Returns the empty set. */
     @Override
-    public Collection<RuleEdge> bindsEdges() {
+    public Collection<? extends RuleEdge> bindsEdges() {
         return Collections.emptySet();
     }
 
@@ -81,13 +78,12 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * Returns the node for which this item tests.
      */
     public RuleNode getNode() {
-        return this.source;
+        return this.node;
     }
 
     @Override
     public String toString() {
-        return String.format("Find node %s:%s%s", this.source, this.type,
-            this.sharpType ? " (sharp)" : "");
+        return String.format("Find node %s:%s", this.node, this.matchingTypes);
     }
 
     /**
@@ -109,11 +105,14 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     }
 
     public void activate(PlanSearchStrategy strategy) {
-        this.sourceFound = strategy.isNodeFound(this.source);
-        this.sourceIx = strategy.getNodeIx(this.source);
-        this.varIxs = new int[this.typeVars.size()];
+        this.nodeFound = strategy.isNodeFound(this.node);
+        this.nodeIx = strategy.getNodeIx(this.node);
+        this.varIxs = new int[this.boundVars.size()];
+        this.varFound = new boolean[this.boundVars.size()];
         for (int i = 0; i < this.varIxs.length; i++) {
-            this.varIxs[i] = strategy.getVarIx(this.typeVars.get(i));
+            LabelVar var = this.boundVars.get(i);
+            this.varFound[i] = strategy.isVarFound(var);
+            this.varIxs[i] = strategy.getVarIx(var);
         }
     }
 
@@ -127,93 +126,74 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
     final public Record createRecord(
             groove.match.plan.PlanSearchStrategy.Search search) {
-        if (isPreMatched(search)) {
-            // the edge is unexpectedly pre-matched
-            return createDummyRecord();
-        } else if (isSingular(search)) {
+        if (this.nodeFound) {
             return createSingularRecord(search);
         } else {
             return createMultipleRecord(search);
         }
     }
 
-    /** Indicates if the edge is pre-matched in the search. */
-    boolean isPreMatched(Search search) {
-        return search.getNodeSeed(this.sourceIx) != null;
-    }
-
-    /** Indicates if the source node has a singular image in the search. */
-    boolean isSingular(Search search) {
-        return this.sourceFound || isPreMatched(search);
-    }
-
     /** Creates a record for the case the image is singular. */
     SingularRecord createSingularRecord(Search search) {
-        return new NodeTypeSingularRecord(search, this.sourceIx);
+        return new NodeTypeSingularRecord(search, this.nodeIx);
     }
 
     /** Creates a record for the case the image is not singular. */
     MultipleRecord<HostNode> createMultipleRecord(Search search) {
-        return new NodeTypeMultipleRecord(search, this.sourceIx,
-            this.sourceFound);
+        return new NodeTypeMultipleRecord(search, this.nodeIx);
     }
 
     /**
      * The node to be matched.
      */
-    final RuleNode source;
+    final RuleNode node;
     /** The type label to be matched. */
     final TypeNode type;
     /** Type variables in the rule node. */
-    final List<LabelVar> typeVars;
+    private final List<LabelVar> boundVars;
     /** The set of end nodes of this edge. */
     private final Set<RuleNode> boundNodes;
 
     /** The index of the source in the search. */
-    int sourceIx;
+    private int nodeIx;
+    /** Flags indicating whether images for the label variables have been found. */
+    boolean[] varFound;
     /** The indices of the label variables in the search. */
     int[] varIxs;
-    /** Indicates if the source is found before this item is invoked. */
-    boolean sourceFound;
+    /** Indicates if the node is found before this item is invoked. */
+    boolean nodeFound;
     /** The collection of subtypes of this node type. */
-    final Collection<TypeNode> subtypes;
-    /** Flag indicating if the node type has non-trivial subtypes. */
-    final boolean sharpType;
+    final Set<TypeNode> matchingTypes;
 
     /**
-     * Search record to be used if the node type image is completely determined
-     * by the pre-matched end.
+     * Search record to be used if the node image is already found.
      * @author Arend Rensink
      * @version $Revision $
      */
     private class NodeTypeSingularRecord extends SingularRecord {
         /** Constructs an instance for a given search. */
-        public NodeTypeSingularRecord(Search search, int sourceIx) {
+        public NodeTypeSingularRecord(Search search, int nodeIx) {
             super(search);
-            this.sourceIx = sourceIx;
-            this.varFound = new boolean[NodeTypeSearchItem.this.varIxs.length];
+            this.nodeIx = nodeIx;
         }
 
         @Override
         public void initialise(HostGraph host) {
             super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
+            this.nodeSeed = this.search.getNodeSeed(this.nodeIx);
         }
 
         @Override
         boolean find() {
             boolean result = false;
-            this.image = computeImage();
-            TypeNode sourceType = this.image.getType();
+            this.imageType = computeImage().getType();
             result =
-                NodeTypeSearchItem.this.source.getMatchingTypes().contains(
-                    sourceType);
-            for (int vi = 0; result && vi < this.varFound.length; vi++) {
+                NodeTypeSearchItem.this.matchingTypes.contains(this.imageType);
+            for (int vi = 0; result
+                && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
                 int varIx = NodeTypeSearchItem.this.varIxs[vi];
-                TypeElement varFind = this.search.getVar(varIx);
-                boolean varFound = this.varFound[vi] = varFind != null;
-                if (varFound) {
-                    result = varFind == sourceType;
+                if (NodeTypeSearchItem.this.varFound[vi]) {
+                    result = this.search.getVar(varIx) == this.imageType;
                 }
             }
             if (result) {
@@ -224,9 +204,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         void erase() {
-            this.search.putNode(this.sourceIx, null);
-            for (int vi = 0; vi < this.varFound.length; vi++) {
-                if (!this.varFound[vi]) {
+            for (int vi = 0; vi < NodeTypeSearchItem.this.varFound.length; vi++) {
+                if (!NodeTypeSearchItem.this.varFound[vi]) {
                     this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], null);
                 }
             }
@@ -235,15 +214,13 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         @Override
         final boolean write() {
             boolean result = true;
-            for (int vi = 0; result && vi < this.varFound.length; vi++) {
-                if (!this.varFound[vi]) {
+            for (int vi = 0; result
+                && vi < NodeTypeSearchItem.this.varFound.length; vi++) {
+                if (!NodeTypeSearchItem.this.varFound[vi]) {
                     result =
                         this.search.putVar(NodeTypeSearchItem.this.varIxs[vi],
-                            this.image.getType());
+                            this.imageType);
                 }
-            }
-            if (result) {
-                result = this.search.putNode(this.sourceIx, this.image);
             }
             if (!result) {
                 erase();
@@ -256,8 +233,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * end node images.
          */
         private HostNode computeImage() {
-            return this.sourcePreMatch == null
-                    ? this.search.getNode(this.sourceIx) : this.sourcePreMatch;
+            return this.nodeSeed == null ? this.search.getNode(this.nodeIx)
+                    : this.nodeSeed;
         }
 
         @Override
@@ -266,13 +243,11 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         }
 
         /** The pre-matched (fixed) source image, if any. */
-        private HostNode sourcePreMatch;
+        private HostNode nodeSeed;
         /** The index of the source in the search. */
-        private final int sourceIx;
-        /** Previously found images for the type variables. */
-        private final boolean[] varFound;
-        /** The previously found type, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
-        private HostNode image;
+        private final int nodeIx;
+        /** The type of the currently selected image. */
+        private TypeNode imageType;
     }
 
     /**
@@ -285,39 +260,27 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         /**
          * Creates a record based on a given search.
          */
-        NodeTypeMultipleRecord(Search search, int sourceIx, boolean sourceFound) {
+        NodeTypeMultipleRecord(Search search, int sourceIx) {
             super(search);
             this.sourceIx = sourceIx;
-            this.sourceFound = sourceFound;
             this.varFind =
                 new TypeElement[NodeTypeSearchItem.this.varIxs.length];
         }
 
         @Override
-        public void initialise(HostGraph host) {
-            super.initialise(host);
-            this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
-        }
-
-        @Override
         void init() {
-            this.sourceFind = this.sourcePreMatch;
-            if (this.sourceFind == null && this.sourceFound) {
-                this.sourceFind = this.search.getNode(this.sourceIx);
-                assert this.sourceFind != null : String.format(
-                    "Node %s not found", NodeTypeSearchItem.this.source);
-            }
             for (int vi = 0; vi < this.varFind.length; vi++) {
-                int varIx = NodeTypeSearchItem.this.varIxs[vi];
-                this.varFind[vi] = this.search.getVar(varIx);
+                if (NodeTypeSearchItem.this.varFound[vi]) {
+                    int varIx = NodeTypeSearchItem.this.varIxs[vi];
+                    this.varFind[vi] = this.search.getVar(varIx);
+                }
             }
             initImages();
         }
 
         @Override
         boolean write(HostNode image) {
-            if (!NodeTypeSearchItem.this.source.getMatchingTypes().contains(
-                image.getType())) {
+            if (!NodeTypeSearchItem.this.matchingTypes.contains(image.getType())) {
                 return false;
             }
             boolean result = true;
@@ -331,7 +294,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
                     result = this.search.putVar(varIx, image.getType());
                 }
             }
-            if (result && this.sourceFind == null) {
+            if (result) {
                 result = this.search.putNode(this.sourceIx, image);
             }
             if (result) {
@@ -350,9 +313,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         @Override
         void erase() {
-            if (this.sourceFind == null) {
-                this.search.putNode(this.sourceIx, null);
-            }
+            this.search.putNode(this.sourceIx, null);
             for (int vi = 0; vi < this.varFind.length; vi++) {
                 if (this.varFind[vi] == null) {
                     this.search.putVar(NodeTypeSearchItem.this.varIxs[vi], null);
@@ -367,12 +328,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
          * for correctness of the source or label parts.
          */
         private void initImages() {
-            if (this.sourceFind != null) {
-                this.imageIter =
-                    Collections.singleton(this.sourceFind).iterator();
-            } else {
-                this.imageIter = this.host.nodeSet().iterator();
-            }
+            this.imageIter = this.host.nodeSet().iterator();
         }
 
         @Override
@@ -382,19 +338,8 @@ class NodeTypeSearchItem extends AbstractSearchItem {
 
         /** The index of the source in the search. */
         final private int sourceIx;
-        /** Indicates if the source is found before this item is invoked. */
-        final private boolean sourceFound;
         /** Images for the type variables found during {@link #init()}. */
         private final TypeElement[] varFind;
-
-        private HostNode sourcePreMatch;
-
-        /**
-         * The pre-matched image for the edge source, if any. A value of
-         * <code>null</code> means that no image is currently selected for the
-         * source, or the source was pre-matched.
-         */
-        private HostNode sourceFind;
         /** Image found by the latest call to {@link #next()}, if any. */
         private HostNode selected;
     }

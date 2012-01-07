@@ -96,6 +96,11 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.condition;
     }
 
+    /** Returns root graph of the condition with which this rule is associated. */
+    public RuleGraph getRoot() {
+        return getCondition().getRoot();
+    }
+
     /** Returns the type graph of this rule. */
     public TypeGraph getTypeGraph() {
         return getCondition().getTypeGraph();
@@ -512,12 +517,12 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Returns the match strategy for the target
      * pattern. First creates the strategy using 
-     * {@link #createMatcher(RuleGraph)} if that
+     * {@link #createMatcher(Anchor)} if that
      * has not been done.
      * 
      * @param seedMap mapping from the seed elements to a host graph.
      * 
-     * @see #createMatcher(RuleGraph)
+     * @see #createMatcher(Anchor)
      */
     private SearchStrategy getMatcher(RuleToHostMap seedMap) {
         assert isTop();
@@ -534,8 +539,7 @@ public class Rule implements Fixable, Comparable<Rule> {
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
-                RuleGraph seed = new RuleGraph("seed-" + initPars);
-                seed.addNodeSet(seedMap.nodeMap().keySet());
+                Anchor seed = new Anchor(seedMap.nodeMap().keySet());
                 this.matcherMap.put(initPars, result = createMatcher(seed));
             }
         } else {
@@ -546,12 +550,12 @@ public class Rule implements Fixable, Comparable<Rule> {
 
     /**
      * Returns a (precomputed) match strategy for the target
-     * pattern, given a seed map.
-     * @see #createMatcher(RuleGraph)
+     * pattern, based on the rule seed.
+     * @see #createMatcher(Anchor)
      */
     public Matcher getMatcher() {
         if (this.matcher == null) {
-            this.matcher = createMatcher(this.condition.getRoot());
+            this.matcher = createMatcher(getSeed());
         }
         return this.matcher;
     }
@@ -562,7 +566,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * retrieves its value from {@link #getMatcherFactory()}.
      * @param seed the pre-matched subgraph
      */
-    private Matcher createMatcher(RuleGraph seed) {
+    private Matcher createMatcher(Anchor seed) {
         testFixed(true);
         return getMatcherFactory().createMatcher(getCondition(), seed);
     }
@@ -643,12 +647,20 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.colorMap;
     }
 
-    /** Returns the anchor graph. */
-    public RuleGraph getAnchor() {
+    /** Returns the anchor of the rule. */
+    public Anchor getAnchor() {
         if (this.anchor == null) {
             initAnchor();
         }
         return this.anchor;
+    }
+
+    /** Returns the seed of the rule. */
+    public Anchor getSeed() {
+        if (this.seed == null) {
+            this.seed = new Anchor(getRoot());
+        }
+        return this.seed;
     }
 
     /** Returns the anchor nodes. */
@@ -657,6 +669,14 @@ public class Rule implements Fixable, Comparable<Rule> {
             initAnchor();
         }
         return this.anchorNodes;
+    }
+
+    /** Returns the anchor variables. */
+    public LabelVar[] getAnchorVars() {
+        if (this.anchorVars == null) {
+            initAnchor();
+        }
+        return this.anchorVars;
     }
 
     /** Returns the anchor edges. */
@@ -673,8 +693,8 @@ public class Rule implements Fixable, Comparable<Rule> {
     private void initAnchor() {
         this.anchor = anchorFactory.newAnchor(this);
         Set<RuleNode> nodeResult = new TreeSet<RuleNode>(this.anchor.nodeSet());
-        this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
         Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(this.anchor.edgeSet());
+        this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
         this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
     }
 
@@ -682,9 +702,10 @@ public class Rule implements Fixable, Comparable<Rule> {
     public String toString() {
         StringBuilder res =
             new StringBuilder(String.format(
-                "Rule %s; anchor nodes: %s, edges: %s%n", getName(),
-                Groove.toString(getAnchorNodes()),
-                Groove.toString(getAnchorEdges())));
+                "Rule %s; anchor nodes: %s, edges: %s, variables: %s%n",
+                getName(), Groove.toString(getAnchorNodes()),
+                Groove.toString(getAnchorEdges()),
+                Groove.toString(getAnchorVars())));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -926,7 +947,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
-    public final RuleEdge[] getEraserEdges() {
+    public final DefaultRuleEdge[] getEraserEdges() {
         if (this.eraserEdges == null) {
             this.eraserEdges = computeEraserEdges();
         }
@@ -936,7 +957,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Computes the eraser (i.e., LHS-only) edges.
      */
-    private RuleEdge[] computeEraserEdges() {
+    private DefaultRuleEdge[] computeEraserEdges() {
         testFixed(true);
         Set<RuleEdge> result = new HashSet<RuleEdge>(lhs().edgeSet());
         result.removeAll(rhs().edgeSet());
@@ -944,11 +965,11 @@ public class Rule implements Fixable, Comparable<Rule> {
         for (RuleNode eraserNode : getEraserNodes()) {
             result.removeAll(lhs().edgeSet(eraserNode));
         }
-        return result.toArray(new RuleEdge[result.size()]);
+        return result.toArray(new DefaultRuleEdge[result.size()]);
     }
 
     /** Returns the eraser edges that are not themselves anchors. */
-    final RuleEdge[] getEraserNonAnchorEdges() {
+    final DefaultRuleEdge[] getEraserNonAnchorEdges() {
         if (this.eraserNonAnchorEdges == null) {
             this.eraserNonAnchorEdges = computeEraserNonAnchorEdges();
         }
@@ -958,17 +979,17 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Computes the array of creator edges that are not themselves anchors.
      */
-    private RuleEdge[] computeEraserNonAnchorEdges() {
-        Set<RuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
+    private DefaultRuleEdge[] computeEraserNonAnchorEdges() {
+        Set<DefaultRuleEdge> eraserNonAnchorEdgeSet =
+            new HashSet<DefaultRuleEdge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(Arrays.asList(getAnchorEdges()));
-        return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
+        return eraserNonAnchorEdgeSet.toArray(new DefaultRuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
 
     /**
      * Returns the LHS nodes that are not mapped to the RHS.
      */
-    public final RuleNode[] getEraserNodes() {
+    public final DefaultRuleNode[] getEraserNodes() {
         if (this.eraserNodes == null) {
             this.eraserNodes = computeEraserNodes();
         }
@@ -978,11 +999,11 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Computes the eraser (i.e., lhs-only) nodes.
      */
-    private RuleNode[] computeEraserNodes() {
+    private DefaultRuleNode[] computeEraserNodes() {
         //testFixed(true);
         Set<RuleNode> result = new HashSet<RuleNode>(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
-        return result.toArray(new RuleNode[result.size()]);
+        return result.toArray(new DefaultRuleNode[result.size()]);
     }
 
     /**
@@ -1384,14 +1405,16 @@ public class Rule implements Fixable, Comparable<Rule> {
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()
      */
-    private RuleNode[] eraserNodes;
+    private DefaultRuleNode[] eraserNodes;
     /**
      * The lhs edges that are not ruleMorph keys
      * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
      */
-    private RuleEdge[] eraserEdges;
-    /** The anchor graph. */
-    private RuleGraph anchor;
+    private DefaultRuleEdge[] eraserEdges;
+    /** The rule anchor. */
+    private Anchor anchor;
+    /** The rule seed. */
+    private Anchor seed;
     /**
      * The set of anchor nodes of this rule.
      */
@@ -1401,9 +1424,13 @@ public class Rule implements Fixable, Comparable<Rule> {
      */
     private RuleEdge[] anchorEdges;
     /**
+     * The anchor variables of this rule.
+     */
+    private LabelVar[] anchorVars;
+    /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
-    private RuleEdge[] eraserNonAnchorEdges;
+    private DefaultRuleEdge[] eraserNonAnchorEdges;
     /**
      * The lhs nodes that are end points of eraser or creator edges or mergers,
      * either in this rule or one of its sub-rules.
@@ -1489,7 +1516,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     private Matcher eventMatcher;
 
     /** Returns the current anchor factory for all rules. */
-    public static AnchorFactory<Rule> getAnchorFactory() {
+    public static AnchorFactory getAnchorFactory() {
         return anchorFactory;
     }
 
@@ -1497,7 +1524,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * Sets the anchor factory for all rules. Only affects rules created from
      * this moment on.
      */
-    public static void setAnchorFactory(AnchorFactory<Rule> anchorFactory) {
+    public static void setAnchorFactory(AnchorFactory anchorFactory) {
         Rule.anchorFactory = anchorFactory;
     }
 
@@ -1512,8 +1539,8 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * The factory used for creating rule anchors.
      */
-    private static AnchorFactory<Rule> anchorFactory =
-        MinimalAnchorFactory.getInstance();
+    private static AnchorFactory anchorFactory =
+        DefaultAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
     /**

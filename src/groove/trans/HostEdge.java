@@ -25,7 +25,7 @@ import groove.graph.TypeLabel;
  * @author Arend Rensink
  */
 public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
-        HostElement {
+        HostElement, AnchorValue {
     /** Constructor for a typed edge. */
     protected HostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         super(source, type.label(), target);
@@ -78,6 +78,11 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
      */
     public TypeEdge getType() {
         return this.type;
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.EDGE;
     }
 
     /** The (unique) number of this edge. */

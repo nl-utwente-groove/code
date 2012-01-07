@@ -17,8 +17,8 @@
 package groove.match.plan;
 
 import groove.rel.LabelVar;
+import groove.trans.Anchor;
 import groove.trans.Condition;
-import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
      * @param seed subgraph whose image is pre-matched before invoking the search plan
      * @param injective flag indicating that the match should be injective
      */
-    public SearchPlan(Condition condition, RuleGraph seed, boolean injective) {
+    public SearchPlan(Condition condition, Anchor seed, boolean injective) {
         this.condition = condition;
         this.injective = injective;
         this.seed = seed;
@@ -47,7 +47,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     }
 
     /** Returns the (non-{@code null}) seed for this search plan. */
-    public final RuleGraph getSeed() {
+    public final Anchor getSeed() {
         return this.seed;
     }
 
@@ -142,7 +142,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** The condition for which this is the search plan. */
     private final Condition condition;
     /** The subgraph whose image is pre-matched before invoking the search plan. */
-    private final RuleGraph seed;
+    private final Anchor seed;
     /** Direct dependencies of all search plan items. */
     private final List<Integer> dependencies = new ArrayList<Integer>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */

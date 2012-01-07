@@ -16,13 +16,12 @@
  */
 package groove.match;
 
+import groove.trans.Anchor;
+import groove.trans.AnchorKey;
+import groove.trans.AnchorValue;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
 import groove.trans.Proof;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
 import groove.util.Fixable;
 import groove.util.HashBag;
@@ -34,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Encoding of a condition match as a tree structure.
@@ -362,21 +360,12 @@ public class TreeMatch implements Fixable {
             int patternHashCode = 1;
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Map<?,?> nodeMap = getPatternMap().nodeMap();
-                RuleNode[] anchorNodes =
-                    getCondition().getRule().getAnchorNodes();
-                for (int i = 0; i < anchorNodes.length; i++) {
+                Anchor anchor = getCondition().getRule().getAnchor();
+                for (int i = 0; i < anchor.size(); i++) {
+                    AnchorKey key = anchor.get(i);
+                    AnchorValue value = getPatternMap().get(key);
                     patternHashCode =
-                        prime * patternHashCode
-                            + nodeMap.get(anchorNodes[i]).hashCode();
-                }
-                Map<?,?> edgeMap = getPatternMap().edgeMap();
-                RuleEdge[] anchorEdges =
-                    getCondition().getRule().getAnchorEdges();
-                for (int i = 0; i < anchorEdges.length; i++) {
-                    patternHashCode =
-                        prime * patternHashCode
-                            + edgeMap.get(anchorEdges[i]).hashCode();
+                        prime * patternHashCode + value.hashCode();
                 }
             } else {
                 // the entire pattern map is relevant
@@ -409,31 +398,14 @@ public class TreeMatch implements Fixable {
             return false;
         }
         if (getOp().hasPattern()) {
+            RuleToHostMap myMap = getPatternMap();
+            RuleToHostMap hisMap = other.getPatternMap();
             if (getCondition().hasRule()) {
                 // only the anchor images matter to equality of the match
-                Map<RuleNode,? extends HostNode> myNodeMap =
-                    getPatternMap().nodeMap();
-                Map<RuleNode,? extends HostNode> otherNodeMap =
-                    other.getPatternMap().nodeMap();
-                RuleNode[] anchorNodes =
-                    getCondition().getRule().getAnchorNodes();
-                for (int i = 0; i < anchorNodes.length; i++) {
-                    RuleNode element = anchorNodes[i];
-                    if (!myNodeMap.get(element).equals(
-                        otherNodeMap.get(element))) {
-                        return false;
-                    }
-                }
-                Map<RuleEdge,? extends HostEdge> myEdgeMap =
-                    getPatternMap().edgeMap();
-                Map<RuleEdge,? extends HostEdge> otherEdgeMap =
-                    other.getPatternMap().edgeMap();
-                RuleEdge[] anchorEdges =
-                    getCondition().getRule().getAnchorEdges();
-                for (int i = 0; i < anchorEdges.length; i++) {
-                    RuleEdge element = anchorEdges[i];
-                    if (!myEdgeMap.get(element).equals(
-                        otherEdgeMap.get(element))) {
+                Anchor anchor = getCondition().getRule().getAnchor();
+                for (int i = 0; i < anchor.size(); i++) {
+                    AnchorKey key = anchor.get(i);
+                    if (!myMap.get(key).equals(hisMap.get(key))) {
                         return false;
                     }
                 }

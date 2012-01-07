@@ -31,7 +31,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FormatError implements Comparable<FormatError>, SelectableListEntry {
+public class FormatError implements Comparable<FormatError>,
+        SelectableListEntry {
     /** Constructs an error consisting of a string message. */
     public FormatError(String message) {
         this.message = message;
@@ -181,7 +182,7 @@ public class FormatError implements Comparable<FormatError>, SelectableListEntry
     }
 
     /** Returns a new format error that extends this one with context information. */
-    public FormatError extend(Object par) {
+    public FormatError extend(Object... par) {
         return new FormatError(this, par);
     }
 

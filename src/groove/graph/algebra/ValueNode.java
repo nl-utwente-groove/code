@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
 import groove.graph.TypeNode;
+import groove.trans.AnchorKind;
 import groove.trans.HostNode;
 import groove.view.aspect.AspectParser;
 
@@ -106,6 +107,11 @@ public class ValueNode extends AbstractNode implements HostNode {
     @Override
     public TypeNode getType() {
         return this.type;
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.NODE;
     }
 
     /** The signature of this value node. */

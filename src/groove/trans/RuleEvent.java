@@ -52,7 +52,7 @@ public interface RuleEvent extends Comparable<RuleEvent>, GraphTransitionStub,
      * Returns the anchor image at a given position.
      * This always refers to the anchor of the top level existential event. 
      */
-    public HostElement getAnchorImage(int i);
+    public AnchorValue getAnchorImage(int i);
 
     /**
      * Returns a match of this event's rule, based on the anchor map in this

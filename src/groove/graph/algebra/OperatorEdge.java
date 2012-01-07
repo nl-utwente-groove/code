@@ -17,8 +17,17 @@
 package groove.graph.algebra;
 
 import groove.algebra.Operator;
+import groove.graph.AbstractEdge;
+import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
+import groove.graph.TypeGuard;
+import groove.rel.LabelVar;
 import groove.trans.RuleEdge;
 import groove.trans.RuleLabel;
+import groove.trans.RuleNode;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class represents the edges in attributed graphs which support the
@@ -29,7 +38,8 @@ import groove.trans.RuleLabel;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class OperatorEdge extends RuleEdge {
+public class OperatorEdge extends AbstractEdge<RuleNode,RuleLabel> implements
+        RuleEdge {
     /**
      * Constructs an edge for a given operation.
      * @param source the product node that is the source of the edge
@@ -37,7 +47,7 @@ public class OperatorEdge extends RuleEdge {
      * @param target the target node for the edge
      */
     public OperatorEdge(ProductNode source, RuleLabel label, VariableNode target) {
-        super(source, label, null, target);
+        super(source, label, target);
         assert label.isOperator();
         this.operator = label.getOperator();
     }
@@ -59,6 +69,26 @@ public class OperatorEdge extends RuleEdge {
      */
     public Operator getOperator() {
         return this.operator;
+    }
+
+    @Override
+    public TypeEdge getType() {
+        return null;
+    }
+
+    @Override
+    public Set<LabelVar> getVars() {
+        return EMPTY_VAR_SET;
+    }
+
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return EMPTY_GUARD_LIST;
+    }
+
+    @Override
+    public Set<? extends TypeElement> getMatchingTypes() {
+        return EMPTY_MATCH_SET;
     }
 
     /** The operation represented by this edge. */
