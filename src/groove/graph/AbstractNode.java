@@ -31,7 +31,6 @@ abstract public class AbstractNode implements Node, Cloneable {
      */
     protected AbstractNode(int nr) {
         this.nodeNr = nr;
-        this.hashCode = computeHashCode();
     }
 
     /**
@@ -48,6 +47,10 @@ abstract public class AbstractNode implements Node, Cloneable {
      */
     @Override
     final public int hashCode() {
+        if (this.hashCode == 0) {
+            int result = computeHashCode();
+            this.hashCode = result == 0 ? 1 : result;
+        }
         return this.hashCode;
     }
 
@@ -150,5 +153,5 @@ abstract public class AbstractNode implements Node, Cloneable {
      * The hashcode of this node. The hashcode is precomputed at creation time
      * using {@link #computeHashCode()}.
      */
-    private final int hashCode;
+    private int hashCode;
 }

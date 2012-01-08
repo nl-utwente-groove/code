@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,30 +16,105 @@
  */
 package groove.trans;
 
-import groove.graph.Edge;
+import groove.graph.AbstractEdge;
 import groove.graph.TypeEdge;
+import groove.graph.TypeGraph;
+import groove.graph.TypeGuard;
+import groove.rel.LabelVar;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-/**
- * Supertype of all edges that may appear in a {@link RuleGraph}.
- * @author Arend Rensink
- * @version $Revision $
- */
-public interface RuleEdge extends Edge, RuleElement {
-    /** Specialises the return type. */
-    RuleNode source();
+/** Rule edge that is not attribute-related. */
+public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
+        RuleElement {
+    /** Constructs a rule edge from a given rule label and/or type edge. */
+    public RuleEdge(RuleNode source, RuleLabel label, TypeEdge type,
+            RuleNode target) {
+        super(source, label, target);
+        assert label.getTypeLabel() == null
+            || label.getTypeLabel().equals(type.label());
+        this.type = type;
+        TypeGuard guard = label.getWildcardGuard();
+        if (guard != null) {
+            this.typeGuards = Collections.singletonList(guard);
+            TypeGraph typeGraph = source.getType().getGraph();
+            if (typeGraph == null) {
+                this.matchingTypes = Collections.emptySet();
+            } else {
+                this.matchingTypes = new HashSet<TypeEdge>();
+                for (TypeEdge typeEdge : typeGraph.edgeSet()) {
+                    if (typeEdge.source().getSubtypes().contains(
+                        source.getType())
+                        && typeEdge.target().getSubtypes().contains(
+                            target.getType()) && guard.isSatisfied(typeEdge)) {
+                        this.matchingTypes.add(typeEdge);
+                    }
+                }
+            }
+        } else if (type == null) {
+            this.matchingTypes = Collections.emptySet();
+            this.typeGuards = Collections.emptyList();
+        } else {
+            this.matchingTypes = new HashSet<TypeEdge>(type.getSubtypes());
+            this.typeGuards = Collections.emptyList();
+        }
+    }
 
-    /** Specialises the return type. */
-    RuleNode target();
+    /** 
+     * Returns the (possibly {@code null}) edge type of this edge.
+     */
+    public TypeEdge getType() {
+        return this.type;
+    }
 
-    /** Specialises the return type. */
-    RuleLabel label();
+    /**
+     * Returns the optional set of possible edge types,
+     * if the label of this edge is a wildcard.
+     */
+    @Override
+    public Set<TypeEdge> getMatchingTypes() {
+        return this.matchingTypes;
+    }
 
-    /** Specialises the return type. */
-    TypeEdge getType();
+    @Override
+    public List<TypeGuard> getTypeGuards() {
+        return this.typeGuards;
+    }
 
-    /** Fixed global empty set of matching types. */
-    public final static Set<TypeEdge> EMPTY_MATCH_SET = Collections.emptySet();
+    @Override
+    public Set<LabelVar> getVars() {
+        Set<LabelVar> result = this.vars;
+        if (result == null) {
+            result = this.vars = new HashSet<LabelVar>();
+            for (TypeGuard guard : getTypeGuards()) {
+                if (guard.isNamed()) {
+                    result.add(guard.getVar());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Sets the possible types of a wildcard edge. */
+    public void setWildcardTypes(Set<TypeEdge> wildcardTypes) {
+        assert this.label.isWildcard();
+        this.matchingTypes.retainAll(wildcardTypes);
+    }
+
+    @Override
+    public AnchorKind getAnchorKind() {
+        return AnchorKind.EDGE;
+    }
+
+    /** The edge type of this rule edge. */
+    private final TypeEdge type;
+    /** Possibly empty list of label variables. */
+    private final List<TypeGuard> typeGuards;
+    /** The (named) label variables involved in the type guards. */
+    private Set<LabelVar> vars;
+    /** Set of possible edge types, if the label is a wildcard. */
+    private final Set<TypeEdge> matchingTypes;
 }

@@ -21,13 +21,10 @@ import groove.graph.iso.PartitionRefiner;
 import groove.util.AbstractCacheHolder;
 import groove.util.Dispenser;
 import groove.util.Groove;
-import groove.util.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -489,58 +486,6 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     private GraphInfo<N,E> graphInfo;
 
     // -------------------- REPORTER DEFINITIONS ------------------------
-
-    /**
-     * Partitions a set of graph elements into its maximal connected subsets.
-     * The set does not necessarily contain all endpoints of edges it contains.
-     * A subset is connected if there is a chain of edges and edge endpoints,
-     * all of which are in the set, between all pairs of elements in the set.
-     * @param nodeSet the set of nodes to be partitioned
-     * @param edgeSet the set of edges to be partitioned
-     * @return The set of maximal connected subsets of <code>elementSet</code>
-     */
-    static public <N extends Node,E extends Edge> Set<Pair<Set<N>,Set<E>>> getConnectedSets(
-            Collection<N> nodeSet, Collection<E> edgeSet) {
-        // mapping from nodes of elementSet to sets of connected elements
-        Map<Element,Pair<Set<N>,Set<E>>> resultMap =
-            new HashMap<Element,Pair<Set<N>,Set<E>>>();
-        for (N elem : nodeSet) {
-            // the node cell consists of a singleton for the time being
-            Set<N> nodeCellSecond = new HashSet<N>();
-            nodeCellSecond.add(elem);
-            resultMap.put(elem, new Pair<Set<N>,Set<E>>(nodeCellSecond,
-                new HashSet<E>()));
-        }
-        for (E edge : edgeSet) {
-            Pair<Set<N>,Set<E>> sourceCell = resultMap.get(edge.source());
-            Pair<Set<N>,Set<E>> targetCell = resultMap.get(edge.target());
-            if (targetCell != null) {
-                if (sourceCell == null) {
-                    sourceCell = targetCell;
-                } else if (targetCell != sourceCell) {
-                    sourceCell.one().addAll(targetCell.one());
-                    sourceCell.two().addAll(targetCell.two());
-                    for (N loser : targetCell.one()) {
-                        resultMap.put(loser, sourceCell);
-                    }
-                    for (E loser : targetCell.two()) {
-                        resultMap.put(loser, sourceCell);
-                    }
-                }
-            }
-            if (sourceCell == null) {
-                // no end nodes of edge have a cell
-                Set<E> cellSecond = new HashSet<E>();
-                cellSecond.add(edge);
-                sourceCell =
-                    new Pair<Set<N>,Set<E>>(new HashSet<N>(), cellSecond);
-            } else {
-                sourceCell.two().add(edge);
-            }
-            resultMap.put(edge, sourceCell);
-        }
-        return new HashSet<Pair<Set<N>,Set<E>>>(resultMap.values());
-    }
 
     /**
      * Returns the number of graphs created and never fixed.

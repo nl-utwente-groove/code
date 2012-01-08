@@ -40,6 +40,7 @@ import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Multiplicity;
 import groove.graph.TypeLabel;
+import groove.io.Util;
 import groove.rel.RegExpr;
 import groove.trans.RuleLabel;
 import groove.util.ExprParser;
@@ -202,7 +203,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         boolean simple =
             ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
                 || ruleLabel.isWildcard();
-        if (!simple && ruleLabel.isMatchable()) {
+        if (!simple) {
             AspectKind kind = getKind();
             assert kind.isRole();
             if (kind.isCreator() && !ruleLabel.isEmpty()) {
@@ -353,7 +354,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             result = getTypeLabel();
         }
         if (result == null) {
-            String text;
+            String text = null;
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
@@ -368,10 +369,16 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
                         getGraphRole() == RULE ? ":=" : "=");
             } else if (getKind() == CONNECT) {
                 text = "+";
-            } else if (getGraphRole() == GraphRole.TYPE
-                && getAttrKind().hasSignature()) {
-                text = getAttrAspect().getContentString();
-            } else {
+            } else if (getAttrKind() == ARGUMENT) {
+                text = "" + Util.LC_PI + getArgument();
+            } else if (getAttrKind().hasSignature()) {
+                if (getGraphRole() == GraphRole.TYPE) {
+                    text = getAttrAspect().getContentString();
+                } else if (getOperator() != null) {
+                    text = getOperator().getName();
+                }
+            }
+            if (text == null) {
                 text = getInnerText();
             }
             result = DefaultLabel.createLabel(text);
@@ -395,10 +402,8 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         RuleLabel result;
         if (getKind().isMeta() || isAssign() || isPredicate()) {
             result = null;
-        } else if (getAttrKind() == ARGUMENT) {
-            result = new RuleLabel(getArgument());
-        } else if (getAttrKind().hasSignature()) {
-            result = new RuleLabel(getOperator());
+        } else if (getAttrKind() != DEFAULT) {
+            result = null;
         } else {
             assert isAssign() || getKind().isRole();
             if (getLabelKind() == LITERAL) {

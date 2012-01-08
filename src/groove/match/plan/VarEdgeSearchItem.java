@@ -21,7 +21,7 @@ import groove.graph.TypeElement;
 import groove.graph.TypeGuard;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
-import groove.trans.DefaultRuleEdge;
+import groove.trans.RuleEdge;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 
@@ -40,7 +40,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
      * Constructs a new search item. The item will match any edge between the
      * end images, and record the edge label as value of the wildcard variable.
      */
-    public VarEdgeSearchItem(DefaultRuleEdge edge) {
+    public VarEdgeSearchItem(RuleEdge edge) {
         super(edge);
         this.guard = edge.label().getWildcardGuard();
         this.var = this.guard.getVar();

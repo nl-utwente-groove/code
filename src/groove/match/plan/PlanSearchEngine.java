@@ -21,7 +21,7 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.Label;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.graph.algebra.OperatorEdge;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
 import groove.rel.LabelVar;
@@ -30,7 +30,6 @@ import groove.trans.Anchor;
 import groove.trans.AnchorKey;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
-import groove.trans.DefaultRuleEdge;
 import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
 import groove.trans.RuleEdge;
@@ -436,17 +435,12 @@ public class PlanSearchEngine extends SearchEngine {
                     createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (label.getWildcardGuard() != null) {
                 assert !this.typeGraph.isNodeType(edge);
-                result = new VarEdgeSearchItem((DefaultRuleEdge) edge);
+                result = new VarEdgeSearchItem(edge);
             } else if (label.isEmpty()) {
                 result = new EqualitySearchItem(source, target, true);
             } else if (label.isSharp() || label.isAtom()) {
-                result = new Edge2SearchItem((DefaultRuleEdge) edge);
-            } else if (label.isOperator()) {
-                assert this.searchMode == NORMAL;
-                result =
-                    new OperatorEdgeSearchItem((OperatorEdge) edge,
-                        this.algebraFamily);
-            } else if (!label.isArgument()) {
+                result = new Edge2SearchItem(edge);
+            } else {
                 result = new RegExprEdgeSearchItem(edge, this.typeGraph);
             }
             return result;
@@ -466,7 +460,13 @@ public class PlanSearchEngine extends SearchEngine {
                 }
                 // otherwise, the node must be among the count nodes of
                 // the subconditions
-            } else if (node instanceof DefaultRuleNode) {
+            } else if (node instanceof OperatorNode) {
+                assert this.searchMode == NORMAL;
+                result =
+                    new OperatorNodeSearchItem((OperatorNode) node,
+                        this.algebraFamily);
+            } else {
+                assert node instanceof DefaultRuleNode;
                 result = new NodeTypeSearchItem(node, this.typeGraph);
             }
             return result;
@@ -716,7 +716,7 @@ public class PlanSearchEngine extends SearchEngine {
          * <li> {@link Edge2SearchItem}s
          * <li> {@link EqualitySearchItem}s
          * <li> {@link NegatedSearchItem}s
-         * <li> {@link OperatorEdgeSearchItem}s
+         * <li> {@link OperatorNodeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
          * <li> {@link SeedSearchItem}s
          * </ul>
@@ -760,7 +760,7 @@ public class PlanSearchEngine extends SearchEngine {
                 return result;
             }
             result++;
-            if (itemClass == OperatorEdgeSearchItem.class) {
+            if (itemClass == OperatorNodeSearchItem.class) {
                 return result;
             }
             result++;

@@ -18,8 +18,7 @@ package groove.trans;
 
 import groove.control.CtrlPar.Var;
 import groove.graph.TypeGraph;
-import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.io.HTMLConverter;
 import groove.io.Util;
@@ -376,15 +375,20 @@ public class Condition implements Fixable {
             if (node instanceof VariableNode
                 && ((VariableNode) node).getConstant() == null
                 && !resolved.contains(node)) {
-                result.put((VariableNode) node,
-                    new ArrayList<Set<VariableNode>>());
+                VariableNode varNode = (VariableNode) node;
+                if (!getPattern().inEdgeSet(node).isEmpty()) {
+                    resolved.add(varNode);
+                } else {
+                    result.put(varNode, new ArrayList<Set<VariableNode>>());
+                }
             }
         }
         // first collect the count nodes of subconditions
         for (Condition subCondition : getSubConditions()) {
             VariableNode countNode = subCondition.getCountNode();
             // check if the condition has a non-constant count node
-            if (countNode != null && countNode.getConstant() == null) {
+            if (countNode != null && countNode.getConstant() == null
+                && !resolved.contains(countNode)) {
                 Set<VariableNode> resolver = new HashSet<VariableNode>();
                 // add the unresolved root nodes of the subcondition to the resolver
                 for (RuleNode rootNode : subCondition.getInputNodes()) {
@@ -401,31 +405,24 @@ public class Condition implements Fixable {
                 }
             }
         }
-        // now add resolvers due to product nodes
-        for (RuleNode node : result.keySet()) {
-            if (node instanceof VariableNode
-                && ((VariableNode) node).getConstant() == null) {
-                VariableNode varNode = (VariableNode) node;
-                for (RuleEdge edge : getPattern().inEdgeSet(node)) {
-                    if (edge.label().isMatchable()) {
-                        resolved.add(varNode);
-                    } else if (edge instanceof OperatorEdge) {
-                        ProductNode source = ((OperatorEdge) edge).source();
-                        // collect the argument nodes
-                        Set<VariableNode> resolver =
-                            new HashSet<VariableNode>();
-                        for (VariableNode arg : source.getArguments()) {
-                            if (arg.getSymbol() == null) {
-                                resolver.add(arg);
-                            }
-                        }
-                        resolver.removeAll(resolved);
-                        if (resolver.isEmpty()) {
-                            resolved.add(varNode);
-                        } else {
-                            result.get(varNode).add(resolver);
-                        }
+        // now add resolvers due to operator nodes
+        for (RuleNode node : getPattern().nodeSet()) {
+            if (node instanceof OperatorNode
+                && !resolved.contains(((OperatorNode) node).getTarget())) {
+                OperatorNode opNode = (OperatorNode) node;
+                VariableNode target = opNode.getTarget();
+                // collect the argument nodes
+                Set<VariableNode> resolver = new HashSet<VariableNode>();
+                for (VariableNode arg : opNode.getArguments()) {
+                    if (arg.getSymbol() == null) {
+                        resolver.add(arg);
                     }
+                }
+                resolver.removeAll(resolved);
+                if (resolver.isEmpty()) {
+                    resolved.add(target);
+                } else {
+                    result.get(target).add(resolver);
                 }
             }
         }

@@ -16,18 +16,14 @@
  */
 package groove.trans;
 
-import groove.graph.DefaultNode;
 import groove.graph.Node;
 import groove.graph.TypeNode;
-import groove.graph.algebra.ProductNode;
 
 import java.util.Collections;
 import java.util.Set;
 
 /**
  * Supertype of all nodes that can occur in a {@link RuleGraph}.
- * These are {@link DefaultNode}s and {@link ProductNode}s (or
- * subclasses of the latter).
  * @author Arend Rensink
  * @version $Revision $
  */

@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface RuleElement extends Element {
+public interface RuleElement extends Element, AnchorKey {
     /** Returns the type of this rule element. */
     public TypeElement getType();
 

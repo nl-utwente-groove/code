@@ -947,7 +947,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
-    public final DefaultRuleEdge[] getEraserEdges() {
+    public final RuleEdge[] getEraserEdges() {
         if (this.eraserEdges == null) {
             this.eraserEdges = computeEraserEdges();
         }
@@ -957,7 +957,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Computes the eraser (i.e., LHS-only) edges.
      */
-    private DefaultRuleEdge[] computeEraserEdges() {
+    private RuleEdge[] computeEraserEdges() {
         testFixed(true);
         Set<RuleEdge> result = new HashSet<RuleEdge>(lhs().edgeSet());
         result.removeAll(rhs().edgeSet());
@@ -965,11 +965,11 @@ public class Rule implements Fixable, Comparable<Rule> {
         for (RuleNode eraserNode : getEraserNodes()) {
             result.removeAll(lhs().edgeSet(eraserNode));
         }
-        return result.toArray(new DefaultRuleEdge[result.size()]);
+        return result.toArray(new RuleEdge[result.size()]);
     }
 
     /** Returns the eraser edges that are not themselves anchors. */
-    final DefaultRuleEdge[] getEraserNonAnchorEdges() {
+    final RuleEdge[] getEraserNonAnchorEdges() {
         if (this.eraserNonAnchorEdges == null) {
             this.eraserNonAnchorEdges = computeEraserNonAnchorEdges();
         }
@@ -979,11 +979,11 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * Computes the array of creator edges that are not themselves anchors.
      */
-    private DefaultRuleEdge[] computeEraserNonAnchorEdges() {
-        Set<DefaultRuleEdge> eraserNonAnchorEdgeSet =
-            new HashSet<DefaultRuleEdge>(Arrays.asList(getEraserEdges()));
+    private RuleEdge[] computeEraserNonAnchorEdges() {
+        Set<RuleEdge> eraserNonAnchorEdgeSet =
+            new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
         eraserNonAnchorEdgeSet.removeAll(Arrays.asList(getAnchorEdges()));
-        return eraserNonAnchorEdgeSet.toArray(new DefaultRuleEdge[eraserNonAnchorEdgeSet.size()]);
+        return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
 
     /**
@@ -1410,7 +1410,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * The lhs edges that are not ruleMorph keys
      * @invariant lhsOnlyEdges \subseteq lhs.edgeSet()
      */
-    private DefaultRuleEdge[] eraserEdges;
+    private RuleEdge[] eraserEdges;
     /** The rule anchor. */
     private Anchor anchor;
     /** The rule seed. */
@@ -1430,7 +1430,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */
-    private DefaultRuleEdge[] eraserNonAnchorEdges;
+    private RuleEdge[] eraserNonAnchorEdges;
     /**
      * The lhs nodes that are end points of eraser or creator edges or mergers,
      * either in this rule or one of its sub-rules.

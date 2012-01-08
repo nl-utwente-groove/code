@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
@@ -26,9 +27,7 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 
 import java.util.List;
@@ -68,6 +67,13 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return new VariableNode(nr, constant, type);
     }
 
+    /** Creates an operator node for a given node number and arity. */
+    public OperatorNode createOperatorNode(int nr, Operator operator,
+            List<VariableNode> arguments, VariableNode target) {
+        updateMaxNodeNr(nr);
+        return new OperatorNode(nr, operator, arguments, target);
+    }
+
     /** Creates a label with the given text. */
     public RuleLabel createLabel(String text) {
         return new RuleLabel(text);
@@ -82,19 +88,19 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     @Override
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
         RuleLabel ruleLabel = (RuleLabel) label;
-        if (ruleLabel.isArgument()) {
-            return new ArgumentEdge((ProductNode) source, ruleLabel,
-                (VariableNode) target);
-        } else if (ruleLabel.isOperator()) {
-            return new OperatorEdge((ProductNode) source, ruleLabel,
-                (VariableNode) target);
-        } else {
-            TypeLabel typeLabel = ruleLabel.getTypeLabel();
-            TypeEdge type =
-                typeLabel == null ? null : this.typeFactory.getEdge(
-                    source.getType(), typeLabel, target.getType(), false);
-            return new DefaultRuleEdge(source, ruleLabel, type, target);
-        }
+        //        if (ruleLabel.isArgument()) {
+        //            return new ArgumentEdge((ProductNode) source, ruleLabel,
+        //                (VariableNode) target);
+        //        } else if (ruleLabel.isOperator()) {
+        //            return new OperatorEdge((ProductNode) source, ruleLabel,
+        //                (VariableNode) target);
+        //        } else {
+        TypeLabel typeLabel = ruleLabel.getTypeLabel();
+        TypeEdge type =
+            typeLabel == null ? null : this.typeFactory.getEdge(
+                source.getType(), typeLabel, target.getType(), false);
+        return new RuleEdge(source, ruleLabel, type, target);
+        //        }
     }
 
     @Override

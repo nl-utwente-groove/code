@@ -1374,8 +1374,8 @@ public final class GraphToTikz {
         Edge e = edge.getEdge();
         if (e instanceof AspectEdge) {
             RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
-            if (ruleLabel != null && ruleLabel.isMatchable()
-                && !ruleLabel.isAtom() && !ruleLabel.isSharp()) {
+            if (ruleLabel != null && !ruleLabel.isAtom()
+                && !ruleLabel.isSharp()) {
                 // We have a regular expression on the label, make it italic.
                 this.result.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
             } else {

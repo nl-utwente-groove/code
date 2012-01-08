@@ -56,8 +56,8 @@ public class Matcher implements SearchStrategy {
         this.condition = condition;
         if (seed == null && condition.getOp().hasPattern()) {
             seed = new Anchor();
-            seed.addKeys(condition.getInputNodes());
-            seed.addKeys(condition.getRoot().edgeSet());
+            seed.addAll(condition.getInputNodes());
+            seed.addAll(condition.getRoot().edgeSet());
             seed.addAll(condition.getRoot().varSet());
         }
         this.seed = seed;

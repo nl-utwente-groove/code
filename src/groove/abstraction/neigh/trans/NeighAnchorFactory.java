@@ -83,11 +83,11 @@ public final class NeighAnchorFactory implements AnchorFactory {
         singularNodes.addAll(rule.getModifierEnds());
         // Everything that is within radius distance of the singular nodes
         // is also part of the anchor.
-        result.addKeys(singularNodes);
+        result.addAll(singularNodes);
         for (RuleNode singularNode : singularNodes) {
             for (RuleEdge edge : rule.lhs().edgeSet(singularNode)) {
-                result.addKey(edge.source());
-                result.addKey(edge.target());
+                result.add(edge.source());
+                result.add(edge.target());
             }
         }
         return result;

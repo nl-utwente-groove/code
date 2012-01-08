@@ -20,7 +20,6 @@ import groove.graph.TypeEdge;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.trans.DefaultRuleEdge;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -42,7 +41,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      * Creates a search item for a given binary edge.
      * @param edge the edge to be matched
      */
-    public Edge2SearchItem(DefaultRuleEdge edge) {
+    public Edge2SearchItem(RuleEdge edge) {
         // as this is subclassed by VarEdgeSearchItem,
         // the label may actually be an arbitrary regular expression
         assert edge.label().isSharp() || edge.label().isAtom()
@@ -77,7 +76,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     /** Returns the singleton set consisting of the matched edge. */
     @Override
     public Collection<? extends RuleEdge> bindsEdges() {
-        return Collections.singleton((RuleEdge) this.edge);
+        return Collections.singleton(this.edge);
     }
 
     /**
@@ -200,7 +199,7 @@ class Edge2SearchItem extends AbstractSearchItem {
     /**
      * The edge for which this search item is to find an image.
      */
-    final DefaultRuleEdge edge;
+    final RuleEdge edge;
     /** The label of {@link #edge}, separately stored for efficiency. */
     final TypeEdge type;
     /**

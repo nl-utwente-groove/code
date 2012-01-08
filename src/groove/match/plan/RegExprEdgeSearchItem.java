@@ -41,7 +41,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
         RuleLabel label = edge.label();
-        assert label.isMatchable();
         this.labelAutomaton = label.getAutomaton(typeGraph);
         this.edgeExpr = label.getMatchExpr();
         this.boundVars = label.getMatchExpr().boundVarSet();

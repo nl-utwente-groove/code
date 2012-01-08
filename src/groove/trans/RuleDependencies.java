@@ -418,24 +418,21 @@ public class RuleDependencies {
         freshTargetEdges.removeAll(cond.getRoot().edgeSet());
         for (RuleEdge edge : freshTargetEdges) {
             RuleLabel label = edge.label();
-            // don't look at attribute-related edges
-            if (!(label.isArgument() || label.isOperator())) {
-                // flag indicating that the edge always tests positively
-                // for the presence of connecting structure
-                boolean presence = true;
-                Set<TypeElement> affectedSet;
-                if (label.isNeg()) {
-                    affectedSet = negative;
-                    presence = false;
-                } else {
-                    affectedSet = positive;
-                    presence = !label.getMatchExpr().isAcceptsEmptyWord();
-                }
-                affectedSet.addAll(getMatchingTypes(edge));
-                if (presence) {
-                    isolatedNodes.remove(edge.source());
-                    isolatedNodes.remove(edge.target());
-                }
+            // flag indicating that the edge always tests positively
+            // for the presence of connecting structure
+            boolean presence = true;
+            Set<TypeElement> affectedSet;
+            if (label.isNeg()) {
+                affectedSet = negative;
+                presence = false;
+            } else {
+                affectedSet = positive;
+                presence = !label.getMatchExpr().isAcceptsEmptyWord();
+            }
+            affectedSet.addAll(getMatchingTypes(edge));
+            if (presence) {
+                isolatedNodes.remove(edge.source());
+                isolatedNodes.remove(edge.target());
             }
         }
         // if there is a dangling edge check, dangling edge types are negative conditions
@@ -525,12 +522,10 @@ public class RuleDependencies {
             if (label.isNeg()) {
                 label = label.getNegOperand().toLabel();
             }
-            if (label.isMatchable()) {
-                RegAut labelAut = label.getAutomaton(this.typeGraph);
-                result.addAll(labelAut.getAlphabet());
-                if (labelAut.isAcceptsEmptyWord()) {
-                    result.addAll(this.typeGraph.nodeSet());
-                }
+            RegAut labelAut = label.getAutomaton(this.typeGraph);
+            result.addAll(labelAut.getAlphabet());
+            if (labelAut.isAcceptsEmptyWord()) {
+                result.addAll(this.typeGraph.nodeSet());
             }
         } else {
             result.addAll(this.typeGraph.getSubtypes(edgeType));

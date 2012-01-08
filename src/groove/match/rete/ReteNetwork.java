@@ -24,8 +24,7 @@ import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
-import groove.graph.algebra.ArgumentEdge;
-import groove.graph.algebra.OperatorEdge;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
@@ -158,10 +157,10 @@ public class ReteNetwork {
         StaticMap openList = new StaticMap();
 
         Set<RuleEdge> emptyAndNegativePathEdges = new TreeHashSet<RuleEdge>();
-        Set<OperatorEdge> operatorEdges = new TreeHashSet<OperatorEdge>();
+        Set<OperatorNode> operatorNodes = new TreeHashSet<OperatorNode>();
         mapQuantifierCountNodes(openList, condition);
         mapEdgesAndNodes(openList, condition.getPattern(),
-            emptyAndNegativePathEdges, operatorEdges);
+            emptyAndNegativePathEdges, operatorNodes);
 
         if (openList.size() > 0) {
             //generate subgraph-checkers
@@ -182,7 +181,7 @@ public class ReteNetwork {
             HashSet<ReteStaticMapping> isolatedComponents =
                 new HashSet<ReteStaticMapping>();
             while (((openList.size() > 1) && (isolatedComponents.size() < openList.size()))
-                || !operatorEdges.isEmpty()) {
+                || !operatorNodes.isEmpty()) {
 
                 toBeDeleted.clear();
                 //Try to merge the n-nodes using their existing
@@ -226,7 +225,7 @@ public class ReteNetwork {
                 //until a new subgraph-checker is created or
                 //until it turns out that no more merge is possible.
                 while (!changes
-                    && ((isolatedComponents.size() < openList.size()) || !(operatorEdges.isEmpty()))) {
+                    && ((isolatedComponents.size() < openList.size()) || !(operatorNodes.isEmpty()))) {
                     /**
                      * then remove from open-list the references to
                      * - the subgraph-checker of the largest subgraph g of the actual
@@ -270,11 +269,11 @@ public class ReteNetwork {
                         changes = true;
                     } else if (m1 != null) {
                         isolatedComponents.add(m1);
-                    } else if (!operatorEdges.isEmpty()) {
+                    } else if (!operatorNodes.isEmpty()) {
                         List<ReteStaticMapping> argumentSources =
                             new ArrayList<ReteStaticMapping>();
-                        OperatorEdge opEdge =
-                            pickOneOperatorEdge(openList, operatorEdges,
+                        OperatorNode opNode =
+                            pickOneOperatorNode(openList, operatorNodes,
                                 argumentSources);
                         ReteStaticMapping inputAntecedent = null;
                         assert argumentSources.size() > 0;
@@ -287,13 +286,13 @@ public class ReteNetwork {
                         toBeDeleted.addAll(argumentSources);
                         DataOperatorChecker operatorNode =
                             new DataOperatorChecker(this, inputAntecedent,
-                                opEdge);
+                                opNode);
                         ReteStaticMapping opCheckerMapping =
                             ReteStaticMapping.mapDataOperatorNode(operatorNode,
-                                opEdge, inputAntecedent);
+                                opNode, inputAntecedent);
                         openList.add(opCheckerMapping);
-                        assert opEdge != null;
-                        operatorEdges.remove(opEdge);
+                        assert opNode != null;
+                        operatorNodes.remove(opNode);
                         changes = true;
                     } else {
                         //everything else in the openList is just a bunch of 
@@ -449,8 +448,8 @@ public class ReteNetwork {
     }
 
     /**
-     * Tries to pick "the best" operator edge in the given list
-     * of operator edges that could connect or make use of the 
+     * Tries to pick "the best" operator node in the given list
+     * of operator nodes that could connect or make use of the 
      * disconnected components on the openList. 
      * 
      * "The best" is a heuristic criterion that is now chosen to be 
@@ -464,27 +463,27 @@ public class ReteNetwork {
      * nodes already in the components on the open list    
      *   
      * @param openList  The list of "seemingly" disconnected components of a rule
-     * @param operatorEdges The list of candidate operator edges.
+     * @param operatorNodes The list of candidate operator nodes.
      * @param argumentSources Output parameter. The list of components 
      *                        containing the argument nodes of the operator reside.
      *                        No component is repeated in the list.  
-     * @return The operator edge picked. Will return <code>null</code> if
-     * the parameter operatorEdges is empty, or none of the operator edges
+     * @return The operator node picked. Will return <code>null</code> if
+     * the parameter operatorNodes is empty, or none of the operator nodes
      * have their arguments on the open list 
-     * otherwise it will definitely return some operator edge.
+     * otherwise it will definitely return some operator node.
      */
-    private OperatorEdge pickOneOperatorEdge(StaticMap openList,
-            Set<OperatorEdge> operatorEdges,
+    private OperatorNode pickOneOperatorNode(StaticMap openList,
+            Set<OperatorNode> operatorNodes,
             List<ReteStaticMapping> argumentSources) {
-        OperatorEdge result = null;
+        OperatorNode result = null;
 
-        final HashMap<OperatorEdge,List<ReteStaticMapping>> candidates =
-            new HashMap<OperatorEdge,List<ReteStaticMapping>>();
-        for (OperatorEdge edge : operatorEdges) {
+        final HashMap<OperatorNode,List<ReteStaticMapping>> candidates =
+            new HashMap<OperatorNode,List<ReteStaticMapping>>();
+        for (OperatorNode node : operatorNodes) {
             boolean allArgumentsFound = true;
             List<ReteStaticMapping> argumentComponents =
                 new ArrayList<ReteStaticMapping>();
-            for (VariableNode vn : edge.source().getArguments()) {
+            for (VariableNode vn : node.getArguments()) {
                 boolean found = false;
                 for (ReteStaticMapping component : openList) {
                     if (component.getLhsNodes().contains(vn)) {
@@ -501,16 +500,16 @@ public class ReteNetwork {
                 }
             }
             if (allArgumentsFound) {
-                candidates.put(edge, argumentComponents);
+                candidates.put(node, argumentComponents);
             }
         }
-        OperatorEdge[] resultCandidates =
-            new OperatorEdge[candidates.keySet().size()];
+        OperatorNode[] resultCandidates =
+            new OperatorNode[candidates.keySet().size()];
         candidates.keySet().toArray(resultCandidates);
-        Arrays.sort(resultCandidates, new Comparator<OperatorEdge>() {
+        Arrays.sort(resultCandidates, new Comparator<OperatorNode>() {
 
             @Override
-            public int compare(OperatorEdge arg0, OperatorEdge arg1) {
+            public int compare(OperatorNode arg0, OperatorNode arg1) {
                 int result =
                     candidates.get(arg0).size() - candidates.get(arg1).size();
                 if (result == 0) {
@@ -629,29 +628,31 @@ public class ReteNetwork {
      *                                   list so that they could be processed after 
      *                                   everything else is processed in building 
      *                                   the RETE network. 
-     * @param operatorEdges This is an output parameter. This routine will just
-     *                      collects the data operator edges in this set without
+     * @param operatorNodes This is an output parameter. This routine will just
+     *                      collects the data operator nodes in this set without
      *                      statically mapping them and putting them on the open-list.                      
      */
     private void mapEdgesAndNodes(StaticMap openList, RuleGraph ruleGraph,
             Set<RuleEdge> emptyAndNegativePathEdges,
-            Set<OperatorEdge> operatorEdges) {
+            Set<OperatorNode> operatorNodes) {
 
         Collection<RuleNode> mappedLHSNodes = new HashSet<RuleNode>();
         Collection<RuleEdge> edgeSet = ruleGraph.edgeSet();
         Collection<RuleNode> nodeSet = ruleGraph.nodeSet();
 
+        for (RuleNode n : nodeSet) {
+            if (n instanceof OperatorNode) {
+                OperatorNode opNode = (OperatorNode) n;
+                operatorNodes.add(opNode);
+                // We don't need n-node-checkers for those
+                mappedLHSNodes.add(opNode.getTarget());
+                mappedLHSNodes.add(opNode);
+            }
+        }
         //Adding the required edge-checkers if needed.
         for (RuleEdge e : edgeSet) {
             ReteStaticMapping mapping = null;
-            if (e instanceof OperatorEdge) {
-                operatorEdges.add((OperatorEdge) e);
-                // We don't need n-node-checkers for those
-                mappedLHSNodes.add(e.target());
-                mappedLHSNodes.add(e.source());
-            } else if (e instanceof ArgumentEdge) {
-                continue;
-            } else if (e.label().isAtom() || e.label().isWildcard()) {
+            if (e.label().isAtom() || e.label().isWildcard()) {
                 EdgeCheckerNode edgeChecker = findEdgeCheckerForEdge(e);
                 if (edgeChecker == null) {
                     edgeChecker = new EdgeCheckerNode(this, e);
@@ -830,9 +831,9 @@ public class ReteNetwork {
 
             Set<RuleEdge> emptyAcceptingAndNegativeEdges =
                 new TreeHashSet<RuleEdge>();
-            Set<OperatorEdge> operatorEdge = new TreeHashSet<OperatorEdge>();
+            Set<OperatorNode> operatorNode = new TreeHashSet<OperatorNode>();
             mapEdgesAndNodes(openList, newNacGraph,
-                emptyAcceptingAndNegativeEdges, operatorEdge);
+                emptyAcceptingAndNegativeEdges, operatorNode);
             if (m1 == null) {
                 m1 = openList.get(0);
                 byPassList.add(m1);
@@ -1421,7 +1422,7 @@ public class ReteNetwork {
         }
 
         public static ReteStaticMapping mapDataOperatorNode(
-                DataOperatorChecker doc, OperatorEdge opEdge,
+                DataOperatorChecker doc, OperatorNode opEdge,
                 ReteStaticMapping antecedentMapping) {
             assert antecedentMapping.getNNode().equals(
                 doc.getAntecedents().get(0));
@@ -1430,7 +1431,7 @@ public class ReteNetwork {
             for (int i = 0; i < antecedentMapping.getElements().length; i++) {
                 mapto[i] = antecedentMapping.getElements()[i];
             }
-            mapto[mapto.length - 1] = opEdge.target();
+            mapto[mapto.length - 1] = opEdge.getTarget();
             return new ReteStaticMapping(doc, mapto);
 
         }
