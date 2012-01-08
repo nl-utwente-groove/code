@@ -77,6 +77,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         super(name);
         this.implicit = implicit;
         this.factory = new TypeFactory(this);
+        // always add the basic data types
+        addNodeSet(this.factory.getDataTypes());
     }
 
     @Override
