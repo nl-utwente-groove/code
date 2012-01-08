@@ -19,7 +19,7 @@ package groove.graph;
 import static groove.graph.GraphRole.TYPE;
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.rel.LabelVar;
@@ -432,11 +432,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
         }
         // determine the node types
+        List<OperatorNode> opNodes = new ArrayList<OperatorNode>();
         for (RuleNode node : source.nodeSet()) {
             try {
                 RuleNode image;
-                if (node instanceof ProductNode) {
-                    image = node;
+                if (node instanceof OperatorNode) {
+                    opNodes.add((OperatorNode) node);
+                    continue;
                 } else if (node instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) node;
                     Constant constant = varNode.getConstant();
@@ -477,6 +479,28 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 errors.addAll(e.getErrors());
             }
         }
+        // create images for the operator nodes
+        for (OperatorNode opNode : opNodes) {
+            boolean imageOk = true;
+            List<VariableNode> newArgs = new ArrayList<VariableNode>();
+            for (VariableNode arg : opNode.getArguments()) {
+                VariableNode argImage = (VariableNode) result.getNode(arg);
+                if (argImage == null) {
+                    imageOk = false;
+                    break;
+                }
+                newArgs.add(argImage);
+            }
+            VariableNode newTarget =
+                (VariableNode) result.getNode(opNode.getTarget());
+            imageOk &= newTarget != null;
+            if (imageOk) {
+                OperatorNode image =
+                    ruleFactory.createOperatorNode(opNode.getNumber(),
+                        opNode.getOperator(), newArgs, newTarget);
+                result.putNode(opNode, image);
+            }
+        }
         // separate the edges
         // label variable edges
         Set<RuleEdge> varEdges = new HashSet<RuleEdge>();
@@ -484,8 +508,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         Set<RuleEdge> regExprEdges = new HashSet<RuleEdge>();
         // other typable edges (except already processed node types)
         Set<RuleEdge> simpleEdges = new HashSet<RuleEdge>();
-        // all other edges
-        Set<RuleEdge> otherEdges = new HashSet<RuleEdge>();
         for (RuleEdge edge : source.edgeSet()) {
             // only consider edges for which source and target are typed
             // which may fail to hold due to a previous error
@@ -496,10 +518,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     simpleEdges.add(edge);
                 } else if (edgeLabel.isWildcard()) {
                     varEdges.add(edge);
-                } else if (edgeLabel.isMatchable()) {
-                    regExprEdges.add(edge);
                 } else {
-                    otherEdges.add(edge);
+                    regExprEdges.add(edge);
                 }
             }
         }
@@ -536,9 +556,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 result.putEdge(edge,
                     ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
             }
-        }
-        for (RuleEdge edge : otherEdges) {
-            result.putEdge(edge, edge);
         }
         RegExprTyper regExprTyper =
             new RegExprTyper(this, result.getVarTyping());

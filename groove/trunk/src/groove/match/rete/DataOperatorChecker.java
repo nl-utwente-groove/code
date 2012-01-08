@@ -19,7 +19,7 @@ package groove.match.rete;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
 import groove.algebra.Operator;
-import groove.graph.algebra.OperatorEdge;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.rete.LookupEntry.Role;
@@ -53,36 +53,35 @@ public class DataOperatorChecker extends ReteNetworkNode {
      * 
      * @param network The owner RETE network
      * @param antecedent The static mapping of the antecedent
-     * @param opEdge the edge with the operator label that represents  
+     * @param opNode the node with the operator label that represents  
      *               the operation this checker node should perform.
      */
     public DataOperatorChecker(ReteNetwork network,
-            ReteStaticMapping antecedent, OperatorEdge opEdge) {
+            ReteStaticMapping antecedent, OperatorNode opNode) {
         super(network);
-        assert antecedent.getLhsNodes().containsAll(
-            opEdge.source().getArguments());
-        this.operator = opEdge.getOperator();
+        assert antecedent.getLhsNodes().containsAll(opNode.getArguments());
+        this.operator = opNode.getOperator();
         this.operation =
             AlgebraFamily.getInstance().getOperation(this.operator);
         this.dataCreator =
-            !antecedent.getLhsNodes().contains(opEdge.target())
-                && (opEdge.target().getConstant() == null);
+            !antecedent.getLhsNodes().contains(opNode.getTarget())
+                && (opNode.getTarget().getConstant() == null);
         this.addAntecedent(antecedent.getNNode());
         antecedent.getNNode().addSuccessor(this);
-        adjustPattern(opEdge);
-        for (VariableNode vn : opEdge.source().getArguments()) {
+        adjustPattern(opNode);
+        for (VariableNode vn : opNode.getArguments()) {
             this.argumentLocator.add(antecedent.locateNode(vn));
         }
     }
 
-    private void adjustPattern(OperatorEdge opEdge) {
+    private void adjustPattern(OperatorNode opNode) {
         ReteNetworkNode antecedent = getAntecedents().get(0);
         RuleElement[] antecedentPattern = antecedent.getPattern();
         this.pattern = new RuleElement[antecedent.getPattern().length + 1];
         for (int i = 0; i < antecedentPattern.length; i++) {
             this.pattern[i] = antecedentPattern[i];
         }
-        this.pattern[this.pattern.length - 1] = opEdge.target();
+        this.pattern[this.pattern.length - 1] = opNode.getTarget();
     }
 
     /**

@@ -48,7 +48,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
      */
     public Anchor newAnchor(Rule rule) {
         RuleGraph lhs = rule.lhs();
-        Set<Object> result = new LinkedHashSet<Object>();
+        Set<AnchorKey> result = new LinkedHashSet<AnchorKey>();
         Set<RuleNode> colorNodes =
             new HashSet<RuleNode>(rule.getColorMap().keySet());
         colorNodes.retainAll(lhs.nodeSet());

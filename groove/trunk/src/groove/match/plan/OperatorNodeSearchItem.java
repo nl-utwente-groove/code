@@ -18,8 +18,7 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
-import groove.graph.algebra.OperatorEdge;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.plan.PlanSearchStrategy.Search;
@@ -35,45 +34,42 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * A search item for a product edge. The source node (a {@link ProductNode})
- * will typically have no images; instead, its operands are guaranteed to have
- * images.
+ * A search item for an operator node.
  * @author Arend Rensink
  * @version $Revision $
  */
-class OperatorEdgeSearchItem extends AbstractSearchItem {
+class OperatorNodeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a given edge, for which it is know which edge
      * ends have already been matched (in the search plan) before this one.
-     * @param edge the edge to be matched
+     * @param node the edge to be matched
      */
-    public OperatorEdgeSearchItem(OperatorEdge edge, AlgebraFamily family) {
-        this.edge = edge;
-        this.operation = family.getOperation(edge.getOperator());
-        this.arguments = edge.source().getArguments();
-        this.target = edge.target();
+    public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
+        this.node = node;
+        this.operation = family.getOperation(node.getOperator());
+        this.arguments = node.getArguments();
+        this.target = node.getTarget();
         this.neededNodes = new HashSet<RuleNode>(this.arguments);
         if (this.target.getConstant() != null) {
             this.boundNodes = Collections.<RuleNode>emptySet();
             this.neededNodes.add(this.target);
             this.value =
-                family.getValue(edge.getOperator().getResultType(),
+                family.getValue(node.getOperator().getResultType(),
                     this.target.getSymbol());
         } else {
-            this.boundNodes =
-                Arrays.<RuleNode>asList(this.target, edge.source());
+            this.boundNodes = Collections.<RuleNode>singleton(node);
             this.value = null;
         }
     }
 
-    public OperatorEdgeRecord createRecord(
+    public OperatorNodeRecord createRecord(
             groove.match.plan.PlanSearchStrategy.Search matcher) {
-        return new OperatorEdgeRecord(matcher);
+        return new OperatorNodeRecord(matcher);
     }
 
     /**
-     * Returns a singleton set consisting of the target node of the operator
-     * edge.
+     * Returns a singleton set consisting of the operator
+     * node.
      */
     @Override
     public Collection<? extends RuleNode> bindsNodes() {
@@ -95,23 +91,24 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * If the other item is also a {@link OperatorEdgeSearchItem}, compares on
+     * If the other item is also a {@link OperatorNodeSearchItem}, compares on
      * the basis of the label and then the arguments; otherwise, delegates to
      * <code>super</code>.
      */
     @Override
     public int compareTo(SearchItem other) {
         int result = 0;
-        if (other instanceof OperatorEdgeSearchItem) {
-            OperatorEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
-            List<VariableNode> otherArguments =
-                otherEdge.source().getArguments();
-            result = this.edge.label().compareTo(otherEdge.label());
+        if (other instanceof OperatorNodeSearchItem) {
+            OperatorNode hisNode = ((OperatorNodeSearchItem) other).getNode();
+            List<VariableNode> hisArguments = hisNode.getArguments();
+            result =
+                this.operation.getName().compareTo(
+                    hisNode.getOperator().getName());
             for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
-                result = this.arguments.get(i).compareTo(otherArguments.get(i));
+                result = this.arguments.get(i).compareTo(hisArguments.get(i));
             }
             if (result == 0) {
-                result = this.target.compareTo(otherEdge.target());
+                result = this.target.compareTo(hisNode.getTarget());
             }
         }
         if (result == 0) {
@@ -122,16 +119,16 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * This implementation returns the product edge's hash code.
+     * This implementation returns the operator node's hash code.
      */
     @Override
     int getRating() {
-        return this.edge.hashCode();
+        return this.node.hashCode();
     }
 
-    /** Returns the product edge being calculated by this search item. */
-    public OperatorEdge getEdge() {
-        return this.edge;
+    /** Returns the operator node being calculated by this search item. */
+    public OperatorNode getNode() {
+        return this.node;
     }
 
     public void activate(PlanSearchStrategy strategy) {
@@ -143,14 +140,14 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         }
     }
 
-    /** The product edge for which we seek an image. */
-    final OperatorEdge edge;
+    /** The operator node for which we seek an image. */
+    final OperatorNode node;
     /** The operation determined by the product edge. */
     final Operation operation;
     /** The factory needed to create value nodes for the calculated outcomes. */
-    /** List of operands of the product edge's source node. */
+    /** List of operands of the operator node. */
     final List<VariableNode> arguments;
-    /** The target node of the product edge. */
+    /** The target node of the operation. */
     final VariableNode target;
     /** The value of the target node, if it is a constant. */
     final Object value;
@@ -166,24 +163,24 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     int targetIx;
 
     /**
-     * Record of an edge search item, storing an iterator over the candidate
+     * Record of a node search item, storing an iterator over the candidate
      * images.
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class OperatorEdgeRecord extends SingularRecord {
+    private class OperatorNodeRecord extends SingularRecord {
         /**
          * Creates a record based on a given underlying matcher.
          */
-        OperatorEdgeRecord(Search search) {
+        OperatorNodeRecord(Search search) {
             super(search);
         }
 
         @Override
         public String toString() {
             return String.format("%s = %s",
-                OperatorEdgeSearchItem.this.toString(),
-                this.search.getNode(OperatorEdgeSearchItem.this.targetIx));
+                OperatorNodeSearchItem.this.toString(),
+                this.search.getNode(OperatorNodeSearchItem.this.targetIx));
         }
 
         @Override
@@ -191,7 +188,7 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             super.initialise(host);
             this.factory = host.getFactory();
             this.targetPreMatch =
-                this.search.getNodeSeed(OperatorEdgeSearchItem.this.targetIx);
+                this.search.getNodeSeed(OperatorNodeSearchItem.this.targetIx);
         }
 
         @Override
@@ -200,20 +197,20 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
             Object outcome = calculateResult();
             if (outcome == null) {
                 result = false;
-            } else if (OperatorEdgeSearchItem.this.value != null) {
-                result = OperatorEdgeSearchItem.this.value.equals(outcome);
-            } else if (OperatorEdgeSearchItem.this.targetFound
+            } else if (OperatorNodeSearchItem.this.value != null) {
+                result = OperatorNodeSearchItem.this.value.equals(outcome);
+            } else if (OperatorNodeSearchItem.this.targetFound
                 || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
                 if (targetFind == null) {
                     targetFind =
-                        this.search.getNode(OperatorEdgeSearchItem.this.targetIx);
+                        this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage =
                     this.factory.createValueNode(
-                        OperatorEdgeSearchItem.this.operation.getResultAlgebra(),
+                        OperatorNodeSearchItem.this.operation.getResultAlgebra(),
                         outcome);
                 this.image = targetImage;
                 result = write();
@@ -224,19 +221,19 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
         @Override
         void erase() {
             if (this.image != null) {
-                this.search.putNode(OperatorEdgeSearchItem.this.targetIx, null);
+                this.search.putNode(OperatorNodeSearchItem.this.targetIx, null);
             }
         }
 
         @Override
         boolean write() {
             return this.image == null
-                || this.search.putNode(OperatorEdgeSearchItem.this.targetIx,
+                || this.search.putNode(OperatorNodeSearchItem.this.targetIx,
                     this.image);
         }
 
         /**
-         * Calculates the result of the operation in {@link #getEdge()}, based
+         * Calculates the result of the operation in {@link #getNode()}, based
          * on the currently installed images of the arguments.
          * @return the result of the operation, or <code>null</code> if it
          *         cannot be calculated due to the fact that one of the
@@ -244,24 +241,24 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         private Object calculateResult() throws IllegalArgumentException {
             Object[] operands =
-                new Object[OperatorEdgeSearchItem.this.arguments.size()];
-            for (int i = 0; i < OperatorEdgeSearchItem.this.arguments.size(); i++) {
+                new Object[OperatorNodeSearchItem.this.arguments.size()];
+            for (int i = 0; i < OperatorNodeSearchItem.this.arguments.size(); i++) {
                 HostNode operandImage =
-                    this.search.getNode(OperatorEdgeSearchItem.this.argumentIxs[i]);
+                    this.search.getNode(OperatorNodeSearchItem.this.argumentIxs[i]);
                 if (!(operandImage instanceof ValueNode)) {
                     // one of the arguments was not bound to a value
                     // (probably due to some typing error in another rule)
-                    // and so we cannot match the edge
+                    // and so we cannot match the node
                     return null;
                 }
                 operands[i] = ((ValueNode) operandImage).getValue();
             }
             try {
                 Object result =
-                    OperatorEdgeSearchItem.this.operation.apply(Arrays.asList(operands));
+                    OperatorNodeSearchItem.this.operation.apply(Arrays.asList(operands));
                 if (PRINT) {
                     System.out.printf("Applying %s to %s yields %s%n",
-                        OperatorEdgeSearchItem.this.operation,
+                        OperatorNodeSearchItem.this.operation,
                         Arrays.asList(operands), result);
                 }
                 return result;

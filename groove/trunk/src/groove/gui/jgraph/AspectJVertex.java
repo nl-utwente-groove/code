@@ -14,7 +14,6 @@ import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.RuleLevelTree;
 import groove.gui.jgraph.JAttr.AttributeMap;
@@ -182,7 +181,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             } else {
                 assert attrKind == AspectKind.PRODUCT;
                 // delegate the identity string to a corresponding product node
-                return new ProductNode(getNode().getNumber(), 0).toString();
+                return "p" + getNode().getNumber();
             }
         } else {
             return super.getNodeIdString();

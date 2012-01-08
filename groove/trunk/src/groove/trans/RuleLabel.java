@@ -16,19 +16,16 @@
  */
 package groove.trans;
 
-import groove.algebra.Operator;
 import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
-import groove.io.Util;
 import groove.rel.LabelVar;
 import groove.rel.RegAut;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -51,8 +48,6 @@ public class RuleLabel extends AbstractLabel {
         }
         //assert !regExpr.isNeg() : "Rule label expressions may not be negated";
         this.regExpr = regExpr;
-        this.operator = null;
-        this.argNr = INVALID_ARG_NR;
     }
 
     /**
@@ -73,20 +68,6 @@ public class RuleLabel extends AbstractLabel {
         this(RegExpr.atom(text));
     }
 
-    /** Constructs a label representing an operation argument number. */
-    public RuleLabel(int argNr) {
-        this.argNr = argNr;
-        this.regExpr = null;
-        this.operator = null;
-    }
-
-    /** Constructs a label based on a given algebraic operator. */
-    public RuleLabel(Operator operator) {
-        this.argNr = INVALID_ARG_NR;
-        this.regExpr = null;
-        this.operator = operator;
-    }
-
     @Override
     public EdgeRole getRole() {
         EdgeRole result = super.getRole();
@@ -103,29 +84,13 @@ public class RuleLabel extends AbstractLabel {
      */
     public String text() {
         String result;
-        if (isOperator()) {
-            result = getOperator().getName();
-        } else if (isArgument()) {
-            result = "" + Util.LC_PI + getArgument();
-        } else if (isAtom() || isSharp() || isWildcard()) {
+        if (isAtom() || isSharp() || isWildcard()) {
             result = getMatchExpr().toString();
             result = EdgeRole.parseLabel(result).two();
         } else {
             result = getMatchExpr().toString();
         }
         return result;
-    }
-
-    /**
-     * Indicates if this rule label can be matched, i.e.,
-     * it is not an argument or operator label.
-     * A label is matchable if and only if {@link #getMatchExpr()} returns
-     * a value different from {@code null}.
-     * @see #isArgument()
-     * @see #isOperator()
-     */
-    public boolean isMatchable() {
-        return this.regExpr != null;
     }
 
     /** Returns the underlying regular expression. */
@@ -141,7 +106,7 @@ public class RuleLabel extends AbstractLabel {
      * used to match node type labels properly; non-{@code null}
      */
     public RegAut getAutomaton(TypeGraph typeGraph) {
-        if (isMatchable() && this.automaton == null
+        if (this.automaton == null
             || this.automaton.getTypeGraph() != typeGraph) {
             this.automaton = calculator.compute(getMatchExpr(), typeGraph);
         }
@@ -153,17 +118,7 @@ public class RuleLabel extends AbstractLabel {
         boolean result = false;
         if (obj instanceof RuleLabel) {
             RuleLabel other = (RuleLabel) obj;
-            if (isArgument()) {
-                result =
-                    other.isArgument() && getArgument() == other.getArgument();
-            } else if (isOperator()) {
-                result =
-                    other.isOperator()
-                        && getOperator().equals(other.getOperator());
-            } else {
-                assert isMatchable();
-                result = getMatchExpr().equals(other.getMatchExpr());
-            }
+            result = getMatchExpr().equals(other.getMatchExpr());
         }
         return result;
     }
@@ -347,44 +302,15 @@ public class RuleLabel extends AbstractLabel {
         return null;
     }
 
-    /** Indicates whether this label wraps an algebraic operator. */
-    public boolean isOperator() {
-        return this.operator != null;
-    }
-
-    /** Returns the operator wrapped in this label, if any. */
-    public Operator getOperator() {
-        return this.operator;
-    }
-
-    /** Indicates whether this label wraps an argument number. */
-    public boolean isArgument() {
-        return this.argNr != INVALID_ARG_NR;
-    }
-
-    /** Returns the argument number wrapped in this label, if any. */
-    public int getArgument() {
-        return this.argNr;
-    }
-
     /** Returns the set of label variables occurring in this label. */
     public Set<LabelVar> allVarSet() {
-        if (isMatchable()) {
-            return getMatchExpr().allVarSet();
-        } else {
-            return Collections.emptySet();
-        }
+        return getMatchExpr().allVarSet();
     }
 
     /** The underlying regular expression, if any. */
     private final RegExpr regExpr;
     /** An automaton constructed lazily for the regular expression. */
     private RegAut automaton;
-    /** The wrapped operator, if any. */
-    private final Operator operator;
-    /** The argument number wrapped by this label, if any. */
-    private final int argNr;
-
     /** Calculator used to construct all the automata. */
     static private final RegAutCalculator calculator = new RegAutCalculator();
     /** Number used for labels that are not argument labels. */

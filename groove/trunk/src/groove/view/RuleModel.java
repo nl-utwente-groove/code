@@ -28,14 +28,14 @@ import groove.algebra.Constant;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.graph.AbstractGraph;
+import groove.graph.Element;
 import groove.graph.GraphProperties;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
-import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.rel.LabelVar;
@@ -56,7 +56,6 @@ import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
@@ -71,7 +70,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1207,7 +1205,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             for (AspectNode modelNode : origin.modelNodes) {
                 try {
-                    processNode(modelNode);
+                    if (modelNode.getAttrKind() != PRODUCT) {
+                        processNode(modelNode);
+                    }
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
                 }
@@ -1220,8 +1220,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 try {
                     if (modelEdge.getKind() == CONNECT) {
                         addConnect(modelEdge);
-                    } else {
+                    } else if (modelEdge.getAttrKind() == AspectKind.DEFAULT) {
                         processEdge(modelEdge);
+                    } else if (modelEdge.getAttrKind() != AspectKind.ARGUMENT) {
+                        addOperator(modelEdge);
                     }
                 } catch (FormatException exc) {
                     errors.addAll(exc.getErrors());
@@ -1287,9 +1289,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private void processEdge(AspectEdge modelEdge) throws FormatException {
             AspectKind edgeKind = modelEdge.getKind();
             this.isRule |= edgeKind.inLHS() != edgeKind.inRHS();
-            // flag indicating that the rule edge is fresh in the LHS
             RuleEdge ruleEdge = getEdgeImage(modelEdge);
+            if (ruleEdge == null) {
+                // this was an argument or operation edge;
+                // it has been processed by adding the info to the operator node
+                return;
+            }
             if (edgeKind.inLHS()) {
+                // flag indicating that the rule edge is fresh in the LHS
                 boolean freshInLhs = this.lhs.addEdge(ruleEdge);
                 if (freshInLhs) {
                     if (edgeKind.inRHS()) {
@@ -1343,6 +1350,39 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.connectMap.put(connectEdge, nodeSet);
         }
 
+        private void addOperator(AspectEdge operatorEdge)
+            throws FormatException {
+            AspectNode productNode = operatorEdge.source();
+            List<VariableNode> arguments = new ArrayList<VariableNode>();
+            for (AspectNode argModelNode : productNode.getArgNodes()) {
+                VariableNode argument =
+                    (VariableNode) getNodeImage(argModelNode);
+                if (!this.lhs.nodeSet().contains(argument)) {
+                    throw new FormatException(
+                        "Argument must exist on the level of the product node",
+                        argModelNode, productNode);
+                }
+                arguments.add(argument);
+            }
+            VariableNode target =
+                (VariableNode) getNodeImage(operatorEdge.target());
+            if (!this.lhs.nodeSet().contains(target)) {
+                throw new FormatException(
+                    "Operation target must exist on the level of the operator edge",
+                    operatorEdge);
+            }
+            RuleNode opNode =
+                this.factory.createOperatorNode(productNode.getNumber(),
+                    operatorEdge.getOperator(), arguments, target);
+            if (operatorEdge.getKind().inNAC()) {
+                this.nacNodeSet.add(opNode);
+            } else {
+                this.lhs.addNode(opNode);
+                this.mid.addNode(opNode);
+                this.rhs.addNode(opNode);
+            }
+        }
+
         /** Constructs the NACs for this rule. */
         private List<RuleGraph> computeNacs() throws FormatException {
             List<RuleGraph> result = new ArrayList<RuleGraph>();
@@ -1350,43 +1390,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             // add the nacs to the rule
             // find connected sets of NAC nodes, taking the
             // connection edges into account
-            Set<Pair<Set<RuleNode>,Set<RuleEdge>>> partition =
-                AbstractGraph.getConnectedSets(this.nacNodeSet, this.nacEdgeSet);
-            for (Map.Entry<AspectEdge,Set<RuleNode>> connection : this.connectMap.entrySet()) {
-                // find the (separate) cells for the target nodes of the connect edge
-                Set<RuleNode> newNodes = new HashSet<RuleNode>();
-                Set<RuleEdge> newEdges = new HashSet<RuleEdge>();
-                for (RuleNode node : connection.getValue()) {
-                    boolean found = false;
-                    Iterator<Pair<Set<RuleNode>,Set<RuleEdge>>> cellIter =
-                        partition.iterator();
-                    while (cellIter.hasNext()) {
-                        Pair<Set<RuleNode>,Set<RuleEdge>> cell =
-                            cellIter.next();
-                        if (cell.one().contains(node)) {
-                            found = true;
-                            cellIter.remove();
-                            newNodes.addAll(cell.one());
-                            newEdges.addAll(cell.two());
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        throw new FormatException(
-                            "Connect edge should be between distinct NACs",
-                            connection.getKey());
-                    }
-                }
-                partition.add(Pair.newPair(newNodes, newEdges));
-            }
-            for (Pair<Set<RuleNode>,Set<RuleEdge>> nacPair : partition) {
-                Set<RuleNode> nacNodes = nacPair.one();
-                Set<RuleEdge> nacEdges = nacPair.two();
+            for (Cell cell : getConnectedSets()) {
                 // construct the NAC graph
                 RuleGraph nac =
                     createGraph(this.lhs.getName() + "-nac-" + result.size());
-                nac.addNodeSet(nacNodes);
-                nac.addEdgeSet(nacEdges);
+                nac.addNodeSet(cell.getNodes());
+                nac.addEdgeSet(cell.getEdges());
                 result.add(nac);
             }
             if (errors.isEmpty()) {
@@ -1397,23 +1406,127 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
 
         /**
+         * Partitions a set of graph elements into its maximal connected subsets.
+         * The set does not necessarily contain all endpoints of edges it contains.
+         * A subset is connected if there is a chain of edges and edge endpoints,
+         * all of which are in the set, between all pairs of elements in the set.
+         * @return The set of maximal connected subsets of {@link #nacNodeSet} and
+         * {@link #nacEdgeSet}
+         */
+        private Collection<Cell> getConnectedSets() throws FormatException {
+            // mapping from nodes of elementSet to sets of connected elements
+            Map<Element,Cell> result = new HashMap<Element,Cell>();
+            for (RuleNode node : this.nacNodeSet) {
+                Cell nodeCell = new Cell();
+                nodeCell.add(node);
+                result.put(node, nodeCell);
+            }
+            // merge cells connected by an operator
+            for (RuleNode node : this.nacNodeSet) {
+                if (node instanceof OperatorNode) {
+                    OperatorNode opNode = (OperatorNode) node;
+                    Cell nodeCell = result.get(opNode);
+                    for (RuleNode argNode : opNode.getArguments()) {
+                        Cell argCell = result.get(argNode);
+                        if (argCell != null) {
+                            nodeCell.addAll(argCell);
+                        }
+                    }
+                    VariableNode target = opNode.getTarget();
+                    Cell targetCell = result.get(target);
+                    if (targetCell != null) {
+                        nodeCell.addAll(targetCell);
+                    }
+                    for (RuleElement elem : nodeCell) {
+                        result.put(elem, nodeCell);
+                    }
+                }
+            }
+            // merge cells connected by an edge
+            for (RuleEdge edge : this.nacEdgeSet) {
+                Cell edgeCell = new Cell();
+                edgeCell.add(edge);
+                Cell sourceCell = result.get(edge.source());
+                if (sourceCell != null) {
+                    edgeCell.addAll(sourceCell);
+                }
+                Cell targetCell = result.get(edge.target());
+                if (targetCell != null) {
+                    edgeCell.addAll(targetCell);
+                }
+                for (RuleElement elem : edgeCell) {
+                    result.put(elem, edgeCell);
+                }
+            }
+            // merge cells connected by an explicit connection
+            for (Map.Entry<AspectEdge,Set<RuleNode>> connection : this.connectMap.entrySet()) {
+                // find the (separate) cells for the target nodes of the connect edge
+                Cell newCell = new Cell();
+                for (RuleNode node : connection.getValue()) {
+                    Cell nodeCell = result.get(node);
+                    if (nodeCell == null) {
+                        throw new FormatException(
+                            "Connect edge should be between distinct NACs",
+                            connection.getKey());
+                    }
+                    newCell.addAll(nodeCell);
+                }
+                for (RuleElement elem : newCell) {
+                    result.put(elem, newCell);
+                }
+            }
+            return new HashSet<Cell>(result.values());
+        }
+
+        private class Cell extends HashSet<RuleElement> {
+            public Cell() {
+                // empty
+            }
+
+            public Set<RuleNode> getNodes() {
+                Set<RuleNode> result = new HashSet<RuleNode>();
+                for (RuleElement elem : this) {
+                    if (elem instanceof RuleNode) {
+                        result.add((RuleNode) elem);
+                    }
+                }
+                return result;
+            }
+
+            public Set<RuleEdge> getEdges() {
+                Set<RuleEdge> result = new HashSet<RuleEdge>();
+                for (RuleElement elem : this) {
+                    if (elem instanceof RuleEdge) {
+                        result.add((RuleEdge) elem);
+                    }
+                }
+                return result;
+            }
+        }
+
+        /**
          * Checks if all product nodes have all their arguments.
          */
         private void checkAttributes(Collection<FormatError> errors) {
             // check if product nodes have all their arguments (on this level)
             for (RuleNode prodNode : this.lhs.nodeSet()) {
-                if (prodNode instanceof ProductNode
-                    && !this.lhs.nodeSet().containsAll(
-                        ((ProductNode) prodNode).getArguments())) {
-                    // collect all affected nodes
-                    Set<RuleNode> nodes =
-                        new HashSet<RuleNode>(
-                            ((ProductNode) prodNode).getArguments());
-                    nodes.removeAll(this.lhs.nodeSet());
-                    nodes.add(prodNode);
+                if (!(prodNode instanceof OperatorNode)) {
+                    continue;
+                }
+                OperatorNode opNode = (OperatorNode) prodNode;
+                for (RuleNode argNode : opNode.getArguments()) {
+                    if (!this.lhs.nodeSet().contains(argNode)) {
+                        errors.add(new FormatError(
+                            "Argument must occur on the level of the product node",
+                            opNode, argNode));
+
+                    }
+                }
+                RuleNode opTarget = opNode.getTarget();
+                if (!this.lhs.nodeSet().contains(opTarget)) {
                     errors.add(new FormatError(
-                        "Arguments must be bound on the level of the product node",
-                        nodes.toArray()));
+                        "Operation target must occur on the level of the product node",
+                        opNode, opTarget));
 
                 }
             }
@@ -1504,10 +1617,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             AspectKind nodeAttrKind = node.getAttrKind();
             int nr = node.getNumber();
-            if (nodeAttrKind == PRODUCT) {
-                result =
-                    new ProductNode(node.getNumber(), node.getArgNodes().size());
-            } else if (nodeAttrKind.hasSignature()) {
+            if (nodeAttrKind.hasSignature()) {
                 Aspect nodeAttr = node.getAttrAspect();
                 if (nodeAttr.hasContent()) {
                     result =

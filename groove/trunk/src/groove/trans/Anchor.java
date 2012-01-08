@@ -39,23 +39,15 @@ public class Anchor extends ArrayList<AnchorKey> {
      * Constructs an anchor initialised to a given collection of keys.
      * @param c the collection of keys; these are assumed to be of type {@link AnchorKey}
      */
-    public Anchor(Collection<? extends Object> c) {
-        addKeys(c);
+    public Anchor(Collection<? extends AnchorKey> c) {
+        super(c);
     }
 
     /** Constructs an anchor initialised to the elements of a rule graph. */
     public Anchor(RuleGraph graph) {
-        addKeys(graph.nodeSet());
-        addKeys(graph.edgeSet());
+        addAll(graph.nodeSet());
+        addAll(graph.edgeSet());
         addAll(graph.varSet());
-    }
-
-    /**
-     * Adds a given object to this anchor,
-     * after casting it to an {@link AnchorKey}.
-     */
-    public void addKey(Object key) {
-        add((AnchorKey) key);
     }
 
     @Override
@@ -67,21 +59,11 @@ public class Anchor extends ArrayList<AnchorKey> {
                 addAll(AnchorKind.node(e).getVars());
             } else if (e.getAnchorKind() == AnchorKind.EDGE) {
                 addAll(AnchorKind.edge(e).getVars());
-                addKey(AnchorKind.edge(e).source());
-                addKey(AnchorKind.edge(e).target());
+                add(AnchorKind.edge(e).source());
+                add(AnchorKind.edge(e).target());
             }
         }
         return result;
-    }
-
-    /**
-     * Adds all elements of a given collection to this anchor,
-     * assuming all of them to be {@link AnchorKey}s.
-     */
-    public void addKeys(Collection<? extends Object> keys) {
-        for (Object key : keys) {
-            add((AnchorKey) key);
-        }
     }
 
     /** Returns the set of node keys in this anchor. */
@@ -93,7 +75,7 @@ public class Anchor extends ArrayList<AnchorKey> {
     }
 
     /** Returns the set of edge keys in this anchor. */
-    public Set<DefaultRuleEdge> edgeSet() {
+    public Set<RuleEdge> edgeSet() {
         if (this.edgeSet == null) {
             initSets();
         }
@@ -111,7 +93,7 @@ public class Anchor extends ArrayList<AnchorKey> {
     /** Initialises the node, edge and label sets. */
     private void initSets() {
         this.nodeSet = new HashSet<RuleNode>();
-        this.edgeSet = new HashSet<DefaultRuleEdge>();
+        this.edgeSet = new HashSet<RuleEdge>();
         this.varSet = new HashSet<LabelVar>();
         for (AnchorKey key : this) {
             switch (key.getAnchorKind()) {
@@ -128,6 +110,6 @@ public class Anchor extends ArrayList<AnchorKey> {
     }
 
     private Set<RuleNode> nodeSet;
-    private Set<DefaultRuleEdge> edgeSet;
+    private Set<RuleEdge> edgeSet;
     private Set<LabelVar> varSet;
 }

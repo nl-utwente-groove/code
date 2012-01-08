@@ -22,14 +22,9 @@
                 <string>270 69 70 24</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>Properties</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n0">
-            <attr name="label">
-                <string>new:finished</string>
+                <string>bool:</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -37,19 +32,24 @@
                 <string>parin:0</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n2" from="n2">
             <attr name="label">
                 <string>bool:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>new:finished</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>Properties</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>del:finished</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>bool:</string>
             </attr>
         </edge>
     </graph>

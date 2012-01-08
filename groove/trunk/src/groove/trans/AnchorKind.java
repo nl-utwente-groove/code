@@ -59,8 +59,8 @@ public enum AnchorKind implements Comparable<AnchorKind> {
     }
 
     /** Casts a given anchor key to an edge, if it is of edge kind. */
-    public static DefaultRuleEdge edge(AnchorKey key) {
-        return key.getAnchorKind() == EDGE ? (DefaultRuleEdge) key : null;
+    public static RuleEdge edge(AnchorKey key) {
+        return key.getAnchorKind() == EDGE ? (RuleEdge) key : null;
     }
 
     /** Casts a given anchor key to a label variable, if it is of label kind. */
