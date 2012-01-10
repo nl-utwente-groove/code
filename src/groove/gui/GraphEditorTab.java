@@ -219,6 +219,9 @@ final public class GraphEditorTab extends ResourceTab implements
                 GraphInfo.setProperties(newGraph, properties);
                 newGraph.setFixed();
                 change(newGraph);
+            } else {
+                getModel().loadViewErrors();
+                getJGraph().refresh();
             }
             updateStatus();
         } else {

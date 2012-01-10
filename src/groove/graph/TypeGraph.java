@@ -893,7 +893,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         if (result == null && isImplicit()) {
             // this must be due to the fact that we are still editing the graph being analysed
             // return an edge that is not in the type graph
-            result = getFactory().newEdge(sourceType, label, targetType);
+            //            result = getFactory().newEdge(sourceType, label, targetType);
         }
         return result;
     }
