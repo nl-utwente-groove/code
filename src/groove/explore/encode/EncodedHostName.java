@@ -46,7 +46,7 @@ public class EncodedHostName implements EncodedType<String,String> {
     @Override
     public String parse(GraphGrammar rules, String source)
         throws FormatException {
-        Pattern pattern = Pattern.compile("^http\\://[a-zA-Z0-9\\-\\.]+(\\.[a-zA-Z]{2,3})?\\:[0-9]{4}(/\\S*)?$");
+        Pattern pattern = Pattern.compile("^https?\\://[a-zA-Z0-9\\-\\.]+(\\.[a-zA-Z]{2,3})?\\:[0-9]{4}(/\\S*)?$");
         Matcher matcher = pattern.matcher(source);
         if(!matcher.find())
             throw new FormatException("Bad host name '%s': %s", source,
