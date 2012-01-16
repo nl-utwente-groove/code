@@ -407,22 +407,23 @@ public class Condition implements Fixable {
         }
         // now add resolvers due to operator nodes
         for (RuleNode node : getPattern().nodeSet()) {
-            if (node instanceof OperatorNode
-                && !resolved.contains(((OperatorNode) node).getTarget())) {
+            if (node instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) node;
                 VariableNode target = opNode.getTarget();
-                // collect the argument nodes
-                Set<VariableNode> resolver = new HashSet<VariableNode>();
-                for (VariableNode arg : opNode.getArguments()) {
-                    if (arg.getSymbol() == null) {
-                        resolver.add(arg);
+                if (result.containsKey(target) && !resolved.contains(target)) {
+                    // collect the argument nodes
+                    Set<VariableNode> resolver = new HashSet<VariableNode>();
+                    for (VariableNode arg : opNode.getArguments()) {
+                        if (arg.getSymbol() == null) {
+                            resolver.add(arg);
+                        }
                     }
-                }
-                resolver.removeAll(resolved);
-                if (resolver.isEmpty()) {
-                    resolved.add(target);
-                } else {
-                    result.get(target).add(resolver);
+                    resolver.removeAll(resolved);
+                    if (resolver.isEmpty()) {
+                        resolved.add(target);
+                    } else {
+                        result.get(target).add(resolver);
+                    }
                 }
             }
         }

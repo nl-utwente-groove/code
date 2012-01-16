@@ -92,7 +92,7 @@ public class ChangeCount {
 
         /** Gets the (possibly recomputed) value. */
         public O getValue() {
-            if (this.value == null || this.tracker.isStale()) {
+            if (this.tracker.isStale() || this.value == null) {
                 this.value = computeValue();
             }
             return this.value;

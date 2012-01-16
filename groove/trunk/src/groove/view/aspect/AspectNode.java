@@ -646,7 +646,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     /** Changes the (aspect) type of this node. */
-    private void setAspect(Aspect type) throws FormatException {
+    void setAspect(Aspect type) throws FormatException {
         assert !type.getKind().isAttrKind() && !type.getKind().isParam() : String.format(
             "Aspect %s is not a valid node type", type);
         if (this.aspect == null) {
