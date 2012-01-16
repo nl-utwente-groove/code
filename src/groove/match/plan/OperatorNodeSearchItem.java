@@ -57,7 +57,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 family.getValue(node.getOperator().getResultType(),
                     this.target.getSymbol());
         } else {
-            this.boundNodes = Collections.<RuleNode>singleton(node);
+            this.boundNodes = Collections.<RuleNode>singleton(this.target);
             this.value = null;
         }
     }
