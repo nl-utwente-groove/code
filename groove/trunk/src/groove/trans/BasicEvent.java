@@ -137,17 +137,17 @@ final public class BasicEvent extends
             result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
-            int anchorNodeCount = getRule().getAnchorNodes().length;
+            int anchorSize = getRule().getAnchor().size();
             AnchorValue[] anchorImage = getAnchorImage();
             for (int i = 0; i < size; i++) {
                 int binding = getRule().getParBinding(i);
                 HostNode argument;
-                if (binding < anchorNodeCount) {
+                if (binding < anchorSize) {
                     argument = (HostNode) anchorImage[binding];
                 } else if (addedNodes == null) {
                     argument = null;
                 } else {
-                    argument = addedNodes[binding - anchorNodeCount];
+                    argument = addedNodes[binding - anchorSize];
                 }
                 result[i] = argument;
             }
