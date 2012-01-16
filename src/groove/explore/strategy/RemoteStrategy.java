@@ -70,27 +70,49 @@ public class RemoteStrategy extends AbstractStrategy {
 
 	private String format_to_simple_sts(GTS gts) {
 		String message = "[";
+		
 		// For each state
 		Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
 		while(nodesIter.hasNext()) {
 			GraphState node = nodesIter.next();
 			Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
+			
 			// For each outgoing edge
 			Iterator<GraphTransition> edgeIter = node.getTransitionIter();
 			while(edgeIter.hasNext()) {
 				GraphTransition edge = edgeIter.next();
 				String label = edge.label().text();
+				
+				// Construct the label type
+				String type = null;
+				if (label.contains("?"))
+					type = "stimulus";
+				else
+					type = "response";
+				
+				// Remove possible empty parameter
+				boolean notEmpty = true;
+				if(label.endsWith("()")) {
+					label = label.substring(0,label.length()-2);
+					notEmpty = false;
+				}
+				
+				// Remove all '!' and '?' from the label
+				label = label.replace("!","").replace("?","");
+				
 				String guard = "null";
 				String iVars = "[]";
-				if(!noParamEdges.contains(label)) {
+				if(notEmpty && !noParamEdges.contains(label)) {
 					// Find if the label has parameters
 					Pattern pattern = Pattern.compile("\\(.+\\)$");
-					Matcher matcher = pattern.matcher(edge.label().text());
+					Matcher matcher = pattern.matcher(label);
 					if(matcher.find()) {
 						String paramString = label.substring(matcher.start());
 						label = label.substring(0, matcher.start());
+						
 						// Parse the parameters
 						Object[] params = parseParams(paramString);
+						
 						// Construct the interaction variable declaration
 						// TODO: memoize this
 						iVars = "[";
@@ -100,6 +122,7 @@ public class RemoteStrategy extends AbstractStrategy {
 							iVars+="[\""+iVarNames[i]+"\",\""+getType(params[i])+"\"],";
 						}
 						iVars = iVars.substring(0, iVars.length()-1)+"]";
+						
 						// Construct the guard
 						List<Object[]> l = new ArrayList<Object[]>();
 						l.add(params);
@@ -109,17 +132,8 @@ public class RemoteStrategy extends AbstractStrategy {
 						noParamEdges.add(label);
 					}
 				}
-				// Remove possible empty parameter
-				if(label.endsWith("()"))
-					label = label.substring(0,label.length()-2);
-				// Construct the label type
-				String type = null;
-				if (label.contains("?"))
-					type = "stimulus";
-				else
-					type = "response";
 				// Construct the switch relation
-				message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\","+iVars+"],\"s"+edge.target().getNumber()+"\",\""+guard+"\",null],";
+				message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\","+iVars+"],\"s"+edge.target().getNumber()+"\","+guard+",null],";
 			}
 		}
 		message = message.substring(0, message.length()-1)+"]";
@@ -207,7 +221,7 @@ public class RemoteStrategy extends AbstractStrategy {
 
 			}
 		}
-		// real
+		// double
 		pattern = Pattern.compile("^\\d+\\.\\d+$");
 		matcher = pattern.matcher(valueString);
 		if (matcher.find()) {
@@ -224,7 +238,7 @@ public class RemoteStrategy extends AbstractStrategy {
 
 	// Construct the guard based on all possible interaction variable valuations
 	private String constructGuard(List<Object[]> params, String[] names) {
-		String guard = "";
+		String guard = "\"";
 		for(int i = 0; i < params.size(); i++) {
 			Object[] o = params.get(i);
 			guard+="("+names[0]+" == "+o[0];
@@ -233,7 +247,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			}
 			guard+=") ||";
 		}
-		guard = guard.substring(0, guard.length()-3);
+		guard = guard.substring(0, guard.length()-3)+"\"";
 		return guard;
 	}
 	
