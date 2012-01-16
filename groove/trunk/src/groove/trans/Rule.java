@@ -372,7 +372,7 @@ public class Rule implements Fixable, Comparable<Rule> {
                 assert binding >= anchorSize;
             } else {
                 // look up the node in the anchor
-                binding = Arrays.asList(getAnchorNodes()).indexOf(ruleNode);
+                binding = getAnchor().indexOf(ruleNode);
                 assert binding >= 0 : String.format(
                     "Node %s not in anchors %s", ruleNode,
                     Arrays.toString(getAnchorNodes()));
