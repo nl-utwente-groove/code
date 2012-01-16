@@ -34,6 +34,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
+import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.list.ErrorListPanel;
@@ -93,6 +94,7 @@ public class Simulator implements SimulatorListener {
         this.actions = new ActionStore(this);
         this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
         this.undoManager = new SimulatorUndoManager(this);
+        GraphPreviewDialog.setSimulator(this);
         getFrame();
     }
 

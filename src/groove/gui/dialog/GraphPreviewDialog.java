@@ -2,6 +2,7 @@ package groove.gui.dialog;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.gui.DisplayKind;
 import groove.gui.JGraphPanel;
 import groove.gui.Simulator;
@@ -17,6 +18,13 @@ import groove.verify.BuchiLocation;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JDialog;
 
@@ -111,11 +119,19 @@ public class GraphPreviewDialog extends JDialog {
     /** The simulator reference, may be null. */
     protected final Simulator simulator;
 
+    /** Sets the static simulator in a global variable,
+     * to be used by calls to {@link #showGraph(Graph)}.
+     * @param simulator the simulator to be used by {@link #showGraph(Graph)}
+     */
+    public static void setSimulator(Simulator simulator) {
+        GraphPreviewDialog.globalSimulator = simulator;
+    }
+
     /**
      * Creates a dialog for the given graph, and sets it to visible.
      */
     public static void showGraph(Graph<?,?> graph) {
-        showGraph(null, graph);
+        showGraph(globalSimulator, graph);
     }
 
     /**
@@ -123,6 +139,33 @@ public class GraphPreviewDialog extends JDialog {
      * simulator, and sets it to visible.
      */
     public static void showGraph(Simulator simulator, Graph<?,?> graph) {
-        new GraphPreviewDialog(simulator, graph).setVisible(true);
+        final GraphRole role = graph.getRole();
+        final String name = graph.getName();
+        synchronized (recentPreviews) {
+            if (!TIMER || recentPreviews.get(role).add(name)) {
+                new GraphPreviewDialog(simulator, graph).setVisible(true);
+                if (TIMER) {
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            synchronized (recentPreviews) {
+                                recentPreviews.get(role).remove(name);
+                            }
+                        }
+                    }, 1000);
+                }
+            }
+        }
     }
+
+    private static Simulator globalSimulator;
+    private static Map<GraphRole,Set<String>> recentPreviews =
+        new EnumMap<GraphRole,Set<String>>(GraphRole.class);
+    static {
+        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+            recentPreviews.put(role, new HashSet<String>());
+        }
+    }
+    private static final boolean TIMER = true;
+    private static final Timer timer = new Timer();
 }

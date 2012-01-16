@@ -34,6 +34,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.ResourceKind;
 import groove.util.Colors;
+import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
@@ -108,8 +109,11 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public AspectJModel newModel() {
+        GrammarModel grammar =
+            getSimulatorModel() == null ? null
+                    : getSimulatorModel().getGrammar();
         return new AspectJModel(AspectJVertex.getPrototype(this),
-            AspectJEdge.getPrototype(this), getSimulatorModel().getGrammar());
+            AspectJEdge.getPrototype(this), grammar);
     }
 
     /**

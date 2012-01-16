@@ -1353,11 +1353,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private void addOperator(AspectEdge operatorEdge)
             throws FormatException {
             AspectNode productNode = operatorEdge.source();
+            boolean embargo = productNode.getKind().inNAC();
             List<VariableNode> arguments = new ArrayList<VariableNode>();
             for (AspectNode argModelNode : productNode.getArgNodes()) {
                 VariableNode argument =
                     (VariableNode) getNodeImage(argModelNode);
-                if (!this.lhs.nodeSet().contains(argument)) {
+                if (!(this.lhs.nodeSet().contains(argument) || embargo
+                    && this.nacNodeSet.contains(argument))) {
                     throw new FormatException(
                         "Argument must exist on the level of the product node",
                         argModelNode, productNode);
@@ -1366,7 +1368,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             VariableNode target =
                 (VariableNode) getNodeImage(operatorEdge.target());
-            if (!this.lhs.nodeSet().contains(target)) {
+            if (!(this.lhs.nodeSet().contains(target) || embargo
+                && this.nacNodeSet.contains(target))) {
                 throw new FormatException(
                     "Operation target must exist on the level of the operator edge",
                     operatorEdge);

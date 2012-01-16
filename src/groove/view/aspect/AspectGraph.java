@@ -498,8 +498,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /** Adds a node with the same nesting level as a given source node. */
-    private AspectNode addNestedNode(AspectNode source) {
+    private AspectNode addNestedNode(AspectNode source) throws FormatException {
         AspectNode result = addNode();
+        if (source.getKind() == AspectKind.EMBARGO) {
+            result.setAspect(source.getAspect());
+        }
         AspectNode nesting =
             source.getKind().isQuantifier() ? source.getNestingParent()
                     : source.getNestingLevel();
