@@ -380,9 +380,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         // absent LTS nodes and edges
         JAttr ltsAbsent = new JAttr() {
             {
-                this.shape = JVertexShape.DIAMOND;
                 this.dash = JAttr.ABSENT_DASH;
-                this.foreColour = this.lineColour = new Color(255, 20, 147);
             }
         };
         LTS_NODE_ABSENT_CHANGE = ltsAbsent.getNodeAttrs().diff(LTS_NODE_ATTR);
