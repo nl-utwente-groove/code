@@ -153,6 +153,9 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      */
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         return isTypeEqual(obj) && isEndEqual((Edge) obj)
             && isLabelEqual((Edge) obj);
     }

@@ -18,6 +18,7 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_LTS_OPTION;
+import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
@@ -36,7 +37,10 @@ import groove.gui.jgraph.LTSJVertex;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.view.GrammarModel;
 
 import java.awt.Component;
@@ -116,6 +120,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         super.installListeners();
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
+        addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
         addRefreshListener(SHOW_LTS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
@@ -214,7 +219,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         }
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             GraphState state = source.getState();
-            GraphTransition transition = source.getTransition();
+            RuleTransition transition = source.getTransition();
             if (getJModel() != null) {
                 getJGraph().setActive(state, transition);
             }
@@ -316,7 +321,8 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                         getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     if (cell instanceof LTSJEdge) {
                         GraphTransition edge = ((LTSJEdge) cell).getEdge();
-                        getSimulatorModel().setMatch(edge);
+                        MatchResult match = edge.getSteps().iterator().next();
+                        getSimulatorModel().setMatch(match);
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
@@ -363,7 +369,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void closeUpdate(GTS lts, GraphState closed) {
+        public void statusUpdate(GTS lts, GraphState closed, Flag flag) {
             if (getJModel() == null) {
                 return;
             }

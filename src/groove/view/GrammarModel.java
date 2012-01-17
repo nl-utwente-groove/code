@@ -21,6 +21,7 @@ import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.PROLOG;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
+import groove.control.CtrlAut;
 import groove.control.CtrlFactory;
 import groove.explore.Exploration;
 import groove.graph.DefaultGraph;
@@ -32,6 +33,7 @@ import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
+import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
@@ -390,17 +392,22 @@ public class GrammarModel implements Observer {
             }
         }
         // set control
+        CtrlAut control = null;
         if (isUseControl()) {
             ControlModel controlModel = getControlModel(getControlName());
             if (controlModel == null) {
                 errors.add(new FormatError(
                     "Control program '%s' cannot be found", getControlName()));
-            } else if (result.hasMultiplePriorities()) {
+            } else if (!controlModel.isDefault()
+                && result.hasMultiplePriorities()) {
                 errors.add(new FormatError(
                     "Rule priorities and control programs are incompatible, please disable either."));
             } else {
                 try {
-                    result.setCtrlAut(controlModel.toCtrlAut());
+                    control = controlModel.toCtrlAut();
+                    for (Recipe recipe : controlModel.getRecipes()) {
+                        result.add(recipe);
+                    }
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add(new FormatError(
@@ -409,9 +416,13 @@ public class GrammarModel implements Observer {
                     }
                 }
             }
-        } else {
-            result.setCtrlAut(CtrlFactory.instance().buildDefault(result));
         }
+        // use the default control automaton if the above has not resulted
+        // in a dedicated one
+        if (control == null) {
+            control = CtrlFactory.instance().buildDefault(result.getActions());
+        }
+        result.setCtrlAut(control);
         // set properties
         result.setProperties(getProperties());
         // set start graph

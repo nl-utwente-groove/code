@@ -3,8 +3,9 @@ package groove.gui.jgraph;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
-import groove.lts.DerivationLabel;
 import groove.lts.GraphTransition;
+import groove.lts.RuleLabel;
+import groove.lts.RuleTransition;
 import groove.util.Groove;
 
 /**
@@ -23,7 +24,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     /**
      * Creates a new instance from a given edge (required to be a
-     * {@link GraphTransition}).
+     * {@link RuleTransition}).
      */
     LTSJEdge(LTSJGraph jGraph, LTSJModel jModel, GraphTransition edge) {
         super(jGraph, jModel, edge);
@@ -57,12 +58,12 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         String[] displayedLabels = new String[getEdges().size()];
         int labelIndex = 0;
         for (Object part : getEdges()) {
-            GraphTransition trans = (GraphTransition) part;
+            RuleTransition trans = (RuleTransition) part;
             String description;
             if (getJGraph().isShowAnchors()) {
                 description = trans.getEvent().toString();
             } else {
-                description = trans.getEvent().getRule().getName();
+                description = trans.getEvent().getRule().getFullName();
             }
             displayedLabels[labelIndex] =
                 HTMLConverter.STRONG_TAG.on(description, true);
@@ -81,7 +82,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     protected StringBuilder getLine(Edge edge) {
         String text =
             getJGraph().isShowAnchors()
-                    ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())
+                    ? RuleLabel.getAnchorText(((RuleTransition) edge).getEvent())
                     : edge.label().text();
         return new StringBuilder(text);
     }
@@ -91,9 +92,21 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         return this.active;
     }
 
+    /** Indicates that the node or target of this edge is absent. */
+    final boolean isAbsent() {
+        return getEdge().source().isAbsent() || getEdge().target().isAbsent();
+    }
+
+    /** Indicates that this edge is a partial rule application. */
+    final boolean isPartial() {
+        return getEdge().isPartial();
+    }
+
     @Override
     public boolean isVisible() {
-        boolean result = super.isVisible();
+        boolean result =
+            (getJGraph().isShowPartialTransitions() || !isPartial())
+                && super.isVisible();
         return result && this.visible;
     }
 
@@ -114,6 +127,11 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         AttributeMap result = LTSJGraph.LTS_EDGE_ATTR.clone();
         if (isActive()) {
             result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
+        }
+        if (isAbsent()) {
+            result.applyMap(LTSJGraph.LTS_EDGE_ABSENT_CHANGE);
+        } else if (isPartial()) {
+            result.applyMap(LTSJGraph.LTS_EDGE_TRANSIENT_CHANGE);
         }
         return result;
     }

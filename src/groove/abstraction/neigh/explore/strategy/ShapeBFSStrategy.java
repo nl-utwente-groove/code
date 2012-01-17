@@ -20,7 +20,7 @@ import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
 import groove.abstraction.neigh.explore.util.ShapeMatchSetCollector;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeState;
-import groove.explore.strategy.NextOpenStrategy;
+import groove.explore.strategy.BFSStrategy;
 import groove.explore.util.MatchSetCollector;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
@@ -38,7 +38,7 @@ import groove.lts.GraphState;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeBFSStrategy extends NextOpenStrategy {
+public final class ShapeBFSStrategy extends BFSStrategy {
 
     /** Delegates to super.*/
     @Override
@@ -62,5 +62,14 @@ public final class ShapeBFSStrategy extends NextOpenStrategy {
     protected MatchSetCollector createMatchCollector() {
         return new ShapeMatchSetCollector((ShapeState) getState(), getRecord(),
             getGTS().checkDiamonds());
+    }
+
+    @Override
+    protected GraphState getFromPool() {
+        ShapeState result;
+        do {
+            result = (ShapeState) super.getFromPool();
+        } while (result != null && result.isSubsumed());
+        return result;
     }
 }

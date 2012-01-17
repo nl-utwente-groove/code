@@ -23,6 +23,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
@@ -697,6 +698,7 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
         result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
         result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
+        result.add(getOptions().getItem(SHOW_PARTIAL_GTS_OPTION));
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_LTS_OPTION));

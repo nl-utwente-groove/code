@@ -10,7 +10,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.parse.Namespace.Kind;
+import groove.control.CtrlCall.Kind;
 import groove.trans.Rule;
 import groove.algebra.AlgebraFamily;
 import groove.view.FormatError;
@@ -50,20 +50,20 @@ import java.util.HashMap;
 }
 
 program 
-  : ^(PROGRAM actions functions block) 
+  : ^(PROGRAM recipes functions block) 
     { if ($block.tree.getChildCount() == 0) {
           helper.checkAny($PROGRAM);
       }
     }
   ;
 
-actions
-  : ^(ACTIONS action*)
+recipes
+  : ^(RECIPES recipe*)
   ;
 
-action
-  : ^( RULE ID
-       { helper.startBody($ID, Kind.ACTION); } 
+recipe
+  : ^( RECIPE ID INT_LIT?
+       { helper.startBody($ID, Kind.RECIPE); } 
        block
        { helper.endBody(); } 
      )

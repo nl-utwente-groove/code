@@ -3,3 +3,4 @@ choice {
 } or {
     b;
 }
+b;

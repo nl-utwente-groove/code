@@ -1,8 +1,8 @@
-rule ab() {
+recipe ab() {
   choice {
     try a;
   } or {
     b;
   }
-  b;
+  c;
 }

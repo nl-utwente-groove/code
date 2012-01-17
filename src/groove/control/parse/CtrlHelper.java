@@ -19,10 +19,11 @@ package groove.control.parse;
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
+import groove.control.CtrlCall.Kind;
 import groove.control.CtrlPar;
+import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.control.parse.Namespace.Kind;
 import groove.view.FormatError;
 
 import java.util.ArrayList;
@@ -127,26 +128,34 @@ public class CtrlHelper {
      * @return {@code true} if no rule or function with the name of this one was
      * already declared; {@code false} otherwise
      */
-    boolean declareName(Tree functionTree) {
+    boolean declareName(Tree functionTree, String text) {
         boolean result = false;
-        assert (functionTree.getType() == CtrlParser.FUNCTION || functionTree.getType() == CtrlParser.RULE)
-            && functionTree.getChildCount() == 2;
+        assert (functionTree.getType() == CtrlParser.FUNCTION || functionTree.getType() == CtrlParser.RECIPE)
+            && functionTree.getChildCount() <= 3;
         String name = functionTree.getChild(0).getText();
         if (this.namespace.hasName(name)) {
             emitErrorMessage(functionTree,
-                "Duplicate name: Rule %s already defined", name);
+                "Duplicate name: %s %s already defined",
+                this.namespace.getKind(name).getName(true), name);
+        } else if (functionTree.getType() == CtrlParser.FUNCTION) {
+            // it's a function
+            this.namespace.addFunction(name, new ArrayList<CtrlPar.Var>());
+            result = true;
         } else {
-            Kind kind =
-                functionTree.getType() == CtrlParser.FUNCTION ? Kind.FUNCTION
-                        : Kind.ACTION;
-            this.namespace.addName(kind, name, new ArrayList<CtrlPar.Var>());
+            // it's a recipe
+            String priority =
+                functionTree.getChildCount() == 2 ? "0"
+                        : functionTree.getChild(1).getText();
+            this.namespace.addRecipe(name, Integer.parseInt(priority),
+                new ArrayList<CtrlPar.Var>(), text);
+            //            System.out.printf("Recipe %s: %s%n", name, text);
             result = true;
         }
         return result;
     }
 
     /** Sets the current function name to a given value. */
-    void startBody(MyTree nameTree, Kind kind) {
+    void startBody(MyTree nameTree, CtrlCall.Kind kind) {
         assert this.currentName == null;
         this.currentName = nameTree.getText();
         this.currentKind = kind;
@@ -204,7 +213,7 @@ public class CtrlHelper {
     /** The function or transaction name currently processed. */
     private String currentName;
     /** The kind ofr {@link #currentName}. */
-    private Kind currentKind;
+    private CtrlCall.Kind currentKind;
 
     boolean declareVar(Tree nameTree, MyTree typeTree) {
         boolean result = true;
@@ -314,9 +323,10 @@ public class CtrlHelper {
             }
             if (checkCall(callTree, name, args)) {
                 // create the (rule or function) call
-                Kind kind = this.namespace.getKind(name);
-                if (kind == Kind.RULE) {
-                    result = new CtrlCall(this.namespace.useRule(name), args);
+                CtrlCall.Kind kind = this.namespace.getKind(name);
+                this.namespace.useName(name);
+                if (kind == CtrlCall.Kind.RULE) {
+                    result = new CtrlCall(this.namespace.getRule(name), args);
                 } else {
                     // it's a function call
                     result = new CtrlCall(kind, name, args);
@@ -331,21 +341,20 @@ public class CtrlHelper {
     }
 
     void checkAny(MyTree anyTree) {
-        if (this.currentKind == Kind.ACTION) {
-            emitErrorMessage(anyTree,
-                "'any' may not be used in a transactional rule");
+        if (this.currentKind == CtrlCall.Kind.RECIPE) {
+            emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        checkGroupCall(anyTree, this.namespace.getAllRules());
+        checkGroupCall(anyTree, this.namespace.getTopNames());
     }
 
     void checkOther(MyTree otherTree) {
-        if (this.currentKind == Kind.ACTION) {
+        if (this.currentKind == CtrlCall.Kind.RECIPE) {
             emitErrorMessage(otherTree,
-                "'other' may not be used in a transactional rule");
+                "'other' may not be used within a recipe");
         }
         Set<String> unusedRules =
-            new HashSet<String>(this.namespace.getAllRules());
-        unusedRules.removeAll(this.namespace.getUsedRules());
+            new HashSet<String>(this.namespace.getTopNames());
+        unusedRules.removeAll(this.namespace.getUsedNames());
         checkGroupCall(otherTree, unusedRules);
     }
 
@@ -360,14 +369,14 @@ public class CtrlHelper {
      * the declared signature.
      */
     private boolean checkCall(MyTree callTree, String name, List<CtrlPar> args) {
-        Kind kind = this.namespace.getKind(name);
+        CtrlCall.Kind kind = this.namespace.getKind(name);
         List<CtrlPar.Var> sig =
             kind == null ? null : this.namespace.getSig(name);
         boolean result = sig != null;
         if (!result) {
             emitErrorMessage(callTree, "No function or rule %s defined", name);
         } else if (args == null) {
-            result = kind == Kind.RULE;
+            result = kind == CtrlCall.Kind.RULE || kind == Kind.RECIPE;
             for (int i = 0; result && i < sig.size(); i++) {
                 result = sig.get(i).compatibleWith(new CtrlPar.Wild());
             }
@@ -444,9 +453,21 @@ public class CtrlHelper {
      * Tests if a given control automaton is suitable as body of a 
      * transaction.
      */
-    boolean checkActionBody(MyTree actionTree, String name, CtrlAut aut) {
+    boolean checkRecipeBody(MyTree actionTree, String name, CtrlAut aut) {
         boolean result = true;
-        if (!aut.isEndDeterministic()) {
+        for (CtrlTransition omegaTrans : aut.getOmegaTransitions()) {
+            if (omegaTrans.source() == aut.getStart()) {
+                emitErrorMessage(actionTree,
+                    "Recipe '%s' should not have empty behaviour", name);
+                result = false;
+                break;
+            }
+        }
+        if (aut.getOmegaTransitions().isEmpty()) {
+            emitErrorMessage(actionTree,
+                "Rule transaction '%s' must terminate", name);
+            result = false;
+        } else if (!aut.isEndDeterministic()) {
             emitErrorMessage(actionTree,
                 "Rule transaction '%s' must terminate deterministically", name);
             result = false;

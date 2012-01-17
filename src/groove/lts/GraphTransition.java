@@ -16,20 +16,16 @@
  */
 package groove.lts;
 
-import groove.control.CtrlTransition;
 import groove.graph.Edge;
+import groove.trans.Action;
 import groove.trans.HostGraphMorphism;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.RuleApplication;
-import groove.view.FormatException;
 
 /**
- * 
+ * Models a transition in a GTS.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransition extends GraphTransitionStub, Edge, MatchResult {
+public interface GraphTransition extends Edge {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 
@@ -37,57 +33,21 @@ public interface GraphTransition extends GraphTransitionStub, Edge, MatchResult 
     GraphState target();
 
     /** Overrides the method to specialise the result type. */
-    DerivationLabel label();
+    ActionLabel label();
 
-    /** Callback method to construct a rule application from this
-     * graph transition.
-     */
-    public RuleApplication createRuleApplication();
+    /** Returns the action for which this is a transition. */
+    public Action getAction();
+
+    /** Indicates if this transition is part of a recipe transition. */
+    public boolean isPartial();
 
     /** 
-     * Returns a string to be sent to the standard output
-     * on adding a transition with this event to a GTS. 
-     * @return a standard output string, or {@code null} if
-     * there is no standard output for the rule of this event.
-     * @throws FormatException if the format string of the rule
-     * does not correspond to the actual rule parameters
+     * Returns an iterator over the steps comprising this transition.
      */
-    public String getOutputString() throws FormatException;
-
-    /** Returns the (possibly {@code null} control transition associated with this transition. */
-    CtrlTransition getCtrlTransition();
-
-    /**
-     * Returns the nodes added by this transition, in coanchor order.
-     */
-    public HostNode[] getAddedNodes();
-
-    /**
-     * Returns the matching of the LHS into the source graph.
-     */
-    public Proof getMatch();
+    public Iterable<RuleTransition> getSteps();
 
     /**
      * Returns the (partial) morphism from the source to the target graph.
      */
     public HostGraphMorphism getMorphism();
-
-    /**
-     * Indicates if the transition involves a non-trivial symmetry. This is the
-     * case if and only if there is a non-trivial isomorphism from the directly
-     * derived target of the event applied to the source, to the actual (stored)
-     * target.
-     * @return <code>true</code> if the transition involves a non-trivial
-     *         symmetry
-     * @see #getMorphism()
-     */
-    public boolean isSymmetry();
-
-    /**
-     * Converts this transition to a more memory-efficient representation, from
-     * which the original transition can be retrieved by
-     * {@link GraphTransitionStub#toTransition(GraphState)}.
-     */
-    public GraphTransitionStub toStub();
-
 }

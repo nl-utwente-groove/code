@@ -20,13 +20,17 @@ import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
 /**
- * Interface for objects modelling outgoing graph transitions. These objects
- * typically do not store the source of the transition; instead they are stored
- * inside by the source state.
+ * Graph transition stub specialised to rule transitions.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphTransitionStub {
+public interface RuleTransitionStub {
+    /**
+     * Returns the target state of this graph transition stub, given
+     * a certain source state.
+     */
+    GraphState getTarget(GraphState source);
+
     /**
      * Returns the event that underlies the transition from a given source to
      * this object.
@@ -40,25 +44,19 @@ public interface GraphTransitionStub {
     HostNode[] getAddedNodes(GraphState source);
 
     /**
-     * Returns the target state of this graph transition stub, given
-     * a certain source state.
-     */
-    GraphState getTarget(GraphState source);
-
-    /**
      * Constructs a graph transition from this transition stub, based on a given
      * source.
      * @param source the source state for the graph transition
      * @return A graph transition based on the given source, and the rule,
      *         anchor images and target state stored in this out-transition.
      */
-    GraphTransition toTransition(GraphState source);
+    RuleTransition toTransition(GraphState source);
 
     /**
      * Indicates if the transition stub involves a non-trivial symmetry.
      * @return <code>true</code> if the transition involves a non-trivial
      *         symmetry
-     * @see GraphTransition#isSymmetry()
+     * @see RuleTransition#isSymmetry()
      */
     boolean isSymmetry();
 }

@@ -493,12 +493,12 @@ public class Generator extends CommandLineTool {
                 flags.exportStateNames);
 
         // Compute the set of states to be exported separately.
-        Collection<GraphState> export = new HashSet<GraphState>(0);
+        Collection<? extends GraphState> export = new HashSet<GraphState>(0);
         if (flags.exportFinalStates) {
             export = getGTS().getFinalStates();
         }
         if (flags.exportAllStates) {
-            export = getGTS().getStateSet();
+            export = getGTS().nodeSet();
         }
 
         // Perform the export itself.

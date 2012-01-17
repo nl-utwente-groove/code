@@ -190,7 +190,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param node the node being added
      */
     protected void fireAddNode(N node) {
-        if (!isCacheCleared()) {
+        if (hasCache()) {
             getCache().addUpdate(node);
         }
     }
@@ -201,7 +201,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param edge the edge being added
      */
     protected void fireAddEdge(E edge) {
-        if (!isCacheCleared()) {
+        if (hasCache()) {
             getCache().addUpdate(edge);
         }
     }
@@ -212,7 +212,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param node the node being removed
      */
     protected void fireRemoveNode(N node) {
-        if (!isCacheCleared()) {
+        if (hasCache()) {
             getCache().removeUpdate(node);
         }
     }
@@ -223,7 +223,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param edge the edge being removed
      */
     protected void fireRemoveEdge(E edge) {
-        if (!isCacheCleared()) {
+        if (hasCache()) {
             getCache().removeUpdate(edge);
         }
     }
@@ -438,7 +438,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @see CertificateStrategy#getStrength()
      */
     public boolean hasCertifier(boolean strong) {
-        return !isCacheCleared() && getCache().hasCertifier(strong);
+        return hasCache() && getCache().hasCertifier(strong);
     }
 
     /**

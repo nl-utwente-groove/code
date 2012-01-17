@@ -21,15 +21,17 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;
 import groove.lts.AbstractGraphState;
-import groove.lts.DerivationLabel;
+import groove.lts.ActionLabel;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.GraphTransitionStub;
+import groove.lts.RuleTransition;
+import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
+import groove.lts.StateReference;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
+import groove.util.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +64,7 @@ public class ShapeState extends AbstractGraphState {
     /** A (possible null) reference to a state that subsumes this one. */
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
-    private final ArrayList<GraphTransition> transitions;
+    private final ArrayList<RuleTransition> transitions;
     /**
      * Temporary set of possible subsumed states used when adding the state to
      * the GTS.
@@ -80,19 +82,28 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    public ShapeState(Shape shape, CtrlState ctrlState, int number) {
-        // We don't have a cache reference, so just pass null to the
-        // super constructor.
-        super(null, number);
-        setCtrlState(ctrlState);
+    protected ShapeState(CacheReference<StateCache> reference, Shape shape,
+            CtrlState ctrlState, int number) {
+        super(reference, number);
         this.shape = shape;
         this.shape.setName(toString());
         // Fix the shape to avoid modifications.
         // EDUARDO: restore this after debugging is done.
         // this.shape.setFixed();
         this.closed = false;
-        this.transitions = new ArrayList<GraphTransition>();
+        this.transitions = new ArrayList<RuleTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
+        setCtrlState(ctrlState);
+    }
+
+    /**
+     * Constructs a numbered state with the given shape and with an empty set of
+     * transitions.
+     * @param number the number of the state; required to be non-negative
+     */
+    public ShapeState(SystemRecord record, Shape shape, CtrlState ctrlState,
+            int number) {
+        this(StateReference.newInstance(record), shape, ctrlState, number);
     }
 
     // ------------------------------------------------------------------------
@@ -105,18 +116,13 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public int getTransitionCount() {
-        return this.transitions.size();
-    }
-
-    @Override
-    public Iterator<GraphTransition> getTransitionIter() {
+    public Iterator<RuleTransition> getTransitionIter() {
         return this.transitions.iterator();
     }
 
     @Override
-    public Set<GraphTransition> getTransitionSet() {
-        return new HashSet<GraphTransition>(this.transitions);
+    public Set<RuleTransition> getTransitionSet() {
+        return new HashSet<RuleTransition>(this.transitions);
     }
 
     @Override
@@ -125,7 +131,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public boolean addTransition(GraphTransition transition) {
+    public boolean addTransition(RuleTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeNextState : "Invalid transition type.";
         this.transitions.add(transition);
@@ -133,7 +139,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public boolean containsTransition(GraphTransition transition) {
+    public boolean containsTransition(RuleTransition transition) {
         return this.transitions.contains(transition);
     }
 
@@ -150,18 +156,8 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    protected SystemRecord getRecord() {
-        return this.getGTS().getRecord();
-    }
-
-    @Override
     public ShapeNode[] getBoundNodes() {
         return EMPTY_NODE_ARRAY;
-    }
-
-    @Override
-    public void clearCache() {
-        // We don't have a cache, so just return.
     }
 
     @Override
@@ -170,7 +166,7 @@ public class ShapeState extends AbstractGraphState {
             return this.nextStates;
         } else {
             Set<ShapeState> result = new MyHashSet<ShapeState>();
-            for (GraphTransition transition : this.transitions) {
+            for (RuleTransition transition : this.transitions) {
                 result.add((ShapeState) transition.target());
             }
             if (this.isClosed()) {
@@ -178,11 +174,6 @@ public class ShapeState extends AbstractGraphState {
             }
             return result;
         }
-    }
-
-    @Override
-    public Iterator<ShapeState> getNextStateIter() {
-        return getNextStateSet().iterator();
     }
 
     // ------------------------------------------------------------------------
@@ -193,10 +184,9 @@ public class ShapeState extends AbstractGraphState {
      * Returns true if this state has an outgoing transition to the given
      * target state with given label.
      */
-    protected boolean containsTransition(DerivationLabel label,
-            ShapeState target) {
+    protected boolean containsTransition(ActionLabel label, ShapeState target) {
         boolean result = false;
-        for (GraphTransition trans : this.transitions) {
+        for (RuleTransition trans : this.transitions) {
             if (trans.target().getNumber() == target.getNumber()
                 && trans.label().equals(label)) {
                 result = true;
@@ -225,7 +215,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     /** Returns true if this state is subsumed by another one in the GTS. */
-    protected boolean isSubsumed() {
+    public boolean isSubsumed() {
         return this.subsumptor != null;
     }
 
@@ -259,7 +249,7 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     @Override
-    public GraphTransitionStub getOutStub(RuleEvent prime) {
+    public RuleTransitionStub getOutStub(RuleEvent prime) {
         throw new UnsupportedOperationException();
     }
 
@@ -274,24 +264,19 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    protected StateCache createCache() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected GraphTransitionStub createTransitionStub(RuleEvent event,
+    protected RuleTransitionStub createTransitionStub(RuleEvent event,
             HostNode[] addedNodes, GraphState target) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected GraphTransitionStub createInTransitionStub(GraphState source,
+    protected RuleTransitionStub createInTransitionStub(GraphState source,
             RuleEvent event, HostNode[] addedNodes) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<RuleEvent,GraphTransition> getTransitionMap() {
+    public Map<RuleEvent,RuleTransition> getTransitionMap() {
         throw new UnsupportedOperationException();
     }
 

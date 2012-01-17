@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Rule;
+import groove.trans.Action;
 
 /**
  * Predicate rule_priority(+Rule,?Priority)
@@ -33,7 +33,7 @@ public class Predicate_rule_priority extends TransPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Rule rl = getRule(args[0]);
+        Action rl = getRule(args[0]);
         Term res = IntegerTerm.get(rl.getPriority());
         return interpreter.unify(args[1], res);
     }

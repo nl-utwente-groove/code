@@ -77,6 +77,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_ANCHORS_OPTION);
         addCheckbox(SHOW_ASPECTS_OPTION);
         addCheckbox(SHOW_VALUE_NODES_OPTION);
+        addCheckbox(SHOW_PARTIAL_GTS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_LTS_OPTION);
@@ -884,6 +885,9 @@ public class Options implements Cloneable {
     static public final String SHOW_TYPE_TAB_OPTION = "Show type graph tab";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
+    /** Show partial transitions option */
+    static public final String SHOW_PARTIAL_GTS_OPTION =
+        "Show partial transitions";
     /** Show unfiltered edges to filtered nodes. */
     static public final String SHOW_UNFILTERED_EDGES_OPTION =
         "Show all unfiltered edges";
@@ -911,6 +915,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
         boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
         boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
+        boolOptionDefaults.put(SHOW_PARTIAL_GTS_OPTION, true);
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);

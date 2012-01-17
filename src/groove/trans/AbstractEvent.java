@@ -17,9 +17,9 @@
 package groove.trans;
 
 import groove.graph.algebra.ValueNode;
-import groove.lts.DefaultGraphTransition;
+import groove.lts.DefaultRuleTransition;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 import groove.view.FormatException;
@@ -252,16 +252,16 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     }
 
     /**
-     * Returns a {@link DefaultGraphTransition}. The method does not check if
+     * Returns a {@link DefaultRuleTransition}. The method does not check if
      * this event is actually applicable at <code>source</code>.
      * @throws UnsupportedOperationException if the rule is not unmodifying
      */
-    public GraphTransition toTransition(GraphState source) {
+    public RuleTransition toTransition(GraphState source) {
         if (getRule().isModifying()) {
             throw new UnsupportedOperationException(
                 "Only unmodifying events can be used as graph transition stubs");
         }
-        return new DefaultGraphTransition(source, this, EMPTY_NODE_ARRAY,
+        return new DefaultRuleTransition(source, this, EMPTY_NODE_ARRAY,
             source, false);
     }
 

@@ -17,7 +17,7 @@
 package groove.verify;
 
 import groove.lts.GraphTransition;
-import groove.trans.Rule;
+import groove.trans.Action;
 
 /**
  * Models a transition in a product automaton consisting of a graph-transition
@@ -63,8 +63,8 @@ public class ProductTransition {
     }
 
     /** returnsz the rule of this buchi transition */
-    public Rule rule() {
-        return graphTransition().getEvent().getRule();
+    public Action rule() {
+        return graphTransition().getAction();
     }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
@@ -85,9 +85,14 @@ public class ProductTransition {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ProductTransition
-            && equalsSource((ProductTransition) obj)
-            && equalsEvent((ProductTransition) obj);
+        if (this == obj) {
+            return false;
+        }
+        if (!(obj instanceof ProductTransition)) {
+            return false;
+        }
+        ProductTransition other = (ProductTransition) obj;
+        return equalsSource(other) && equalsTransition(other);
     }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
@@ -104,11 +109,8 @@ public class ProductTransition {
      * This implementation compares objects on the basis of the source graph,
      * rule and anchor images.
      */
-    protected boolean equalsEvent(ProductTransition other) {
-        return graphTransition().source().equals(
-            other.graphTransition().source())
-            && graphTransition().getEvent().equals(
-                other.graphTransition().getEvent());
+    protected boolean equalsTransition(ProductTransition other) {
+        return graphTransition().equals(other.graphTransition().source());
     }
 
     @Override

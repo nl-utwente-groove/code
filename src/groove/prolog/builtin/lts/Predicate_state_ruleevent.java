@@ -24,7 +24,7 @@ import gnu.prolog.vm.BacktrackInfo;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.trans.RuleEvent;
 import groove.util.TransformIterator;
 
@@ -72,10 +72,10 @@ public class Predicate_state_ruleevent extends LtsPrologCode {
             GraphState graphState = getGraphState(args[0]);
             graphState.getTransitionIter();
             Iterator<RuleEvent> it =
-                new TransformIterator<GraphTransition,RuleEvent>(
+                new TransformIterator<RuleTransition,RuleEvent>(
                     graphState.getTransitionIter()) {
                     @Override
-                    protected RuleEvent toOuter(GraphTransition from) {
+                    protected RuleEvent toOuter(RuleTransition from) {
                         return from.getEvent();
                     }
                 };

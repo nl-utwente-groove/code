@@ -34,7 +34,7 @@ import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -724,7 +724,7 @@ public class ShowHideMenu extends JMenu {
             while (state instanceof GraphNextState) {
                 this.trace.add(jGraph.getModel().getJCellForNode(state));
                 this.trace.add(jGraph.getModel().getJCellForEdge(
-                    (GraphTransition) state));
+                    (RuleTransition) state));
                 state = ((GraphNextState) state).source();
             }
             LTSJModel model = jGraph.getModel();

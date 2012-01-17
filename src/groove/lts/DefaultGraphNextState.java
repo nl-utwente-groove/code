@@ -23,9 +23,13 @@ import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
+import groove.trans.Recipe;
+import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
+
+import java.util.Collections;
 
 /**
  * 
@@ -33,7 +37,7 @@ import groove.view.FormatException;
  * @version $Revision$
  */
 public class DefaultGraphNextState extends AbstractGraphState implements
-        GraphNextState, GraphTransitionStub {
+        GraphNextState, RuleTransitionStub {
     /**
      * Constructs a successor state on the basis of a given parent state and
      * rule application, and a given control location.
@@ -55,6 +59,16 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     public RuleEvent getEvent() {
         return this.event;
+    }
+
+    @Override
+    public Rule getAction() {
+        return getEvent().getRule();
+    }
+
+    @Override
+    public Iterable<RuleTransition> getSteps() {
+        return Collections.<RuleTransition>singletonList(this);
     }
 
     @Override
@@ -98,8 +112,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns the rule name.
      */
-    public DerivationLabel label() {
-        return new DerivationLabel(getEvent(), this.addedNodes);
+    public RuleLabel label() {
+        return new RuleLabel(this.source, getEvent(), this.addedNodes);
     }
 
     @Override
@@ -151,19 +165,19 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return false;
     }
 
-    public GraphTransitionStub toStub() {
+    public RuleTransitionStub toStub() {
         return this;
     }
 
     /**
-     * This implementation returns a {@link DefaultGraphTransition} with
+     * This implementation returns a {@link DefaultRuleTransition} with
      * {@link #getSourceEvent()} if <code>source</code> does not equal
      * {@link #source()}, otherwise it returns <code>this</code>.
      */
-    public GraphTransition toTransition(GraphState source) {
+    public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            return new DefaultGraphTransition(source,
-                getSourceEvent(), getSourceAddedNodes(), this, isSymmetry());
+            return new DefaultRuleTransition(source, getSourceEvent(),
+                getSourceAddedNodes(), this, isSymmetry());
         } else {
             return this;
         }
@@ -197,7 +211,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     /**
      * Returns the event from the source of this transition, if that is itself a
-     * {@link groove.lts.GraphTransitionStub}.
+     * {@link groove.lts.RuleTransitionStub}.
      */
     protected RuleEvent getSourceEvent() {
         if (source() instanceof GraphNextState) {
@@ -209,7 +223,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     /**
      * Returns the event from the source of this transition, if that is itself a
-     * {@link groove.lts.GraphTransitionStub}.
+     * {@link groove.lts.RuleTransitionStub}.
      */
     protected HostNode[] getSourceAddedNodes() {
         if (source() instanceof GraphNextState) {
@@ -221,25 +235,25 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     /**
      * This implementation compares the state on the basis of its qualities as a
-     * {@link GraphTransition}. That is, two objects are considered equal if
+     * {@link RuleTransition}. That is, two objects are considered equal if
      * they have the same source and event.
-     * @see #equalsTransition(GraphTransition)
+     * @see #equalsTransition(RuleTransition)
      */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         } else {
-            return (obj instanceof GraphTransition)
-                && equalsTransition((GraphTransition) obj);
+            return (obj instanceof RuleTransition)
+                && equalsTransition((RuleTransition) obj);
         }
     }
 
     /**
      * This implementation compares the source and event of another
-     * {@link GraphTransition} to those of this object.
+     * {@link RuleTransition} to those of this object.
      */
-    protected boolean equalsTransition(GraphTransition other) {
+    protected boolean equalsTransition(RuleTransition other) {
         return source() == other.source() && getEvent() == other.getEvent();
     }
 
@@ -257,7 +271,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * <code>super</code>.
      */
     @Override
-    protected GraphTransitionStub createInTransitionStub(GraphState source,
+    protected RuleTransitionStub createInTransitionStub(GraphState source,
             RuleEvent event, HostNode[] addedNodes) {
         if (source == source() && event == getEvent()) {
             return this;
@@ -272,6 +286,16 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         CtrlState sourceCtrlState = source().getCtrlState();
         return sourceCtrlState == null ? null
                 : sourceCtrlState.getTransition(getEvent().getRule());
+    }
+
+    @Override
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return getCtrlTransition().getRecipe();
     }
 
     /** Keeps track of bound variables */

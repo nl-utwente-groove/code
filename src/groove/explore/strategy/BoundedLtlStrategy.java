@@ -21,6 +21,7 @@ import groove.explore.util.RandomChooserInSequence;
 import groove.graph.EdgeRole;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductState;
@@ -182,7 +183,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
 
                 // we only continue with freshly created states
                 if (unexplored(newState)) {
-                    if (newState.getGraphState() instanceof GraphTransition) {
+                    if (newState.getGraphState() instanceof RuleTransition) {
                         // if the transition does not cross the boundary or its
                         // target-state is already explored in previous
                         // iterations

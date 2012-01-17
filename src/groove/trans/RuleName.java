@@ -185,6 +185,18 @@ public class RuleName implements Comparable<RuleName> {
     private final String[] tokens;
     /** The text returned by {@link #toString()}. */
     private final String text;
+
+    /** Returns the last part of a qualified name. */
+    public static String getLastName(String fullName) {
+        return new RuleName(fullName).child();
+    }
+
+    /** Returns the namespace of a qualified name. */
+    public static String getParent(String fullName) {
+        RuleName parent = new RuleName(fullName).parent();
+        return parent == null ? "" : parent.toString();
+    }
+
     /**
      * Character to separate constituent tokens.
      */

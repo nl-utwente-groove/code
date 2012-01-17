@@ -1,4 +1,4 @@
-rule ab() {
+recipe ab() {
   a;
   b;
 }

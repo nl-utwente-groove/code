@@ -28,8 +28,8 @@ import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.explore.util.MatchApplier;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.trans.RuleEvent;
 import groove.util.Pair;
 
@@ -90,11 +90,11 @@ public final class ShapeMatchApplier extends MatchApplier {
      * this method is garbage: callers should not use it.
      */
     @Override
-    public GraphTransition apply(GraphState sourceGS, MatchResult match) {
+    public RuleTransition apply(GraphState sourceGS, MatchResult match) {
         assert sourceGS instanceof ShapeState;
         addTransitionReporter.start();
         ShapeState source = (ShapeState) sourceGS;
-        GraphTransition result = null;
+        RuleTransition result = null;
         RuleEvent origEvent = match.getEvent();
         Shape host = source.getGraph();
         AGTS agts = this.getGTS();
@@ -118,7 +118,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                 RuleEvent realEvent = pair.two();
                 Shape target = transformedShape.normalise();
 
-                GraphTransition trans;
+                RuleTransition trans;
                 ShapeNextState newState =
                     new ShapeNextState(agts.nodeCount(), target, source,
                         realEvent);
@@ -138,7 +138,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                         ShapePreviewDialog.showShape(newState.getGraph());
                     }
                 }
-                agts.addTransition(trans);
+                agts.addRuleTransition(trans);
                 result = trans;
             }
         } catch (AssertionError e) {

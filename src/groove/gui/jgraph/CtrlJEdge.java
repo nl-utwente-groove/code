@@ -4,7 +4,7 @@ import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.util.Groove;
 
 /**
@@ -20,7 +20,7 @@ public class CtrlJEdge extends GraphJEdge {
 
     /**
      * Creates a new instance from a given edge (required to be a
-     * {@link GraphTransition}).
+     * {@link RuleTransition}).
      */
     CtrlJEdge(CtrlJGraph jGraph, GraphJModel<?,?> jModel, CtrlTransition edge) {
         super(jGraph, jModel, edge);
@@ -39,6 +39,12 @@ public class CtrlJEdge extends GraphJEdge {
     @Override
     public CtrlTransition getEdge() {
         return (CtrlTransition) super.getEdge();
+    }
+
+    @Override
+    public boolean addEdge(Edge edge) {
+        CtrlTransition trans = (CtrlTransition) edge;
+        return trans.isStart() == getEdge().isStart() && super.addEdge(edge);
     }
 
     @Override
@@ -72,7 +78,7 @@ public class CtrlJEdge extends GraphJEdge {
     protected AttributeMap createAttributes() {
         AttributeMap result;
         boolean omega = getEdge().getCall().isOmega();
-        if (getEdge().isExitsTransient()) {
+        if (getEdge().isStart() && getEdge().source().isTransient()) {
             result =
                 omega ? CtrlJGraph.CONTROL_OMEGA_EXIT_EDGE_ATTR
                         : CtrlJGraph.CONTROL_EXIT_EDGE_ATTR;

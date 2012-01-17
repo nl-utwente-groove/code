@@ -50,7 +50,7 @@ public abstract class AbstractStrategy implements Strategy {
         for (MatchResult next : createMatchCollector().getMatchSet()) {
             getMatchApplier().apply(getState(), next);
         }
-        setClosed(getState(), true);
+        getState().setClosed(true);
         return updateAtState();
     }
 
@@ -107,7 +107,7 @@ public abstract class AbstractStrategy implements Strategy {
      * been explored.
      */
     protected void setClosed(GraphState state, boolean complete) {
-        getGTS().setClosed(state, complete);
+        state.setClosed(complete);
     }
 
     /**

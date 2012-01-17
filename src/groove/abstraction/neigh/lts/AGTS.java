@@ -24,18 +24,14 @@ import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.GraphCache;
 import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
-import groove.lts.DerivationLabel;
+import groove.lts.ActionLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
-import groove.util.FilterIterator;
-import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -116,32 +112,27 @@ public final class AGTS extends GTS {
      * The given transition must be of type ShapeTransition or ShapeNextState.
      */
     @Override
-    public void addTransition(GraphTransition transition) {
+    public void addRuleTransition(RuleTransition transition) {
         assert (transition instanceof ShapeTransition)
             || (transition instanceof ShapeNextState) : "Type error : "
             + transition + " is not of type ShapeTransition or ShapeNextState.";
-        super.addTransition(transition);
+        super.addRuleTransition(transition);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<? extends ShapeState> nodeSet() {
+        return (Set<? extends ShapeState>) super.nodeSet();
     }
 
     @Override
-    protected TreeHashSet<GraphState> createStateSet() {
+    protected ShapeStateSet createStateSet() {
         return new ShapeStateSet(getCollapse());
-    }
-
-    @Override
-    public Iterator<GraphState> getOpenStateIter() {
-        return new FilterIterator<GraphState>(nodeSet().iterator()) {
-            @Override
-            protected boolean approves(Object obj) {
-                ShapeState state = (ShapeState) obj;
-                return !state.isClosed() && !state.isSubsumed();
-            }
-        };
     }
 
     /** Throws an UnsupportedOperationException. */
     @Override
-    protected GraphCache<GraphState,GraphTransition> createCache() {
+    protected GraphCache<GraphState,RuleTransition> createCache() {
         throw new UnsupportedOperationException();
     }
 
@@ -154,7 +145,7 @@ public final class AGTS extends GTS {
     @Override
     protected ShapeState createStartState(HostGraph startGraph) {
         ShapeState result =
-            new ShapeState((Shape) startGraph,
+            new ShapeState(getRecord(), (Shape) startGraph,
                 getGrammar().getCtrlAut().getStart(), 0);
         return result;
     }
@@ -167,13 +158,6 @@ public final class AGTS extends GTS {
     @Override
     public ShapeState startState() {
         return (ShapeState) super.startState();
-    }
-
-    @Override
-    public Set<ShapeState> nodeSet() {
-        @SuppressWarnings("unchecked")
-        Set<ShapeState> stateSet = (Set<ShapeState>) ((Set<?>) getStateSet());
-        return Collections.unmodifiableSet(stateSet);
     }
 
     // ------------------------------------------------------------------------
@@ -229,7 +213,7 @@ public final class AGTS extends GTS {
 
         // Go over all states and compute the closure for the subsumption
         // relation.
-        for (GraphState graphState : this.getStateSet()) {
+        for (GraphState graphState : getStateSet()) {
             ShapeState state = (ShapeState) graphState;
             if (!state.isSubsumed() && !closureMap.containsKey(state)) {
                 // This state will be in the reduced GTS.
@@ -279,14 +263,14 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(origSrcClosure.getGraph(),
+                    new ShapeState(getRecord(), origSrcClosure.getGraph(),
                         origSrcClosure.getCtrlState(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);
                 result.startState = reducedSrc;
             }
             // Go over all next states.
-            for (GraphTransition origTrans : origSrcClosure.getTransitionSet()) {
+            for (RuleTransition origTrans : origSrcClosure.getTransitionSet()) {
                 ShapeState origTgt = (ShapeState) origTrans.target();
                 ShapeState origTgtClosure = closureMap.get(origTgt);
                 assert origTgtClosure != null;
@@ -302,13 +286,13 @@ public final class AGTS extends GTS {
                     stateMap.put(origTgtClosure, reducedTgt);
                 } else {
                     // Check if we have a new transition.
-                    DerivationLabel transLabel = origTrans.label();
+                    ActionLabel transLabel = origTrans.label();
                     // Create a new transition.
                     if (!reducedSrc.containsTransition(transLabel, reducedTgt)) {
                         ShapeTransition reducedTrans =
                             new ShapeTransition(reducedSrc,
                                 origTrans.getEvent(), reducedTgt);
-                        result.addTransition(reducedTrans);
+                        result.addRuleTransition(reducedTrans);
                     }
                 }
             }
@@ -321,9 +305,9 @@ public final class AGTS extends GTS {
             ShapeState reducedState) {
         reducedGTS.addStateWithoutCheck(reducedState);
         if (reducedState instanceof ShapeNextState) {
-            reducedGTS.addTransition((GraphTransition) reducedState);
+            reducedGTS.addRuleTransition((RuleTransition) reducedState);
         }
-        reducedGTS.setClosed(reducedState, true);
+        reducedState.setClosed(true);
         if (this.isFinal(origState)) {
             reducedGTS.setFinal(reducedState);
         }

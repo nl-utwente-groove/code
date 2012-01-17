@@ -23,7 +23,7 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.trans.HostNode;
@@ -138,7 +138,7 @@ public class MatchSetCollector {
         // the third only if the parent match target is already closed
         final boolean isDisabled = isDisabled(ctrlTrans.getCall());
         if (!isDisabled) {
-            for (GraphTransition trans : this.parentOutMap.values()) {
+            for (RuleTransition trans : this.parentOutMap.values()) {
                 if (trans.getEvent().getRule().equals(ctrlTrans.getRule())) {
                     result.add(trans);
                     hasMatched = true;
@@ -312,7 +312,7 @@ public class MatchSetCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final Map<RuleEvent,GraphTransition> parentOutMap;
+    private final Map<RuleEvent,RuleTransition> parentOutMap;
     /** The rules that may be enabled. */
     private final Set<Rule> enabledRules;
     /** The rules that may be disabled. */

@@ -22,7 +22,8 @@ import java.util.Set;
 
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
-    /** Constructs an initially empty schedule. 
+    /**
+     * Constructs an initially empty schedule. 
      * @param isTransient if {@code true}, the schedule is part of a transaction
      */
     public CtrlSchedule(CtrlState state, CtrlTransition trans,
@@ -30,12 +31,9 @@ public class CtrlSchedule {
         this.state = state;
         this.trans = trans;
         if (trans != null) {
-            this.triedRules = null;
+            this.triedCalls = null;
         } else {
-            this.triedRules = new HashSet<CtrlCall>();
-            for (CtrlCall call : triedCalls) {
-                this.triedRules.add(call);
-            }
+            this.triedCalls = new HashSet<CtrlCall>(triedCalls);
         }
         this.success = success;
         assert !isTransient || state.isTransient();
@@ -71,13 +69,14 @@ public class CtrlSchedule {
         return this.state;
     }
 
-    /** Returns the set of control calls that has been tried at this point
+    /**
+     * Returns the set of control calls that has been tried at this point
      * of the schedule, provided the schedule is finished
      * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
      * yields {@code false}.
      */
     public Set<CtrlCall> getTriedCalls() {
-        return this.triedRules;
+        return this.triedCalls;
     }
 
     /** Sets the success and failure schedules. */
@@ -149,7 +148,7 @@ public class CtrlSchedule {
     /** The set of calls that have been tried when this point of the schedule is reached.
      * Only filled in if {@link #isFinished()} is satisfied.
      */
-    private final Set<CtrlCall> triedRules;
+    private final Set<CtrlCall> triedCalls;
     /** Next schedule node in case {@link #trans} succeeds. */
     private CtrlSchedule succNext;
     /** Next schedule node in case {@link #trans} fails. */

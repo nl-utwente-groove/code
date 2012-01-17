@@ -21,7 +21,7 @@ import static groove.verify.FormulaParser.Token.NOT;
 import static groove.verify.FormulaParser.Token.TRUE;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.verify.FormulaParser.Token;
 
 import java.util.ArrayList;
@@ -73,10 +73,10 @@ public class DefaultMarker {
         Integer openAtomIndex = this.stringAtoms.get(Formula.OPEN_ATOM);
         Integer finalAtomIndex = this.stringAtoms.get(Formula.FINAL_ATOM);
         for (GraphState state : this.gts.nodeSet()) {
-            Set<GraphTransition> transitions = state.getTransitionSet();
+            Set<RuleTransition> transitions = state.getTransitionSet();
             int stateNr = state.getNumber();
             this.states[stateNr] = state;
-            for (GraphTransition transition : transitions) {
+            for (RuleTransition transition : transitions) {
                 GraphState target = transition.target();
                 int targetNr = target.getNumber();
                 if (backward[targetNr] == null) {
@@ -86,7 +86,7 @@ public class DefaultMarker {
                 // check whether this transition corresponds to an atomic
                 // proposition of the source state
                 Integer atomIndex =
-                    this.ruleAtoms.get(transition.getEvent().getRule().getName());
+                    this.ruleAtoms.get(transition.getEvent().getRule().getFullName());
                 if (atomIndex != null) {
                     this.marking[atomIndex].set(stateNr);
                 }
@@ -342,13 +342,13 @@ public class DefaultMarker {
                 for (int p = 0; p < preds.length; p++) {
                     int pred = preds[p];
                     nextCounts[pred]++;
-                    if (this.states[pred].getTransitionCount() == nextCounts[pred]) {
+                    if (this.states[pred].getTransitionSet().size() == nextCounts[pred]) {
                         result.set(pred);
                     }
                 }
             }
             // the property vacuously holds for deadlocked states
-            if (this.states[i].getTransitionCount() == 0) {
+            if (this.states[i].getTransitionSet().isEmpty()) {
                 result.set(i);
             }
         }
@@ -412,7 +412,7 @@ public class DefaultMarker {
                 // been marked
                 if (arg1.get(pred) && !result.get(pred)) {
                     markedNextCount[pred]++;
-                    int nextTotal = this.states[pred].getTransitionCount();
+                    int nextTotal = this.states[pred].getTransitionSet().size();
                     if (markedNextCount[pred] == nextTotal) {
                         result.set(pred);
                         newStates.add(pred);

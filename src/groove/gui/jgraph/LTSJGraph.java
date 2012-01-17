@@ -26,7 +26,7 @@ import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.util.Colors;
 
 import java.awt.Color;
@@ -84,6 +84,11 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
     }
 
+    /** Indicates if partial transitions and transient states should be shown. */
+    public boolean isShowPartialTransitions() {
+        return getOptionValue(Options.SHOW_PARTIAL_GTS_OPTION);
+    }
+
     /**
      * Node hiding doesn't mean much in the LTS, so always show the edges unless
      * explicitly filtered.
@@ -98,8 +103,9 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      */
     public void scrollTo(Element nodeOrEdge) {
         GraphJCell cell = getModel().getJCell(nodeOrEdge);
-        assert cell != null;
-        scrollCellToVisible(cell);
+        if (cell != null) {
+            scrollCellToVisible(cell);
+        }
     }
 
     /**
@@ -180,7 +186,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * is the one currently selected in the simulator. Returns <tt>null</tt> if
      * no transition is selected.
      */
-    public GraphTransition getActiveTransition() {
+    public RuleTransition getActiveTransition() {
         return this.activeTransition;
     }
 
@@ -200,10 +206,10 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * @param state the new active state
      * @param trans the new active transition
      */
-    public void setActive(GraphState state, GraphTransition trans) {
+    public void setActive(GraphState state, RuleTransition trans) {
         List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
         List<GraphJCell> changedCells = new ArrayList<GraphJCell>();
-        GraphTransition previousTrans = this.activeTransition;
+        RuleTransition previousTrans = this.activeTransition;
         this.activeTransition = trans;
         if (previousTrans != null) {
             LTSJCell jCell =
@@ -214,12 +220,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
         if (trans != null) {
             LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
-            assert jCell != null : String.format("No image for %s in jModel",
-                trans);
-            if (jCell.setActive(true)) {
-                changedCells.add(jCell);
+            if (jCell != null) {
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
+                activeCells.add(jCell);
             }
-            activeCells.add(jCell);
         }
         GraphState previousState = this.activeState;
         this.activeState = state;
@@ -232,10 +238,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
         if (state != null && getModel() != null) {
             LTSJVertex jCell = (LTSJVertex) getModel().getJCellForNode(state);
-            if (jCell.setActive(true)) {
-                changedCells.add(jCell);
+            if (jCell != null) {
+                if (jCell.setActive(true)) {
+                    changedCells.add(jCell);
+                }
+                activeCells.add(jCell);
             }
-            activeCells.add(jCell);
         }
         if (!changedCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());
@@ -259,7 +267,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * @invariant activeTransition == null ||
      *            ltsJModel.graph().contains(activeTransition)
      */
-    private GraphTransition activeTransition;
+    private RuleTransition activeTransition;
 
     /**
      * The simulator to which this j-graph is associated.
@@ -297,6 +305,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     static public final JAttr.AttributeMap LTS_EDGE_ATTR;
     /** Transient node attributes of the LTS */
     static public final JAttr.AttributeMap LTS_NODE_TRANSIENT_CHANGE;
+    /** Transient edge attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_EDGE_TRANSIENT_CHANGE;
+    /** Absent node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_NODE_ABSENT_CHANGE;
+    /** Absent edge attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_EDGE_ABSENT_CHANGE;
     /** Active node attributes of the LTS */
     static public final JAttr.AttributeMap LTS_NODE_ACTIVE_CHANGE;
     /** Active edge attributes of the LTS */
@@ -345,21 +359,34 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         // active LTS nodes and edges
         JAttr ltsActive = new JAttr() {
             {
-                this.lineColour = Color.blue;
+                this.lineColour = this.foreColour = Color.blue;
                 this.linewidth = 3;
                 this.lineEnd = GraphConstants.ARROW_SIMPLE;
             }
         };
         LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs().diff(LTS_NODE_ATTR);
         LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
-        // active LTS nodes and edges
+        // transient LTS nodes and edges
         JAttr ltsTransient = new JAttr() {
             {
                 this.shape = JVertexShape.DIAMOND;
+                this.foreColour = this.lineColour = new Color(255, 20, 147);
             }
         };
         LTS_NODE_TRANSIENT_CHANGE =
             ltsTransient.getNodeAttrs().diff(LTS_NODE_ATTR);
+        LTS_EDGE_TRANSIENT_CHANGE =
+            ltsTransient.getEdgeAttrs().diff(LTS_EDGE_ATTR);
+        // absent LTS nodes and edges
+        JAttr ltsAbsent = new JAttr() {
+            {
+                this.shape = JVertexShape.DIAMOND;
+                this.dash = JAttr.ABSENT_DASH;
+                this.foreColour = this.lineColour = new Color(255, 20, 147);
+            }
+        };
+        LTS_NODE_ABSENT_CHANGE = ltsAbsent.getNodeAttrs().diff(LTS_NODE_ATTR);
+        LTS_EDGE_ABSENT_CHANGE = ltsAbsent.getEdgeAttrs().diff(LTS_EDGE_ATTR);
     }
 
     /**
@@ -379,7 +406,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
          * Adapts the name of the action so that it reflects that the element to
          * scroll to is a given transition.
          */
-        public void setTransition(GraphTransition edge) {
+        public void setTransition(RuleTransition edge) {
             putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " derivation");
         }
 

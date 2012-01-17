@@ -19,17 +19,26 @@ package groove.lts;
 import groove.graph.AbstractLabel;
 import groove.trans.AbstractEvent;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
+import groove.trans.Recipe;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
 
-/** Class of labels that can appear on graph transitions. */
-public class DerivationLabel extends AbstractLabel {
+/** Class of labels that can appear on rule transitions. */
+public class RuleLabel extends AbstractLabel implements ActionLabel {
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    public DerivationLabel(RuleEvent event, HostNode[] addedNodes) {
+    public RuleLabel(GraphState source, RuleEvent event, HostNode[] addedNodes) {
+        this.event = event;
+        this.recipe =
+            source.getCtrlState().getTransition(event.getRule()).getRecipe();
         this.text = getLabelText(event, addedNodes);
+    }
+
+    @Override
+    public Rule getAction() {
+        return this.event.getRule();
     }
 
     /** Constructs the label text. */
@@ -40,6 +49,10 @@ public class DerivationLabel extends AbstractLabel {
             rule.getSystemProperties().isShowTransitionBrackets();
         if (brackets) {
             result.append(BEGIN_CHAR);
+        }
+        if (this.recipe != null) {
+            result.append(this.recipe);
+            result.append('/');
         }
         result.append(((AbstractEvent<?,?>) event).getLabelText(addedNodes));
         if (brackets) {
@@ -53,6 +66,8 @@ public class DerivationLabel extends AbstractLabel {
         return this.text;
     }
 
+    private final Recipe recipe;
+    private final RuleEvent event;
     private final String text;
 
     /** 

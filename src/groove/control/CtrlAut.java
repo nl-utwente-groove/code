@@ -17,9 +17,12 @@
 package groove.control;
 
 import static groove.graph.GraphRole.CTRL;
+import groove.control.CtrlCall.Kind;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
+import groove.trans.Recipe;
+import groove.trans.Rule;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatError;
@@ -103,9 +106,14 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         return clone(null);
     }
 
-    /** Clones this automaton, optionally making the intermediate states transient. */
-    public CtrlAut clone(String action) {
-        CtrlAut result = newGraph(getName());
+    /** 
+     * Clones this automaton, optionally making the intermediate states transient.
+     * @param recipe if not {@code null}, the new automaton is to be the body
+     * of a recipe with this name
+     */
+    public CtrlAut clone(Recipe recipe) {
+        CtrlAut result =
+            newGraph(recipe == null ? getName() : recipe.getFullName());
         Map<CtrlState,CtrlState> stateMap = new HashMap<CtrlState,CtrlState>();
         stateMap.put(getStart(), result.getStart());
         stateMap.put(getFinal(), result.getFinal());
@@ -115,22 +123,34 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
                 image = result.getStart();
             } else if (state.equals(getFinal())) {
                 image = result.getFinal();
+            } else if (recipe == null) {
+                image = result.copyState(state, state.getRecipe());
             } else {
-                image = result.copyState(state, action);
+                // determine if this state certainly terminates, in which case
+                // it is already not transient any more
+                boolean terminating =
+                    state.getTransitions().size() == 1
+                        && state.getTransitions().iterator().next().getCall().isOmega();
+                image = result.copyState(state, terminating ? null : recipe);
             }
             image.setBoundVars(state.getBoundVars());
             stateMap.put(state, image);
         }
         for (CtrlTransition trans : edgeSet()) {
+            CtrlLabel label = trans.label();
+            CtrlCall call = trans.getCall();
             CtrlState newSource = stateMap.get(trans.source());
             CtrlState newTarget = stateMap.get(trans.target());
-            boolean exitsTransient =
-                trans.isExitsTransient() || action != null
-                    && newSource.isTransient() && trans.getCall().isOmega();
-            result.addTransition(newSource, trans.label(), newTarget,
-                exitsTransient);
-            if (exitsTransient) {
-                newSource.setExitGuard(trans.label().getGuard());
+            Recipe newRecipe =
+                recipe == null || call.isOmega() ? trans.getRecipe() : recipe;
+            boolean newStart =
+                recipe == null ? trans.isStart()
+                        : newSource == result.getStart() || call.isOmega();
+            CtrlLabel newLabel =
+                new CtrlLabel(call, label.getGuard(), newRecipe, newStart);
+            result.addTransition(newSource, newLabel, newTarget);
+            if (newStart && newSource.isTransient()) {
+                newSource.setExitGuard(label.getGuard());
             }
         }
         result.getInfo().getErrors().addAll(this.getInfo().getErrors());
@@ -162,9 +182,8 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
      * due to a nondeterminism
      */
     CtrlTransition addTransition(CtrlState source, CtrlLabel label,
-            CtrlState target, boolean exitsTransient) {
-        CtrlTransition result =
-            createTransition(source, label, target, exitsTransient);
+            CtrlState target) {
+        CtrlTransition result = createTransition(source, label, target);
         if (addTransition(result)) {
             return result;
         } else {
@@ -184,17 +203,17 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
      * Adds a fresh state to this control automaton, based on an existing state.
      * The transient nature of the new state is copied from the original.
      * @param original the state whose transiency information should be copied
-     * @param action if {@code true}, the new state should be transient in any case
+     * @param recipe if {@code null}, gives the name of the recipe for which this is a transient state
      */
-    CtrlState copyState(CtrlState original, String action) {
+    CtrlState copyState(CtrlState original, Recipe recipe) {
         CtrlState result;
-        if (action == null) {
-            result = createState(original.getAction());
+        if (recipe == null) {
+            result = createState(original.getRecipe());
             if (original.hasExitGuard()) {
                 result.setExitGuard(original.getExitGuard());
             }
         } else {
-            result = createState(action);
+            result = createState(recipe);
         }
         addState(result);
         return result;
@@ -248,20 +267,22 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /** The final state of the automaton. */
     private final CtrlState finalState;
 
-    /** Returns the set of rules and transactions invoked by this automaton. */
-    public Set<String> getRules() {
-        Set<String> result = new HashSet<String>();
+    /** Returns the set of rules invoked by this automaton. */
+    public Set<Rule> getRules() {
+        Set<Rule> result = new HashSet<Rule>();
         for (CtrlTransition trans : edgeSet()) {
             CtrlCall call = trans.getCall();
-            result.add(call.getName());
+            if (call.getKind() == Kind.RULE) {
+                result.add(call.getRule());
+            }
         }
         return result;
     }
 
     /** Factory method to create a control state for this automaton. 
-     * @param action optional name of the transaction of which the new state is part
+     * @param recipe optional name of the recipe of which the new state is part
      */
-    private CtrlState createState(String action) {
+    private CtrlState createState(Recipe recipe) {
         int stateNr = this.maxStateNr + 1;
         boolean fresh = false;
         while (!fresh) {
@@ -275,13 +296,13 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             }
         }
         this.maxStateNr = stateNr;
-        return new CtrlState(this, action, stateNr);
+        return new CtrlState(this, recipe, stateNr);
     }
 
     /** Factory method for control transitions. */
     private CtrlTransition createTransition(CtrlState source, CtrlLabel label,
-            CtrlState target, boolean exitsTransient) {
-        return new CtrlTransition(source, label, target, exitsTransient);
+            CtrlState target) {
+        return new CtrlTransition(source, label, target);
     }
 
     /** 
@@ -344,7 +365,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
                             CtrlTransition iOut = iOutEntry.getValue();
                             CtrlTransition jOut =
                                 jOutMap.get(iOutEntry.getKey());
-                            if (iOut.isExitsTransient() != jOut.isExitsTransient()) {
+                            if (iOut.isStart() != jOut.isStart()) {
                                 distinct = true;
                                 break;
                             }
@@ -418,11 +439,14 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /** Computes the quotient of this automaton, based on a given state partition. */
     private CtrlAut computeQuotient(Map<CtrlState,Set<CtrlState>> partition) {
         CtrlAut result = newGraph(getName());
+        Set<CtrlState> representatives = new HashSet<CtrlState>();
         Map<Set<CtrlState>,CtrlState> stateMap =
             new HashMap<Set<CtrlState>,CtrlState>();
-        for (Set<CtrlState> cell : partition.values()) {
+        for (Map.Entry<CtrlState,Set<CtrlState>> cellEntry : partition.entrySet()) {
+            Set<CtrlState> cell = cellEntry.getValue();
             CtrlState image;
             if (!stateMap.containsKey(cell)) {
+                representatives.add(cellEntry.getKey());
                 if (cell.contains(getStart())) {
                     image = result.getStart();
                     assert !cell.contains(getFinal());
@@ -435,11 +459,15 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
                 stateMap.put(cell, image);
             }
         }
-        for (CtrlTransition trans : edgeSet()) {
-            CtrlState newSource = stateMap.get(partition.get(trans.source()));
-            CtrlState newTarget = stateMap.get(partition.get(trans.target()));
-            result.addTransition(newSource, trans.label(), newTarget,
-                trans.isExitsTransient());
+        // only add outgoing transitions for the representatives,
+        // to avoid the appearance of nondeterminism
+        for (CtrlState state : representatives) {
+            CtrlState newSource = stateMap.get(partition.get(state));
+            for (CtrlTransition trans : state.getTransitions()) {
+                CtrlState newTarget =
+                    stateMap.get(partition.get(trans.target()));
+                result.addTransition(newSource, trans.label(), newTarget);
+            }
         }
         return result;
     }
@@ -509,18 +537,18 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /** Upper bound of the range of known consecutive state numbers. */
     private int maxStateNr = -1;
 
-    /** Returns the control program of this automaton (if any). */
-    public String getProgram() {
-        return this.program;
+    /** Indicates if this is the default control automaton of a grammar. */
+    public boolean isDefault() {
+        return this.isDefault;
     }
 
-    /** Sets the control program of this automaton. */
-    public void setProgram(String program) {
-        this.program = program;
+    /** Sets the default status of this automaton to {@code true}. */
+    public void setDefault() {
+        this.isDefault = true;
     }
 
-    /** The control program of this automaton (if any). */
-    private String program;
+    /** Flag indicating that this is the default control automaton of a grammar. */
+    private boolean isDefault;
 
     /** 
      * Tests if the automaton terminates deterministically.
@@ -549,7 +577,19 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     private class TransitionSet extends AbstractSet<CtrlTransition> {
         @Override
         public boolean add(CtrlTransition e) {
-            return e.source().addTransition(e);
+            boolean result = e.source().addTransition(e);
+            if (!result) {
+                FormatError error;
+                if (e.getCall().isOmega()) {
+                    error = new FormatError("Nondetermistic termination");
+                } else {
+                    error =
+                        new FormatError("Non-determinism for rule %s",
+                            e.getRule().getFullName());
+                }
+                GraphInfo.getInfo(CtrlAut.this, true).getErrors().add(error);
+            }
+            return result;
         }
 
         @Override

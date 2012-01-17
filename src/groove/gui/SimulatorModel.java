@@ -14,7 +14,9 @@ import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
@@ -448,7 +450,7 @@ public class SimulatorModel implements Cloneable {
         getExploreStateStrategy().prepare(getGts(), getState());
         getExploreStateStrategy().next();
         changeGts(getGts(), true);
-        GraphTransition outTrans = getOutTransition(getState());
+        RuleTransition outTrans = getOutTransition(getState());
         if (outTrans != null) {
             changeMatch(outTrans);
             changeDisplay(DisplayKind.LTS);
@@ -462,7 +464,7 @@ public class SimulatorModel implements Cloneable {
      */
     public void doApplyMatch() {
         start();
-        GraphTransition trans = getTransition();
+        RuleTransition trans = getTransition();
         if (trans == null) {
             trans = getEventApplier().apply(getState(), getMatch().getEvent());
         }
@@ -473,7 +475,7 @@ public class SimulatorModel implements Cloneable {
             this.old.match = trans;
             GraphState state = this.state = trans.target();
             this.changes.add(Change.STATE);
-            GraphTransition outTrans = null;
+            RuleTransition outTrans = null;
             // set the match to an outgoing transition
             if (state.isClosed()) {
                 outTrans = getOutTransition(state);
@@ -487,9 +489,9 @@ public class SimulatorModel implements Cloneable {
     /** Returns the first outgoing transition that is not a self-loop,
      * preferably one that also leads to an open state.
      * Returns {@code null} if there is no such outgoing transition. */
-    private GraphTransition getOutTransition(GraphState state) {
-        GraphTransition result = null;
-        for (GraphTransition outTrans : getState().getTransitionSet()) {
+    private RuleTransition getOutTransition(GraphState state) {
+        RuleTransition result = null;
+        for (RuleTransition outTrans : getState().getTransitionSet()) {
             if (outTrans.target() != getState()) {
                 result = outTrans;
                 if (!outTrans.target().isClosed()) {
@@ -667,9 +669,9 @@ public class SimulatorModel implements Cloneable {
      * a transition.
      * @see #getMatch()
      */
-    public final GraphTransition getTransition() {
-        return this.match instanceof GraphTransition
-                ? (GraphTransition) this.match : null;
+    public final RuleTransition getTransition() {
+        return this.match instanceof RuleTransition
+                ? (RuleTransition) this.match : null;
     }
 
     /** 
@@ -682,9 +684,9 @@ public class SimulatorModel implements Cloneable {
         start();
         if (changeMatch(match) && match != null) {
             changeSelected(ResourceKind.RULE,
-                match.getEvent().getRule().getName());
-            if (match instanceof GraphTransition) {
-                changeState(((GraphTransition) match).source());
+                match.getEvent().getRule().getFullName());
+            if (match instanceof RuleTransition) {
+                changeState(((RuleTransition) match).source());
             }
             changeDisplay(DisplayKind.LTS);
         }
@@ -1334,7 +1336,7 @@ public class SimulatorModel implements Cloneable {
         }
 
         @Override
-        public void closeUpdate(GTS graph, GraphState explored) {
+        public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
             this.changed = true;
         }
 

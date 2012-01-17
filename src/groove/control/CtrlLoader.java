@@ -22,14 +22,19 @@ import groove.control.parse.CtrlChecker;
 import groove.control.parse.CtrlParser;
 import groove.control.parse.MyTree;
 import groove.control.parse.Namespace;
+import groove.graph.GraphInfo;
+import groove.trans.Action;
 import groove.trans.GraphGrammar;
+import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.util.Pair;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -45,14 +50,13 @@ import org.antlr.runtime.RecognitionException;
 public class CtrlLoader {
     /**
      * Returns the control automaton for a given control program (given as string) and grammar. 
-     * @param grammar grammar containing the properties and rules needed in the compilation
+     * @param properties the system properties under which the automaton is compiled
+     * @param rules the set of rules that can be invoked.
      */
-    public CtrlAut runString(String program, GraphGrammar grammar)
-        throws FormatException {
-        CtrlAut result =
-            runStream(new ANTLRStringStream(program), grammar.getProperties(),
-                grammar.getRules());
-        result.setProgram(program);
+    public Result runString(String program, SystemProperties properties,
+            Collection<Rule> rules) throws FormatException {
+        Result result =
+            runStream(new ANTLRStringStream(program), properties, rules);
         return result;
     }
 
@@ -62,23 +66,22 @@ public class CtrlLoader {
      * @param properties the system properties under which the automaton is compiled
      * @param rules the set of rules that can be invoked.
      */
-    public CtrlAut runString(String program, SystemProperties properties,
+    public Result runString(String program, SystemProperties properties,
             Set<Rule> rules) throws FormatException {
-        CtrlAut result =
+        Result result =
             runStream(new ANTLRStringStream(program), properties, rules);
-        result.setProgram(program);
         return result;
     }
 
     /**
      * Returns the control automaton for a given control program (given as filename) and 
      * grammar.  
-     * @param grammar grammar containing the properties and rules needed in the compilation
+     * @param properties the system properties under which the automaton is compiled
+     * @param rules the set of rules that can be invoked.
      */
-    public CtrlAut runFile(String inputFileName, GraphGrammar grammar)
-        throws FormatException, IOException {
-        return runStream(new ANTLRFileStream(inputFileName),
-            grammar.getProperties(), grammar.getRules());
+    public Result runFile(String inputFileName, SystemProperties properties,
+            Collection<Rule> rules) throws FormatException, IOException {
+        return runStream(new ANTLRFileStream(inputFileName), properties, rules);
     }
 
     /**
@@ -87,7 +90,7 @@ public class CtrlLoader {
      * @param properties the system properties under which the automaton is compiled
      * @param rules the set of rules that can be invoked.
      */
-    public CtrlAut runStream(CharStream inputStream,
+    public Result runStream(CharStream inputStream,
             SystemProperties properties, Collection<Rule> rules)
         throws FormatException {
         try {
@@ -120,7 +123,28 @@ public class CtrlLoader {
             if (!errors.isEmpty()) {
                 throw new FormatException(errors);
             }
-            return aut.normalise();
+            List<Recipe> recipes = new ArrayList<Recipe>();
+            List<Action> actions = new ArrayList<Action>();
+            for (String name : namespace.getTopNames()) {
+                switch (namespace.getKind(name)) {
+                case RECIPE:
+                    Recipe recipe = namespace.getRecipe(name);
+                    recipes.add(recipe);
+                    actions.add(recipe);
+                    break;
+                case RULE:
+                    actions.add(namespace.getRule(name));
+                }
+            }
+            if (aut == null) {
+                aut = CtrlFactory.instance().buildDefault(actions);
+            } else {
+                aut = aut.normalise();
+            }
+            if (GraphInfo.hasErrors(aut)) {
+                throw new FormatException(GraphInfo.getErrors(aut));
+            }
+            return new Result(aut, recipes);
         } catch (RecognitionException re) {
             throw new FormatException(re.getMessage(), re.line,
                 re.charPositionInLine);
@@ -141,8 +165,11 @@ public class CtrlLoader {
             GraphGrammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String filename = args[1];
-                System.out.printf("Control automaton for %s:%n%s", filename,
-                    instance.runFile(filename, grammar));
+                System.out.printf(
+                    "Control automaton for %s:%n%s",
+                    filename,
+                    instance.runFile(filename, grammar.getProperties(),
+                        grammar.getAllRules()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -159,4 +186,13 @@ public class CtrlLoader {
     private static final CtrlLoader instance = new CtrlLoader();
     private static final boolean DEBUG = false;
 
+    /** Result object of the parser,
+     * consisting of a main automaton and a set of recipe automata. 
+     */
+    public static class Result extends Pair<CtrlAut,List<Recipe>> {
+        /** Constructs a result object. */
+        Result(CtrlAut one, List<Recipe> two) {
+            super(one, two);
+        }
+    }
 }

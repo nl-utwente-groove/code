@@ -7,7 +7,7 @@ options {
 }
 
 tokens {
-  ACTIONS;
+  RECIPES;
   ARG;
   ARGS;
 	BLOCK;
@@ -28,10 +28,31 @@ import java.util.LinkedList;
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.parse.Namespace.Kind;
+import groove.control.CtrlCall.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.view.FormatError;
 import java.util.LinkedList;
+}
+
+@lexer::members {
+    /** Last token read when start position is recorded. */
+    private String lastToken;
+    /** Start position of a recorded substring of the input. */
+    private int recordPos;
+    
+    /** Starts recording the input string. */
+    public void startRecord() {
+        lastToken = this.state.token.getText();
+        recordPos = getCharIndex();
+    }
+    
+    public String getRecord() {
+        org.antlr.runtime.Token currentToken = this.state.token;
+        int currentTokenLength =
+            currentToken == null ? 0 : currentToken.getText().length();
+        return (this.lastToken + getCharStream().substring(this.recordPos,
+            getCharIndex() - 1 - currentTokenLength)).trim();
+    }
 }
 
 @members {
@@ -69,21 +90,22 @@ import java.util.LinkedList;
 
 /** @H Main program. */
 program
-  : //@S ( function | action | stat )*
+  : //@S ( function | recipe | stat )*
     //@B Main program, consisting of optional top-level statements,
-    //@B control function definitions and transaction rule definitions.
-    (function|action|stat)* EOF
-    -> ^(PROGRAM ^(ACTIONS action*) ^(FUNCTIONS function*) ^(BLOCK stat*))
+    //@B control function definitions and recipe definitions.
+    (function|recipe|stat)* EOF
+    -> ^(PROGRAM ^(RECIPES recipe*) ^(FUNCTIONS function*) ^(BLOCK stat*))
   ;
 
-/** @H Transaction rule declaration.
+/** @H Recipe declaration.
   * @B During exploration, the body is treated as an atomic transaction.
   */
-action
-  : //@S RULE name LPAR RPAR block
+recipe
+  : //@S RECIPE name LPAR RPAR block
     //@B Declares an atomic rule %s, with body %s.
-    RULE^ ID LPAR! RPAR! block
-    { helper.declareName($RULE.tree); }
+    { lexer.startRecord(); }
+    RECIPE^ ID LPAR! RPAR! (PRIORITY! INT_LIT)? block
+    { helper.declareName($RECIPE.tree, lexer.getRecord()); }
   ;
 
 /** @H Function declaration.
@@ -94,7 +116,7 @@ function
   : //@S FUNCTION name LPAR RPAR block
     //@B Declares the function %s, with body %s.
     FUNCTION^ ID LPAR! RPAR! block
-    { helper.declareName($FUNCTION.tree); }
+    { helper.declareName($FUNCTION.tree, null); }
   ;
 
 /** @H Statement block. */
@@ -329,7 +351,8 @@ OR       : 'or';
 OTHER    : 'other';
 OUT	     : 'out';
 REAL     : 'real';
-RULE     : 'rule';
+PRIORITY : 'priority';
+RECIPE   : 'recipe';
 STAR     : 'star';
 STRING   : 'string';
 TRY      : 'try';

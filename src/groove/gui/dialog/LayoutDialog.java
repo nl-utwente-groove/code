@@ -110,10 +110,12 @@ public class LayoutDialog extends JDialog implements ActionListener,
     }
 
     private void refreshPanel(LayouterItem item) {
-        this.getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
-        LayouterItem layouterItem =
-            (LayouterItem) this.getJGraph().getLayouter();
-        this.replacePanel(layouterItem.getPanel());
+        if (getJGraph() != null) {
+            getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
+            LayouterItem layouterItem =
+                (LayouterItem) getJGraph().getLayouter();
+            replacePanel(layouterItem.getPanel());
+        }
     }
 
     private void replacePanel(JPanel panel) {
@@ -128,7 +130,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
     }
 
     private SetLayoutMenu getLayoutMenu() {
-        return this.getJGraph().getSetLayoutMenu();
+        return getJGraph() == null ? null : getJGraph().getSetLayoutMenu();
     }
 
     private void refreshJGraph() {

@@ -36,6 +36,7 @@ import groove.view.FormatException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -88,7 +89,8 @@ public class CtrlBuildTest {
     /** Tests the default automaton construction. */
     @Test
     public void testDefaultAut() {
-        CtrlAut aut = CtrlFactory.instance().buildDefault(this.prioGrammar);
+        CtrlAut aut =
+            CtrlFactory.instance().buildDefault(this.prioGrammar.getActions());
         assertEquals(2, aut.nodeCount());
         assertEquals(7, aut.edgeCount());
         Rule m3 = this.prioGrammar.getRule("m3");
@@ -104,26 +106,27 @@ public class CtrlBuildTest {
         CtrlCall callC2 = new CtrlCall(c2, null);
         CtrlCall callC1 = new CtrlCall(c1, null);
         CtrlCall omega = CtrlCall.OMEGA;
+        Set<CtrlCall> emptyGuard = Collections.emptySet();
         Set<CtrlCall> level2AllGuard = new HashSet<CtrlCall>();
         level2AllGuard.add(callM3);
         level2AllGuard.add(callC3);
         Set<CtrlCall> level1AllGuard = new HashSet<CtrlCall>(level2AllGuard);
         level1AllGuard.add(callM2);
         level1AllGuard.add(callC2);
-        Set<CtrlCall> omegaGuard = new HashSet<CtrlCall>();
-        omegaGuard.add(callM1);
-        omegaGuard.add(callM2);
-        omegaGuard.add(callM3);
+        Set<CtrlCall> omegaGuard =
+            new HashSet<CtrlCall>(Arrays.asList(callM1, callM2, callM3, callC1,
+                callC2, callC3));
         Set<CtrlLabel> expectedSelfLabels =
-            new HashSet<CtrlLabel>(Arrays.asList(new CtrlLabel[] {
-                new CtrlLabel(callM3), new CtrlLabel(callC3),
-                new CtrlLabel(callM2, level2AllGuard),
-                new CtrlLabel(callC2, level2AllGuard),
-                new CtrlLabel(callM1, level1AllGuard),
-                new CtrlLabel(callC1, level1AllGuard),}));
+            new HashSet<CtrlLabel>(Arrays.asList(
+                createLabel(callM3, emptyGuard),
+                createLabel(callC3, emptyGuard),
+                createLabel(callM2, level2AllGuard),
+                createLabel(callC2, level2AllGuard),
+                createLabel(callM1, level1AllGuard),
+                createLabel(callC1, level1AllGuard)));
         Set<CtrlLabel> expectedOmegaLabels =
             new HashSet<CtrlLabel>(
-                Arrays.asList(new CtrlLabel[] {new CtrlLabel(omega, omegaGuard)}));
+                Arrays.asList(createLabel(omega, omegaGuard)));
         Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
         Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
         for (CtrlTransition trans : aut.getStart().getTransitions()) {
@@ -136,6 +139,10 @@ public class CtrlBuildTest {
         }
         assertEquals(expectedSelfLabels, actualSelfLabels);
         assertEquals(expectedOmegaLabels, actualOmegaLabels);
+    }
+
+    private CtrlLabel createLabel(CtrlCall call, Set<CtrlCall> guard) {
+        return new CtrlLabel(call, guard, null, true);
     }
 
     /** Test for initialisation errors. */
@@ -337,7 +344,8 @@ public class CtrlBuildTest {
             result =
                 this.parser.runFile(
                     CONTROL_FILTER.addExtension(CONTROL_DIR + filename),
-                    this.testGrammar);
+                    this.testGrammar.getProperties(),
+                    this.testGrammar.getAllRules()).one();
             if (DEBUG) {
                 System.out.printf("Control automaton for %s:%n%s%n", filename,
                     result);
@@ -351,7 +359,9 @@ public class CtrlBuildTest {
     /** Builds a control automaton from a given program. */
     private CtrlAut buildString(String program) throws FormatException {
         CtrlAut result = null;
-        result = this.parser.runString(program, this.testGrammar);
+        result =
+            this.parser.runString(program, this.testGrammar.getProperties(),
+                this.testGrammar.getAllRules()).one();
         if (DEBUG) {
             System.out.printf("Control automaton for \'%s\':%n%s%n", program,
                 result);

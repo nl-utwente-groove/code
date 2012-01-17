@@ -31,7 +31,28 @@ import java.util.Set;
 /**
  * Combination of graph and node functionality, used to store the state of a
  * graph transition system.
- * 
+ * States store the outgoing rule transitions, but not the recipe transitions:
+ * these can be calculated by the GTS.
+ * Every graph state has a <i>status</i>, consisting of the following boolean
+ * flags:
+ * <ul>
+ * <li> <b>Closed:</b> A graph state is closed if all rule applications have been explored.
+ * <li> <b>Cooked:</b> A graph state is cooked if it is closed and all reachable states up
+ * until the first non-transient states are also closed. This means that all outgoing
+ * transitions (including recipe transitions) are known.
+ * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in 
+ * the execution of a recipe.
+ * <li> <b>Absent:</b> A graph state is absent if it is cooked and transient and does not 
+ * have a path to a non-transient state, or violates a right 
+ * application condition.
+ * <li> <b>Error:</b> A graph state is erroneous if it fails to satisfy an invariant
+ * </ul>
+ * A derived concept is:
+ * <ul>
+ * <li> <b>Present:</b> A graph state is (definitely) present if it is cooked and not absent.
+ * (Note that this is <i>not</i> strictly the inverse of being absent: an uncooked state
+ * is neither present nor absent.
+ * </ul>
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-22 13:02:44 $
  */
@@ -55,28 +76,25 @@ public interface GraphState extends Node {
      * Retrieves an outgoing transition with a given event, if it exists. Yields
      * <code>null</code> otherwise.
      */
-    public GraphTransitionStub getOutStub(RuleEvent prime);
+    public RuleTransitionStub getOutStub(RuleEvent prime);
 
     /**
      * Returns an iterator over the current set of outgoing transitions starting
-     * in this state, as {@link GraphTransition}s.
+     * in this state, as {@link RuleTransition}s.
      */
-    public Iterator<GraphTransition> getTransitionIter();
+    public Iterator<RuleTransition> getTransitionIter();
 
     /**
      * Returns an unmodifiable set view on the currently generated outgoing
      * transitions starting in this state.
      */
-    public Set<GraphTransition> getTransitionSet();
+    public Set<RuleTransition> getTransitionSet();
 
     /**
      * Returns an unmodifiable map from rules to the 
      * currently generated outgoing transitions.
      */
-    public Map<RuleEvent,GraphTransition> getTransitionMap();
-
-    /** Returns the number of (currently generated) outgoing transitions. */
-    public int getTransitionCount();
+    public Map<RuleEvent,RuleTransition> getTransitionMap();
 
     /**
      * Returns (a copy of) the set of next states reachable from this state,
@@ -85,23 +103,17 @@ public interface GraphState extends Node {
     public Collection<? extends GraphState> getNextStateSet();
 
     /**
-     * Returns an iterator over the next states reachable from this state,
-     * according to the currently generated outgoing transitions.
-     */
-    public Iterator<? extends GraphState> getNextStateIter();
-
-    /**
      * Adds an outgoing transition to this state, if it is not yet there.
      * @return <code>true</code> if the transition was added,
      *         <code>false</code> otherwise
      */
-    public boolean addTransition(GraphTransition transition);
+    public boolean addTransition(RuleTransition transition);
 
     /**
      * Tests if a certain transition is among the currently generated outgoing
      * transitions of this state.
      */
-    public boolean containsTransition(GraphTransition transition);
+    public boolean containsTransition(RuleTransition transition);
 
     /**
      * Returns a list of values for the bound variables of
@@ -110,6 +122,11 @@ public interface GraphState extends Node {
      * @see CtrlState#getBoundVars()
      */
     public HostNode[] getBoundNodes();
+
+    /** 
+     * Returns the current state cache, or a fresh one if the cache is cleared.
+     */
+    public StateCache getCache();
 
     /**
      * Closes this state. This announces that no more outgoing transitions will
@@ -140,9 +157,24 @@ public interface GraphState extends Node {
     public boolean isError();
 
     /** 
+     * Declares this state to be cooked.
+     * @return if {@code false}, the state was already known to be cooked
+     * @see #isCooked()
+     */
+    public boolean setCooked();
+
+    /** 
+     * Indicates if this state is cooked. 
+     * This is the case if
+     * all outgoing paths have been explored up until the first non-transient state.
+     * @see #isTransient()
+     */
+    public boolean isCooked();
+
+    /** 
      * Indicates if this is a transient state.
-     * This is the case if and only if the associated control state is transient.
-     * @see #getCtrlState()
+     * This is the case if and only if the associated control schedule is transient.
+     * @see #getSchedule()
      */
     public boolean isTransient();
 
@@ -158,4 +190,57 @@ public interface GraphState extends Node {
 
     /** Indicates if this state is not properly part of the state space. */
     public boolean isAbsent();
+
+    /** 
+     * Indicates if this state is properly part of the state space.
+     * If a state is cooked, it is either present or absent.
+     * @see #isCooked()
+     * @see #isAbsent() 
+     */
+    public boolean isPresent();
+
+    /** Changeable status flags of a graph state. */
+    public enum Flag {
+        /** 
+         * Flag indicating that the state has been closed.
+         * This is the case if and only if no more outgoing transitions will be added.
+         */
+        CLOSED,
+        /**
+         * Flag indicating that the graph state has been cooked. 
+         * This is the case if and only if it is closed, and all outgoing transition
+         * sequences eventually lead to non-transient or absent states.
+         */
+        COOKED,
+        /**
+         * Flag indicating that the graph state is absent.
+         * This is the case if it is closed and transient and has
+         * no reachable non-transient state, or if it violates a right
+         * application condition.
+         */
+        ABSENT,
+        /** Flag indicating that the state has an error. */
+        ERROR;
+
+        private Flag() {
+            this.mask = 1 << ordinal();
+        }
+
+        /** Returns the mask corresponding to this flag. */
+        public int mask() {
+            return this.mask;
+        }
+
+        /** Sets this flag in a given integer value. */
+        public int set(int status) {
+            return status | this.mask;
+        }
+
+        /** Tests if this flag is set in a given integer value. */
+        public boolean test(int status) {
+            return (status & this.mask) != 0;
+        }
+
+        private final int mask;
+    }
 }

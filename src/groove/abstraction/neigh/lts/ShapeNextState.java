@@ -19,16 +19,21 @@ package groove.abstraction.neigh.lts;
 import groove.abstraction.neigh.shape.Shape;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
-import groove.lts.DerivationLabel;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransitionStub;
+import groove.lts.RuleLabel;
+import groove.lts.RuleTransition;
+import groove.lts.RuleTransitionStub;
+import groove.trans.Action;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
+import groove.trans.Recipe;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
+
+import java.util.Collections;
 
 /**
  * Combines a {@link ShapeState} and a {@link ShapeTransition}.
@@ -36,7 +41,7 @@ import groove.view.FormatException;
  * @author Eduardo Zambon
  */
 public final class ShapeNextState extends ShapeState implements GraphNextState,
-        GraphTransitionStub {
+        RuleTransitionStub {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -54,7 +59,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
      */
     public ShapeNextState(int number, Shape shape, ShapeState source,
             RuleEvent event) {
-        super(shape,
+        super(source.getCacheReference(), shape,
             source.getCtrlState().getTransition(event.getRule()).target(),
             number);
         this.transition = new ShapeTransition(source, event, this);
@@ -75,7 +80,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public DerivationLabel label() {
+    public RuleLabel label() {
         return this.transition.label();
     }
 
@@ -92,6 +97,16 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     @Override
     public RuleEvent getEvent() {
         return this.transition.getEvent();
+    }
+
+    @Override
+    public Action getAction() {
+        return getEvent().getRule();
+    }
+
+    @Override
+    public Iterable<RuleTransition> getSteps() {
+        return Collections.<RuleTransition>singletonList(this);
     }
 
     @Override
@@ -129,6 +144,16 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     // ------------------------------------------------------------------------
 
     @Override
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return getCtrlTransition().getRecipe();
+    }
+
+    @Override
     public HostNode[] getAddedNodes() {
         throw new UnsupportedOperationException();
     }
@@ -149,7 +174,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public GraphTransitionStub toStub() {
+    public RuleTransitionStub toStub() {
         throw new UnsupportedOperationException();
     }
 

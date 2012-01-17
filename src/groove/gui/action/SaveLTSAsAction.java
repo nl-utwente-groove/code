@@ -70,10 +70,10 @@ public class SaveLTSAsAction extends SimulatorAction {
         DefaultGraph lts =
             gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
 
-        Collection<GraphState> export = new HashSet<GraphState>(0);
+        Collection<? extends GraphState> export = new HashSet<GraphState>(0);
 
         if (exportStates == SaveLTSAsDialog.STATES_ALL) {
-            export = gts.getStateSet();
+            export = gts.nodeSet();
         } else if (exportStates == SaveLTSAsDialog.STATES_FINAL) {
             export = gts.getFinalStates();
         }

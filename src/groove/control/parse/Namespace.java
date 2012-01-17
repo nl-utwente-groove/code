@@ -17,8 +17,11 @@
 package groove.control.parse;
 
 import groove.control.CtrlAut;
+import groove.control.CtrlCall;
+import groove.control.CtrlCall.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
+import groove.trans.Recipe;
 import groove.trans.Rule;
 
 import java.util.HashMap;
@@ -35,19 +38,72 @@ import java.util.Set;
  */
 public class Namespace {
     /**
-     * Adds a function name to the set of declared functions.
+     * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addName(Kind kind, String name, List<CtrlPar.Var> sig) {
+    public boolean addFunction(String name, List<CtrlPar.Var> sig) {
         boolean result = !this.kindMap.containsKey(name);
         if (result) {
-            this.kindMap.put(name, kind);
+            this.kindMap.put(name, Kind.FUNCTION);
             this.sigMap.put(name, sig);
-            if (kind == Kind.ACTION) {
-                this.allRules.add(name);
-            }
         }
         return result;
+    }
+
+    /**
+     * Adds a function or recipe name to the set of declared names.
+     * @return {@code true} if the name is new.
+     */
+    public boolean addRecipe(String name, int priority, List<CtrlPar.Var> sig,
+            String text) {
+        boolean result = !this.kindMap.containsKey(name);
+        if (result) {
+            this.kindMap.put(name, Kind.RECIPE);
+            this.sigMap.put(name, sig);
+            this.allNames.add(name);
+            this.recipeMap.put(name, new Recipe(name, priority, sig, text));
+        }
+        return result;
+    }
+
+    /**
+     * Adds a rule to the name space.
+     */
+    public boolean addRule(Rule rule) {
+        String ruleName = rule.getFullName();
+        boolean result = !this.kindMap.containsKey(ruleName);
+        if (result) {
+            this.kindMap.put(ruleName, CtrlCall.Kind.RULE);
+            this.ruleMap.put(ruleName, rule);
+            this.allNames.add(ruleName);
+            this.sigMap.put(ruleName, rule.getSignature());
+        }
+        return result;
+    }
+
+    /**
+     * Adds a function or recipe body to the namespace.
+     * The function or transaction name should have been defined already.
+     * If this concerns a recipe, the body is cloned and the rules appearing
+     * in the recipe are removed from the set of known rules.
+     */
+    public void addBody(String name, CtrlAut body) {
+        assert hasName(name) && getKind(name).hasBody() : String.format(
+            "Unknown or inappropriate name %s", name);
+        // the rules in a transaction body are no longer available
+        if (getKind(name) == CtrlCall.Kind.RECIPE) {
+            body = body.clone(getRecipe(name));
+            for (Rule rule : body.getRules()) {
+                this.allNames.remove(rule.getFullName());
+            }
+            getRecipe(name).setBody(body);
+        }
+        this.bodyMap.put(name, body);
+    }
+
+    /** Returns the set of all names known to this namespace. */
+    public Set<String> getNames() {
+        return this.kindMap.keySet();
     }
 
     /** Checks if a given name has been declared. */
@@ -61,34 +117,8 @@ public class Namespace {
      * @return the kind of object {@code name} has been declared as,
      * or {@code null} if {@code name} is unknown
      */
-    public Kind getKind(String name) {
+    public CtrlCall.Kind getKind(String name) {
         return this.kindMap.get(name);
-    }
-
-    /**
-     * Adds a function or transaction body to the namespace.
-     * The function name should have been defined already. 
-     */
-    public void addBody(Kind kind, String name, CtrlAut body) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
-            "Unknown or inappropriate name %s", name);
-        this.autMap.put(name, body);
-        // the rules in a transaction body are no longer available
-        if (kind == Kind.ACTION) {
-            this.allRules.removeAll(body.getRules());
-        }
-    }
-
-    /**
-     * Adds a rule to the name space.
-     */
-    public boolean addRule(Rule rule) {
-        String ruleName = rule.getName().toString();
-        this.kindMap.put(ruleName, Kind.RULE);
-        this.ruleMap.put(ruleName, rule);
-        this.allRules.add(ruleName);
-        List<Var> oldSig = this.sigMap.put(ruleName, rule.getSignature());
-        return oldSig == null;
     }
 
     /**
@@ -97,7 +127,7 @@ public class Namespace {
     public CtrlAut getBody(String name) {
         assert hasName(name) && getKind(name).hasBody() : String.format(
             "Unknown or inappropriate name %s", name);
-        CtrlAut result = this.autMap.get(name);
+        CtrlAut result = this.bodyMap.get(name);
         assert result != null : String.format("Unknown function %s", name);
         return result;
     }
@@ -110,28 +140,27 @@ public class Namespace {
     }
 
     /**
-     * Returns the rule associated with a given rule name
+     * Returns the set of all top-level rule and recipe names.
      */
-    public Rule useRule(String name) {
-        Rule result = this.ruleMap.get(name);
-        this.usedRules.add(name);
-        return result;
+    public Set<String> getTopNames() {
+        return this.allNames;
     }
 
-    /**
-     * Returns the set of all known rules.
-     * These consist of the graph rules and the transactions.
+    /** 
+     * Signals that a given name should be added to the used names.
+     * The name should be a known rule or recipe name. 
      */
-    public Set<String> getAllRules() {
-        return this.allRules;
+    public void useName(String name) {
+        assert getKind(name) != Kind.OMEGA;
+        this.usedNames.add(name);
     }
 
     /** Returns the set of all used rules,
-     * i.e., all rules for which {@link Namespace#useRule(String)}
+     * i.e., all rules for which {@link Namespace#useName(String)}
      * has been invoked.
      */
-    public Set<String> getUsedRules() {
-        return this.usedRules;
+    public Set<String> getUsedNames() {
+        return this.usedNames;
     }
 
     /**
@@ -141,54 +170,25 @@ public class Namespace {
         return this.sigMap.get(name);
     }
 
+    /** Returns the recipe text associated with a given recipe name. */
+    public Recipe getRecipe(String name) {
+        return this.recipeMap.get(name);
+    }
+
     /** Mapping from declared names to their signatures. */
     private final Map<String,List<Var>> sigMap =
         new HashMap<String,List<Var>>();
     /** Mapping from declared names to their kinds. */
-    private final Map<String,Kind> kindMap = new HashMap<String,Kind>();
+    private final Map<String,CtrlCall.Kind> kindMap =
+        new HashMap<String,CtrlCall.Kind>();
     /** Mapping from declared rules names to the rules. */
     private final Map<String,Rule> ruleMap = new HashMap<String,Rule>();
     /** Mapping from names to their declared bodies. */
-    private final Map<String,CtrlAut> autMap = new HashMap<String,CtrlAut>();
+    private final Map<String,CtrlAut> bodyMap = new HashMap<String,CtrlAut>();
+    /** Mapping from declared recipe names to their body text. */
+    private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
     /** Set of all rule names. */
-    private final Set<String> allRules = new HashSet<String>();
+    private final Set<String> allNames = new HashSet<String>();
     /** Set of used rule names. */
-    private final Set<String> usedRules = new HashSet<String>();
-
-    /** Kinds of names encountered in a control program. */
-    public static enum Kind {
-        /** Graph transformation rules. */
-        RULE("rule"),
-        /** Transactions (declared by {@code rule} blocks). */
-        ACTION("transaction"),
-        /** Functions (declared by {@code function} blocks). */
-        FUNCTION("function");
-
-        private Kind(String name) {
-            this.name = name;
-        }
-
-        /** 
-         * Indicates if this kind of name has an associated body
-         * (translated to a control automaton).
-         */
-        public boolean hasBody() {
-            return this != RULE;
-        }
-
-        /** 
-         * Returns the description of this name kind,
-         * with the initial letter optionally capitalised.
-         */
-        public String getName(boolean upper) {
-            StringBuilder result = new StringBuilder(this.name);
-            if (upper) {
-                result.replace(0, 1,
-                    "" + Character.toUpperCase(this.name.charAt(0)));
-            }
-            return result.toString();
-        }
-
-        private final String name;
-    }
+    private final Set<String> usedNames = new HashSet<String>();
 }

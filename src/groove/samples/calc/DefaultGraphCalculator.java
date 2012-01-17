@@ -21,10 +21,10 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.Action;
 import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
-import groove.trans.Rule;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
@@ -142,8 +142,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
      * Returns the rule in the underlying grammar with a certain name.
      * @throws IllegalArgumentException if no such condition exists
      */
-    protected Rule getRule(String name) {
-        Rule result = getGrammar().getRule(name);
+    protected Action getRule(String name) {
+        Action result = getGrammar().getRule(name);
         if (result == null) {
             throw new IllegalArgumentException("No rule \"" + name
                 + "\" in grammar");

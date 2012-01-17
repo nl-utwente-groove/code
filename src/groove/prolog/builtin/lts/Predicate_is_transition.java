@@ -22,7 +22,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 
 /**
  * Predicate is_transition(+Transition)
@@ -33,7 +33,7 @@ public class Predicate_is_transition extends LtsPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         if (args[0] instanceof JavaObjectTerm) {
-            if (((JavaObjectTerm) args[0]).value instanceof GraphTransition) {
+            if (((JavaObjectTerm) args[0]).value instanceof RuleTransition) {
                 return SUCCESS_LAST;
             }
         }

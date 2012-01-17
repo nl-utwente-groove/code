@@ -21,6 +21,7 @@ import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
 import groove.gui.layout.SpringUtilities;
+import groove.trans.Action;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 
@@ -196,8 +197,8 @@ public class BoundedModelCheckingDialog {
     public void setGrammar(GraphGrammar grammar) {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<String>();
-        for (Rule rule : grammar.getRules()) {
-            this.ruleNames.add(rule.getName());
+        for (Action rule : grammar.getActions()) {
+            this.ruleNames.add(rule.getFullName());
         }
     }
 

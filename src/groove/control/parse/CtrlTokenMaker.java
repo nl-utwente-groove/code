@@ -39,7 +39,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
 @SuppressWarnings("all")
 public class CtrlTokenMaker extends AbstractTokenMaker {
 
-    protected final String operators = "+-*/%!=<>^&|?:";
+    protected final String operators = "+-*/%!=<>^&|?:#";
 
     protected final String separators = "()[]{}";
 
@@ -148,7 +148,8 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
         tokenMap.put("if", reservedWord);
         tokenMap.put("or", reservedWord);
         tokenMap.put("other", reservedWord);
-        tokenMap.put("rule", reservedWord);
+        tokenMap.put("priority", reservedWord);
+        tokenMap.put("recipe", reservedWord);
         tokenMap.put("try", reservedWord);
         tokenMap.put("until", reservedWord);
         tokenMap.put("var", reservedWord);
