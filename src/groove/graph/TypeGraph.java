@@ -747,9 +747,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         HostEdge nodeTypeEdge = nodeTypeEdges.get(0);
                         TypeLabel nodeType = nodeTypeEdge.label();
                         TypeNode type = getNode(nodeType);
+                        if (type == null) {
+                            throw new FormatException("Unknown node type '%s'",
+                                nodeType, nodeTypeEdge);
+                        }
                         if (type.isAbstract()) {
-                            errors.add(new FormatError(
-                                "Abstract node type '%s'", type, nodeTypeEdge));
+                            throw new FormatException(
+                                "Abstract node type '%s'", type, nodeTypeEdge);
                         }
                         image =
                             hostFactory.createNode(node.getNumber(), nodeType);
