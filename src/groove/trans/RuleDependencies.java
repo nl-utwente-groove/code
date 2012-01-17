@@ -455,7 +455,7 @@ public class RuleDependencies {
         }
         // does the condition test for an isolated node?
         for (RuleNode isolatedNode : isolatedNodes) {
-            positive.add(isolatedNode.getType());
+            positive.addAll(isolatedNode.getType().getSubtypes());
         }
     }
 
