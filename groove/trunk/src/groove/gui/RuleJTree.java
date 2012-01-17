@@ -21,6 +21,7 @@ import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
+import groove.control.CtrlAut;
 import groove.explore.util.MatchSetCollector;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -30,10 +31,10 @@ import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
+import groove.trans.Action;
 import groove.trans.ResourceKind;
-import groove.trans.Rule;
 import groove.trans.RuleName;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
@@ -177,7 +178,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      */
     private Map<Integer,Set<RuleModel>> getPriorityMap(GrammarModel grammar) {
         Map<Integer,Set<RuleModel>> result =
-            new TreeMap<Integer,Set<RuleModel>>(Rule.PRIORITY_COMPARATOR);
+            new TreeMap<Integer,Set<RuleModel>>(Action.PRIORITY_COMPARATOR);
         for (ResourceModel<?> ruleModel : grammar.getResourceSet(ResourceKind.RULE)) {
             int priority = ((RuleModel) ruleModel).getPriority();
             Set<RuleModel> priorityRules = result.get(priority);
@@ -420,7 +421,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         // rule events
         // insert new matches
         for (MatchResult match : matches) {
-            String ruleName = match.getEvent().getRule().getName();
+            String ruleName = match.getEvent().getRule().getFullName();
             RuleModel ruleView = getGrammar().getRuleModel(ruleName);
             assert ruleView != null : String.format(
                 "Rule view %s does not exist in grammar", ruleView);
@@ -719,6 +720,38 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /**
+     * Transaction nodes (= level 1 nodes) of the directory
+     */
+    private static class ActionTreeNode extends DefaultMutableTreeNode {
+        /**
+         * Creates a new transaction node based on a given control automaton.
+         */
+        public ActionTreeNode(CtrlAut action) {
+            super(action, true);
+        }
+
+        /**
+         * Returns the control automaton of the transaction wrapped in this node.
+         */
+        public CtrlAut getAction() {
+            return (CtrlAut) getUserObject();
+        }
+
+        /** Text of this node as displayed in the rule tree. */
+        public String getText() {
+            return new RuleName(getAction().getName()).child();
+        }
+
+        /**
+         * To display, show child name only.
+         */
+        @Override
+        public String toString() {
+            return new RuleName(getAction().getName()).child();
+        }
+    }
+
+    /**
      * Directory nodes (= level 0 nodes) of the directory
      */
     private static class DirectoryTreeNode extends DefaultMutableTreeNode {
@@ -787,9 +820,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 result = getResult().getEvent().getAnchorImageString();
             } else {
                 MatchResult match = getResult();
-                if (match instanceof GraphTransition) {
+                if (match instanceof RuleTransition) {
                     String state =
-                        ((GraphTransition) match).target().toString();
+                        ((RuleTransition) match).target().toString();
                     result =
                         HTMLConverter.HTML_TAG.on("To "
                             + HTMLConverter.ITALIC_TAG.on(state));
@@ -831,6 +864,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 icon = display.getListIcon(ruleName);
                 error = display.hasError(ruleName);
                 text = display.getLabelText(ruleName);
+            } else if (value instanceof ActionTreeNode) {
+                icon = Icons.ACTION_LIST_ICON;
+                text = ((ActionTreeNode) value).getText();
             } else if (value instanceof MatchTreeNode) {
                 icon = Icons.GRAPH_MATCH_ICON;
             }

@@ -19,14 +19,11 @@ package groove.trans;
 import groove.control.CtrlAut;
 import groove.graph.TypeGraph;
 import groove.prolog.GrooveEnvironment;
-import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,10 +62,10 @@ public class GraphGrammar {
         getProperties().putAll(other.getProperties());
         this.nameRuleMap.putAll(other.nameRuleMap);
         // the target sets of the priority rule map must be copied, not aliased
-        for (Map.Entry<Integer,Set<Rule>> priorityRuleEntry : other.priorityRuleMap.entrySet()) {
-            Set<Rule> newRuleSet = createRuleSet();
+        for (Map.Entry<Integer,Set<Action>> priorityRuleEntry : other.priorityActionMap.entrySet()) {
+            Set<Action> newRuleSet = createActionSet();
             newRuleSet.addAll(priorityRuleEntry.getValue());
-            this.priorityRuleMap.put(priorityRuleEntry.getKey(), newRuleSet);
+            this.priorityActionMap.put(priorityRuleEntry.getKey(), newRuleSet);
         }
     }
 
@@ -80,71 +77,69 @@ public class GraphGrammar {
         return this.name;
     }
 
-    /** Convenience method to return the rule with a name given as a string. */
+    /** Convenience method to return the rule with a given name, if any. */
     public Rule getRule(String name) {
         return this.nameRuleMap.get(name);
     }
 
-    /**
-     * Returns an unmodifiable view upon the names of all production rules in
-     * this production system.
-     * @ensure <tt>result.equals(getRuleMap.keySet())</tt>
-     */
-    public Set<String> getRuleNames() {
-        return Collections.unmodifiableSet(this.nameRuleMap.keySet());
+    /** Convenience method to return the recipe with a given name, if any. */
+    public Recipe getRecipe(String name) {
+        return this.nameRecipeMap.get(name);
     }
 
-    /**
-     * Returns an unmodifiable view upon the map from available priorities to
-     * rules with that priority. The map is sorted from high to low priority.
-     */
-    public SortedMap<Integer,Set<Rule>> getRuleMap() {
-        return Collections.unmodifiableSortedMap(this.priorityRuleMap);
+    /** Indicates if there are any recipes in this grammar. */
+    public boolean hasRecipes() {
+        return !this.nameRecipeMap.isEmpty();
     }
 
-    /**
-     * Returns a Set<Rule> Iterator based on the global priorities
-     * 
-     * @return Iterator<Set<Rule>>
-     */
-    public Iterator<Set<Rule>> getRuleSetIter() {
-        return this.priorityRuleMap.values().iterator();
-    }
-
-    /**
-     * Returns an unmodifiable view upon the underlying collection of rules. The
-     * result is ordered by descending priority, and within each priority, by
-     * alphabetical order of the names. Don't invoke {@link Object#equals} on
-     * the result!
-     * @ensure <tt>result: Label -> Rule</tt>
-     */
-    public Collection<Rule> getRules() {
-        Collection<Rule> result = this.ruleSet;
+    /** Convenience method to return the action with a given name, if any. */
+    public Action getAction(String name) {
+        Action result = getRule(name);
         if (result == null) {
-            result =
-                Arrays.asList(new CollectionOfCollections<Rule>(
-                    this.priorityRuleMap.values()).toArray(new Rule[0]));
-            if (isFixed()) {
-                this.ruleSet = result;
-            }
+            result = getRecipe(name);
         }
         return result;
     }
 
     /**
-     * Returns <tt>true</tt> if the rule system has rules at more than one
+     * Returns an unmodifiable view upon the map from available priorities to
+     * actions with that priority. The map is sorted from high to low priority.
+     */
+    public SortedMap<Integer,Set<Action>> getActionMap() {
+        return Collections.unmodifiableSortedMap(this.priorityActionMap);
+    }
+
+    /**
+     * Returns the underlying set of actions, i.e., rules and recipes. The
+     * result is ordered by descending priority, and within each priority, by
+     * alphabetical order of the names.
+     */
+    public Set<Action> getActions() {
+        return this.actions;
+    }
+
+    /**
+     * Returns the underlying set of rules.
+     * This combines the top-level rules and the subrules used in recipes.
+     */
+    public Set<Rule> getAllRules() {
+        return this.allRules;
+    }
+
+    /**
+     * Returns <tt>true</tt> if the rule system has actions at more than one
      * priority.
      */
     public boolean hasMultiplePriorities() {
-        return this.priorityRuleMap.size() > 1;
+        return this.priorityActionMap.size() > 1;
     }
 
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append("Rule system:\n    ");
-        for (Rule production : getRules()) {
-            res.append(production + "\n");
+        for (Action action : getActions()) {
+            res.append(action + "\n");
         }
         res.append("\nStart graph:\n    ");
         res.append(getStartGraph().toString());
@@ -152,55 +147,41 @@ public class GraphGrammar {
     }
 
     /**
-     * Adds a production rule to this rule system. Removes the existing rule
-     * with the same name, if any, and returns it. This is only allowed if the
-     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
-     * @param rule the production rule to be added
+     * Adds a new action to this rule system.
+     * This is only allowed if the
+     * grammar is not yet fixed, as indicated by {@link #isFixed()};
+     * moreover, the action name should be new.
+     * @param action the production rule to be added
      * @require <tt>rule != null</tt>
      * @throws IllegalStateException if the rule system is fixed
      * @see #isFixed()
      */
-    public Rule add(Rule rule) {
+    public void add(Action action) {
         testFixed(false);
-        String ruleName = rule.getName();
-        int priority = rule.getPriority();
-        Rule oldRuleForName = remove(ruleName);
+        String ruleName = action.getFullName();
+        int priority = action.getPriority();
         // add the rule to the priority map
-        Set<Rule> priorityRuleSet = this.priorityRuleMap.get(priority);
+        Set<Action> priorityRuleSet = this.priorityActionMap.get(priority);
         // if there is not yet any rule with this priority, create a set
         if (priorityRuleSet == null) {
-            this.priorityRuleMap.put(priority, priorityRuleSet =
-                createRuleSet());
+            this.priorityActionMap.put(priority, priorityRuleSet =
+                createActionSet());
         }
-        priorityRuleSet.add(rule);
+        priorityRuleSet.add(action);
+        this.actions.add(action);
         // add the rule to the map
-        this.nameRuleMap.put(ruleName, rule);
-        return oldRuleForName;
-    }
-
-    /**
-     * Removes a named production rule from this rule system, and returns it.
-     * This is only allowed if the grammar is not yet fixed, as indicated by
-     * {@link #isFixed()}.
-     * @param ruleName the name of the production rule to be added
-     * @throws IllegalStateException if the rule system is fixed
-     * @see #isFixed()
-     */
-    private Rule remove(String ruleName) {
-        testFixed(false);
-        Rule result = this.nameRuleMap.remove(ruleName);
-        // now remove the old rule with this name, if any
-        if (result != null) {
-            int priority = result.getPriority();
-            Set<Rule> priorityRuleSet = this.priorityRuleMap.get(priority);
-            priorityRuleSet.remove(result);
-            // if this is the last rule with this priority, remove the entry
-            // from the map
-            if (priorityRuleSet.isEmpty()) {
-                this.priorityRuleMap.remove(priority);
+        if (action instanceof Rule) {
+            Rule rule = (Rule) action;
+            this.nameRuleMap.put(ruleName, rule);
+            this.allRules.add(rule);
+        } else {
+            Recipe recipe = (Recipe) action;
+            this.nameRecipeMap.put(ruleName, recipe);
+            for (Rule rule : recipe.getBody().getRules()) {
+                rule.setPartial();
+                this.allRules.add(rule);
             }
         }
-        return result;
     }
 
     /**
@@ -214,8 +195,7 @@ public class GraphGrammar {
     }
 
     /**
-     * Sets the rule system to fixed. After invoking this method,
-     * {@link #add(Rule)} will throw an {@link IllegalStateException}.
+     * Sets the rule system to fixed.
      * @throws FormatException if the rules are inconsistent with the system
      *         properties or there is some other reason why they cannot be used
      *         in derivations.
@@ -223,7 +203,7 @@ public class GraphGrammar {
      */
     public void setFixed() throws FormatException {
         testConsistent();
-        for (Rule rule : getRules()) {
+        for (Rule rule : getAllRules()) {
             rule.setFixed();
         }
         getStartGraph().setFixed();
@@ -396,25 +376,36 @@ public class GraphGrammar {
      * Factory method to create a set to contain rules. This implementation
      * returns a {@link TreeSet}.
      */
-    private Set<Rule> createRuleSet() {
-        return new TreeSet<Rule>();
+    private Set<Action> createActionSet() {
+        return new TreeSet<Action>();
     }
 
     /**
-     * A mapping from the rule names to the rules.
+     * A mapping from action names to the available rules.
      */
     private final Map<String,Rule> nameRuleMap = new TreeMap<String,Rule>();
+    /**
+     * A mapping from action names to the available transactions.
+     */
+    private final Map<String,Recipe> nameRecipeMap =
+        new TreeMap<String,Recipe>();
     /**
      * A mapping from priorities to sets of rules having that priority. The
      * ordering is from high to low priority.
      */
-    private final SortedMap<Integer,Set<Rule>> priorityRuleMap =
-        new TreeMap<Integer,Set<Rule>>(Rule.PRIORITY_COMPARATOR);
+    private final SortedMap<Integer,Set<Action>> priorityActionMap =
+        new TreeMap<Integer,Set<Action>>(Action.PRIORITY_COMPARATOR);
     /**
-     * Set of rules, collected separately for purposes of speedup.
-     * @see #getRules()
+     * Set of all actions, collected separately for purposes of speedup.
+     * @see #getActions()
      */
-    private Collection<Rule> ruleSet;
+    private final Set<Action> actions = new TreeSet<Action>(
+        Action.ACTION_COMPARATOR);
+    /**
+     * Set of all rules, being the union of the top-level action rules
+     * and the subrules used in recipes.
+     */
+    private final Set<Rule> allRules = new HashSet<Rule>();
     /**
      * The properties bundle of this rule system.
      */

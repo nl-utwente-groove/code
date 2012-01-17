@@ -40,7 +40,7 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
 import groove.trans.HostEdge;
@@ -285,7 +285,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                 clearSelectedMatch(true);
                 displayState(null);
             } else {
-                GraphTransition transition = oldModel.getTransition();
+                RuleTransition transition = oldModel.getTransition();
                 GraphState target =
                     transition == null ? null : transition.target();
                 if (target == newState) {
@@ -422,7 +422,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                         match.getEvent()));
                 } else {
                     result.append(String.format(" (with match of %s)",
-                        match.getEvent().getRule().getName()));
+                        match.getEvent().getRule().getFullName()));
                 }
             }
         }
@@ -489,7 +489,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * Extracts the colours that were added to the target state of a given
      * graph transition.
      */
-    private Map<HostNode,Color> extractColors(GraphTransition transition) {
+    private Map<HostNode,Color> extractColors(RuleTransition transition) {
         Map<HostNode,Color> result = new HashMap<HostNode,Color>();
         RuleApplication application = transition.createRuleApplication();
         Map<RuleNode,Set<HostNode>> comatch = application.getComatch();

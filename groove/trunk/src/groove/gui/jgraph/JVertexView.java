@@ -634,10 +634,13 @@ public class JVertexView extends VertexView {
             background =
                 (background != null) ? background : graph.getBackground();
             if (emph) {
+                float darken = .95f;
                 background =
-                    new Color(Math.max(background.getRed() - 30, 0), Math.max(
-                        background.getGreen() - 30, 0), Math.max(
-                        background.getBlue() - 30, 0), background.getAlpha());
+                    new Color(
+                        Math.max((int) (background.getRed() * darken), 0),
+                        Math.max((int) (background.getGreen() * darken), 0),
+                        Math.max((int) (background.getBlue() * darken), 0),
+                        background.getAlpha());
             }
             setBackground(background);
             Font font = GraphConstants.getFont(attributes);

@@ -20,12 +20,12 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.lts.AbstractGraphState;
 import groove.lts.DefaultGraphNextState;
-import groove.lts.DefaultGraphTransition;
+import groove.lts.DefaultRuleTransition;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.lts.GraphTransitionStub;
+import groove.lts.RuleTransition;
+import groove.lts.RuleTransitionStub;
 import groove.lts.MatchResult;
 import groove.trans.CompositeEvent;
 import groove.trans.HostNode;
@@ -64,29 +64,29 @@ public class MatchApplier implements RuleEventApplier {
      * rule event. The event is assumed not to have been explored yet.
      * @return the added (new) transition
      */
-    public GraphTransition apply(GraphState source, MatchResult match) {
+    public RuleTransition apply(GraphState source, MatchResult match) {
         addTransitionReporter.start();
-        GraphTransition transition = null;
+        RuleTransition transition = null;
         Rule rule = match.getEvent().getRule();
         CtrlState sourceCtrl = source.getCtrlState();
         CtrlTransition ctrlTrans = sourceCtrl.getTransition(rule);
         if (!ctrlTrans.isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
-            } else if (match instanceof GraphTransition) {
+            } else if (match instanceof RuleTransition) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
                 assert source instanceof GraphNextState;
-                GraphTransition parentTrans = (GraphTransition) match;
+                RuleTransition parentTrans = (RuleTransition) match;
                 boolean parentModifiesCtrl =
                     parentTrans.getCtrlTransition().isModifying();
                 RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
                 if (!parentModifiesCtrl && !parentTrans.isSymmetry()
                     && !parentTrans.getEvent().conflicts(sourceEvent)) {
                     GraphState sibling = parentTrans.target();
-                    GraphTransitionStub siblingOut =
+                    RuleTransitionStub siblingOut =
                         sibling.getOutStub(sourceEvent);
                     if (siblingOut != null) {
                         transition =
@@ -107,12 +107,12 @@ public class MatchApplier implements RuleEventApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultGraphTransition(source, match.getEvent(),
+                    new DefaultRuleTransition(source, match.getEvent(),
                         freshTarget.getAddedNodes(), isoTarget, true);
             }
         }
         // add transition to gts
-        getGTS().addTransition(transition);
+        getGTS().addRuleTransition(transition);
         addTransitionReporter.stop();
         return transition;
     }
@@ -127,7 +127,7 @@ public class MatchApplier implements RuleEventApplier {
         HostNode[] boundNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            GraphTransition parentOut = (GraphTransition) match;
+            RuleTransition parentOut = (RuleTransition) match;
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
             RuleEffect record =
@@ -154,12 +154,12 @@ public class MatchApplier implements RuleEventApplier {
      * and target state. A final parameter determines if the target state is
      * directly derived from the source, or modulo a symmetry.
      */
-    private GraphTransition createTransition(GraphState source,
+    private RuleTransition createTransition(GraphState source,
             MatchResult match, GraphState target, boolean symmetry) {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            GraphTransition parentOut = (GraphTransition) match;
+            RuleTransition parentOut = (RuleTransition) match;
             addedNodes = parentOut.getAddedNodes();
         } else {
             RuleEffect record =
@@ -169,7 +169,7 @@ public class MatchApplier implements RuleEventApplier {
                 record.hasCreatedNodes() ? record.getCreatedNodeArray()
                         : EMPTY_NODE_ARRAY;
         }
-        return new DefaultGraphTransition(source, event, addedNodes, target,
+        return new DefaultRuleTransition(source, event, addedNodes, target,
             symmetry);
     }
 
@@ -178,13 +178,13 @@ public class MatchApplier implements RuleEventApplier {
      * as created nodes for a new target graph.
      */
     private boolean reuseCreatedNodes(GraphState source, MatchResult match) {
-        if (!(match instanceof GraphTransition)) {
+        if (!(match instanceof RuleTransition)) {
             return false;
         }
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        HostNode[] addedNodes = ((GraphTransition) match).getAddedNodes();
+        HostNode[] addedNodes = ((RuleTransition) match).getAddedNodes();
         if (addedNodes == null || addedNodes.length == 0) {
             return true;
         }

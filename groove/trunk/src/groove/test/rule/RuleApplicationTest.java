@@ -214,14 +214,14 @@ public class RuleApplicationTest {
                 }
                 Assert.fail(String.format(
                     "Rule %s, start graph %s: Found: %s; unexpected target graph %s",
-                    rule.getName(), start.getName(), found, target));
+                    rule.getFullName(), start.getName(), found, target));
             }
         }
         int leftOver = found.nextClearBit(0);
         if (leftOver < results.size()) {
             Assert.fail(String.format(
                 "Rule %s, start graph %s: Expected target missing: %s",
-                rule.getName(), start.getName(),
+                rule.getFullName(), start.getName(),
                 results.get(leftOver).getName()));
         }
     }

@@ -21,12 +21,27 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
     /**
      * Lazily creates and returns a cache. Cache creation is deferred to
      * {@link #createCache()}.
+     * Convenience method for {@code getCache(true)}
      * @return the cache stored at invocation time, or a fresh cache if the
      *         cache was cleared before
+     * @see #getCache(boolean)
+     * @see #hasCache()
      */
     final public C getCache() {
+        return getCache(true);
+    }
+
+    /**
+     * Returns the current cache. If the cache is cleared,
+     * optionally creates a fresh one.
+     * @param create if {@code true}, the cache is created if it was cleared
+     * before the call
+     * @return the pre-existing cache, or a fresh cache if there was no 
+     * pre-existing one and {@code create} is set, or {@code null} otherwise
+     */
+    final public C getCache(boolean create) {
         C result = getCacheReference().get();
-        if (result == null) {
+        if (result == null && create) {
             result = createCache();
             setCacheReference(getCacheReference().newReference(this, result));
         }
@@ -45,8 +60,8 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
     /**
      * Tests if the cache is currently cleared.
      */
-    final public boolean isCacheCleared() {
-        return getCacheReference().get() == null;
+    final public boolean hasCache() {
+        return getCacheReference().get() != null;
     }
 
     /**
@@ -63,10 +78,10 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * @see CacheReference#setSoft()
      */
     final public void setCacheCollectable() {
-        if (isCacheCleared()) {
-            setCacheReference(getCacheReference().getNullReference(false));
-        } else {
+        if (hasCache()) {
             getCacheReference().setSoft();
+        } else {
+            setCacheReference(getCacheReference().getNullReference(false));
         }
         assert isCacheCollectable();
     }

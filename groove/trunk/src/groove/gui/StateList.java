@@ -23,9 +23,9 @@ import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
+import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -216,11 +216,13 @@ public class StateList extends JTree implements SimulatorListener {
             this.states = new GraphState[0];
         } else {
             // check expansion of current states
-            if (previous != null
-                && isExpanded(createPath(getStateNode(previous)))) {
-                this.expanded.add(previous);
-                if (this.expanded.size() > MAX_EXPANDED) {
-                    this.expanded.poll();
+            if (previous != null) {
+                StateTreeNode stateNode = getStateNode(previous);
+                if (stateNode != null && isExpanded(createPath(stateNode))) {
+                    this.expanded.add(previous);
+                    if (this.expanded.size() > MAX_EXPANDED) {
+                        this.expanded.poll();
+                    }
                 }
             }
             getTopNode().removeAllChildren();
@@ -231,11 +233,13 @@ public class StateList extends JTree implements SimulatorListener {
             // only add range nodes if there are too many states
             if (hasRangeNodes()) {
                 for (int i = 0; i < this.states.length; i += RANGE_SIZE) {
-                    RangeTreeNode rangeNode = new RangeTreeNode(i);
-                    getTopNode().add(rangeNode);
-                    // provisionally assign a single child to make the
-                    // range node expandable
-                    rangeNode.add(createStateNode(this.states[i]));
+                    if (this.states[i] != null) {
+                        RangeTreeNode rangeNode = new RangeTreeNode(i);
+                        getTopNode().add(rangeNode);
+                        // provisionally assign a single child to make the
+                        // range node expandable
+                        rangeNode.add(createStateNode(this.states[i]));
+                    }
                 }
                 getModel().reload();
                 // collapse all range nodes
@@ -264,9 +268,12 @@ public class StateList extends JTree implements SimulatorListener {
                         ? ((RangeTreeNode) parent).getLower() : 0;
             int upper = Math.min(this.states.length, lower + RANGE_SIZE);
             for (int s = lower; s < upper; s++) {
-                StateTreeNode stateNode = createStateNode(this.states[s]);
-                parent.add(stateNode);
-                stateNodes.add(stateNode);
+                GraphState state = this.states[s];
+                if (state != null) {
+                    StateTreeNode stateNode = createStateNode(state);
+                    parent.add(stateNode);
+                    stateNodes.add(stateNode);
+                }
             }
             getModel().reload(parent);
             for (StateTreeNode stateNode : stateNodes) {
@@ -336,37 +343,41 @@ public class StateList extends JTree implements SimulatorListener {
     private void refreshSelection(GraphState state, MatchResult match) {
         if (state != null) {
             StateTreeNode stateNode = getStateNode(state);
-            TreePath statePath = createPath(stateNode);
-            expandPath(statePath);
-            TreePath selectPath = statePath;
-            if (match != null) {
-                // find the match among the grandchildren of the state node
-                for (int i = 0; i < stateNode.getChildCount(); i++) {
-                    RuleTreeNode ruleNode =
-                        (RuleTreeNode) stateNode.getChildAt(i);
-                    if (ruleNode.getRule().equals(match.getEvent().getRule())) {
-                        for (int m = 0; m < ruleNode.getChildCount(); m++) {
-                            MatchTreeNode matchNode =
-                                (MatchTreeNode) ruleNode.getChildAt(m);
-                            if (matchNode.getMatch().getEvent().equals(
-                                match.getEvent())) {
-                                selectPath = createPath(matchNode);
-                                break;
+            if (stateNode != null) {
+                TreePath statePath = createPath(stateNode);
+                expandPath(statePath);
+                TreePath selectPath = statePath;
+                if (match != null) {
+                    // find the match among the grandchildren of the state node
+                    for (int i = 0; i < stateNode.getChildCount(); i++) {
+                        RuleTreeNode ruleNode =
+                            (RuleTreeNode) stateNode.getChildAt(i);
+                        if (ruleNode.getRule().equals(
+                            match.getEvent().getRule())) {
+                            for (int m = 0; m < ruleNode.getChildCount(); m++) {
+                                MatchTreeNode matchNode =
+                                    (MatchTreeNode) ruleNode.getChildAt(m);
+                                if (matchNode.getMatch().getEvent().equals(
+                                    match.getEvent())) {
+                                    selectPath = createPath(matchNode);
+                                    break;
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
+                setSelectionPath(selectPath);
+                // show as much as possible of the expanded state
+                if (stateNode.getChildCount() > 0) {
+                    RuleTreeNode ruleNode =
+                        (RuleTreeNode) stateNode.getLastChild();
+                    MatchTreeNode transNode =
+                        (MatchTreeNode) ruleNode.getLastChild();
+                    scrollPathToVisible(createPath(transNode));
+                }
+                scrollPathToVisible(statePath);
             }
-            setSelectionPath(selectPath);
-            // show as much as possible of the expanded state
-            if (stateNode.getChildCount() > 0) {
-                RuleTreeNode ruleNode = (RuleTreeNode) stateNode.getLastChild();
-                MatchTreeNode transNode =
-                    (MatchTreeNode) ruleNode.getLastChild();
-                scrollPathToVisible(createPath(transNode));
-            }
-            scrollPathToVisible(statePath);
         }
     }
 
@@ -376,15 +387,38 @@ public class StateList extends JTree implements SimulatorListener {
     }
 
     private StateTreeNode getStateNode(GraphState state) {
+        StateTreeNode result = null;
         int nr = state.getNumber();
         if (hasRangeNodes()) {
-            RangeTreeNode rangeNode =
-                (RangeTreeNode) getTopNode().getChildAt(nr / RANGE_SIZE);
-            fill(rangeNode);
-            return (StateTreeNode) rangeNode.getChildAt(nr % RANGE_SIZE);
+            RangeTreeNode rangeNode = (RangeTreeNode) find(getTopNode(), nr);
+            if (rangeNode != null) {
+                fill(rangeNode);
+                result = (StateTreeNode) find(rangeNode, nr);
+            }
         } else {
-            return (StateTreeNode) getTopNode().getChildAt(nr);
+            result = (StateTreeNode) find(getTopNode(), nr);
         }
+        return result;
+    }
+
+    private NumberedTreeNode find(TreeNode parent, int number) {
+        NumberedTreeNode result = null;
+        int lower = 0;
+        int upper = parent.getChildCount() - 1;
+        boolean found = false;
+        while (!found && lower <= upper) {
+            int mid = (lower + upper) / 2;
+            result = (NumberedTreeNode) parent.getChildAt(mid);
+            int resultNumber = result.getNumber();
+            if (resultNumber < number) {
+                lower = mid + 1;
+            } else if (resultNumber > number) {
+                upper = mid - 1;
+            } else {
+                found = true;
+            }
+        }
+        return found ? result : null;
     }
 
     /**
@@ -423,16 +457,28 @@ public class StateList extends JTree implements SimulatorListener {
     /** Size of the queue of previously expanded nodes. */
     private static final int MAX_EXPANDED = 2;
 
+    /** Tree node with a number that allows a binary search. */
+    abstract static private class NumberedTreeNode extends
+            DefaultMutableTreeNode {
+        /** Creates a tree node with a given user object. */
+        protected NumberedTreeNode(Object userObject) {
+            super(userObject, true);
+        }
+
+        /** Returns the number. */
+        abstract public int getNumber();
+    }
+
     /**
      * Tree node wrapping a range of {@link StateTreeNode}s.
      */
-    private class RangeTreeNode extends DefaultMutableTreeNode {
+    private class RangeTreeNode extends NumberedTreeNode {
         /**
          * Creates a new range node based on a given lower bound. The node can have
          * children.
          */
         public RangeTreeNode(int lower) {
-            super(lower, true);
+            super(lower);
         }
 
         /**
@@ -440,6 +486,11 @@ public class StateList extends JTree implements SimulatorListener {
          */
         public int getLower() {
             return (Integer) getUserObject();
+        }
+
+        @Override
+        public int getNumber() {
+            return getLower();
         }
 
         @Override
@@ -454,14 +505,19 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Tree node wrapping a graph state.
      */
-    private static class StateTreeNode extends DefaultMutableTreeNode {
+    private static class StateTreeNode extends NumberedTreeNode {
         /**
          * Creates a new rule node based on a given state. The node can have
          * children.
          */
         public StateTreeNode(GraphState state, boolean expanded) {
-            super(state, true);
+            super(state);
             this.expanded = expanded;
+        }
+
+        @Override
+        public int getNumber() {
+            return getState().getNumber();
         }
 
         /**
@@ -506,7 +562,7 @@ public class StateList extends JTree implements SimulatorListener {
 
         @Override
         public String toString() {
-            return getRule().getName();
+            return getRule().getFullName();
         }
     }
 
@@ -542,8 +598,8 @@ public class StateList extends JTree implements SimulatorListener {
         public String toString() {
             String result;
             MatchResult match = getMatch();
-            if (match instanceof GraphTransition) {
-                String state = ((GraphTransition) match).target().toString();
+            if (match instanceof RuleTransition) {
+                String state = ((RuleTransition) match).target().toString();
                 result =
                     HTMLConverter.HTML_TAG.on("To "
                         + HTMLConverter.ITALIC_TAG.on(state));
@@ -654,9 +710,12 @@ public class StateList extends JTree implements SimulatorListener {
                         selectedState = ((StateTreeNode) parentNode).getState();
                     }
                     if (selectedState != null) {
-                        expandPath(createPath(getStateNode(selectedState)));
-                        getSimulatorModel().setState(selectedState);
-                        getSimulatorModel().setMatch(selectedMatch);
+                        StateTreeNode stateNode = getStateNode(selectedState);
+                        if (stateNode != null) {
+                            expandPath(createPath(stateNode));
+                            getSimulatorModel().setState(selectedState);
+                            getSimulatorModel().setMatch(selectedMatch);
+                        }
                     }
                 }
                 getSimulatorModel().doSelectSet(ResourceKind.RULE,
@@ -674,7 +733,7 @@ public class StateList extends JTree implements SimulatorListener {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule().getName());
+                            result.add(((RuleTreeNode) nodes[i]).getRule().getFullName());
                         }
                     }
                 }

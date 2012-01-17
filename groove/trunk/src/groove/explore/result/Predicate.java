@@ -17,7 +17,7 @@
 package groove.explore.result;
 
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.trans.Rule;
 
 /**
@@ -174,7 +174,7 @@ public abstract class Predicate<A> {
      * checks whether a given rule has been applied.
      * <======================================================================>
      */
-    public static class RuleApplied extends Predicate<GraphTransition> {
+    public static class RuleApplied extends Predicate<RuleTransition> {
         private final Rule rule;
 
         /** Default constructor. */
@@ -184,7 +184,7 @@ public abstract class Predicate<A> {
         }
 
         @Override
-        public boolean eval(GraphTransition value) {
+        public boolean eval(RuleTransition value) {
             return value.getEvent().getRule().equals(this.rule);
         }
     }

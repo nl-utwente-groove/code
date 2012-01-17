@@ -18,7 +18,7 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.util.Groove;
 import groove.util.History;
 
@@ -101,7 +101,7 @@ public class StepHistory implements SimulatorListener {
      * don't get the selection of a state followed by the selection of an
      * outgoing transition, but only the latter).
      */
-    private synchronized void setTransitionUpdate(GraphTransition transition) {
+    private synchronized void setTransitionUpdate(RuleTransition transition) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetTransitionAction(transition);
             // test if the previous history action was setting the source state
@@ -225,7 +225,7 @@ public class StepHistory implements SimulatorListener {
 
     /**
      * Class to record history elements without having to rely on the
-     * distinction between {@link GraphState}s and {@link GraphTransition}s.
+     * distinction between {@link GraphState}s and {@link RuleTransition}s.
      */
     private static abstract class HistoryAction {
         /**
@@ -237,7 +237,7 @@ public class StepHistory implements SimulatorListener {
          *        if the action is setting a state
          */
         public HistoryAction(final GraphState state,
-                final GraphTransition transition) {
+                final RuleTransition transition) {
             this.transition = transition;
             if (state == null) {
                 this.state = transition.source();
@@ -258,7 +258,7 @@ public class StepHistory implements SimulatorListener {
          * Returns the transition stored in this action, if any, or
          * <code>null</code> otherwise.
          */
-        GraphTransition getTransition() {
+        RuleTransition getTransition() {
             return this.transition;
         }
 
@@ -300,7 +300,7 @@ public class StepHistory implements SimulatorListener {
          * The transition stored in this history action; may be
          * <code>null</code> if the action is setting a state.
          */
-        private final GraphTransition transition;
+        private final RuleTransition transition;
     }
 
     /** Action that records setting a state. */
@@ -314,7 +314,7 @@ public class StepHistory implements SimulatorListener {
     /** Action that records setting a transition. */
     private class SetTransitionAction extends HistoryAction {
         /** Constructs an instance for a given graph transition. */
-        public SetTransitionAction(final GraphTransition transition) {
+        public SetTransitionAction(final RuleTransition transition) {
             super(null, transition);
         }
     }

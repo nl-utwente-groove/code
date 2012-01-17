@@ -53,7 +53,7 @@ public class CtrlJVertex extends GraphJVertex {
         if (isTransient()) {
             StringBuilder action = new StringBuilder();
             action.append(HTMLConverter.toHtml('<'));
-            action.append(getNode().getAction());
+            action.append(getNode().getRecipe());
             action.append(HTMLConverter.toHtml('>'));
             result.add(action);
         }

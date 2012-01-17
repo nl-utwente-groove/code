@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +56,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Rule implements Fixable, Comparable<Rule> {
+public class Rule implements Action, Fixable {
     /**
      * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
@@ -107,21 +106,18 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the name of this rule (which equals the name of the associated condition). */
-    public String getName() {
+    public String getFullName() {
         return getCondition().getName();
+    }
+
+    /** Returns the name of this rule (which equals the name of the associated condition). */
+    public String getLastName() {
+        return RuleName.getLastName(getFullName());
     }
 
     /** Returns the system properties. */
     public SystemProperties getSystemProperties() {
         return getCondition().getSystemProperties();
-    }
-
-    /**
-     * Indicates if the rule is explicitly typed.
-     * TODO eventually this test should not be necessary
-     */
-    boolean isTyped() {
-        return !getSystemProperties().getTypeNames().isEmpty();
     }
 
     /**
@@ -139,7 +135,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Indicates if this rule has a confluency property. If this method returns
+     * Indicates if this rule has a confluence property. If this method returns
      * <code>true</code>, this means the rule can be applied only once, to an
      * arbitrary match.
      */
@@ -167,7 +163,7 @@ public class Rule implements Fixable, Comparable<Rule> {
         if (parent != null) {
             assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String.format(
                 "Rule '%s': Parent nodes %s do not contain all co-roots %s",
-                getName(), parent.rhs().nodeSet(), getCoRoot().nodeSet());
+                getFullName(), parent.rhs().nodeSet(), getCoRoot().nodeSet());
         }
         this.parent = parent;
     }
@@ -179,7 +175,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     public String getTransitionLabel() {
         String result = this.ruleProperties.getTransitionLabel();
         if (result == null) {
-            result = getName();
+            result = getFullName();
         }
         return result;
     }
@@ -230,7 +226,7 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /** Returns the top rule of the hierarchy in which this rule is nested. */
-    public Rule getTop() {
+    public Action getTop() {
         if (isTop()) {
             return this;
         } else {
@@ -703,7 +699,7 @@ public class Rule implements Fixable, Comparable<Rule> {
         StringBuilder res =
             new StringBuilder(String.format(
                 "Rule %s; anchor nodes: %s, edges: %s, variables: %s%n",
-                getName(), Groove.toString(getAnchorNodes()),
+                getLastName(), Groove.toString(getAnchorNodes()),
                 Groove.toString(getAnchorEdges()),
                 Groove.toString(getAnchorVars())));
         res.append(getCondition().toString("    "));
@@ -711,10 +707,10 @@ public class Rule implements Fixable, Comparable<Rule> {
     }
 
     /**
-     * Compares two rules on the basis of their names.
+     * Compares two actions on the basis of their names.
      */
-    public int compareTo(Rule other) {
-        return getName().compareTo(other.getName());
+    public int compareTo(Action other) {
+        return getFullName().compareTo(other.getFullName());
     }
 
     // ------------------- commands --------------------------
@@ -1219,7 +1215,7 @@ public class Rule implements Fixable, Comparable<Rule> {
      * the creator edges and their endpoints.
      */
     private RuleGraph computeCreatorGraph() {
-        RuleGraph result = rhs().newGraph(getName() + "(creators)");
+        RuleGraph result = rhs().newGraph(getFullName() + "(creators)");
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
         result.addEdgeSet(Arrays.asList(getCreatorEdges()));
         return result;
@@ -1323,6 +1319,25 @@ public class Rule implements Fixable, Comparable<Rule> {
         return this.ruleProperties;
     }
 
+    /** 
+     * Indicates if this rule is part of a recipe.
+     * @see #isPartial()
+     */
+    public boolean isPartial() {
+        return this.partial;
+    }
+
+    /** 
+     * Sets the rule to partial.
+     * @see #isPartial() 
+     */
+    public void setPartial() {
+        this.partial = true;
+    }
+
+    /** Flag indicating that this rule is part of a recipe. */
+    private boolean partial;
+    /** Application condition of this rule. */
     private final Condition condition;
     /**
      * The parent rule of this rule; may be <code>null</code>, if this is a
@@ -1543,20 +1558,4 @@ public class Rule implements Fixable, Comparable<Rule> {
         DefaultAnchorFactory.getInstance();
     /** Debug flag for the constructor. */
     private static final boolean PRINT = false;
-    /**
-     * The lowest rule priority, which is also the default value if no explicit
-     * priority is given.
-     */
-    static public final int DEFAULT_PRIORITY = 0;
-    /**
-     * A comparator for priorities, encoded as {@link Integer} objects. This
-     * implementation orders priorities from high to low.
-     */
-    static final public Comparator<Integer> PRIORITY_COMPARATOR =
-        new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {
-                return o2.intValue() - o1.intValue();
-            }
-
-        };
 }

@@ -16,6 +16,7 @@
  */
 package groove.io;
 
+import groove.trans.Action;
 import groove.trans.Rule;
 import groove.util.Groove;
 
@@ -29,7 +30,7 @@ import java.net.URL;
  */
 public class PriorityFileName {
     /** Default priority value, copied from {@link Rule#DEFAULT_PRIORITY}. */
-    static public final int DEFAULT_PRIORITY = Rule.DEFAULT_PRIORITY;
+    static public final int DEFAULT_PRIORITY = Action.DEFAULT_PRIORITY;
     /** Separator between priority and actual file name. */
     static public final String SEPARATOR = ".";
 

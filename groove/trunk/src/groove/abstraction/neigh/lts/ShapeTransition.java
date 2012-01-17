@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.lts;
 
-import groove.lts.DefaultGraphTransition;
+import groove.lts.DefaultRuleTransition;
 import groove.trans.RuleEvent;
 
 /**
@@ -24,7 +24,7 @@ import groove.trans.RuleEvent;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeTransition extends DefaultGraphTransition {
+public final class ShapeTransition extends DefaultRuleTransition {
 
     // ------------------------------------------------------------------------
     // Constructors

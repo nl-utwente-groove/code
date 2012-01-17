@@ -24,7 +24,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
@@ -95,14 +95,14 @@ public abstract class LtsPrologCode extends GraphPrologCode {
      * @param term      A term representing a graph transition
      * @return          A graph transition
      */
-    public static final GraphTransition getTransition(Term term)
+    public static final RuleTransition getTransition(Term term)
         throws PrologException {
         if (term instanceof JavaObjectTerm) {
             JavaObjectTerm jot = (JavaObjectTerm) term;
-            if (!(jot.value instanceof GraphTransition)) {
+            if (!(jot.value instanceof RuleTransition)) {
                 PrologException.domainError(LtsPrologCode.TRANSITION_ATOM, term);
             }
-            return (GraphTransition) jot.value;
+            return (RuleTransition) jot.value;
         } else {
             PrologException.typeError(LtsPrologCode.TRANSITION_ATOM, term);
         }

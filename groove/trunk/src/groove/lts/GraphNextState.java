@@ -18,10 +18,10 @@ package groove.lts;
 
 /**
  * Combination of a {@link GraphState} and a
- * {@link GraphTransition}.
+ * {@link RuleTransition}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphNextState extends GraphState, GraphTransition {
+public interface GraphNextState extends GraphState, RuleTransition {
     // adds nothing to the combination of interfaces
 }

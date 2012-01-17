@@ -148,7 +148,7 @@ public final class Trace {
     /** Prints the current transition to stdout. */
     public void printTransition() {
         System.out.println(this.stateFiles[this.currState] + "--"
-            + this.rules[this.currRule].getName() + "-->"
+            + this.rules[this.currRule].getFullName() + "-->"
             + this.stateFiles[this.currState + 1]);
     }
 

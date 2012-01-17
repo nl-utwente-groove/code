@@ -348,14 +348,9 @@ public class RuleApplication implements DeltaApplier {
                     if (!record.isErasedEdge(sourceEdge)) {
                         target.removeEdge(sourceEdge);
                         registerErasure(sourceEdge);
-                        // TODO the following becomes superfluous as soon as 
-                        // we truly start working with typed nodes
-                        if (!getRule().isTyped()
-                            || !sourceEdge.label().isNodeType()) {
-                            // we register this as an edge to be added later
-                            // at that point the merge map is taken into account
-                            record.addCreatedEdge(sourceEdge);
-                        }
+                        // we register this as an edge to be added later
+                        // at that point the merge map is taken into account
+                        record.addCreatedEdge(sourceEdge);
                     }
                 }
                 removeNode(target, mergedElem);
@@ -421,7 +416,7 @@ public class RuleApplication implements DeltaApplier {
     @Override
     public String toString() {
         StringBuffer result =
-            new StringBuffer("Derivation for rule " + getRule().getName());
+            new StringBuffer("Derivation for rule " + getRule().getFullName());
         result.append("\nMatching:\n  " + this.anchorMap);
         return result.toString();
     }

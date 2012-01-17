@@ -17,10 +17,10 @@
 package groove.control;
 
 import groove.graph.AbstractLabel;
+import groove.trans.Recipe;
 import groove.util.Groove;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -32,18 +32,20 @@ import java.util.TreeMap;
  */
 public class CtrlLabel extends AbstractLabel {
     /** 
-     * Constructs a control label from a call, with an empty guard.
-     */
-    public CtrlLabel(CtrlCall call) {
-        this(call, Collections.<CtrlCall>emptyList());
-    }
-
-    /** 
      * Constructs a control label from a call and
      * a guard.
+     * @param call the (non-{@code null}) control call in the label
+     * @param guard the (non-{@code null}) guard of the control call
+     * @param recipe the (optional) recipe of which this label is part
+     * @param start flag indicating if this is the first call of a new action
      */
-    public CtrlLabel(CtrlCall call, Collection<CtrlCall> guard) {
+    public CtrlLabel(CtrlCall call, Collection<CtrlCall> guard, Recipe recipe,
+            boolean start) {
+        assert start || !call.isOmega();
+        assert start || recipe != null;
         this.call = call;
+        this.recipe = recipe;
+        this.start = start;
         for (CtrlCall guardCall : guard) {
             this.guardMap.put(guardCall.getName(), guardCall);
         }
@@ -52,6 +54,10 @@ public class CtrlLabel extends AbstractLabel {
     @Override
     public String text() {
         StringBuilder result = new StringBuilder();
+        if (hasRecipe()) {
+            result.append(getRecipe());
+            result.append('/');
+        }
         if (!this.guardMap.isEmpty()) {
             result.append(Groove.toString(this.guardMap.keySet().toArray()));
         }
@@ -85,4 +91,32 @@ public class CtrlLabel extends AbstractLabel {
     /** Guard of this label, consisting of a list of failure rules. */
     private final Map<String,CtrlCall> guardMap =
         new TreeMap<String,CtrlCall>();
+
+    /** 
+     * Indicates whether this label starts a new action.
+     */
+    public boolean isStart() {
+        return this.start;
+    }
+
+    /** Returns the name of the recipe of which this label is part, if any. */
+    public Recipe getRecipe() {
+        return this.recipe;
+    }
+
+    /** Indicates if this control label is part of a recipe. */
+    public boolean hasRecipe() {
+        return getRecipe() != null;
+    }
+
+    /** 
+     * Name of the encompassing recipe, if any.
+     */
+    private final Recipe recipe;
+
+    /** 
+     * Flag indicating that this transition leaves a transient phase.
+     */
+    private final boolean start;
+
 }

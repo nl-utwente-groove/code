@@ -399,6 +399,14 @@ public class JAttr {
     static public final Border NESTED_BORDER = createNodeBorder(
         new StrokedLineBorder(DEFAULT_CELL_COLOR, createStroke(
             DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
+    /**
+     * Dash pattern used for transient elements.
+     */
+    static public final float[] TRANSIENT_DASH = new float[] {6.0f, 4.0f};
+    /**
+     * Dash pattern used for absent elements.
+     */
+    static public final float[] ABSENT_DASH = new float[] {3.0f, 3.0f};
     /** 
      * Static flag determining if gradient background paint should be used.
      * Gradient paint looks better, but there is a performance hit. 
@@ -420,18 +428,6 @@ public class JAttr {
                     BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
         }
         return result;
-    }
-
-    /** Creates a rule border with given colour, dash pattern, and width. */
-    public static Border createRuleBorder(Color color, float width,
-            float[] dash, boolean emph) {
-        Border result;
-        if (dash == NO_DASH) {
-            result = new LineBorder(color, (int) width);
-        } else {
-            result = new StrokedLineBorder(color, createStroke(width, dash));
-        }
-        return createNodeBorder(result, emph);
     }
 
     /**

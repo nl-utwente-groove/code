@@ -51,7 +51,7 @@ public class RuleDependencies {
             RuleDependencies data = new RuleDependencies(grammar);
             data.collectCharacteristics();
             for (Rule rule : grammar.getRules()) {
-                System.out.println("Rule " + rule.getName() + ":");
+                System.out.println("Rule " + rule.getFullName() + ":");
                 System.out.println("Positive labels: "
                     + data.positiveMap.get(rule));
                 System.out.println("Negative labels: "
@@ -61,26 +61,26 @@ public class RuleDependencies {
                 System.out.println("Produced labels: "
                     + data.producedMap.get(rule));
                 Collection<String> enablerNames = new ArrayList<String>();
-                for (Rule depRule : data.getEnablers(rule)) {
-                    enablerNames.add(depRule.getName());
+                for (Action depRule : data.getEnablers(rule)) {
+                    enablerNames.add(depRule.getFullName());
                 }
                 Collection<String> disablerNames = new ArrayList<String>();
-                for (Rule depRule : data.getDisablers(rule)) {
-                    disablerNames.add(depRule.getName());
+                for (Action depRule : data.getDisablers(rule)) {
+                    disablerNames.add(depRule.getFullName());
                 }
                 Collection<String> enabledNames = new ArrayList<String>();
-                for (Rule depRule : data.getEnableds(rule)) {
-                    enabledNames.add(depRule.getName());
+                for (Action depRule : data.getEnableds(rule)) {
+                    enabledNames.add(depRule.getFullName());
                 }
                 Collection<String> disabledNames = new ArrayList<String>();
-                for (Rule depRule : data.getDisableds(rule)) {
-                    disabledNames.add(depRule.getName());
+                for (Action depRule : data.getDisableds(rule)) {
+                    disabledNames.add(depRule.getFullName());
                 }
                 // disablerNames.removeAll(enablerNames);
                 // disabledNames.removeAll(enabledNames);
                 Collection<String> allRuleNames = new ArrayList<String>();
-                for (Rule otherRule : grammar.getRules()) {
-                    allRuleNames.add(otherRule.getName());
+                for (Action otherRule : grammar.getRules()) {
+                    allRuleNames.add(otherRule.getFullName());
                 }
                 allRuleNames.removeAll(enablerNames);
                 allRuleNames.removeAll(disablerNames);
@@ -105,7 +105,7 @@ public class RuleDependencies {
 
     /** Constructs a new dependencies object, for a given rule system. */
     public RuleDependencies(GraphGrammar ruleSystem) {
-        this.rules = ruleSystem.getRules();
+        this.rules = ruleSystem.getAllRules();
         this.properties = ruleSystem.getProperties();
         this.typeGraph = ruleSystem.getTypeGraph();
     }

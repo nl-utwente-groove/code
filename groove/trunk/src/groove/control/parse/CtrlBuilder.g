@@ -10,7 +10,7 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.parse.Namespace.Kind;
+import groove.control.CtrlCall.Kind;
 import groove.trans.Rule;
 import groove.view.FormatError;
 import java.util.Set;
@@ -44,9 +44,9 @@ import java.util.HashSet;
 }
 
 program returns [ CtrlAut aut ]
-  : ^(PROGRAM actions functions block)
+  : ^(PROGRAM recipes functions block)
     { if ($block.tree.getChildCount() == 0) {
-          $aut = builder.buildAlap(builder.buildAny(namespace));
+          $aut = null;
       } else {
           $aut = $block.aut;
       }
@@ -58,16 +58,16 @@ functions
 
 function
   : ^(FUNCTION ID block)
-    { namespace.addBody(Kind.FUNCTION, $ID.text, $block.aut); }
+    { namespace.addBody($ID.text, $block.aut); }
   ;
   
-actions
-  : ^(ACTIONS action*);
+recipes
+  : ^(RECIPES recipe*);
 
-action
-  : ^(RULE ID block)
-    { helper.checkActionBody($RULE, $ID.text, $block.aut);
-      namespace.addBody(Kind.ACTION, $ID.text, $block.aut);
+recipe
+  : ^(RECIPE ID INT_LIT? block)
+    { helper.checkRecipeBody($RECIPE, $ID.text, $block.aut);
+      namespace.addBody($ID.text, $block.aut);
     }
   ;
 

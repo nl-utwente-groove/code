@@ -93,8 +93,8 @@ public class AntWorld {
             @Override
             public void addUpdate(GTS gts, GraphTransition trans) {
                 this.counter++;
-                if (trans.getEvent().getRule().getName().equals("end_turn")) {
-                    System.out.print("\n" + trans.getEvent());
+                if (trans.getAction().getFullName().equals("end_turn")) {
+                    System.out.print("\n" + trans.getAction());
                 } else if (this.counter % 10 == 0) {
                     System.out.print(".");
                 }

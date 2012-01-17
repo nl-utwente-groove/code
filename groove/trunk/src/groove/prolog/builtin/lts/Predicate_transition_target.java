@@ -22,7 +22,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 
 /**
  * Predicate transition_target(+Transition,?State)
@@ -32,7 +32,7 @@ public class Predicate_transition_target extends LtsPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        GraphTransition transition = getTransition(args[0]);
+        RuleTransition transition = getTransition(args[0]);
         Term result = new JavaObjectTerm(transition.target());
         return interpreter.unify(args[1], result);
     }

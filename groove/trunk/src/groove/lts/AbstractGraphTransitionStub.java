@@ -30,7 +30,7 @@ import java.util.Arrays;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
+abstract class AbstractGraphTransitionStub implements RuleTransitionStub {
     /**
      * Constructs a stub on the basis of a given rule event, added nodes and
      * target state.
@@ -73,8 +73,8 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
         }
     }
 
-    public GraphTransition toTransition(GraphState source) {
-        return new DefaultGraphTransition(source,
+    public RuleTransition toTransition(GraphState source) {
+        return new DefaultRuleTransition(source,
             getEvent(source), getAddedNodes(source), getTarget(source), isSymmetry());
     }
 
@@ -92,7 +92,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
 
     /**
      * This method is only there because we needed to make
-     * {@link groove.lts.GraphTransitionStub} a sub-interface of {@link Element}.
+     * {@link groove.lts.RuleTransitionStub} a sub-interface of {@link Element}.
      * The method throws an {@link UnsupportedOperationException} always.
      */
     public int compareTo(Element obj) {

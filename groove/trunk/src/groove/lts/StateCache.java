@@ -27,6 +27,7 @@ import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,13 +53,88 @@ public class StateCache {
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
-    boolean addTransitionStub(GraphTransitionStub stub) {
-        boolean result = getStubSet().add(stub);
+    boolean addTransition(RuleTransition transition) {
+        boolean result = getStubSet().add(transition.toStub());
         if (result && this.transitionMap != null) {
-            GraphTransition trans = stub.toTransition(this.state);
-            this.transitionMap.put(trans.getEvent(), trans);
+            this.transitionMap.put(transition.getEvent(), transition);
         }
+        addChild(transition.target(), new GTS.NormalisedStateSet());
         return result;
+    }
+
+    /** 
+     * Possibly adds this cache to the raw parents of a given
+     * child state. If the prospective child is itself one of this cache's
+     * raw ancestors, the grandchildren are added recursively.
+     * @param child the child state to whose parents this cache should be added
+     * @param cyclic intersection of this cache's uncooked ancestors and {@code child}'s
+     * successors that have already been investigated 
+     */
+    private void addChild(GraphState child, Set<GraphState> cyclic) {
+        // only add the child if it is raw
+        if (child.isTransient() && !child.isCooked()) {
+            if (child.equals(getState())) {
+                // do nothing
+            } else if (this.rawAncestors.contains(child)) {
+                if (cyclic.add(child)) {
+                    // recursively investigate all grandchildren
+                    for (RuleTransition childTrans : child.getTransitionSet()) {
+                        addChild(childTrans.target(), cyclic);
+                    }
+                }
+            } else {
+                // add this cache as uncooked ancestor to the given child
+                StateCache childCache = child.getCache();
+                childCache.rawParents.add(this);
+                childCache.rawAncestors.add(getState());
+                childCache.rawAncestors.addAll(this.rawAncestors);
+                this.rawChildCount++;
+            }
+        } else {
+            this.present = true;
+        }
+    }
+
+    /** 
+     * Callback method invoked when the state has been closed.
+     * If there are no raw children, calls {@link #fireCooked()}.
+     */
+    void fireClosed() {
+        if (this.rawChildCount == 0) {
+            getState().setCooked();
+            if (!this.present) {
+                getState().setAbsent();
+            }
+        }
+    }
+
+    /** 
+     * Callback method invoked when the state has become cooked.
+     * Notifies all raw predecessors that the associated state has become cooked.
+     */
+    void fireCooked() {
+        for (StateCache parent : this.rawParents) {
+            parent.notifyChildCooked(this.present);
+        }
+        this.rawParents.clear();
+        this.rawAncestors.clear();
+    }
+
+    /** 
+     * Callback method signalling that one of the uncooked successors has
+     * become cooked.
+     * @param present flag indicating that the cooked successor is now present,
+     * implying that this state is present as well.
+     */
+    private void notifyChildCooked(boolean present) {
+        this.rawChildCount--;
+        this.present |= present;
+        if (this.rawChildCount == 0) {
+            getState().setCooked();
+            if (!this.present) {
+                getState().setAbsent();
+            }
+        }
     }
 
     AbstractGraphState getState() {
@@ -134,8 +210,7 @@ public class StateCache {
             AbstractGraphState backward = state.source();
             List<DefaultGraphNextState> stateChain =
                 new LinkedList<DefaultGraphNextState>();
-            while (backward instanceof GraphNextState
-                && backward.isCacheCleared()
+            while (backward instanceof GraphNextState && !backward.hasCache()
                 && backward.getFrozenGraph() == null) {
                 stateChain.add(0, (DefaultGraphNextState) backward);
                 backward = ((DefaultGraphNextState) backward).source();
@@ -160,18 +235,6 @@ public class StateCache {
         }
         return result;
     }
-
-    //
-    //    /**
-    //     * Decides whether the underlying graph should be frozen. The decision is
-    //     * taken on the basis of the <i>freeze count</i>, as computed by
-    //     * {@link #getFreezeCount()}; the graph is frozen if the freeze count
-    //     * exceeds {@link #FREEZE_BOUND}.
-    //     * @return <code>true</code> if the graph should be frozen
-    //     */
-    //    private boolean isFreezeGraph() {
-    //        return isFreezeGraph(getFreezeCount());
-    //    }
 
     /**
      * Decides whether the underlying graph should be frozen. The decision is
@@ -207,7 +270,7 @@ public class StateCache {
      * Lazily creates and returns a mapping from the events to 
      * outgoing transitions of this state.
      */
-    Map<RuleEvent,GraphTransition> getTransitionMap() {
+    Map<RuleEvent,RuleTransition> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -218,23 +281,23 @@ public class StateCache {
      * Computes a mapping from the events to the 
      * outgoing transitions of this state.
      */
-    private Map<RuleEvent,GraphTransition> computeTransitionMap() {
-        Map<RuleEvent,GraphTransition> result =
-            new HashMap<RuleEvent,GraphTransition>();
-        for (GraphTransitionStub stub : getStubSet()) {
-            GraphTransition trans = stub.toTransition(this.state);
+    private Map<RuleEvent,RuleTransition> computeTransitionMap() {
+        Map<RuleEvent,RuleTransition> result =
+            new HashMap<RuleEvent,RuleTransition>();
+        for (RuleTransitionStub stub : getStubSet()) {
+            RuleTransition trans = stub.toTransition(this.state);
             result.put(trans.getEvent(), trans);
         }
         return result;
     }
 
     /**
-     * Returns the cached set of {@link GraphTransitionStub}s. The set is
+     * Returns the cached set of {@link RuleTransitionStub}s. The set is
      * constructed lazily if the state is closed, using
      * {@link #computeStubSet()}; if the state is not closed, an empty set is
      * initialised.
      */
-    Set<GraphTransitionStub> getStubSet() {
+    Set<RuleTransitionStub> getStubSet() {
         if (this.stubSet == null) {
             this.stubSet = computeStubSet();
         }
@@ -250,12 +313,12 @@ public class StateCache {
     }
 
     /**
-     * Reconstructs the set of {@link groove.lts.GraphTransitionStub}s from the
+     * Reconstructs the set of {@link groove.lts.RuleTransitionStub}s from the
      * corresponding array in the underlying graph state. It is assumed that
      * <code>getState().isClosed()</code>.
      */
-    private Set<GraphTransitionStub> computeStubSet() {
-        Set<GraphTransitionStub> result = createStubSet();
+    private Set<RuleTransitionStub> computeStubSet() {
+        Set<RuleTransitionStub> result = createStubSet();
         result.addAll(this.state.getStoredTransitionStubs());
         return result;
     }
@@ -263,11 +326,11 @@ public class StateCache {
     /**
      * Factory method for the outgoing transition set.
      */
-    private Set<GraphTransitionStub> createStubSet() {
-        return new TreeHashSet<GraphTransitionStub>() {
+    private Set<RuleTransitionStub> createStubSet() {
+        return new TreeHashSet<RuleTransitionStub>() {
             @Override
-            protected boolean areEqual(GraphTransitionStub key,
-                    GraphTransitionStub otherKey) {
+            protected boolean areEqual(RuleTransitionStub key,
+                    RuleTransitionStub otherKey) {
                 return key.getEvent(getState()).equals(
                     otherKey.getEvent(getState()));
                 // return key.getEvent(getState()) ==
@@ -275,7 +338,7 @@ public class StateCache {
             }
 
             @Override
-            protected int getCode(GraphTransitionStub key) {
+            protected int getCode(RuleTransitionStub key) {
                 RuleEvent keyEvent = key.getEvent(getState());
                 // return keyEvent == null ? 0 : keyEvent.identityHashCode();
                 return keyEvent == null ? 0 : keyEvent.hashCode();
@@ -286,7 +349,7 @@ public class StateCache {
     /**
      * The set of outgoing transitions computed for the underlying graph.
      */
-    private Set<GraphTransitionStub> stubSet;
+    private Set<RuleTransitionStub> stubSet;
     /** The graph state of this cache. */
     private final AbstractGraphState state;
     /** The system record generating this state. */
@@ -294,9 +357,24 @@ public class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private Map<RuleEvent,GraphTransition> transitionMap;
+    private Map<RuleEvent,RuleTransition> transitionMap;
     /** Cached graph for this state. */
     private DeltaHostGraph graph;
+    /** 
+     * Set of direct uncooked predecessor states, maintained as long this state 
+     * is transient and uncooked. These states are notified as soon as this state is
+     * discovered to be non-transient or cooked.
+     * @see #fireCooked()
+     */
+    private final List<StateCache> rawParents = new ArrayList<StateCache>();
+    /** Transitively closed set of uncooked ancestors. This is maintained
+     * to ensure that cycles of transient states are correctly cooked.
+     */
+    private final Set<GraphState> rawAncestors = new GTS.NormalisedStateSet();
+    /** Number of transient, uncooked successors. */
+    private int rawChildCount;
+    /** Flag indicating if the associated state is known to be present. */
+    private boolean present;
     /**
      * Flag indicating if (a fraction of the) state graphs should be frozen.
      * This is set to <code>true</code> if states in the GTS are collapsed.

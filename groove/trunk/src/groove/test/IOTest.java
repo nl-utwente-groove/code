@@ -136,7 +136,7 @@ public class IOTest {
             assertEquals(grammarName, gg.getName());
             assertEquals(startName, view.getStartGraphModel().getName());
             assertEquals(controlName, view.getActiveControlModel().getName());
-            assertEquals(rulecount, gg.getRules().size());
+            assertEquals(rulecount, gg.getActions().size());
 
             GTS lts = new GTS(gg);
             Exploration exploration = new Exploration();

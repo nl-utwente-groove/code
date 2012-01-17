@@ -20,6 +20,7 @@ import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 
 import java.util.HashSet;
@@ -78,7 +79,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         this.isHidden = !this.isHidden;
         if (this.isHidden) {
             GTS lts = getGraph();
-            for (GraphState state : lts.getStateSet()) {
+            for (GraphState state : lts.nodeSet()) {
                 ((LTSJCell) getJCellForNode(state)).setVisible(false);
             }
             Queue<GraphState> stateQueue = new LinkedList<GraphState>();
@@ -127,7 +128,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    public void closeUpdate(GTS lts, GraphState explored) {
+    public void statusUpdate(GTS lts, GraphState explored, Flag flag) {
         // do nothing
     }
 

@@ -26,7 +26,7 @@ import groove.explore.util.MatchSetCollector;
  * performs a linear exploration.
  * @author Eduardo Zambon
  */
-public class LinearConfluentRules extends NextOpenStrategy {
+public class LinearConfluentRules extends BFSStrategy {
     /**
      * Returns a {@link ConfluentMatchSetCollector}.
      */

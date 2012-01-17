@@ -58,10 +58,10 @@ public class LinearStrategy extends AbstractStrategy {
         if (match != null) {
             getMatchApplier().apply(getState(), match);
             if (closeExit()) {
-                setClosed(getState(), false);
+                getState().setClosed(false);
             }
         } else {
-            setClosed(getState(), true);
+            getState().setClosed(true);
         }
         return updateAtState();
     }

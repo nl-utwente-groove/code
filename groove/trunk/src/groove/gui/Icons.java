@@ -315,6 +315,9 @@ public final class Icons {
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
     /** Small icon for production rules, as shown in the rule tree. */
     public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
+    /** Small icon for transactional rules, as shown in the rule tree. */
+    public static final ImageIcon ACTION_LIST_ICON =
+        createIcon("rule-small-multi.gif");
     /** Icon for rule (GPR) files. */
     public static final ImageIcon RULE_FILE_ICON = createIcon("rule-file.gif");
     /** Icon for the rule panel of the simulator. */

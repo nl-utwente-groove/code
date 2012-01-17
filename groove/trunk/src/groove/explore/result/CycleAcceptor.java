@@ -20,6 +20,7 @@ package groove.explore.result;
 import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.verify.ModelChecking;
 import groove.verify.ProductListener;
 import groove.verify.ProductState;
@@ -59,7 +60,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     @Override
-    public void closeUpdate(GTS gts, GraphState state) {
+    public void statusUpdate(GTS gts, GraphState state, Flag flag) {
         throw new UnsupportedOperationException();
     }
 

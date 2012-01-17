@@ -4,10 +4,10 @@ import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
-import groove.lts.DerivationLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
+import groove.lts.RuleLabel;
+import groove.lts.RuleTransition;
 
 import java.util.List;
 
@@ -45,7 +45,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /** A state is also visible if it is open, final, or the start state. */
     @Override
     public boolean isVisible() {
-        return (isSpecialNode() || hasVisibleIncidentEdge()) && this.visible;
+        return (getJGraph().isShowPartialTransitions() || !isTransient())
+            && (isSpecialNode() || hasVisibleIncidentEdge()) && this.visible;
     }
 
     public void setVisible(boolean visible) {
@@ -122,7 +123,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     public List<StringBuilder> getLines() {
         List<StringBuilder> result = super.getLines();
         CtrlState ctrlState = getNode().getCtrlState();
-        if (ctrlState.getAut().getProgram() != null) {
+        if (!ctrlState.getAut().isDefault()) {
             result.add(new StringBuilder("ctrl: "
                 + HTMLConverter.toHtml(ctrlState.toString())));
         }
@@ -137,7 +138,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     public StringBuilder getLine(Edge edge) {
         String text =
             getJGraph().isShowAnchors()
-                    ? DerivationLabel.getAnchorText(((GraphTransition) edge).getEvent())
+                    ? RuleLabel.getAnchorText(((RuleTransition) edge).getEvent())
                     : edge.label().text();
         StringBuilder result = new StringBuilder(text);
         HTMLConverter.toHtml(result);
@@ -192,7 +193,9 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         if (isActive()) {
             result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
         }
-        if (isTransient()) {
+        if (getNode().isAbsent()) {
+            result.applyMap(LTSJGraph.LTS_NODE_ABSENT_CHANGE);
+        } else if (isTransient()) {
             result.applyMap(LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
         }
         return result;

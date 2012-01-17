@@ -20,8 +20,8 @@ import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
@@ -54,13 +54,13 @@ public class ReteStrategy extends AbstractStrategy {
             new ArrayList<GraphState>(ruleMatches.size());
 
         for (MatchResult nextMatch : ruleMatches) {
-            GraphTransition trans =
+            RuleTransition trans =
                 getMatchApplier().apply(getState(), nextMatch);
             outTransitions.add(trans.target());
         }
 
         addToPool(outTransitions);
-        setClosed(getState(), true);
+        getState().setClosed(true);
         this.deltaAccumulator = new DeltaStore();
         updateAtState();
         ReteStrategyNextReporter.stop();

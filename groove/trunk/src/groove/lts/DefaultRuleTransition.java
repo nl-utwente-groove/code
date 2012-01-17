@@ -25,38 +25,39 @@ import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.trans.AbstractEvent;
+import groove.trans.Action;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
+import groove.trans.Recipe;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
+
+import java.util.Collections;
 
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
-public class DefaultGraphTransition extends
-        AbstractEdge<GraphState,DerivationLabel> implements
-        GraphTransitionStub, GraphTransition {
+public class DefaultRuleTransition extends AbstractEdge<GraphState,RuleLabel>
+        implements RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public DefaultGraphTransition(GraphState source, RuleEvent event,
+    public DefaultRuleTransition(GraphState source, RuleEvent event,
             HostNode[] addedNodes, GraphState target, boolean symmetry) {
-        super(source, new DerivationLabel(event, addedNodes), target);
+        super(source, new RuleLabel(source, event, addedNodes), target);
         this.event = event;
         this.addedNodes = addedNodes;
         this.symmetry = symmetry;
         CtrlState sourceCtrl = source.getCtrlState();
-        this.ctrlTrans =
-            sourceCtrl == null ? null
-                    : sourceCtrl.getTransition(event.getRule());
+        this.ctrlTrans = sourceCtrl.getTransition(event.getRule());
     }
 
     /**
@@ -64,13 +65,23 @@ public class DefaultGraphTransition extends
      * @param source the source state
      * @param target the target state
      */
-    public DefaultGraphTransition(RuleEvent event, GraphState source,
+    public DefaultRuleTransition(RuleEvent event, GraphState source,
             GraphState target) {
         this(source, event, null, target, false);
     }
 
+    @Override
+    public Action getAction() {
+        return getEvent().getRule();
+    }
+
     public RuleEvent getEvent() {
         return this.event;
+    }
+
+    @Override
+    public Iterable<RuleTransition> getSteps() {
+        return Collections.<RuleTransition>singletonList(this);
     }
 
     @Override
@@ -96,10 +107,8 @@ public class DefaultGraphTransition extends
         return this.addedNodes;
     }
 
-    public GraphTransitionStub toStub() {
-        /*if (!getEvent().getRule().isModifying()) {
-            return getEvent();
-        } else*/if (isSymmetry()) {
+    public RuleTransitionStub toStub() {
+        if (isSymmetry()) {
             return new SymmetryTransitionStub(getEvent(), getAddedNodes(),
                 target());
         } else if (target() instanceof DefaultGraphNextState) {
@@ -146,7 +155,7 @@ public class DefaultGraphTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns <code>this</code>.
      */
-    public GraphTransition toTransition(GraphState source) {
+    public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
         } else {
@@ -217,7 +226,7 @@ public class DefaultGraphTransition extends
      * This implementation compares objects on the basis of the source graph,
      * rule and anchor images.
      */
-    protected boolean equalsSource(GraphTransition other) {
+    protected boolean equalsSource(RuleTransition other) {
         return source() == other.source();
     }
 
@@ -225,19 +234,19 @@ public class DefaultGraphTransition extends
      * This implementation compares objects on the basis of the source graph,
      * rule and anchor images.
      */
-    protected boolean equalsEvent(GraphTransition other) {
+    protected boolean equalsEvent(RuleTransition other) {
         return getEvent().equals(other.getEvent());
     }
 
     /**
      * This implementation delegates to
-     * <tt>{@link #equalsSource(GraphTransition)}</tt>.
+     * <tt>{@link #equalsSource(RuleTransition)}</tt>.
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof GraphTransition
-            && equalsSource((GraphTransition) obj)
-            && equalsEvent((GraphTransition) obj);
+        return obj instanceof RuleTransition
+            && equalsSource((RuleTransition) obj)
+            && equalsEvent((RuleTransition) obj);
     }
 
     /**
@@ -256,7 +265,13 @@ public class DefaultGraphTransition extends
             GraphTransition other = (GraphTransition) obj;
             int result = source().compareTo(other.source());
             if (result == 0) {
-                result = getEvent().compareTo(other.getEvent());
+                result =
+                    getAction().getFullName().compareTo(
+                        other.getAction().getFullName());
+            }
+            if (result == 0) {
+                result =
+                    getEvent().compareTo(((RuleTransition) other).getEvent());
                 if (result == 0) {
                     result = target().compareTo(other.target());
                 }
@@ -276,6 +291,16 @@ public class DefaultGraphTransition extends
     /** Returns the (possibly {@code null} underlying control transition. */
     public CtrlTransition getCtrlTransition() {
         return this.ctrlTrans;
+    }
+
+    @Override
+    public boolean isPartial() {
+        return getRecipe() != null;
+    }
+
+    @Override
+    public Recipe getRecipe() {
+        return getCtrlTransition().getRecipe();
     }
 
     private final CtrlTransition ctrlTrans;

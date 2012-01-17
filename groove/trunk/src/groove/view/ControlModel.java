@@ -18,12 +18,17 @@ package groove.view;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.control.CtrlLoader.Result;
+import groove.trans.Recipe;
 import groove.trans.ResourceKind;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Bridge between control programs (which are just strings) and control
  * automata.
- * @author Staijen
+ * @author Arend Rensink
  */
 public class ControlModel extends TextBasedModel<CtrlAut> {
     /**
@@ -50,11 +55,37 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     }
 
     @Override
-    CtrlAut compute() throws FormatException {
-        return parser.runString(getProgram(), getGrammar().getProperties(),
-            getGrammar().getRules());
+    public CtrlAut compute() throws FormatException {
+        Result result =
+            parser.runString(getProgram(), getGrammar().getProperties(),
+                getGrammar().getRules());
+        this.recipes = new HashSet<Recipe>(result.two());
+        return result.one();
+    }
+
+    /** Returns the set of recipes defined in the control program. */
+    public Set<Recipe> getRecipes() {
+        synchronise();
+        return this.recipes;
+    }
+
+    /** 
+     * Indicates if the control automaton is the default automaton,
+     * i.e., without explicit control.
+     */
+    public boolean isDefault() {
+        boolean result = false;
+        try {
+            CtrlAut aut = toResource();
+            result = aut == null || aut.isDefault();
+        } catch (FormatException e) {
+            // do nothing
+        }
+        return result;
     }
 
     /** The control parser. */
     private static final CtrlLoader parser = CtrlLoader.getInstance();
+    /** The set of recipes found in the last computation of the control automaton. */
+    private Set<Recipe> recipes;
 }

@@ -122,7 +122,7 @@ public class ReteNetwork {
         this.injective = enableInjectivity;
         this.root = new RootNode(this);
         this.state = new ReteState(this);
-        this.build(g.getRules());
+        this.build(g.getAllRules());
         this.ownerEngine = engine;
     }
 

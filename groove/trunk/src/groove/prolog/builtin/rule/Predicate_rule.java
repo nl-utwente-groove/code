@@ -27,6 +27,7 @@ import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
+import groove.trans.Action;
 import groove.trans.Rule;
 
 /**
@@ -41,8 +42,8 @@ public class Predicate_rule extends TransPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         try {
-            Rule rl = (Rule) ((JavaObjectTerm) args[1]).value;
-            Term res = AtomTerm.get(rl.getName());
+            Action rl = (Action) ((JavaObjectTerm) args[1]).value;
+            Term res = AtomTerm.get(rl.getFullName());
             return interpreter.unify(args[0], res);
         } catch (Exception e) {
             try {

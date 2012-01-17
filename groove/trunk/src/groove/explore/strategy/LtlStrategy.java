@@ -27,6 +27,7 @@ import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
@@ -87,13 +88,13 @@ public class LtlStrategy extends AbstractStrategy {
         // current state with the current Buchi location and add
         // the resulting combined transition to the product GTS
 
-        Set<GraphTransition> outTransitions = getState().getTransitionSet();
+        Set<RuleTransition> outTransitions = getState().getTransitionSet();
         Set<String> applicableRules = filterRuleNames(outTransitions);
 
         for (BuchiTransition buchiTrans : getAtBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(applicableRules)) {
                 boolean finalState = true;
-                for (GraphTransition nextTransition : outTransitions) {
+                for (RuleTransition nextTransition : outTransitions) {
                     if (nextTransition.getRole() == EdgeRole.BINARY) {
                         finalState = false;
                         ProductTransition productTransition =
@@ -299,7 +300,7 @@ public class LtlStrategy extends AbstractStrategy {
 
     /**
      * Constructs the set of rule names for which the iterator contains a match.
-     * @param graphTransitions a set of {@link groove.lts.GraphTransition}s
+     * @param graphTransitions a set of {@link groove.lts.RuleTransition}s
      * @return the set of rule names contained in the given
      *         <code>iterator</code>
      */

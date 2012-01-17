@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.trans.Action;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
 import groove.verify.ProductTransition;
@@ -57,7 +58,7 @@ public class RuleSetBoundary extends Boundary {
         // represents a final transition and does therefore
         // not cross any boundary
         if (transition.graphTransition() != null
-            && containsRule(transition.rule())) {
+            && containsAction(transition.rule())) {
             // this is a forbidden rule
             // the current depth now determines whether we may
             // traverse this transition, or not
@@ -75,13 +76,13 @@ public class RuleSetBoundary extends Boundary {
     }
 
     /** Returns whether this boundary contains the given rule. */
-    public boolean containsRule(Rule rule) {
-        return this.ruleSetBoundary.contains(rule);
+    public boolean containsAction(Action action) {
+        return this.ruleSetBoundary.contains(action);
     }
 
     @Override
     public void backtrackTransition(ProductTransition transition) {
-        if (transition.rule() != null && containsRule(transition.rule())) {
+        if (transition.rule() != null && containsAction(transition.rule())) {
             decreaseDepth();
         }
     }
@@ -89,11 +90,11 @@ public class RuleSetBoundary extends Boundary {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for (Rule rule : this.ruleSetBoundary) {
+        for (Action rule : this.ruleSetBoundary) {
             if (result.length() > 0) {
                 result.append(",");
             }
-            result.append(rule.getName());
+            result.append(rule.getFullName());
         }
         return result.toString();
     }

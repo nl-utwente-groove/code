@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import groove.trans.Action;
 import groove.trans.Rule;
 import groove.util.ExprParser;
 import groove.util.ListComparator;
@@ -104,7 +105,7 @@ public class GraphProperties extends Properties {
     public int getPriority() {
         String result = getProperty(PRIORITY_KEY);
         if (result == null) {
-            return Rule.DEFAULT_PRIORITY;
+            return Action.DEFAULT_PRIORITY;
         } else {
             return Integer.parseInt(result);
         }
@@ -120,13 +121,13 @@ public class GraphProperties extends Properties {
     public int setPriority(int priority) {
         String result;
         // if the new value is the default priority, remove the key instead
-        if (priority == Rule.DEFAULT_PRIORITY) {
+        if (priority == Action.DEFAULT_PRIORITY) {
             result = (String) remove(PRIORITY_KEY);
         } else {
             result = (String) super.setProperty(PRIORITY_KEY, "" + priority);
         }
         if (result == null) {
-            return Rule.DEFAULT_PRIORITY;
+            return Action.DEFAULT_PRIORITY;
         } else {
             return Integer.parseInt(result);
         }
@@ -320,7 +321,7 @@ public class GraphProperties extends Properties {
      */
     static public String getDefaultValue(String key) {
         if (key.equals(PRIORITY_KEY)) {
-            return Integer.toString(Rule.DEFAULT_PRIORITY);
+            return Integer.toString(Action.DEFAULT_PRIORITY);
         } else if (key.equals(ENABLED_KEY)) {
             return Boolean.toString(true);
         } else if (key.equals(CONFLUENT_KEY)) {
@@ -339,7 +340,7 @@ public class GraphProperties extends Properties {
     static public int getPriority(Graph<?,?> graph) {
         GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties == null) {
-            return Rule.DEFAULT_PRIORITY;
+            return Action.DEFAULT_PRIORITY;
         } else {
             return properties.getPriority();
         }

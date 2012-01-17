@@ -128,7 +128,7 @@ public class SystemRecord {
     public Set<Rule> getDisabledRules(Rule disabler) {
         Set<Rule> result = getDependencies().getDisableds(disabler);
         assert result != null : String.format("Null rule dependencies for %s",
-            disabler.getName());
+            disabler.getFullName());
         return result;
     }
 
@@ -279,31 +279,6 @@ public class SystemRecord {
      */
     // EZ says: Switched to false to see if the performance is improved...
     private boolean copyGraphs = false;
-
-    /**
-     * Changes the state of the storeTransitions property.
-     * @see #isCopyGraphs()
-     */
-    public void setStoreTransitions(boolean store) {
-        this.storeTransitions = store;
-    }
-
-    /**
-     * Indicates transitions are stored in the GTS.
-     * @return <code>true</code> if all transitions are stored;
-     *         <code>false</code> if no transitions, or only unmodifying
-     *         transitions, are stored (this is up to the strategy).
-     */
-    public boolean isStoreTransitions() {
-        return this.storeTransitions;
-    }
-
-    /**
-     * Flag indicating if transitions are to be stored in the GTS. If
-     * <code>false</code>, only states (and possibly unmodifying transitions)
-     * are stored.
-     */
-    private boolean storeTransitions = true;
 
     /**
      * Changes the random access property.

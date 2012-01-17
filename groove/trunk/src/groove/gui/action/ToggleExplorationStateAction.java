@@ -44,7 +44,7 @@ public class ToggleExplorationStateAction extends SimulatorAction {
             this.putValue(Action.NAME, Options.TOGGLE_TO_CONC_ACTION_NAME);
             Abstraction.initialise();
             HostGraph graph =
-                this.getSimulator().getModel().getGts().getStateSet().iterator().next().getGraph();
+                this.getSimulator().getModel().getGts().nodeSet().iterator().next().getGraph();
             Shape shape = Shape.createShape(graph);
             System.out.println(shape);
             ShapePreviewDialog.showShape(this.getSimulator(), shape);

@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2011-12-28 22:53:47
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2012-01-16 22:34:40
 
 package groove.control.parse;
 import groove.control.*;
@@ -13,65 +13,86 @@ import java.util.ArrayList;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class CtrlLexer extends Lexer {
     public static final int EOF=-1;
-    public static final int ACTIONS=4;
-    public static final int ALAP=5;
-    public static final int AMP=6;
-    public static final int ANY=7;
-    public static final int ARG=8;
-    public static final int ARGS=9;
-    public static final int ASTERISK=10;
-    public static final int BAR=11;
-    public static final int BLOCK=12;
-    public static final int BOOL=13;
-    public static final int BSLASH=14;
-    public static final int CALL=15;
-    public static final int CHOICE=16;
-    public static final int COMMA=17;
-    public static final int DO=18;
-    public static final int DONT_CARE=19;
-    public static final int DOT=20;
-    public static final int DO_UNTIL=21;
-    public static final int DO_WHILE=22;
-    public static final int ELSE=23;
-    public static final int EscapeSequence=24;
-    public static final int FALSE=25;
-    public static final int FUNCTION=26;
-    public static final int FUNCTIONS=27;
-    public static final int ID=28;
-    public static final int IF=29;
-    public static final int INT=30;
-    public static final int INT_LIT=31;
-    public static final int IntegerNumber=32;
-    public static final int LCURLY=33;
-    public static final int LPAR=34;
-    public static final int MINUS=35;
-    public static final int ML_COMMENT=36;
-    public static final int NODE=37;
-    public static final int NOT=38;
-    public static final int NonIntegerNumber=39;
-    public static final int OR=40;
-    public static final int OTHER=41;
-    public static final int OUT=42;
-    public static final int PLUS=43;
+    public static final int ALAP=4;
+    public static final int AMP=5;
+    public static final int ANY=6;
+    public static final int ARG=7;
+    public static final int ARGS=8;
+    public static final int ASTERISK=9;
+    public static final int BAR=10;
+    public static final int BLOCK=11;
+    public static final int BOOL=12;
+    public static final int BSLASH=13;
+    public static final int CALL=14;
+    public static final int CHOICE=15;
+    public static final int COMMA=16;
+    public static final int DO=17;
+    public static final int DONT_CARE=18;
+    public static final int DOT=19;
+    public static final int DO_UNTIL=20;
+    public static final int DO_WHILE=21;
+    public static final int ELSE=22;
+    public static final int EscapeSequence=23;
+    public static final int FALSE=24;
+    public static final int FUNCTION=25;
+    public static final int FUNCTIONS=26;
+    public static final int ID=27;
+    public static final int IF=28;
+    public static final int INT=29;
+    public static final int INT_LIT=30;
+    public static final int IntegerNumber=31;
+    public static final int LCURLY=32;
+    public static final int LPAR=33;
+    public static final int MINUS=34;
+    public static final int ML_COMMENT=35;
+    public static final int NODE=36;
+    public static final int NOT=37;
+    public static final int NonIntegerNumber=38;
+    public static final int OR=39;
+    public static final int OTHER=40;
+    public static final int OUT=41;
+    public static final int PLUS=42;
+    public static final int PRIORITY=43;
     public static final int PROGRAM=44;
     public static final int QUOTE=45;
     public static final int RCURLY=46;
     public static final int REAL=47;
     public static final int REAL_LIT=48;
-    public static final int RPAR=49;
-    public static final int RULE=50;
-    public static final int SEMI=51;
-    public static final int SHARP=52;
-    public static final int SL_COMMENT=53;
-    public static final int STAR=54;
-    public static final int STRING=55;
-    public static final int STRING_LIT=56;
-    public static final int TRUE=57;
-    public static final int TRY=58;
-    public static final int UNTIL=59;
-    public static final int VAR=60;
-    public static final int WHILE=61;
-    public static final int WS=62;
+    public static final int RECIPE=49;
+    public static final int RECIPES=50;
+    public static final int RPAR=51;
+    public static final int SEMI=52;
+    public static final int SHARP=53;
+    public static final int SL_COMMENT=54;
+    public static final int STAR=55;
+    public static final int STRING=56;
+    public static final int STRING_LIT=57;
+    public static final int TRUE=58;
+    public static final int TRY=59;
+    public static final int UNTIL=60;
+    public static final int VAR=61;
+    public static final int WHILE=62;
+    public static final int WS=63;
+
+        /** Last token read when start position is recorded. */
+        private String lastToken;
+        /** Start position of a recorded substring of the input. */
+        private int recordPos;
+        
+        /** Starts recording the input string. */
+        public void startRecord() {
+            lastToken = this.state.token.getText();
+            recordPos = getCharIndex();
+        }
+        
+        public String getRecord() {
+            org.antlr.runtime.Token currentToken = this.state.token;
+            int currentTokenLength =
+                currentToken == null ? 0 : currentToken.getText().length();
+            return (this.lastToken + getCharStream().substring(this.recordPos,
+                getCharIndex() - 1 - currentTokenLength)).trim();
+        }
+
 
     // delegates
     // delegators
@@ -93,8 +114,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ALAP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:317:10: ( 'alap' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:317:12: 'alap'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:339:10: ( 'alap' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:339:12: 'alap'
             {
             match("alap"); 
 
@@ -116,8 +137,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ANY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:318:9: ( 'any' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:318:11: 'any'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:340:9: ( 'any' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:340:11: 'any'
             {
             match("any"); 
 
@@ -139,8 +160,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = BOOL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:319:10: ( 'bool' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:319:12: 'bool'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:341:10: ( 'bool' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:341:12: 'bool'
             {
             match("bool"); 
 
@@ -162,8 +183,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = CHOICE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:320:10: ( 'choice' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:320:12: 'choice'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:10: ( 'choice' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:342:12: 'choice'
             {
             match("choice"); 
 
@@ -185,8 +206,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = DO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:321:10: ( 'do' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:321:12: 'do'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:10: ( 'do' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:343:12: 'do'
             {
             match("do"); 
 
@@ -208,8 +229,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ELSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:322:10: ( 'else' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:322:12: 'else'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:344:10: ( 'else' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:344:12: 'else'
             {
             match("else"); 
 
@@ -231,8 +252,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = FALSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:323:10: ( 'false' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:323:12: 'false'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:345:10: ( 'false' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:345:12: 'false'
             {
             match("false"); 
 
@@ -254,8 +275,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = FUNCTION;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:10: ( 'function' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:324:12: 'function'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:346:10: ( 'function' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:346:12: 'function'
             {
             match("function"); 
 
@@ -277,8 +298,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = IF;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:325:10: ( 'if' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:325:12: 'if'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:10: ( 'if' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:12: 'if'
             {
             match("if"); 
 
@@ -300,8 +321,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:326:10: ( 'int' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:326:12: 'int'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:348:10: ( 'int' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:348:12: 'int'
             {
             match("int"); 
 
@@ -323,8 +344,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = NODE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:327:10: ( 'node' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:327:12: 'node'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:349:10: ( 'node' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:349:12: 'node'
             {
             match("node"); 
 
@@ -346,8 +367,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:328:10: ( 'or' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:328:12: 'or'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:350:10: ( 'or' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:350:12: 'or'
             {
             match("or"); 
 
@@ -369,8 +390,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:329:10: ( 'other' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:329:12: 'other'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:351:10: ( 'other' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:351:12: 'other'
             {
             match("other"); 
 
@@ -392,8 +413,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = OUT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:330:10: ( 'out' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:330:12: 'out'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:352:10: ( 'out' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:352:12: 'out'
             {
             match("out"); 
 
@@ -415,8 +436,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = REAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:331:10: ( 'real' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:331:12: 'real'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:353:10: ( 'real' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:353:12: 'real'
             {
             match("real"); 
 
@@ -433,15 +454,15 @@ public class CtrlLexer extends Lexer {
     }
     // $ANTLR end "REAL"
 
-    // $ANTLR start "RULE"
-    public final void mRULE() throws RecognitionException {
+    // $ANTLR start "PRIORITY"
+    public final void mPRIORITY() throws RecognitionException {
         try {
-            int _type = RULE;
+            int _type = PRIORITY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:332:10: ( 'rule' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:332:12: 'rule'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:354:10: ( 'priority' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:354:12: 'priority'
             {
-            match("rule"); 
+            match("priority"); 
 
 
 
@@ -454,15 +475,38 @@ public class CtrlLexer extends Lexer {
         	// do for sure before leaving
         }
     }
-    // $ANTLR end "RULE"
+    // $ANTLR end "PRIORITY"
+
+    // $ANTLR start "RECIPE"
+    public final void mRECIPE() throws RecognitionException {
+        try {
+            int _type = RECIPE;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:355:10: ( 'recipe' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:355:12: 'recipe'
+            {
+            match("recipe"); 
+
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        	// do for sure before leaving
+        }
+    }
+    // $ANTLR end "RECIPE"
 
     // $ANTLR start "STAR"
     public final void mSTAR() throws RecognitionException {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:333:10: ( 'star' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:333:12: 'star'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:10: ( 'star' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:356:12: 'star'
             {
             match("star"); 
 
@@ -484,8 +528,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:334:10: ( 'string' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:334:12: 'string'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:10: ( 'string' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:12: 'string'
             {
             match("string"); 
 
@@ -507,8 +551,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = TRY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:335:10: ( 'try' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:335:12: 'try'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:10: ( 'try' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:12: 'try'
             {
             match("try"); 
 
@@ -530,8 +574,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = TRUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:336:10: ( 'true' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:336:12: 'true'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:359:10: ( 'true' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:359:12: 'true'
             {
             match("true"); 
 
@@ -553,8 +597,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = UNTIL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:337:10: ( 'until' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:337:12: 'until'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:360:10: ( 'until' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:360:12: 'until'
             {
             match("until"); 
 
@@ -576,8 +620,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = WHILE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:338:10: ( 'while' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:338:12: 'while'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:361:10: ( 'while' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:361:12: 'while'
             {
             match("while"); 
 
@@ -599,8 +643,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = INT_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:341:3: ( IntegerNumber )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:341:5: IntegerNumber
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:364:3: ( IntegerNumber )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:364:5: IntegerNumber
             {
             mIntegerNumber(); 
 
@@ -619,7 +663,7 @@ public class CtrlLexer extends Lexer {
     // $ANTLR start "IntegerNumber"
     public final void mIntegerNumber() throws RecognitionException {
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:370:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -638,18 +682,18 @@ public class CtrlLexer extends Lexer {
             }
             switch (alt2) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:347:5: '0'
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:370:5: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:348:5: '1' .. '9' ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:371:5: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:348:14: ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:371:14: ( '0' .. '9' )*
                     loop1:
                     do {
                         int alt1=2;
@@ -700,8 +744,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = REAL_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:351:3: ( NonIntegerNumber )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:351:5: NonIntegerNumber
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:374:3: ( NonIntegerNumber )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:374:5: NonIntegerNumber
             {
             mNonIntegerNumber(); 
 
@@ -720,7 +764,7 @@ public class CtrlLexer extends Lexer {
     // $ANTLR start "NonIntegerNumber"
     public final void mNonIntegerNumber() throws RecognitionException {
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -739,9 +783,9 @@ public class CtrlLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
                     {
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:9: ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:9: ( '0' .. '9' )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -782,7 +826,7 @@ public class CtrlLexer extends Lexer {
 
                     match('.'); 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:357:27: ( '0' .. '9' )*
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:27: ( '0' .. '9' )*
                     loop4:
                     do {
                         int alt4=2;
@@ -819,11 +863,11 @@ public class CtrlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:9: '.' ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:9: '.' ( '0' .. '9' )+
                     {
                     match('.'); 
 
-                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:358:13: ( '0' .. '9' )+
+                    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:13: ( '0' .. '9' )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -879,13 +923,13 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:362:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:362:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:385:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:385:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
             {
             mQUOTE(); 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:363:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:386:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
             loop7:
             do {
                 int alt7=3;
@@ -901,7 +945,7 @@ public class CtrlLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:363:7: EscapeSequence
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:386:7: EscapeSequence
             	    {
             	    mEscapeSequence(); 
 
@@ -909,7 +953,7 @@ public class CtrlLexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:364:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:387:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '[')||(input.LA(1) >= ']' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -947,14 +991,14 @@ public class CtrlLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:372:3: ( BSLASH ( QUOTE BSLASH ) )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:372:5: BSLASH ( QUOTE BSLASH )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:395:3: ( BSLASH ( QUOTE BSLASH ) )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:395:5: BSLASH ( QUOTE BSLASH )
             {
             mBSLASH(); 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:373:5: ( QUOTE BSLASH )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:373:7: QUOTE BSLASH
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:396:5: ( QUOTE BSLASH )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:396:7: QUOTE BSLASH
             {
             mQUOTE(); 
 
@@ -980,8 +1024,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:377:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:377:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
             {
             if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
                 input.consume();
@@ -993,7 +1037,7 @@ public class CtrlLexer extends Lexer {
             }
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:377:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
             loop8:
             do {
                 int alt8=2;
@@ -1043,8 +1087,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:379:11: ( '&' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:379:13: '&'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:402:11: ( '&' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:402:13: '&'
             {
             match('&'); 
 
@@ -1064,8 +1108,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:11: ( '.' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:380:13: '.'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:403:11: ( '.' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:403:13: '.'
             {
             match('.'); 
 
@@ -1085,8 +1129,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:11: ( '!' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:381:13: '!'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:404:11: ( '!' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:404:13: '!'
             {
             match('!'); 
 
@@ -1106,8 +1150,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:382:11: ( '|' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:382:13: '|'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:405:11: ( '|' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:405:13: '|'
             {
             match('|'); 
 
@@ -1127,8 +1171,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:11: ( '#' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:383:13: '#'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:406:11: ( '#' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:406:13: '#'
             {
             match('#'); 
 
@@ -1148,8 +1192,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:384:11: ( '+' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:384:13: '+'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:407:11: ( '+' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:407:13: '+'
             {
             match('+'); 
 
@@ -1169,8 +1213,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ASTERISK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:385:11: ( '*' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:385:13: '*'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:408:11: ( '*' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:408:13: '*'
             {
             match('*'); 
 
@@ -1190,8 +1234,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:386:11: ( '_' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:386:13: '_'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:409:11: ( '_' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:409:13: '_'
             {
             match('_'); 
 
@@ -1211,8 +1255,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:387:11: ( '-' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:387:13: '-'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:410:11: ( '-' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:410:13: '-'
             {
             match('-'); 
 
@@ -1232,8 +1276,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:388:11: ( '\"' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:388:13: '\"'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:411:11: ( '\"' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:411:13: '\"'
             {
             match('\"'); 
 
@@ -1253,8 +1297,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:389:11: ( '\\\\' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:389:13: '\\\\'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:412:11: ( '\\\\' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:412:13: '\\\\'
             {
             match('\\'); 
 
@@ -1274,8 +1318,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:390:11: ( ',' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:390:13: ','
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:11: ( ',' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:413:13: ','
             {
             match(','); 
 
@@ -1295,8 +1339,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:391:11: ( ';' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:391:13: ';'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:414:11: ( ';' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:414:13: ';'
             {
             match(';'); 
 
@@ -1316,8 +1360,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:392:11: ( '(' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:392:13: '('
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:415:11: ( '(' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:415:13: '('
             {
             match('('); 
 
@@ -1337,8 +1381,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:393:11: ( ')' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:393:13: ')'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:416:11: ( ')' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:416:13: ')'
             {
             match(')'); 
 
@@ -1358,8 +1402,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = LCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:394:11: ( '{' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:394:13: '{'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:417:11: ( '{' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:417:13: '{'
             {
             match('{'); 
 
@@ -1379,8 +1423,8 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = RCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:395:11: ( '}' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:395:13: '}'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:418:11: ( '}' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:418:13: '}'
             {
             match('}'); 
 
@@ -1400,14 +1444,14 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:397:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:397:14: '/*' ( options {greedy=false; } : . )* '*/'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:420:12: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:420:14: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:397:19: ( options {greedy=false; } : . )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:420:19: ( options {greedy=false; } : . )*
             loop9:
             do {
                 int alt9=2;
@@ -1432,7 +1476,7 @@ public class CtrlLexer extends Lexer {
 
                 switch (alt9) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:397:47: .
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:420:47: .
             	    {
             	    matchAny(); 
 
@@ -1467,14 +1511,14 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:14: '//' ( options {greedy=false; } : . )* '\\n'
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:421:12: ( '//' ( options {greedy=false; } : . )* '\\n' )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:421:14: '//' ( options {greedy=false; } : . )* '\\n'
             {
             match("//"); 
 
 
 
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:19: ( options {greedy=false; } : . )*
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:421:19: ( options {greedy=false; } : . )*
             loop10:
             do {
                 int alt10=2;
@@ -1490,7 +1534,7 @@ public class CtrlLexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:398:47: .
+            	    // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:421:47: .
             	    {
             	    matchAny(); 
 
@@ -1523,10 +1567,10 @@ public class CtrlLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:423:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:423:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:400:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:423:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -1579,8 +1623,8 @@ public class CtrlLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:8: ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | RULE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
-        int alt12=46;
+        // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:8: ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS )
+        int alt12=47;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
@@ -1704,247 +1748,255 @@ public class CtrlLexer extends Lexer {
                 }
                 break;
             case 16 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:84: RULE
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:84: PRIORITY
                 {
-                mRULE(); 
+                mPRIORITY(); 
 
 
                 }
                 break;
             case 17 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:89: STAR
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:93: RECIPE
+                {
+                mRECIPE(); 
+
+
+                }
+                break;
+            case 18 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:100: STAR
                 {
                 mSTAR(); 
 
 
                 }
                 break;
-            case 18 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:94: STRING
+            case 19 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:105: STRING
                 {
                 mSTRING(); 
 
 
                 }
                 break;
-            case 19 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:101: TRY
+            case 20 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:112: TRY
                 {
                 mTRY(); 
 
 
                 }
                 break;
-            case 20 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:105: TRUE
+            case 21 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:116: TRUE
                 {
                 mTRUE(); 
 
 
                 }
                 break;
-            case 21 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:110: UNTIL
+            case 22 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:121: UNTIL
                 {
                 mUNTIL(); 
 
 
                 }
                 break;
-            case 22 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:116: WHILE
+            case 23 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:127: WHILE
                 {
                 mWHILE(); 
 
 
                 }
                 break;
-            case 23 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:122: INT_LIT
+            case 24 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:133: INT_LIT
                 {
                 mINT_LIT(); 
 
 
                 }
                 break;
-            case 24 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:130: REAL_LIT
+            case 25 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:141: REAL_LIT
                 {
                 mREAL_LIT(); 
 
 
                 }
                 break;
-            case 25 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:139: STRING_LIT
+            case 26 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:150: STRING_LIT
                 {
                 mSTRING_LIT(); 
 
 
                 }
                 break;
-            case 26 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:150: ID
+            case 27 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:161: ID
                 {
                 mID(); 
 
 
                 }
                 break;
-            case 27 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:153: AMP
+            case 28 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:164: AMP
                 {
                 mAMP(); 
 
 
                 }
                 break;
-            case 28 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:157: DOT
+            case 29 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:168: DOT
                 {
                 mDOT(); 
 
 
                 }
                 break;
-            case 29 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:161: NOT
+            case 30 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:172: NOT
                 {
                 mNOT(); 
 
 
                 }
                 break;
-            case 30 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:165: BAR
+            case 31 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:176: BAR
                 {
                 mBAR(); 
 
 
                 }
                 break;
-            case 31 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:169: SHARP
+            case 32 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:180: SHARP
                 {
                 mSHARP(); 
 
 
                 }
                 break;
-            case 32 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:175: PLUS
+            case 33 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:186: PLUS
                 {
                 mPLUS(); 
 
 
                 }
                 break;
-            case 33 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:180: ASTERISK
+            case 34 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:191: ASTERISK
                 {
                 mASTERISK(); 
 
 
                 }
                 break;
-            case 34 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:189: DONT_CARE
+            case 35 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:200: DONT_CARE
                 {
                 mDONT_CARE(); 
 
 
                 }
                 break;
-            case 35 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:199: MINUS
+            case 36 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:210: MINUS
                 {
                 mMINUS(); 
 
 
                 }
                 break;
-            case 36 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:205: QUOTE
+            case 37 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:216: QUOTE
                 {
                 mQUOTE(); 
 
 
                 }
                 break;
-            case 37 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:211: BSLASH
+            case 38 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:222: BSLASH
                 {
                 mBSLASH(); 
 
 
                 }
                 break;
-            case 38 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:218: COMMA
+            case 39 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:229: COMMA
                 {
                 mCOMMA(); 
 
 
                 }
                 break;
-            case 39 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:224: SEMI
+            case 40 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:235: SEMI
                 {
                 mSEMI(); 
 
 
                 }
                 break;
-            case 40 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:229: LPAR
+            case 41 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:240: LPAR
                 {
                 mLPAR(); 
 
 
                 }
                 break;
-            case 41 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:234: RPAR
+            case 42 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:245: RPAR
                 {
                 mRPAR(); 
 
 
                 }
                 break;
-            case 42 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:239: LCURLY
+            case 43 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:250: LCURLY
                 {
                 mLCURLY(); 
 
 
                 }
                 break;
-            case 43 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:246: RCURLY
+            case 44 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:257: RCURLY
                 {
                 mRCURLY(); 
 
 
                 }
                 break;
-            case 44 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:253: ML_COMMENT
+            case 45 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:264: ML_COMMENT
                 {
                 mML_COMMENT(); 
 
 
                 }
                 break;
-            case 45 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:264: SL_COMMENT
+            case 46 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:275: SL_COMMENT
                 {
                 mSL_COMMENT(); 
 
 
                 }
                 break;
-            case 46 :
-                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:275: WS
+            case 47 :
+                // E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g:1:286: WS
                 {
                 mWS(); 
 
@@ -1959,71 +2011,76 @@ public class CtrlLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\16\23\2\71\1\74\1\75\22\uffff\4\23\1\105\3\23\1\111\2\23"+
-        "\1\114\10\23\2\uffff\1\71\5\uffff\1\23\1\130\2\23\1\uffff\3\23\1"+
-        "\uffff\1\136\1\23\1\uffff\1\23\1\141\4\23\1\146\3\23\1\152\1\uffff"+
-        "\1\153\1\23\1\155\2\23\1\uffff\1\160\1\23\1\uffff\1\162\1\163\1"+
-        "\164\1\23\1\uffff\1\166\2\23\2\uffff\1\23\1\uffff\1\172\1\23\1\uffff"+
-        "\1\174\3\uffff\1\23\1\uffff\1\176\1\177\1\u0080\1\uffff\1\23\1\uffff"+
-        "\1\u0082\3\uffff\1\23\1\uffff\1\u0084\1\uffff";
+        "\1\uffff\17\24\2\72\1\75\1\76\22\uffff\4\24\1\106\3\24\1\112\2\24"+
+        "\1\115\10\24\2\uffff\1\72\5\uffff\1\24\1\132\2\24\1\uffff\3\24\1"+
+        "\uffff\1\140\1\24\1\uffff\1\24\1\143\5\24\1\151\3\24\1\155\1\uffff"+
+        "\1\156\1\24\1\160\2\24\1\uffff\1\163\1\24\1\uffff\1\165\2\24\1\170"+
+        "\1\24\1\uffff\1\172\2\24\2\uffff\1\24\1\uffff\1\176\1\24\1\uffff"+
+        "\1\u0080\1\uffff\2\24\1\uffff\1\24\1\uffff\1\u0084\1\u0085\1\u0086"+
+        "\1\uffff\1\24\1\uffff\1\u0088\1\24\1\u008a\3\uffff\1\24\1\uffff"+
+        "\1\24\1\uffff\1\u008d\1\u008e\2\uffff";
     static final String DFA12_eofS =
-        "\u0085\uffff";
+        "\u008f\uffff";
     static final String DFA12_minS =
         "\1\11\1\154\1\157\1\150\1\157\1\154\1\141\1\146\1\157\1\162\1\145"+
-        "\1\164\1\162\1\156\1\150\2\56\1\60\1\0\20\uffff\1\52\1\uffff\1\141"+
-        "\1\171\2\157\1\55\1\163\1\154\1\156\1\55\1\164\1\144\1\55\1\150"+
-        "\1\164\1\141\1\154\1\141\1\165\1\164\1\151\2\uffff\1\56\5\uffff"+
-        "\1\160\1\55\1\154\1\151\1\uffff\1\145\1\163\1\143\1\uffff\1\55\1"+
-        "\145\1\uffff\1\145\1\55\1\154\1\145\1\162\1\151\1\55\1\145\1\151"+
-        "\1\154\1\55\1\uffff\1\55\1\143\1\55\1\145\1\164\1\uffff\1\55\1\162"+
-        "\1\uffff\3\55\1\156\1\uffff\1\55\1\154\1\145\2\uffff\1\145\1\uffff"+
-        "\1\55\1\151\1\uffff\1\55\3\uffff\1\147\1\uffff\3\55\1\uffff\1\157"+
-        "\1\uffff\1\55\3\uffff\1\156\1\uffff\1\55\1\uffff";
+        "\1\162\1\164\1\162\1\156\1\150\2\56\1\60\1\0\20\uffff\1\52\1\uffff"+
+        "\1\141\1\171\2\157\1\55\1\163\1\154\1\156\1\55\1\164\1\144\1\55"+
+        "\1\150\1\164\1\141\1\151\1\141\1\165\1\164\1\151\2\uffff\1\56\5"+
+        "\uffff\1\160\1\55\1\154\1\151\1\uffff\1\145\1\163\1\143\1\uffff"+
+        "\1\55\1\145\1\uffff\1\145\1\55\1\154\1\151\1\157\1\162\1\151\1\55"+
+        "\1\145\1\151\1\154\1\55\1\uffff\1\55\1\143\1\55\1\145\1\164\1\uffff"+
+        "\1\55\1\162\1\uffff\1\55\1\160\1\162\1\55\1\156\1\uffff\1\55\1\154"+
+        "\1\145\2\uffff\1\145\1\uffff\1\55\1\151\1\uffff\1\55\1\uffff\1\145"+
+        "\1\151\1\uffff\1\147\1\uffff\3\55\1\uffff\1\157\1\uffff\1\55\1\164"+
+        "\1\55\3\uffff\1\156\1\uffff\1\171\1\uffff\2\55\2\uffff";
     static final String DFA12_maxS =
-        "\1\175\1\156\1\157\1\150\1\157\1\154\1\165\1\156\1\157\2\165\1\164"+
-        "\1\162\1\156\1\150\3\71\1\uffff\20\uffff\1\57\1\uffff\1\141\1\171"+
-        "\2\157\1\172\1\163\1\154\1\156\1\172\1\164\1\144\1\172\1\150\1\164"+
-        "\1\141\1\154\1\162\1\171\1\164\1\151\2\uffff\1\71\5\uffff\1\160"+
-        "\1\172\1\154\1\151\1\uffff\1\145\1\163\1\143\1\uffff\1\172\1\145"+
-        "\1\uffff\1\145\1\172\1\154\1\145\1\162\1\151\1\172\1\145\1\151\1"+
-        "\154\1\172\1\uffff\1\172\1\143\1\172\1\145\1\164\1\uffff\1\172\1"+
-        "\162\1\uffff\3\172\1\156\1\uffff\1\172\1\154\1\145\2\uffff\1\145"+
-        "\1\uffff\1\172\1\151\1\uffff\1\172\3\uffff\1\147\1\uffff\3\172\1"+
-        "\uffff\1\157\1\uffff\1\172\3\uffff\1\156\1\uffff\1\172\1\uffff";
+        "\1\175\1\156\1\157\1\150\1\157\1\154\1\165\1\156\1\157\1\165\1\145"+
+        "\1\162\1\164\1\162\1\156\1\150\3\71\1\uffff\20\uffff\1\57\1\uffff"+
+        "\1\141\1\171\2\157\1\172\1\163\1\154\1\156\1\172\1\164\1\144\1\172"+
+        "\1\150\1\164\1\143\1\151\1\162\1\171\1\164\1\151\2\uffff\1\71\5"+
+        "\uffff\1\160\1\172\1\154\1\151\1\uffff\1\145\1\163\1\143\1\uffff"+
+        "\1\172\1\145\1\uffff\1\145\1\172\1\154\1\151\1\157\1\162\1\151\1"+
+        "\172\1\145\1\151\1\154\1\172\1\uffff\1\172\1\143\1\172\1\145\1\164"+
+        "\1\uffff\1\172\1\162\1\uffff\1\172\1\160\1\162\1\172\1\156\1\uffff"+
+        "\1\172\1\154\1\145\2\uffff\1\145\1\uffff\1\172\1\151\1\uffff\1\172"+
+        "\1\uffff\1\145\1\151\1\uffff\1\147\1\uffff\3\172\1\uffff\1\157\1"+
+        "\uffff\1\172\1\164\1\172\3\uffff\1\156\1\uffff\1\171\1\uffff\2\172"+
+        "\2\uffff";
     static final String DFA12_acceptS =
-        "\23\uffff\1\32\1\33\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\45\1\46"+
-        "\1\47\1\50\1\51\1\52\1\53\1\uffff\1\56\24\uffff\1\27\1\30\1\uffff"+
-        "\1\34\1\44\1\31\1\54\1\55\4\uffff\1\5\3\uffff\1\11\2\uffff\1\14"+
-        "\13\uffff\1\2\5\uffff\1\12\2\uffff\1\16\4\uffff\1\23\3\uffff\1\1"+
-        "\1\3\1\uffff\1\6\2\uffff\1\13\1\uffff\1\17\1\20\1\21\1\uffff\1\24"+
-        "\3\uffff\1\7\1\uffff\1\15\1\uffff\1\25\1\26\1\4\1\uffff\1\22\1\uffff"+
-        "\1\10";
+        "\24\uffff\1\33\1\34\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\46\1\47"+
+        "\1\50\1\51\1\52\1\53\1\54\1\uffff\1\57\24\uffff\1\30\1\31\1\uffff"+
+        "\1\35\1\45\1\32\1\55\1\56\4\uffff\1\5\3\uffff\1\11\2\uffff\1\14"+
+        "\14\uffff\1\2\5\uffff\1\12\2\uffff\1\16\5\uffff\1\24\3\uffff\1\1"+
+        "\1\3\1\uffff\1\6\2\uffff\1\13\1\uffff\1\17\2\uffff\1\22\1\uffff"+
+        "\1\25\3\uffff\1\7\1\uffff\1\15\3\uffff\1\26\1\27\1\4\1\uffff\1\21"+
+        "\1\uffff\1\23\2\uffff\1\10\1\20";
     static final String DFA12_specialS =
-        "\22\uffff\1\0\162\uffff}>";
+        "\23\uffff\1\0\173\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\2\44\2\uffff\1\44\22\uffff\1\44\1\25\1\22\1\27\2\uffff\1\24"+
-            "\1\uffff\1\37\1\40\1\31\1\30\1\35\1\33\1\21\1\43\1\17\11\20"+
-            "\1\uffff\1\36\5\uffff\32\23\1\uffff\1\34\2\uffff\1\32\1\uffff"+
-            "\1\1\1\2\1\3\1\4\1\5\1\6\2\23\1\7\4\23\1\10\1\11\2\23\1\12\1"+
-            "\13\1\14\1\15\1\23\1\16\3\23\1\41\1\26\1\42",
-            "\1\45\1\uffff\1\46",
-            "\1\47",
+            "\2\45\2\uffff\1\45\22\uffff\1\45\1\26\1\23\1\30\2\uffff\1\25"+
+            "\1\uffff\1\40\1\41\1\32\1\31\1\36\1\34\1\22\1\44\1\20\11\21"+
+            "\1\uffff\1\37\5\uffff\32\24\1\uffff\1\35\2\uffff\1\33\1\uffff"+
+            "\1\1\1\2\1\3\1\4\1\5\1\6\2\24\1\7\4\24\1\10\1\11\1\13\1\24\1"+
+            "\12\1\14\1\15\1\16\1\24\1\17\3\24\1\42\1\27\1\43",
+            "\1\46\1\uffff\1\47",
             "\1\50",
             "\1\51",
             "\1\52",
-            "\1\53\23\uffff\1\54",
-            "\1\55\7\uffff\1\56",
-            "\1\57",
-            "\1\60\1\uffff\1\61\1\62",
-            "\1\63\17\uffff\1\64",
+            "\1\53",
+            "\1\54\23\uffff\1\55",
+            "\1\56\7\uffff\1\57",
+            "\1\60",
+            "\1\61\1\uffff\1\62\1\63",
+            "\1\64",
             "\1\65",
             "\1\66",
             "\1\67",
             "\1\70",
-            "\1\72\1\uffff\12\72",
-            "\1\72\1\uffff\12\73",
-            "\12\72",
-            "\12\76\1\uffff\2\76\1\uffff\ufff2\76",
+            "\1\71",
+            "\1\73\1\uffff\12\73",
+            "\1\73\1\uffff\12\74",
+            "\12\73",
+            "\12\77\1\uffff\2\77\1\uffff\ufff2\77",
             "",
             "",
             "",
@@ -2040,103 +2097,112 @@ public class CtrlLexer extends Lexer {
             "",
             "",
             "",
-            "\1\77\4\uffff\1\100",
+            "\1\100\4\uffff\1\101",
             "",
-            "\1\101",
             "\1\102",
             "\1\103",
             "\1\104",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\106",
+            "\1\105",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\107",
             "\1\110",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\112",
+            "\1\111",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\113",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\115",
+            "\1\114",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\116",
             "\1\117",
-            "\1\120",
-            "\1\121\20\uffff\1\122",
-            "\1\124\3\uffff\1\123",
-            "\1\125",
-            "\1\126",
-            "",
-            "",
-            "\1\72\1\uffff\12\73",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "\1\120\1\uffff\1\121",
+            "\1\122",
+            "\1\123\20\uffff\1\124",
+            "\1\126\3\uffff\1\125",
             "\1\127",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\131",
-            "\1\132",
+            "\1\130",
             "",
+            "",
+            "\1\73\1\uffff\12\74",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\131",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\133",
             "\1\134",
-            "\1\135",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\135",
+            "\1\136",
             "\1\137",
             "",
-            "\1\140",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\141",
+            "",
             "\1\142",
-            "\1\143",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\144",
             "\1\145",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\146",
             "\1\147",
             "\1\150",
-            "\1\151",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\152",
+            "\1\153",
             "\1\154",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\156",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\157",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\161",
+            "\1\162",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\165",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\164",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\166",
             "\1\167",
-            "\1\170",
-            "",
-            "",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\171",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "\1\173",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "",
+            "\1\174",
             "",
             "",
             "\1\175",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\177",
+            "",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
             "",
             "\1\u0081",
-            "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
-            "",
-            "",
+            "\1\u0082",
             "",
             "\1\u0083",
             "",
-            "\1\23\2\uffff\12\23\7\uffff\32\23\4\uffff\1\23\1\uffff\32\23",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "",
+            "\1\u0087",
+            "",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\u0089",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "",
+            "",
+            "",
+            "\1\u008b",
+            "",
+            "\1\u008c",
+            "",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "\1\24\2\uffff\12\24\7\uffff\32\24\4\uffff\1\24\1\uffff\32\24",
+            "",
             ""
     };
 
@@ -2170,19 +2236,19 @@ public class CtrlLexer extends Lexer {
             this.transition = DFA12_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | RULE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
+            return "1:1: Tokens : ( ALAP | ANY | BOOL | CHOICE | DO | ELSE | FALSE | FUNCTION | IF | INT | NODE | OR | OTHER | OUT | REAL | PRIORITY | RECIPE | STAR | STRING | TRY | TRUE | UNTIL | WHILE | INT_LIT | REAL_LIT | STRING_LIT | ID | AMP | DOT | NOT | BAR | SHARP | PLUS | ASTERISK | DONT_CARE | MINUS | QUOTE | BSLASH | COMMA | SEMI | LPAR | RPAR | LCURLY | RCURLY | ML_COMMENT | SL_COMMENT | WS );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA12_18 = input.LA(1);
+                        int LA12_19 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA12_18 >= '\u0000' && LA12_18 <= '\t')||(LA12_18 >= '\u000B' && LA12_18 <= '\f')||(LA12_18 >= '\u000E' && LA12_18 <= '\uFFFF')) ) {s = 62;}
+                        if ( ((LA12_19 >= '\u0000' && LA12_19 <= '\t')||(LA12_19 >= '\u000B' && LA12_19 <= '\f')||(LA12_19 >= '\u000E' && LA12_19 <= '\uFFFF')) ) {s = 63;}
 
-                        else s = 61;
+                        else s = 62;
 
                         if ( s>=0 ) return s;
                         break;

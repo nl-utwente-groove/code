@@ -16,33 +16,34 @@
  */
 package groove.lts;
 
+import groove.lts.GraphState.Flag;
+
 /**
- * An extended graph listener, which is also notified of explore actions on an
- * LTS.
+ * A listener to certain types of GTS updates.
  * @author Arend Rensink
  * @version $Revision$
  */
 public interface GTSListener {
     /**
-     * Signals that a node has been added to a given graph.
-     * @param gts the graph that has been updated
-     * @param state the node that has been added
-     * @require <tt>graph.containsElement(elem)</tt>
+     * Signals that a state has been added to a given GTS.
+     * @param gts the GTS that has been updated
+     * @param state the state that has been added
      */
     void addUpdate(GTS gts, GraphState state);
 
     /**
-     * Signals that an edge has been added to a given graph.
-     * @param gts the graph that has been updated
-     * @param transition the edge that has been added
-     * @require <tt>graph.containsElement(elem)</tt>
+     * Signals that a transition has been added to a given GTS.
+     * @param gts the GTS that has been updated
+     * @param transition the transition that has been added
      */
     void addUpdate(GTS gts, GraphTransition transition);
 
     /**
-     * Update method called when a state of the LTS is set to closed, in the
-     * course of LTS exploration.
-     * @see GTS#isOpen(GraphState)
+     * Signals that a status flag in a graph
+     * state has changed.
+     * @param gts the GTS in which the change occurred
+     * @param state the graph state whose status has changed
+     * @param flag the status flag that has changed
      */
-    public void closeUpdate(GTS graph, GraphState explored);
+    public void statusUpdate(GTS gts, GraphState state, Flag flag);
 }
