@@ -2236,9 +2236,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 AspectNode node, Integer nr) throws FormatException {
             AspectKind nodeKind = node.getKind();
             AspectKind paramKind = node.getParamKind();
-            boolean hasControl =
-                getSystemProperties() != null
-                    && getSystemProperties().getControlName() != null;
             CtrlType varType;
             AspectKind attrKind = node.getAttrKind();
             if (attrKind.hasSignature()) {
@@ -2249,11 +2246,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             CtrlVar var = new CtrlVar("arg" + nr, varType);
             boolean inOnly = paramKind == PARAM_IN;
             boolean outOnly = paramKind == PARAM_OUT;
-            if (inOnly && !hasControl) {
-                throw new FormatException(
-                    "Parameter '%d' is a required input, but control is not enabled",
-                    nr, node);
-            }
             RuleNode nodeImage = RuleModel.this.modelMap.getNode(node);
             assert nodeImage != null;
             boolean creator;

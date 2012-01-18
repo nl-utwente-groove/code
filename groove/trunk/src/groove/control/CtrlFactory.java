@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.parse.Namespace;
+import groove.graph.GraphInfo;
 import groove.trans.Action;
 import groove.trans.Recipe;
 import groove.trans.Rule;
@@ -389,13 +390,28 @@ public class CtrlFactory {
     }
 
     /** Builds the default control automaton for a set of actions. */
-    public CtrlAut buildDefault(Collection<? extends Action> actions) {
+    public CtrlAut buildDefault(Collection<? extends Action> actions)
+        throws FormatException {
         CtrlAut result = new CtrlAut("control");
+        Set<FormatError> errors = new HashSet<FormatError>();
         Map<Integer,Set<Action>> priorityMap =
             new HashMap<Integer,Set<Action>>();
         Namespace namespace = new Namespace();
         // first add the names and signatures to the namespace
         for (Action action : actions) {
+            boolean needsInput = false;
+            for (CtrlPar.Var var : action.getSignature()) {
+                if (var.isInOnly()) {
+                    needsInput = true;
+                    break;
+                }
+            }
+            if (needsInput) {
+                errors.add(new FormatError(
+                    "Grammar needs explicit control for input action '%s'",
+                    action.getFullName()));
+                continue;
+            }
             if (action instanceof Rule) {
                 namespace.addRule((Rule) action);
             } else {
@@ -411,6 +427,9 @@ public class CtrlFactory {
                     new HashSet<Action>());
             }
             priorityActions.add(action);
+        }
+        if (!errors.isEmpty()) {
+            GraphInfo.addErrors(result, errors);
         }
         // List of control automata for different levels of priority
         List<CtrlAut> prioAutList = new ArrayList<CtrlAut>();
@@ -432,14 +451,9 @@ public class CtrlFactory {
             }
             result = buildAlap(result);
         }
-        try {
-            result = result.normalise();
-            result.setDefault();
-            return result;
-        } catch (FormatException e) {
-            assert false;
-            return null;
-        }
+        result = result.normalise();
+        result.setDefault();
+        return result;
     }
 
     /** Constructs an empty control automaton. 
