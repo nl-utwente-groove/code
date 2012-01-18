@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.gui.LabelTree;
@@ -55,6 +56,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     public LTSJGraph(Simulator simulator) {
         super(simulator, true);
         this.simulator = simulator;
+        this.showHideMode = getOptionValue(SHOW_LTS_OPTION);
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
     }
@@ -255,6 +257,14 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
     }
 
+    public boolean getShowHideMode() {
+        return this.showHideMode;
+    }
+
+    public void toggleShowHideMode() {
+        this.showHideMode = !this.showHideMode;
+    }
+
     /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
@@ -273,6 +283,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * The simulator to which this j-graph is associated.
      */
     private final Simulator simulator;
+
+    /**
+     * The boolean showing the status of the show/hide mode for the LTS panel
+     */
+
+    private boolean showHideMode = true;
 
     /** Initialises and returns the action to scroll to the active state or transition. */
     private Action getScrollToCurrentAction() {
