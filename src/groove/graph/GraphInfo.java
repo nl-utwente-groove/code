@@ -59,7 +59,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
      * errors stored, creates the list.
      * @see #setErrors(Collection)
      */
-    public void addErrors(List<FormatError> errors) {
+    public void addErrors(Collection<FormatError> errors) {
         List<FormatError> myErrors = getErrors();
         if (myErrors == null) {
             setErrors(errors);
@@ -266,10 +266,10 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
 
     /**
      * Convenience method to add a list of errors to a graph.
-     * @see #addErrors(List)
+     * @see #addErrors(Collection)
      */
     public static <N extends Node,E extends Edge> void addErrors(
-            Graph<N,E> graph, List<FormatError> errors) {
+            Graph<N,E> graph, Collection<FormatError> errors) {
         getInfo(graph, true).addErrors(errors);
     }
 

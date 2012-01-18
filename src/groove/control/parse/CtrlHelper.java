@@ -344,7 +344,10 @@ public class CtrlHelper {
         if (this.currentKind == CtrlCall.Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
-        checkGroupCall(anyTree, this.namespace.getTopNames());
+        Set<String> anyNames =
+            new HashSet<String>(this.namespace.getTopNames());
+        anyNames.removeAll(this.namespace.getUsedNames());
+        checkGroupCall(anyTree, anyNames);
     }
 
     void checkOther(MyTree otherTree) {

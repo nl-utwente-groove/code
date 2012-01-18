@@ -89,8 +89,14 @@ public class CtrlBuildTest {
     /** Tests the default automaton construction. */
     @Test
     public void testDefaultAut() {
-        CtrlAut aut =
-            CtrlFactory.instance().buildDefault(this.prioGrammar.getActions());
+        CtrlAut aut = null;
+        try {
+            aut =
+                CtrlFactory.instance().buildDefault(
+                    this.prioGrammar.getActions());
+        } catch (FormatException e) {
+            fail();
+        }
         assertEquals(2, aut.nodeCount());
         assertEquals(7, aut.edgeCount());
         Rule m3 = this.prioGrammar.getRule("m3");
