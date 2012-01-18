@@ -132,7 +132,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
      */
     public void showHideLts() {
         if (getOptionValue(SHOW_LTS_OPTION)) {
-            LTSJModel ltsModel;
+            LTSJModel ltsModel = null;
             ltsModel = getJGraph().newModel();
             GTS gts = getSimulatorModel().getGts();
             if (gts != null) {
@@ -160,7 +160,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         } else {
             getOptions().setSelected(SHOW_LTS_OPTION, true);
         }
-        showHideLts();
+        //showHideLts();
         return;
     }
 
