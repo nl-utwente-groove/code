@@ -134,12 +134,15 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         if (getOptionValue(SHOW_LTS_OPTION)) {
             LTSJModel ltsModel;
             ltsModel = getJGraph().newModel();
-            ltsModel.loadGraph(getSimulatorModel().getGts());
-            setJModel(ltsModel);
+            GTS gts = getSimulatorModel().getGts();
+            if (gts != null) {
+                ltsModel.loadGraph(gts);
+                setJModel(ltsModel);
+                getJGraph().freeze();
+                getJGraph().getLayouter().start(false);
+            }
             getJGraph().setVisible(true);
             getJGraph().refresh();
-            getJGraph().freeze();
-            getJGraph().getLayouter().start(false);
             getJGraph().setEnabled(true);
         } else {
             getJGraph().setVisible(false);
