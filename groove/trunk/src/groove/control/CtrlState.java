@@ -17,9 +17,11 @@
 package groove.control;
 
 import groove.graph.Element;
+import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.trans.Recipe;
 import groove.trans.Rule;
+import groove.view.FormatError;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -125,20 +127,28 @@ public class CtrlState implements Node {
     }
 
     /**
-     * Add an outgoing transition to this control state, if there was not
+     * Creates and adds an outgoing transition to this control state.
+     * It is an error if there was
      * already a transition for the same rule.
-     * @return {@code true} if the transition was added; {@code false} if
-     * there was already a transition for the same rule
      */
-    public boolean addTransition(CtrlTransition transition) {
-        CtrlTransition oldTransition =
-            this.outTransitions.put(transition.getRule(), transition);
-        boolean result = oldTransition == null;
-        if (!result) {
-            this.outTransitions.put(transition.getRule(), oldTransition);
+    public CtrlTransition addTransition(CtrlLabel label, CtrlState target) {
+        CtrlTransition result = new CtrlTransition(this, label, target);
+        this.transitions.add(result);
+        CtrlTransition oldTrans =
+            this.transitionMap.put(result.getRule(), result);
+        if (oldTrans != null) {
+            FormatError error =
+                new FormatError("Nondeterminism for '%s'", result.getCall());
+            GraphInfo.addErrors(getAut(), Collections.singleton(error));
         }
-        if (result && transition.hasRecipe()) {
+        if (result.hasRecipe()) {
             this.recipeCount++;
+        }
+        if (label.getCall().isOmega()) {
+            getAut().addOmega(result);
+        }
+        if (label.isStart() && isTransient()) {
+            setExitGuard(label.getGuard());
         }
         return result;
     }
@@ -146,11 +156,13 @@ public class CtrlState implements Node {
     /**
      * Removes an outgoing transition from this control state.
      */
-    public boolean removeTransition(CtrlTransition transition) {
-        boolean result =
-            this.outTransitions.remove(transition.getRule()) != null;
-        if (result && transition.hasRecipe()) {
-            this.recipeCount--;
+    public boolean removeOmega(CtrlTransition trans) {
+        assert trans.getCall().isOmega();
+        assert trans.getNumber() == this.transitions.size() - 1;
+        this.transitions.remove(trans.getNumber());
+        boolean result = this.transitionMap.remove(trans.getRule()) != null;
+        if (result) {
+            getAut().removeOmega(trans);
         }
         return result;
     }
@@ -162,27 +174,27 @@ public class CtrlState implements Node {
 
     /** Returns the outgoing control transition for a given rule, if any. */
     public CtrlTransition getTransition(Rule rule) {
-        return this.outTransitions.get(rule);
+        return this.transitionMap.get(rule);
     }
 
     /** Returns the outgoing control transitions of this control state. */
     public Collection<CtrlTransition> getTransitions() {
-        return this.outTransitions.values();
+        return this.transitions;
     }
 
     /** 
      * Returns the set of rule names of outgoing transitions, or
      * {@code null} if there is an outgoing omega transition. 
      */
-    public Set<CtrlCall> getInit() {
-        Set<CtrlCall> result = new HashSet<CtrlCall>();
+    public CtrlGuard getInit() {
+        CtrlGuard result = new CtrlGuard();
         for (CtrlTransition trans : getTransitions()) {
             CtrlCall call = trans.getCall();
             if (call.isOmega()) {
                 result = null;
                 break;
             } else {
-                result.add(call);
+                result.add(trans);
             }
         }
         return result;
@@ -220,8 +232,8 @@ public class CtrlState implements Node {
             this.disabledMap = computeDisabledMap();
             this.schedule =
                 getSchedule(new TreeSet<CtrlTransition>(getTransitions()),
-                    Collections.<CtrlCall>emptySet(),
-                    Collections.<CtrlCall>emptySet());
+                    Collections.<CtrlTransition>emptySet(),
+                    Collections.<CtrlTransition>emptySet());
             // discard the map to save space
             this.scheduleMap = null;
         }
@@ -229,7 +241,7 @@ public class CtrlState implements Node {
     }
 
     /** Returns the (optional) guard under which the transient status is exited. */
-    public Collection<CtrlCall> getExitGuard() {
+    public CtrlGuard getExitGuard() {
         return this.exitGuard;
     }
 
@@ -246,18 +258,42 @@ public class CtrlState implements Node {
      * An optional guard under which the transient status of this
      * control state is lifted; i.e., the transaction is completed.
      */
-    public void setExitGuard(Collection<CtrlCall> exitGuard) {
-        assert isTransient() && this.exitGuard == null;
+    public void setExitGuard(CtrlGuard exitGuard) {
+        assert isTransient()
+            && (this.exitGuard == null || this.exitGuard.equals(exitGuard));
         this.exitGuard = exitGuard;
     }
 
+    /** 
+     * Copies all outgoing transitions of this state to another.
+     * Both the source state and the target states are mapped, as are
+     * the guard transitions.
+     * @param stateMap mapping from states in this automaton to states in
+     * the target automaton
+     * @param guard optional additional guard transitions to be added to all guards
+     * in the copied transitions
+     */
+    public void copyTransitions(Map<CtrlState,CtrlState> stateMap,
+            CtrlGuard guard) {
+        CtrlState sourceImage = stateMap.get(this);
+        Map<CtrlTransition,CtrlTransition> transMap =
+            new HashMap<CtrlTransition,CtrlTransition>();
+        for (CtrlTransition key : this.transitions) {
+            CtrlState targetImage = stateMap.get(key.target());
+            CtrlLabel newLabel = key.label().newLabel(transMap, guard);
+            CtrlTransition image =
+                sourceImage.addTransition(newLabel, targetImage);
+            transMap.put(key, image);
+        }
+    }
+
     /** Computes a map from control calls to transitions disabled by those calls. */
-    private Map<CtrlCall,Set<CtrlTransition>> computeDisabledMap() {
+    private Map<CtrlTransition,Set<CtrlTransition>> computeDisabledMap() {
         // look for the transition that appears in the fewest guards
-        Map<CtrlCall,Set<CtrlTransition>> result =
-            new HashMap<CtrlCall,Set<CtrlTransition>>();
+        Map<CtrlTransition,Set<CtrlTransition>> result =
+            new HashMap<CtrlTransition,Set<CtrlTransition>>();
         for (CtrlTransition trans : getTransitions()) {
-            for (CtrlCall call : trans.label().getGuard()) {
+            for (CtrlTransition call : trans.label().getGuard()) {
                 Set<CtrlTransition> disablings = result.get(call);
                 if (disablings == null) {
                     result.put(call, disablings = new HashSet<CtrlTransition>());
@@ -279,15 +315,16 @@ public class CtrlState implements Node {
      * @return a schedule for the given configuration
      */
     private CtrlSchedule getSchedule(Set<CtrlTransition> transSet,
-            Set<CtrlCall> triedCalls, Set<CtrlCall> failedCalls) {
+            Set<CtrlTransition> triedCalls, Set<CtrlTransition> failedCalls) {
         if (this.scheduleMap == null) {
             this.scheduleMap =
-                new HashMap<Set<CtrlTransition>,Map<Set<CtrlCall>,CtrlSchedule>>();
+                new HashMap<Set<CtrlTransition>,Map<Set<CtrlTransition>,CtrlSchedule>>();
         }
-        Map<Set<CtrlCall>,CtrlSchedule> auxMap = this.scheduleMap.get(transSet);
+        Map<Set<CtrlTransition>,CtrlSchedule> auxMap =
+            this.scheduleMap.get(transSet);
         if (auxMap == null) {
             this.scheduleMap.put(transSet, auxMap =
-                new HashMap<Set<CtrlCall>,CtrlSchedule>());
+                new HashMap<Set<CtrlTransition>,CtrlSchedule>());
         }
         CtrlSchedule result = auxMap.get(triedCalls);
         if (result == null) {
@@ -298,16 +335,16 @@ public class CtrlState implements Node {
     }
 
     private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
-            Set<CtrlCall> triedCalls, Set<CtrlCall> failedCalls) {
+            Set<CtrlTransition> tried, Set<CtrlTransition> failed) {
         // look for the untried call with the least disablings
-        CtrlTransition trans = null;
-        Set<CtrlTransition> disablings = null;
+        CtrlTransition chosenTrans = null;
+        Set<CtrlTransition> chosenDisablings = null;
         // boolean indicating that the omega rule guards have all been satisfied
         boolean success = false;
         for (CtrlTransition tryTrans : transSet) {
-            Set<CtrlCall> guard =
-                new HashSet<CtrlCall>(tryTrans.label().getGuard());
-            guard.removeAll(triedCalls);
+            Set<CtrlTransition> guard =
+                new HashSet<CtrlTransition>(tryTrans.getGuard());
+            guard.removeAll(tried);
             if (!guard.isEmpty()) {
                 continue;
             }
@@ -315,72 +352,101 @@ public class CtrlState implements Node {
                 success = true;
                 continue;
             }
-            CtrlCall tryCall = tryTrans.getCall();
             Set<CtrlTransition> tryDisablings;
-            if (this.disabledMap.containsKey(tryCall)) {
+            if (this.disabledMap.containsKey(tryTrans)) {
                 tryDisablings =
-                    new HashSet<CtrlTransition>(this.disabledMap.get(tryCall));
+                    new HashSet<CtrlTransition>(this.disabledMap.get(tryTrans));
                 tryDisablings.retainAll(transSet);
             } else {
                 tryDisablings = Collections.emptySet();
             }
-            if (trans == null || tryDisablings.size() < disablings.size()) {
-                trans = tryTrans;
-                disablings = tryDisablings;
-            }
-            if (disablings.size() == 0) {
-                // we're not going to find a smaller anyway
-                break;
+            if (chosenTrans == null
+                || tryDisablings.size() < chosenDisablings.size()
+                || (tryDisablings.size() == chosenDisablings.size() && smallerThan(
+                    tryTrans, chosenTrans))) {
+                chosenTrans = tryTrans;
+                chosenDisablings = tryDisablings;
             }
         }
         boolean isTransient = isTransient();
         if (hasExitGuard()) {
-            Set<CtrlCall> guard = new HashSet<CtrlCall>(getExitGuard());
-            guard.removeAll(failedCalls);
+            Set<CtrlTransition> guard =
+                new HashSet<CtrlTransition>(getExitGuard());
+            guard.removeAll(failed);
             isTransient = !guard.isEmpty();
         }
         CtrlSchedule result =
-            new CtrlSchedule(this, trans, triedCalls, success, isTransient);
-        if (trans != null) {
-            Set<CtrlCall> newTriedCalls = new HashSet<CtrlCall>(triedCalls);
-            newTriedCalls.add(trans.getCall());
-            Set<CtrlCall> newFailedCalls = new HashSet<CtrlCall>(failedCalls);
-            newFailedCalls.add(trans.getCall());
+            new CtrlSchedule(this, chosenTrans, tried, success, isTransient);
+        if (chosenTrans != null) {
+            Set<CtrlTransition> newTried = new HashSet<CtrlTransition>(tried);
+            newTried.add(chosenTrans);
+            Set<CtrlTransition> newFailed = new HashSet<CtrlTransition>(failed);
+            newFailed.add(chosenTrans);
             Set<CtrlTransition> remainder =
                 new LinkedHashSet<CtrlTransition>(transSet);
-            remainder.remove(trans);
-            CtrlSchedule failNext =
-                getSchedule(remainder, newTriedCalls, newFailedCalls);
+            remainder.remove(chosenTrans);
+            CtrlSchedule failNext = getSchedule(remainder, newTried, newFailed);
             CtrlSchedule succNext;
-            if (disablings.isEmpty()) {
+            if (chosenDisablings.isEmpty()) {
                 succNext = failNext;
             } else {
                 remainder = new LinkedHashSet<CtrlTransition>(remainder);
-                remainder.removeAll(disablings);
-                succNext = getSchedule(remainder, newTriedCalls, failedCalls);
+                remainder.removeAll(chosenDisablings);
+                succNext = getSchedule(remainder, newTried, failed);
             }
             result.setNext(succNext, failNext);
         }
         return result;
     }
 
+    /** Compares two control transition for the purpose of deciding which one
+     * is to come first in the schedule.
+     */
+    private boolean smallerThan(CtrlTransition one, CtrlTransition two) {
+        int result =
+            one.getCall().toString().compareTo(two.getCall().toString());
+        if (result == 0) {
+            result = one.getGuard().compareTo(two.getGuard());
+        }
+        if (result == 0) {
+            int myRecipe = one.hasRecipe() ? 1 : 0;
+            int hisRecipe = two.hasRecipe() ? 1 : 0;
+            result = myRecipe - hisRecipe;
+            if (result == 0 && one.hasRecipe()) {
+                result = getRecipe().compareTo(two.getRecipe());
+            }
+        }
+        if (result == 0) {
+            int myStart = one.isStart() ? 1 : 0;
+            int hisStart = two.isStart() ? 1 : 0;
+            result = myStart - hisStart;
+        }
+        if (result == 0) {
+            result = one.getNumber() - two.getNumber();
+        }
+        return result < 0;
+    }
+
     /** Internal number to identify the state. */
     private final int stateNumber;
+    /** List of outgoing transitions. */
+    private final List<CtrlTransition> transitions =
+        new ArrayList<CtrlTransition>();
     /** Mapping from rules to outgoing transitions. */
-    private final Map<Rule,CtrlTransition> outTransitions =
+    private final Map<Rule,CtrlTransition> transitionMap =
         new HashMap<Rule,CtrlTransition>();
     /** The collection of bound variables of this control state. */
     private final List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
     /** Optional name of a recipe of which this is a transient state. */
     private final Recipe recipe;
     /** If the state is transient, an optional guard under which the transient status is exited. */
-    private Collection<CtrlCall> exitGuard;
+    private CtrlGuard exitGuard;
     /** The schedule for trying the outgoing transitions of this state. */
     private CtrlSchedule schedule;
     /** Map from calls to transitions disabled by their success. */
-    private Map<CtrlCall,Set<CtrlTransition>> disabledMap;
+    private Map<CtrlTransition,Set<CtrlTransition>> disabledMap;
     /** Map storing the computed intermediate schedules, to enable sharing. */
-    private Map<Set<CtrlTransition>,Map<Set<CtrlCall>,CtrlSchedule>> scheduleMap;
+    private Map<Set<CtrlTransition>,Map<Set<CtrlTransition>,CtrlSchedule>> scheduleMap;
     /** Count of the number of outgoing recipe transitions. */
     private int recipeCount;
 }

@@ -17,12 +17,10 @@
 package groove.control;
 
 import groove.graph.AbstractLabel;
+import groove.graph.Label;
 import groove.trans.Recipe;
-import groove.util.Groove;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * A control label wraps a control call and a guard, consisting of a 
@@ -39,27 +37,54 @@ public class CtrlLabel extends AbstractLabel {
      * @param recipe the (optional) recipe of which this label is part
      * @param start flag indicating if this is the first call of a new action
      */
-    public CtrlLabel(CtrlCall call, Collection<CtrlCall> guard, Recipe recipe,
+    public CtrlLabel(CtrlCall call, CtrlGuard guard, Recipe recipe,
             boolean start) {
+        this(0, call, guard, recipe, start);
+    }
+
+    /** 
+     * Constructs a control label from a call and
+     * a guard.
+     * @param number number of the label
+     * @param call the (non-{@code null}) control call in the label
+     * @param guard the (non-{@code null}) guard of the control call
+     * @param recipe the (optional) recipe of which this label is part
+     * @param start flag indicating if this is the first call of a new action
+     */
+    private CtrlLabel(int number, CtrlCall call, CtrlGuard guard,
+            Recipe recipe, boolean start) {
         assert start || !call.isOmega();
         assert start || recipe != null;
         this.call = call;
         this.recipe = recipe;
         this.start = start;
-        for (CtrlCall guardCall : guard) {
-            this.guardMap.put(guardCall.getName(), guardCall);
-        }
+        this.guard.addAll(guard);
+        this.number = number;
     }
 
     @Override
     public String text() {
         StringBuilder result = new StringBuilder();
+        result.append('t');
+        result.append(getNumber());
+        result.append(':');
         if (hasRecipe()) {
             result.append(getRecipe());
             result.append('/');
         }
-        if (!this.guardMap.isEmpty()) {
-            result.append(Groove.toString(this.guardMap.keySet().toArray()));
+        if (!this.guard.isEmpty()) {
+            result.append('[');
+            boolean first = true;
+            for (CtrlTransition guard : this.guard) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append(',');
+                }
+                result.append('t');
+                result.append(guard.getNumber());
+            }
+            result.append(']');
         }
         result.append(getCall().toString());
         return result.toString();
@@ -73,24 +98,13 @@ public class CtrlLabel extends AbstractLabel {
     /** The rule call wrapped in this control label. */
     private final CtrlCall call;
 
-    /** Returns the set of failure rules wrapped into this label. */
-    public final Collection<CtrlCall> getGuard() {
-        return this.guardMap.values();
+    /** Returns the set of failure transitions wrapped into this label. */
+    public final CtrlGuard getGuard() {
+        return this.guard;
     }
 
-    /** Indicates if the guard contains a call with a given (rule or function) call. */
-    public final boolean hasGuardCall(String name) {
-        return this.guardMap.containsKey(name);
-    }
-
-    /** Returns the guarded call for a given (rule or function) name, if any. */
-    public final CtrlCall getGuardCall(String name) {
-        return this.guardMap.get(name);
-    }
-
-    /** Guard of this label, consisting of a list of failure rules. */
-    private final Map<String,CtrlCall> guardMap =
-        new TreeMap<String,CtrlCall>();
+    /** Guard of this label, consisting of a list of failure transitions. */
+    private final CtrlGuard guard = new CtrlGuard();
 
     /** 
      * Indicates whether this label starts a new action.
@@ -119,4 +133,64 @@ public class CtrlLabel extends AbstractLabel {
      */
     private final boolean start;
 
+    /** Returns the label number. */
+    public int getNumber() {
+        return this.number;
+    }
+
+    /** The internal number of this label. */
+    private final int number;
+
+    /** Returns a renumbered copy of this label. */
+    public CtrlLabel newLabel(int number) {
+        return new CtrlLabel(number, getCall(), getGuard(), getRecipe(),
+            isStart());
+    }
+
+    @Override
+    public int compareTo(Label obj) {
+        if (!(obj instanceof CtrlLabel)) {
+            return super.compareTo(obj);
+        }
+        CtrlLabel other = (CtrlLabel) obj;
+        return getNumber() - other.getNumber();
+        //        int result = getCall().toString().compareTo(other.getCall().toString());
+        //        if (result == 0) {
+        //            result = getGuard().compareTo(other.getGuard());
+        //        }
+        //        if (result == 0) {
+        //            int myRecipe = hasRecipe() ? 1 : 0;
+        //            int hisRecipe = other.hasRecipe() ? 1 : 0;
+        //            result = myRecipe - hisRecipe;
+        //            if (result == 0 && hasRecipe()) {
+        //                result = getRecipe().compareTo(other.getRecipe());
+        //            }
+        //        }
+        //        if (result == 0) {
+        //            int myStart = isStart() ? 1 : 0;
+        //            int hisStart = other.isStart() ? 1 : 0;
+        //            result = myStart - hisStart;
+        //        }
+        //        if (result == 0) {
+        //            result = getNumber() - other.getNumber();
+        //        }
+        //        return result;
+    }
+
+    /** 
+     * Returns a copy of this label in which the guard is
+     * transformed and possibly extended.
+     * @param map optional mapping under which both the guard of this label
+     * and the additional guards are transformed
+     * @param guard optional additional guarding transitions
+     */
+    public CtrlLabel newLabel(Map<CtrlTransition,CtrlTransition> map,
+            CtrlGuard guard) {
+        CtrlGuard newGuard = getGuard().newGuard(map);
+        if (guard != null) {
+            newGuard.addAll(guard);
+        }
+        return new CtrlLabel(getNumber(), getCall(), newGuard, getRecipe(),
+            isStart());
+    }
 }

@@ -26,10 +26,8 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -51,14 +49,14 @@ public class CtrlFactory {
      * operator.
      */
     public CtrlAut buildAlap(CtrlAut aut) {
-        return buildLoop(aut, aut.getStart().getInit());
+        return buildLoop(aut, aut.getInitGuard());
     }
 
     /** 
      * Closes a given control automaton under arbitrary repetition
      */
     public CtrlAut buildStar(CtrlAut aut) {
-        return buildLoop(aut, Collections.<CtrlCall>emptySet());
+        return buildLoop(aut, EMPTY_GUARD);
     }
 
     /** Factory method for a rule or function call. */
@@ -76,8 +74,8 @@ public class CtrlFactory {
         CtrlAut result = createCtrlAut(call.getName());
         CtrlState middle = result.addState();
         // convert the call arguments using the context
-        result.addTransition(result.getStart(), createLabel(call), middle);
-        result.addTransition(middle, createOmegaLabel(), result.getFinal());
+        result.getStart().addTransition(createLabel(call), middle);
+        middle.addTransition(createOmegaLabel(), result.getFinal());
         return result;
     }
 
@@ -120,7 +118,7 @@ public class CtrlFactory {
      * by modifying the first of the three.
      */
     public CtrlAut buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
-        Set<CtrlCall> guard = first.getStart().getInit();
+        CtrlGuard guard = first.getInitGuard();
         buildSeq(first, second);
         if (third == null) {
             third = buildTrue();
@@ -175,27 +173,25 @@ public class CtrlFactory {
      * @param second the automaton to be executed second
      */
     public CtrlAut buildSeq(CtrlAut first, CtrlAut second) {
-        Map<CtrlState,CtrlState> secondToFirstMap =
-            copyStates(second, first, null);
+        CtrlMorphism secondToFirstMap = copyStates(second, first, null);
         // remove omega-transitions from first
         Set<CtrlTransition> firstOmega = removeOmegas(first);
         // copy transitions from second to first
-        for (CtrlTransition trans : second.edgeSet()) {
-            CtrlState sourceImage = secondToFirstMap.get(trans.source());
-            CtrlState targetImage = secondToFirstMap.get(trans.target());
-            CtrlLabel label = trans.label();
-            // initial transitions have to be treated separately
-            if (sourceImage.equals(first.getStart())) {
-                // create a combined transition for every omega transition of first
+        for (CtrlState state : second.nodeSet()) {
+            if (state.equals(second.getStart())) {
+                // merge initial transitions of second with all
+                // omega transitions of first
+                Map<CtrlState,CtrlState> stateMap =
+                    new HashMap<CtrlState,CtrlState>(secondToFirstMap.nodeMap());
                 for (CtrlTransition omega : firstOmega) {
-                    CtrlLabel newLabel =
-                        createLabel(label, omega.label().getGuard());
-                    first.addTransition(omega.source(), newLabel, targetImage);
+                    stateMap.put(state, omega.source());
+                    state.copyTransitions(stateMap, omega.getGuard());
                 }
             } else {
-                first.addTransition(sourceImage, label, targetImage);
+                state.copyTransitions(secondToFirstMap.nodeMap(), null);
             }
         }
+        first.addErrors(second);
         return first;
     }
 
@@ -212,8 +208,7 @@ public class CtrlFactory {
 
     /** Adds an unconditional terminating transition between start and final state. */
     public CtrlAut addOmega(CtrlAut result) {
-        result.addTransition(result.getStart(), createOmegaLabel(),
-            result.getFinal());
+        result.getStart().addTransition(createOmegaLabel(), result.getFinal());
         return result;
     }
 
@@ -225,7 +220,7 @@ public class CtrlFactory {
         if (second == null) {
             second = buildTrue();
         }
-        return buildOr(first, second, first.getStart().getInit());
+        return buildOr(first, second, first.getInitGuard());
     }
 
     /**
@@ -236,16 +231,16 @@ public class CtrlFactory {
      */
     public CtrlAut buildUntilDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
-        Set<CtrlCall> autGuard = first.getStart().getInit();
-        if (autGuard != null) {
+        CtrlGuard firstGuard = first.getInitGuard();
+        if (firstGuard != null) {
             // remove omega-transitions from first
             Set<CtrlTransition> firstOmega = removeOmegas(first);
             // build the until loop
-            buildOr(first, second, autGuard);
+            buildOr(first, second, firstGuard);
             buildLoop(first, null);
             // re-attach the omega-transitions
             for (CtrlTransition omega : firstOmega) {
-                first.addTransition(omega);
+                omega.source().addTransition(omega.label(), omega.target());
             }
         }
         return first;
@@ -260,10 +255,10 @@ public class CtrlFactory {
      */
     public CtrlAut buildWhileDo(CtrlAut first, CtrlAut second) {
         // get the automaton guard before the omegas are removed
-        Set<CtrlCall> autGuard = first.getStart().getInit();
+        CtrlGuard firstGuard = first.getInitGuard();
         // sequentially compose first and second
         buildSeq(first, second);
-        return buildLoop(first, autGuard);
+        return buildLoop(first, firstGuard);
     }
 
     /** 
@@ -271,25 +266,23 @@ public class CtrlFactory {
      * predefined guard.
      * The result is constructed by modifying the parameter.
      */
-    private CtrlAut buildLoop(CtrlAut aut, Set<CtrlCall> guard) {
+    private CtrlAut buildLoop(CtrlAut aut, CtrlGuard guard) {
         Set<CtrlTransition> omegas = removeOmegas(aut);
+        // create an identity state map for the automaton
+        Map<CtrlState,CtrlState> id = new HashMap<CtrlState,CtrlState>();
+        for (CtrlState state : aut.nodeSet()) {
+            id.put(state, state);
+        }
+        // create new omega transitions if the automaton guard is non-degenerate
+        if (guard != null) {
+            CtrlLabel newLabel = createLabel(CtrlCall.OMEGA, guard);
+            aut.getStart().addTransition(newLabel, aut.getFinal());
+        }
         // loop back from final to post-initial states
         for (CtrlTransition omega : omegas) {
             // create cycles for all original omega transitions
-            for (CtrlTransition init : aut.getStart().getTransitions()) {
-                CtrlLabel newLabel =
-                    createLabel(init.label(), omega.label().getGuard());
-                aut.addTransition(omega.source(), newLabel, init.target());
-            }
-            // create new omega transitions if the automaton guard is non-degenerate
-            if (guard != null) {
-                CtrlLabel newLabel = createLabel(omega.label(), guard);
-                aut.addTransition(omega.source(), newLabel, aut.getFinal());
-            }
-        }
-        if (guard != null) {
-            CtrlLabel newLabel = createLabel(CtrlCall.OMEGA, guard);
-            aut.addTransition(aut.getStart(), newLabel, aut.getFinal());
+            id.put(aut.getStart(), omega.source());
+            aut.getStart().copyTransitions(id, omega.getGuard());
         }
         return aut;
     }
@@ -299,29 +292,18 @@ public class CtrlFactory {
      * under a given guard. The guard may be {@code null}, meaning that
      * the second automaton is unreachable.
      */
-    private CtrlAut buildOr(CtrlAut first, CtrlAut second,
-            Collection<CtrlCall> guard) {
+    private CtrlAut buildOr(CtrlAut first, CtrlAut second, CtrlGuard guard) {
         // if the guard is degenerate, the second automaton is unreachable
         if (guard != null) {
-            List<FormatError> errors = new ArrayList<FormatError>();
-            Map<CtrlState,CtrlState> secondToFirstMap =
-                copyStates(second, first, null);
+            CtrlMorphism secondToFirstMap = copyStates(second, first, null);
             // copy transitions from second to first
-            for (CtrlTransition trans : second.edgeSet()) {
-                CtrlState sourceImage = secondToFirstMap.get(trans.source());
-                CtrlState targetImage = secondToFirstMap.get(trans.target());
-                CtrlLabel label = trans.label();
-                // initial transitions have to be treated separately
-                if (sourceImage.equals(first.getStart())) {
-                    // create an augmented transition, 
-                    CtrlLabel newLabel = createLabel(label, guard);
-                    first.addTransition(sourceImage, newLabel, targetImage);
-                } else {
-                    first.addTransition(sourceImage, label, targetImage);
-                }
+            for (CtrlState state : second.nodeSet()) {
+                boolean isInit = state.equals(second.getStart());
+                state.copyTransitions(secondToFirstMap.nodeMap(), isInit
+                        ? guard : null);
             }
-            first.getInfo().addErrors(errors);
         }
+        first.addErrors(second);
         return first;
     }
 
@@ -333,10 +315,9 @@ public class CtrlFactory {
      * @param recipe optional recipe of which the copied states are part
      * @return a map from states in {@code fromAut} to new states in {@code toAut}
      */
-    private Map<CtrlState,CtrlState> copyStates(CtrlAut fromAut, CtrlAut toAut,
+    private CtrlMorphism copyStates(CtrlAut fromAut, CtrlAut toAut,
             Recipe recipe) {
-        Map<CtrlState,CtrlState> secondToFirstMap =
-            new HashMap<CtrlState,CtrlState>();
+        CtrlMorphism secondToFirstMap = new CtrlMorphism();
         for (CtrlState state : fromAut.nodeSet()) {
             CtrlState image;
             if (state.equals(fromAut.getStart())) {
@@ -344,34 +325,21 @@ public class CtrlFactory {
             } else if (state.equals(fromAut.getFinal())) {
                 image = toAut.getFinal();
             } else {
-                image = toAut.copyState(state, recipe);
+                image = toAut.addState(state, recipe);
             }
-            secondToFirstMap.put(state, image);
+            secondToFirstMap.putNode(state, image);
         }
-        toAut.getInfo().addErrors(fromAut.getInfo().getErrors());
         return secondToFirstMap;
     }
 
     /** Removes and returns the set of omega transitions from a given automaton. */
-    private Set<CtrlTransition> removeOmegas(CtrlAut first) {
-        Set<CtrlTransition> firstOmega =
-            new HashSet<CtrlTransition>(first.getOmegaTransitions());
-        for (CtrlTransition omega : firstOmega) {
-            first.removeTransition(omega);
+    private Set<CtrlTransition> removeOmegas(CtrlAut aut) {
+        Set<CtrlTransition> omegas =
+            new HashSet<CtrlTransition>(aut.getOmegas());
+        for (CtrlTransition o : omegas) {
+            o.source().removeOmega(o);
         }
-        return firstOmega;
-    }
-
-    /**
-     * Factory method extending the guard of an existing (virtual) control label.
-     */
-    private CtrlLabel createLabel(CtrlLabel orig,
-            Collection<CtrlCall> extraGuards) {
-        CtrlCall origCall = orig.getCall();
-        Set<CtrlCall> newGuards = new LinkedHashSet<CtrlCall>(extraGuards);
-        newGuards.addAll(orig.getGuard());
-        return new CtrlLabel(origCall, newGuards, orig.getRecipe(),
-            orig.isStart());
+        return omegas;
     }
 
     /** Factory method for control labels with an empty guard. */
@@ -380,7 +348,7 @@ public class CtrlFactory {
     }
 
     /** Factory method for control labels. */
-    private CtrlLabel createLabel(CtrlCall call, Collection<CtrlCall> guard) {
+    private CtrlLabel createLabel(CtrlCall call, CtrlGuard guard) {
         return new CtrlLabel(call, guard, null, true);
     }
 
@@ -471,6 +439,5 @@ public class CtrlFactory {
     /** The singleton instance of this class. */
     private static final CtrlFactory INSTANCE = new CtrlFactory();
     /** Constant empty set of guard rule names. */
-    private static final Collection<CtrlCall> EMPTY_GUARD =
-        Collections.<CtrlCall>emptyList();
+    private static final CtrlGuard EMPTY_GUARD = new CtrlGuard();
 }

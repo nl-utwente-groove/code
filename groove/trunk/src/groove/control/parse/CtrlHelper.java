@@ -454,11 +454,11 @@ public class CtrlHelper {
 
     /** 
      * Tests if a given control automaton is suitable as body of a 
-     * transaction.
+     * recipe.
      */
     boolean checkRecipeBody(MyTree actionTree, String name, CtrlAut aut) {
         boolean result = true;
-        for (CtrlTransition omegaTrans : aut.getOmegaTransitions()) {
+        for (CtrlTransition omegaTrans : aut.getOmegas()) {
             if (omegaTrans.source() == aut.getStart()) {
                 emitErrorMessage(actionTree,
                     "Recipe '%s' should not have empty behaviour", name);
@@ -466,13 +466,12 @@ public class CtrlHelper {
                 break;
             }
         }
-        if (aut.getOmegaTransitions().isEmpty()) {
-            emitErrorMessage(actionTree,
-                "Rule transaction '%s' must terminate", name);
+        if (aut.getOmegas().isEmpty()) {
+            emitErrorMessage(actionTree, "Recipe '%s' must terminate", name);
             result = false;
         } else if (!aut.isEndDeterministic()) {
             emitErrorMessage(actionTree,
-                "Rule transaction '%s' must terminate deterministically", name);
+                "Recipe '%s' must terminate deterministically", name);
             result = false;
         }
         return result;
