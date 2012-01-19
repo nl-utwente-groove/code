@@ -230,12 +230,8 @@ public class RuleApplication implements DeltaApplier {
             RuleEffect record = getEffect();
             eraseEdges(record, target);
             // either merge or erase the LHS nodes
-            if (record.hasMergeMap()) {
-                mergeNodes(record, target);
-            }
-            if (record.hasErasedNodes()) {
-                eraseNodes(record, target);
-            }
+            mergeNodes(record, target);
+            eraseNodes(record, target);
             createNodes(record, target);
             createEdges(record, target);
         }
