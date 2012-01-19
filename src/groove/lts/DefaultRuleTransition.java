@@ -209,7 +209,7 @@ public class DefaultRuleTransition extends AbstractEdge<GraphState,RuleLabel>
                 IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
                     derivedTarget, realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition "
-                + iso
+                + this
                 + ": \n"
                 + AbstractGraph.toString(derivedTarget)
                 + " and \n"
