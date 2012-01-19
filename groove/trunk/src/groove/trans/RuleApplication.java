@@ -234,6 +234,7 @@ public class RuleApplication implements DeltaApplier {
             eraseNodes(record, target);
             createNodes(record, target);
             createEdges(record, target);
+            eraseIsolatedValueNodes(target);
         }
     }
 
@@ -281,21 +282,17 @@ public class RuleApplication implements DeltaApplier {
             }
             removeNodeSet(target, nodeSet);
         }
-        removeIsolatedValueNodes(target);
     }
 
     /**
-     * Removes those value nodes whose incoming edges have all been erased.
+     * Removes those value nodes whose incoming edges have all been erased
+     * (and none have been added).
      */
-    protected void removeIsolatedValueNodes(DeltaTarget target) {
+    private void eraseIsolatedValueNodes(DeltaTarget target) {
         // for efficiency we don't use the getter but test for null
         if (this.isolatedValueNodes != null) {
             for (ValueNode node : this.isolatedValueNodes) {
                 target.removeNode(node);
-                if (this.removedValueNodes == null) {
-                    this.removedValueNodes = new HashSet<ValueNode>();
-                }
-                this.removedValueNodes.add(node);
             }
         }
     }
@@ -325,7 +322,7 @@ public class RuleApplication implements DeltaApplier {
             Set<HostEdge> edges = getValueNodeEdges((ValueNode) target);
             edges.remove(edge);
             if (edges.isEmpty()) {
-                getIsolatedValueNodes().add((ValueNode) target);
+                addIsolatedValueNode((ValueNode) target);
             }
         }
     }
@@ -351,7 +348,7 @@ public class RuleApplication implements DeltaApplier {
                 }
                 removeNode(target, mergedElem);
             }
-            removeIsolatedValueNodes(target);
+            eraseIsolatedValueNodes(target);
         }
     }
 
@@ -449,24 +446,18 @@ public class RuleApplication implements DeltaApplier {
      */
     private void addEdge(DeltaTarget target, HostEdge edge) {
         HostNode targetNode = edge.target();
-        if (targetNode instanceof ValueNode
-            && (!this.source.containsNode(targetNode) && !getAddedValueNodes().contains(
-                targetNode)) || this.removedValueNodes != null
-            && this.removedValueNodes.contains(targetNode)) {
-            target.addNode(targetNode);
-            boolean nodeAdded =
-                getAddedValueNodes().add((ValueNode) targetNode);
-            assert nodeAdded : String.format("%s already contained %s",
-                getAddedValueNodes(), targetNode);
-            if (this.removedValueNodes != null
-                && this.removedValueNodes.contains(targetNode)) {
-                this.removedValueNodes.remove(targetNode);
+        if (targetNode instanceof ValueNode) {
+            ValueNode valueNode = (ValueNode) targetNode;
+            if (this.source.containsNode(targetNode)) {
+                removeIsolatedValueNode(valueNode);
+            } else if (registerAddedValueNode(valueNode)) {
+                target.addNode(targetNode);
             }
         }
         if (target instanceof HostGraph) {
             ((HostGraph) target).addEdgeWithoutCheck(edge);
         } else {
-            // apparently the target wasn't an InternalGraph
+            // apparently the target wasn't a HostGraph
             // so we can't do efficient edge addition
             target.addEdge(edge);
         }
@@ -521,24 +512,34 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Returns the currently detected set of value nodes that have become
-     * isolated due to edge erasure.
+     * Adds a node to the set of value nodes that have become isolated
+     * due to edge erasure.
      */
-    private Set<ValueNode> getIsolatedValueNodes() {
+    private void addIsolatedValueNode(ValueNode node) {
         if (this.isolatedValueNodes == null) {
             this.isolatedValueNodes = new HashSet<ValueNode>();
         }
-        return this.isolatedValueNodes;
+        this.isolatedValueNodes.add(node);
     }
 
     /**
-     * Returns the currently added set of value nodes.
+     * Removes an isolated node (a new edge to it has been added).
      */
-    private Set<ValueNode> getAddedValueNodes() {
+    private void removeIsolatedValueNode(ValueNode node) {
+        if (this.isolatedValueNodes != null) {
+            this.isolatedValueNodes.remove(node);
+        }
+    }
+
+    /**
+     * Registers that a value node has been added.
+     * @return {@code true} if this is a newly registered node
+     */
+    private boolean registerAddedValueNode(ValueNode node) {
         if (this.addedValueNodes == null) {
             this.addedValueNodes = new HashSet<ValueNode>();
         }
-        return this.addedValueNodes;
+        return this.addedValueNodes.add(node);
     }
 
     /** Returns the relation between rule nodes and target graph nodes. */
@@ -643,6 +644,4 @@ public class RuleApplication implements DeltaApplier {
     private Set<ValueNode> isolatedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
     private Set<ValueNode> addedValueNodes;
-    /** The set of value nodes that have been removed due to edge deletion. */
-    private Set<ValueNode> removedValueNodes;
 }
