@@ -73,7 +73,7 @@ public final class ShapeRuleApplication extends RuleApplication {
 
     @Override
     protected void mergeNodes(RuleEffect record, DeltaTarget target) {
-        throw new UnsupportedOperationException();
+        // nothing to be merged
     }
 
     @Override
@@ -103,6 +103,5 @@ public final class ShapeRuleApplication extends RuleApplication {
                 shape.removeNode(node);
             }
         }
-        this.removeIsolatedValueNodes(target);
     }
 }
