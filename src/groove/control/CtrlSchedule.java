@@ -27,13 +27,16 @@ public class CtrlSchedule {
      * @param isTransient if {@code true}, the schedule is part of a transaction
      */
     public CtrlSchedule(CtrlState state, CtrlTransition trans,
-            Set<CtrlCall> triedCalls, boolean success, boolean isTransient) {
+            Set<CtrlTransition> tried, boolean success, boolean isTransient) {
         this.state = state;
         this.trans = trans;
         if (trans != null) {
             this.triedCalls = null;
         } else {
-            this.triedCalls = new HashSet<CtrlCall>(triedCalls);
+            this.triedCalls = new HashSet<CtrlCall>();
+            for (CtrlTransition triedTrans : tried) {
+                tried.add(triedTrans);
+            }
         }
         this.success = success;
         assert !isTransient || state.isTransient();

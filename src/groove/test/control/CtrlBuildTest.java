@@ -25,9 +25,11 @@ import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
+import groove.control.CtrlGuard;
 import groove.control.CtrlLabel;
 import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
+import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -36,7 +38,6 @@ import groove.view.FormatException;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -68,6 +69,7 @@ public class CtrlBuildTest {
             this.prioGrammar =
                 Groove.loadGrammar(GRAMMAR_DIR + "emptypriorules").toGrammar();
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -99,6 +101,7 @@ public class CtrlBuildTest {
         }
         assertEquals(2, aut.nodeCount());
         assertEquals(7, aut.edgeCount());
+        CtrlAut expected = new CtrlAut("expected");
         Rule m3 = this.prioGrammar.getRule("m3");
         Rule m2 = this.prioGrammar.getRule("m2");
         Rule m1 = this.prioGrammar.getRule("m1");
@@ -111,28 +114,39 @@ public class CtrlBuildTest {
         CtrlCall callC3 = new CtrlCall(c3, null);
         CtrlCall callC2 = new CtrlCall(c2, null);
         CtrlCall callC1 = new CtrlCall(c1, null);
-        CtrlCall omega = CtrlCall.OMEGA;
-        Set<CtrlCall> emptyGuard = Collections.emptySet();
-        Set<CtrlCall> level2AllGuard = new HashSet<CtrlCall>();
-        level2AllGuard.add(callM3);
-        level2AllGuard.add(callC3);
-        Set<CtrlCall> level1AllGuard = new HashSet<CtrlCall>(level2AllGuard);
-        level1AllGuard.add(callM2);
-        level1AllGuard.add(callC2);
-        Set<CtrlCall> omegaGuard =
-            new HashSet<CtrlCall>(Arrays.asList(callM1, callM2, callM3, callC1,
-                callC2, callC3));
+        CtrlState first = expected.getStart();
+        CtrlGuard emptyGuard = new CtrlGuard();
+        CtrlTransition transM3 =
+            first.addTransition(createLabel(callM3, emptyGuard), first);
+        CtrlTransition transC3 =
+            first.addTransition(createLabel(callC3, emptyGuard), first);
+        CtrlGuard level2AllGuard = new CtrlGuard();
+        level2AllGuard.add(transM3);
+        level2AllGuard.add(transC3);
+        CtrlTransition transC2 =
+            first.addTransition(createLabel(callC2, level2AllGuard), first);
+        CtrlTransition transM2 =
+            first.addTransition(createLabel(callM2, level2AllGuard), first);
+        CtrlGuard level1AllGuard = new CtrlGuard();
+        level1AllGuard.addAll(level2AllGuard);
+        level1AllGuard.add(transM2);
+        level1AllGuard.add(transC2);
+        CtrlTransition transC1 =
+            first.addTransition(createLabel(callC1, level1AllGuard), first);
+        CtrlTransition transM1 =
+            first.addTransition(createLabel(callM1, level1AllGuard), first);
+        CtrlGuard omegaGuard = new CtrlGuard();
+        omegaGuard.addAll(Arrays.asList(transM1, transM2, transM3, transC1,
+            transC2, transC3));
         Set<CtrlLabel> expectedSelfLabels =
-            new HashSet<CtrlLabel>(Arrays.asList(
-                createLabel(callM3, emptyGuard),
-                createLabel(callC3, emptyGuard),
-                createLabel(callM2, level2AllGuard),
-                createLabel(callC2, level2AllGuard),
-                createLabel(callM1, level1AllGuard),
-                createLabel(callC1, level1AllGuard)));
+            new HashSet<CtrlLabel>(Arrays.asList(transM1.label(),
+                transM2.label(), transM3.label(), transC1.label(),
+                transC2.label(), transC3.label()));
+        CtrlTransition omega =
+            first.addTransition(createLabel(CtrlCall.OMEGA, omegaGuard),
+                expected.getFinal());
         Set<CtrlLabel> expectedOmegaLabels =
-            new HashSet<CtrlLabel>(
-                Arrays.asList(createLabel(omega, omegaGuard)));
+            new HashSet<CtrlLabel>(Arrays.asList(omega.label()));
         Set<CtrlLabel> actualSelfLabels = new HashSet<CtrlLabel>();
         Set<CtrlLabel> actualOmegaLabels = new HashSet<CtrlLabel>();
         for (CtrlTransition trans : aut.getStart().getTransitions()) {
@@ -147,7 +161,7 @@ public class CtrlBuildTest {
         assertEquals(expectedOmegaLabels, actualOmegaLabels);
     }
 
-    private CtrlLabel createLabel(CtrlCall call, Set<CtrlCall> guard) {
+    private CtrlLabel createLabel(CtrlCall call, CtrlGuard guard) {
         return new CtrlLabel(call, guard, null, true);
     }
 
