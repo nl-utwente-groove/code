@@ -693,7 +693,7 @@ public class Rule implements Action, Fixable {
         Set<LabelVar> varResult = new TreeSet<LabelVar>(this.anchor.varSet());
         this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
         this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
-        this.anchorVars = edgeResult.toArray(new LabelVar[varResult.size()]);
+        this.anchorVars = varResult.toArray(new LabelVar[varResult.size()]);
     }
 
     @Override

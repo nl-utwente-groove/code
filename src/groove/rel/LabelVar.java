@@ -27,7 +27,7 @@ import groove.trans.AnchorKind;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LabelVar implements AnchorKey {
+public class LabelVar implements AnchorKey, Comparable<LabelVar> {
     /** 
      * Private constructor initialising all fields
      * @param nr number of the new variable; 0 unless the name is empty
@@ -118,6 +118,21 @@ public class LabelVar implements AnchorKey {
             return false;
         }
         return getKey().equals(other.getKey());
+    }
+
+    @Override
+    public int compareTo(LabelVar o) {
+        if (hasName()) {
+            if (o.hasName()) {
+                return getName().compareTo(o.getName());
+            } else {
+                return +1;
+            }
+        } else if (o.hasName()) {
+            return -1;
+        } else {
+            return this.nr - o.nr;
+        }
     }
 
     /** The number of the label variable; 0 unless the name is empty. */
