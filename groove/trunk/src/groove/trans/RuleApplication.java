@@ -568,12 +568,15 @@ public class RuleApplication implements DeltaApplier {
     private void collectComatch(Map<RuleNode,Set<HostNode>> result,
             BasicEvent event) {
         Rule rule = event.getRule();
-        RuleNode[] anchors = rule.getAnchorNodes();
-        for (int i = 0; i < anchors.length; i++) {
-            HostNode image =
-                getMorphism().getNode((HostNode) event.getAnchorImage(i));
-            if (image != null) {
-                addToComatch(result, anchors[i], image);
+        Anchor anchor = rule.getAnchor();
+        for (int i = 0; i < anchor.size(); i++) {
+            AnchorKey anchorKey = anchor.get(i);
+            if (anchorKey instanceof RuleNode) {
+                HostNode anchorValue = (HostNode) event.getAnchorImage(i);
+                HostNode image = getMorphism().getNode(anchorValue);
+                if (image != null) {
+                    addToComatch(result, (RuleNode) anchorKey, image);
+                }
             }
         }
         RuleNode[] creators = rule.getCreatorNodes();
