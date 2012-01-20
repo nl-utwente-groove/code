@@ -690,8 +690,10 @@ public class Rule implements Action, Fixable {
         this.anchor = anchorFactory.newAnchor(this);
         Set<RuleNode> nodeResult = new TreeSet<RuleNode>(this.anchor.nodeSet());
         Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(this.anchor.edgeSet());
+        Set<LabelVar> varResult = new TreeSet<LabelVar>(this.anchor.varSet());
         this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
         this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
+        this.anchorVars = edgeResult.toArray(new LabelVar[varResult.size()]);
     }
 
     @Override
