@@ -145,12 +145,14 @@ public class GraphPreviewDialog extends JDialog {
             if (!TIMER || recentPreviews.get(role).add(name)) {
                 new GraphPreviewDialog(simulator, graph).setVisible(true);
                 if (TIMER) {
+                    final Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
                             synchronized (recentPreviews) {
                                 recentPreviews.get(role).remove(name);
                             }
+                            timer.cancel();
                         }
                     }, 1000);
                 }
@@ -167,5 +169,4 @@ public class GraphPreviewDialog extends JDialog {
         }
     }
     private static final boolean TIMER = true;
-    private static final Timer timer = new Timer();
 }
