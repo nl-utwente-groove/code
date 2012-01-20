@@ -348,7 +348,7 @@ public class Condition implements Fixable {
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
             errors.add(new FormatError(
-                "Cannot resolve attribute value node '%s'", node));
+                "Variable node '%s' cannot always be assigned", node));
         }
         if (!errors.isEmpty()) {
             throw new FormatException(errors);
@@ -383,25 +383,28 @@ public class Condition implements Fixable {
                 }
             }
         }
-        // first collect the count nodes of subconditions
-        for (Condition subCondition : getSubConditions()) {
-            VariableNode countNode = subCondition.getCountNode();
-            // check if the condition has a non-constant count node
-            if (countNode != null && countNode.getConstant() == null
-                && !resolved.contains(countNode)) {
-                Set<VariableNode> resolver = new HashSet<VariableNode>();
-                // add the unresolved root nodes of the subcondition to the resolver
-                for (RuleNode rootNode : subCondition.getInputNodes()) {
-                    if (rootNode instanceof VariableNode
-                        && ((VariableNode) rootNode).getConstant() == null) {
-                        resolver.add((VariableNode) rootNode);
+        // first collect the count nodes of subconditions, if this node is conjunctive
+        // or there is only one subcondition
+        if (getOp().isConjunctive() || getSubConditions().size() == 1) {
+            for (Condition subCondition : getSubConditions()) {
+                VariableNode countNode = subCondition.getCountNode();
+                // check if the condition has a non-constant count node
+                if (countNode != null && countNode.getConstant() == null
+                    && !resolved.contains(countNode)) {
+                    Set<VariableNode> resolver = new HashSet<VariableNode>();
+                    // add the unresolved root nodes of the subcondition to the resolver
+                    for (RuleNode rootNode : subCondition.getInputNodes()) {
+                        if (rootNode instanceof VariableNode
+                            && ((VariableNode) rootNode).getConstant() == null) {
+                            resolver.add((VariableNode) rootNode);
+                        }
                     }
-                }
-                resolver.removeAll(resolved);
-                if (resolver.isEmpty()) {
-                    resolved.add(countNode);
-                } else {
-                    addResolver(result, countNode, resolver);
+                    resolver.removeAll(resolved);
+                    if (resolver.isEmpty()) {
+                        resolved.add(countNode);
+                    } else {
+                        addResolver(result, countNode, resolver);
+                    }
                 }
             }
         }
