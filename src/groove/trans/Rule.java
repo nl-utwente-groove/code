@@ -31,7 +31,6 @@ import groove.match.plan.PlanSearchStrategy;
 import groove.rel.LabelVar;
 import groove.rel.VarSupport;
 import groove.util.Fixable;
-import groove.util.Groove;
 import groove.util.Visitor;
 import groove.view.FormatException;
 
@@ -355,7 +354,7 @@ public class Rule implements Action, Fixable {
      */
     private int[] computeParBinding() {
         int[] result = new int[this.sig.size()];
-        int anchorSize = getAnchorNodes().length;
+        int anchorSize = getAnchor().size();
         for (int i = 0; i < this.sig.size(); i++) {
             CtrlPar.Var par = this.sig.get(i);
             int binding;
@@ -370,8 +369,7 @@ public class Rule implements Action, Fixable {
                 // look up the node in the anchor
                 binding = getAnchor().indexOf(ruleNode);
                 assert binding >= 0 : String.format(
-                    "Node %s not in anchors %s", ruleNode,
-                    Arrays.toString(getAnchorNodes()));
+                    "Node %s not in anchors %s", ruleNode, getAnchor());
             }
             result[i] = binding;
         }
@@ -646,7 +644,7 @@ public class Rule implements Action, Fixable {
     /** Returns the anchor of the rule. */
     public Anchor getAnchor() {
         if (this.anchor == null) {
-            initAnchor();
+            this.anchor = anchorFactory.newAnchor(this);
         }
         return this.anchor;
     }
@@ -659,51 +657,11 @@ public class Rule implements Action, Fixable {
         return this.seed;
     }
 
-    /** Returns the anchor nodes. */
-    public RuleNode[] getAnchorNodes() {
-        if (this.anchorNodes == null) {
-            initAnchor();
-        }
-        return this.anchorNodes;
-    }
-
-    /** Returns the anchor variables. */
-    public LabelVar[] getAnchorVars() {
-        if (this.anchorVars == null) {
-            initAnchor();
-        }
-        return this.anchorVars;
-    }
-
-    /** Returns the anchor edges. */
-    public RuleEdge[] getAnchorEdges() {
-        if (this.anchorEdges == null) {
-            initAnchor();
-        }
-        return this.anchorEdges;
-    }
-
-    /**
-     * Initialises the anchor nodes and edges for this rule.
-     */
-    private void initAnchor() {
-        this.anchor = anchorFactory.newAnchor(this);
-        Set<RuleNode> nodeResult = new TreeSet<RuleNode>(this.anchor.nodeSet());
-        Set<RuleEdge> edgeResult = new TreeSet<RuleEdge>(this.anchor.edgeSet());
-        Set<LabelVar> varResult = new TreeSet<LabelVar>(this.anchor.varSet());
-        this.anchorNodes = nodeResult.toArray(new RuleNode[nodeResult.size()]);
-        this.anchorEdges = edgeResult.toArray(new RuleEdge[edgeResult.size()]);
-        this.anchorVars = varResult.toArray(new LabelVar[varResult.size()]);
-    }
-
     @Override
     public String toString() {
         StringBuilder res =
-            new StringBuilder(String.format(
-                "Rule %s; anchor nodes: %s, edges: %s, variables: %s%n",
-                getLastName(), Groove.toString(getAnchorNodes()),
-                Groove.toString(getAnchorEdges()),
-                Groove.toString(getAnchorVars())));
+            new StringBuilder(String.format("Rule %s; anchor %s%n",
+                getFullName(), getAnchor()));
         res.append(getCondition().toString("    "));
         return res.toString();
     }
@@ -980,7 +938,7 @@ public class Rule implements Action, Fixable {
     private RuleEdge[] computeEraserNonAnchorEdges() {
         Set<RuleEdge> eraserNonAnchorEdgeSet =
             new HashSet<RuleEdge>(Arrays.asList(getEraserEdges()));
-        eraserNonAnchorEdgeSet.removeAll(Arrays.asList(getAnchorEdges()));
+        eraserNonAnchorEdgeSet.removeAll(getAnchor().edgeSet());
         return eraserNonAnchorEdgeSet.toArray(new RuleEdge[eraserNonAnchorEdgeSet.size()]);
     }
 
@@ -1432,18 +1390,6 @@ public class Rule implements Action, Fixable {
     private Anchor anchor;
     /** The rule seed. */
     private Anchor seed;
-    /**
-     * The set of anchor nodes of this rule.
-     */
-    private RuleNode[] anchorNodes;
-    /**
-     * The set of anchor edges of this rule.
-     */
-    private RuleEdge[] anchorEdges;
-    /**
-     * The anchor variables of this rule.
-     */
-    private LabelVar[] anchorVars;
     /**
      * The lhs edges that are not ruleMorph keys and are not anchors
      */

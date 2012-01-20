@@ -24,9 +24,9 @@ import groove.lts.DefaultRuleTransition;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
-import groove.lts.MatchResult;
 import groove.trans.CompositeEvent;
 import groove.trans.HostNode;
 import groove.trans.MergeMap;
@@ -207,7 +207,7 @@ public class MatchApplier implements RuleEventApplier {
         result = new HostNode[valueCount];
         HostNode[] parentValues = source.getBoundNodes();
         Rule rule = event.getRule();
-        int anchorNodeCount = rule.getAnchorNodes().length;
+        int anchorSize = rule.getAnchor().size();
         HostNode[] createdNodes = record.getCreatedNodeArray();
         Set<HostNode> erasedNodes = record.getErasedNodes();
         MergeMap mergeMap = record.getMergeMap();
@@ -217,14 +217,14 @@ public class MatchApplier implements RuleEventApplier {
             if (fromI >= parentValues.length) {
                 // this is an output parameter of the rule
                 int binding = rule.getParBinding(fromI - parentValues.length);
-                if (binding < anchorNodeCount) {
+                if (binding < anchorSize) {
                     // the parameter is not a creator node
                     HostNode sourceValue =
                         (HostNode) event.getAnchorImage(binding);
                     value = getNodeImage(sourceValue, mergeMap, erasedNodes);
                 } else {
                     // the parameter is a creator node
-                    value = createdNodes[binding - anchorNodeCount];
+                    value = createdNodes[binding - anchorSize];
                 }
             } else {
                 // this is an input parameter of the rule

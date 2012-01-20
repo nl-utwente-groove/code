@@ -57,10 +57,8 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -335,8 +333,8 @@ public final class Materialisation {
     }
 
     /** Returns a list of rule nodes that are part of the anchor. */
-    private List<RuleNode> getSingularRuleNodes() {
-        return Arrays.asList(this.matchedRule.getAnchorNodes());
+    private Set<RuleNode> getSingularRuleNodes() {
+        return this.matchedRule.getAnchor().nodeSet();
     }
 
     /** Returns all bundles of this materialisation. */
