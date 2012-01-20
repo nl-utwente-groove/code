@@ -19,6 +19,7 @@ package groove.explore.strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.RuleTransition;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,273 +38,286 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * Sends the explored statespace (using the DFS Strategy) to a remote server.
  * TODO: In a later version, the exploration strategy will be obtained from the remote server.
+ *
+ * JSON format:
+ * [<label start state>:String, <switch relation 1>:Array, <switch relation 2>:Array, ...]
+ * <switch relation>: [<label source state>:String, <gate>:Array, <label target state>:String, <guard>:String, <update mapping>:String]
+ * <gate>: [<label>:String, <stimulus/response>:String, [<interaction variable 1>:Array, <interaction variable 2>:Array, ...]
+ * <interaction variable>: [<interaction variable identifier>:String, <int. variable type>:String]
+ * label is null for tau transition
  *
  * @author Vincent de Bruijn
  * 
  */
 public class RemoteStrategy extends AbstractStrategy {
-    @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
-        // Initiate the Depth-First strategy
-        this.dfsStrategy = new DFSStrategy();
-        this.dfsStrategy.prepare(gts, startState);
-    }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
+	@Override
+	public void prepare(GTS gts, GraphState startState) {
+		super.prepare(gts, startState);
+		// Initiate the Depth-First strategy
+		this.dfsStrategy = new DFSStrategy();
+		this.dfsStrategy.prepare(gts, startState);
+	}
 
-    @Override
-    protected GraphState getNextState() {
-        GraphState result = this.dfsStrategy.getNextState();
-        if (result == null) {
-            send(format_to_simple_sts(getGTS()));
-        }
-        return result;
-    }
+	public void setHost(String host) {
+		this.host = host;
+	}
 
-    private String format_to_simple_sts(GTS gts) {
-        String message = "[";
+	@Override
+	protected GraphState getNextState() {
+		GraphState result = dfsStrategy.getNextState();
+		if (result == null) {
+			send(format_to_simple_sts(getGTS()));
+		}
+		return result;
+	}
 
-        // For each state
-        for (GraphState node : gts.nodeSet()) {
-            Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
+  // Transforms the gts to a simple sts.
+  // Formats each state in the gts to a location, each transition to a switch relation and each parameter on the transitions to an interaction variable.
+  // @return: a JSON formatted string
+	private String format_to_simple_sts(GTS gts) {
+		String message = "[\"s0\",";
+		
+		// For each state
+		Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
+		while(nodesIter.hasNext()) {
+			GraphState node = nodesIter.next();
+			Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
+			
+			// For each outgoing edge
+			Iterator<RuleTransition> edgeIter = node.getTransitionIter();
+			while(edgeIter.hasNext()) {
+				GraphTransition edge = edgeIter.next();
+				String label = edge.label().text();
+				
+				// Construct the label type
+				String type = null;
+				if (label.contains("?"))
+					type = "stimulus";
+				else
+					type = "response";
+				
+				// Remove possible empty parameter
+				boolean notEmpty = true;
+				if(label.endsWith("()")) {
+					label = label.substring(0,label.length()-2);
+					notEmpty = false;
+				}
+				
+				// Remove all '!' and '?' from the label
+				label = label.replace("!","").replace("?","");
+				
+				String guard = "null";
+				String iVars = "[]";
+				if(notEmpty && !noParamEdges.contains(label)) {
+					// Find if the label has parameters
+					Pattern pattern = Pattern.compile("\\(.+\\)$");
+					Matcher matcher = pattern.matcher(label);
+					if(matcher.find()) {
+						String paramString = label.substring(matcher.start());
+						label = label.substring(0, matcher.start());
+						
+						// Parse the parameters
+						Object[] params = parseParams(paramString);
+						
+						// Construct the interaction variable declaration
+						// TODO: memoize this
+						iVars = "[";
+						String[] iVarNames = new String[params.length];
+						for (int i = 0; i < params.length; i++) {
+							iVarNames[i] = label+"_i"+(i+1);
+							iVars+="[\""+iVarNames[i]+"\",\""+getType(params[i])+"\"],";
+						}
+						iVars = iVars.substring(0, iVars.length()-1)+"]";
+						
+						// Construct the guard
+						List<Object[]> l = new ArrayList<Object[]>();
+						l.add(params);
+						guard = constructGuard(l, iVarNames);
+					} else {
+						// We do not have to check future edges with this label
+						noParamEdges.add(label);
+					}
+				}
+				// Construct the switch relation
+				message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\","+iVars+"],\"s"+edge.target().getNumber()+"\","+guard+",null],";
+			}
+		}
+		message = message.substring(0, message.length()-1)+"]";
+		return message;
+	}
 
-            // For each outgoing edge
-            for (GraphTransition edge : gts.outEdgeSet(node)) {
-                String label = edge.label().text();
+  // Transforms the gts to an sts.
+  // TODO: create transformation rules
+  // @return: a JSON formatted string containing the sts
+	private String format_to_sts(GTS gts) {
+		String message = "[";
+		// For each state
+		Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
+		while(nodesIter.hasNext()) {
+			GraphState node = nodesIter.next();
+			Map<String, List<Object[]>> valueMap = new HashMap<String, List<Object[]>>(); // maps a label to a list of parameter values
+			Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
+			// For each outgoing edge
+			Iterator<RuleTransition> edgeIter = node.getTransitionIter();
+			while(edgeIter.hasNext()) {
+				GraphTransition edge = edgeIter.next();
+				String label = edge.label().text();
+				if(!noParamEdges.contains(label)) {
+					// Find if the label has parameters
+					Pattern pattern = Pattern.compile("\\(.+\\)$");
+					Matcher matcher = pattern.matcher(edge.label().text());
+					if(matcher.find()) {
+						String paramString = label.substring(matcher.start());
+						label = label.substring(0, matcher.start());
+						// Parse the parameters
+						Object[] params = parseParams(paramString);
+						// Map the label to these parameter values
+						List<Object[]> values = valueMap.get(label);
+						if(values == null) {
+							values = new ArrayList<Object[]>();
+							valueMap.put(label, values);
+						}
+						values.add(params);
+					} else {
+						// Remove possible empty parameter
+						//if(label.endsWith("()"))
+						//label = label.substring(0,label.length()-2);
+						// We do not have to explore future edges with this label
+						noParamEdges.add(label);
+					}
+				}
+			}
+			// For each label
+			Iterator<String> ix = valueMap.keySet().iterator();
+			while (ix.hasNext()) {
+				String label = ix.next();
+				List<Object[]> params = valueMap.get(label);
+				// Construct the constraint (guard) by doing some smart partitioning
+				//String guard = partitionParams(params);
+				String type = null;
+				if (label.contains("?"))
+					type = "stimulus";
+				else
+					type = "response";
+				// TODO: fix this problem
+				//message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\"],\"s"+edge.target().getNumber()+"\"],";
+			}
+		}
+		message = message.substring(0, message.length()-1)+"]";
+		return message;
+	}
 
-                // Construct the label type
-                String type = null;
-                if (label.contains("?")) {
-                    type = "stimulus";
-                } else {
-                    type = "response";
-                }
+	// Parses a "(x, y, ...)" string to an array of Objects representing x, y, etc.
+	private Object[] parseParams(String paramString) {
+		String[] split = paramString.substring(1,paramString.length()-1).split(",");
+		Object[] params = new Object[split.length];
+		for(int i = 0; i < split.length; i++) {
+			params[i] = parseValue(split[i]);
+		}
+		return params;
+	}
 
-                // Remove possible empty parameter
-                boolean notEmpty = true;
-                if (label.endsWith("()")) {
-                    label = label.substring(0, label.length() - 2);
-                    notEmpty = false;
-                }
+	// Parses a string with an unknown data value to an Object representing that data value
+	private Object parseValue(String valueString) {
+		// integer
+		Pattern pattern = Pattern.compile("^\\d+$");
+		Matcher matcher = pattern.matcher(valueString);
+		if (matcher.find()) {
+			try {
+				return Integer.parseInt(valueString);
+			} catch(NumberFormatException e) {
+				// This should not happen
 
-                // Remove all '!' and '?' from the label
-                label = label.replace("!", "").replace("?", "");
+			}
+		}
+		// double
+		pattern = Pattern.compile("^\\d+\\.\\d+$");
+		matcher = pattern.matcher(valueString);
+		if (matcher.find()) {
+			try {
+				return Double.parseDouble(valueString);
+			} catch(NumberFormatException e) {
+				// This should not happen
 
-                String guard = "null";
-                String iVars = "[]";
-                if (notEmpty && !noParamEdges.contains(label)) {
-                    // Find if the label has parameters
-                    Pattern pattern = Pattern.compile("\\(.+\\)$");
-                    Matcher matcher = pattern.matcher(label);
-                    if (matcher.find()) {
-                        String paramString = label.substring(matcher.start());
-                        label = label.substring(0, matcher.start());
+			}
+		}
+		// string
+		return valueString;
+	}
 
-                        // Parse the parameters
-                        Object[] params = parseParams(paramString);
+	// Construct the guard based on all possible interaction variable valuations
+	private String constructGuard(List<Object[]> params, String[] names) {
+		String guard = "\"";
+		for(int i = 0; i < params.size(); i++) {
+			Object[] o = params.get(i);
+			guard+="("+names[0]+" == "+o[0];
+			for(int j = 1; j < o.length; j++) {
+				guard+=" && "+names[j]+" == "+o[j].toString();
+			}
+			guard+=") ||";
+		}
+		guard = guard.substring(0, guard.length()-3)+"\"";
+		return guard;
+	}
+	
+	// Determines the type of this object and returns a string representation of the type
+	private String getType(Object o) {
+		String type = o.getClass().toString();
+		int index = type.lastIndexOf(".");
+		if (index != -1) {
+			return type.substring(index+1, type.length()).toLowerCase();
+		} else {
+			return type.toLowerCase();
+		}
+	}
 
-                        // Construct the interaction variable declaration
-                        // TODO: memoize this
-                        iVars = "[";
-                        String[] iVarNames = new String[params.length];
-                        for (int i = 0; i < params.length; i++) {
-                            iVarNames[i] = label + "_i" + (i + 1);
-                            iVars +=
-                                "[\"" + iVarNames[i] + "\",\""
-                                    + getType(params[i]) + "\"],";
-                        }
-                        iVars = iVars.substring(0, iVars.length() - 1) + "]";
+	// Sends a JSON message to the remote server
+	private void send(String message) {
+		// Connect to the remote server
+		try {
+			// Create a URLConnection object for a URL
+			URL url = new URL(host);
+			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setReadTimeout(10000);
+			conn.setRequestProperty("Content-Type","application/json");
 
-                        // Construct the guard
-                        List<Object[]> l = new ArrayList<Object[]>();
-                        l.add(params);
-                        guard = constructGuard(l, iVarNames);
-                    } else {
-                        // We do not have to check future edges with this label
-                        noParamEdges.add(label);
-                    }
-                }
-                // Construct the switch relation
-                message +=
-                    "[\"s" + node.getNumber() + "\",[\"" + label + "\",\""
-                        + type + "\"," + iVars + "],\"s"
-                        + edge.target().getNumber() + "\"," + guard + ",null],";
-            }
-        }
-        message = message.substring(0, message.length() - 1) + "]";
-        return message;
-    }
+			System.out.println(message);
 
-    private String format_to_sts(GTS gts) {
-        String message = "[";
-        // For each state
-        Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
-        while (nodesIter.hasNext()) {
-            GraphState node = nodesIter.next();
-            Map<String,List<Object[]>> valueMap =
-                new HashMap<String,List<Object[]>>(); // maps a label to a list of parameter values
-            Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
-            // For each outgoing edge
-            for (GraphTransition edge : gts.outEdgeSet(node)) {
-                String label = edge.label().text();
-                if (!noParamEdges.contains(label)) {
-                    // Find if the label has parameters
-                    Pattern pattern = Pattern.compile("\\(.+\\)$");
-                    Matcher matcher = pattern.matcher(edge.label().text());
-                    if (matcher.find()) {
-                        String paramString = label.substring(matcher.start());
-                        label = label.substring(0, matcher.start());
-                        // Parse the parameters
-                        Object[] params = parseParams(paramString);
-                        // Map the label to these parameter values
-                        List<Object[]> values = valueMap.get(label);
-                        if (values == null) {
-                            values = new ArrayList<Object[]>();
-                            valueMap.put(label, values);
-                        }
-                        values.add(params);
-                    } else {
-                        // Remove possible empty parameter
-                        //if(label.endsWith("()"))
-                        //label = label.substring(0,label.length()-2);
-                        // We do not have to explore future edges with this label
-                        noParamEdges.add(label);
-                    }
-                }
-            }
-            // For each label
-            Iterator<String> ix = valueMap.keySet().iterator();
-            while (ix.hasNext()) {
-                String label = ix.next();
-                List<Object[]> params = valueMap.get(label);
-                // Construct the constraint (guard) by doing some smart partitioning
-                //String guard = partitionParams(params);
-                String type = null;
-                if (label.contains("?")) {
-                    type = "stimulus";
-                } else {
-                    type = "response";
-                    // TODO: fix this problem
-                    //message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\"],\"s"+edge.target().getNumber()+"\"],";
-                }
-            }
-        }
-        message = message.substring(0, message.length() - 1) + "]";
-        return message;
-    }
+			conn.connect();
 
-    // Parses a "(x, y, ...)" string to an array of Objects representing x, y, etc.
-    private Object[] parseParams(String paramString) {
-        String[] split =
-            paramString.substring(1, paramString.length() - 1).split(",");
-        Object[] params = new Object[split.length];
-        for (int i = 0; i < split.length; i++) {
-            params[i] = parseValue(split[i]);
-        }
-        return params;
-    }
+			OutputStreamWriter out = new OutputStreamWriter(
+					conn.getOutputStream());
+			out.write(message);
+			out.close();
 
-    // Parses a string with an unknown data value to an Object representing that data value
-    private Object parseValue(String valueString) {
-        // integer
-        Pattern pattern = Pattern.compile("^\\d+$");
-        Matcher matcher = pattern.matcher(valueString);
-        if (matcher.find()) {
-            try {
-                return Integer.parseInt(valueString);
-            } catch (NumberFormatException e) {
-                // This should not happen
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(
+							conn.getInputStream()));
 
-            }
-        }
-        // double
-        pattern = Pattern.compile("^\\d+\\.\\d+$");
-        matcher = pattern.matcher(valueString);
-        if (matcher.find()) {
-            try {
-                return Double.parseDouble(valueString);
-            } catch (NumberFormatException e) {
-                // This should not happen
+			String decodedString;
+			System.out.println("Server response:");
 
-            }
-        }
-        // string
-        return valueString;
-    }
+			while ((decodedString = in.readLine()) != null) {
+				System.out.println(decodedString);
+			}
+			in.close();
 
-    // Construct the guard based on all possible interaction variable valuations
-    private String constructGuard(List<Object[]> params, String[] names) {
-        String guard = "\"";
-        for (int i = 0; i < params.size(); i++) {
-            Object[] o = params.get(i);
-            guard += "(" + names[0] + " == " + o[0];
-            for (int j = 1; j < o.length; j++) {
-                guard += " && " + names[j] + " == " + o[j].toString();
-            }
-            guard += ") ||";
-        }
-        guard = guard.substring(0, guard.length() - 3) + "\"";
-        return guard;
-    }
+			conn.disconnect();
 
-    // Determines the type of this object and returns a string representation of the type
-    private String getType(Object o) {
-        String type = o.getClass().toString();
-        int index = type.lastIndexOf(".");
-        if (index != -1) {
-            return type.substring(index + 1, type.length()).toLowerCase();
-        } else {
-            return type.toLowerCase();
-        }
-    }
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    // Sends a JSON message to the remote server
-    private void send(String message) {
-        // Connect to the remote server
-        try {
-            // Create a URLConnection object for a URL
-            URL url = new URL(this.host);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            System.out.println(message);
-
-            conn.connect();
-
-            OutputStreamWriter out =
-                new OutputStreamWriter(conn.getOutputStream());
-            out.write(message);
-            out.close();
-
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
-            String decodedString;
-            System.out.println("Server response:");
-
-            while ((decodedString = in.readLine()) != null) {
-                System.out.println(decodedString);
-            }
-            in.close();
-
-            conn.disconnect();
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private DFSStrategy dfsStrategy;
-    private String host;
+	private DFSStrategy dfsStrategy;
+	private String host;
 }
