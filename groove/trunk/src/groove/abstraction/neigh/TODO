@@ -198,39 +198,17 @@ on the original shapes by extending m' over the 0+ elements of s0. If we succeed
 then s0 is subsumed by s1, otherwise the shapes are different.
 - s1' is subsumed by s0'. This is symmetrical to the previous case.
 
+-------------------------------------------------------------------------------
 
+- On-the-fly state space reduction
+  ---------- ----- ----- ---------
 
+On the current abstract exploration we first construct the entire state space
+while recording the subsumption relation and then after exploration finishes we
+build the reduced state space by colapsing under subsumption. Since the reduced
+state space is several orders of magnitude smaller, we could greatly reduce
+memory consumption if we colapse subsumed states on-the-fly. This goes against
+the original notion of a GTS, where states are only added and not removed so
+maybe there are some hidden pitfalls around.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------------------
