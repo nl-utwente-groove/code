@@ -37,6 +37,8 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.match.Matcher;
+import groove.match.MatcherFactory;
+import groove.match.SearchEngine.SearchMode;
 import groove.match.TreeMatch;
 import groove.trans.BasicEvent;
 import groove.trans.GraphGrammar;
@@ -476,6 +478,7 @@ public final class Materialisation {
     }
 
     private boolean violatesNACs() {
+        boolean result = false;
         if (this.hasNACs()) {
             Matcher matcher = ReverseMatcherStore.getMatcher(this.matchedRule);
             TreeMatch nacMatch = matcher.find(this.shape, this.match);
@@ -490,10 +493,15 @@ public final class Materialisation {
                     }
                 });
                 nacMatch.traverseProofs(finder);
-                return finder.found();
+                result = finder.found();
             }
         }
-        return false;
+        // EZ says: we have to reset the matcher factory to minimal mode
+        // here. Sometimes we already have a pre-match computed for other
+        // rules and the call to create a new matcher for these other rules
+        // fails if we are in reverse mode.
+        MatcherFactory.instance().setEngine(SearchMode.MINIMAL);
+        return result;
     }
 
     /**

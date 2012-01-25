@@ -35,7 +35,7 @@ import org.junit.Test;
 public class TestShapeGenerator {
 
     private static final int VERBOSITY = 0;
-    private static final String STRATEGY = "shapebfs";
+    private static final String STRATEGY = "shapedfs";
 
     private List<String> getArgs(String grammar, String startGraph) {
         String args[] =
@@ -159,7 +159,7 @@ public class TestShapeGenerator {
             generator.start();
             AGTS gts = generator.getReducedGTS();
             assertEquals(152, gts.getStateCount());
-            assertEquals(586, gts.getTransitionCount());
+            assertEquals(614, gts.getTransitionCount());
         }
     }
 

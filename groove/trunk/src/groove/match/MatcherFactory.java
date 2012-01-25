@@ -16,10 +16,10 @@
  */
 package groove.match;
 
+import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
 import groove.trans.Anchor;
 import groove.trans.Condition;
-
 
 /**
  * A factory for matchers.
@@ -44,6 +44,15 @@ public class MatcherFactory {
      */
     public void setEngine(SearchEngine engine) {
         this.engine = engine;
+    }
+
+    /**
+     * Changes the search engine set in this factory.
+     * This will cause all matchers created by this factory to refresh
+     * their inner search strategies.
+     */
+    public void setEngine(SearchMode mode) {
+        this.engine = PlanSearchEngine.getInstance(mode);
     }
 
     /** Sets the search engine to the default. */
