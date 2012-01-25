@@ -29,7 +29,14 @@ import groove.explore.encode.Serialized;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.graph.DefaultGraph;
+import groove.graph.Node;
+import groove.graph.algebra.OperatorNode;
+import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
 import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.trans.RuleEdge;
+import groove.trans.RuleNode;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
@@ -268,6 +275,40 @@ public final class ShapeGenerator extends CommandLineTool {
         } catch (IOException exc) {
             printError("I/O error while loading grammar: " + exc.getMessage(),
                 false);
+        }
+        // Check if the grammar can be used in abstract mode.
+        checkGrammarForAbstraction();
+    }
+
+    private void checkGrammarForAbstraction() {
+        if (!this.grammar.getProperties().isInjective()) {
+            printError(
+                "Grammar is not injective! Abstraction can only work with injective rules...",
+                false);
+        }
+        for (Node node : this.grammar.getStartGraph().nodeSet()) {
+            if (node instanceof ValueNode) {
+                printError(
+                    "Grammar start graph has attributes! Abstraction cannot handle attributes...",
+                    false);
+            }
+        }
+        for (Rule rule : this.grammar.getAllRules()) {
+            for (RuleNode node : rule.lhs().nodeSet()) {
+                if (node instanceof OperatorNode
+                    || node instanceof VariableNode) {
+                    printError(
+                        "Grammar rules operate on attributes! Abstraction cannot handle attributes...",
+                        false);
+                }
+            }
+            for (RuleEdge edge : rule.lhs().edgeSet()) {
+                if (!edge.label().isAtom()) {
+                    printError(
+                        "Grammar rules have regular expressions that the abstraction cannot handle!",
+                        false);
+                }
+            }
         }
     }
 
