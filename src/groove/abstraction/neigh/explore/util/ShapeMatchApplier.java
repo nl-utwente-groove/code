@@ -141,7 +141,7 @@ public final class ShapeMatchApplier extends MatchApplier {
                 agts.addRuleTransition(trans);
                 result = trans;
             }
-        } catch (AssertionError e) {
+        } catch (Throwable e) {
             // Additional code for bug hunting.
             System.err.println("\nFound a bug in the abstraction code!!!");
             File file = new File(source.toString() + ".gxl");
@@ -152,7 +152,9 @@ public final class ShapeMatchApplier extends MatchApplier {
             System.err.println(origEvent.getMatch(host));
             System.err.println();
             // Raise the error again so it reaches the top level.
-            throw e;
+            // throw e;
+            e.printStackTrace();
+            System.exit(1);
         }
 
         addTransitionReporter.stop();
