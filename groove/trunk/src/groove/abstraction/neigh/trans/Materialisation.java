@@ -1195,19 +1195,16 @@ public final class Materialisation {
     }*/
 
     public static void main(String args[]) {
-        //String DIRECTORY = "junit/abstraction/basic-tests.gps/";
-        String DIRECTORY = "junit/abstraction/euler-counting.gps/";
+        String DIRECTORY = "junit/abstraction/bauer-ideal-platoon.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Abstraction.initialise();
-        //File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-        File file = new File(DIRECTORY + "dfs8.gxl");
+        File file = new File(DIRECTORY + "error.gxl");
         File grammarFile = new File(DIRECTORY);
         try {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             GraphGrammar grammar = view.toGrammar();
-            //Rule rule = grammar.getRule("test-mat-13");
-            Rule rule = grammar.getRule("toOldArea10");
+            Rule rule = grammar.getRule("pass-1");
             Shape shape =
                 ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
             ShapePreviewDialog.showShape(shape);
@@ -1226,63 +1223,4 @@ public final class Materialisation {
         }
     }
 
-    /*public static void main(String args[]) {
-        String DIRECTORY = "junit/abstraction/euler-counting.gps/";
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
-        Abstraction.initialise();
-        File grammarFile = new File(DIRECTORY);
-        try {
-            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
-            GraphGrammar grammar = view.toGrammar();
-            ShapeGxl marshaller = ShapeGxl.getInstance(grammar.getTypeGraph());
-            Shape dfs = marshaller.loadShape(new File(DIRECTORY + "dfs8.gxl"));
-            Shape bfs = marshaller.loadShape(new File(DIRECTORY + "bfs8.gxl"));
-            ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
-            int result = checker.compareShapes(dfs, bfs).one();
-            System.out.println("Comparison: " + result);
-            Rule rule = grammar.getRule("toOldArea10");
-
-            Set<Proof> preMatches = PreMatch.getPreMatches(dfs, rule);
-            assert preMatches.size() == 1;
-            Proof preMatch = preMatches.iterator().next();
-            Set<Materialisation> dfsMats =
-                Materialisation.getMaterialisations(dfs, preMatch);
-
-            preMatches = PreMatch.getPreMatches(bfs, rule);
-            assert preMatches.size() == 1;
-            preMatch = preMatches.iterator().next();
-            Set<Materialisation> bfsMats =
-                Materialisation.getMaterialisations(bfs, preMatch);
-
-            System.out.println(dfsMats.size());
-            System.out.println(bfsMats.size());
-
-            Materialisation dfsMat = dfsMats.iterator().next();
-            Shape dfsShape = dfsMat.getShape();
-            dfsShape.reduce();
-            //ShapePreviewDialog.showShape(dfsShape);
-            for (Materialisation dfsMat : dfsMats) {
-                Shape dfsShape = dfsMat.getShape();
-            int i = 1;
-            for (Materialisation bfsMat : bfsMats) {
-                Shape bfsShape = bfsMat.getShape();
-                result = checker.compareShapes(dfsShape, bfsShape).one();
-                System.out.println("Comparison: " + result);
-                if (i == 4) {
-                    ShapePreviewDialog.showShape(bfsShape);
-                    bfsShape.reduce();
-                    ShapePreviewDialog.showShape(bfsShape);
-                    result = checker.compareShapes(dfsShape, bfsShape).one();
-                    System.out.println("Comparison: " + result);
-                }
-                i++;
-            }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
-        }
-    }*/
 }
