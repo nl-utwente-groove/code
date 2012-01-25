@@ -29,7 +29,6 @@ import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.TypeLabel;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
-import groove.match.plan.PlanSearchEngine;
 import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -77,8 +76,7 @@ public final class PreMatch {
 
         // Make sure that the search engine is set to minimal mode. This is
         // needed when we have rules with NACs.
-        MatcherFactory.instance().setEngine(
-            PlanSearchEngine.getInstance(SearchMode.MINIMAL));
+        MatcherFactory.instance().setEngine(SearchMode.MINIMAL);
 
         Set<Proof> preMatches = new MyHashSet<Proof>();
         // We use the normal matching algorithms for finding matches.
