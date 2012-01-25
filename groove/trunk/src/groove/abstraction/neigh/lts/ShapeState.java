@@ -59,8 +59,6 @@ public class ShapeState extends AbstractGraphState {
 
     /** The shape associated with this state. */
     private final Shape shape;
-    /** Flag to indicate whether this state is closed or not. */
-    private boolean closed;
     /** A (possible null) reference to a state that subsumes this one. */
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
@@ -90,7 +88,6 @@ public class ShapeState extends AbstractGraphState {
         // Fix the shape to avoid modifications.
         // EDUARDO: restore this after debugging is done.
         // this.shape.setFixed();
-        this.closed = false;
         this.transitions = new ArrayList<RuleTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
         setCtrlState(ctrlState);
@@ -141,18 +138,6 @@ public class ShapeState extends AbstractGraphState {
     @Override
     public boolean containsTransition(RuleTransition transition) {
         return this.transitions.contains(transition);
-    }
-
-    @Override
-    public boolean setClosed(boolean finished) {
-        boolean result = !this.closed;
-        this.closed = true;
-        return result;
-    }
-
-    @Override
-    public boolean isClosed() {
-        return this.closed;
     }
 
     @Override
