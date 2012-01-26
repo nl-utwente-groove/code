@@ -1078,14 +1078,17 @@ public final class Materialisation {
         Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
         // We need to check for nodes that got disconnected...
         for (ShapeNode origNode : origShape.nodeSet()) {
-            for (ShapeNode node : morph.getPreImages(origNode)) {
-                for (EdgeSignature origEs : origShape.getEdgeSignatures(origNode)) {
-                    // We know that the original signature has edges.
-                    // Check if the pre-images also do.
-                    morph.getPreImages(shape, node, origEs, false, preImgEs);
-                    if (preImgEs.isEmpty()) {
-                        // The node got disconnected and therefore cannot exist.
-                        garbageNodes.add(node);
+            for (EdgeSignature origEs : origShape.getEdgeSignatures(origNode)) {
+                Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
+                if (!origEsMult.isZeroPlus()) {
+                    for (ShapeNode node : morph.getPreImages(origNode)) {
+                        // We know that the original signature has edges.
+                        // Check if the pre-images also do.
+                        morph.getPreImages(shape, node, origEs, false, preImgEs);
+                        if (preImgEs.isEmpty()) {
+                            // The node got disconnected and therefore cannot exist.
+                            garbageNodes.add(node);
+                        }
                     }
                 }
             }
@@ -1207,7 +1210,6 @@ public final class Materialisation {
             Rule rule = grammar.getRule("pass-1");
             Shape shape =
                 ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
-            ShapePreviewDialog.showShape(shape);
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =
