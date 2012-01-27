@@ -23,7 +23,9 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.GraphCache;
 import groove.graph.TypeEdge;
+import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.lts.ActionLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -166,10 +168,19 @@ public final class AGTS extends GTS {
 
     /** Store the abstraction labels in the parameters, if any. */
     private void storeAbsLabels() {
+        TypeGraph typeGraph = getGrammar().getTypeGraph();
         Set<TypeLabel> unaryLabels = new MyHashSet<TypeLabel>();
-        for (TypeEdge typeEdge : getGrammar().getTypeGraph().edgeSet()) {
+        for (TypeEdge typeEdge : typeGraph.edgeSet()) {
             if (!typeEdge.label().isBinary()) {
                 unaryLabels.add(typeEdge.label());
+            }
+        }
+        if (!typeGraph.isImplicit()) {
+            // Node types are not stored as edges.
+            for (TypeNode typeNode : typeGraph.nodeSet()) {
+                if (!typeNode.isTopType()) {
+                    unaryLabels.add(typeNode.label());
+                }
             }
         }
 
