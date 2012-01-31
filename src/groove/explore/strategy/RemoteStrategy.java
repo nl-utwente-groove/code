@@ -16,18 +16,23 @@
  */
 package groove.explore.strategy;
 
+import groove.graph.algebra.ValueNode;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransition;
+import groove.rel.LabelVar;
 import groove.trans.Condition;
+import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
+import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleGraph;
+import groove.trans.RuleNode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,13 +74,15 @@ public class RemoteStrategy extends AbstractStrategy {
 	public void prepare(GTS gts, GraphState startState) {
 		super.prepare(gts, startState);
 		
+		generalizeTest(startState.getGraph());
+		
 		// Initiate the Depth-First strategy
 		this.dfsStrategy = new DFSStrategy();
 		this.dfsStrategy.prepare(gts, startState);
 		
-		//connect();
+		connect();
 		this.sts = new STS();
-		this.sts.toLocation(this.sts.hostGraphToLocation(startState.getGraph()));
+		this.sts.setStartLocation(this.sts.hostGraphToLocation(startState.getGraph()));
 	}
 	
 	@Override
@@ -83,8 +90,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		if (getState() == null) {
 			return false;
 	    }
-		
-		// If the location is new, determine its outgoing switch relations
+		// If the current location is new, determine its outgoing switch relations
 		Location current = this.sts.getCurrentLocation();
 		if (!current.explored()) {
 			// Get current rule matches
@@ -117,25 +123,17 @@ public class RemoteStrategy extends AbstractStrategy {
 
 	@Override
 	protected GraphState getNextState() {
-		GraphState result = getRemoteStrategy();
-		if (result == null) {
-			//send(format_to_simple_sts(getGTS()));
-			send(this.sts.toJSON());
-			disconnect();
-		}
-		return null;
-		//return result;
-	}
-	
-	// Sends the possible rule matches to the remote server.
-	// Wait for rule choice. Apply the chosen rule.
-	private GraphState getRemoteStrategy() {
 		Location current = this.sts.getCurrentLocation();
-		
+		GraphState state = null;
 		if (useDFS) {
 			// Use the DfsStrategy to decide on the next state.
-			GraphState state = dfsStrategy.getNextState();
-			this.sts.toLocation(this.sts.getLocation(state.getGraph()));
+			state = dfsStrategy.getNextState();
+			if (state == null) {
+				send(this.sts.toJSON());
+				disconnect();
+			} else {
+				this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
+			}
 			return state;
 		} else {
 			// Send the possible switch relations from the current location to the remote server.
@@ -144,163 +142,31 @@ public class RemoteStrategy extends AbstractStrategy {
 			
 			// Get the response with the choice from the remote server.
 			InstantiatedSwitchRelation isr = receive();
-			this.sts.toLocation(current.getRelationTarget(isr.getSwitchRelation()));
-			
-			return isr.getTransition().target();
+			if (isr == null) {
+				disconnect();
+			} else {
+				this.sts.toLocation(current.getRelationTarget(isr.getSwitchRelation()));
+				state = isr.getTransition().target();
+			}
 		}
+		return null;
+		//return state;
 	}
 	
 	private String createMessage(Set<SwitchRelation> relations) {
 		String message = "[";
 		for (SwitchRelation r : relations ) {
-			message += r.toJSON()+",";
+			//message += r.toJSON()+",";
 		}
 		message = message.substring(0, message.length()-1)+"]";
  		return message;
 	}
 
-  // Transforms the gts to a simple sts.
-  // Formats each state in the gts to a location, each transition to a switch relation and each parameter on the transitions to an interaction variable.
-  // @return: a JSON formatted string
-	private String format_to_simple_sts(GTS gts) {
-		String message = "[\"s0\",";
-		
-		// For each state
-		Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
-		while(nodesIter.hasNext()) {
-			GraphState node = nodesIter.next();
-			Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
-			
-			// For each outgoing edge
-			Iterator<RuleTransition> edgeIter = node.getTransitionIter();
-			while(edgeIter.hasNext()) {
-				GraphTransition edge = edgeIter.next();
-				String label = edge.label().text();
-				
-				// Construct the label type
-				String type = null;
-				if (label.contains("?"))
-					type = "stimulus";
-				else
-					type = "response";
-				
-				// Remove possible empty parameter
-				boolean notEmpty = true;
-				if(label.endsWith("()")) {
-					label = label.substring(0,label.length()-2);
-					notEmpty = false;
-				}
-				
-				// Remove all '!' and '?' from the label
-				label = label.replace("!","").replace("?","");
-				
-				String guard = "null";
-				String iVars = "[]";
-				if(notEmpty && !noParamEdges.contains(label)) {
-					// Find if the label has parameters
-					Pattern pattern = Pattern.compile("\\(.+\\)$");
-					Matcher matcher = pattern.matcher(label);
-					if(matcher.find()) {
-						String paramString = label.substring(matcher.start());
-						label = label.substring(0, matcher.start());
-						
-						// Parse the parameters
-						Object[] params = parseParams(paramString);
-						
-						// Construct the interaction variable declaration
-						// TODO: memoize this
-						iVars = "[";
-						String[] iVarNames = new String[params.length];
-						for (int i = 0; i < params.length; i++) {
-							iVarNames[i] = label+"_i"+(i+1);
-							iVars+="[\""+iVarNames[i]+"\",\""+getType(params[i])+"\"],";
-						}
-						iVars = iVars.substring(0, iVars.length()-1)+"]";
-						
-						// Construct the guard
-						List<Object[]> l = new ArrayList<Object[]>();
-						l.add(params);
-						guard = constructGuard(l, iVarNames);
-					} else {
-						// We do not have to check future edges with this label
-						noParamEdges.add(label);
-					}
-				}
-				// Construct the switch relation
-				message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\","+iVars+"],\"s"+edge.target().getNumber()+"\","+guard+",null],";
-			}
-		}
-		message = message.substring(0, message.length()-1)+"]";
-		return message;
-	}
-
-	// Parses a "(x, y, ...)" string to an array of Objects representing x, y, etc.
-	private Object[] parseParams(String paramString) {
-		String[] split = paramString.substring(1,paramString.length()-1).split(",");
-		Object[] params = new Object[split.length];
-		for(int i = 0; i < split.length; i++) {
-			params[i] = parseValue(split[i]);
-		}
-		return params;
-	}
-
-	// Parses a string with an unknown data value to an Object representing that data value
-	private Object parseValue(String valueString) {
-		// integer
-		Pattern pattern = Pattern.compile("^\\d+$");
-		Matcher matcher = pattern.matcher(valueString);
-		if (matcher.find()) {
-			try {
-				return Integer.parseInt(valueString);
-			} catch(NumberFormatException e) {
-				// This should not happen
-
-			}
-		}
-		// double
-		pattern = Pattern.compile("^\\d+\\.\\d+$");
-		matcher = pattern.matcher(valueString);
-		if (matcher.find()) {
-			try {
-				return Double.parseDouble(valueString);
-			} catch(NumberFormatException e) {
-				// This should not happen
-
-			}
-		}
-		// string
-		return valueString;
-	}
-
-	// Construct the guard based on all possible interaction variable valuations
-	private String constructGuard(List<Object[]> params, String[] names) {
-		String guard = "\"";
-		for(int i = 0; i < params.size(); i++) {
-			Object[] o = params.get(i);
-			guard+="("+names[0]+" == "+o[0];
-			for(int j = 1; j < o.length; j++) {
-				guard+=" && "+names[j]+" == "+o[j].toString();
-			}
-			guard+=") ||";
-		}
-		guard = guard.substring(0, guard.length()-3)+"\"";
-		return guard;
-	}
-	
-	// Determines the type of this object and returns a string representation of the type
-	private String getType(Object o) {
-		String type = o.getClass().toString();
-		int index = type.lastIndexOf(".");
-		if (index != -1) {
-			return type.substring(index+1, type.length()).toLowerCase();
-		} else {
-			return type.toLowerCase();
-		}
-	}
+  
 
 	// Connect to the remote server
 	private void connect() {
-		try {
+		/*try {
 			// Create a URLConnection object for a URL
 			URL url = new URL(host);
 			this.conn = (HttpURLConnection)url.openConnection();
@@ -310,14 +176,16 @@ public class RemoteStrategy extends AbstractStrategy {
 			conn.setRequestProperty("Content-Type","application/json");
 	
 			conn.connect();
-	
+			
 			this.out = new OutputStreamWriter(conn.getOutputStream());
 			this.in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
+		this.out = new OutputStreamWriter(System.out);
+		this.in = new BufferedReader(new InputStreamReader(System.in));
 	}
 	
 	// Disconnect from the remote server.
@@ -325,7 +193,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		try {
 			in.close();
 			out.close();
-			conn.disconnect();
+			//conn.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -369,7 +237,8 @@ public class RemoteStrategy extends AbstractStrategy {
 	 * This contains the sts representing the GTS explored so far.
 	 */
 	private class STS {
-
+		
+		private Location start;
 		private Location current;
 		private Map<HostGraph, Location> locationMapping;
 		private Map<Rule, SwitchRelation> switchRelationMapping;
@@ -377,6 +246,11 @@ public class RemoteStrategy extends AbstractStrategy {
 		public STS() {
 			this.locationMapping = new HashMap<HostGraph, Location>();
 			this.switchRelationMapping = new HashMap<Rule, SwitchRelation>();
+		}
+		
+		public void setStartLocation(Location start) {
+			this.start = start;
+			toLocation(start);
 		}
 		
 		public Location getCurrentLocation() {
@@ -415,18 +289,34 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON() {
-			return "";
+			String json = "["+start.toJSON();
+			for (Location l : locationMapping.values()) {
+				String relation = ",[";
+				for (SwitchRelation r : l.getSwitchRelations()) {
+					json+=","+r.toJSON(l, l.getRelationTarget(r));
+				}
+			}
+			return json+"]";
 		}
 		
 		private HostGraph generalize(HostGraph graph) {
 			HostGraph generalizedGraph = graph.clone();
-			System.out.println("nodes:");
-			for (HostNode node : generalizedGraph.nodeSet()) {
-				System.out.println(node.toString());
-			}
-			System.out.println("edges:");
-			for (HostEdge edge : generalizedGraph.edgeSet()) {
-				System.out.println(edge.toString());
+			HostFactory factory = generalizedGraph.getFactory();
+			for (HostEdge edge : graph.edgeSet()) {
+				HostNode node = edge.target();
+				if (node.getType().isDataType()) {
+					ValueNode valueNode = (ValueNode)node;
+					Object value = valueNode.getValue();
+					/*Object newValue = null;
+					if (value.getClass().toString() == "java.lang.Integer")
+						newValue = new Integer(0);
+					
+					ValueNode newNode = factory.createValueNode(valueNode.getNumber(), valueNode.getAlgebra(), newValue);
+					generalizedGraph.addNode(newNode);
+					generalizedGraph.removeEdge(edge);
+					generalizedGraph.addEdge(factory.createEdge(edge.source(), edge.label(), newNode));*/
+					generalizedGraph.removeNode(node);
+				}
 			}
 			return generalizedGraph;
 		}
@@ -442,7 +332,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		public Location(String identifier) {
 			this.identifier = identifier;
-			relations = new HashMap<SwitchRelation, Location>();
+			this.relations = new HashMap<SwitchRelation, Location>();
 		}
 		
 		public Set<SwitchRelation> getSwitchRelations() {
@@ -464,6 +354,10 @@ public class RemoteStrategy extends AbstractStrategy {
 		public String toString() {
 			return identifier;
 		}
+		
+		public String toJSON() {
+			return "\""+toString()+"\"";
+		}
 	
 	}
 	
@@ -472,28 +366,122 @@ public class RemoteStrategy extends AbstractStrategy {
 	 */
 	private class SwitchRelation {
 		
-		private String gate;
+		private Gate gate;
 		private String guard;
 		private String update;
 		
-		public SwitchRelation(String gate, String guard, String update) {
+		public SwitchRelation(Gate gate, String guard, String update) {
 			this.gate = gate;
 			this.guard = guard;
 			this.update = update;
 		}
 		
 		public SwitchRelation(Rule rule) {
-			this.gate = rule.getFullName();
+			String name = rule.getFullName();
+			List<Variable> iVars = new ArrayList<Variable>();
+			// Guards
+			// datatype nodes in the lhs are restricted by edges to/from that node in
+			// the lhs and nac.
+			this.guard = "";
+			// Update of Location variable:
+			// edge to datatype node in lhs, same edge, same source to different
+			// datatype node in rhs.
+			// New location variable:
+			// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
+			this.update = "";
+			
+			// Interaction variable:
+			// datatype node labeled as parameter (in lhs).
+			
 			RuleGraph lhs = rule.lhs();
 			RuleGraph rhs = rule.rhs();
 			Condition nac = rule.getCondition();
-			System.out.println(lhs.toString());
-			System.out.println(rhs.toString());
-			System.out.println(nac.toString());
+			//System.out.println(rhs.toString());
+			//System.out.println(nac.toString());
+			
+			for (RuleNode rn : lhs.nodeSet()) {
+				if (rn.getType().isDataType()) {
+					System.out.println(rn.toString());
+					System.out.println(rn.getVars());
+					System.out.println(rn.getAnchorKind());
+					System.out.println(rn.getType());
+					System.out.println(rn.getClass());
+					System.out.println("");
+				}
+			}
+			
+			for (RuleNode rn : rhs.nodeSet()) {
+				if (rn.getType().isDataType()) {
+					System.out.println(rn.toString());
+					System.out.println(rn.getVars());
+					System.out.println(rn.getAnchorKind());
+					System.out.println(rn.getType());
+					System.out.println(rn.getClass());
+					System.out.println("");
+				}
+			}
+			this.gate = new Gate(name, iVars);
+		}
+		
+		public String toJSON(Location source, Location target) {
+			return "["+source.toJSON()+",\""+gate+"\","+target.toJSON()+",\""+guard+"\",\""+update+"\"]";
+		}
+		
+	}
+	
+	private class Gate {
+		
+		private String identifier;
+		private List<Variable> iVars;
+		
+		public Gate(String identifier, List<Variable> iVars) {
+			this.identifier = identifier;
+			this.iVars = iVars;
 		}
 		
 		public String toJSON() {
-			return "["+guard+","+update+"]";
+			String json = "[\""+this.identifier+"\"";
+			for (Variable v : iVars) {
+				json+=","+v.toJSON();
+			}
+			return json+"]";
+		}
+		
+	}
+	
+	private class Variable {
+		
+		protected String identifier;
+		protected String type;
+		
+		public Variable(String identifier, Class type) {
+			this.identifier = identifier;
+			String classType = type.toString();
+			int index = classType.lastIndexOf(".");
+			if (index != -1) {
+				this.type = classType.substring(index+1, classType.length()).toLowerCase();
+			} else {
+				this.type = classType.toLowerCase();
+			}
+		}
+		
+		public String toJSON() {
+			return "[\""+this.identifier+"\",\""+type+"\"]";
+		}
+	}
+	
+	private class LocationVariable extends Variable {
+		
+		private Object initialValue;
+
+		public LocationVariable(String identifier, Object initialValue) {
+			super(identifier, initialValue.getClass());
+			this.initialValue = initialValue;
+		}
+		
+		@Override
+		public String toJSON() {
+			return "[\""+this.identifier+"\",\""+this.type+"\","+initialValue.toString()+"]";
 		}
 		
 	}
@@ -516,4 +504,155 @@ public class RemoteStrategy extends AbstractStrategy {
 			return this.transition;
 		}
 	}
+	
+	//TESTS
+	
+	public void generalizeTest(HostGraph graph) {
+		System.out.println("Started test case generalizeTest");
+		STS s = new STS();
+		Location l1 = s.hostGraphToLocation(graph);
+		Location l2 = s.hostGraphToLocation(graph);
+		boolean result = l1.equals(l2);
+		System.out.println(result);
+		assert result;
+	}
+	/*
+	// Transforms the gts to a simple sts.
+	  // Formats each state in the gts to a location, each transition to a switch relation and each parameter on the transitions to an interaction variable.
+	  // @return: a JSON formatted string
+		private String format_to_simple_sts(GTS gts) {
+			String message = "[\"s0\",";
+			
+			// For each state
+			Iterator<? extends GraphState> nodesIter = gts.nodeSet().iterator();
+			while(nodesIter.hasNext()) {
+				GraphState node = nodesIter.next();
+				Set<String> noParamEdges = new HashSet<String>(); // if a label has no parameter edges, future edges with that label will also not have parameters
+				
+				// For each outgoing edge
+				Iterator<RuleTransition> edgeIter = node.getTransitionIter();
+				while(edgeIter.hasNext()) {
+					GraphTransition edge = edgeIter.next();
+					String label = edge.label().text();
+					
+					// Construct the label type
+					String type = null;
+					if (label.contains("?"))
+						type = "stimulus";
+					else
+						type = "response";
+					
+					// Remove possible empty parameter
+					boolean notEmpty = true;
+					if(label.endsWith("()")) {
+						label = label.substring(0,label.length()-2);
+						notEmpty = false;
+					}
+					
+					// Remove all '!' and '?' from the label
+					label = label.replace("!","").replace("?","");
+					
+					String guard = "null";
+					String iVars = "[]";
+					if(notEmpty && !noParamEdges.contains(label)) {
+						// Find if the label has parameters
+						Pattern pattern = Pattern.compile("\\(.+\\)$");
+						Matcher matcher = pattern.matcher(label);
+						if(matcher.find()) {
+							String paramString = label.substring(matcher.start());
+							label = label.substring(0, matcher.start());
+							
+							// Parse the parameters
+							Object[] params = parseParams(paramString);
+							
+							// Construct the interaction variable declaration
+							// TODO: memoize this
+							iVars = "[";
+							String[] iVarNames = new String[params.length];
+							for (int i = 0; i < params.length; i++) {
+								iVarNames[i] = label+"_i"+(i+1);
+								iVars+="[\""+iVarNames[i]+"\",\""+getType(params[i])+"\"],";
+							}
+							iVars = iVars.substring(0, iVars.length()-1)+"]";
+							
+							// Construct the guard
+							List<Object[]> l = new ArrayList<Object[]>();
+							l.add(params);
+							guard = constructGuard(l, iVarNames);
+						} else {
+							// We do not have to check future edges with this label
+							noParamEdges.add(label);
+						}
+					}
+					// Construct the switch relation
+					message += "[\"s"+node.getNumber()+"\",[\""+label+"\",\""+type+"\","+iVars+"],\"s"+edge.target().getNumber()+"\","+guard+",null],";
+				}
+			}
+			message = message.substring(0, message.length()-1)+"]";
+			return message;
+		}
+
+		// Parses a "(x, y, ...)" string to an array of Objects representing x, y, etc.
+		private Object[] parseParams(String paramString) {
+			String[] split = paramString.substring(1,paramString.length()-1).split(",");
+			Object[] params = new Object[split.length];
+			for(int i = 0; i < split.length; i++) {
+				params[i] = parseValue(split[i]);
+			}
+			return params;
+		}
+
+		// Parses a string with an unknown data value to an Object representing that data value
+		private Object parseValue(String valueString) {
+			// integer
+			Pattern pattern = Pattern.compile("^\\d+$");
+			Matcher matcher = pattern.matcher(valueString);
+			if (matcher.find()) {
+				try {
+					return Integer.parseInt(valueString);
+				} catch(NumberFormatException e) {
+					// This should not happen
+
+				}
+			}
+			// double
+			pattern = Pattern.compile("^\\d+\\.\\d+$");
+			matcher = pattern.matcher(valueString);
+			if (matcher.find()) {
+				try {
+					return Double.parseDouble(valueString);
+				} catch(NumberFormatException e) {
+					// This should not happen
+
+				}
+			}
+			// string
+			return valueString;
+		}
+
+		// Construct the guard based on all possible interaction variable valuations
+		private String constructGuard(List<Object[]> params, String[] names) {
+			String guard = "\"";
+			for(int i = 0; i < params.size(); i++) {
+				Object[] o = params.get(i);
+				guard+="("+names[0]+" == "+o[0];
+				for(int j = 1; j < o.length; j++) {
+					guard+=" && "+names[j]+" == "+o[j].toString();
+				}
+				guard+=") ||";
+			}
+			guard = guard.substring(0, guard.length()-3)+"\"";
+			return guard;
+		}
+		
+		// Determines the type of this object and returns a string representation of the type
+		private String getType(Object o) {
+			String type = o.getClass().toString();
+			int index = type.lastIndexOf(".");
+			if (index != -1) {
+				return type.substring(index+1, type.length()).toLowerCase();
+			} else {
+				return type.toLowerCase();
+			}
+		}*/
 }
