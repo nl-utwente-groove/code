@@ -59,11 +59,12 @@ import java.util.regex.Pattern;
  * TODO: In a later version, the exploration strategy will be obtained from the remote server.
  *
  * JSON format:
- * [<label start state>:String, <switch relation 1>:Array, <switch relation 2>:Array, ...]
- * <switch relation>: [<label source state>:String, <gate>:Array, <label target state>:String, <guard>:String, <update mapping>:String]
- * <gate>: [<label>:String, <stimulus/response>:String, [<interaction variable 1>:Array, <interaction variable 2>:Array, ...]
- * <interaction variable>: [<interaction variable identifier>:String, <int. variable type>:String]
- * label is null for tau transition
+ * {start: "label start location", lVars: {<location variable>}, relations: [<switch relation>], gates: {<gate>}, iVars: {<interaction variable>}}
+ * <location variable> = "label": {type: "variable type", init: initial value}
+ * <switch relation> = {source: "label source location", gate: "label gate", target: "label target location", guard: "guard", update: "update mapping"}
+ * <gate> = "label": {type: "?/!", iVars: ["label interaction variable"]}
+ * <interaction variable> = "label": "variable type"
+ * interaction variable label is null for tau transition.
  *
  * @author Vincent de Bruijn
  * 
@@ -242,10 +243,16 @@ public class RemoteStrategy extends AbstractStrategy {
 		private Location current;
 		private Map<HostGraph, Location> locationMapping;
 		private Map<Rule, SwitchRelation> switchRelationMapping;
+		private Set<LocationVariable> locationVariables;
+		private Set<Gate> gates;
+		private Set<InteractionVariable> interactionVariables;
 		
 		public STS() {
 			this.locationMapping = new HashMap<HostGraph, Location>();
 			this.switchRelationMapping = new HashMap<Rule, SwitchRelation>();
+			this.locationVariables = new HashSet<LocationVariable>();
+			this.gates = new HashSet<Gate>();
+			this.interactionVariables = new HashSet<InteractionVariable>();
 		}
 		
 		public void setStartLocation(Location start) {
@@ -282,25 +289,106 @@ public class RemoteStrategy extends AbstractStrategy {
 		public SwitchRelation ruleToSwitchRelation(Rule rule) {
 			SwitchRelation switchRelation = switchRelationMapping.get(rule);
 			if (switchRelation == null) {
-				switchRelation = new RemoteStrategy.SwitchRelation(rule);
+
+				String name = rule.getFullName();
+				List<InteractionVariable> iVars = new ArrayList<InteractionVariable>();
+				// Guards
+				// datatype nodes in the lhs are restricted by edges to/from that node in
+				// the lhs and nac.
+				String guard = "";
+				// Update of Location variable:
+				// edge to datatype node in lhs, same edge, same source to different
+				// datatype node in rhs.
+				// New location variable:
+				// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
+				String update = "";
+				
+				// Interaction variable:
+				// datatype node labeled as parameter (in lhs).
+				
+				RuleGraph lhs = rule.lhs();
+				RuleGraph rhs = rule.rhs();
+				Condition nac = rule.getCondition();
+				//System.out.println(rhs.toString());
+				//System.out.println(nac.toString());
+				
+				for (RuleNode rn : lhs.nodeSet()) {
+					if (rn.getType().isDataType()) {
+						System.out.println(rn.toString());
+						System.out.println(rn.getVars());
+						System.out.println(rn.getAnchorKind());
+						System.out.println(rn.getType());
+						System.out.println(rn.getClass());
+						System.out.println("");
+					}
+				}
+				
+				for (RuleNode rn : rhs.nodeSet()) {
+					if (rn.getType().isDataType()) {
+						System.out.println(rn.toString());
+						System.out.println(rn.getVars());
+						System.out.println(rn.getAnchorKind());
+						System.out.println(rn.getType());
+						System.out.println(rn.getClass());
+						System.out.println("");
+					}
+				}
+				Gate gate = addGate(name, iVars);
+				switchRelation = new SwitchRelation(gate, guard, update);
 				switchRelationMapping.put(rule, switchRelation);
 			}
 			return switchRelation;
 		}
 		
+		public LocationVariable addLocationVariable(String label, String type, Object init) {
+			LocationVariable v = new LocationVariable(label, type, init);
+			this.locationVariables.add(v);
+			return v;
+		}
+		
+		public InteractionVariable addInteractionVariable(String label, Class type) {
+			String classType = type.toString();
+			int index = classType.lastIndexOf(".");
+			if (index != -1) {
+				classType = classType.substring(index+1, classType.length()).toLowerCase();
+			} else {
+				classType = classType.toLowerCase();
+			}
+			InteractionVariable v = new InteractionVariable(label, classType);
+			this.interactionVariables.add(v);
+			return v;
+		}
+		
+		public Gate addGate(String label, List<InteractionVariable> iVars) {
+			Gate gate = new Gate(label, iVars);
+			this.gates.add(gate);
+			return gate;
+		}
+		
 		public String toJSON() {
-			String json = "["+start.toJSON();
+			String json = "{\"start\": "+start.toJSON()+",\"lVars\": [";
+			for (LocationVariable v : this.locationVariables) {
+				json+=v.toJSON()+",";
+			}
+			json = json.substring(0, json.length()-1)+"],\"relations\": [";
 			for (Location l : locationMapping.values()) {
-				String relation = ",[";
 				for (SwitchRelation r : l.getSwitchRelations()) {
-					json+=","+r.toJSON(l, l.getRelationTarget(r));
+					json+=r.toJSON(l, l.getRelationTarget(r))+",";
 				}
 			}
-			return json+"]";
+			json = json.substring(0, json.length()-1)+"],\"gates\": {";
+			for (Gate g : this.gates) {
+				json += g.toJSON()+",";
+			}
+			json = json.substring(0, json.length()-1)+"},\"iVars\": {";
+			for (InteractionVariable v : this.interactionVariables) {
+				json += v.toJSON()+",";
+			}
+			return json.substring(0, json.length()-1)+"}}";
 		}
 		
 		private HostGraph generalize(HostGraph graph) {
-			HostGraph generalizedGraph = graph.clone();
+			HostGraph generalizedGraph = new DataFreeHostGraph(graph);
 			HostFactory factory = generalizedGraph.getFactory();
 			for (HostEdge edge : graph.edgeSet()) {
 				HostNode node = edge.target();
@@ -327,11 +415,11 @@ public class RemoteStrategy extends AbstractStrategy {
 	 */
 	private class Location {
 		
-		private String identifier;
+		private String label;
 		private Map<SwitchRelation, Location> relations;
 		
-		public Location(String identifier) {
-			this.identifier = identifier;
+		public Location(String label) {
+			this.label = label;
 			this.relations = new HashMap<SwitchRelation, Location>();
 		}
 		
@@ -351,12 +439,18 @@ public class RemoteStrategy extends AbstractStrategy {
 			return !this.relations.isEmpty();
 		}
 		
-		public String toString() {
-			return identifier;
+		public String getLabel() {
+			return label;
+		}
+		
+		public boolean equals(Object o) {
+			if (! (o instanceof Location))
+				return false;
+			return this.label == ((Location)o).getLabel();
 		}
 		
 		public String toJSON() {
-			return "\""+toString()+"\"";
+			return "\""+this.label+"\"";
 		}
 	
 	}
@@ -376,112 +470,110 @@ public class RemoteStrategy extends AbstractStrategy {
 			this.update = update;
 		}
 		
-		public SwitchRelation(Rule rule) {
-			String name = rule.getFullName();
-			List<Variable> iVars = new ArrayList<Variable>();
-			// Guards
-			// datatype nodes in the lhs are restricted by edges to/from that node in
-			// the lhs and nac.
-			this.guard = "";
-			// Update of Location variable:
-			// edge to datatype node in lhs, same edge, same source to different
-			// datatype node in rhs.
-			// New location variable:
-			// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
-			this.update = "";
-			
-			// Interaction variable:
-			// datatype node labeled as parameter (in lhs).
-			
-			RuleGraph lhs = rule.lhs();
-			RuleGraph rhs = rule.rhs();
-			Condition nac = rule.getCondition();
-			//System.out.println(rhs.toString());
-			//System.out.println(nac.toString());
-			
-			for (RuleNode rn : lhs.nodeSet()) {
-				if (rn.getType().isDataType()) {
-					System.out.println(rn.toString());
-					System.out.println(rn.getVars());
-					System.out.println(rn.getAnchorKind());
-					System.out.println(rn.getType());
-					System.out.println(rn.getClass());
-					System.out.println("");
-				}
-			}
-			
-			for (RuleNode rn : rhs.nodeSet()) {
-				if (rn.getType().isDataType()) {
-					System.out.println(rn.toString());
-					System.out.println(rn.getVars());
-					System.out.println(rn.getAnchorKind());
-					System.out.println(rn.getType());
-					System.out.println(rn.getClass());
-					System.out.println("");
-				}
-			}
-			this.gate = new Gate(name, iVars);
+		public Gate getGate() {
+			return this.gate;
+		}
+		
+		public String getGuard() {
+			return this.guard;
+		}
+		
+		public String getUpdate() {
+			return this.update;
+		}
+		
+		public boolean equals(Object o) {
+			if (!(o instanceof SwitchRelation))
+				return false;
+			SwitchRelation other = (SwitchRelation)o;
+			return other.getGate() == this.gate && other.getGuard() == this.guard && other.getUpdate() == this.update;
 		}
 		
 		public String toJSON(Location source, Location target) {
-			return "["+source.toJSON()+",\""+gate+"\","+target.toJSON()+",\""+guard+"\",\""+update+"\"]";
+			return "{\"source\": "+source.toJSON()+",\"gate\": \""+gate.getLabel()+"\",\"target\":"+target.toJSON()+",\"guard\": \""+guard+"\",\"update\": \"\""+update+"\"}";
 		}
 		
 	}
 	
 	private class Gate {
 		
-		private String identifier;
-		private List<Variable> iVars;
+		private String label;
+		private List<InteractionVariable> iVars;
 		
-		public Gate(String identifier, List<Variable> iVars) {
-			this.identifier = identifier;
+		public Gate(String label, List<InteractionVariable> iVars) {
+			this.label = label;
 			this.iVars = iVars;
 		}
 		
+		public String getLabel() {
+			return label;
+		}
+		
+		public boolean equals(Object o) {
+			if (!(o instanceof Gate))
+				return false;
+			Gate other = (Gate)o;
+			return other.getLabel() == this.label;
+		}
+		
 		public String toJSON() {
-			String json = "[\""+this.identifier+"\"";
+			String type = "!";
+			if (label.contains("?"))
+				type = "?";
+			String json = "\""+this.label+"\": {\"type\": \""+type+"\", \"iVars\": [";
 			for (Variable v : iVars) {
-				json+=","+v.toJSON();
+				json+="\""+v.getLabel()+"\",";
 			}
-			return json+"]";
+			return json.substring(0, json.length()-1)+"]}";
 		}
 		
 	}
 	
 	private class Variable {
 		
-		protected String identifier;
+		protected String label;
 		protected String type;
 		
-		public Variable(String identifier, Class type) {
-			this.identifier = identifier;
-			String classType = type.toString();
-			int index = classType.lastIndexOf(".");
-			if (index != -1) {
-				this.type = classType.substring(index+1, classType.length()).toLowerCase();
-			} else {
-				this.type = classType.toLowerCase();
-			}
+		public Variable(String label, String type) {
+			this.label = label;
+			this.type = type;
+		}
+		
+		public String getLabel() {
+			return this.label;
+		}
+		
+		public boolean equals(Object o) {
+			if (!(o instanceof Variable))
+				return false;
+			Variable other = (Variable)o;
+			return other.getLabel() == this.label;
+		}
+	}
+	
+	private class InteractionVariable extends Variable {
+		
+		public InteractionVariable(String label, String type) {
+			super(label, type);
 		}
 		
 		public String toJSON() {
-			return "[\""+this.identifier+"\",\""+type+"\"]";
+			return "\""+this.label+"\": \""+type+"\"";
 		}
+		
 	}
 	
 	private class LocationVariable extends Variable {
 		
 		private Object initialValue;
 
-		public LocationVariable(String identifier, Object initialValue) {
-			super(identifier, initialValue.getClass());
+		public LocationVariable(String identifier, String type, Object initialValue) {
+			super(identifier, type);
 			this.initialValue = initialValue;
 		}
 		
-		@Override
 		public String toJSON() {
-			return "[\""+this.identifier+"\",\""+this.type+"\","+initialValue.toString()+"]";
+			return "\""+this.label+"\": {\"type\": \""+this.type+"\",\"init\": "+initialValue.toString()+"}";
 		}
 		
 	}
@@ -502,6 +594,31 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		public GraphTransition getTransition() {
 			return this.transition;
+		}
+	}
+	
+	private class DataFreeHostGraph extends DefaultHostGraph {
+		public DataFreeHostGraph(HostGraph graph) {
+			super(graph);
+			
+		}
+		
+		public boolean equals(Object o) {
+			HostGraph graph = (HostGraph)o;
+			Set<? extends HostNode> theseNodes = this.nodeSet();
+			Set<? extends HostNode> otherNodes = graph.nodeSet();
+			if (theseNodes.size() != otherNodes.size())
+				return false;
+			Set<? extends HostEdge> otherEdges = graph.edgeSet();
+			Set<? extends HostEdge> theseEdges = this.edgeSet();
+			if (theseEdges.size() != otherEdges.size())
+				return false;
+			
+			boolean equal = true;
+			for (HostNode n : this.nodeSet()) {
+				//if graph.
+			}
+			return equal;
 		}
 	}
 	
