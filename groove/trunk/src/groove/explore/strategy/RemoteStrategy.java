@@ -16,7 +16,11 @@
  */
 package groove.explore.strategy;
 
+import groove.algebra.SignatureKind;
+import groove.graph.Graph;
 import groove.graph.algebra.ValueNode;
+import groove.graph.algebra.VariableNode;
+import groove.graph.iso.IsoChecker;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -24,6 +28,7 @@ import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransition;
 import groove.rel.LabelVar;
+import groove.trans.AnchorKey;
 import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
@@ -75,7 +80,7 @@ public class RemoteStrategy extends AbstractStrategy {
 	public void prepare(GTS gts, GraphState startState) {
 		super.prepare(gts, startState);
 		
-		generalizeTest(startState.getGraph());
+		doTests(startState.getGraph());
 		
 		// Initiate the Depth-First strategy
 		this.dfsStrategy = new DFSStrategy();
@@ -83,7 +88,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		connect();
 		this.sts = new STS();
-		this.sts.setStartLocation(this.sts.hostGraphToLocation(startState.getGraph()));
+		this.sts.hostGraphToStartLocation(startState.getGraph());
 	}
 	
 	@Override
@@ -150,8 +155,7 @@ public class RemoteStrategy extends AbstractStrategy {
 				state = isr.getTransition().target();
 			}
 		}
-		return null;
-		//return state;
+		return state;
 	}
 	
 	private String createMessage(Set<SwitchRelation> relations) {
@@ -232,6 +236,7 @@ public class RemoteStrategy extends AbstractStrategy {
 	private Writer out;
 	private BufferedReader in;
 	private boolean useDFS = true;
+	private IsoChecker<HostNode, HostEdge> isoChecker = IsoChecker.getInstance(true);
 	
 	/*
 	 * A Symbolic Transition System.
@@ -241,14 +246,14 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		private Location start;
 		private Location current;
-		private Map<HostGraph, Location> locationMapping;
+		private Map<GeneralizedGraph, Location> locationMapping;
 		private Map<Rule, SwitchRelation> switchRelationMapping;
 		private Set<LocationVariable> locationVariables;
 		private Set<Gate> gates;
 		private Set<InteractionVariable> interactionVariables;
 		
 		public STS() {
-			this.locationMapping = new HashMap<HostGraph, Location>();
+			this.locationMapping = new HashMap<GeneralizedGraph, Location>();
 			this.switchRelationMapping = new HashMap<Rule, SwitchRelation>();
 			this.locationVariables = new HashSet<LocationVariable>();
 			this.gates = new HashSet<Gate>();
@@ -277,7 +282,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public Location hostGraphToLocation(HostGraph graph) {
-			HostGraph locationGraph = generalize(graph);
+			GeneralizedGraph locationGraph = generalize(graph);
 			Location location = locationMapping.get(locationGraph);
 			if (location == null) {
 				location = new RemoteStrategy.Location("s"+locationMapping.size());
@@ -286,12 +291,23 @@ public class RemoteStrategy extends AbstractStrategy {
 			return location;
 		}
 		
+		public Location hostGraphToStartLocation(HostGraph graph) {
+			Location location = hostGraphToLocation(graph);
+			setStartLocation(location);
+			initializeLocationVariables(graph);
+			return location;
+		}
+		
 		public SwitchRelation ruleToSwitchRelation(Rule rule) {
 			SwitchRelation switchRelation = switchRelationMapping.get(rule);
 			if (switchRelation == null) {
+				
+				RuleGraph lhs = rule.lhs();
+				RuleGraph rhs = rule.rhs();
+				Condition nac = rule.getCondition();
+				//System.out.println(lhs.toString());
 
 				String name = rule.getFullName();
-				List<InteractionVariable> iVars = new ArrayList<InteractionVariable>();
 				// Guards
 				// datatype nodes in the lhs are restricted by edges to/from that node in
 				// the lhs and nac.
@@ -305,32 +321,33 @@ public class RemoteStrategy extends AbstractStrategy {
 				
 				// Interaction variable:
 				// datatype node labeled as parameter (in lhs).
-				
-				RuleGraph lhs = rule.lhs();
-				RuleGraph rhs = rule.rhs();
-				Condition nac = rule.getCondition();
+				List<InteractionVariable> iVars = new ArrayList<InteractionVariable>();
+				int end = rule.getSignature().size();
+				for (int i = 0; i < end; i++){
+					int index = rule.getParBinding(i);
+					AnchorKey k = rule.getAnchor().get(index);
+					if (k instanceof VariableNode) {
+						VariableNode v = (VariableNode)k;
+						// TODO:this naming scheme is wrong for another rule, where the node.toString() is the same, but the signature is different.
+						// temporary fix: add signature to label.
+						InteractionVariable iVar = addInteractionVariable(v.toString()+v.getSignature().toString(), v.getSignature());
+						iVars.add(iVar);
+					} else {
+						// We don't allow non-variables to be parameters
+						System.out.println("ERROR: non-variable node "+k.toString()+"listed as parameter");
+					}
+				}
 				//System.out.println(rhs.toString());
 				//System.out.println(nac.toString());
 				
 				for (RuleNode rn : lhs.nodeSet()) {
 					if (rn.getType().isDataType()) {
-						System.out.println(rn.toString());
-						System.out.println(rn.getVars());
-						System.out.println(rn.getAnchorKind());
-						System.out.println(rn.getType());
-						System.out.println(rn.getClass());
-						System.out.println("");
+						
 					}
 				}
 				
 				for (RuleNode rn : rhs.nodeSet()) {
 					if (rn.getType().isDataType()) {
-						System.out.println(rn.toString());
-						System.out.println(rn.getVars());
-						System.out.println(rn.getAnchorKind());
-						System.out.println(rn.getType());
-						System.out.println(rn.getClass());
-						System.out.println("");
 					}
 				}
 				Gate gate = addGate(name, iVars);
@@ -340,21 +357,14 @@ public class RemoteStrategy extends AbstractStrategy {
 			return switchRelation;
 		}
 		
-		public LocationVariable addLocationVariable(String label, String type, Object init) {
+		public LocationVariable addLocationVariable(String label, SignatureKind type, Object init) {
 			LocationVariable v = new LocationVariable(label, type, init);
 			this.locationVariables.add(v);
 			return v;
 		}
 		
-		public InteractionVariable addInteractionVariable(String label, Class type) {
-			String classType = type.toString();
-			int index = classType.lastIndexOf(".");
-			if (index != -1) {
-				classType = classType.substring(index+1, classType.length()).toLowerCase();
-			} else {
-				classType = classType.toLowerCase();
-			}
-			InteractionVariable v = new InteractionVariable(label, classType);
+		public InteractionVariable addInteractionVariable(String label, SignatureKind type) {
+			InteractionVariable v = new InteractionVariable(label, type);
 			this.interactionVariables.add(v);
 			return v;
 		}
@@ -366,47 +376,64 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON() {
-			String json = "{\"start\": "+start.toJSON()+",\"lVars\": [";
+			String json = "{\"start\":"+start.toJSON()+",\"lVars\":[";
 			for (LocationVariable v : this.locationVariables) {
 				json+=v.toJSON()+",";
 			}
-			json = json.substring(0, json.length()-1)+"],\"relations\": [";
+			if (!this.locationVariables.isEmpty())
+				json = json.substring(0, json.length()-1);
+			json+="],\"relations\":[";
 			for (Location l : locationMapping.values()) {
 				for (SwitchRelation r : l.getSwitchRelations()) {
 					json+=r.toJSON(l, l.getRelationTarget(r))+",";
 				}
 			}
-			json = json.substring(0, json.length()-1)+"],\"gates\": {";
+			json = json.substring(0, json.length()-1)+"],\"gates\":{";
 			for (Gate g : this.gates) {
 				json += g.toJSON()+",";
 			}
-			json = json.substring(0, json.length()-1)+"},\"iVars\": {";
+			json = json.substring(0, json.length()-1)+"},\"iVars\":{";
 			for (InteractionVariable v : this.interactionVariables) {
 				json += v.toJSON()+",";
 			}
-			return json.substring(0, json.length()-1)+"}}";
+			if (!this.interactionVariables.isEmpty())
+				json = json.substring(0, json.length()-1);
+			return json+"}}";
 		}
 		
-		private HostGraph generalize(HostGraph graph) {
-			HostGraph generalizedGraph = new DataFreeHostGraph(graph);
+		private GeneralizedGraph generalize(HostGraph graph) {
+			GeneralizedGraph generalizedGraph = new GeneralizedGraph(graph);
 			HostFactory factory = generalizedGraph.getFactory();
+			List<HostEdge> toRemove = new ArrayList<HostEdge>();
+			for (HostEdge edge : generalizedGraph.edgeSet()) {
+				HostNode node = edge.target();
+				if (node.getType().isDataType()) {
+					toRemove.add(edge);
+				}
+			}
+			for (HostEdge edge : toRemove) {
+				ValueNode valueNode = (ValueNode)edge.target();
+				Object newValue = null;
+				if (valueNode.getSignature() == SignatureKind.INT)
+					newValue = new Integer(0);
+				
+				ValueNode newNode = factory.createValueNode(valueNode.getNumber(), valueNode.getAlgebra(), newValue);
+				generalizedGraph.addNode(newNode);
+				generalizedGraph.removeEdge(edge);
+				generalizedGraph.addEdge(factory.createEdge(edge.source(), edge.label(), newNode));
+			}
+			return generalizedGraph;
+		}
+		
+		private void initializeLocationVariables(HostGraph graph) {
 			for (HostEdge edge : graph.edgeSet()) {
 				HostNode node = edge.target();
 				if (node.getType().isDataType()) {
 					ValueNode valueNode = (ValueNode)node;
-					Object value = valueNode.getValue();
-					/*Object newValue = null;
-					if (value.getClass().toString() == "java.lang.Integer")
-						newValue = new Integer(0);
-					
-					ValueNode newNode = factory.createValueNode(valueNode.getNumber(), valueNode.getAlgebra(), newValue);
-					generalizedGraph.addNode(newNode);
-					generalizedGraph.removeEdge(edge);
-					generalizedGraph.addEdge(factory.createEdge(edge.source(), edge.label(), newNode));*/
-					generalizedGraph.removeNode(node);
+					String label = edge.source().toString()+"_"+edge.label().text();
+					addLocationVariable(label, valueNode.getSignature(), valueNode.getValue());
 				}
 			}
-			return generalizedGraph;
 		}
 	}
 	
@@ -449,6 +476,10 @@ public class RemoteStrategy extends AbstractStrategy {
 			return this.label == ((Location)o).getLabel();
 		}
 		
+		public int hashCode() {
+			return getLabel().hashCode();
+		}
+		
 		public String toJSON() {
 			return "\""+this.label+"\"";
 		}
@@ -486,11 +517,23 @@ public class RemoteStrategy extends AbstractStrategy {
 			if (!(o instanceof SwitchRelation))
 				return false;
 			SwitchRelation other = (SwitchRelation)o;
-			return other.getGate() == this.gate && other.getGuard() == this.guard && other.getUpdate() == this.update;
+			return other.getGate() == getGate() && other.getGuard() == getGuard() && other.getUpdate() == getUpdate();
+		}
+		
+		public int hashCode() {
+			final int prime = 31;
+            int result = 1;
+            result =
+                prime * result + getGate().hashCode();
+            result =
+                prime * result + getGuard().hashCode();
+            result =
+                prime * result + getUpdate().hashCode();
+            return result;
 		}
 		
 		public String toJSON(Location source, Location target) {
-			return "{\"source\": "+source.toJSON()+",\"gate\": \""+gate.getLabel()+"\",\"target\":"+target.toJSON()+",\"guard\": \""+guard+"\",\"update\": \"\""+update+"\"}";
+			return "{\"source\":"+source.toJSON()+",\"gate\":\""+gate.getLabel()+"\",\"target\":"+target.toJSON()+",\"guard\":\""+guard+"\",\"update\":\""+update+"\"}";
 		}
 		
 	}
@@ -506,21 +549,25 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String getLabel() {
-			return label;
+			return this.label;
 		}
 		
 		public boolean equals(Object o) {
 			if (!(o instanceof Gate))
 				return false;
 			Gate other = (Gate)o;
-			return other.getLabel() == this.label;
+			return other.getLabel() == getLabel();
+		}
+		
+		public int hashCode() {
+			return getLabel().hashCode();
 		}
 		
 		public String toJSON() {
 			String type = "!";
 			if (label.contains("?"))
 				type = "?";
-			String json = "\""+this.label+"\": {\"type\": \""+type+"\", \"iVars\": [";
+			String json = "\""+getLabel()+"\": {\"type\": \""+type+"\", \"iVars\":[";
 			for (Variable v : iVars) {
 				json+="\""+v.getLabel()+"\",";
 			}
@@ -532,9 +579,9 @@ public class RemoteStrategy extends AbstractStrategy {
 	private class Variable {
 		
 		protected String label;
-		protected String type;
+		protected SignatureKind type;
 		
-		public Variable(String label, String type) {
+		public Variable(String label, SignatureKind type) {
 			this.label = label;
 			this.type = type;
 		}
@@ -543,22 +590,30 @@ public class RemoteStrategy extends AbstractStrategy {
 			return this.label;
 		}
 		
+		public SignatureKind getType() {
+			return this.type;
+		}
+		
 		public boolean equals(Object o) {
 			if (!(o instanceof Variable))
 				return false;
 			Variable other = (Variable)o;
-			return other.getLabel() == this.label;
+			return other.getLabel() == getLabel();
+		}
+		
+		public int hashCode() {
+			return getLabel().hashCode();
 		}
 	}
 	
 	private class InteractionVariable extends Variable {
 		
-		public InteractionVariable(String label, String type) {
+		public InteractionVariable(String label, SignatureKind type) {
 			super(label, type);
 		}
 		
 		public String toJSON() {
-			return "\""+this.label+"\": \""+type+"\"";
+			return "\""+getLabel()+"\": \""+type+"\"";
 		}
 		
 	}
@@ -567,13 +622,17 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		private Object initialValue;
 
-		public LocationVariable(String identifier, String type, Object initialValue) {
+		public LocationVariable(String identifier, SignatureKind type, Object initialValue) {
 			super(identifier, type);
 			this.initialValue = initialValue;
 		}
 		
+		public Object getInitialValue() {
+			return this.initialValue;
+		}
+		
 		public String toJSON() {
-			return "\""+this.label+"\": {\"type\": \""+this.type+"\",\"init\": "+initialValue.toString()+"}";
+			return "\""+getLabel()+"\":{\"type\": \""+getType()+"\",\"init\":"+getInitialValue().toString()+"}";
 		}
 		
 	}
@@ -597,32 +656,38 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 	}
 	
-	private class DataFreeHostGraph extends DefaultHostGraph {
-		public DataFreeHostGraph(HostGraph graph) {
+	private class GeneralizedGraph extends DefaultHostGraph {
+		
+		public GeneralizedGraph(HostGraph graph) {
 			super(graph);
-			
 		}
 		
+		@Override
 		public boolean equals(Object o) {
 			HostGraph graph = (HostGraph)o;
-			Set<? extends HostNode> theseNodes = this.nodeSet();
-			Set<? extends HostNode> otherNodes = graph.nodeSet();
-			if (theseNodes.size() != otherNodes.size())
-				return false;
-			Set<? extends HostEdge> otherEdges = graph.edgeSet();
-			Set<? extends HostEdge> theseEdges = this.edgeSet();
-			if (theseEdges.size() != otherEdges.size())
-				return false;
-			
-			boolean equal = true;
-			for (HostNode n : this.nodeSet()) {
-				//if graph.
-			}
-			return equal;
+			return isoChecker.areIsomorphic(this, graph);
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+            int result = 1;
+            result =
+                prime * result + nodeCount();
+            result =
+                prime * result
+                		+ edgeCount();
+            return result;
 		}
 	}
 	
 	//TESTS
+	
+	public void doTests(HostGraph graph) {
+		System.out.println("START TESTS");
+		generalizeTest(graph);
+		System.out.println("");
+	}
 	
 	public void generalizeTest(HostGraph graph) {
 		System.out.println("Started test case generalizeTest");
@@ -678,7 +743,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						if(matcher.find()) {
 							String paramString = label.substring(matcher.start());
 							label = label.substring(0, matcher.start());
-							
+						
 							// Parse the parameters
 							Object[] params = parseParams(paramString);
 							
