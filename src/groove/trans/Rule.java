@@ -1035,7 +1035,7 @@ public class Rule implements Action, Fixable {
     /**
      * Returns the creator edges between reader nodes.
      */
-    final RuleEdge[] getSimpleCreatorEdges() {
+    final public RuleEdge[] getSimpleCreatorEdges() {
         if (this.simpleCreatorEdges == null) {
             this.simpleCreatorEdges = computeSimpleCreatorEdges();
         }
@@ -1082,7 +1082,7 @@ public class Rule implements Action, Fixable {
     /**
      * Returns the RHS edges that are not images of an LHS edge.
      */
-    final RuleEdge[] getCreatorEdges() {
+    final public RuleEdge[] getCreatorEdges() {
         if (this.creatorEdges == null) {
             this.creatorEdges = computeCreatorEdges();
         }
