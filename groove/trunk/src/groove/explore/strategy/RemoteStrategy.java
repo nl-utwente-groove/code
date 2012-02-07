@@ -329,20 +329,11 @@ public class RemoteStrategy extends AbstractStrategy {
 				System.out.println(nac.getRoot());
 
 				String name = rule.getFullName();
-				// Guards
-				// datatype nodes in the lhs are restricted by edges to/from that node in
-				// the lhs and nac.
-				String guard = "";
-				// Update of Location variable:
-				// edge to datatype node in lhs, same edge, same source to different
-				// datatype node in rhs.
-				// New location variable:
-				// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
-				String update = "";
 				
 				// Interaction variable:
 				// datatype node labeled as parameter (in lhs).
 				List<InteractionVariable> iVars = new ArrayList<InteractionVariable>();
+				List<VariableNode> iVarNodes = new ArrayList<VariableNode>();
 				int end = rule.getSignature().size();
 				for (int i = 0; i < end; i++){
 					int index = rule.getParBinding(i);
@@ -353,6 +344,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						// temporary fix: add signature to label.
 						InteractionVariable iVar = addInteractionVariable(createInteractionVariableLabel(v), v.getSignature());
 						iVars.add(iVar);
+						iVarNodes.add(v);
 					} else {
 						// We don't allow non-variables to be parameters
 						System.out.println("ERROR: non-variable node "+k.toString()+" listed as parameter");
@@ -361,15 +353,45 @@ public class RemoteStrategy extends AbstractStrategy {
 				//System.out.println(rhs.toString());
 				//System.out.println(nac.toString());
 				
-				// Map all variables in the LHS of this rule
+				// Map all location variables in the LHS of this rule
 				Map<VariableNode, LocationVariable> varMap = new HashMap<VariableNode, LocationVariable>();
 				for (RuleEdge le : lhs.edgeSet()) {
 					if (le.target() instanceof VariableNode) {
-						varMap.put((VariableNode)le.target(), getLocationVariable(createLocationVariableLabel(le)));
+						LocationVariable var = getLocationVariable(createLocationVariableLabel(le));
+						if (var == null) {
+							System.out.println("Data node found not mapped by any variable: "+le.target());
+						} else {
+							varMap.put((VariableNode)le.target(), var);
+						}
+					}
+				}
+
+				// Create the guard for this switch relation
+				// datatype nodes in the lhs are restricted by edges to/from that node in
+				// the lhs and nac.
+				String guard = "";
+				for (VariableNode v : iVarNodes) {
+					StringBuffer result = new StringBuffer();
+					parseAlgebraicExpression(lhs, v, varMap, result);
+					if (result.length() != 0) {
+						guard+=createInteractionVariableLabel(v)+" == "+result+" /\\";
+					}
+				}
+				for (VariableNode v : varMap.keySet()) {
+					StringBuffer result = new StringBuffer();
+					parseAlgebraicExpression(lhs, v, varMap, result);
+					if (result.length() != 0) {
+						//guard+=createLocationVariableLabel(v)+" == "+result+" /\\";
 					}
 				}
 				
 				// Create the update for this switch relation
+				// Update of Location variable:
+				// edge to datatype node in lhs, same edge, same source to different
+				// datatype node in rhs.
+				// New location variable:
+				// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
+				String update = "";
 				for (RuleEdge e : rule.getCreatorEdges()) {
 					if (e.target().getType().isDataType()) {
 						// A creator edge has been detected to a data node,
@@ -377,7 +399,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						RuleNode node = e.target();
 						// Parse the resulting value. This can be a variable or an expression over variables and primite data types.
 						StringBuffer updateValue = new StringBuffer();
-						SignatureKind resultType = parseAlgebraicExpression(nac.getPattern(), node, varMap, updateValue);
+						SignatureKind resultType = parseExpression(nac.getPattern(), node, varMap, updateValue);
 						if (updateValue.length() == 0) {
 							// there should be a node referencing the data node
 							System.out.println("ERROR: no node found referencing "+node.toString()+" in the LHS or Condition of rule "+rule.getFullName());
@@ -498,17 +520,15 @@ public class RemoteStrategy extends AbstractStrategy {
 			}
 		}
 		
-		private SignatureKind parseAlgebraicExpression(RuleGraph pattern, Node resultValue, Map<VariableNode, LocationVariable> varMap, StringBuffer result) {
+		private SignatureKind parseExpression(RuleGraph pattern, Node resultValue, Map<VariableNode, LocationVariable> varMap, StringBuffer result) {
+			VariableNode variableResult = (VariableNode)resultValue;
 			// Check if the expression is a primitive value
-			System.out.println(resultValue.getClass());
-			if (resultValue instanceof ValueNode) {
-				ValueNode valueNode = ((ValueNode)resultValue);
-				System.out.println(valueNode.getValue().toString());
-				result.append(valueNode.getValue().toString());
-				return valueNode.getSignature();
+			String symbol = variableResult.getSymbol();
+			if (symbol != null) {
+				result.append(symbol);
+				return variableResult.getSignature();
 			}
 			// Check if the expression is a known interaction variable
-			VariableNode variableResult = (VariableNode)resultValue;
 			String iLabel = createInteractionVariableLabel(variableResult);
 			InteractionVariable iVar = getInteractionVariable(iLabel);
 			if (iVar != null) {
@@ -522,6 +542,12 @@ public class RemoteStrategy extends AbstractStrategy {
 				return lVar.getType();
 			}
 			// The expression has to be a complex expression.
+			SignatureKind type = parseAlgebraicExpression(pattern, variableResult, varMap, result);
+			
+			return type;
+		}
+	
+		private SignatureKind parseAlgebraicExpression(RuleGraph pattern, VariableNode variableResult, Map<VariableNode, LocationVariable> varMap, StringBuffer result) {
 			SignatureKind type = null;
 			for (RuleNode rn : pattern.nodeSet()) {
 				if (rn instanceof OperatorNode) {
@@ -531,7 +557,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		           		String[] subExpressions = new String[arguments.size()];
 		           		for (int i = 0; i < arguments.size(); i++) {
 		           			StringBuffer newResult = new StringBuffer();
-		           			parseAlgebraicExpression(pattern, arguments.get(i), varMap, newResult);
+		           			parseExpression(pattern, arguments.get(i), varMap, newResult);
 		           			subExpressions[i] = newResult.toString();
 		           		}
 		           		Operator op = opNode.getOperator();
@@ -544,7 +570,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			return type;
 		}
 	}
-	
+
 	/*
 	 * A location in the STS.
 	 */
