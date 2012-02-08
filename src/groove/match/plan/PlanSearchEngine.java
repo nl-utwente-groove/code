@@ -348,12 +348,14 @@ public class PlanSearchEngine extends SearchEngine {
                     // types are not specialised
                     RuleNode source = edge.source();
                     if (edgeItem.bindsNodes().contains(source)
-                        && (edge.getType() == null || edge.getType().source() == source.getType())) {
+                        && edge.getType() != null
+                        && edge.getType().source() == source.getType()) {
                         unmatchedNodes.remove(source);
                     }
                     RuleNode target = edge.target();
                     if (edgeItem.bindsNodes().contains(target)
-                        && (edge.getType() == null || edge.getType().target() == target.getType())) {
+                        && edge.getType() != null
+                        && edge.getType().target() == target.getType()) {
                         unmatchedNodes.remove(target);
                     }
                 }
