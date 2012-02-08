@@ -134,16 +134,17 @@ public class RuleJTree extends JTree implements SimulatorListener {
      */
     private void loadGrammar(GrammarModel grammar) {
         setShowAnchorsOptionListener();
-        Map<RuleName,DirectoryTreeNode> dirNodeMap =
-            new HashMap<RuleName,DirectoryTreeNode>();
         this.clearAllMaps();
         this.topDirectoryNode.removeAllChildren();
         DefaultMutableTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<RuleModel>> priorityMap = getPriorityMap(grammar);
         Collection<String> selectedRules =
             getSimulatorModel().getSelectSet(ResourceKind.RULE);
+        List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
+            Map<RuleName,DirectoryTreeNode> dirNodeMap =
+                new HashMap<RuleName,DirectoryTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -160,7 +161,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
                 parentNode.add(ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
-                expandPath(rulePath);
+                expandedPaths.add(rulePath);
                 if (selectedRules.contains(ruleName)) {
                     selectedPaths.add(rulePath);
                 }
@@ -168,6 +169,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
         }
         this.ruleDirectory.reload(this.topDirectoryNode);
+        for (TreePath path : expandedPaths) {
+            expandPath(path);
+        }
         setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
