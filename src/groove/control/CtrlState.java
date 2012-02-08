@@ -278,7 +278,10 @@ public class CtrlState implements Node {
         CtrlState sourceImage = stateMap.get(this);
         Map<CtrlTransition,CtrlTransition> transMap =
             new HashMap<CtrlTransition,CtrlTransition>();
-        for (CtrlTransition key : this.transitions) {
+        // copy the transitions to avoid concurrent modification 
+        // in case the source image equals this
+        for (CtrlTransition key : new ArrayList<CtrlTransition>(
+            this.transitions)) {
             CtrlState targetImage = stateMap.get(key.target());
             CtrlLabel newLabel = key.label().newLabel(transMap, guard);
             CtrlTransition image =
