@@ -6,6 +6,7 @@ import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
+import groove.view.TextBasedModel;
 
 import java.awt.BorderLayout;
 import java.util.Collection;
@@ -34,14 +35,20 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * @author Arend Rensink
  */
 final public class TextTab extends ResourceTab implements MainTab {
-    /** Creates an initially empty display. */
+    /**
+     * Creates an initially empty text area.
+     * @param display the display on which this editor is placed.
+     */
     public TextTab(ResourceDisplay display) {
         this(display, null, null);
     }
 
     /** 
-     * Constructs a prolog editor with a given name.
+     * Constructs an editor with a given name.
      * @param display the display on which this editor is placed.
+     * @param name name of the program to be edited; if {@code null}, this
+     * is not an editor but a fresh empty area
+     * @param program the program to be edited
      */
     public TextTab(final ResourceDisplay display, String name, String program) {
         super(display);
@@ -134,7 +141,16 @@ final public class TextTab extends ResourceTab implements MainTab {
 
     @Override
     public void updateGrammar(GrammarModel grammar) {
-        setResource(getName());
+        // test if the graph being edited is still in the grammar;
+        // if not, silently dispose it - it's too late to do anything else!
+        TextBasedModel<?> textModel =
+            getName() == null ? null : (TextBasedModel<?>) grammar.getResource(
+                getResourceKind(), getName());
+        if (textModel == null) {
+            dispose();
+        } else if (!isDirty()) {
+            this.textArea.setProgram(textModel.getProgram());
+        }
     }
 
     /** Indicates if the editor is currently dirty. */
