@@ -43,8 +43,12 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
+import groove.trans.RuleEvent;
 import groove.trans.RuleGraph;
+import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
+import groove.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -105,20 +109,22 @@ public class RemoteStrategy extends AbstractStrategy {
 	    }
 		// If the current location is new, determine its outgoing switch relations
 		Location current = this.sts.getCurrentLocation();
-		if (!current.explored()) {
-			// Get current rule matches
-			Set<Rule> rules = new HashSet<Rule>();
-			for (MatchResult next : createMatchCollector().getMatchSet()) {
-            	RuleTransition transition = getMatchApplier().apply(getState(), next);
-				Rule rule = next.getEvent().getRule();
-				if (!rules.contains(rule)) {
-					SwitchRelation sr = this.sts.ruleToSwitchRelation(rule);
-	            	Location l = this.sts.hostGraphToLocation(transition.target().getGraph());
-					current.addSwitchRelation(sr, l);
-					rules.add(rule);
+		// Get current rule matches
+		for (MatchResult next : createMatchCollector().getMatchSet()) {
+			SwitchRelation sr = this.sts.ruleMatchToSwitchRelation(next);
+			if (current.getRelationTarget(sr) == null) {
+	        	RuleTransition transition = getMatchApplier().apply(getState(), next);
+	            Location l = this.sts.hostGraphToLocation(transition.target().getGraph());
+				current.addSwitchRelation(sr, l);
+				RuleToHostMap ruleMap = next.getEvent().getAnchorMap();
+				for (RuleEdge eraserEdge : sr.getUpdates()) {
+					RuleEdge creatorEdge = sr.getUpdateOf(eraserEdge);
+					HostEdge eraserTarget = ruleMap.getEdge(eraserEdge);
+					HostEdge creatorTarget = ruleMap.getEdge(creatorEdge);
+					this.sts.addReferenceToLocationVariable(creatorTarget, this.sts.getLocationVariable(eraserTarget));
 				}
-	        }
-		}
+			}
+        }
         return updateAtState();
     }
 
@@ -254,17 +260,19 @@ public class RemoteStrategy extends AbstractStrategy {
 		private Location start;
 		private Location current;
 		private Map<GeneralizedGraph, Location> locationMapping;
-		private Map<Rule, SwitchRelation> switchRelationMapping;
-		private Map<String, LocationVariable> locationVariables;
+		private Map<MatchResult, SwitchRelation> switchRelationMapping;
 		private Set<Gate> gates;
-		private Map<String, InteractionVariable> interactionVariables;
+		// not injective
+		private Map<HostEdge, LocationVariable> locationVariables;
+		// injective
+		private Map<VariableNode, InteractionVariable> interactionVariables;
 		
 		public STS() {
 			this.locationMapping = new HashMap<GeneralizedGraph, Location>();
-			this.switchRelationMapping = new HashMap<Rule, SwitchRelation>();
-			this.locationVariables = new HashMap<String, LocationVariable>();
+			this.switchRelationMapping = new HashMap<MatchResult, SwitchRelation>();
+			this.locationVariables = new HashMap<HostEdge, LocationVariable>();
 			this.gates = new HashSet<Gate>();
-			this.interactionVariables = new HashMap<String, InteractionVariable>();
+			this.interactionVariables = new HashMap<VariableNode, InteractionVariable>();
 		}
 		
 		public void setStartLocation(Location start) {
@@ -280,20 +288,65 @@ public class RemoteStrategy extends AbstractStrategy {
 			current = l;
 		}
 		
-		public SwitchRelation getSwitchRelation(Rule rule) {
-			return switchRelationMapping.get(rule);
+		public SwitchRelation getSwitchRelation(MatchResult match) {
+			return switchRelationMapping.get(match);
 		}
 		
 		public Location getLocation(HostGraph graph) {
 			return locationMapping.get(graph);
 		}
 		
-		public LocationVariable getLocationVariable(String label) {
-			return this.locationVariables.get(label);
+		public LocationVariable getLocationVariable(HostEdge edge) {
+			return this.locationVariables.get(edge);
 		}
 		
-		public InteractionVariable getInteractionVariable(String label) {
-			return this.interactionVariables.get(label);
+		public InteractionVariable getInteractionVariable(VariableNode node) {
+			return this.interactionVariables.get(node);
+		}
+		
+		// @param edge must be a HostEdge pointing to a ValueNode.
+		public LocationVariable addLocationVariable(HostEdge edge, Object init) {
+			ValueNode node = (ValueNode)edge.target();
+			String label = createLocationVariableLabel(edge);
+			LocationVariable v = new LocationVariable(label, node.getSignature(), init);
+			this.locationVariables.put(edge, v);
+			return v;
+		}
+		
+		public void addReferenceToLocationVariable(HostEdge edge, LocationVariable var) {
+			this.locationVariables.put(edge, var);
+		}
+		
+		public InteractionVariable addInteractionVariable(VariableNode node) {
+			String label = createInteractionVariableLabel(node);
+			InteractionVariable v = new InteractionVariable(label, node.getSignature());
+			this.interactionVariables.put(node, v);
+			return v;
+		}
+		
+		public Gate addGate(String label, List<InteractionVariable> iVars) {
+			Gate gate = new Gate(label, iVars);
+			this.gates.add(gate);
+			return gate;
+		}
+		
+		public Object getDefaultValue(SignatureKind s) {
+			switch(s) {
+				case INT: return new Integer(0);
+				case BOOL: return new Boolean(false);
+				case REAL: return new Double(0.0);
+				case STRING: return "";
+				default: return null;
+			}
+		}
+		
+		public String createInteractionVariableLabel(VariableNode node) {
+			return node.toString()+node.getSignature().toString();
+		}
+		
+		// TODO: persistent source node identities needed for location variables
+		public String createLocationVariableLabel(HostEdge edge) {
+			return edge.source()+"_"+edge.label().text()+"_"+edge.getNumber();
 		}
 		
 		public Location hostGraphToLocation(HostGraph graph) {
@@ -313,20 +366,16 @@ public class RemoteStrategy extends AbstractStrategy {
 			return location;
 		}
 		
-		public SwitchRelation ruleToSwitchRelation(Rule rule) {
-			SwitchRelation switchRelation = switchRelationMapping.get(rule);
+		public SwitchRelation ruleMatchToSwitchRelation(MatchResult match) {			
+			SwitchRelation switchRelation = switchRelationMapping.get(match);
 			if (switchRelation == null) {
-				
+
+				RuleEvent event = match.getEvent();
+				Rule rule = event.getRule();
+				RuleToHostMap ruleMap = event.getAnchorMap();
 				RuleGraph lhs = rule.lhs();
 				RuleGraph rhs = rule.rhs();
 				Condition nac = rule.getCondition();
-				System.out.println(nac.toString());
-				System.out.println("");
-				System.out.println(nac.getPattern());
-				System.out.println("");
-				System.out.println(nac.getOp());
-				System.out.println("");
-				System.out.println(nac.getRoot());
 
 				String name = rule.getFullName();
 				
@@ -342,7 +391,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						VariableNode v = (VariableNode)k;
 						// TODO:this naming scheme is wrong for another rule, where the node.toString() is the same, but the signature is different.
 						// temporary fix: add signature to label.
-						InteractionVariable iVar = addInteractionVariable(createInteractionVariableLabel(v), v.getSignature());
+						InteractionVariable iVar = addInteractionVariable(v);
 						iVars.add(iVar);
 						iVarNodes.add(v);
 					} else {
@@ -357,9 +406,10 @@ public class RemoteStrategy extends AbstractStrategy {
 				Map<VariableNode, LocationVariable> varMap = new HashMap<VariableNode, LocationVariable>();
 				for (RuleEdge le : lhs.edgeSet()) {
 					if (le.target() instanceof VariableNode) {
-						LocationVariable var = getLocationVariable(createLocationVariableLabel(le));
+						HostEdge hostEdge = ruleMap.getEdge(le);
+						LocationVariable var = getLocationVariable(hostEdge);
 						if (var == null) {
-							System.out.println("Data node found not mapped by any variable: "+le.target());
+							System.out.println("ERROR: Data node found not mapped by any variable: "+hostEdge);
 						} else {
 							varMap.put((VariableNode)le.target(), var);
 						}
@@ -392,77 +442,58 @@ public class RemoteStrategy extends AbstractStrategy {
 				// New location variable:
 				// edge to datatype node in rhs, not in lhs. (should be an update, declare in start state?)
 				String update = "";
-				for (RuleEdge e : rule.getCreatorEdges()) {
+				
+				// first find the location variables undergoing an update, by finding eraser edges to these variables
+				Map<Pair<RuleNode, RuleLabel>, RuleEdge> possibleUpdates = new HashMap<Pair<RuleNode, RuleLabel>, RuleEdge>();
+				for (RuleEdge e : rule.getEraserEdges()) {
 					if (e.target().getType().isDataType()) {
+						possibleUpdates.put(new Pair<RuleNode, RuleLabel>(e.source(), e.label()), e);
+					}
+				}
+
+				Map<RuleEdge, RuleEdge> locationVarUpdateMap = new HashMap<RuleEdge, RuleEdge>();
+				for (RuleEdge creatorEdge : rule.getCreatorEdges()) {
+					if (creatorEdge.target().getType().isDataType()) {
 						// A creator edge has been detected to a data node,
-						// this indicates an update for an location variable.
-						RuleNode node = e.target();
+						// this indicates an update for a location variable.
+						RuleEdge eraserEdge = locationVarUpdateMap.get(new Pair<RuleNode, RuleLabel>(creatorEdge.source(), creatorEdge.label()));
+						if (eraserEdge == null) {
+							// modelling constraint for now, updates have to be done in eraser/creator pairs.
+							System.out.println("ERROR: no eraser edge found for created location variable "+creatorEdge+"; location variables have to be declared in start location and reference must be deleted");
+						}
+						LocationVariable var = varMap.get(eraserEdge.target());
+						if (var == null) {
+							// Data nodes should always be a location variable.
+							System.out.println("ERROR: no location variable found referenced by "+eraserEdge.target().toString()+" in the LHS or Condition of rule "+name);
+						}
+						RuleNode node = creatorEdge.target();
 						// Parse the resulting value. This can be a variable or an expression over variables and primite data types.
 						StringBuffer updateValue = new StringBuffer();
 						SignatureKind resultType = parseExpression(nac.getPattern(), node, varMap, updateValue);
 						if (updateValue.length() == 0) {
-							// there should be a node referencing the data node
-							System.out.println("ERROR: no node found referencing "+node.toString()+" in the LHS or Condition of rule "+rule.getFullName());
+							// Update can't be empty. This should never happen.
+							System.out.println("ERROR: Update of "+var.toString()+" in rule "+rule.getFullName()+" is empty where it shouldn't be.");
 						}
-						String lLabel = createLocationVariableLabel(e);
-						LocationVariable var = getLocationVariable(lLabel);
-						if (var == null) {
-							// The location variable is initialized here for the first time,
-							// create a default initialization
-							var = addLocationVariable(lLabel, resultType, getDefaultValue(resultType));
+						if (resultType != ((VariableNode)eraserEdge.target()).getSignature()) {
+							// The result type of the expression should be the same as the type of the variable. This should never happen.
+							System.out.println("ERROR: The result type of the expression "+updateValue+" ("+resultType+") is not the same as the type of the location variable "+var.getLabel()+" ("+((VariableNode)eraserEdge.target()).getSignature()+") in rule "+name);
 						}
+						locationVarUpdateMap.put(eraserEdge, creatorEdge);
 						update += var.getLabel()+" := "+updateValue;
 					}
 				}
 				
 				// Create the gate and the switch relation
 				Gate gate = addGate(name, iVars);
-				switchRelation = new SwitchRelation(gate, guard, update);
-				switchRelationMapping.put(rule, switchRelation);
+				switchRelation = new SwitchRelation(gate, guard, update, locationVarUpdateMap);
+				switchRelationMapping.put(match, switchRelation);
 			}
 			return switchRelation;
 		}
 		
-		public LocationVariable addLocationVariable(String label, SignatureKind type, Object init) {
-			LocationVariable v = new LocationVariable(label, type, init);
-			this.locationVariables.put(label, v);
-			return v;
-		}
-		
-		public InteractionVariable addInteractionVariable(String label, SignatureKind type) {
-			InteractionVariable v = new InteractionVariable(label, type);
-			this.interactionVariables.put(label, v);
-			return v;
-		}
-		
-		public Gate addGate(String label, List<InteractionVariable> iVars) {
-			Gate gate = new Gate(label, iVars);
-			this.gates.add(gate);
-			return gate;
-		}
-		
-		public Object getDefaultValue(SignatureKind s) {
-			switch(s) {
-				case INT: return new Integer(0);
-				case BOOL: return new Boolean(false);
-				case REAL: return new Double(0.0);
-				case STRING: return "";
-				default: return null;
-			}
-		}
-		
-		public String createInteractionVariableLabel(VariableNode node) {
-			return node.toString()+node.getSignature().toString();
-		}
-		
-		// TODO: persistent source node identities needed for location variables
-		public String createLocationVariableLabel(Edge edge) {
-			return /*edge.source()+"_"+*/edge.label().text();
-		}
-		
 		public String toJSON() {
 			String json = "{\"start\":"+start.toJSON()+",\"lVars\":[";
-			for (LocationVariable v : this.locationVariables.values()) {
+			for (LocationVariable v : new HashSet<LocationVariable>(this.locationVariables.values())) {
 				json+=v.toJSON()+",";
 			}
 			if (!this.locationVariables.isEmpty())
@@ -514,8 +545,7 @@ public class RemoteStrategy extends AbstractStrategy {
 				HostNode node = edge.target();
 				if (node.getType().isDataType()) {
 					ValueNode valueNode = (ValueNode)node;
-					String label = createLocationVariableLabel(edge);
-					addLocationVariable(label, valueNode.getSignature(), valueNode.getValue());
+					addLocationVariable(edge, valueNode.getValue());
 				}
 			}
 		}
@@ -530,7 +560,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			}
 			// Check if the expression is a known interaction variable
 			String iLabel = createInteractionVariableLabel(variableResult);
-			InteractionVariable iVar = getInteractionVariable(iLabel);
+			InteractionVariable iVar = getInteractionVariable(variableResult);
 			if (iVar != null) {
 				result.append(iLabel);
 				return iVar.getType();
@@ -596,10 +626,6 @@ public class RemoteStrategy extends AbstractStrategy {
 			relations.put(sr, l);
 		}
 		
-		public boolean explored() {
-			return !this.relations.isEmpty();
-		}
-		
 		public String getLabel() {
 			return label;
 		}
@@ -628,11 +654,13 @@ public class RemoteStrategy extends AbstractStrategy {
 		private Gate gate;
 		private String guard;
 		private String update;
+		private Map<RuleEdge, RuleEdge> locationVarUpdateMap;
 		
-		public SwitchRelation(Gate gate, String guard, String update) {
+		public SwitchRelation(Gate gate, String guard, String update, Map<RuleEdge, RuleEdge> locationVarUpdateMap) {
 			this.gate = gate;
 			this.guard = guard;
 			this.update = update;
+			this.locationVarUpdateMap = locationVarUpdateMap;
 		}
 		
 		public Gate getGate() {
@@ -645,6 +673,14 @@ public class RemoteStrategy extends AbstractStrategy {
 		
 		public String getUpdate() {
 			return this.update;
+		}
+		
+		public RuleEdge getUpdateOf(RuleEdge edge) {
+			return this.locationVarUpdateMap.get(edge);
+		}
+		
+		public Set<RuleEdge> getUpdates() {
+			return this.locationVarUpdateMap.keySet();
 		}
 		
 		public boolean equals(Object o) {
