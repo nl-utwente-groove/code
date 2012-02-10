@@ -340,8 +340,8 @@ public abstract class ResourceDisplay extends Display implements
      * or type graph could have changed)
      */
     protected void updateGrammar(GrammarModel grammar, boolean fresh) {
-        int tabCount = getTabPane().getTabCount();
         getMainTab().updateGrammar(grammar);
+        int tabCount = getTabPane().getTabCount();
         for (int i = tabCount - 1; i >= 0; i--) {
             Tab tab = (Tab) getTabPane().getComponentAt(i);
             if (tab.isEditor() && fresh) {
