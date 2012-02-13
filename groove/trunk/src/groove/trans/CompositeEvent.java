@@ -87,7 +87,7 @@ public class CompositeEvent extends
             }
         };
         Proof result =
-            getRule().traverseMatches(source, null,
+            getRule().traverseMatches(source, getAnchorMap(),
                 Visitor.newFinder(isMyMatch));
         if (result != null) {
             return result;
