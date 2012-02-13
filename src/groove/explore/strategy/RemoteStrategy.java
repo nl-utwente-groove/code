@@ -98,7 +98,8 @@ public class RemoteStrategy extends AbstractStrategy {
 		this.dfsStrategy = new DFSStrategy();
 		this.dfsStrategy.prepare(gts, startState);
 		
-		connect();
+		if (!useDFS)
+			connect();
 		this.sts = new STS();
 		this.sts.hostGraphToStartLocation(startState.getGraph());
 	}
@@ -142,6 +143,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			// Use the DfsStrategy to decide on the next state.
 			state = dfsStrategy.getNextState();
 			if (state == null) {
+				connect();
 				send(this.sts.toJSON());
 				disconnect();
 			} else {
@@ -178,34 +180,48 @@ public class RemoteStrategy extends AbstractStrategy {
 
 	// Connect to the remote server
 	private void connect() {
-		/*try {
+		System.out.println("Connecting...");
+		try {
 			// Create a URLConnection object for a URL
 			URL url = new URL(host);
-			this.conn = (HttpURLConnection)url.openConnection();
+			conn = (HttpURLConnection)url.openConnection();
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
 			conn.setReadTimeout(10000);
 			conn.setRequestProperty("Content-Type","application/json");
 	
-			conn.connect();
+			//conn.connect();
 			
-			this.out = new OutputStreamWriter(conn.getOutputStream());
-			this.in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			/*BufferedReader error = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+			StringBuffer buf = new StringBuffer();
+			String line;
+			while ((line = error.readLine()) != null) {
+				buf.append(line);
+			}
+			
+			if (buf.length() > 0) {
+				System.out.println("Error in connection to: "+url);
+				System.out.println(buf);
+			} else {
+				this.out = new OutputStreamWriter(conn.getOutputStream());
+				this.in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			}*/
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
-		this.out = new OutputStreamWriter(System.out);
-		this.in = new BufferedReader(new InputStreamReader(System.in));
+		}
+		//this.out = new OutputStreamWriter(System.out);
+		//this.in = new BufferedReader(new InputStreamReader(System.in));
 	}
 	
 	// Disconnect from the remote server.
 	private void disconnect() {
+		System.out.println("Disconnecting...");
 		try {
 			in.close();
 			out.close();
-			//conn.disconnect();
+			conn.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -214,8 +230,27 @@ public class RemoteStrategy extends AbstractStrategy {
 	// Sends a JSON message to the remote server
 	// @param message A JSON formatted message
 	private void send(String message) {
+		System.out.println("Sending JSON message...");
+		System.out.println(message);
 		try {
+			if (out == null) {
+				this.out = new OutputStreamWriter(conn.getOutputStream());
+			}
 			out.write(message);
+			out.flush();
+			conn.connect();
+			if (conn.getResponseCode() != 200) {
+				this.in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+				System.out.println("Error in connection to: "+conn.getURL());
+			} else if (in == null) {
+				this.in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			}
+			StringBuffer buf = new StringBuffer();
+			String line;
+			while ((line = in.readLine()) != null) {
+				buf.append(line);
+			}
+			System.out.println(buf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -331,7 +366,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String createInteractionVariableLabel(VariableNode node) {
-			return node.toString()+node.getSignature().toString();
+			return node.toString();
 		}
 		
 		public String createLocationVariableLabel(HostEdge edge) {
@@ -413,12 +448,12 @@ public class RemoteStrategy extends AbstractStrategy {
 					StringBuffer result = new StringBuffer();
 					parseAlgebraicExpression(lhs, v, varMap, result);
 					if (result.length() != 0) {
-						guard+=createInteractionVariableLabel(v)+" == "+result+" /\\";
+						guard+=createInteractionVariableLabel(v)+" == "+result+" and ";
 					}
 					result = new StringBuffer();
 					parseBooleanExpression(lhs, v, varMap, result);
 					if (result.length() != 0) {
-						guard+=result+" /\\";
+						guard+=result+" and ";
 					}
 				}
 				for (VariableNode v : varMap.keySet()) {
@@ -426,17 +461,17 @@ public class RemoteStrategy extends AbstractStrategy {
 						StringBuffer result = new StringBuffer();
 						parseAlgebraicExpression(lhs, v, varMap, result);
 						if (result.length() != 0) {
-							guard+=varMap.get(v).getLabel()+" == "+result+" /\\";
+							guard+=varMap.get(v).getLabel()+" == "+result+" and ";
 						}
 						result = new StringBuffer();
 						parseBooleanExpression(lhs, v, varMap, result);
 						if (result.length() != 0) {
-							guard+=result+" /\\";
+							guard+=result+" and ";
 						}
 					}
 				}
-				if (guard.length() > 3)
-					guard = guard.substring(0, guard.length()-3);
+				if (guard.length() > 5)
+					guard = guard.substring(0, guard.length()-5);
 				
 				// Create the update for this switch relation
 				// Update of Location variable:
@@ -482,7 +517,7 @@ public class RemoteStrategy extends AbstractStrategy {
 							System.out.println("ERROR: The result type of the expression "+updateValue+" ("+resultType+") is not the same as the type of the location variable "+var.getLabel()+" ("+((VariableNode)eraserEdge.target()).getSignature()+") in rule "+name);
 						}
 						locationVarUpdateMap.put(eraserEdge, creatorEdge);
-						update += var.getLabel()+" := "+updateValue+"; ";
+						update += var.getLabel()+" = "+updateValue+"; ";
 					}
 				}
 				if (update.length() > 2)
@@ -501,13 +536,13 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON() {
-			String json = "{\"start\":"+start.toJSON()+",\"lVars\":[";
+			String json = "{\"_json\":{\"start\":"+start.toJSON()+",\"lVars\":{";
 			for (LocationVariable v : new HashSet<LocationVariable>(this.locationVariables.values())) {
 				json+=v.toJSON()+",";
 			}
 			if (!this.locationVariables.isEmpty())
 				json = json.substring(0, json.length()-1);
-			json+="],\"relations\":[";
+			json+="},\"relations\":[";
 			for (Location l : locationMap.values()) {
 				for (SwitchRelation r : l.getSwitchRelations()) {
 					json+=r.toJSON(l, l.getRelationTarget(r))+",";
@@ -523,7 +558,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			}
 			if (!this.interactionVariables.isEmpty())
 				json = json.substring(0, json.length()-1);
-			return json+"}}";
+			return json+"}}}";
 		}
 		
 		private Object getSwitchIdentifier(Gate gate, String guard, String update) {
@@ -619,7 +654,7 @@ public class RemoteStrategy extends AbstractStrategy {
 				if (e.getType() == null) {
 					StringBuffer expr = new StringBuffer();
 					parseExpression(pattern, e.source(), varMap, expr);
-					result.append(varMap.get(variableResult).getLabel()+e.label().text()+expr);
+					result.append(varMap.get(variableResult).getLabel()+" "+e.label().text()+" "+expr);
 				}
 			}
 		}
@@ -761,7 +796,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			String type = "!";
 			if (label.contains("?"))
 				type = "?";
-			String json = "\""+getLabel()+"\": {\"type\": \""+type+"\", \"iVars\":[";
+			String json = "\""+getLabel()+"\":{\"type\":\""+type+"\",\"iVars\":[";
 			for (Variable v : iVars) {
 				json+="\""+v.getLabel()+"\",";
 			}
@@ -807,7 +842,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON() {
-			return "\""+getLabel()+"\": \""+type+"\"";
+			return "\""+getLabel()+"\":\""+type+"\"";
 		}
 		
 	}
@@ -826,7 +861,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON() {
-			return "\""+getLabel()+"\":{\"type\": \""+getType()+"\",\"init\":"+getInitialValue().toString()+"}";
+			return "\""+getLabel()+"\":{\"type\":\""+getType()+"\",\"init\":"+getInitialValue().toString()+"}";
 		}
 		
 	}
