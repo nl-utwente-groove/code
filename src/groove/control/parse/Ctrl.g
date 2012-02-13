@@ -39,6 +39,8 @@ import java.util.LinkedList;
     private String lastToken;
     /** Start position of a recorded substring of the input. */
     private int recordPos;
+    /** Helper class to convert AST trees to namespace. */
+    private CtrlHelper helper;
     
     /** Starts recording the input string. */
     public void startRecord() {
@@ -52,6 +54,17 @@ import java.util.LinkedList;
             currentToken == null ? 0 : currentToken.getText().length();
         return (this.lastToken + getCharStream().substring(this.recordPos,
             getCharIndex() - 1 - currentTokenLength)).trim();
+    }
+    
+    public void setHelper(CtrlHelper helper) {
+        this.helper = helper;
+    }
+    
+    public void displayRecognitionError(String[] tokenNames,
+            RecognitionException e) {
+        String hdr = getErrorHeader(e);
+        String msg = getErrorMessage(e, tokenNames);
+        this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
 }
 
@@ -80,6 +93,7 @@ import java.util.LinkedList;
     public MyTree run(CharStream input, Namespace namespace, AlgebraFamily family) throws RecognitionException {
         this.helper = new CtrlHelper(this, namespace, family);
         lexer.setCharStream(input);
+        lexer.setHelper(this.helper);
         setTokenStream(new CommonTokenStream(lexer));
         setTreeAdaptor(new MyTreeAdaptor());
         return (MyTree) program().getTree();
