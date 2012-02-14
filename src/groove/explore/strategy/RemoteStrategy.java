@@ -20,6 +20,7 @@ import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractEdge;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -294,14 +295,14 @@ public class RemoteStrategy extends AbstractStrategy {
 		// not injective
 		private Map<Pair<Integer, TypeLabel>, LocationVariable> locationVariables;
 		// injective
-		private Map<VariableNode, InteractionVariable> interactionVariables;
+		private Map<Pair<VariableNode, Rule>, InteractionVariable> interactionVariables;
 		
 		public STS() {
 			this.locationMap = new HashMap<GeneralizedGraph, Location>();
 			this.switchRelationMap = new HashMap<Object, SwitchRelation>();
 			this.locationVariables = new HashMap<Pair<Integer, TypeLabel>, LocationVariable>();
 			this.gates = new HashSet<Gate>();
-			this.interactionVariables = new HashMap<VariableNode, InteractionVariable>();
+			this.interactionVariables = new HashMap<Pair<VariableNode, Rule>, InteractionVariable>();
 		}
 		
 		public void setStartLocation(Location start) {
@@ -329,8 +330,8 @@ public class RemoteStrategy extends AbstractStrategy {
 			return this.locationVariables.get(new Pair<Integer, TypeLabel>(edge.source().getNumber(), edge.label()));
 		}
 		
-		public InteractionVariable getInteractionVariable(VariableNode node) {
-			return this.interactionVariables.get(node);
+		public InteractionVariable getInteractionVariable(VariableNode node, Rule rule) {
+			return this.interactionVariables.get(new Pair<VariableNode, Rule>(node,rule));
 		}
 		
 		// @param edge must be a HostEdge pointing to a ValueNode.
@@ -342,10 +343,10 @@ public class RemoteStrategy extends AbstractStrategy {
 			return v;
 		}
 		
-		public InteractionVariable addInteractionVariable(VariableNode node) {
+		public InteractionVariable addInteractionVariable(VariableNode node, Rule rule) {
 			String label = createInteractionVariableLabel(node);
 			InteractionVariable v = new InteractionVariable(label, node.getSignature());
-			this.interactionVariables.put(node, v);
+			this.interactionVariables.put(new Pair<VariableNode, Rule>(node, rule), v);
 			return v;
 		}
 		
@@ -415,7 +416,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						VariableNode v = (VariableNode)k;
 						// TODO:this naming scheme is wrong for another rule, where the node.toString() is the same, but the signature is different.
 						// temporary fix: add signature to label.
-						InteractionVariable iVar = addInteractionVariable(v);
+						InteractionVariable iVar = addInteractionVariable(v,rule);
 						iVars.add(iVar);
 						iVarNodes.add(v);
 					} else {
@@ -432,7 +433,7 @@ public class RemoteStrategy extends AbstractStrategy {
 					if (le.getType() != null && le.target() instanceof VariableNode) {
 						HostEdge hostEdge = ruleMap.mapEdge(le);
 						LocationVariable var = getLocationVariable(hostEdge);
-						if (var == null) {
+						if (var == null && !isFinal(getState().getGraph(), hostEdge.source())) {
 							System.out.println("ERROR: Data node found not mapped by any variable: "+hostEdge);
 						} else if (!varMap.containsKey(le.target())) {
 							varMap.put((VariableNode)le.target(), var);
@@ -446,32 +447,38 @@ public class RemoteStrategy extends AbstractStrategy {
 				String guard = "";
 				for (VariableNode v : iVarNodes) {
 					StringBuffer result = new StringBuffer();
-					parseAlgebraicExpression(lhs, v, varMap, result);
+					parseAlgebraicExpression(rule, lhs, v, varMap, result);
 					if (result.length() != 0) {
-						guard+=createInteractionVariableLabel(v)+" == "+result+" and ";
+						guard+=createInteractionVariableLabel(v)+" == "+result+" && ";
 					}
 					result = new StringBuffer();
-					parseBooleanExpression(lhs, v, varMap, result);
+					parseBooleanExpression(rule, lhs, v, varMap, result);
 					if (result.length() != 0) {
-						guard+=result+" and ";
+						guard+=result;
 					}
 				}
 				for (VariableNode v : varMap.keySet()) {
 					if (!iVarNodes.contains(v)) {
 						StringBuffer result = new StringBuffer();
-						parseAlgebraicExpression(lhs, v, varMap, result);
+						parseAlgebraicExpression(rule, lhs, v, varMap, result);
 						if (result.length() != 0) {
-							guard+=varMap.get(v).getLabel()+" == "+result+" and ";
+							guard+=varMap.get(v).getLabel()+" == "+result+" && ";
 						}
 						result = new StringBuffer();
-						parseBooleanExpression(lhs, v, varMap, result);
+						parseBooleanExpression(rule, lhs, v, varMap, result);
 						if (result.length() != 0) {
-							guard+=result+" and ";
+							guard+=result;
 						}
 					}
 				}
-				if (guard.length() > 5)
-					guard = guard.substring(0, guard.length()-5);
+				// Do a one time check for expressions resulting in a known value,
+				// to allow operator node with variable arguments to true/false output
+				StringBuffer result = new StringBuffer();
+				parseArgumentExpression(rule, lhs, varMap, result);
+				guard+=result;
+				if (guard.length() > 4)
+					guard = guard.substring(0, guard.length()-4);
+				
 				
 				// Create the update for this switch relation
 				// Update of Location variable:
@@ -507,7 +514,7 @@ public class RemoteStrategy extends AbstractStrategy {
 						RuleNode node = creatorEdge.target();
 						// Parse the resulting value. This can be a variable or an expression over variables and primite data types.
 						StringBuffer updateValue = new StringBuffer();
-						SignatureKind resultType = parseExpression(nac.getPattern(), node, varMap, updateValue);
+						SignatureKind resultType = parseExpression(rule, nac.getPattern(), node, varMap, updateValue);
 						if (updateValue.length() == 0) {
 							// Update can't be empty. This should never happen.
 							System.out.println("ERROR: Update of "+var.toString()+" in rule "+rule.getFullName()+" is empty where it shouldn't be.");
@@ -520,8 +527,6 @@ public class RemoteStrategy extends AbstractStrategy {
 						update += var.getLabel()+" = "+updateValue+"; ";
 					}
 				}
-				if (update.length() > 2)
-					update = update.substring(0, update.length()-2);
 				
 				// Create the gate and the switch relation
 				Gate gate = addGate(name, iVars);
@@ -572,7 +577,7 @@ public class RemoteStrategy extends AbstractStrategy {
 			List<HostEdge> toRemove = new ArrayList<HostEdge>();
 			for (HostEdge edge : generalizedGraph.edgeSet()) {
 				HostNode node = edge.target();
-				if (node.getType().isDataType()) {
+				if (node.getType().isDataType() && !isFinal(generalizedGraph, edge.source())) {
 					toRemove.add(edge);
 				}
 			}
@@ -592,14 +597,14 @@ public class RemoteStrategy extends AbstractStrategy {
 		private void initializeLocationVariables(HostGraph graph) {
 			for (HostEdge edge : graph.edgeSet()) {
 				HostNode node = edge.target();
-				if (node.getType().isDataType()) {
+				if (node.getType().isDataType() && !isFinal(graph, edge.source())) {
 					ValueNode valueNode = (ValueNode)node;
 					addLocationVariable(edge, valueNode.getValue());
 				}
 			}
 		}
 		
-		private SignatureKind parseExpression(RuleGraph pattern, Node resultValue, Map<VariableNode, Variable> varMap, StringBuffer result) {
+		private SignatureKind parseExpression(Rule rule, RuleGraph pattern, Node resultValue, Map<VariableNode, Variable> varMap, StringBuffer result) {
 			VariableNode variableResult = (VariableNode)resultValue;
 			// Check if the expression is a primitive value
 			String symbol = variableResult.getSymbol();
@@ -609,8 +614,9 @@ public class RemoteStrategy extends AbstractStrategy {
 			}
 			// Check if the expression is a known interaction variable
 			String iLabel = createInteractionVariableLabel(variableResult);
-			InteractionVariable iVar = getInteractionVariable(variableResult);
+			InteractionVariable iVar = getInteractionVariable(variableResult,rule);
 			if (iVar != null) {
+				System.out.println(iLabel+": "+variableResult.getNumber());
 				result.append(iLabel);
 				return iVar.getType();
 			}
@@ -621,42 +627,87 @@ public class RemoteStrategy extends AbstractStrategy {
 				return lVar.getType();
 			}
 			// The expression has to be a complex expression.
-			SignatureKind type = parseAlgebraicExpression(pattern, variableResult, varMap, result);
+			SignatureKind type = parseAlgebraicExpression(rule, pattern, variableResult, varMap, result);
 			
 			return type;
 		}
 	
-		private SignatureKind parseAlgebraicExpression(RuleGraph pattern, VariableNode variableResult, Map<VariableNode, Variable> varMap, StringBuffer result) {
+		private SignatureKind parseAlgebraicExpression(Rule rule, RuleGraph pattern, VariableNode variableResult, Map<VariableNode, Variable> varMap, StringBuffer result) {
 			SignatureKind type = null;
-			for (RuleEdge e : pattern.inEdgeSet(variableResult)) {
-				if (e.source() instanceof OperatorNode) {
-		           	OperatorNode opNode = (OperatorNode)e.source();
+			for (RuleNode node : pattern.nodeSet()) {
+				if (node instanceof OperatorNode) {
+		           	OperatorNode opNode = (OperatorNode)node;
 		           	if (opNode.getTarget().equals(variableResult)) {
 		           		List<VariableNode> arguments = opNode.getArguments();
 		           		String[] subExpressions = new String[arguments.size()];
 		           		for (int i = 0; i < arguments.size(); i++) {
 		           			StringBuffer newResult = new StringBuffer();
-		           			parseExpression(pattern, arguments.get(i), varMap, newResult);
+		           			parseExpression(rule, pattern, arguments.get(i), varMap, newResult);
 		           			subExpressions[i] = newResult.toString();
 		           		}
 		           		Operator op = opNode.getOperator();
 		           		type = op.getResultType();
 		           		result.append("("+subExpressions[0]+op.getSymbol()+subExpressions[1]+")");
-	           			break;
+		           		break;
 	           		}
 	           	}
 			}
 			return type;
 		}
 		
-		private void parseBooleanExpression(RuleGraph pattern, VariableNode variableResult, Map<VariableNode, Variable> varMap, StringBuffer result) {
+		private void parseArgumentExpression(Rule rule, RuleGraph pattern, Map<VariableNode, Variable> varMap, StringBuffer result) {
+			SignatureKind type = null;
+			for (RuleNode node : pattern.nodeSet()) {
+	           	String value;
+				if (node instanceof OperatorNode) {
+					OperatorNode opNode = (OperatorNode)node;
+					if ((value = opNode.getTarget().getSymbol()) != null) {
+		       			// opNode.getArguments().contains(variableResult) && getInteractionVariable(variableResult) != null
+		       			// operatorNode refers to a node with a value
+		       			List<VariableNode> arguments = opNode.getArguments();
+		           		String[] subExpressions = new String[arguments.size()];
+		           		for (int i = 0; i < arguments.size(); i++) {
+		           			StringBuffer newResult = new StringBuffer();
+		           			parseExpression(rule, pattern, arguments.get(i), varMap, newResult);
+		           			subExpressions[i] = newResult.toString();
+		           		}
+		           		Operator op = opNode.getOperator();
+		           		type = op.getResultType();
+		           		result.append("("+subExpressions[0]+" "+op.getSymbol()+" "+subExpressions[1]+")");
+		           		if (type.equals(SignatureKind.BOOL)) {
+		           			result.append(" && ");
+		           		} else {
+		           			result.insert(0, "(");
+		           			result.append("== "+value+") && ");
+		           		}
+					}
+				}
+       		}
+		}
+		
+		private void parseBooleanExpression(Rule rule, RuleGraph pattern, VariableNode variableResult, Map<VariableNode, Variable> varMap, StringBuffer result) {
 			for (RuleEdge e : pattern.inEdgeSet(variableResult)) {
 				if (e.getType() == null) {
 					StringBuffer expr = new StringBuffer();
-					parseExpression(pattern, e.source(), varMap, expr);
-					result.append(varMap.get(variableResult).getLabel()+" "+e.label().text()+" "+expr);
+					parseExpression(rule, pattern, e.source(), varMap, expr);
+					result.append(varMap.get(variableResult).getLabel()+" "+getOperator(e.label().text())+" "+expr+" && ");
 				}
 			}
+		}
+		
+		private String getOperator(String operator) {
+			if (operator == "=")
+				return "==";
+			else
+				return operator;				
+		}
+		
+		private boolean isFinal(HostGraph graph, HostNode node) {
+			for (HostEdge e : graph.edgeSet(node)) {
+				if (e.getRole().equals(EdgeRole.FLAG) && e.label().text().equals("final"))
+					return true;
+			}
+			return false;
 		}
 	}
 
@@ -762,7 +813,7 @@ public class RemoteStrategy extends AbstractStrategy {
 		}
 		
 		public String toJSON(Location source, Location target) {
-			return "{\"source\":"+source.toJSON()+",\"gate\":\""+gate.getLabel()+"\",\"target\":"+target.toJSON()+",\"guard\":\""+guard+"\",\"update\":\""+update+"\"}";
+			return "{\"source\":"+source.toJSON()+",\"gate\":\""+gate.getStrippedLabel()+"\",\"target\":"+target.toJSON()+",\"guard\":\""+guard+"\",\"update\":\""+update+"\"}";
 		}
 		
 	}
@@ -796,11 +847,18 @@ public class RemoteStrategy extends AbstractStrategy {
 			String type = "!";
 			if (label.contains("?"))
 				type = "?";
-			String json = "\""+getLabel()+"\":{\"type\":\""+type+"\",\"iVars\":[";
+			String json = "\""+getStrippedLabel()+"\":{\"type\":\""+type+"\",\"iVars\":[";
 			for (Variable v : iVars) {
 				json+="\""+v.getLabel()+"\",";
 			}
 			return json.substring(0, json.length()-1)+"]}";
+		}
+		
+		public String getStrippedLabel() {
+			if (label.endsWith("?") || label.endsWith("!"))
+				return label.substring(0, label.length()-1);
+			else
+				return label;
 		}
 		
 	}
