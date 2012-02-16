@@ -21,6 +21,7 @@ import groove.test.control.AllControlTests;
 import groove.test.graph.AllGraphTests;
 import groove.test.prolog.AllPrologTests;
 import groove.test.rule.AllRuleTests;
+import groove.test.sts.AllSTSTests;
 import groove.test.verify.AllVerifyTests;
 
 import org.junit.runner.RunWith;
@@ -35,7 +36,7 @@ import org.junit.runners.Suite;
     AllGraphTests.class, AllPrologTests.class, AllRuleTests.class,
     AllVerifyTests.class, AutomatonTest.class, BinaryEdgeTest.class,
     ExplorationTest.class, HashBagTest.class, IOTest.class,
-    TreeHashSetTest.class})
+    TreeHashSetTest.class, AllSTSTests.class})
 public class AllTests {
     // Empty by design.
 }

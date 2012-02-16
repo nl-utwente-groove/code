@@ -649,6 +649,8 @@ public class TestMaterialisation {
         }
     }
 
+    // VdB says: These graphs no longer exist in basic-tests.gps
+    /*
     @Test
     public void testMaterialisation13() {
         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
@@ -685,7 +687,7 @@ public class TestMaterialisation {
                 Materialisation.getMaterialisations(shape, preMatch);
             assertTrue(mats.size() == 5 || mats.size() == 2);
         }
-    }
+    }*/
 
     @Test
     public void testRuleAppAndNormalisation() {
