@@ -453,6 +453,11 @@ public final class Multiplicity {
         return approx(this.i, this.j, MultKind.NODE_MULT);
     }
 
+    /** Basic getter method. */
+    public MultKind getKind() {
+        return this.kind;
+    }
+
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------

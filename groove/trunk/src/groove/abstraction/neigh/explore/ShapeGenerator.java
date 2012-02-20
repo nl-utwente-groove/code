@@ -88,9 +88,6 @@ public final class ShapeGenerator extends CommandLineTool {
     private boolean isPrintStats;
     /** Local references to the command line options. */
     private final TemplatedOption<Strategy> strategyOption;
-    private final MultiplicityBoundOption nodeBoundOption;
-    private final MultiplicityBoundOption edgeBoundOption;
-    private final StatsOption statsOption;
     /** Reduced GTS. */
     private AGTS reducedGTS;
 
@@ -110,12 +107,10 @@ public final class ShapeGenerator extends CommandLineTool {
                 "str",
                 StrategyEnumerator.newInstance(StrategyValue.ABSTRACT_STRATEGIES));
         addOption(this.strategyOption);
-        this.nodeBoundOption = new MultiplicityBoundOption(MultKind.NODE_MULT);
-        addOption(this.nodeBoundOption);
-        this.edgeBoundOption = new MultiplicityBoundOption(MultKind.EDGE_MULT);
-        addOption(this.edgeBoundOption);
-        this.statsOption = new StatsOption();
-        addOption(this.statsOption);
+        addOption(new MultiplicityBoundOption(MultKind.NODE_MULT));
+        addOption(new MultiplicityBoundOption(MultKind.EDGE_MULT));
+        addOption(new StatsOption());
+        addOption(new ThreeMultValOption());
     }
 
     // ------------------------------------------------------------------------
@@ -234,8 +229,13 @@ public final class ShapeGenerator extends CommandLineTool {
                 + (this.startGraphName == null ? "default"
                         : this.startGraphName));
             println("Exploration:\t" + this.exploration.getIdentifier());
-            println("Node bound:\t" + Parameters.getNodeMultBound()
+            print("Node bound:\t" + Parameters.getNodeMultBound()
                 + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
+            if (Parameters.isUseThreeValues()) {
+                println("\tLIMITING MULTIPLICITIES TO 0, 1 and 0+");
+            } else {
+                println();
+            }
             println("Timestamp:\t" + this.invocationTime);
             print("\nProgress:\n\n");
             getGTS().addLTSListener(new GenerateProgressMonitor());
@@ -482,7 +482,7 @@ public final class ShapeGenerator extends CommandLineTool {
 
         @Override
         public String getName() {
-            return "t";
+            return "p";
         }
 
         @Override
@@ -493,6 +493,41 @@ public final class ShapeGenerator extends CommandLineTool {
         @Override
         public void parse(String parameter) {
             ShapeGenerator.this.setPrintStats();
+        }
+
+    }
+
+    /**
+     * Command line option to specify the use of three values of multiplicity
+     * only.
+     * 
+     * @author Eduardo Zambon
+     */
+    private class ThreeMultValOption implements CommandLineOption {
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Limit the possible multiplicity values to three: 0, 1, or 0+."};
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "t";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) {
+            Parameters.setUseThreeValues(true);
         }
 
     }

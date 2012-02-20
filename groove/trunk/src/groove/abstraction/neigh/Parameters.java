@@ -41,6 +41,14 @@ public final class Parameters {
      * Labels to be used in the abstraction. Taken from the grammar properties.
      */
     private static Set<TypeLabel> absLabels = new MyHashSet<TypeLabel>();
+    /**
+     * Flag to indicate if only three values should be used for multiplicities.
+     * This limit the multiplicity values to either 0, 1 or 0+. Setting this
+     * flag to true decreases the precision of the abstraction but it can be
+     * useful to limit the size of the abstract state space.
+     * Defaults to false.
+     */
+    private static boolean useThreeValues = false;
 
     // ------------------------------------------------------------------------
     // Static methods
@@ -88,6 +96,16 @@ public final class Parameters {
     public static void setAbsLabels(Set<TypeLabel> absLabels) {
         Parameters.absLabels.clear();
         Parameters.absLabels.addAll(absLabels);
+    }
+
+    /** Basic setter method. */
+    public static void setUseThreeValues(boolean useThreeValues) {
+        Parameters.useThreeValues = useThreeValues;
+    }
+
+    /** Basic inspection method. */
+    public static boolean isUseThreeValues() {
+        return useThreeValues;
     }
 
 }

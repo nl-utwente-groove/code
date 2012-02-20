@@ -346,10 +346,21 @@ public final class AGTS extends GTS {
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
+            assert this.collapse == COLLAPSE_ISO_STRONG;
+
+            if (myState.getCtrlState() != otherState.getCtrlState()) {
+                return false;
+            }
+
             assert myState instanceof ShapeState;
             assert otherState instanceof ShapeState;
             ShapeState myShapeState = (ShapeState) myState;
             ShapeState otherShapeState = (ShapeState) otherState;
+            if (otherShapeState.isSubsumed()) {
+                // If the state is subsumed it means we can leave the comparison
+                // to the other subsumptor state...
+                return false;
+            }
             ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
             int comparison =
                 checker.compareShapes(myShapeState.getGraph(),

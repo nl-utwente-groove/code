@@ -139,6 +139,22 @@ public final class Shape extends DefaultHostGraph {
         return shape;
     }
 
+    /**
+     * If the abstraction is set to use only three multiplicity values, then
+     * this method projects any unbounded multiplicity to 0+.
+     * If all multiplicity values are used, then this method returns the object
+     * given as parameter.
+     */
+    private static Multiplicity widenMultRange(Multiplicity mult) {
+        if (Parameters.isUseThreeValues() && mult.isUnbounded()
+            && !mult.isZeroPlus()) {
+            return Multiplicity.getMultiplicity(0, Multiplicity.OMEGA,
+                mult.getKind());
+        } else {
+            return mult;
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
@@ -491,6 +507,8 @@ public final class Shape extends DefaultHostGraph {
             // Fill the shape node multiplicity.
             int size = ec.size();
             Multiplicity mult = Multiplicity.approx(size, size, NODE_MULT);
+            // Make sure we are using the proper multiplicity values.
+            mult = widenMultRange(mult);
             this.setNodeMult(nodeS, mult);
             // Update the abstraction morphism map.
             for (HostNode node : ec) {
@@ -520,6 +538,8 @@ public final class Shape extends DefaultHostGraph {
             super.addNode(nodeS);
             // Fill the shape node multiplicity.
             Multiplicity mult = origShape.getNodeSetMultSum(ec);
+            // Make sure we are using the proper multiplicity values.
+            mult = widenMultRange(mult);
             this.setNodeMult(nodeS, mult);
             // Update the shape morphism.
             for (HostNode node : ec) {
@@ -618,6 +638,8 @@ public final class Shape extends DefaultHostGraph {
                 int size = intersectEdges.size();
                 // Approximate the cardinality of the set of intersecting edges.
                 Multiplicity mult = Multiplicity.approx(size, size, EDGE_MULT);
+                // Make sure we are using the proper multiplicity values.
+                mult = widenMultRange(mult);
                 // Store the multiplicity in the proper multiplicity map.
                 this.setEdgeSigMult(es, mult);
             }
@@ -648,6 +670,8 @@ public final class Shape extends DefaultHostGraph {
                 Multiplicity mult =
                     currGraphNeighEquiv.getMultSum(direction, nodeS,
                         esT.getLabel(), ecTonS);
+                // Make sure we are using the proper multiplicity values.
+                mult = widenMultRange(mult);
                 // Store the multiplicity in the proper multiplicity map.
                 this.setEdgeSigMult(esT, mult);
             }
@@ -1330,7 +1354,8 @@ public final class Shape extends DefaultHostGraph {
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
         // Making node multiplicities more precise, when possible.
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        // EZ says: removing this for now to see if performance improves...
+        /*Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
             if (nodeMult.isUnbounded()) {
@@ -1346,7 +1371,7 @@ public final class Shape extends DefaultHostGraph {
                     }
                 }
             }
-        }
+        }*/
         assert newShape.isInvariantOK();
         return newShape;
     }
