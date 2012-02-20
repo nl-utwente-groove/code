@@ -20,13 +20,11 @@ import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
 import groove.abstraction.neigh.explore.util.ShapeMatchSetCollector;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeState;
-import groove.explore.strategy.ClosingStrategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.explore.util.MatchSetCollector;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-
-import java.util.Stack;
 
 /**
  * Depth-first search exploration strategy for abstract state spaces.
@@ -39,9 +37,7 @@ import java.util.Stack;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeDFSStrategy extends ClosingStrategy {
-
-    private final Stack<GraphState> stack = new Stack<GraphState>();
+public final class ShapeDFSStrategy extends DFSStrategy {
 
     /** Delegates to super.*/
     @Override
@@ -69,21 +65,11 @@ public final class ShapeDFSStrategy extends ClosingStrategy {
 
     @Override
     protected GraphState getFromPool() {
-        if (this.stack.isEmpty()) {
-            return null;
-        } else {
-            return this.stack.pop();
-        }
-    }
-
-    @Override
-    protected void putInPool(GraphState element) {
-        this.stack.push(element);
-    }
-
-    @Override
-    protected void clearPool() {
-        this.stack.clear();
+        ShapeState result;
+        do {
+            result = (ShapeState) super.getFromPool();
+        } while (result != null && result.isSubsumed());
+        return result;
     }
 
 }

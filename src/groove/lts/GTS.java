@@ -860,7 +860,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         /** The isomorphism checker of the state set. */
         private final IsoChecker<HostNode,HostEdge> checker;
         /** The value of the collapse property. */
-        private final int collapse;
+        protected final int collapse;
 
         /**
          * Value for the state collapse property indicating that no states

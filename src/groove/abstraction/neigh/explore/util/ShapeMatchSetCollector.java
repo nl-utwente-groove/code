@@ -54,8 +54,7 @@ public final class ShapeMatchSetCollector extends MatchSetCollector {
             final Collection<MatchResult> result) {
         for (Proof preMatch : PreMatch.getPreMatches(
             ((ShapeState) this.state).getGraph(), ctrlTrans.getRule())) {
-            boolean changed = result.add(this.record.getEvent(preMatch));
-            assert changed;
+            result.add(this.record.getEvent(preMatch));
         }
         return !result.isEmpty();
     }
