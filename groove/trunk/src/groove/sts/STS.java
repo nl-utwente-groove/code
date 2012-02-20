@@ -435,9 +435,10 @@ public class STS {
 			Object newValue = null;
 			newValue = getDefaultValue(valueNode.getSignature());
 			
-			ValueNode newNode = factory.createValueNode(valueNode.getNumber(), valueNode.getAlgebra(), newValue);
-			generalizedGraph.addNode(newNode);
+			generalizedGraph.removeNode(valueNode);
 			generalizedGraph.removeEdge(edge);
+			ValueNode newNode = factory.createValueNode(valueNode.getAlgebra(), newValue);
+			generalizedGraph.addNode(newNode);
 			generalizedGraph.addEdge(factory.createEdge(edge.source(), edge.label(), newNode));
 		}
 		return generalizedGraph;
