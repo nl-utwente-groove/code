@@ -832,7 +832,7 @@ public class Generator extends CommandLineTool {
      * 
      * @see StoreCommandLineOption
      */
-    protected static class ResultOption extends StoreCommandLineOption<Integer> {
+    public static class ResultOption extends StoreCommandLineOption<Integer> {
 
         /** 
          * Default constructor. Defines '-r' to be the name of the command

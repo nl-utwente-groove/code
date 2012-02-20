@@ -125,13 +125,15 @@ public enum StrategyValue implements ParsableValue {
                 + "using incremental bounds based on graph size or rule applications"
                 + "and optimised to avoid reexploring connected components ('pockets')"),
     /** Shape exploration strategy. */
-    SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
-            "This strategy is used for abstract state space exploration."),
-    /** Shape exploration strategy. */
     SHAPE_DFS("shapedfs", "Shape Depth-First Exploration",
             "This strategy is used for abstract state space exploration."),
+    /** Shape exploration strategy. */
+    SHAPE_BFS("shapebfs", "Shape Breadth-First Exploration",
+            "This strategy is used for abstract state space exploration."),
     /** Remote strategy. */
-    REMOTE("remote", "Remote Exploration",
+    REMOTE(
+            "remote",
+            "Remote Exploration",
             "This strategy obtains the exploration strategy from a remote server. Still under construction. The statespace is explored using the Depth-First Strategy and the resulting GTS is sent to the host as an LTS.");
 
     private StrategyValue(String keyword, String name, String description) {
@@ -355,16 +357,15 @@ public enum StrategyValue implements ParsableValue {
             };
         case REMOTE:
             return new MyTemplate1<String>(new PAll("host"), "host",
-                    new EncodedHostName()) {
+                new EncodedHostName()) {
 
-                    @Override
-                    public Strategy create(String host) {
-                        RemoteStrategy strategy =
-                            new RemoteStrategy();
-                        strategy.setHost(host);
-                        return strategy;
-                    }
-                };
+                @Override
+                public Strategy create(String host) {
+                    RemoteStrategy strategy = new RemoteStrategy();
+                    strategy.setHost(host);
+                    return strategy;
+                }
+            };
 
         default:
             // we can't come here
@@ -381,10 +382,10 @@ public enum StrategyValue implements ParsableValue {
         LTL_BOUNDED, LTL_POCKET);
     /** Special mask for development strategies only. Treated specially. */
     public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
-        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, SHAPE_BFS, SHAPE_DFS);
+        EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, SHAPE_DFS, SHAPE_BFS);
     /** Set of strategies for abstract exploration. */
     public final static EnumSet<StrategyValue> ABSTRACT_STRATEGIES =
-        EnumSet.of(SHAPE_BFS, SHAPE_DFS);
+        EnumSet.of(SHAPE_DFS, SHAPE_BFS);
     /** Set of strategies for abstract exploration. */
     public final static EnumSet<StrategyValue> CONCRETE_STRATEGIES =
         EnumSet.complementOf(ABSTRACT_STRATEGIES);
