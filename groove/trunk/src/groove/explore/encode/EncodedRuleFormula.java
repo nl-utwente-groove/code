@@ -44,8 +44,8 @@ public class EncodedRuleFormula implements
     @Override
     public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(
             GrammarModel grammar) {
-        return new StringEditor<Predicate<GraphState>>(
-            grammar, "ruleName; !P; P||Q; P&&Q; P->Q", "", 30);
+        return new StringEditor<Predicate<GraphState>>(grammar,
+            "ruleName; !P; P||Q; P&&Q; P->Q", "", 30);
     }
 
     @Override
@@ -100,9 +100,10 @@ public class EncodedRuleFormula implements
       */
     private Predicate<GraphState> parseRule() throws FormatException {
         int start_i = this.i;
-        while (this.i <= this.last_i && this.text.charAt(this.i) != '('
+        while (this.i <= this.last_i
+            && this.text.charAt(this.i) != '('
             && this.text.charAt(this.i) != ')'
-            && this.text.charAt(this.i) != '-'
+            //            && this.text.charAt(this.i) != '-'
             && this.text.charAt(this.i) != '>'
             && this.text.charAt(this.i) != '|'
             && this.text.charAt(this.i) != '&'
