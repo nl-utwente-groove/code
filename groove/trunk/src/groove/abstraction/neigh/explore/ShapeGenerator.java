@@ -20,12 +20,15 @@ import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.lts.AGTS;
+import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.Generator;
+import groove.explore.Generator.ResultOption;
 import groove.explore.Generator.TemplatedOption;
 import groove.explore.StrategyEnumerator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.graph.DefaultGraph;
@@ -88,6 +91,8 @@ public final class ShapeGenerator extends CommandLineTool {
     private boolean isPrintStats;
     /** Local references to the command line options. */
     private final TemplatedOption<Strategy> strategyOption;
+    private final TemplatedOption<Acceptor> acceptorOption;
+    private final ResultOption resultOption;
     /** Reduced GTS. */
     private AGTS reducedGTS;
 
@@ -106,7 +111,13 @@ public final class ShapeGenerator extends CommandLineTool {
                 "s",
                 "str",
                 StrategyEnumerator.newInstance(StrategyValue.ABSTRACT_STRATEGIES));
+        this.acceptorOption =
+            new TemplatedOption<Acceptor>("a", "acc",
+                AcceptorEnumerator.newInstance());
+        this.resultOption = new ResultOption();
         addOption(this.strategyOption);
+        addOption(this.acceptorOption);
+        addOption(this.resultOption);
         addOption(new MultiplicityBoundOption(MultKind.NODE_MULT));
         addOption(new MultiplicityBoundOption(MultKind.EDGE_MULT));
         addOption(new StatsOption());
@@ -134,6 +145,7 @@ public final class ShapeGenerator extends CommandLineTool {
     @Override
     public void processArguments() {
         super.processArguments();
+
         List<String> argsList = getArgs();
         if (argsList.size() > 0) {
             setGrammarLocation(argsList.remove(0));
@@ -144,14 +156,29 @@ public final class ShapeGenerator extends CommandLineTool {
         if (this.grammarLocation == null) {
             printError("No grammar location specified", true);
         }
-        Serialized strategy = null;
+
+        Serialized strategy;
         if (isOptionActive(this.strategyOption)) {
             strategy = this.strategyOption.getValue();
         } else {
-            strategy = new Serialized("shapebfs");
+            strategy = new Serialized("shapedfs");
         }
-        this.exploration =
-            new Exploration(strategy, new Serialized("final"), 0);
+
+        Serialized acceptor = null;
+        if (isOptionActive(this.acceptorOption)) {
+            acceptor = this.acceptorOption.getValue();
+        } else {
+            acceptor = new Serialized("final");
+        }
+
+        int nrResults;
+        if (isOptionActive(this.resultOption)) {
+            nrResults = this.resultOption.getValue();
+        } else {
+            nrResults = 0;
+        }
+
+        this.exploration = new Exploration(strategy, acceptor, nrResults);
     }
 
     /**
@@ -322,6 +349,8 @@ public final class ShapeGenerator extends CommandLineTool {
         reportGTS(getGTS(), "Original GTS");
         AGTS reducedGTS = getReducedGTS();
         reportGTS(reducedGTS, "Reduced GTS");
+        println("\nResult count: "
+            + this.exploration.getLastResult().getValue().size());
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
             DefaultGraph gtsGraph =
