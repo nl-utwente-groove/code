@@ -349,7 +349,7 @@ public final class ShapeGenerator extends CommandLineTool {
         reportGTS(getGTS(), "Original GTS");
         AGTS reducedGTS = getReducedGTS();
         reportGTS(reducedGTS, "Reduced GTS");
-        println("\nResult count: "
+        printfMedium("\nResult count: "
             + this.exploration.getLastResult().getValue().size());
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {

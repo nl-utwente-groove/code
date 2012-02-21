@@ -1354,8 +1354,7 @@ public final class Shape extends DefaultHostGraph {
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
         // Making node multiplicities more precise, when possible.
-        // EZ says: removing this for now to see if performance improves...
-        /*Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
+        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
             if (nodeMult.isUnbounded()) {
@@ -1371,7 +1370,7 @@ public final class Shape extends DefaultHostGraph {
                     }
                 }
             }
-        }*/
+        }
         assert newShape.isInvariantOK();
         return newShape;
     }
