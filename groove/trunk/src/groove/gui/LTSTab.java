@@ -121,7 +121,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-        addRefreshListener(SHOW_LTS_OPTION);
+        addShowHideListener();
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
@@ -142,12 +142,10 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 getJGraph().getLayouter().start(false);
             }
             getJGraph().setVisible(true);
-            getJGraph().refresh();
             getJGraph().setEnabled(true);
         } else {
-            getJGraph().setVisible(false);
-            getJGraph().refresh();
             getJGraph().setEnabled(false);
+            getJGraph().setVisible(false);
         }
     }
 
@@ -167,7 +165,6 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
      */
     @Override
     protected void refresh() {
-        super.refresh();
         if (getOptionValue(SHOW_LTS_OPTION) != this.display.getLtsJGraph().getShowHideMode()) {
             this.display.getLtsJGraph().toggleShowHideMode();
             showHideLts();
