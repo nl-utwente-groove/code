@@ -9,5 +9,5 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({STSTest.class})
 public class AllSTSTests {
-	// Empty by design
+    // Empty by design
 }

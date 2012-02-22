@@ -23,43 +23,52 @@ public class STSTest extends TestCase {
     protected HostEdge[] e2 = new HostEdge[2];
     protected HostNode[] n3 = new HostNode[3];
     protected HostEdge[] e3 = new HostEdge[2];
-	
+
     /**
      * Creates a new instance of this test.
      * @param name The name of this test
      */
-	public STSTest(String name) {
-		super(name);
-	}
-	
-	/** 
-	 * Sets up all Object needed for the tests
-	 */
-	protected void setUp() {
+    public STSTest(String name) {
+        super(name);
+    }
+
+    /** 
+     * Sets up all Object needed for the tests
+     */
+    protected void setUp() {
         this.g1 = new DefaultHostGraph("g1");
         this.g2 = new DefaultHostGraph("g2");
         this.g3 = new DefaultHostGraph("g2");
 
         this.n1[0] = this.g1.getFactory().createNode();
         this.n1[1] = this.g1.getFactory().createNode();
-        this.n1[2] = this.g1.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
+        this.n1[2] =
+            this.g1.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
 
-        this.e1[0] = this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
-        this.e1[1] = this.g1.getFactory().createEdge(this.n1[0], "x", this.n1[2]);
-        
+        this.e1[0] =
+            this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
+        this.e1[1] =
+            this.g1.getFactory().createEdge(this.n1[0], "x", this.n1[2]);
+
         this.n2[0] = this.g2.getFactory().createNode();
         this.n2[1] = this.g2.getFactory().createNode();
-        this.n2[2] = this.g2.getFactory().createValueNode(JavaIntAlgebra.instance, 1);
+        this.n2[2] =
+            this.g2.getFactory().createValueNode(JavaIntAlgebra.instance, 1);
 
-        this.e2[0] = this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
-        this.e2[1] = this.g2.getFactory().createEdge(this.n2[0], "x", this.n2[2]);
-        
+        this.e2[0] =
+            this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
+        this.e2[1] =
+            this.g2.getFactory().createEdge(this.n2[0], "x", this.n2[2]);
+
         this.n3[0] = this.g3.getFactory().createNode();
         this.n3[1] = this.g3.getFactory().createNode();
-        this.n3[2] = this.g3.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
+        this.n3[2] =
+            this.g3.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
 
-        this.e3[0] = this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);
-        this.e3[1] = this.g3.getFactory().createEdge(this.n3[0], "y", this.n3[2]);
+        this.e3[0] =
+            this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);
+        this.e3[1] =
+            this.g3.getFactory().createEdge(this.n3[0], "y", this.n3[2]);
 
         for (int i = 0; i < 3; i++) {
             this.g1.addNode(this.n1[i]);
@@ -73,17 +82,17 @@ public class STSTest extends TestCase {
             this.g3.addEdge(this.e3[i]);
         }
     }
-	
-	/** 
-	 * Tests if the host graphs are correctly generalized to a location.
-	 */
-	public void testHostGraphToLocation() {
-		STS s = new STS();
-		Location l1 = s.hostGraphToLocation(this.g1);
-		Location l2 = s.hostGraphToLocation(this.g2);
-		Location l3 = s.hostGraphToLocation(this.g3);
-		assert l1.equals(l2);
-		assert !l1.equals(l3);
-	}
+
+    /** 
+     * Tests if the host graphs are correctly generalized to a location.
+     */
+    public void testHostGraphToLocation() {
+        STS s = new STS();
+        Location l1 = s.hostGraphToLocation(this.g1);
+        Location l2 = s.hostGraphToLocation(this.g2);
+        Location l3 = s.hostGraphToLocation(this.g3);
+        assert l1.equals(l2);
+        assert !l1.equals(l3);
+    }
 
 }
