@@ -166,6 +166,8 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     @Override
     protected void refresh() {
         if (getOptionValue(SHOW_LTS_OPTION) != this.display.getLtsJGraph().getShowHideMode()) {
+            this.display.getShowLTSButton().setSelected(
+                !this.display.getShowLTSButton().isSelected());
             this.display.getLtsJGraph().toggleShowHideMode();
             showHideLts();
         }

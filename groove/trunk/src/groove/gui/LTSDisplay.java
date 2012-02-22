@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -92,6 +93,22 @@ public class LTSDisplay extends Display {
         getDisplayPanel().repaint();
     }
 
+    private JToggleButton hideLTSButton;
+    private JToggleButton showLTSButton;
+
+    /*
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    public JToggleButton getShowLTSButton() {
+        if (this.showLTSButton == null) {
+            this.showLTSButton =
+                new JToggleButton(getActions().getShowLTSAction());
+            this.showLTSButton.setFocusable(false);
+            this.showLTSButton.setText(null);
+        }
+        return this.showLTSButton;
+    }
+
     private void fillToolBar(JToolBar result) {
         result.removeAll();
         result.add(getActions().getExplorationDialogAction());
@@ -110,7 +127,7 @@ public class LTSDisplay extends Display {
             result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
         }
         result.add(getActions().getHideLTSAction());
-        result.add(getActions().getShowLTSAction());
+        result.add(getShowLTSButton());
     }
 
     /**
