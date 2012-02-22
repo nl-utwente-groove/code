@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
@@ -279,6 +280,30 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /**
+     * Adds a show hide listener to the menu item associated with for an option
+     * with a given name.
+     * @see #getRefreshListener()
+     */
+    protected void addShowHideListener() {
+        addOptionListener(SHOW_LTS_OPTION, getShowHideListener());
+    }
+
+    /**
+     * Returns the refresh listener for this panel. Lazily creates the listener.
+     */
+    protected final RefreshListener getShowHideListener() {
+        if (this.showHideListener == null) {
+            this.showHideListener = new RefreshListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    refresh();
+                }
+            };
+        }
+        return this.showHideListener;
+    }
+
+    /**
      * Returns the refresh listener for this panel. Lazily creates the listener.
      */
     protected final RefreshListener getRefreshListener() {
@@ -379,6 +404,8 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private final Options options;
     /** Change listener that calls {@link #refresh()} when activated. */
     private RefreshListener refreshListener;
+    /** Change listener that for lts show hide feature, callss {@link #refresh()} of LTSTab when activated. */
+    private RefreshListener showHideListener;
     /**
      * Panel for showing status messages
      */
