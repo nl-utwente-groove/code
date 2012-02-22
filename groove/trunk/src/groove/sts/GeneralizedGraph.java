@@ -14,33 +14,30 @@ import groove.trans.HostNode;
  *
  */
 public class GeneralizedGraph extends DefaultHostGraph {
-	
 
-	private static IsoChecker<HostNode, HostEdge> isoChecker = IsoChecker.getInstance(true);
-	
-	/**
-	 * Creates a new instance.
-	 * @param graph A generalized graph.
-	 */
-	public GeneralizedGraph(HostGraph graph) {
-		super(graph);
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		HostGraph graph = (HostGraph)o;
-		return isoChecker.areIsomorphic(this, graph);
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
+    private static IsoChecker<HostNode,HostEdge> isoChecker =
+        IsoChecker.getInstance(true);
+
+    /**
+     * Creates a new instance.
+     * @param graph A generalized graph.
+     */
+    public GeneralizedGraph(HostGraph graph) {
+        super(graph);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        HostGraph graph = (HostGraph) o;
+        return isoChecker.areIsomorphic(this, graph);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
         int result = 1;
-        result =
-            prime * result + nodeCount();
-        result =
-            prime * result
-            		+ edgeCount();
+        result = prime * result + nodeCount();
+        result = prime * result + edgeCount();
         return result;
-	}
+    }
 }

@@ -4,20 +4,21 @@ import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 
 public class InstantiatedSwitchRelation {
-	
-	private SwitchRelation relation;
-	private RuleTransition transition;
-	
-	public InstantiatedSwitchRelation(SwitchRelation relation, RuleTransition transition) {
-		this.relation = relation;
-		this.transition = transition;
-	}
-	
-	public SwitchRelation getSwitchRelation() {
-		return this.relation;
-	}
-	
-	public GraphTransition getTransition() {
-		return this.transition;
-	}
+
+    private SwitchRelation relation;
+    private RuleTransition transition;
+
+    public InstantiatedSwitchRelation(SwitchRelation relation,
+            RuleTransition transition) {
+        this.relation = relation;
+        this.transition = transition;
+    }
+
+    public SwitchRelation getSwitchRelation() {
+        return this.relation;
+    }
+
+    public GraphTransition getTransition() {
+        return this.transition;
+    }
 }
