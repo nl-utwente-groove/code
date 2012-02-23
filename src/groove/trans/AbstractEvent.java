@@ -20,11 +20,14 @@ import groove.graph.algebra.ValueNode;
 import groove.lts.DefaultRuleTransition;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
+import groove.match.TreeMatch;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
+import groove.util.Visitor;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
 import java.util.Set;
@@ -294,6 +297,57 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
     protected Set<HostEdge> createEdgeSet(int capacity) {
         return new HostEdgeSet(capacity);
     }
+
+    final public Proof getMatch(final HostGraph source) {
+        assert isCorrectFor(source);
+        // visitor that selects a proof that corresponds to this event
+        Visitor<TreeMatch,Proof> matchVisitor = new Visitor<TreeMatch,Proof>() {
+            @Override
+            protected boolean process(TreeMatch match) {
+                if (getRule().isValidPatternMap(source, match.getPatternMap())) {
+                    setResult(extractProof(match));
+                }
+                return !hasResult();
+            }
+        };
+        Proof result =
+            getRule().getEventMatcher().traverse(source, getAnchorMap(),
+                matchVisitor);
+        return result;
+    }
+
+    /**
+     * Tests if the anchor map fits into a given host graph.
+     * @param host the graph to be tested
+     * @return <code>true</code> if the anchor map images are all in
+     *         <code>host</code>
+     */
+    private boolean isCorrectFor(HostGraph host) {
+        RuleToHostMap anchorMap = getAnchorMap();
+        boolean correct = true;
+        Iterator<? extends HostEdge> edgeImageIter =
+            anchorMap.edgeMap().values().iterator();
+        while (correct && edgeImageIter.hasNext()) {
+            correct = host.containsEdge(edgeImageIter.next());
+        }
+        if (correct) {
+            Iterator<? extends HostNode> nodeImageIter =
+                anchorMap.nodeMap().values().iterator();
+            while (correct && nodeImageIter.hasNext()) {
+                HostNode nodeImage = nodeImageIter.next();
+                correct =
+                    nodeImage instanceof ValueNode
+                        || host.containsNode(nodeImage);
+            }
+        }
+        return correct;
+    }
+
+    /** 
+     * Extracts a proof corresponding to this event from a given match.
+     * @return a proof constructed from {@code match} whose events equals this one.
+     */
+    abstract protected Proof extractProof(TreeMatch match);
 
     /** The rule for which this is an event. */
     private final R rule;

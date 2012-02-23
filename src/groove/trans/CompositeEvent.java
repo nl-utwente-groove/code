@@ -16,9 +16,8 @@
  */
 package groove.trans;
 
+import groove.match.TreeMatch;
 import groove.util.CacheReference;
-import groove.util.Property;
-import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,23 +78,17 @@ public class CompositeEvent extends
         return Arrays.toString(eventLabels.toArray());
     }
 
-    public Proof getMatch(HostGraph source) {
-        Property<Proof> isMyMatch = new Property<Proof>() {
-            @Override
-            public boolean isSatisfied(Proof value) {
-                return value.newEvent(null).equals(CompositeEvent.this);
+    /** Extracts a proof corresponding to this event from a given match. */
+    @Override
+    protected Proof extractProof(TreeMatch match) {
+        Proof result = null;
+        for (Proof proof : match.toProofSet()) {
+            if (proof.newEvent(null).equals(CompositeEvent.this)) {
+                result = proof;
+                break;
             }
-        };
-        Proof result =
-            getRule().traverseMatches(source, getAnchorMap(),
-                Visitor.newFinder(isMyMatch));
-        if (result != null) {
-            return result;
         }
-        // if we're here, we failed to reconstruct this event from
-        // any of the matches.
-        throw new IllegalArgumentException(String.format(
-            "Can't find match for event %s", this));
+        return result;
     }
 
     @Override
