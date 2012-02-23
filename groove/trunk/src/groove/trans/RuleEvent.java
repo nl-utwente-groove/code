@@ -16,8 +16,8 @@
  */
 package groove.trans;
 
-import groove.lts.RuleTransitionStub;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransitionStub;
 
 /**
  * Interface to encode a rule instantiation that provides images to the rule
@@ -55,8 +55,11 @@ public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
     public AnchorValue getAnchorImage(int i);
 
     /**
-     * Returns a match of this event's rule, based on the anchor map in this
-     * event. Returns <code>null</code> if no match exists.
+     * Returns a proof of this event's rule condition in a given host graph,
+     * based on the anchor map in this event.
+     * @param source the host graph in which a proof should be found
+     * @return a proof based on this event, of {@code null} if there is
+     * no such proof in {@code source}
      */
     public Proof getMatch(HostGraph source);
 

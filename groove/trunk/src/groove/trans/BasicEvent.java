@@ -20,6 +20,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.trans.RuleEffect.Fragment;
 import groove.util.CacheReference;
@@ -155,15 +156,11 @@ final public class BasicEvent extends
         return result;
     }
 
-    /**
-     * Computes a match based on the precomputed anchor map.
-     */
-    public Proof getMatch(HostGraph host) {
-        Proof result = null;
-        if (isCorrectFor(host)) {
-            result = getRule().getEventMatch(this, host);
-        }
-        return result;
+    @Override
+    protected Proof extractProof(TreeMatch match) {
+        // this is a simple event, so there are no subrules;
+        // the match consists only of the pattern map
+        return new Proof(getRule().getCondition(), match.getPatternMap());
     }
 
     /**
@@ -190,33 +187,6 @@ final public class BasicEvent extends
         } else {
             return result;
         }
-    }
-
-    /**
-     * Tests if the anchor map fits into a given host graph.
-     * @param host the graph to be tested
-     * @return <code>true</code> if the anchor map images are all in
-     *         <code>host</code>
-     */
-    private boolean isCorrectFor(HostGraph host) {
-        RuleToHostMap anchorMap = getAnchorMap();
-        boolean correct = true;
-        Iterator<? extends HostEdge> edgeImageIter =
-            anchorMap.edgeMap().values().iterator();
-        while (correct && edgeImageIter.hasNext()) {
-            correct = host.containsEdge(edgeImageIter.next());
-        }
-        if (correct) {
-            Iterator<? extends HostNode> nodeImageIter =
-                anchorMap.nodeMap().values().iterator();
-            while (correct && nodeImageIter.hasNext()) {
-                HostNode nodeImage = nodeImageIter.next();
-                correct =
-                    nodeImage instanceof ValueNode
-                        || host.containsNode(nodeImage);
-            }
-        }
-        return correct;
     }
 
     @Override

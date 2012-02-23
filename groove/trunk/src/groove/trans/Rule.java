@@ -393,29 +393,6 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Reconstructs a proof for this rule's condition from a rule event.
-     * This is only invoked on simple rules, i.e., without subrules.
-     */
-    public Proof getEventMatch(BasicEvent event, final HostGraph host) {
-        Proof result =
-            getEventMatcher().traverse(host, event.getAnchorMap(),
-                new Visitor<TreeMatch,Proof>() {
-                    @Override
-                    protected boolean process(TreeMatch match) {
-                        boolean result =
-                            isValidPatternMap(host, match.getPatternMap());
-                        if (result) {
-                            // this is a simple event, so there are no subrules;
-                            // the match consists only of the pattern map
-                            setResult(createProof(match.getPatternMap()));
-                        }
-                        return result;
-                    }
-                });
-        return result;
-    }
-
-    /**
      * Returns a match of this condition into a given host graph, given a
      * matching of the root graph.
      * @param host the graph in which the match is to be found
@@ -481,18 +458,6 @@ public class Rule implements Action, Fixable {
                 }
             });
         return visitor.getResult();
-    }
-
-    /**
-     * Callback factory method to create a match on the basis of a mapping of
-     * this condition's target.
-     * 
-     * @param patternMap the mapping, presumably of the elements of
-     *        {@link #lhs()} into some host graph
-     * @return a match constructed on the basis of <code>map</code>
-     */
-    private Proof createProof(RuleToHostMap patternMap) {
-        return new Proof(this.condition, patternMap);
     }
 
     /**
