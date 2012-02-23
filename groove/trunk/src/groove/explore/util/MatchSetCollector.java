@@ -21,11 +21,16 @@ import groove.control.CtrlPar;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.graph.algebra.ValueNode;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransition;
+import groove.trans.AnchorValue;
+import groove.trans.CompositeEvent;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
@@ -115,10 +120,17 @@ public class MatchSetCollector {
      * constructor into a collection passed in as a parameter.
      */
     public void collectMatchSet(Collection<MatchResult> result) {
+        if (DEBUG) {
+            System.out.printf("Matches for %s, %s%n  ", this.state,
+                this.state.getGraph());
+        }
         CtrlTransition ctrlTrans = firstCall();
         while (ctrlTrans != null) {
             boolean hasMatches = collectEvents(ctrlTrans, result);
             ctrlTrans = nextCall(hasMatches);
+        }
+        if (DEBUG) {
+            System.out.println();
         }
     }
 
@@ -141,6 +153,10 @@ public class MatchSetCollector {
             for (RuleTransition trans : this.parentOutMap.values()) {
                 if (trans.getEvent().getRule().equals(ctrlTrans.getRule())) {
                     result.add(trans);
+                    if (DEBUG) {
+                        System.out.print(" T"
+                            + System.identityHashCode(trans.getEvent()));
+                    }
                     hasMatched = true;
                 }
             }
@@ -159,7 +175,14 @@ public class MatchSetCollector {
                             // only look up the event in the parent map if
                             // the rule was disabled, as otherwise the result
                             // already contains all relevant parent results
-                            result.add(isDisabled ? getParentOut(event) : event);
+                            MatchResult match =
+                                isDisabled ? getParentOut(event) : event;
+                            result.add(match);
+                            if (DEBUG) {
+                                System.out.print(" E"
+                                    + System.identityHashCode(match.getEvent()));
+                                checkEvent(match.getEvent());
+                            }
                             setResult(true);
                             return true;
                         }
@@ -170,6 +193,36 @@ public class MatchSetCollector {
             }
         }
         return hasMatched;
+    }
+
+    /** Tests if all anchor images in a given event actually occur in the graph. */
+    private void checkEvent(RuleEvent event) {
+        if (event instanceof CompositeEvent) {
+            for (RuleEvent subEvent : ((CompositeEvent) event).getEventSet()) {
+                checkEvent(subEvent);
+            }
+        } else {
+            for (int i = 0; i < event.getRule().getAnchor().size(); i++) {
+                AnchorValue anchorImage = event.getAnchorImage(i);
+                HostGraph host = MatchSetCollector.this.state.getGraph();
+                switch (anchorImage.getAnchorKind()) {
+                case EDGE:
+                    if (!host.containsEdge((HostEdge) anchorImage)) {
+                        assert false : String.format(
+                            "Edge %s does not occur in graph %s", anchorImage,
+                            host);
+                    }
+                    break;
+                case NODE:
+                    if (!(anchorImage instanceof ValueNode)
+                        && !host.containsNode((HostNode) anchorImage)) {
+                        assert false : String.format(
+                            "Node %s does not occur in graph %s", anchorImage,
+                            host);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -328,4 +381,6 @@ public class MatchSetCollector {
 
     /** Flag to indicate if confluent diamonds should be considered. */
     private final boolean checkDiamonds;
+    /** Debug flag for the match collector. */
+    private final static boolean DEBUG = false;
 }

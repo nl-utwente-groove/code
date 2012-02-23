@@ -55,6 +55,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             sourceCtrlState.getTransition(event.getRule());
         setCtrlState(ctrlTrans.target());
         this.boundNodes = boundNodes;
+        if (DEBUG) {
+            System.out.printf("Created state %s from %s:%n", this, source);
+            System.out.printf("  Graph: %s%n", source.getGraph());
+            System.out.printf("  Event: %s%n", event.getAnchorImageString());
+            System.out.printf("  Event id: %s%n",
+                System.identityHashCode(event));
+        }
     }
 
     public RuleEvent getEvent() {
@@ -313,4 +320,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * The identities of the nodes added with respect to the source state.
      */
     private final HostNode[] addedNodes;
+    /** Flag to switch on debugging info. */
+    private final static boolean DEBUG = false;
 }

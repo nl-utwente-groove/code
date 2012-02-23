@@ -25,6 +25,7 @@ import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.trans.Condition;
+import groove.trans.DefaultHostNode;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -405,7 +406,22 @@ public class PlanSearchStrategy implements SearchStrategy {
                 }
             }
             found = current == planSize;
+            boolean oldFound = this.found;
             this.found = found;
+            if (PRINT_MATCHES) {
+                Condition condition =
+                    PlanSearchStrategy.this.plan.getCondition();
+                if (condition.hasRule() && condition.getRule().isTop()) {
+                    System.out.printf("Next match for %s%s%n",
+                        condition.getName(), oldFound ? ": " : " in "
+                            + this.host);
+                    if (found) {
+                        System.out.print("  " + getMatch());
+                    } else {
+                        System.out.println("  None");
+                    }
+                }
+            }
             searchFindReporter.stop();
             return found;
         }
@@ -441,6 +457,13 @@ public class PlanSearchStrategy implements SearchStrategy {
 
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, HostNode image) {
+            if (CHECK_IMAGES) {
+                if (image instanceof DefaultHostNode
+                    && !this.host.containsNode(image)) {
+                    assert false : String.format(
+                        "Node %s does not occur in graph %s", image, this.host);
+                }
+            }
             RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
             assert image == null || this.nodeSeeds[index] == null : String.format(
                 "Assignment %s=%s replaces pre-matched image %s", nodeKey,
@@ -479,6 +502,12 @@ public class PlanSearchStrategy implements SearchStrategy {
 
         /** Sets the edge image for the edge key with a given index. */
         final boolean putEdge(int index, HostEdge image) {
+            if (CHECK_IMAGES) {
+                if (image != null && !this.host.containsEdge(image)) {
+                    assert false : String.format(
+                        "Edge %s does not occur in graph %s", image, this.host);
+                }
+            }
             this.edgeImages[index] = image;
             return true;
         }
@@ -627,6 +656,9 @@ public class PlanSearchStrategy implements SearchStrategy {
         private final SearchItem.Record[][] influence;
         /** Forward influence count of the records. */
         private final int[] influenceCount;
+
+        private final static boolean PRINT_MATCHES = false;
+        private final static boolean CHECK_IMAGES = true;
     }
 
 }

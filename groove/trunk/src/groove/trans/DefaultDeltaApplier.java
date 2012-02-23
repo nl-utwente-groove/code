@@ -263,6 +263,32 @@ public class DefaultDeltaApplier implements DeltaApplier {
         return new StackedSet<E>(lower, added, removed);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        if (!this.addedNodeSet.isEmpty()) {
+            result.append('+');
+            result.append(this.addedNodeSet);
+            result.append(' ');
+        }
+        if (!this.removedNodeSet.isEmpty()) {
+            result.append('-');
+            result.append(this.removedNodeSet);
+            result.append(' ');
+        }
+        if (!this.addedEdgeSet.isEmpty()) {
+            result.append('+');
+            result.append(this.addedEdgeSet);
+            result.append(' ');
+        }
+        if (!this.removedEdgeSet.isEmpty()) {
+            result.append('-');
+            result.append(this.removedEdgeSet);
+            result.append(' ');
+        }
+        return result.toString();
+    }
+
     /** The set of added nodes of this delta. */
     final private Set<HostNode> addedNodeSet;
     /** The set of removed nodes of this delta. */
