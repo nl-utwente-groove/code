@@ -17,10 +17,11 @@
 package groove.explore.encode;
 
 import groove.trans.GraphGrammar;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Encoding of a host name.
@@ -49,10 +50,11 @@ public class EncodedHostName implements EncodedType<String,String> {
         Pattern pattern =
             Pattern.compile("^https?\\://[a-zA-Z0-9\\-\\.]+(\\.[a-zA-Z]{2,3})?\\:[0-9]{4}(/\\S*)?$");
         Matcher matcher = pattern.matcher(source);
-        if (!matcher.find())
+        if (!matcher.find()) {
             throw new FormatException("Bad host name '%s': %s", source,
                 "Should match pattern: " + pattern.toString());
-        else
+        } else {
             return source;
+        }
     }
 }

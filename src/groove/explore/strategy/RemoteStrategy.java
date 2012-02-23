@@ -22,7 +22,9 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.sts.InstantiatedSwitchRelation;
 import groove.sts.Location;
+import groove.sts.OnTheFlySTS;
 import groove.sts.STS;
+import groove.sts.STSException;
 import groove.sts.SwitchRelation;
 
 import java.io.BufferedReader;
@@ -37,63 +39,22 @@ import java.util.Set;
 
 /**
  * The exploration strategy will be obtained from a remote server or, if the
- * DFSStrategy is used, it sends the explored statespace (using the DFS
- * Strategy) to the remote server.
- * 
- * In the latter case the JSON format is: {start: "label start location", lVars:
- * {<location variable>}, relations: [<switch relation>], gates: {<gate>},
- * iVars: {<interaction variable>}} <location variable> = "label": {type:
- * "variable type", init: initial value} <switch relation> = {source:
- * "label source location", gate: "label gate", target: "label target location",
- * guard: "guard", update: "update mapping"} <gate> = "label": {type: "?/!",
- * iVars: ["label interaction variable"]} <interaction variable> = "label":
- * "variable type" interaction variable label is null for tau transition.
- * 
+ * SymbolicStrategy is used, it sends the sts obtained from the SymbolicStrategy
+ * to the remote server.
  * @author Vincent de Bruijn
  */
 public class RemoteStrategy extends AbstractStrategy {
 
-    @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
-
-        // Initiate the Depth-First strategy
-        this.dfsStrategy = new DFSStrategy();
-        this.dfsStrategy.prepare(gts, startState);
-
-        if (!this.useDFS) {
-            connect();
-        }
-        this.sts = new STS();
-        this.sts.hostGraphToStartLocation(startState.getGraph());
-    }
-
-    @Override
-    public boolean next() {
-        if (getState() == null) {
-            return false;
-        }
-        // If the current location is new, determine its outgoing switch
-        // relations
-        Location current = this.sts.getCurrentLocation();
-        // Get current rule matches
-        for (MatchResult next : createMatchCollector().getMatchSet()) {
-            SwitchRelation sr =
-                this.sts.ruleMatchToSwitchRelation(getState().getGraph(), next);
-            if (current.getRelationTarget(sr) == null) {
-                RuleTransition transition =
-                    getMatchApplier().apply(getState(), next);
-                Location l =
-                    this.sts.hostGraphToLocation(transition.target().getGraph());
-                current.addSwitchRelation(sr, l);
-            }
-        }
-        return updateAtState();
-    }
+    private String host;
+    private STS sts;
+    private HttpURLConnection conn;
+    private Writer out;
+    private BufferedReader in;
+    private boolean useSymbolicStrategy = true;
+    private SymbolicStrategy symbolicStrategy;
 
     /**
      * Sets the remote host.
-     * 
      * @param host
      *            The remote host
      */
@@ -102,31 +63,75 @@ public class RemoteStrategy extends AbstractStrategy {
     }
 
     /**
-     * Sets the use of the DFSStrategy. If the strategy is used, this
-     * exploration strategy will first explore the statespace and transmit it to
-     * the remote server. If the strategy is not used, the exploration strategy
+     * Sets the use of the SymbolicStrategy. If the strategy is used, this
+     * exploration strategy will first explore the statespace and transmit an sts
+     * to the remote server. If the strategy is not used, the exploration strategy
      * is obtained from the remote server.
-     * 
      * @param use
-     *            Whether the DFSStrategy should be used or not
+     *            Whether the SymbolicStrategy should be used or not
      */
-    public void setUseDFS(boolean use) {
-        this.useDFS = use;
+    public void setUseSymbolicStrategy(boolean use) {
+        this.useSymbolicStrategy = use;
+    }
+
+    @Override
+    public void prepare(GTS gts, GraphState startState) {
+        super.prepare(gts, startState);
+
+        if (this.useSymbolicStrategy) {
+            this.symbolicStrategy = new SymbolicStrategy();
+            this.symbolicStrategy.prepare(gts, startState);
+        } else {
+            connect();
+            this.sts = new OnTheFlySTS();
+            this.sts.hostGraphToStartLocation(startState.getGraph());
+        }
+    }
+
+    @Override
+    public boolean next() {
+        if (getState() == null) {
+            return false;
+        } else if (this.useSymbolicStrategy) {
+            return this.symbolicStrategy.next();
+        } else {
+            // If the current location is new, determine its outgoing switch
+            // relations
+            Location current = this.sts.getCurrentLocation();
+            // Get current rule matches
+            for (MatchResult next : createMatchCollector().getMatchSet()) {
+                SwitchRelation sr = null;
+                try {
+                    sr =
+                        this.sts.ruleMatchToSwitchRelation(
+                            getState().getGraph(), next);
+                } catch (STSException e) {
+                    // TODO: handle this exception
+                    System.out.println(e.getStackTrace());
+                }
+                if (current.getRelationTarget(sr) == null) {
+                    RuleTransition transition =
+                        getMatchApplier().apply(getState(), next);
+                    Location l =
+                        this.sts.hostGraphToLocation(transition.target().getGraph());
+                    current.addSwitchRelation(sr, l);
+                }
+            }
+            return updateAtState();
+        }
     }
 
     @Override
     protected GraphState getNextState() {
         Location current = this.sts.getCurrentLocation();
         GraphState state = null;
-        if (this.useDFS) {
+        if (this.useSymbolicStrategy) {
             // Use the DfsStrategy to decide on the next state.
-            state = this.dfsStrategy.getNextState();
+            state = this.symbolicStrategy.getNextState();
             if (state == null) {
                 connect();
-                send(this.sts.toJSON());
+                send(this.symbolicStrategy.getSTS().toJSON());
                 disconnect();
-            } else {
-                this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
             }
             return state;
         } else {
@@ -272,13 +277,5 @@ public class RemoteStrategy extends AbstractStrategy {
         }
         return null;
     }
-
-    private DFSStrategy dfsStrategy;
-    private String host;
-    private STS sts;
-    private HttpURLConnection conn;
-    private Writer out;
-    private BufferedReader in;
-    private boolean useDFS = true;
 
 }

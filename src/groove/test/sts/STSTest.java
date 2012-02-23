@@ -1,18 +1,37 @@
 package groove.test.sts;
 
 import groove.algebra.JavaIntAlgebra;
+import groove.explore.util.MatchSetCollector;
+import groove.lts.GTS;
+import groove.lts.MatchResult;
+import groove.lts.StartGraphState;
 import groove.sts.Location;
 import groove.sts.STS;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.SystemRecord;
+import groove.util.Groove;
+import groove.view.FormatException;
+import groove.view.GrammarModel;
+
+import java.io.IOException;
+import java.util.Collection;
+
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.junit.Test;
-
+/**
+ * Superclass for STS tests. Do not run, run CompleteSTSTest or OnTheFlySTSTest.
+ * @author Vincent de Bruijn
+ * @version $Revision $
+ */
 @SuppressWarnings("all")
-public class STSTest extends TestCase {
+public abstract class STSTest extends TestCase {
+
+    /** Location of the samples. */
+    static protected final String INPUT_DIR = "junit/rules";
 
     protected HostGraph g1;
     protected HostGraph g2;
@@ -24,17 +43,20 @@ public class STSTest extends TestCase {
     protected HostNode[] n3 = new HostNode[3];
     protected HostEdge[] e3 = new HostEdge[2];
 
+    protected STS sts;
+
     /**
-     * Creates a new instance of this test.
+     * Constructor.
      * @param name The name of this test
      */
     public STSTest(String name) {
         super(name);
     }
 
-    /** 
+    /**
      * Sets up all Object needed for the tests
      */
+    @Override
     protected void setUp() {
         this.g1 = new DefaultHostGraph("g1");
         this.g2 = new DefaultHostGraph("g2");
@@ -87,12 +109,68 @@ public class STSTest extends TestCase {
      * Tests if the host graphs are correctly generalized to a location.
      */
     public void testHostGraphToLocation() {
-        STS s = new STS();
-        Location l1 = s.hostGraphToLocation(this.g1);
-        Location l2 = s.hostGraphToLocation(this.g2);
-        Location l3 = s.hostGraphToLocation(this.g3);
-        assert l1.equals(l2);
-        assert !l1.equals(l3);
+        Location l1 = this.sts.hostGraphToLocation(this.g1);
+        Location l2 = this.sts.hostGraphToLocation(this.g2);
+        Location l3 = this.sts.hostGraphToLocation(this.g3);
+        Assert.assertTrue(l1.equals(l2));
+        Assert.assertFalse(l1.equals(l3));
     }
 
+    /**
+     * Tests toLocation.
+     */
+    public void testToLocation() {
+        Location l = this.sts.hostGraphToLocation(this.g1);
+        this.sts.toLocation(l);
+        Assert.assertEquals(this.sts.getCurrentLocation(), l);
+    }
+
+    /**
+     * Tests ruleMatchToSwitchRelation for simple guards.
+     */
+    public void testSimpleGuards() {
+        test("simpleGuards");
+    }
+
+    /**
+     * Tests ruleMatchToSwitchRelation for the rule matches in the given grammar.
+     * @param grammarName The name of the grammar to test on.
+     */
+    protected void test(String grammarName) {
+        try {
+            GrammarModel view =
+                Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            HostGraph graph = view.getStartGraphModel().toHost();
+            for (MatchResult next : createMatchSet(view)) {
+                testRuleMatchToSwitchRelation(graph, next);
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Tests ruleMatchToSwitchRelation.
+     */
+    protected abstract void testRuleMatchToSwitchRelation(
+            HostGraph sourceGraph, MatchResult match);
+
+    /** 
+     * Gets the first matchset for the given grammar for rule to switchrelation tests 
+     */
+    protected Collection<MatchResult> createMatchSet(GrammarModel view) {
+        try {
+            HostGraph graph = view.getStartGraphModel().toHost();
+            GTS gts =
+                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            SystemRecord record = new SystemRecord(gts);
+            StartGraphState state = new StartGraphState(record, graph);
+            return new MatchSetCollector(state, record, gts.checkDiamonds()).getMatchSet();
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+        }
+        return null;
+    }
 }
