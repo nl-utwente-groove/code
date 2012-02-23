@@ -390,9 +390,9 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         // data should have been initialised
         assert isDataInitialised();
         if ((depth + 1) % MAX_CHAIN_DEPTH == 0) {
-            result = new CopyTarget();
+            result = new CopyTarget(!this.copyData);
         } else {
-            result = this.copyData ? new CopyTarget() : new SwingTarget();
+            result = this.copyData ? new CopyTarget(false) : new SwingTarget();
         }
         return result;
     }
@@ -559,7 +559,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         @Override
         public boolean addNode(HostNode node) {
             Set<HostEdge> edges = addKeyToMap(this.nodeEdgeMap, node);
-            assert edges == null;
+            assert edges == null : String.format(
+                "Node %s already occured in graph", node);
             addKeyToMap(this.nodeInEdgeMap, node);
             addKeyToMap(this.nodeOutEdgeMap, node);
             return true;
@@ -569,7 +570,10 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         @Override
         public boolean removeNode(HostNode node) {
             Set<HostEdge> edges = removeKeyFromMap(this.nodeEdgeMap, node);
-            assert edges.isEmpty();
+            assert edges != null : String.format(
+                "Node %s did not occur in graph", node);
+            assert edges.isEmpty() : String.format(
+                "Node %s still had incident edges %s", node, edges);
             removeKeyFromMap(this.nodeOutEdgeMap, node);
             removeKeyFromMap(this.nodeInEdgeMap, node);
             return true;
@@ -581,21 +585,22 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
          * A second parameter determines if the set sets
          * in the map should be copied upon modification.
          */
-        final boolean addEdge(HostEdge elem, boolean refreshSource,
+        final boolean addEdge(HostEdge edge, boolean refreshSource,
                 boolean refreshTarget, boolean refreshLabel) {
-            boolean result = this.edgeSet.add(elem);
-            assert result;
+            boolean result = this.edgeSet.add(edge);
+            assert result : String.format("Edge %s already occured in graph",
+                edge);
             // adapt node-edge map
-            HostNode source = elem.source();
-            HostNode target = elem.target();
-            addToMap(this.nodeEdgeMap, source, elem, refreshSource);
+            HostNode source = edge.source();
+            HostNode target = edge.target();
+            addToMap(this.nodeEdgeMap, source, edge, refreshSource);
             if (source != target) {
-                addToMap(this.nodeEdgeMap, target, elem, refreshTarget);
+                addToMap(this.nodeEdgeMap, target, edge, refreshTarget);
             }
             // adapt label-edge map
-            addToMap(this.nodeOutEdgeMap, source, elem, refreshSource);
-            addToMap(this.nodeInEdgeMap, target, elem, refreshTarget);
-            addToMap(this.labelEdgeMap, elem.label(), elem, refreshLabel);
+            addToMap(this.nodeOutEdgeMap, source, edge, refreshSource);
+            addToMap(this.nodeInEdgeMap, target, edge, refreshTarget);
+            addToMap(this.labelEdgeMap, edge.label(), edge, refreshLabel);
             return result;
         }
 
@@ -608,7 +613,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         final boolean removeEdge(HostEdge edge, boolean refreshSource,
                 boolean refreshTarget, boolean refreshLabel) {
             boolean result = this.edgeSet.remove(edge);
-            assert result;
+            assert result : String.format("Edge %s did not occur in graph",
+                edge);
             // adapt node-edge map
             HostNode source = edge.source();
             HostNode target = edge.target();
@@ -748,30 +754,46 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /** Delta target to initialise the data structures. */
     private class CopyTarget extends DataTarget {
-        /** Constructs and instance for a given node and edge set. */
-        public CopyTarget() {
+        /** 
+         * Constructs and instance for a given node and edge set.
+         * @param deepcopy if {@code true}, the maps are completely copied;
+         * otherwise, the image maps are shared. Deep copying is necessary if
+         * the {@link CopyTarget} is used in combination with {@link SwingTarget}s
+         */
+        public CopyTarget(boolean deepcopy) {
             DeltaHostGraph graph = DeltaHostGraph.this;
             this.edgeSet = createEdgeSet(graph.edgeSet);
-            this.nodeEdgeMap =
-                new LinkedHashMap<HostNode,HostEdgeSet>(graph.nodeEdgeMap);
-            this.freshSourceKeys = createNodeSet(null);
-            this.freshTargetKeys = createNodeSet(null);
+            this.nodeEdgeMap = copy(graph.nodeEdgeMap, deepcopy);
+            this.freshSourceKeys =
+                createNodeSet(deepcopy ? this.nodeEdgeMap.keySet() : null);
+            this.freshTargetKeys =
+                createNodeSet(deepcopy ? this.nodeEdgeMap.keySet() : null);
             if (graph.labelEdgeMap != null) {
-                this.labelEdgeMap =
-                    new LinkedHashMap<TypeLabel,HostEdgeSet>(graph.labelEdgeMap);
+                this.labelEdgeMap = copy(graph.labelEdgeMap, deepcopy);
                 this.freshLabelKeys = new HashSet<TypeLabel>();
+                if (deepcopy) {
+                    this.freshLabelKeys.addAll(this.labelEdgeMap.keySet());
+                }
             } else {
                 this.freshLabelKeys = null;
             }
             if (graph.nodeInEdgeMap != null) {
-                this.nodeInEdgeMap =
-                    new LinkedHashMap<HostNode,HostEdgeSet>(graph.nodeInEdgeMap);
+                this.nodeInEdgeMap = copy(graph.nodeInEdgeMap, deepcopy);
             }
             if (graph.nodeOutEdgeMap != null) {
-                this.nodeOutEdgeMap =
-                    new LinkedHashMap<HostNode,HostEdgeSet>(
-                        graph.nodeOutEdgeMap);
+                this.nodeOutEdgeMap = copy(graph.nodeOutEdgeMap, deepcopy);
             }
+        }
+
+        private <K> Map<K,HostEdgeSet> copy(Map<K,HostEdgeSet> source,
+                boolean deepcopy) {
+            Map<K,HostEdgeSet> result = new LinkedHashMap<K,HostEdgeSet>();
+            for (Map.Entry<K,HostEdgeSet> entry : source.entrySet()) {
+                HostEdgeSet image = entry.getValue();
+                result.put(entry.getKey(), deepcopy ? createEdgeSet(image)
+                        : image);
+            }
+            return result;
         }
 
         /**
@@ -779,15 +801,15 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
          * the label-edge maps (if it is set).
          */
         @Override
-        public boolean addEdge(HostEdge elem) {
-            HostNode source = (elem).source();
-            HostNode target = (elem).target();
+        public boolean addEdge(HostEdge edge) {
+            HostNode source = edge.source();
+            HostNode target = edge.target();
             boolean refreshSource = this.freshSourceKeys.add(source);
             boolean refreshTarget = this.freshTargetKeys.add(target);
             boolean refreshLabel =
                 this.freshLabelKeys != null
-                    && this.freshLabelKeys.add((elem).label());
-            return super.addEdge(elem, refreshSource, refreshTarget,
+                    && this.freshLabelKeys.add(edge.label());
+            return super.addEdge(edge, refreshSource, refreshTarget,
                 refreshLabel);
         }
 
