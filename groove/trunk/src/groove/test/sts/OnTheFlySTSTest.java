@@ -69,8 +69,7 @@ public class OnTheFlySTSTest extends STSTest {
      */
     public void testToJson() {
         try {
-            GrammarModel view =
-                Groove.loadGrammar(INPUT_DIR + "/" + "simpleGuards");
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
             HostGraph graph = view.getStartGraphModel().toHost();
             this.onTheFlySTS.hostGraphToStartLocation(graph);
             for (MatchResult next : createMatchSet(view)) {
