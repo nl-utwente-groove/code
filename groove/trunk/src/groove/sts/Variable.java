@@ -29,6 +29,26 @@ public class Variable {
         this.type = type;
     }
 
+    /**
+     * Gets the default value of a variable with type s.
+     * @param s The type.
+     * @return The default value.
+     */
+    public static Object getDefaultValue(SignatureKind s) {
+        switch (s) {
+        case INT:
+            return new Integer(0);
+        case BOOL:
+            return new Boolean(false);
+        case REAL:
+            return new Double(0.0);
+        case STRING:
+            return "";
+        default:
+            return null;
+        }
+    }
+
     /** 
      * Gets the label of this variable.
      * @return The label.

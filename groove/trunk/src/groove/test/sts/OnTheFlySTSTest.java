@@ -22,12 +22,6 @@ import groove.sts.OnTheFlySTS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
 import groove.trans.HostGraph;
-import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
-
-import java.io.IOException;
-
 import junit.framework.Assert;
 
 /**
@@ -64,30 +58,6 @@ public class OnTheFlySTSTest extends STSTest {
         Assert.assertSame(this.onTheFlySTS.getStartLocation(), l);
     }
 
-    /**
-     * Tests toJson.
-     */
-    public void testToJson() {
-        try {
-            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
-            HostGraph graph = view.getStartGraphModel().toHost();
-            this.onTheFlySTS.hostGraphToStartLocation(graph);
-            for (MatchResult next : createMatchSet(view)) {
-                try {
-                    this.onTheFlySTS.ruleMatchToSwitchRelation(graph, next);
-                } catch (STSException e) {
-                    Assert.fail(e.getMessage());
-                }
-            }
-            String json = this.onTheFlySTS.toJSON();
-            // TODO: Test if json is well-formed
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
     @Override
     protected void testRuleMatchToSwitchRelation(HostGraph sourceGraph,
             MatchResult match) {
@@ -98,7 +68,7 @@ public class OnTheFlySTSTest extends STSTest {
 
             Assert.assertNotNull(sr);
             Assert.assertEquals(
-                this.onTheFlySTS.getSwitchRelation(this.onTheFlySTS.getSwitchIdentifier(
+                this.onTheFlySTS.getSwitchRelation(SwitchRelation.getSwitchIdentifier(
                     sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
         } catch (STSException e) {
             Assert.fail(e.getMessage());

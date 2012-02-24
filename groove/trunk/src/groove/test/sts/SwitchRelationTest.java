@@ -21,7 +21,7 @@ import groove.sts.InteractionVariable;
 import groove.sts.Location;
 import groove.sts.SwitchRelation;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -49,7 +49,7 @@ public class SwitchRelationTest extends TestCase {
 
     @Override
     protected void setUp() {
-        this.gate = new Gate("gateLabel", new ArrayList<InteractionVariable>());
+        this.gate = new Gate("gateLabel", new HashSet<InteractionVariable>());
         this.guard = "i < 5";
         this.update = "i = 5;";
         this.sr = new SwitchRelation(this.gate, this.guard, this.update);

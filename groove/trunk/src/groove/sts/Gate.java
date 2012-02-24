@@ -1,6 +1,6 @@
 package groove.sts;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * A gate in an STS.
@@ -9,14 +9,14 @@ import java.util.List;
 public class Gate {
 
     private String label;
-    private List<InteractionVariable> iVars;
+    private Set<InteractionVariable> iVars;
 
     /**
      * Creates a new instance.
      * @param label The label of the new gate.
      * @param iVars The interaction variables of the new gate.
      */
-    public Gate(String label, List<InteractionVariable> iVars) {
+    public Gate(String label, Set<InteractionVariable> iVars) {
         this.label = label;
         this.iVars = iVars;
     }

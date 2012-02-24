@@ -1,6 +1,8 @@
 package groove.sts;
 
 import groove.algebra.SignatureKind;
+import groove.graph.algebra.VariableNode;
+import groove.trans.Rule;
 
 /**
  * An interaction variable in an sts.
@@ -16,6 +18,17 @@ public class InteractionVariable extends Variable {
      */
     public InteractionVariable(String label, SignatureKind type) {
         super(label, type);
+    }
+
+    /**
+     * Creates a label for an InteractionVariable based on a VariableNode.
+     * @param rule The rule where the node is in.
+     * @param node The node on which the label is based.
+     * @return The variable label.
+     */
+    public static String createInteractionVariableLabel(Rule rule,
+            VariableNode node) {
+        return rule.getFullName() + "_" + node.getNumber();
     }
 
     /**

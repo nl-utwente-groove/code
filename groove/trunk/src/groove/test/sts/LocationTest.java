@@ -21,7 +21,7 @@ import groove.sts.InteractionVariable;
 import groove.sts.Location;
 import groove.sts.SwitchRelation;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -55,7 +55,7 @@ public class LocationTest extends TestCase {
         Location l2 = new Location("l2");
         SwitchRelation sr =
             new SwitchRelation(new Gate("lbl",
-                new ArrayList<InteractionVariable>()), "", "");
+                new HashSet<InteractionVariable>()), "", "");
         this.l.addSwitchRelation(sr, l2);
         Assert.assertNotNull(this.l.getSwitchRelations());
         Assert.assertTrue(this.l.getSwitchRelations().size() == 1);
