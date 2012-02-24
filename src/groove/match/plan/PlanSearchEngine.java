@@ -283,7 +283,12 @@ public class PlanSearchEngine extends SearchEngine {
                     } else {
                         AbstractSearchItem edgeSearchItem =
                             createEdgeSearchItem(embargoEdge);
-                        if (this.searchMode == SearchMode.REVERSE) {
+                        if (this.searchMode == SearchMode.REVERSE
+                            && !embargoEdge.source().equals(
+                                embargoEdge.target())) {
+                            // EZ says: we are in reverse mode and we are not
+                            // with a loop embargo. Then we have to search this
+                            // edge positively.
                             item = edgeSearchItem;
                         } else {
                             item = createNegatedSearchItem(edgeSearchItem);
