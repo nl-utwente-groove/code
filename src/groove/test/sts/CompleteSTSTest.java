@@ -73,8 +73,7 @@ public class CompleteSTSTest extends STSTest {
      */
     public void testToJson() {
         try {
-            GrammarModel view =
-                Groove.loadGrammar(INPUT_DIR + "/" + "simpleGuards");
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
             HostGraph graph = view.getStartGraphModel().toHost();
             this.completeSTS.hostGraphToStartLocation(graph);
             for (MatchResult next : createMatchSet(view)) {
@@ -86,6 +85,27 @@ public class CompleteSTSTest extends STSTest {
             }
             String json = this.completeSTS.toJSON();
             // TODO: Test if json is well-formed
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    public void testSTSException() {
+        try {
+            GrammarModel view =
+                Groove.loadGrammar(INPUT_DIR + "/" + "exception");
+            HostGraph graph = view.getStartGraphModel().toHost();
+            this.completeSTS.hostGraphToStartLocation(graph);
+            for (MatchResult next : createMatchSet(view)) {
+                try {
+                    this.completeSTS.ruleMatchToSwitchRelation(graph, next);
+                    Assert.fail("No STSException thrown.");
+                } catch (STSException e) {
+                    Assert.assertFalse(e.getMessage().isEmpty());
+                }
+            }
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         } catch (FormatException e) {

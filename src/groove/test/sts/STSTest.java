@@ -31,7 +31,7 @@ import junit.framework.TestCase;
 public abstract class STSTest extends TestCase {
 
     /** Location of the samples. */
-    static protected final String INPUT_DIR = "junit/rules";
+    static protected final String INPUT_DIR = "junit/rules/sts";
 
     protected HostGraph g1;
     protected HostGraph g2;
@@ -126,10 +126,17 @@ public abstract class STSTest extends TestCase {
     }
 
     /**
-     * Tests ruleMatchToSwitchRelation for simple guards.
+     * Tests ruleMatchToSwitchRelation for guards.
      */
-    public void testSimpleGuards() {
-        test("simpleGuards");
+    public void testGuards() {
+        test("guards");
+    }
+
+    /**
+     * Tests ruleMatchToSwitchRelation for updates.
+     */
+    public void testUpdates() {
+        test("updates");
     }
 
     /**

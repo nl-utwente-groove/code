@@ -244,7 +244,7 @@ public class CompleteSTS extends STS {
                 // A creator edge has been detected to a data node,
                 // this indicates an update for a location variable.
                 RuleEdge eraserEdge =
-                    possibleUpdates.get(new Pair<RuleNode,RuleLabel>(
+                    possibleUpdates.remove(new Pair<RuleNode,RuleLabel>(
                         creatorEdge.source(), creatorEdge.label()));
                 if (eraserEdge == null) {
                     // modelling constraint for now, updates have to be done in
@@ -291,6 +291,11 @@ public class CompleteSTS extends STS {
                 }
                 update += var.getLabel() + " = " + updateValue + "; ";
             }
+        }
+
+        if (!possibleUpdates.isEmpty()) {
+            throw new STSException("ERROR: eraser edge found without creator: "
+                + possibleUpdates.values().iterator().next());
         }
 
         // Create the gate and the switch relation
