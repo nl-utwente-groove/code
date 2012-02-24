@@ -1198,7 +1198,7 @@ public final class Materialisation {
     }*/
 
     public static void main(String args[]) {
-        String DIRECTORY = "junit/abstraction/bauer-ideal-platoon.gps/";
+        String DIRECTORY = "junit/abstraction/temp.gps/";
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Abstraction.initialise();
@@ -1207,7 +1207,7 @@ public final class Materialisation {
         try {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
             GraphGrammar grammar = view.toGrammar();
-            Rule rule = grammar.getRule("pass-1");
+            Rule rule = grammar.getRule("rule");
             Shape shape =
                 ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
