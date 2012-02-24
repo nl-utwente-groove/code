@@ -7,6 +7,7 @@ import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
 import groove.sts.Location;
 import groove.sts.STS;
+import groove.sts.STSException;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -123,6 +124,30 @@ public abstract class STSTest extends TestCase {
         Location l = this.sts.hostGraphToLocation(this.g1);
         this.sts.toLocation(l);
         Assert.assertEquals(this.sts.getCurrentLocation(), l);
+    }
+
+    /**
+     * Tests toJson.
+     */
+    public void testToJson() {
+        try {
+            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
+            HostGraph graph = view.getStartGraphModel().toHost();
+            this.sts.hostGraphToStartLocation(graph);
+            for (MatchResult next : createMatchSet(view)) {
+                try {
+                    this.sts.ruleMatchToSwitchRelation(graph, next);
+                } catch (STSException e) {
+                    Assert.fail(e.getMessage());
+                }
+            }
+            String json = this.sts.toJSON();
+            // TODO: Test if json is well-formed
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     /**

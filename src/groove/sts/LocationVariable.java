@@ -1,6 +1,7 @@
 package groove.sts;
 
 import groove.algebra.SignatureKind;
+import groove.trans.HostEdge;
 
 /**
  * A location variable in an sts.
@@ -21,6 +22,18 @@ public class LocationVariable extends Variable {
             Object initialValue) {
         super(label, type);
         this.initialValue = initialValue;
+    }
+
+    /**
+     * Creates a label for a LocationVariable based on a HostEdge. Assumed is
+     * that the target of the edge is a data node.
+     * 
+     * @param edge
+     *            The edge on which the label is based.
+     * @return The variable label.
+     */
+    public static String createLocationVariableLabel(HostEdge edge) {
+        return edge.label().text() + "_" + edge.source().getNumber();
     }
 
     /**

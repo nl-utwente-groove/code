@@ -69,29 +69,8 @@ public class CompleteSTSTest extends STSTest {
     }
 
     /**
-     * Tests toJson.
+     * Tests STSException.
      */
-    public void testToJson() {
-        try {
-            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
-            HostGraph graph = view.getStartGraphModel().toHost();
-            this.completeSTS.hostGraphToStartLocation(graph);
-            for (MatchResult next : createMatchSet(view)) {
-                try {
-                    this.completeSTS.ruleMatchToSwitchRelation(graph, next);
-                } catch (STSException e) {
-                    Assert.fail(e.getMessage());
-                }
-            }
-            String json = this.completeSTS.toJSON();
-            // TODO: Test if json is well-formed
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
     public void testSTSException() {
         try {
             GrammarModel view =
@@ -113,6 +92,13 @@ public class CompleteSTSTest extends STSTest {
         }
     }
 
+    /**
+     * Tests the 'final' node in a model.
+     */
+    public void testFinalNode() {
+        test("testCase");
+    }
+
     @Override
     protected void testRuleMatchToSwitchRelation(HostGraph sourceGraph,
             MatchResult match) {
@@ -123,7 +109,7 @@ public class CompleteSTSTest extends STSTest {
 
             Assert.assertNotNull(sr);
             Assert.assertEquals(
-                this.completeSTS.getSwitchRelation(this.sts.getSwitchIdentifier(
+                this.completeSTS.getSwitchRelation(SwitchRelation.getSwitchIdentifier(
                     sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
         } catch (STSException e) {
             Assert.fail(e.getMessage());

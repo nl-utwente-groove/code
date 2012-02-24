@@ -73,7 +73,7 @@ public class VariableTest extends TestCase {
     }
 
     /**
-     * Tests hashcode.
+     * Tests hashCode.
      */
     public void testHashCode() {
         this.iVar.hashCode();

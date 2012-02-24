@@ -47,6 +47,19 @@ public class SwitchRelation {
         return this.update;
     }
 
+    /**
+     * Gets a unique identifier object for Switch Relations.
+     * @param gate The gate of the Switch Relation.
+     * @param guard The guard of the Switch Relation.
+     * @param update The update of the Switch Relation.
+     * @return A unique identifier object.
+     */
+    public static Object getSwitchIdentifier(Gate gate, String guard,
+            String update) {
+        // TODO: replace with triple
+        return gate.getLabel() + guard + update;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof SwitchRelation)) {
