@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
@@ -256,6 +257,30 @@ public class TestMatching {
         Proof preMatch = preMatches.iterator().next();
         Set<Materialisation> mats =
             Materialisation.getMaterialisations(shape4, preMatch);
+        assertEquals(0, mats.size());
+    }
+
+    @Test
+    public void testNAC6() {
+        File file = new File(DIRECTORY + "test-nac-5.gxl");
+        Shape shape = null;
+        try {
+            shape =
+                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Parameters.setNodeMultBound(1);
+        Parameters.setEdgeMultBound(1);
+        Multiplicity.initMultStore();
+
+        Rule rule = grammar.getRule("test-nac-5");
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(1, preMatches.size());
+        Proof preMatch = preMatches.iterator().next();
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(0, mats.size());
     }
 
