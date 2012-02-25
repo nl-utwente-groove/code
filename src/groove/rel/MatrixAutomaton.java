@@ -371,38 +371,38 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         }
     }
 
-    public Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
-            Set<HostNode> endImages, Valuation valuation) {
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
+            HostNode endImage, Valuation valuation) {
         assert isFixed();
         if (valuation == null) {
             valuation = Valuation.EMPTY;
         }
-        if (startImages != null) {
+        if (startImage != null) {
             // do forward matching from the start images
             return getMatchingAlgorithm(FORWARD).computeMatches(graph,
-                startImages, endImages, valuation);
-        } else if (endImages != null) {
+                startImage, endImage, valuation);
+        } else if (endImage != null) {
             // do backwards matching from the end images
             return getMatchingAlgorithm(BACKWARD).computeMatches(graph,
-                endImages, null, valuation);
+                endImage, null, valuation);
         } else {
             // if we don't have any start or end images,
             // create a set of start images using the automaton's initial edges
-            return getMatchingAlgorithm(FORWARD).computeMatches(graph,
-                createStartImages(graph), null, valuation);
+            return getMatchingAlgorithm(FORWARD).computeMatches(graph, null,
+                null, valuation);
 
         }
     }
 
-    public Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
-            Set<HostNode> endImages) {
-        return getMatches(graph, startImages, endImages, null);
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
+            HostNode endImage) {
+        return getMatches(graph, startImage, endImage, null);
     }
 
     /**
      * Creates a set of start nodes to be used in the search for matches if no
      * explicit start nodes are provided.
-     * @see #getMatches(HostGraph, Set, Set, Valuation)
+     * @see #getMatches(HostGraph, HostNode, HostNode, Valuation)
      */
     private Set<HostNode> createStartImages(HostGraph graph) {
         Set<HostNode> result = new HashSet<HostNode>();
@@ -818,7 +818,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
-     * {@link RegAut#getMatches(HostGraph, Set, Set, Valuation)}.
+     * {@link RegAut#getMatches(HostGraph, HostNode, HostNode, Valuation)}.
      */
     private class MatchingAlgorithm {
         /** Dummy object used in matching. */
@@ -1239,42 +1239,42 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          * potential end images; if not <code>null</code>, the computation will
          * terminate when it has found all the end images.
          * @param graph the graph in which we are trying to find matches
-         * @param startImages the allowed images of the start node of the
+         * @param startImage the allowed images of the start node of the
          *        algorithm; may not be <code>null</code>
-         * @param endImages the allowed images for the end node of the
+         * @param endImage the allowed images for the end node of the
          *        algorithm; may be <code>null</code> if all end images are
          *        allowed
          * @param valuation initial mapping from variables to labels
          */
-        public Set<Result> computeMatches(HostGraph graph,
-                Set<HostNode> startImages, Set<HostNode> endImages,
-                Valuation valuation) {
+        public Set<Result> computeMatches(HostGraph graph, HostNode startImage,
+                HostNode endImage, Valuation valuation) {
             if (graph != this.graph) {
                 // we're working on a different graph, so the previous matchings
                 // are no good
                 cleanOldMatches();
                 this.graph = graph;
             }
-            this.endImages = endImages;
-            this.storeIntermediates = !hasVars();// && endImages == null;//
-            // && startImages.size() >
-            // 1;
+            this.endImages =
+                endImage == null ? graph.nodeSet()
+                        : Collections.singleton(endImage);
+            this.storeIntermediates = !hasVars();
             this.result = new HashSet<Result>();
-            for (HostNode startImage : startImages) {
-                if (isAcceptsEmptyWord() && isAllowedResult(startImage)) {
-                    this.result.add(new Result(startImage, startImage, null));
+            Set<? extends HostNode> startImages =
+                startImage == null ? graph.nodeSet()
+                        : Collections.singleton(startImage);
+            for (HostNode start : startImages) {
+                if (isAcceptsEmptyWord() && isAllowedResult(start)) {
+                    this.result.add(new Result(start, start, null));
                 }
                 Map<HostNode,Set<Valuation>> resultMap =
-                    new MatchingComputation(this.startIndex, startImage,
-                        valuation).start();
+                    new MatchingComputation(this.startIndex, start, valuation).start();
                 for (Map.Entry<HostNode,Set<Valuation>> resultEntry : resultMap.entrySet()) {
-                    HostNode endImage = resultEntry.getKey();
-                    if (isAllowedResult(endImage)) {
+                    HostNode resultKey = resultEntry.getKey();
+                    if (isAllowedResult(resultKey)) {
                         if (hasVars()) {
-                            addRelated(startImage, endImage,
-                                resultEntry.getValue());
+                            addRelated(start, resultKey, resultEntry.getValue());
                         } else {
-                            addRelated(startImage, endImage);
+                            addRelated(start, resultKey);
                         }
                     }
                 }

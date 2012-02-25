@@ -15,7 +15,6 @@ import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -237,15 +236,13 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 sourceFind =
                     this.search.getNode(RegExprEdgeSearchItem.this.sourceIx);
             }
-            Set<HostNode> imageSourceSet = Collections.singleton(sourceFind);
             HostNode targetFind = this.targetPreMatch;
             if (targetFind == null && RegExprEdgeSearchItem.this.targetFound) {
                 targetFind =
                     this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
             }
-            Set<HostNode> imageTargetSet = Collections.singleton(targetFind);
             return RegExprEdgeSearchItem.this.labelAutomaton.getMatches(
-                this.host, imageSourceSet, imageTargetSet, valuation);
+                this.host, sourceFind, targetFind, valuation);
         }
 
         @Override
@@ -304,15 +301,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 this.targetFind = this.search.getNode(this.targetIx);
                 assert this.targetFind != null : String.format("Target node not found");
             }
-            Set<HostNode> imageSourceSet =
-                this.sourceFind == null ? null
-                        : Collections.singleton(this.sourceFind);
-            Set<HostNode> imageTargetSet =
-                this.targetFind == null ? null
-                        : Collections.singleton(this.targetFind);
             Set<RegAut.Result> matches =
                 RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
-                    imageSourceSet, imageTargetSet, this.valuation);
+                    this.sourceFind, this.targetFind, this.valuation);
             this.imageIter = matches.iterator();
         }
 

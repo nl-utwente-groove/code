@@ -74,15 +74,15 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
      * Returns a relation consisting of pairs of nodes of a given graph between
      * which there is a path matching this automaton.
      * @param graph the graph in which the paths are sought
-     * @param startImages set of nodes in <code>graph</code> from which the
+     * @param startImage set of nodes in <code>graph</code> from which the
      *        matching paths should start; if <code>null</code>, there is no
      *        constraint
-     * @param endImages set of nodes in <code>graph</code> at which the
+     * @param endImage set of nodes in <code>graph</code> at which the
      *        matching paths should end; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
-            Set<HostNode> endImages);
+    Set<Result> getMatches(HostGraph graph, HostNode startImage,
+            HostNode endImage);
 
     /**
      * Returns a relation consisting of pairs of nodes of a given graph between
@@ -90,18 +90,18 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
      * variables, the pairs are edges with {@link RuleToHostMap} labels giving
      * a valuation of the variables.
      * @param graph the graph in which the paths are sought
-     * @param startImages set of nodes in <code>graph</code> from which the
+     * @param startImage set of nodes in <code>graph</code> from which the
      *        matching paths should start; if <code>null</code>, there is no
      *        constraint
-     * @param endImages set of nodes in <code>graph</code> at which the
+     * @param endImage set of nodes in <code>graph</code> at which the
      *        matching paths should end; if <code>null</code>, there is no
      *        constraint
      * @param valuation mapping from variables to edge labels that should be
      *        adhered to in the matching; if <code>null</code>, there is no
      *        constraint
      */
-    Set<Result> getMatches(HostGraph graph, Set<HostNode> startImages,
-            Set<HostNode> endImages, Valuation valuation);
+    Set<Result> getMatches(HostGraph graph, HostNode startImage,
+            HostNode endImage, Valuation valuation);
 
     /** Type of the automaton's match results. */
     class Result extends Duo<HostNode> {
