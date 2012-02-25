@@ -27,7 +27,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultDeltaApplier implements DeltaApplier {
+public class DefaultDeltaApplier implements StoredDeltaApplier {
     /**
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
@@ -219,6 +219,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
     /**
      * Returns the sum of the sizes of all added and removed node and edge sets.
      */
+    @Override
     public int size() {
         return addedSize() + removedSize();
     }
