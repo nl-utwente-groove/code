@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-
 /**
  * Delta applier constructed from a frozen delta array. A frozen delta array is
  * an array of nodes and edges that together constitute an entire graph.
@@ -25,7 +24,7 @@ package groove.trans;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FrozenDeltaApplier implements DeltaApplier {
+public class FrozenDeltaApplier implements StoredDeltaApplier {
     /** Constructs an instance with a given array of elements. */
     public FrozenDeltaApplier(HostElement[] elements) {
         this.elements = elements;
@@ -44,6 +43,11 @@ public class FrozenDeltaApplier implements DeltaApplier {
 
     public void applyDelta(DeltaTarget target) {
         applyDelta(target, ALL_ELEMENTS);
+    }
+
+    @Override
+    public int size() {
+        return this.elements.length;
     }
 
     /** The frozen array of graph elements. */

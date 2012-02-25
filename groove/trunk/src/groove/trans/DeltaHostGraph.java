@@ -81,9 +81,8 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         this.basis = basis;
         this.factory = basis.getFactory();
         this.copyData = copyData;
-        if (delta == null || delta instanceof DeltaStore
-            || delta instanceof FrozenDeltaApplier) {
-            this.delta = delta;
+        if (delta == null || delta instanceof StoredDeltaApplier) {
+            this.delta = (StoredDeltaApplier) delta;
         } else {
             this.delta = new DeltaStore(delta) {
                 @Override
@@ -363,10 +362,21 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
                 }
                 // now iteratively construct the intermediate graphs
                 backward.initData();
+                int deltaSize = 0;
+                int totalDelta = 0;
+                int chainLength = 0;
                 while (!basisChain.isEmpty()) {
                     DeltaHostGraph forward = basisChain.pop();
                     DataTarget target =
-                        forward.basis.getDataTarget(basisChain.size());
+                        forward.basis.getDataTarget(chainLength, totalDelta);
+                    if (target instanceof CopyTarget) {
+                        deltaSize = 0;
+                        totalDelta = 0;
+                        chainLength = 0;
+                    }
+                    deltaSize += forward.delta.size();
+                    totalDelta += deltaSize;
+                    chainLength += 1;
                     // apply the delta to fill the structures
                     forward.delta.applyDelta(target);
                     target.install(forward);
@@ -383,18 +393,25 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     /**
      * Creates a delta target that will construct the necessary data structures
      * for a child graph.
-     * @param depth the basis chain depth at which this graph was found.
      */
-    private DataTarget getDataTarget(int depth) {
+    private DataTarget getDataTarget(int chainLength, int totalDelta) {
         DataTarget result;
         // data should have been initialised
         assert isDataInitialised();
-        if ((depth + 1) % MAX_CHAIN_DEPTH == 0) {
+        if (exceedsCopyBound(chainLength, totalDelta)) {
             result = new CopyTarget(!this.copyData);
         } else {
             result = this.copyData ? new CopyTarget(false) : new SwingTarget();
         }
         return result;
+    }
+
+    /**
+     * Indicates if a given combined delta size and/or chain length is large enough
+     * to prefer copying the data structures over sharing.
+     */
+    private boolean exceedsCopyBound(int chainLength, int totalDelta) {
+        return totalDelta > 2 * size() || chainLength > MAX_CHAIN_LENGTH;
     }
 
     /**
@@ -479,7 +496,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;
     /** The fixed delta of this graph. */
-    DeltaApplier delta;
+    StoredDeltaApplier delta;
 
     /** The (initially null) edge set of this graph. */
     HostEdgeSet edgeSet;
@@ -495,13 +512,13 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     private Reference<CertificateStrategy<HostNode,HostEdge>> certifier;
     /**
      * Flag indicating that data should be copied rather than shared in
-     * {@link #getDataTarget(int)}.
+     * {@link #getDataTarget(int,int)}.
      */
     private boolean copyData = true;
     /** Maximum basis chain length at which the data target is set
      * to a {@link CopyTarget} regardless of the value of {@link #copyData}.
      */
-    static private final int MAX_CHAIN_DEPTH = 100;
+    static private final int MAX_CHAIN_LENGTH = 25;
     /**
      * Debug flag for aliasing the node and edge set. Aliasing the sets may give
      * {@link ConcurrentModificationException}s during matching.
