@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -460,14 +459,12 @@ public class AutomatonTest {
             addRelated(results, nC2, nC4);
             addRelated(results, nC3, nC4);
             addRelated(results, nC4, nC4);
-            assertEquals(results,
-                aut.getMatches(testGraph, null, Collections.singleton(nC4)));
+            assertEquals(results, aut.getMatches(testGraph, null, nC4));
             results.clear();
             addRelated(results, nC2, nC2);
             addRelated(results, nC2, nC3);
             addRelated(results, nC2, nC4);
-            assertEquals(results,
-                aut.getMatches(testGraph, Collections.singleton(nC2), null));
+            assertEquals(results, aut.getMatches(testGraph, nC2, null));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -478,18 +475,18 @@ public class AutomatonTest {
         try {
             RegAut aut = createAutomaton("next+");
             Set<Result> results = new HashSet<Result>();
+            addRelated(results, nC1, nC2);
             addRelated(results, nC1, nC3);
             addRelated(results, nC1, nC4);
+            assertEquals(results, aut.getMatches(testGraph, nC1, null));
+            results.clear();
             addRelated(results, nC2, nC3);
             addRelated(results, nC2, nC4);
-            assertEquals(results, aut.getMatches(testGraph, nC12, nC34));
-            addRelated(results, nC1, nC2);
-            assertEquals(results, aut.getMatches(testGraph, nC12, null));
+            assertEquals(results, aut.getMatches(testGraph, nC2, null));
             results.clear();
             addRelated(results, nC1, nC3);
             addRelated(results, nC2, nC3);
-            assertEquals(results,
-                aut.getMatches(testGraph, null, Collections.singleton(nC3)));
+            assertEquals(results, aut.getMatches(testGraph, null, nC3));
             aut = createAutomaton("?.2");
             results.clear();
             addRelated(results, nI2, nI2);
@@ -509,11 +506,9 @@ public class AutomatonTest {
             addRelated(result, nC3, nI3);
             addRelated(result, nC4, nI3);
             assertEquals(result, aut.getMatches(testGraph, null, null));
-            assertEquals(result,
-                aut.getMatches(testGraph, null, Collections.singleton(nI3)));
+            assertEquals(result, aut.getMatches(testGraph, null, nI3));
             result.clear();
-            assertEquals(result,
-                aut.getMatches(testGraph, null, Collections.singleton(nI2)));
+            assertEquals(result, aut.getMatches(testGraph, null, nI2));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
@@ -571,18 +566,18 @@ public class AutomatonTest {
             addRelated(result, nI3, nC3);
             addRelated(result, nI3, nC4);
             assertEquals(result, aut.getMatches(testGraph, null, null));
-            assertEquals(result,
-                aut.getMatches(testGraph, Collections.singleton(nI3), null));
+            assertEquals(result, aut.getMatches(testGraph, nI3, null));
             result.clear();
-            assertEquals(result,
-                aut.getMatches(testGraph, Collections.singleton(nI2), null));
+            assertEquals(result, aut.getMatches(testGraph, nI2, null));
             aut = createAutomaton("val.-val");
             result.clear();
             addRelated(result, nC3, nC3);
+            addRelated(result, nC4, nC3);
+            assertEquals(result, aut.getMatches(testGraph, null, nC3));
+            result.clear();
             addRelated(result, nC4, nC4);
             addRelated(result, nC3, nC4);
-            addRelated(result, nC4, nC3);
-            assertEquals(result, aut.getMatches(testGraph, null, nC34));
+            assertEquals(result, aut.getMatches(testGraph, null, nC4));
         } catch (FormatException exc) {
             fail("Regular expression parse error: " + exc.getMessage());
         }
