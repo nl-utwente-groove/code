@@ -16,6 +16,8 @@
  */
 package groove.rel;
 
+import static groove.rel.Direction.BACKWARD;
+import static groove.rel.Direction.FORWARD;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
@@ -191,10 +193,16 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         Set<TypeLabel> initPosLabelSet = new HashSet<TypeLabel>();
         Set<TypeLabel> initInvLabelSet = new HashSet<TypeLabel>();
         int indexedNodeCount = this.nodes.length;
-        Map<TypeLabel,Set<RegEdge>>[][] nodeInvLabelEdgeMap =
-            new Map[2][indexedNodeCount];
-        Map<TypeLabel,Set<RegEdge>>[][] nodePosLabelEdgeMap =
-            new Map[2][indexedNodeCount];
+        Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodeInvLabelEdgeMap =
+            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(
+                Direction.class);
+        Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodePosLabelEdgeMap =
+            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(
+                Direction.class);
+        for (Direction dir : Direction.all) {
+            nodeInvLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
+            nodePosLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
+        }
         // iterate over the reachable edges (the one that have an index)
         for (RegEdge edge : this.edgeIndexMap.keySet()) {
             RuleLabel label = edge.label();
@@ -209,14 +217,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             if (label.isWildcard()) {
                 derivedLabels.add(DUMMY_LABELS.get(label.getWildcardGuard().getKind()));
             }
-            Map<TypeLabel,Set<RegEdge>>[][] nodeLabelEdgeMap =
+            Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
             for (TypeLabel derivedLabel : derivedLabels) {
-                for (int direction = FORWARD; direction <= BACKWARD; direction++) {
-                    RegNode end =
-                        (direction == FORWARD) ? edge.source() : edge.target();
-                    addToNodeLabelEdgeSetMap(nodeLabelEdgeMap[direction], end,
-                        derivedLabel, edge);
+                for (Direction direction : Direction.all) {
+                    addToNodeLabelEdgeSetMap(nodeLabelEdgeMap.get(direction),
+                        direction.start(edge), derivedLabel, edge);
                 }
                 if (edge.source() == getStartNode()) {
                     (isInverse ? initInvLabelSet : initPosLabelSet).add(derivedLabel);
@@ -228,15 +234,23 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         initPosLabelSet.toArray(this.initPosLabels);
         this.initInvLabels = new TypeLabel[initInvLabelSet.size()];
         initInvLabelSet.toArray(this.initInvLabels);
-        this.nodePosLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
-        this.nodeInvLabelEdgeIndicesMap = new Map[2][indexedNodeCount];
-        for (int direction = FORWARD; direction <= BACKWARD; direction++) {
+        this.nodePosLabelEdgeIndicesMap =
+            new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
+        this.nodeInvLabelEdgeIndicesMap =
+            new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
+        for (Direction direction : Direction.all) {
+            Map<TypeLabel,int[]>[] posLabelEdgeIndices =
+                new Map[indexedNodeCount];
+            Map<TypeLabel,int[]>[] invLabelEdgeIndices =
+                new Map[indexedNodeCount];
             for (int nodeIndex = 0; nodeIndex < indexedNodeCount; nodeIndex++) {
-                this.nodePosLabelEdgeIndicesMap[direction][nodeIndex] =
-                    toIntArrayMap(nodePosLabelEdgeMap[direction][nodeIndex]);
-                this.nodeInvLabelEdgeIndicesMap[direction][nodeIndex] =
-                    toIntArrayMap(nodeInvLabelEdgeMap[direction][nodeIndex]);
+                posLabelEdgeIndices[nodeIndex] =
+                    toIntArrayMap(nodePosLabelEdgeMap.get(direction)[nodeIndex]);
+                invLabelEdgeIndices[nodeIndex] =
+                    toIntArrayMap(nodeInvLabelEdgeMap.get(direction)[nodeIndex]);
             }
+            this.nodePosLabelEdgeIndicesMap.put(direction, posLabelEdgeIndices);
+            this.nodeInvLabelEdgeIndicesMap.put(direction, invLabelEdgeIndices);
         }
         this.initPosLabels = new TypeLabel[initPosLabelSet.size()];
         initPosLabelSet.toArray(this.initPosLabels);
@@ -400,36 +414,6 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     /**
-     * Creates a set of start nodes to be used in the search for matches if no
-     * explicit start nodes are provided.
-     * @see #getMatches(HostGraph, HostNode, HostNode, Valuation)
-     */
-    private Set<HostNode> createStartImages(HostGraph graph) {
-        Set<HostNode> result = new HashSet<HostNode>();
-        if (isAcceptsEmptyWord() || isInitWildcard()) {
-            // too bad, all graph nodes can be start images
-            result.addAll(graph.nodeSet());
-        } else {
-            addStartImages(result, graph, true);
-            addStartImages(result, graph, false);
-        }
-        return result;
-    }
-
-    private void addStartImages(Set<HostNode> result, HostGraph graph,
-            boolean positive) {
-        TypeLabel[] initLabels =
-            positive ? getInitPosLabels() : getInitInvLabels();
-        for (TypeLabel initLabel : initLabels) {
-            for (HostEdge graphEdge : graph.labelEdgeSet(initLabel)) {
-                HostNode end =
-                    positive ? graphEdge.source() : graphEdge.target();
-                result.add(end);
-            }
-        }
-    }
-
-    /**
      * Returns the set of all wildcard variables occurring in this automaton.
      */
     public Set<LabelVar> allVarSet() {
@@ -493,17 +477,18 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     /**
      * Returns a matching algorithm for a given matching direction. The
      * algorithm is created on demand, using
-     * {@link #createMatchingAlgorithm(int)}.
+     * {@link #createMatchingAlgorithm(Direction)}.
      * @param direction the matching direction: either {@link #FORWARD} or
      *        {@link #BACKWARD}
      */
-    final MatchingAlgorithm getMatchingAlgorithm(int direction) {
+    final MatchingAlgorithm getMatchingAlgorithm(Direction direction) {
         if (this.algorithm == null) {
-            this.algorithm = new MatchingAlgorithm[2];
-            this.algorithm[FORWARD] = createMatchingAlgorithm(FORWARD);
-            this.algorithm[BACKWARD] = createMatchingAlgorithm(BACKWARD);
+            this.algorithm =
+                new EnumMap<Direction,MatchingAlgorithm>(Direction.class);
+            this.algorithm.put(FORWARD, createMatchingAlgorithm(FORWARD));
+            this.algorithm.put(BACKWARD, createMatchingAlgorithm(BACKWARD));
         }
-        return this.algorithm[direction];
+        return this.algorithm.get(direction);
     }
 
     /**
@@ -513,7 +498,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * @param direction the matching direction: either {@link #FORWARD} or
      *        {@link #BACKWARD}
      */
-    final MatchingAlgorithm createMatchingAlgorithm(int direction) {
+    final MatchingAlgorithm createMatchingAlgorithm(Direction direction) {
         return new MatchingAlgorithm(direction);
     }
 
@@ -521,8 +506,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * Returns a mapping from source nodes to mappings from labels to
      * (non-empty) sets of (automaton) edges with that source node and label.
      */
-    final Map<TypeLabel,int[]>[] getNodePosLabelEdgeMap(int direction) {
-        return this.nodePosLabelEdgeIndicesMap[direction];
+    final Map<TypeLabel,int[]>[] getNodePosLabelEdgeMap(Direction direction) {
+        return this.nodePosLabelEdgeIndicesMap.get(direction);
     }
 
     /**
@@ -530,8 +515,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * (non-empty) sets of (automaton) edges with that source node, and the
      * label wrapped in a {@link RegExpr.Inv}.
      */
-    final Map<TypeLabel,int[]>[] getNodeInvLabelEdgeMap(int direction) {
-        return this.nodeInvLabelEdgeIndicesMap[direction];
+    final Map<TypeLabel,int[]>[] getNodeInvLabelEdgeMap(Direction direction) {
+        return this.nodeInvLabelEdgeIndicesMap.get(direction);
     }
 
     /**
@@ -719,7 +704,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * the source node or the target node of the edge, depending on the
      * direction.
      */
-    private Map<TypeLabel,int[]>[][] nodePosLabelEdgeIndicesMap;
+    private Map<Direction,Map<TypeLabel,int[]>[]> nodePosLabelEdgeIndicesMap;
 
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
@@ -727,7 +712,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * {@link RegExpr.Inv}. The node key is either the source node or the target
      * node of the edge, depending on the direction.
      */
-    private Map<TypeLabel,int[]>[][] nodeInvLabelEdgeIndicesMap;
+    private Map<Direction,Map<TypeLabel,int[]>[]> nodeInvLabelEdgeIndicesMap;
     /**
      * The set of positive labels occurring on initial edges of this automaton.
      */
@@ -790,16 +775,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     /**
      * Array of algorithm for matching, indexed by the matching direction.
      */
-    private MatchingAlgorithm[] algorithm;
+    private Map<Direction,MatchingAlgorithm> algorithm;
 
-    /**
-     * Indication of forward matching direction.
-     */
-    static private final int FORWARD = 0;
-    /**
-     * Indication of backward matching direction.
-     */
-    static private final int BACKWARD = 1;
     /** Text of the dummy labels {@link #DUMMY_LABELS}. */
     static private final String DUMMY_LABEL_TEXT = "\u0000";
 
@@ -1213,7 +1190,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          * Creates a matching algorithm for a given direction of matching
          * @param direction either {@link #FORWARD} or {@link #BACKWARD}.
          */
-        public MatchingAlgorithm(int direction) {
+        public MatchingAlgorithm(Direction direction) {
             switch (direction) {
             case FORWARD:
                 this.startIndex = getStartNodeIndex();
@@ -1482,7 +1459,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         /**
          * Flag indicating if we are doing forward or backward matching.
          */
-        final int direction;
+        final Direction direction;
 
         /**
          * Graph on which the current matching computation is performed.
