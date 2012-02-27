@@ -50,13 +50,10 @@ public class SaveGrammarAction extends SimulatorAction {
             SystemStore newStore =
                 getSimulatorModel().getStore().save(grammarFile, clearDir);
             GrammarModel newGrammar = newStore.toGrammarModel();
-            String startGraphName =
-                getSimulatorModel().getGrammar().getStartGraphName();
-            HostModel startGraph =
-                getSimulatorModel().getGrammar().getStartGraphModel();
-            if (startGraphName != null) {
-                newGrammar.setStartGraph(startGraphName);
-            } else if (startGraph != null) {
+            if (getSimulatorModel().getGrammar().getStartGraphNames().isEmpty()) {
+                // remember external start graph
+                HostModel startGraph =
+                    getSimulatorModel().getGrammar().getStartGraphModel();
                 newGrammar.setStartGraph(startGraph.getSource());
             }
             getSimulatorModel().setGrammar(newGrammar);

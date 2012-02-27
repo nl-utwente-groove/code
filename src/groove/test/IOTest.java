@@ -57,22 +57,22 @@ public class IOTest {
         try {
             testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL,
                 nodecount, edgecount);
-            testControl(Groove.loadGrammar(DIRECTORY, null), DEF_START,
-                DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), DEF_START, DEF_CONTROL,
+                nodecount, edgecount);
 
             File file = new File(DIRECTORY);
             URL url = Groove.toURL(file);
 
             testControl(GrammarModel.newInstance(file, false), DEF_START,
                 DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(file, null, false),
-                DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(file, false), DEF_START,
+                DEF_CONTROL, nodecount, edgecount);
 
-            testControl(GrammarModel.newInstance(url), DEF_START,
-                DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url, null), DEF_START,
-                DEF_CONTROL, nodecount, edgecount);
-            testControl(GrammarModel.newInstance(url, DEF_START),
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
+                nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
+                nodecount, edgecount);
+            testControl(GrammarModel.newTestInstance(url, DEF_START),
                 DEF_START, DEF_CONTROL, nodecount, edgecount);
 
         } catch (IOException e) {
@@ -85,8 +85,8 @@ public class IOTest {
         int nodecount = 12;
         int edgecount = 14;
         try {
-            testControl(Groove.loadGrammar(DIRECTORY, ALT_START), ALT_START,
-                DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadTestGrammar(DIRECTORY, ALT_START),
+                ALT_START, DEF_CONTROL, nodecount, edgecount);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -99,7 +99,7 @@ public class IOTest {
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
             GrammarModel grammarView =
-                GrammarModel.newInstance(dir, ALT_START);
+                GrammarModel.newTestInstance(dir, ALT_START);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
                 edgecount);
         } catch (IOException e) {

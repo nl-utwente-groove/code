@@ -21,7 +21,7 @@ class SimulatorHistory implements SimulatorListener {
             Options.userPrefs.get(HISTORY_KEY, "").split(",");
         for (String location : savedLocations) {
             try {
-                this.history.add(createLoadAction(location, null));
+                this.history.add(createLoadAction(location));
             } catch (IOException exc) {
                 // if we can't load from a location, just
                 // omit it from the history
@@ -48,9 +48,8 @@ class SimulatorHistory implements SimulatorListener {
         if (changes.contains(Change.GRAMMAR)) {
             try {
                 Object location = source.getStore().getLocation();
-                String startGraphName = source.getGrammar().getStartGraphName();
                 LoadGrammarFromHistoryAction newAction =
-                    createLoadAction(location.toString(), startGraphName);
+                    createLoadAction(location.toString());
                 this.history.remove(newAction);
                 this.history.add(0, newAction);
                 // trimming list to 10 elements
@@ -65,11 +64,10 @@ class SimulatorHistory implements SimulatorListener {
         }
     }
 
-    private LoadGrammarFromHistoryAction createLoadAction(String location,
-            String startGraphName) throws IOException {
+    private LoadGrammarFromHistoryAction createLoadAction(String location)
+        throws IOException {
         SystemStore store = SystemStoreFactory.newStore(location);
-        return new LoadGrammarFromHistoryAction(this.simulator, location,
-            startGraphName, store);
+        return new LoadGrammarFromHistoryAction(this.simulator, location, store);
     }
 
     private void synch() {

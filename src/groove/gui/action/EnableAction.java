@@ -49,14 +49,13 @@ public class EnableAction extends SimulatorAction {
             getSimulatorModel().getResource(resourceKind);
         boolean isEnabling = resource == null || !resource.isEnabled();
         boolean enabled = name != null && getGrammarStore().isModifiable();
-        if (resourceKind == ResourceKind.HOST) {
-            enabled &= isEnabling;
-        } else {
-            String description =
-                Options.getEnableName(resourceKind, isEnabling);
-            putValue(NAME, description);
-            putValue(SHORT_DESCRIPTION, description);
-        }
+        //        if (resourceKind == ResourceKind.HOST) {
+        //            enabled &= isEnabling;
+        //        } else {
+        String description = Options.getEnableName(resourceKind, isEnabling);
+        putValue(NAME, description);
+        putValue(SHORT_DESCRIPTION, description);
+        //        }
         setEnabled(enabled);
     }
 }

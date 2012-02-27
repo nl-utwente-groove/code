@@ -106,20 +106,7 @@ public class Simulator implements SimulatorListener {
      * @param grammarLocation the location (file or directory) containing the
      *        grammar; if <tt>null</tt>, no grammar is loaded.
      */
-    public Simulator(String grammarLocation) {
-        this(grammarLocation, null);
-    }
-
-    /**
-     * Constructs a simulator using the grammar in a given location and a given
-     * graph as start state. All known graph grammar format loaders are polled
-     * to find one that can load the grammar.
-     * @param grammarLocation the location (file or directory) containing the
-     *        grammar; if <tt>null</tt>, no grammar is loaded.
-     * @param startGraphName the file containing the start state; if
-     *        <tt>null</tt>, the default start state is chosen.
-     */
-    public Simulator(final String grammarLocation, final String startGraphName) {
+    public Simulator(final String grammarLocation) {
         this();
         if (grammarLocation != null) {
             final File location =
@@ -128,7 +115,7 @@ public class Simulator implements SimulatorListener {
                 public void run() {
                     try {
                         Simulator.this.actions.getLoadGrammarAction().load(
-                            location, startGraphName);
+                            location);
                     } catch (IOException exc) {
                         new ErrorDialog(getFrame(), exc.getMessage(), exc).setVisible(true);
                     }
@@ -917,11 +904,8 @@ public class Simulator implements SimulatorListener {
                 simulator = new Simulator();
             } else if (args.length == 1) {
                 simulator = new Simulator(args[0]);
-            } else if (args.length == 2) {
-                simulator = new Simulator(args[0], args[1]);
             } else {
-                throw new IOException(
-                    "Usage: Simulator [<production-system> [<start-state>]]");
+                throw new IOException("Usage: Simulator [<production-system>]");
             }
             // simulator.loadModules();
             simulator.start();

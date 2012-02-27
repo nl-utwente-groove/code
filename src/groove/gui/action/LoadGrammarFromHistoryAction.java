@@ -31,23 +31,19 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
      * Constructs an action that will load a grammar from a predefined
      * location.
      * @param location the location to load from; non-null
-     * @param startGraphName name of the start graph to be loaded; if
-     *        <code>null</code>, the default will be used.
      * 
      */
     public LoadGrammarFromHistoryAction(Simulator simulator, String location,
-            String startGraphName, SystemStore store) {
+            SystemStore store) {
         super(simulator, store.toString(), null);
         this.location = location;
-        this.startGraphName = startGraphName;
         this.store = store;
     }
 
     @Override
     public void execute() {
         try {
-            getActions().getLoadGrammarAction().load(this.store,
-                this.startGraphName);
+            getActions().getLoadGrammarAction().load(this.store);
         } catch (IOException e) {
             showErrorDialog(e, "Can't load grammar: ");
         }
@@ -86,8 +82,6 @@ public class LoadGrammarFromHistoryAction extends SimulatorAction {
 
     /** Location that this action loads from (non-null). */
     private final String location;
-    /** Start graph name that should be loaded with the grammar. */
-    private final String startGraphName;
     /** System store associated with this action (non-null). */
     private final SystemStore store;
 }

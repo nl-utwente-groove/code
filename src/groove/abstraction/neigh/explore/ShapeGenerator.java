@@ -295,7 +295,7 @@ public final class ShapeGenerator extends CommandLineTool {
     private void loadGrammar(String grammarFile, String startGraph) {
         try {
             this.grammar =
-                Groove.loadGrammar(grammarFile, startGraph).toGrammar();
+                Groove.loadTestGrammar(grammarFile, startGraph).toGrammar();
             this.grammar.setFixed();
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage(), false);

@@ -37,7 +37,7 @@ public class LoadGrammarAction extends SimulatorAction {
                 showErrorDialog(null, "No file selected");
             } else {
                 try {
-                    load(selectedFile, null);
+                    load(selectedFile);
                 } catch (IOException exc) {
                     String msg = exc.getMessage();
                     if (msg.endsWith(DefaultArchiveSystemStore.NO_JAR_OR_ZIP_SUFFIX)) {
@@ -57,36 +57,35 @@ public class LoadGrammarAction extends SimulatorAction {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the load action failed
      */
-    public boolean load(File grammarFile, String startGraphName)
-        throws IOException {
+    public boolean load(File grammarFile) throws IOException {
         boolean result = false;
         // Load the grammar.
         final SystemStore store =
             SystemStoreFactory.newStore(grammarFile, false);
-        result = load(store, startGraphName);
+        result = load(store);
         // now we know loading succeeded, we can set the current
         // names & files
         getGrammarFileChooser().setSelectedFile(grammarFile);
         getRuleFileChooser().setCurrentDirectory(grammarFile);
-        if (startGraphName != null) {
-            File startFile = new File(grammarFile, startGraphName);
-            getStateFileChooser().setSelectedFile(startFile);
-        } else {
-            // make sure the selected file from an old grammar is
-            // unselected
-            getStateFileChooser().setSelectedFile(null);
-            // make sure the dialog for open state opens at the
-            // grammar location
-            getStateFileChooser().setCurrentDirectory(grammarFile);
-        }
+        // MdM - TODO - dont know what to do with the code below....
+        //        if (startGraphName != null) {
+        //            File startFile = new File(grammarFile, startGraphName);
+        //            getStateFileChooser().setSelectedFile(startFile);
+        //        } else {
+        // make sure the selected file from an old grammar is
+        // unselected
+        getStateFileChooser().setSelectedFile(null);
+        // make sure the dialog for open state opens at the
+        // grammar location
+        getStateFileChooser().setCurrentDirectory(grammarFile);
+        //        }
         return result;
     }
 
     /**
      * Loads in a given system store.
      */
-    public boolean load(final SystemStore store, final String startGraphName)
-        throws IOException {
+    public boolean load(final SystemStore store) throws IOException {
         if (!getDisplaysPanel().saveAllEditors(true)) {
             return false;
         }
@@ -140,9 +139,6 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         // store.reload(); - MdM - moved to version check code
         final GrammarModel grammar = store.toGrammarModel();
-        if (startGraphName != null) {
-            grammar.setStartGraph(startGraphName);
-        }
         getSimulatorModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
         if (saveAfterLoading && newGrammarFile != null) {

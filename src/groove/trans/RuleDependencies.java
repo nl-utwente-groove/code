@@ -46,8 +46,7 @@ public class RuleDependencies {
      */
     public static void main(String[] args) {
         try {
-            GrammarModel grammar =
-                Groove.loadGrammar(args[0], args.length == 1 ? null : args[1]);
+            GrammarModel grammar = Groove.loadGrammar(args[0]);
             RuleDependencies data = new RuleDependencies(grammar);
             data.collectCharacteristics();
             for (Rule rule : grammar.getRules()) {

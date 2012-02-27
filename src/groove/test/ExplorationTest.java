@@ -403,8 +403,10 @@ public class ExplorationTest {
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
-            return GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
-                startGraphName, false);
+            GrammarModel result =
+                GrammarModel.newTestInstance(new File(INPUT_DIR, grammarName),
+                    startGraphName);
+            return result;
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }
