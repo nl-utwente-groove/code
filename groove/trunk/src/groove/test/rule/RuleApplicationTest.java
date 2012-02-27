@@ -151,7 +151,7 @@ public class RuleApplicationTest {
      */
     private void test(GrammarModel view, String ruleName, String startName) {
         try {
-            view.setStartGraph(startName);
+            view.localSetStartGraphName(startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
             boolean cont = true;
             for (int j = 0; cont; j++) {

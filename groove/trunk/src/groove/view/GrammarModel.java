@@ -24,10 +24,11 @@ import static groove.trans.ResourceKind.TYPE;
 import groove.control.CtrlAut;
 import groove.control.CtrlFactory;
 import groove.explore.Exploration;
-import groove.graph.DefaultGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
@@ -39,16 +40,22 @@ import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -56,22 +63,54 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Grammar model based on a backing system store.
  */
 public class GrammarModel implements Observer {
     /**
-     * Constructs a grammar model from a rule system store. The start graph name
-     * is the default one.
-     * @see Groove#DEFAULT_START_GRAPH_NAME
+     * Constructs a grammar model from a rule system store, and explicitly sets
+     * the start graph to <code>altStartGraphName</code>. This alternative
+     * start graph is not saved in the grammar properties.
+     * Alternatively, if the <code>altStartGraphName</code> argument is
+     * <code>null</code>, then the start graph(s) are loaded from the
+     * grammar properties (and set to {@link Groove#DEFAULT_START_GRAPH_NAME}
+     * if no such property exists).
      */
-    public GrammarModel(SystemStore store) {
+    public GrammarModel(SystemStore store, String altStartGraphName) {
         this.store = store;
-        setStartGraph(Groove.DEFAULT_START_GRAPH_NAME);
         for (ResourceKind resource : ResourceKind.all(false)) {
             syncResource(resource);
         }
+        if (altStartGraphName != null) {
+            this.startGraphNames = new HashSet<String>();
+            if (getResource(ResourceKind.HOST, altStartGraphName) != null) {
+                // use alternative start graph
+                this.startGraphNames.add(altStartGraphName);
+            }
+        } else {
+            Set<String> startGraphNames = getProperties().getStartGraphNames();
+            if (startGraphNames != null) {
+                // use start graphs from properties file
+                this.startGraphNames = startGraphNames;
+            } else {
+                // else try to set start graph to the default
+                this.startGraphNames = new HashSet<String>();
+                if (getResource(ResourceKind.HOST,
+                    Groove.DEFAULT_START_GRAPH_NAME) != null) {
+                    this.startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
+                }
+            }
+        }
+    }
+
+    /**
+     * Constructs a grammar model from a rule system store, using the start
+     * graph(s) that are stored in the grammar properties.
+     */
+    public GrammarModel(SystemStore store) {
+        this(store, null);
     }
 
     /** Returns the name of the rule system. */
@@ -213,13 +252,99 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Returns the name of the start graph, if it is one of the graphs stored
-     * with the rule system.
-     * @return the name of the start graph, or <code>null</code> if the start
-     *         graph is not one of the graphs stored with the rule system
+     * Checks if the given (host graph) name is (a component of) the currently
+     * selected start graph.  
      */
-    public String getStartGraphName() {
-        return this.startGraphName;
+    public boolean isStartGraphName(String name) {
+        return this.startGraphNames.contains(name);
+    }
+
+    /** Gets the names of the graphs that currently make up the start graph. */
+    public Set<String> getStartGraphNames() {
+        return Collections.unmodifiableSet(this.startGraphNames);
+    }
+
+    /** 
+     * Sets the currently enabled start graphs. The change is propagated to
+     * the system store, and can therefore result in an {@link IOException}.
+     */
+    public void setStartGraphNames(Set<String> names) throws IOException {
+        assert names != null;
+        if (!this.startGraphNames.equals(names)) {
+            this.startGraphNames.clear();
+            this.startGraphNames.addAll(names);
+            getProperties().setStartGraphNames(this.startGraphNames);
+            getStore().putProperties(getProperties());
+            this.startGraphModel = null;
+            invalidate();
+        }
+    }
+
+    /** 
+     * Sets a single currently enabled start graph, but does not propagate the
+     * property change to the system store.
+     */
+    public void localSetStartGraphName(String name) {
+        if (name == null) {
+            return;
+        }
+        if (this.startGraphNames.size() == 1
+            && this.startGraphNames.contains(name)) {
+            return;
+        }
+        this.startGraphNames.clear();
+        this.startGraphNames.add(name);
+        getProperties().setStartGraphNames(this.startGraphNames);
+        this.startGraphModel = null;
+        invalidate();
+    }
+
+    /** Convenience alias for updateStartGraphNames(Manipulation.SET). */
+    public void setStartGraphName(String name) throws IOException {
+        updateStartGraphNames(Manipulation.SET, name);
+    }
+
+    /** 
+     * Manipulates the currently enabled start graphs. The change is propagated
+     * to the system store, and can therefore result in an {@link IOException}.
+     */
+    public void updateStartGraphNames(Manipulation manipulation,
+            Set<String> names) throws IOException {
+        if (Manipulation.apply(this.startGraphNames, manipulation, names)) {
+            getProperties().setStartGraphNames(this.startGraphNames);
+            getStore().putProperties(getProperties());
+            this.startGraphModel = null;
+            invalidate();
+        }
+    }
+
+    /** 
+     * Manipulates the currently enabled start graphs. The change is propagated
+     * to the system store, and can therefore result in an {@link IOException}.
+     */
+    public void updateStartGraphNames(Manipulation manipulation, String name)
+        throws IOException {
+        if (Manipulation.apply(this.startGraphNames, manipulation, name)) {
+            getProperties().setStartGraphNames(this.startGraphNames);
+            getStore().putProperties(getProperties());
+            this.startGraphModel = null;
+            invalidate();
+        }
+    }
+
+    /**
+     * Renames one of the select start graphs. The change is propagated to the
+     * system store, and can therefore result in an {@link IOException}.
+     */
+    public void renameStartGraph(String oldName, String newName)
+        throws IOException {
+        if (this.startGraphNames.remove(oldName)) {
+            this.startGraphNames.add(newName);
+            getProperties().setStartGraphNames(this.startGraphNames);
+            getStore().putProperties(getProperties());
+            this.startGraphModel = null;
+            invalidate();
+        }
     }
 
     /**
@@ -229,8 +354,9 @@ public class GrammarModel implements Observer {
      */
 
     public HostModel getStartGraphModel() {
-        if (this.startGraphModel == null && this.startGraphName != null) {
-            this.startGraphModel = getHostModel(this.startGraphName);
+        if (this.startGraphModel == null && !this.startGraphNames.isEmpty()) {
+            this.startGraphModel =
+                new HostModel(this, combineGraphs(this.startGraphNames));
         }
         return this.startGraphModel;
     }
@@ -242,7 +368,7 @@ public class GrammarModel implements Observer {
      * @param startGraph the new start graph; may not be {@code null}
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
-     * @see #setStartGraph(String)
+     * @see #setStartGraphNames
      */
     public HostModel setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
@@ -251,24 +377,10 @@ public class GrammarModel implements Observer {
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraphModel = new HostModel(this, startGraph);
-        this.startGraphName = null;
+        this.startGraphNames.clear();
+        getProperties().setStartGraphNames(this.startGraphNames);
         invalidate();
         return this.startGraphModel;
-    }
-
-    /**
-     * Sets the start graph to one of the graphs in the grammar, with a given name.
-     */
-    public void setStartGraph(String name) {
-        assert name != null;
-        this.startGraphName = name;
-        invalidate();
-    }
-
-    /** Unsets the start graph. */
-    public void removeStartGraph() {
-        this.startGraphModel = null;
-        invalidate();
     }
 
     /** Collects and returns the permanent errors of the rule models. */
@@ -427,11 +539,11 @@ public class GrammarModel implements Observer {
         result.setProperties(getProperties());
         // set start graph
         if (getStartGraphModel() == null) {
-            if (getStartGraphName() == null) {
+            if (this.startGraphNames.isEmpty()) {
                 errors.add(new FormatError("No start graph set"));
             } else {
                 errors.add(new FormatError("Start graph '%s' cannot be loaded",
-                    getStartGraphName()));
+                    this.startGraphNames));
             }
         } else {
             List<FormatError> startGraphErrors;
@@ -488,9 +600,7 @@ public class GrammarModel implements Observer {
         this.modificationCount++;
         this.grammar = null;
         this.errors = null;
-        if (this.startGraphName != null) {
-            this.startGraphModel = null;
-        }
+        getStartGraphModel(); // recompute start graph model, if necessary
     }
 
     @Override
@@ -614,11 +724,8 @@ public class GrammarModel implements Observer {
     private int modificationCount;
     /** The start graph of the grammar. */
     private HostModel startGraphModel;
-    /**
-     * Name of the current start graph, if it is one of the graphs in this rule
-     * system; <code>null</code> otherwise.
-     */
-    private String startGraphName;
+    /** Names of the host graphs that make up the current start graph. */
+    private final Set<String> startGraphNames;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<FormatError> errors;
     /** The graph grammar derived from the rule models. */
@@ -637,37 +744,9 @@ public class GrammarModel implements Observer {
      */
     static public GrammarModel newInstance(URL url)
         throws IllegalArgumentException, IOException {
-        return newInstance(url, url.getQuery());
-    }
-
-    /**
-     * Creates an instance based on a store located at a given URL, with a given
-     * start graph.
-     * @param url the URL to load the grammar from
-     * @param startGraphName the start graph name; if <code>null</code>, the
-     *        default start graph name is used
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given URL
-     * @throws IOException if a store can be created but not loaded
-     */
-    static public GrammarModel newInstance(URL url, String startGraphName)
-        throws IllegalArgumentException, IOException {
         SystemStore store = SystemStoreFactory.newStore(url);
         store.reload();
         GrammarModel result = store.toGrammarModel();
-        if (startGraphName != null) {
-            if (result.getNames(HOST).contains(startGraphName)) {
-                result.setStartGraph(startGraphName);
-            } else {
-                DefaultGraph plainGraph = Groove.loadGraph(startGraphName);
-                if (plainGraph == null) {
-                    throw new IOException(String.format(
-                        "Cannot load start graph %s", startGraphName));
-                } else {
-                    result.setStartGraph(AspectGraph.newInstance(plainGraph));
-                }
-            }
-        }
         return result;
     }
 
@@ -680,26 +759,9 @@ public class GrammarModel implements Observer {
      */
     static public GrammarModel newInstance(File file, boolean create)
         throws IOException {
-        return newInstance(file, null, create);
-    }
-
-    /**
-     * Creates an instance based on a given file and start graph name.
-     * @param file the file to load the grammar from
-     * @param startGraphName the start graph name; if <code>null</code>, the
-     *        default start graph name is used
-     * @param create if <code>true</code> and <code>file</code> does not yet
-     *        exist, attempt to create it.
-     * @throws IOException if an error occurred while creating the store
-     */
-    static public GrammarModel newInstance(File file, String startGraphName,
-            boolean create) throws IOException {
         SystemStore store = SystemStoreFactory.newStore(file, create);
         store.reload();
         GrammarModel result = store.toGrammarModel();
-        if (startGraphName != null) {
-            result.setStartGraph(startGraphName);
-        }
         return result;
     }
 
@@ -719,6 +781,204 @@ public class GrammarModel implements Observer {
             return newInstance(new File(location), false);
         } catch (IOException exc) {
             return newInstance(new File(location), false);
+        }
+    }
+
+    /**
+     * Creates an instance based on a given file, for testing purposes.
+     * @param file the file to load the grammar from
+     * @param altStartGraphName the host graph to be used as start graph 
+     * @throws IOException if an error occurred while creating the store
+     */
+    static public GrammarModel newTestInstance(File file,
+            String altStartGraphName) throws IOException {
+        SystemStore store = SystemStoreFactory.newStore(file, false);
+        store.reload();
+        GrammarModel result = store.toTestGrammarModel(altStartGraphName);
+        return result;
+    }
+
+    /**
+     * Creates an instance based on a store located at a given URL, for testing
+     * purposes.
+     * @param url the URL to load the grammar from
+     * @param altStartGraphName the host graph to be used as start graph 
+     * @throws IllegalArgumentException if no store can be created from the
+     *         given URL
+     * @throws IOException if a store can be created but not loaded
+     */
+    static public GrammarModel newTestInstance(URL url, String altStartGraphName)
+        throws IllegalArgumentException, IOException {
+        SystemStore store = SystemStoreFactory.newStore(url);
+        store.reload();
+        GrammarModel result = store.toTestGrammarModel(altStartGraphName);
+        return result;
+    }
+
+    // ========================================================================
+    // AUXILIARIES FOR COMBINING/MAINTAINING START GRAPHS
+    // ========================================================================
+
+    /**
+     * Computes the union of multiple selected start graphs.
+     */
+    private AspectGraph combineGraphs(Set<String> unsortedNames) {
+
+        // Optimize for 0 and 1 names.
+        if (unsortedNames.size() == 0) {
+            return null;
+        } else if (unsortedNames.size() == 1) {
+            String name = unsortedNames.iterator().next();
+            return (AspectGraph) getResource(ResourceKind.HOST, name).getSource();
+        }
+
+        // Sort the names.
+        TreeSet<String> names = new TreeSet<String>(unsortedNames);
+
+        // Get the graphs, and compute their layout boundaries.
+        List<AspectGraph> graphs = new ArrayList<AspectGraph>();
+        List<Point.Double> dimensions = new ArrayList<Point.Double>();
+        double globalMaxX = 0;
+        double globalMaxY = 0;
+        for (String name : names) {
+            ResourceModel<?> model = getResource(ResourceKind.HOST, name);
+            if (model == null) {
+                System.out.println("Warning: cannot find start graph '" + name
+                    + "'. Ignoring it.");
+                continue;
+            }
+            AspectGraph graph = (AspectGraph) model.getSource();
+            LayoutMap<AspectNode,AspectEdge> layoutMap =
+                graph.getInfo().getLayoutMap();
+            double maxX = 0;
+            double maxY = 0;
+            for (AspectNode node : graph.nodeSet()) {
+                JVertexLayout layout = layoutMap.nodeMap().get(node);
+                maxX =
+                    Math.max(maxX, layout.getBounds().getX()
+                        + layout.getBounds().getWidth());
+                maxY =
+                    Math.max(maxY, layout.getBounds().getY()
+                        + layout.getBounds().getHeight());
+            }
+            dimensions.add(new Point.Double(maxX, maxY));
+            globalMaxX = Math.max(globalMaxX, maxX);
+            globalMaxY = Math.max(globalMaxY, maxY);
+            graphs.add(graph);
+        }
+
+        // Create the combined graph.
+        StringBuilder result = new StringBuilder();
+        Iterator<String> iterator = names.iterator();
+        result.append(iterator.next());
+        while (iterator.hasNext()) {
+            result.append("+");
+            result.append(iterator.next());
+        }
+        AspectGraph combined =
+            new AspectGraph(result.toString(), GraphRole.HOST);
+        LayoutMap<AspectNode,AspectEdge> layoutMap =
+            new LayoutMap<AspectNode,AspectEdge>();
+
+        // Local bookkeeping.
+        int nodeNr = 0;
+        int index = 0;
+        double offsetX = 0;
+        double offsetY = 0;
+        Map<AspectNode,AspectNode> nodeMap =
+            new HashMap<AspectNode,AspectNode>();
+
+        // Copy the graphs one by one into the combined graph.
+        for (AspectGraph graph : graphs) {
+            nodeMap.clear();
+            // Copy the nodes.
+            for (AspectNode node : graph.nodeSet()) {
+                AspectNode fresh = node.clone(nodeNr++);
+                layoutMap.copyNodeWithOffset(fresh, node,
+                    graph.getInfo().getLayoutMap(), offsetX, offsetY);
+                nodeMap.put(node, fresh);
+                combined.addNode(fresh);
+            }
+            // Copy the edges.
+            for (AspectEdge edge : graph.edgeSet()) {
+                AspectEdge fresh =
+                    new AspectEdge(nodeMap.get(edge.source()), edge.label(),
+                        nodeMap.get(edge.target()));
+                layoutMap.copyEdgeWithOffset(fresh, edge,
+                    graph.getInfo().getLayoutMap(), offsetX, offsetY);
+                combined.addEdge(fresh);
+            }
+            // Move the offsets.
+            if (globalMaxX > globalMaxY) {
+                offsetY = offsetY + dimensions.get(index).getY() + 50;
+            } else {
+                offsetX = offsetX + dimensions.get(index).getX() + 50;
+            }
+            index++;
+        }
+
+        // Finalize combined graph.
+        GraphInfo.setLayoutMap(combined, layoutMap);
+        combined.setFixed();
+        return combined;
+    }
+
+    // ========================================================================
+    // ENUM: MANIPULATION
+    // ========================================================================
+
+    /**
+     * A {@link Manipulation} distinguishes between different kinds of set
+     * update operations that can be applied to the set of selected start
+     * graphs.
+     */
+    public static enum Manipulation {
+        /** Add elements to the set. */
+        ADD,
+        /** Remove elements from the set. */
+        REMOVE,
+        /** Clears set, and adds all elements. */
+        SET,
+        /** Add elements that are not part of the set, and removes others. */
+        TOGGLE;
+
+        /** 
+         * Apply a manipulation action. The boolean return value indicates if
+         * the set was changed as a result of this operation.
+         */
+        public static boolean apply(Set<String> set, Manipulation manipulation,
+                Set<String> selected) {
+            switch (manipulation) {
+            case ADD:
+                return set.addAll(selected);
+            case REMOVE:
+                return set.removeAll(selected);
+            case SET:
+                boolean changed = set.equals(selected);
+                set.clear();
+                set.addAll(selected);
+                return changed;
+            case TOGGLE:
+                for (String text : selected) {
+                    if (!set.remove(text)) {
+                        set.add(text);
+                    }
+                }
+                return !selected.isEmpty();
+            default:
+                return false;
+            }
+        }
+
+        /**
+         * Convenience method for applying a manipulation on a singleton
+         * value. Inefficient.
+         */
+        public static boolean apply(Set<String> set, Manipulation manipulation,
+                String selected) {
+            Set<String> temp = new HashSet<String>();
+            temp.add(selected);
+            return apply(set, manipulation, temp);
         }
     }
 }

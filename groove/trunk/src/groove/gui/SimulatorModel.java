@@ -16,13 +16,14 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
-import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.GrammarModel.Manipulation;
 import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
 import groove.view.TextBasedModel;
@@ -66,14 +67,8 @@ public class SimulatorModel implements Cloneable {
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
-                // test now if this is the start state, before it is deleted from the
-                // grammar
-                result = names.contains(grammar.getStartGraphName());
+                grammar.updateStartGraphNames(Manipulation.REMOVE, names);
                 getStore().deleteGraphs(ResourceKind.HOST, names);
-                if (result) {
-                    // reset the start graph to null
-                    grammar.removeStartGraph();
-                }
                 break;
             case PROLOG:
                 getStore().deleteTexts(ResourceKind.PROLOG, names);
@@ -113,15 +108,7 @@ public class SimulatorModel implements Cloneable {
                 result = oldName.equals(getGrammar().getControlName());
                 break;
             case HOST:
-                GrammarModel grammar = getGrammar();
-                String startGraphName = grammar.getStartGraphName();
-                result =
-                    oldName.equals(startGraphName)
-                        || newName.equals(startGraphName);
-                if (result) {
-                    // reset the start graph to the renamed graph
-                    grammar.setStartGraph(newName);
-                }
+                result = getGrammar().isStartGraphName(oldName);
                 break;
             case RULE:
             case TYPE:
@@ -133,6 +120,9 @@ public class SimulatorModel implements Cloneable {
             changeSelected(resource, newName);
             changeGrammar(result);
             changeDisplay(DisplayKind.toDisplay(resource));
+            if (resource == ResourceKind.HOST) {
+                getGrammar().renameStartGraph(oldName, newName);
+            }
         } finally {
             finish();
         }
@@ -175,7 +165,11 @@ public class SimulatorModel implements Cloneable {
             getStore().putProperties(newProperties);
             break;
         case HOST:
-            getGrammar().setStartGraph(name);
+            if (names.size() == 1 && getGrammar().isStartGraphName(name)) {
+                getGrammar().updateStartGraphNames(Manipulation.REMOVE, names);
+            } else {
+                getGrammar().setStartGraphNames(names);
+            }
             break;
         case RULE:
             Collection<AspectGraph> newRules =
@@ -251,7 +245,7 @@ public class SimulatorModel implements Cloneable {
         SystemProperties properties = getGrammar().getProperties();
         switch (graph.getRole()) {
         case HOST:
-            result = name.equals(getGrammar().getStartGraphName());
+            result = getGrammar().isStartGraphName(name);
             break;
         case RULE:
             result = GraphProperties.isEnabled(graph);
@@ -926,8 +920,11 @@ public class SimulatorModel implements Cloneable {
                 if (hasState()) {
                     name = "";
                 } else {
-                    // the next best choice is the start graph name
-                    name = getGrammar().getStartGraphName();
+                    // the next best choice is an (arbitrary) start graph name
+                    Set<String> startNames = getGrammar().getStartGraphNames();
+                    if (startNames.size() > 0) {
+                        name = startNames.iterator().next();
+                    }
                 }
             } else if (resource == ResourceKind.CONTROL) {
                 // for control, the best choice is the active control program

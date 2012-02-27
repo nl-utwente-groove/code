@@ -103,16 +103,20 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "neg2")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("rev")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "rev")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("seq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "seq")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("neq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "neq")) {
                 assertEquals(pn.toString(), 2, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("var")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "var")) {
                 assertEquals(pn.toString(), 2, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "wildcard1")) {
@@ -139,16 +143,20 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "neg2")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("rev")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "rev")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("seq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "seq")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("neq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "neq")) {
                 assertEquals(pn.toString(), 6, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("var")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "var")) {
                 assertEquals(pn.toString(), 3, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "wildcard1")) {
@@ -176,16 +184,20 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "neg2")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("rev")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "rev")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("seq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "seq")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("neq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "neq")) {
                 assertEquals(pn.toString(), 12, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("var")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "var")) {
                 assertEquals(pn.toString(), 3, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "wildcard1")) {
@@ -212,16 +224,20 @@ public class ReteNetworkTest extends TestCase {
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "neg2")) {
                 assertEquals(pn.toString(), 1, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("rev")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "rev")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("seq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "seq")) {
                 assertEquals(pn.toString(), 0, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("neq")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "neq")) {
                 assertEquals(pn.toString(), 42, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "star")) {
                 assertEquals(pn.toString(), 3, rmList.size());
-            } else if (pn.getProductionRule().getFullName().toString().equals("var")) {
+            } else if (pn.getProductionRule().getFullName().toString().equals(
+                "var")) {
                 assertEquals(pn.toString(), 10, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "wildcard1")) {
@@ -243,7 +259,8 @@ public class ReteNetworkTest extends TestCase {
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
-            if (pn.getProductionRule().getFullName().toString().equals("closure")) {
+            if (pn.getProductionRule().getFullName().toString().equals(
+                "closure")) {
                 assertEquals(pn.toString(), 3, rmList.size());
             }
         }
@@ -331,7 +348,8 @@ public class ReteNetworkTest extends TestCase {
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
-            if (pn.getProductionRule().getFullName().toString().equals("count-up")) {
+            if (pn.getProductionRule().getFullName().toString().equals(
+                "count-up")) {
                 assertEquals(1, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "count-down")) {
@@ -363,7 +381,8 @@ public class ReteNetworkTest extends TestCase {
                 "next-phase")) {
                 assertEquals(1, rmList.size());
             } else {
-                assertEquals(pn.getProductionRule().getFullName(), 0, rmList.size());
+                assertEquals(pn.getProductionRule().getFullName(), 0,
+                    rmList.size());
             }
         }
     }
@@ -378,7 +397,8 @@ public class ReteNetworkTest extends TestCase {
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
-            if (pn.getProductionRule().getFullName().toString().equals("sameCount")) {
+            if (pn.getProductionRule().getFullName().toString().equals(
+                "sameCount")) {
                 assertEquals(1, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "noMoreThan3A")) {
@@ -387,7 +407,8 @@ public class ReteNetworkTest extends TestCase {
                 "noMoreThan3B")) {
                 assertEquals(1, rmList.size());
             } else {
-                assertEquals(pn.getProductionRule().getFullName(), 0, rmList.size());
+                assertEquals(pn.getProductionRule().getFullName(), 0,
+                    rmList.size());
             }
         }
     }
@@ -402,7 +423,8 @@ public class ReteNetworkTest extends TestCase {
         network.processGraph(g.getStartGraph());
         for (ProductionNode pn : network.getProductionNodes()) {
             Set<ReteSimpleMatch> rmList = pn.getConflictSet();
-            if (pn.getProductionRule().getFullName().toString().equals("sameCount")) {
+            if (pn.getProductionRule().getFullName().toString().equals(
+                "sameCount")) {
                 assertEquals(0, rmList.size());
             } else if (pn.getProductionRule().getFullName().toString().equals(
                 "noMoreThan3A")) {
@@ -417,7 +439,8 @@ public class ReteNetworkTest extends TestCase {
                 "threeOfAnyKind")) {
                 assertEquals(1, rmList.size());
             } else {
-                assertEquals(pn.getProductionRule().getFullName(), 0, rmList.size());
+                assertEquals(pn.getProductionRule().getFullName(), 0,
+                    rmList.size());
             }
         }
     }
@@ -426,8 +449,8 @@ public class ReteNetworkTest extends TestCase {
         GraphGrammar result = null;
         try {
             result =
-                GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
-                    startGraphName, false).toGrammar();
+                GrammarModel.newTestInstance(new File(INPUT_DIR, grammarName),
+                    startGraphName).toGrammar();
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         } catch (FormatException ex) {

@@ -40,8 +40,8 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph.HostToAspectMap;
@@ -52,6 +52,7 @@ import groove.trans.RuleApplication;
 import groove.trans.RuleNode;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
+import groove.view.HostModel;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -414,7 +415,14 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         result.append(FRAME_NAME);
         if (getSimulatorModel().getState() != null) {
             result.append(": ");
-            result.append(HTMLConverter.STRONG_TAG.on(getSimulatorModel().getState().toString()));
+            String stateID = getSimulatorModel().getState().toString();
+            result.append(HTMLConverter.STRONG_TAG.on(stateID));
+            if (stateID.equals("s0")) {
+                HostModel startGraph =
+                    getSimulatorModel().getGrammar().getStartGraphModel();
+                result.append("=");
+                result.append(startGraph.getName());
+            }
             MatchResult match = getSimulatorModel().getMatch();
             if (match != null) {
                 if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {

@@ -22,6 +22,9 @@ import groove.graph.Node;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -211,6 +214,46 @@ public class LayoutMap<N extends Node,E extends Edge> {
             this.edgeMap.remove(key);
         } else {
             this.edgeMap.put(key, layout);
+        }
+    }
+
+    /**
+     * Inserts layout information for a given node key, using the layout of
+     * another node (from which it was mapped). Also adds an offset.
+     */
+    public void copyNodeWithOffset(N newKey, N oldKey,
+            LayoutMap<N,E> oldLayoutMap, double offsetX, double offsetY) {
+        JVertexLayout oldLayout = oldLayoutMap.nodeMap.get(oldKey);
+        if (oldLayout != null) {
+            Rectangle2D oldBounds = oldLayout.getBounds();
+            Rectangle2D.Double newBounds =
+                new Rectangle2D.Double(oldBounds.getX() + offsetX,
+                    oldBounds.getY() + offsetY, oldBounds.getWidth(),
+                    oldBounds.getHeight());
+            JVertexLayout newLayout = new JVertexLayout(newBounds);
+            putNode(newKey, newLayout);
+        }
+    }
+
+    /**
+     * Inserts layout information for a given edge key, using the layout of
+     * another edge (from which it was mapped). Also adds an offset.
+     */
+    public void copyEdgeWithOffset(E newKey, E oldKey,
+            LayoutMap<N,E> oldLayoutMap, double offsetX, double offsetY) {
+        JEdgeLayout oldLayout = oldLayoutMap.edgeMap.get(oldKey);
+        if (oldLayout != null) {
+            List<Point2D> oldPoints = oldLayout.getPoints();
+            List<Point2D> newPoints = new ArrayList<Point2D>();
+            for (Point2D oldPoint : oldPoints) {
+                newPoints.add(new Point2D.Double(oldPoint.getX() + offsetX,
+                    oldPoint.getY() + offsetY));
+            }
+            Point2D labelPosition = oldLayout.getLabelPosition();
+            JEdgeLayout newLayout =
+                new JEdgeLayout(newPoints, labelPosition,
+                    oldLayout.getLineStyle());
+            putEdge(newKey, newLayout);
         }
     }
 

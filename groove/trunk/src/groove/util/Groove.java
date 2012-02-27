@@ -138,20 +138,6 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory
-     * and return it. Adds the <tt>.gps</tt> extension if the directory name has
-     * no extension.
-     * @param dirname the name of the directory to load the graph grammar from
-     * @return the rule system contained in <code>dirname</code>
-     * @throws IOException if <code>dirname</code> does not exist or is wrongly
-     *         formatted
-     */
-    static public GrammarModel loadGrammar(String dirname) throws IOException {
-        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return GrammarModel.newInstance(dir, false);
-    }
-
-    /**
      * Converts a {@link Rectangle2D} to a {@link Rectangle}.
      */
     static public Rectangle toRectangle(Rectangle2D r) {
@@ -164,20 +150,31 @@ public class Groove {
 
     /**
      * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
-     * with an explicitly given start graph name, and return it. Adds the
-     * <tt>.gps</tt> extension if the file has no extension.
+     * and returns it. Adds the <tt>.gps</tt> extension if the file has no
+     * extension.
      * @param dirname the name of the directory to load the graph grammar from
-     * @param startfilename the name of the start graph; if {@code null}, the
-     * default start graph is used
-     * @return the graph grammar made up by <code>dirname</code> and
-     *         <code>startfilename</code>
-     * @throws IOException if <code>dirname</code> or <code>startfilename</code>
-     *         do not exist or are wrongly formatted
+     * @throws IOException if <code>dirname</code> does not exist or is wrongly
+     *         formatted
      */
-    static public GrammarModel loadGrammar(String dirname, String startfilename)
-        throws IOException {
+    static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return GrammarModel.newInstance(dir, startfilename, false);
+        return GrammarModel.newInstance(dir, false);
+    }
+
+    /**
+     * Attempts to load in a graph grammar, for testing purposes, from a given
+     * <tt>.gps</tt> directory, and returns it. Adds the <tt>.gps</tt> extension
+     * if the file has no extension. Also explicitly sets an alternative start
+     * graph (instead of using the ones in grammar properties).
+     * @param dirname the name of the directory to load the graph grammar from
+     * @param altStartGraphName the name of the alternative start graph
+     * @throws IOException if <code>dirname</code> does not exist or is wrongly
+     *         formatted
+     */
+    static public GrammarModel loadTestGrammar(String dirname,
+            String altStartGraphName) throws IOException {
+        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
+        return GrammarModel.newTestInstance(dir, altStartGraphName);
     }
 
     /**

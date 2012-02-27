@@ -29,8 +29,8 @@ public class LoadGrammarFromURLAction extends SimulatorAction {
             try {
                 URL url = new URL(input);
                 final SystemStore store = SystemStoreFactory.newStore(url);
-                String startGraphName = url.getQuery();
-                getActions().getLoadGrammarAction().load(store, startGraphName);
+                //                String startGraphName = url.getQuery();
+                getActions().getLoadGrammarAction().load(store);
             } catch (MalformedURLException e) {
                 showErrorDialog(e,
                     String.format("Invalid URL '%s'", e.getMessage()));

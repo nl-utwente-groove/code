@@ -149,7 +149,14 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     @Override
     public AspectNode clone() {
-        AspectNode result = new AspectNode(getNumber(), getGraphRole());
+        return clone(getNumber());
+    }
+
+    /**
+     * Clones an {@link AspectNode}, and also renumbers it.
+     */
+    public AspectNode clone(int newNr) {
+        AspectNode result = new AspectNode(newNr, getGraphRole());
         for (AspectLabel label : this.nodeLabels) {
             result.setAspects(label);
         }

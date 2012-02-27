@@ -43,7 +43,7 @@ final public class HostDisplay extends ResourceDisplay {
     @Override
     protected void decorateLabelText(String name, StringBuilder text) {
         super.decorateLabelText(name, text);
-        if (name.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
+        if (getSimulatorModel().getGrammar().isStartGraphName(name)) {
             HTMLConverter.STRONG_TAG.on(text);
             HTMLConverter.HTML_TAG.on(text);
         }
@@ -68,7 +68,7 @@ final public class HostDisplay extends ResourceDisplay {
 
         @Override
         public String getDisplayText(String fullName, String shortName) {
-            if (fullName.equals(getSimulatorModel().getGrammar().getStartGraphName())) {
+            if (getSimulatorModel().getGrammar().isStartGraphName(fullName)) {
                 StringBuilder text = new StringBuilder(shortName);
                 HTMLConverter.STRONG_TAG.on(text);
                 HTMLConverter.HTML_TAG.on(text);

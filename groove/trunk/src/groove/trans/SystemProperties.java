@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -275,6 +276,30 @@ public class SystemProperties extends java.util.Properties implements Fixable {
             return Collections.emptySet();
         } else {
             return new TreeSet<String>(Arrays.asList(programs.split("\\s")));
+        }
+    }
+
+    /**
+     * Sets the start graph names property.
+     * @param graphs the list of start graphs that are in use.
+     */
+    public void setStartGraphNames(Collection<String> graphs) {
+        setProperty(Key.START_GRAPH_NAMES,
+            Groove.toString(graphs.toArray(), "", "", " "));
+    }
+
+    /**
+     * Returns a list of start graph names that are in use.
+     * Returns <code>null</code> if the property does not exist.
+     */
+    public Set<String> getStartGraphNames() {
+        String graphs = getProperty(Key.START_GRAPH_NAMES);
+        if (graphs == null) {
+            return null;
+        } else if ("".equals(graphs)) {
+            return Collections.emptySet();
+        } else {
+            return new HashSet<String>(Arrays.asList(graphs.split("\\s")));
         }
     }
 
@@ -722,6 +747,11 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          */
         ISOMORPHISM("checkIsomorphism", PropertyKind.BOOLEAN,
                 "Flag controlling state graphs are checked up to isomorphism"),
+        /**
+         * Space-separated list of active start graph names.
+         */
+        START_GRAPH_NAMES("startGraph",
+                "Space-separated list of active start graph names"),
         /**
          * Name of the active control program.
          */
