@@ -1421,4 +1421,16 @@ public final class Shape extends DefaultHostGraph {
         return true;
     }
 
+    /** Returns true if the shape has an edge multiplicity different than 1. */
+    public boolean hasCollectorEdgeMults() {
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (Multiplicity mult : getEdgeMultMap(direction).values()) {
+                if (mult.isCollector()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

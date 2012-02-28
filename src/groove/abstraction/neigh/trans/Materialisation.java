@@ -448,7 +448,7 @@ public final class Materialisation {
      * Removes elements from the morphism that are no longer present in the
      * shape.
      */
-    private void updateShapeMorphism() {
+    void updateShapeMorphism() {
         // Remove nodes.
         Set<HostNode> nodesToRemove = new MyHashSet<HostNode>();
         for (Entry<HostNode,HostNode> entry : this.morph.nodeMap().entrySet()) {
@@ -477,7 +477,7 @@ public final class Materialisation {
         }
     }
 
-    private boolean violatesNACs() {
+    boolean violatesNACs() {
         boolean result = false;
         if (this.hasNACs()) {
             Matcher matcher = ReverseMatcherStore.getMatcher(this.matchedRule);
@@ -508,7 +508,7 @@ public final class Materialisation {
      * Returns true if the morphism from the materialised shape to the original
      * one is consistent.
      */
-    private boolean isShapeMorphConsistent() {
+    boolean isShapeMorphConsistent() {
         return this.morph.isValid(this.shape, this.originalShape)
             && this.morph.isConsistent(this.shape, this.originalShape);
     }
@@ -563,6 +563,7 @@ public final class Materialisation {
                     hasConcreteMatch(shape,
                         (RuleToShapeMap) subProof.getPatternMap());
                 if (result) {
+                    // One of the NACs has a concrete match.
                     break;
                 }
             }
@@ -1202,6 +1203,8 @@ public final class Materialisation {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
         Abstraction.initialise();
+        Parameters.setUseThreeValues(true);
+
         File file = new File(DIRECTORY + "error.gxl");
         File grammarFile = new File(DIRECTORY);
         try {

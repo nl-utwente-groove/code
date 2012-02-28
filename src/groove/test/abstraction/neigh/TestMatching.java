@@ -34,6 +34,7 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.AfterClass;
@@ -262,7 +263,7 @@ public class TestMatching {
 
     @Test
     public void testNAC6() {
-        File file = new File(DIRECTORY + "test-nac-5.gxl");
+        File file = new File(DIRECTORY + "test-nac-5a.gxl");
         Shape shape = null;
         try {
             shape =
@@ -281,6 +282,30 @@ public class TestMatching {
         Proof preMatch = preMatches.iterator().next();
         Set<Materialisation> mats =
             Materialisation.getMaterialisations(shape, preMatch);
+        assertEquals(0, mats.size());
+    }
+
+    @Test
+    public void testNAC7() {
+        File file = new File(DIRECTORY + "test-nac-5b.gxl");
+        Shape shape = null;
+        try {
+            shape =
+                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Rule rule = grammar.getRule("test-nac-5");
+        Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
+        assertEquals(2, preMatches.size());
+        Iterator<Proof> it = preMatches.iterator();
+        Proof preMatch = it.next();
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape, preMatch);
+        assertEquals(2, mats.size());
+        preMatch = it.next();
+        mats = Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(0, mats.size());
     }
 
