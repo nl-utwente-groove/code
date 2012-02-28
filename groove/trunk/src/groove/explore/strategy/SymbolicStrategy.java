@@ -25,6 +25,12 @@ import groove.sts.Location;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.view.FormatException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Explores the graph states using a given strategy and builds an STS 
@@ -36,6 +42,7 @@ public class SymbolicStrategy extends AbstractStrategy {
 
     private DFSStrategy dfsStrategy;
     private STS sts;
+    private Map<Rule,Rule> strippedRules;
 
     @Override
     public void prepare(GTS gts, GraphState startState) {
@@ -47,6 +54,30 @@ public class SymbolicStrategy extends AbstractStrategy {
 
         this.sts = new CompleteSTS();
         this.sts.hostGraphToStartLocation(startState.getGraph());
+
+        GraphGrammar g =
+            new GraphGrammar(gts.getGrammar().getName() + " -stripped");
+        g.setStartGraph(gts.startState().getGraph());
+
+        // strip all rules
+        this.strippedRules = new HashMap<Rule,Rule>();
+        for (Rule rule : gts.getGrammar().getAllRules()) {
+            Rule r = this.sts.stripRule(rule);
+            System.out.println(r);
+            System.out.println("");
+            System.out.println(r.lhs());
+            System.out.println("");
+            System.out.println(r.rhs());
+            System.out.println("");
+            this.strippedRules.put(rule, r);
+            g.add(r);
+        }
+        try {
+            g.setFixed();
+        } catch (FormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override

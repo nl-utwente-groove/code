@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>69 92 60 33</string>
@@ -21,17 +24,17 @@
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>54 215 43 43</string>
+                <string>83 212 43 43</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>93 251 30 37</string>
+                <string>164 215 30 37</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
+        <edge to="n2" from="n0">
             <attr name="label">
-                <string>type:Thing</string>
+                <string>y</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
@@ -39,9 +42,9 @@
                 <string>x</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>y</string>
+                <string>type:Thing</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -59,6 +62,11 @@
                 <string>prod:</string>
             </attr>
         </edge>
+        <edge to="n4" from="n3">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
         <edge to="n1" from="n3">
             <attr name="label">
                 <string>arg:0</string>
@@ -67,11 +75,6 @@
         <edge to="n2" from="n3">
             <attr name="label">
                 <string>int:add</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n3">
-            <attr name="label">
-                <string>arg:1</string>
             </attr>
         </edge>
         <edge to="n4" from="n4">

@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>68 72 60 33</string>
@@ -31,7 +34,7 @@
         </node>
         <node id="n7">
             <attr name="layout">
-                <string>245 78 52 37</string>
+                <string>250 73 52 37</string>
             </attr>
         </node>
         <node id="n1">
@@ -39,6 +42,11 @@
                 <string>76 227 43 43</string>
             </attr>
         </node>
+        <edge to="n5" from="n0">
+            <attr name="label">
+                <string>del:s</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:Thing</string>
@@ -47,11 +55,6 @@
         <edge to="n4" from="n0">
             <attr name="label">
                 <string>new:s</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n0">
-            <attr name="label">
-                <string>del:s</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -74,11 +77,6 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge to="n4" from="n6">
-            <attr name="label">
-                <string>arg:0</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n6">
             <attr name="label">
                 <string>arg:1</string>
@@ -87,6 +85,11 @@
         <edge to="n7" from="n6">
             <attr name="label">
                 <string>string:lt</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n6">
+            <attr name="label">
+                <string>arg:0</string>
             </attr>
         </edge>
         <edge to="n7" from="n7">
@@ -99,11 +102,6 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge to="n5" from="n1">
-            <attr name="label">
-                <string>arg:0</string>
-            </attr>
-        </edge>
         <edge to="n4" from="n1">
             <attr name="label">
                 <string>string:concat</string>
@@ -112,6 +110,11 @@
         <edge to="n2" from="n1">
             <attr name="label">
                 <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n1">
+            <attr name="label">
+                <string>arg:0</string>
             </attr>
         </edge>
     </graph>

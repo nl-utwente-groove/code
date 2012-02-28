@@ -4,9 +4,12 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n4">
             <attr name="layout">
-                <string>109 252 52 37</string>
+                <string>232 210 56 37</string>
             </attr>
         </node>
         <node id="n3">
@@ -39,14 +42,14 @@
                 <string>prod:</string>
             </attr>
         </edge>
-        <edge to="n1" from="n3">
-            <attr name="label">
-                <string>arg:0</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n3">
             <attr name="label">
                 <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n3">
+            <attr name="label">
+                <string>arg:0</string>
             </attr>
         </edge>
         <edge to="n4" from="n3">
@@ -64,9 +67,9 @@
                 <string>int:</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n2" from="n0">
             <attr name="label">
-                <string>type:Thing</string>
+                <string>y</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
@@ -74,9 +77,9 @@
                 <string>x</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>y</string>
+                <string>type:Thing</string>
             </attr>
         </edge>
     </graph>
