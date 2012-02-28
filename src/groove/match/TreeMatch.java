@@ -45,7 +45,6 @@ public class TreeMatch implements Fixable {
      * pattern, a pattern map is also given. The submatches are initially empty.
      */
     public TreeMatch(Condition condition, RuleToHostMap patternMap) {
-        assert patternMap != null;
         this.condition = condition;
         this.op = condition.getOp();
         this.subMatches = createSubMatches(condition.getOp());

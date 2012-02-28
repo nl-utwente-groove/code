@@ -566,6 +566,12 @@ public class Condition implements Fixable {
         return this.positive;
     }
 
+    /** Indicates if this condition should be matched injectively. */
+    public boolean isInjective() {
+        return getSystemProperties() != null
+            && getSystemProperties().isInjective();
+    }
+
     /** Sets the associated rule of this condition. */
     public void setRule(Rule rule) {
         assert !isFixed();
