@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.match.SearchEngine.SearchMode;
 import groove.rel.LabelVar;
 import groove.util.Groove;
 
@@ -79,6 +80,21 @@ public class EdgeEmbargo extends Condition {
      */
     public Label edgeLabel() {
         return this.embargoEdge.label();
+    }
+
+    @Override
+    public boolean isCompatible(SearchMode searchMode) {
+        switch (searchMode) {
+        case NORMAL:
+            return true;
+        case MINIMAL:
+            return !edgeLabel().isBinary();
+        case REVERSE:
+            return false;
+        default:
+            assert false;
+            return false;
+        }
     }
 
     /**

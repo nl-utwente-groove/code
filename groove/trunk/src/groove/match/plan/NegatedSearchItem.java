@@ -75,15 +75,6 @@ class NegatedSearchItem extends AbstractSearchItem {
         return this.inner.isTestsNodes();
     }
 
-    @Override
-    public boolean isMinimal() {
-        if (this.inner instanceof Edge2SearchItem) {
-            return !((Edge2SearchItem) this.inner).getEdge().label().isBinary();
-        } else {
-            return false;
-        }
-    }
-
     /**
      * Since the order of negated search items does not influence the match, all
      * of them have the same rating.

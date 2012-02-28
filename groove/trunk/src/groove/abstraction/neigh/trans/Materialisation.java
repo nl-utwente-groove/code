@@ -59,7 +59,6 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -484,12 +483,10 @@ public final class Materialisation {
             TreeMatch nacMatch = matcher.find(this.shape, this.match);
             if (nacMatch != null) {
                 final Shape shape = this.shape;
-                final boolean extended =
-                    !this.match.equals(nacMatch.getPatternMap());
                 Finder<Proof> finder = Visitor.newFinder(new Property<Proof>() {
                     @Override
                     public boolean isSatisfied(Proof value) {
-                        return hasConcreteMatch(shape, value, extended);
+                        return hasConcreteMatch(shape, value);
                     }
                 });
                 nacMatch.traverseProofs(finder);
@@ -545,30 +542,18 @@ public final class Materialisation {
     }
 
     /** Special checker for NAC matches. */
-    static boolean hasConcreteMatch(Shape shape, Proof proof, boolean extended) {
-        Collection<Proof> subProofs = proof.getSubProofs();
-        if (subProofs.isEmpty()) {
-            if (extended) {
-                // In this case we have NACs but they are embedded in the main proof.
-                // This happens when we only have an NegatedSearchItem.
-                return hasConcreteMatch(shape,
-                    (RuleToShapeMap) proof.getPatternMap());
-            } else {
-                return false;
+    static boolean hasConcreteMatch(Shape shape, Proof proof) {
+        boolean result = false;
+        for (Proof subProof : proof.getSubProofs()) {
+            result =
+                hasConcreteMatch(shape,
+                    (RuleToShapeMap) subProof.getPatternMap());
+            if (result) {
+                // One of the NACs has a concrete match.
+                break;
             }
-        } else {
-            boolean result = false;
-            for (Proof subProof : subProofs) {
-                result =
-                    hasConcreteMatch(shape,
-                        (RuleToShapeMap) subProof.getPatternMap());
-                if (result) {
-                    // One of the NACs has a concrete match.
-                    break;
-                }
-            }
-            return result;
         }
+        return result;
     }
 
     /** Checks if the image of the given map in the given shape is concrete. */

@@ -159,6 +159,10 @@ public class TestMatching {
         assertTrue(preMatches.isEmpty());
         preMatches = PreMatch.getPreMatches(shape0c, rule);
         assertEquals(1, preMatches.size());
+        Proof preMatch = preMatches.iterator().next();
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape0c, preMatch);
+        assertEquals(1, mats.size());
         preMatches = PreMatch.getPreMatches(shape0d, rule);
         assertEquals(4, preMatches.size());
     }
@@ -181,6 +185,10 @@ public class TestMatching {
         assertTrue(preMatches.isEmpty());
         preMatches = PreMatch.getPreMatches(shape1b, rule);
         assertEquals(1, preMatches.size());
+        Proof preMatch = preMatches.iterator().next();
+        Set<Materialisation> mats =
+            Materialisation.getMaterialisations(shape1b, preMatch);
+        assertEquals(1, mats.size());
     }
 
     @Test
