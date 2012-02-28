@@ -43,6 +43,32 @@ enum Direction {
         }
     }
 
+    /** Returns the end node of an edge, according to this direction. */
+    public RegNode end(RegEdge edge) {
+        switch (this) {
+        case FORWARD:
+            return edge.target();
+        case BACKWARD:
+            return edge.source();
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    /** Returns the inverse direction. */
+    public Direction getInverse() {
+        switch (this) {
+        case FORWARD:
+            return BACKWARD;
+        case BACKWARD:
+            return FORWARD;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     /** The set of all direction values. */
     public static final Set<Direction> all = EnumSet.allOf(Direction.class);
 }

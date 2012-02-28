@@ -257,9 +257,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     /**
-     * Initializes the sets of all variables and bound variables.
-     * @see #allVarSet()
-     * @see #boundVarSet()
+     * Initialises the sets of all variables.
+     * @see #hasVars()
      */
     private void initVarSets() {
         // traverse the automaton
@@ -268,44 +267,30 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         // keep maps from automaton nodes to all vars and bound vars
         Map<RegNode,Set<LabelVar>> allVarMap =
             new HashMap<RegNode,Set<LabelVar>>();
-        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
-        Map<RegNode,Set<LabelVar>> boundVarMap =
-            new HashMap<RegNode,Set<LabelVar>>();
-        boundVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
             RegNode source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
             Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
-            Set<LabelVar> sourceBoundVarSet = boundVarMap.get(source);
             for (RegEdge outEdge : outEdgeSet(source)) {
                 RegNode target = outEdge.target();
                 Set<LabelVar> targetAllVarSet =
                     new HashSet<LabelVar>(sourceAllVarSet);
-                Set<LabelVar> targetBoundVarSet =
-                    new HashSet<LabelVar>(sourceBoundVarSet);
                 RegExpr expr = outEdge.label().getMatchExpr();
                 targetAllVarSet.addAll(expr.allVarSet());
-                targetBoundVarSet.addAll(expr.boundVarSet());
                 if (allVarMap.containsKey(target)) {
                     // the target is known; take the union of all vars and the
                     // intersection of the bound vars
                     allVarMap.get(target).addAll(targetAllVarSet);
-                    boundVarMap.get(target).retainAll(targetAllVarSet);
                 } else {
                     // the target is new; store all and bound vars
                     remainingNodes.add(target);
                     allVarMap.put(target, targetAllVarSet);
-                    boundVarMap.put(target, targetBoundVarSet);
                 }
             }
         }
         this.allVarSet = allVarMap.get(getEndNode());
         if (this.allVarSet == null) {
             this.allVarSet = Collections.emptySet();
-        }
-        this.boundVarSet = boundVarMap.get(getEndNode());
-        if (this.boundVarSet == null) {
-            this.boundVarSet = Collections.emptySet();
         }
     }
 
@@ -414,38 +399,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     /**
-     * Returns the set of all wildcard variables occurring in this automaton.
-     */
-    public Set<LabelVar> allVarSet() {
-        assert isFixed();
-        return Collections.unmodifiableSet(this.allVarSet);
-    }
-
-    /**
-     * Returns the set of wildcard variables bound in this automaton. A variable
-     * is bound if it occurs on every path from start to end node.
-     */
-    public Set<LabelVar> boundVarSet() {
-        assert isFixed();
-        return Collections.unmodifiableSet(this.boundVarSet);
-    }
-
-    /**
      * Indicates if this automaton includes wildcard variables. Convenience
      * method for <code>!getWildcardIds().isEmpty()</code>.
      */
-    public boolean hasVars() {
+    boolean hasVars() {
         assert isFixed();
         return !this.allVarSet.isEmpty();
-    }
-
-    /**
-     * Indicates if this automaton includes wildcard variables. Convenience
-     * method for <code>!getWildcardIds().isEmpty()</code>.
-     */
-    public boolean bindsVars() {
-        assert isFixed();
-        return !this.boundVarSet.isEmpty();
     }
 
     @Override
@@ -764,10 +723,6 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * Set of wildcard ids occurring in this automaton.
      */
     private Set<LabelVar> allVarSet;
-    /**
-     * Set of wildcard ids occurring in this automaton.
-     */
-    private Set<LabelVar> boundVarSet;
     /**
      * The index of the end node.
      */

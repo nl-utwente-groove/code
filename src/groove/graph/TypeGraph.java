@@ -1006,14 +1006,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
             label.getWildcardGuard().filter(result);
         } else if (label.isSharp()) {
-            if (isNodeType(label)) {
+            if (isNodeType(label) && !isImplicit()) {
                 result.add(getNode(label));
             } else {
-                result.addAll(labelEdgeSet(label.getTypeLabel()));
+                result.addAll(labelEdgeSet(label.getSharpLabel()));
             }
         } else {
             assert label.isAtom();
-            if (isNodeType(label)) {
+            if (isNodeType(label) && !isImplicit()) {
                 result.addAll(getSubtypes(getNode(label)));
             } else {
                 result.addAll(labelEdgeSet(label.getTypeLabel()));
