@@ -22,6 +22,7 @@ import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.io.HTMLConverter;
 import groove.io.Util;
+import groove.match.SearchEngine.SearchMode;
 import groove.util.Fixable;
 import groove.view.FormatError;
 import groove.view.FormatException;
@@ -516,6 +517,11 @@ public class Condition implements Fixable {
         return this.op;
     }
 
+    /** Returns true if the operator of this condition is a NOT. */
+    public final boolean isNot() {
+        return getOp() == Op.NOT;
+    }
+
     /** Returns the rule factory of this condition. */
     public RuleFactory getFactory() {
         return this.factory;
@@ -591,13 +597,15 @@ public class Condition implements Fixable {
      * Returns a new condition object that is the reverse of this one. Hence,
      * a NAC becomes a Positive Application Condition.
      * Used in the abstraction code.
-     * Fails in an assertion if this condition is not a NAC.s 
+     * Fails in an assertion if this condition is not a NAC. 
      */
     public Condition reverse() {
         assert getOp() == Op.NOT;
         Condition result =
-            new Condition(getName(), Op.EXISTS, getPattern(), getRoot(),
+            new Condition(getName(), Op.FORALL, getPattern(), getRoot(),
                 getSystemProperties());
+        result.setPositive();
+        result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());
         }
@@ -610,6 +618,38 @@ public class Condition implements Fixable {
             }
         }
         return result;
+    }
+
+    /** Returns true if this condition can be reversed. */
+    public boolean isReversable() {
+        return isNot() && hasBinaryEdges();
+    }
+
+    /**
+     * Returns true if this condition is compatible with the given search
+     * mode and therefore should be included in the search plan.
+     */
+    public boolean isCompatible(SearchMode searchMode) {
+        switch (searchMode) {
+        case NORMAL:
+            return true;
+        case MINIMAL:
+            return !(isNot() && hasBinaryEdges());
+        case REVERSE:
+            return false;
+        default:
+            assert false;
+            return false;
+        }
+    }
+
+    private boolean hasBinaryEdges() {
+        for (RuleEdge ruleEdge : getPattern().edgeSet()) {
+            if (ruleEdge.label().isBinary()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The operator of this condition. */
@@ -664,6 +704,14 @@ public class Condition implements Fixable {
     static public final Condition True = new Condition("true", Op.TRUE);
     /** Constant condition that is never satisfied. */
     static public final Condition False = new Condition("false", Op.FALSE);
+    static {
+        try {
+            True.setFixed();
+            False.setFixed();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+    }
 
     /** Constructs a disjunctive condition for a non-empty list of operands. */
     static public final Condition newOr(Condition... operands) {

@@ -188,52 +188,48 @@ public class PlanSearchEngine extends SearchEngine {
             }
         }
 
-        /**
-         * Creates and returns a search plan on the basis of the given data.
-         * @param seed the pre-matched subgraph; non-{@code null}
-         */
-        public SearchPlan getPlan(Anchor seed) {
+        private void testUsed() {
             if (this.used) {
                 throw new IllegalStateException(
                     "Method getPlan() was already called");
             } else {
                 this.used = true;
             }
-            boolean injective =
-                this.condition.getSystemProperties().isInjective();
-            if (this.searchMode == SearchMode.MINIMAL
-                || this.searchMode == SearchMode.REGEXPR) {
-                // We don't want injectivity in these modes.
-                injective = false;
-            } else if (this.searchMode == SearchMode.REVERSE) {
-                // We always want injectivity in this mode.
-                injective = true;
+        }
+
+        private boolean getInjectivity() {
+            switch (this.searchMode) {
+            case MINIMAL:
+            case REGEXPR:
+                return false;
+            case REVERSE:
+                return true;
+            case NORMAL:
+                return this.condition.getSystemProperties().isInjective();
+            default:
+                assert false;
+                return false;
             }
+        }
+
+        /**
+         * Creates and returns a search plan on the basis of the given data.
+         * @param seed the pre-matched subgraph; non-{@code null}
+         */
+        public SearchPlan getPlan(Anchor seed) {
+            testUsed();
+            boolean injective = getInjectivity();
             SearchPlan result = new SearchPlan(this.condition, seed, injective);
             Collection<AbstractSearchItem> items = computeSearchItems(seed);
             while (!items.isEmpty()) {
                 AbstractSearchItem bestItem = Collections.max(items, this);
-                // check if the item is compatible with the search mode
-                boolean include;
-                switch (this.searchMode) {
-                case MINIMAL:
-                    include = bestItem.isMinimal();
-                    break;
-                case REGEXPR:
-                    include = (bestItem instanceof RegExprEdgeSearchItem);
-                    break;
-                default:
-                    include = true;
-                }
-                if (include) {
-                    result.add(bestItem);
-                    this.remainingEdges.removeAll(bestItem.bindsEdges());
-                    this.remainingNodes.removeAll(bestItem.bindsNodes());
-                    this.remainingVars.removeAll(bestItem.bindsVars());
-                    // notify the observing comparators of the change
-                    setChanged();
-                    notifyObservers(bestItem);
-                }
+                result.add(bestItem);
+                this.remainingEdges.removeAll(bestItem.bindsEdges());
+                this.remainingNodes.removeAll(bestItem.bindsNodes());
+                this.remainingVars.removeAll(bestItem.bindsVars());
+                // notify the observing comparators of the change
+                setChanged();
+                notifyObservers(bestItem);
                 items.remove(bestItem);
             }
             return result;
@@ -261,45 +257,25 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the pre-matched subgraph
          */
-        Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
+        private Collection<AbstractSearchItem> computeSearchItems(Anchor seed) {
             Collection<AbstractSearchItem> result =
                 new ArrayList<AbstractSearchItem>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
             }
             for (Condition subCondition : this.condition.getSubConditions()) {
-                AbstractSearchItem item;
-                if (subCondition instanceof EdgeEmbargo) {
-                    RuleEdge embargoEdge =
-                        ((EdgeEmbargo) subCondition).getEmbargoEdge();
-                    if (embargoEdge.label().isEmpty()) {
-                        if (this.condition.getSystemProperties().isInjective()) {
-                            item = null;
-                        } else {
-                            item =
-                                createEqualitySearchItem(embargoEdge.source(),
-                                    embargoEdge.target(), false);
-                        }
+                AbstractSearchItem item = null;
+                if (subCondition.isCompatible(this.searchMode)) {
+                    if (subCondition instanceof EdgeEmbargo) {
+                        item =
+                            createEdgeEmbargoItem((EdgeEmbargo) subCondition);
                     } else {
-                        AbstractSearchItem edgeSearchItem =
-                            createEdgeSearchItem(embargoEdge);
-                        if (this.searchMode == SearchMode.REVERSE
-                            && !embargoEdge.source().equals(
-                                embargoEdge.target())) {
-                            // EZ says: we are in reverse mode and we are not
-                            // with a loop embargo. Then we have to search this
-                            // edge positively.
-                            item = edgeSearchItem;
-                        } else {
-                            item = createNegatedSearchItem(edgeSearchItem);
-                        }
+                        item = new ConditionSearchItem(subCondition);
                     }
                 } else {
                     if (this.searchMode == SearchMode.REVERSE
-                        && subCondition.getOp() == Op.NOT) {
+                        && subCondition.isReversable()) {
                         item = new ConditionSearchItem(subCondition.reverse());
-                    } else {
-                        item = new ConditionSearchItem(subCondition);
                     }
                 }
                 if (item != null) {
@@ -307,6 +283,25 @@ public class PlanSearchEngine extends SearchEngine {
                 }
             }
             return result;
+        }
+
+        /** Returned item may be null. */
+        private AbstractSearchItem createEdgeEmbargoItem(
+                EdgeEmbargo subCondition) {
+            AbstractSearchItem item = null;
+            RuleEdge embargoEdge = subCondition.getEmbargoEdge();
+            if (!embargoEdge.label().isEmpty()) {
+                AbstractSearchItem edgeSearchItem =
+                    createEdgeSearchItem(embargoEdge);
+                item = createNegatedSearchItem(edgeSearchItem);
+            } else {
+                if (!this.condition.getSystemProperties().isInjective()) {
+                    item =
+                        createEqualitySearchItem(embargoEdge.source(),
+                            embargoEdge.target(), false);
+                }
+            }
+            return item;
         }
 
         /**

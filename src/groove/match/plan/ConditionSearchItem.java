@@ -116,22 +116,6 @@ class ConditionSearchItem extends AbstractSearchItem {
         return true;
     }
 
-    @Override
-    // EZ says: When in minimal search mode we don't want all negated search
-    // items. We have to check if the pattern has binary edges.
-    public boolean isMinimal() {
-        boolean result = true;
-        if (this.condition.getOp() == Condition.Op.NOT) {
-            for (RuleEdge edge : this.condition.getPattern().edgeSet()) {
-                if (edge.label().isBinary()) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
     public void activate(PlanSearchStrategy strategy) {
         if (this.condition.getOp() != Condition.Op.NOT) {
             this.condIx = strategy.getCondIx(this.condition);
