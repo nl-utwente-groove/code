@@ -205,7 +205,7 @@ public class PlanSearchEngine extends SearchEngine {
             case REVERSE:
                 return true;
             case NORMAL:
-                return this.condition.getSystemProperties().isInjective();
+                return this.condition.isInjective();
             default:
                 assert false;
                 return false;
@@ -295,7 +295,7 @@ public class PlanSearchEngine extends SearchEngine {
                     createEdgeSearchItem(embargoEdge);
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
-                if (!this.condition.getSystemProperties().isInjective()) {
+                if (!this.condition.isInjective()) {
                     item =
                         createEqualitySearchItem(embargoEdge.source(),
                             embargoEdge.target(), false);
