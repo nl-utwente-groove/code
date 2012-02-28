@@ -267,6 +267,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         // keep maps from automaton nodes to all vars and bound vars
         Map<RegNode,Set<LabelVar>> allVarMap =
             new HashMap<RegNode,Set<LabelVar>>();
+        allVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
             RegNode source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
