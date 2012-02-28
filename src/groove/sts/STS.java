@@ -9,6 +9,7 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.lts.MatchResult;
 import groove.trans.AnchorKey;
+import groove.trans.Condition;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
@@ -19,6 +20,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -236,6 +238,84 @@ public abstract class STS {
     }
 
     /**
+     * Strip the given rule.
+     */
+    public Rule stripRule(Rule rule) {
+        RuleGraph newLhs = rule.lhs().clone();
+        RuleGraph newRhs = rule.rhs().clone();
+        // create new condition
+        Condition con = rule.getCondition();
+        Condition newCondition =
+            new Condition(con.getName() + " -stripped", con.getOp(), newLhs,
+                con.getRoot(), con.getSystemProperties());
+        Rule newRule = new Rule(newCondition, newRhs, rule.getRuleProperties());
+        // create new lhs
+        List<RuleNode> toRemove = new ArrayList<RuleNode>();
+        List<RuleEdge> toRemoveEdges = new ArrayList<RuleEdge>();
+        for (RuleNode node : newLhs.nodeSet()) {
+            if (node instanceof OperatorNode) {
+                toRemove.add(node);
+            } else if (node instanceof VariableNode) {
+                for (RuleEdge e : newLhs.inEdgeSet(node)) {
+                    if (isBooleanEdge(e)) {
+                        toRemoveEdges.add(e);
+                    } else if (!newRhs.containsEdge(e)) {
+                        newRhs.addEdge(e);
+                    }
+                }
+            }
+        }
+        for (RuleNode node : toRemove) {
+            newLhs.removeNode(node);
+        }
+        for (RuleEdge edge : toRemoveEdges) {
+            newLhs.removeEdge(edge);
+        }
+
+        //create new rhs
+        toRemoveEdges.clear();
+        for (RuleEdge edge : newRhs.edgeSet()) {
+            if (edge.target() instanceof VariableNode
+                && !newLhs.containsEdge(edge)) {
+                System.out.println("remove: " + edge);
+                toRemoveEdges.add(edge);
+            }
+        }
+        for (RuleEdge edge : toRemoveEdges) {
+            newRhs.removeEdge(edge);
+        }
+        // Clean up unreferenced variable nodes
+        toRemove.clear();
+        for (RuleNode node : newLhs.nodeSet()) {
+            if (node instanceof VariableNode
+                && newLhs.inEdgeSet(node).isEmpty()) {
+                toRemove.add(node);
+            }
+        }
+        for (RuleNode node : toRemove) {
+            newLhs.removeNode(node);
+        }
+        toRemove.clear();
+        for (RuleNode node : newRhs.nodeSet()) {
+            if (node instanceof VariableNode
+                && newRhs.inEdgeSet(node).isEmpty()) {
+                toRemove.add(node);
+            }
+        }
+        for (RuleNode node : toRemove) {
+            newRhs.removeNode(node);
+        }
+        // Fix the rule and return it.
+        try {
+            newRule.setFixed();
+        } catch (FormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return newRule;
+    }
+
+    /**
      * Creates a JSON formatted string based on this STS.
      * The format is: {start: "label start location", lVars:
      * {<location variable>}, relations: [<switch relation>], gates: {<gate>},
@@ -442,7 +522,7 @@ public abstract class STS {
 
         List<String> result = new ArrayList<String>();
         for (RuleEdge e : pattern.inEdgeSet(variableResult)) {
-            if (e.getType() == null) {
+            if (isBooleanEdge(e)) {
                 String expr =
                     parseExpression(rule, pattern, e.source(), iVarMap, lVarMap);
                 result.add(" " + getOperator(e.label().text()) + " " + expr);
@@ -472,8 +552,6 @@ public abstract class STS {
         // Check if the expression is a known interaction variable
         InteractionVariable iVar = iVarMap.get(variableResult);
         if (iVar != null) {
-            System.out.println(iVar.getLabel() + ": "
-                + variableResult.getNumber());
             return iVar.getLabel();
         }
         // Check if the expression is a known location variable
@@ -552,6 +630,15 @@ public abstract class STS {
         } else {
             return operator;
         }
+    }
+
+    /**
+     * Tests if the edge is a boolean (= or !=) edge.
+     * @param edge The edge to test.
+     * @return Whether the edge is a boolean edge or not.
+     */
+    protected boolean isBooleanEdge(RuleEdge edge) {
+        return edge.getType() == null;
     }
 
     // *****************
