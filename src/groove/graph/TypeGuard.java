@@ -150,6 +150,62 @@ public class TypeGuard extends Property<TypeElement> {
         return result;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.kind.hashCode();
+        result =
+            prime * result
+                + ((this.labelSet == null) ? 0 : this.labelSet.hashCode());
+        result = prime * result + (this.negated ? 1231 : 1237);
+        result =
+            prime * result
+                + ((this.textList == null) ? 0 : this.textList.hashCode());
+        result =
+            prime * result + ((this.var == null) ? 0 : this.var.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof TypeGuard)) {
+            return false;
+        }
+        TypeGuard other = (TypeGuard) obj;
+        if (this.kind != other.kind) {
+            return false;
+        }
+        if (this.labelSet == null) {
+            if (other.labelSet != null) {
+                return false;
+            }
+        } else if (!this.labelSet.equals(other.labelSet)) {
+            return false;
+        }
+        if (this.negated != other.negated) {
+            return false;
+        }
+        if (this.textList == null) {
+            if (other.textList != null) {
+                return false;
+            }
+        } else if (!this.textList.equals(other.textList)) {
+            return false;
+        }
+        if (this.var == null) {
+            if (other.var != null) {
+                return false;
+            }
+        } else if (!this.var.equals(other.var)) {
+            return false;
+        }
+        return true;
+    }
+
     /** The optional label variable associated with the constraint. */
     private final LabelVar var;
     /** The type of label we are testing for. See {@link Label#getRole()} */

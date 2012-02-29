@@ -17,8 +17,9 @@
 package groove.rel;
 
 import static groove.rel.Direction.FORWARD;
-import groove.graph.TypeElement;
 import groove.graph.TypeGuard;
+import groove.graph.TypeLabel;
+import groove.util.Duo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,12 +33,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class NormalAutomaton {
+/**
+ * Deterministic automaton optimised towards matching.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public class NormalAutomaton {
+    /** Creates an automaton with a start state constructed from a given set of regular nodes. */
     public NormalAutomaton(Set<RegNode> startNodes, boolean isFinal) {
         this.startState = new NormalState(0, startNodes, true, isFinal);
         this.stateMap.put(startNodes, this.startState);
     }
 
+    /** Creates an automaton with a start state corresponding to a given regular node. */
     public NormalAutomaton(RegNode startNode, boolean isFinal) {
         this(Collections.singleton(startNode), isFinal);
     }
@@ -66,10 +74,12 @@ class NormalAutomaton {
         return this.startState;
     }
 
+    /** Adds a label guard to this automaton. */
     public void addLabelGuard(TypeGuard guard) {
         this.guardList.add(guard);
     }
 
+    /** Returns the set of label guards associated with this automaton. */
     public List<TypeGuard> getLabelGuards() {
         return this.guardList;
     }
@@ -88,7 +98,7 @@ class NormalAutomaton {
         for (NormalState state : getStates()) {
             result.append(String.format("%s%n", state));
             for (Direction dir : Direction.all) {
-                for (Map.Entry<TypeElement,NormalState> labelEntry : state.getLabelMap().get(
+                for (Map.Entry<TypeLabel,NormalState> labelEntry : state.getLabelMap().get(
                     dir).entrySet()) {
                     result.append(dir == FORWARD ? "   " : "  -");
                     result.append(labelEntry.getKey());
@@ -107,6 +117,85 @@ class NormalAutomaton {
             }
         }
         return result.toString();
+    }
+
+    /** Tests if this automaton is isomorphic with another. */
+    public boolean isEquivalent(NormalAutomaton other) {
+        if (!getLabelGuards().equals(other.getLabelGuards())) {
+            return false;
+        }
+        if (getStates().size() != other.getStates().size()) {
+            return false;
+        }
+        boolean result = true;
+        Map<NormalState,NormalState> isoMap =
+            new HashMap<NormalState,NormalState>();
+        Set<Duo<NormalState>> newPairs = new HashSet<Duo<NormalState>>();
+        isoMap.put(getStartState(), other.getStartState());
+        newPairs.add(Duo.newDuo(getStartState(), other.getStartState()));
+        do {
+            Iterator<Duo<NormalState>> newIter = newPairs.iterator();
+            Duo<NormalState> current = newIter.next();
+            newIter.remove();
+            Set<Duo<NormalState>> targetPairs = compareStates(current);
+            if (targetPairs == null) {
+                result = false;
+            } else {
+                for (Duo<NormalState> pair : targetPairs) {
+                    NormalState old = isoMap.put(pair.one(), pair.two());
+                    if (old == null) {
+                        newPairs.add(pair);
+                    } else {
+                        result = old == pair.two();
+                    }
+                }
+            }
+        } while (result && !newPairs.isEmpty());
+        return result;
+    }
+
+    /**
+     * Compares two normal states.
+     * Returns a set of target state pairs reachable by following equi-labelled
+     * transitions, or {@code null} if there is no one-to-one correspondence 
+     * between the transitions.
+     */
+    private Set<Duo<NormalState>> compareStates(Duo<NormalState> statePair) {
+        Set<Duo<NormalState>> result = new HashSet<Duo<NormalState>>();
+        NormalState one = statePair.one();
+        NormalState two = statePair.two();
+        if (one.isFinal() != two.isFinal()) {
+            return null;
+        }
+        for (Direction dir : Direction.all) {
+            Map<TypeLabel,NormalState> oneLabelMap = one.getLabelMap().get(dir);
+            Map<TypeLabel,NormalState> twoLabelMap = two.getLabelMap().get(dir);
+            if (oneLabelMap.size() != twoLabelMap.size()) {
+                return null;
+            }
+            for (Map.Entry<TypeLabel,NormalState> oneEntry : oneLabelMap.entrySet()) {
+                TypeLabel key = oneEntry.getKey();
+                NormalState twoTarget = twoLabelMap.get(key);
+                if (twoTarget == null) {
+                    return null;
+                }
+                result.add(Duo.newDuo(oneEntry.getValue(), twoTarget));
+            }
+            Map<LabelVar,NormalState> oneVarMap = one.getVarMap().get(dir);
+            Map<LabelVar,NormalState> twoVarMap = two.getVarMap().get(dir);
+            if (oneVarMap.size() != twoVarMap.size()) {
+                return null;
+            }
+            for (Map.Entry<LabelVar,NormalState> oneEntry : oneVarMap.entrySet()) {
+                LabelVar key = oneEntry.getKey();
+                NormalState twoTarget = twoVarMap.get(key);
+                if (twoTarget == null) {
+                    return null;
+                }
+                result.add(Duo.newDuo(oneEntry.getValue(), twoTarget));
+            }
+        }
+        return result;
     }
 
     /** 
@@ -247,7 +336,7 @@ class NormalAutomaton {
             NormalState oldState = newStateEntry.getKey().iterator().next();
             NormalState newState = newStateEntry.getValue();
             for (Direction dir : Direction.all) {
-                for (Map.Entry<TypeElement,NormalState> entry : oldState.getLabelMap().get(
+                for (Map.Entry<TypeLabel,NormalState> entry : oldState.getLabelMap().get(
                     dir).entrySet()) {
                     NormalState newSucc =
                         newStateMap.get(partition.get(entry.getValue()));
