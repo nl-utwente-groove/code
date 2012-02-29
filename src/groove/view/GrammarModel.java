@@ -27,6 +27,7 @@ import groove.explore.Exploration;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.io.store.SystemStore;
@@ -40,6 +41,7 @@ import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
+import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -839,8 +841,8 @@ public class GrammarModel implements Observer {
         // Sort the names.
         TreeSet<String> names = new TreeSet<String>(unsortedNames);
 
-        // Get the graphs, and compute their layout boundaries.
-        List<AspectGraph> graphs = new ArrayList<AspectGraph>();
+        // Get the host models, and compute their layout boundaries.
+        List<HostModel> hostModels = new ArrayList<HostModel>();
         List<Point.Double> dimensions = new ArrayList<Point.Double>();
         double globalMaxX = 0;
         double globalMaxY = 0;
@@ -857,7 +859,9 @@ public class GrammarModel implements Observer {
                 this.errors.add(new FormatError(msg, model.getSource()));
                 continue;
             }
-            AspectGraph graph = (AspectGraph) model.getSource();
+            HostModel hostModel = (HostModel) model;
+            hostModels.add(hostModel);
+            AspectGraph graph = hostModel.getSource();
             if (nr_names < 2) {
                 continue; // don't compute layout if 0 or 1 graphs are enabled
             }
@@ -877,7 +881,6 @@ public class GrammarModel implements Observer {
             dimensions.add(new Point.Double(maxX, maxY));
             globalMaxX = Math.max(globalMaxX, maxX);
             globalMaxY = Math.max(globalMaxY, maxY);
-            graphs.add(graph);
         }
 
         // Do not combine if errors exist, or only 0 or 1 graphs are enabled.
@@ -885,8 +888,7 @@ public class GrammarModel implements Observer {
             return null;
         }
         if (nr_names == 1) {
-            return (HostModel) getResource(ResourceKind.HOST,
-                names.iterator().next());
+            return hostModels.iterator().next();
         }
 
         // Create the combined graph.
@@ -909,16 +911,31 @@ public class GrammarModel implements Observer {
         double offsetY = 0;
         Map<AspectNode,AspectNode> nodeMap =
             new HashMap<AspectNode,AspectNode>();
+        Map<Pair<String,TypeNode>,AspectNode> sharedNodes =
+            new HashMap<Pair<String,TypeNode>,AspectNode>();
 
         // Copy the graphs one by one into the combined graph.
-        for (AspectGraph graph : graphs) {
+        for (HostModel hostModel : hostModels) {
+            AspectGraph graph = hostModel.getSource();
             nodeMap.clear();
             // Copy the nodes.
             for (AspectNode node : graph.nodeSet()) {
+                AspectNode fresh;
                 if (node.getId() != null) {
-                    System.err.println("ID:" + node.getId().getContentString());
+                    Pair<String,TypeNode> sharedID =
+                        new Pair<String,TypeNode>(
+                            node.getId().getContentString(),
+                            hostModel.getTypeMap().nodeMap().get(node));
+                    if (sharedNodes.containsKey(sharedID)) {
+                        nodeMap.put(node, sharedNodes.get(sharedID));
+                        continue;
+                    } else {
+                        fresh = node.clone(nodeNr++);
+                        sharedNodes.put(sharedID, fresh);
+                    }
+                } else {
+                    fresh = node.clone(nodeNr++);
                 }
-                AspectNode fresh = node.clone(nodeNr++);
                 layoutMap.copyNodeWithOffset(fresh, node,
                     graph.getInfo().getLayoutMap(), offsetX, offsetY);
                 nodeMap.put(node, fresh);
