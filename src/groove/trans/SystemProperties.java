@@ -297,7 +297,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         if (graphs == null) {
             return null;
         } else if ("".equals(graphs)) {
-            return Collections.emptySet();
+            return new HashSet<String>();
         } else {
             return new HashSet<String>(Arrays.asList(graphs.split("\\s")));
         }

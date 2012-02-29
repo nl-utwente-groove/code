@@ -165,11 +165,7 @@ public class SimulatorModel implements Cloneable {
             getStore().putProperties(newProperties);
             break;
         case HOST:
-            if (names.size() == 1 && getGrammar().isStartGraphName(name)) {
-                getGrammar().updateStartGraphNames(Manipulation.REMOVE, names);
-            } else {
-                getGrammar().setStartGraphNames(names);
-            }
+            getGrammar().updateStartGraphNames(Manipulation.TOGGLE, names);
             break;
         case RULE:
             Collection<AspectGraph> newRules =
@@ -756,6 +752,7 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeExploration();
+            grammar.recomputeStartGraph();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar

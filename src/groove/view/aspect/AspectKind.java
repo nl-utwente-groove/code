@@ -986,7 +986,8 @@ public enum AspectKind {
             switch (role) {
             case HOST:
                 nodeKinds =
-                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR);
+                    EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING, COLOR,
+                        ID);
                 edgeKinds = EnumSet.of(DEFAULT, REMARK, LITERAL, LET);
                 break;
             case RULE:
