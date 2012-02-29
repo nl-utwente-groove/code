@@ -264,6 +264,14 @@ public class GrammarModel implements Observer {
         return Collections.unmodifiableSet(this.startGraphNames);
     }
 
+    /** Forces the start graph to be computed. */
+    public void recomputeStartGraph() {
+        this.startGraphModel = null;
+        this.startGraphNames.clear();
+        this.startGraphNames.addAll(getProperties().getStartGraphNames());
+        invalidate();
+    }
+
     /** 
      * Sets the currently enabled start graphs. The change is propagated to
      * the system store, and can therefore result in an {@link IOException}.
@@ -355,8 +363,7 @@ public class GrammarModel implements Observer {
 
     public HostModel getStartGraphModel() {
         if (this.startGraphModel == null && !this.startGraphNames.isEmpty()) {
-            this.startGraphModel =
-                new HostModel(this, combineGraphs(this.startGraphNames));
+            this.startGraphModel = combineGraphs(this.startGraphNames);
         }
         return this.startGraphModel;
     }
@@ -822,14 +829,11 @@ public class GrammarModel implements Observer {
     /**
      * Computes the union of multiple selected start graphs.
      */
-    private AspectGraph combineGraphs(Set<String> unsortedNames) {
+    private HostModel combineGraphs(Set<String> unsortedNames) {
 
-        // Optimize for 0 and 1 names.
-        if (unsortedNames.size() == 0) {
+        // Do not compute if errors exist in grammar.
+        if (hasErrors()) {
             return null;
-        } else if (unsortedNames.size() == 1) {
-            String name = unsortedNames.iterator().next();
-            return (AspectGraph) getResource(ResourceKind.HOST, name).getSource();
         }
 
         // Sort the names.
@@ -840,14 +844,23 @@ public class GrammarModel implements Observer {
         List<Point.Double> dimensions = new ArrayList<Point.Double>();
         double globalMaxX = 0;
         double globalMaxY = 0;
+        int nr_names = names.size();
         for (String name : names) {
             ResourceModel<?> model = getResource(ResourceKind.HOST, name);
             if (model == null) {
-                System.out.println("Warning: cannot find start graph '" + name
-                    + "'. Ignoring it.");
+                String msg = "Start graph '" + name + "' does not exist.";
+                this.errors.add(new FormatError(msg));
+                continue;
+            }
+            if (model.hasErrors()) {
+                String msg = "Start graph '" + name + "' has errors.";
+                this.errors.add(new FormatError(msg, model.getSource()));
                 continue;
             }
             AspectGraph graph = (AspectGraph) model.getSource();
+            if (nr_names < 2) {
+                continue; // don't compute layout if 0 or 1 graphs are enabled
+            }
             LayoutMap<AspectNode,AspectEdge> layoutMap =
                 graph.getInfo().getLayoutMap();
             double maxX = 0;
@@ -865,6 +878,15 @@ public class GrammarModel implements Observer {
             globalMaxX = Math.max(globalMaxX, maxX);
             globalMaxY = Math.max(globalMaxY, maxY);
             graphs.add(graph);
+        }
+
+        // Do not combine if errors exist, or only 0 or 1 graphs are enabled.
+        if (hasErrors() || nr_names == 0) {
+            return null;
+        }
+        if (nr_names == 1) {
+            return (HostModel) getResource(ResourceKind.HOST,
+                names.iterator().next());
         }
 
         // Create the combined graph.
@@ -920,7 +942,7 @@ public class GrammarModel implements Observer {
         // Finalize combined graph.
         GraphInfo.setLayoutMap(combined, layoutMap);
         combined.setFixed();
-        return combined;
+        return new HostModel(this, combined);
     }
 
     // ========================================================================
