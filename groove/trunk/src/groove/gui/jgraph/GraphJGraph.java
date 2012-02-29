@@ -1186,6 +1186,16 @@ public class GraphJGraph extends org.jgraph.JGraph {
         getModel().edit(change, null, null, null);
     }
 
+    /** Sets the layouting flag to the given value. */
+    public void setLayouting(boolean layouting) {
+        this.layouting = layouting;
+    }
+
+    /** Returns the layouting status of this jGraph. */
+    public boolean isLayouting() {
+        return this.layouting;
+    }
+
     private Map<JGraphMode,Action> modeActionMap;
 
     private Map<JGraphMode,JToggleButton> modeButtonMap;
@@ -1196,6 +1206,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Options options;
     /** Flag indicating if the JGraph is filtering labels. */
     private final boolean filtering;
+    /** Flag indicating if the JGraph is being layouted. */
+    private boolean layouting;
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
     private CancelEditListener cancelListener;
