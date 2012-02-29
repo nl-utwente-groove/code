@@ -90,6 +90,9 @@ public class EdgeEmbargo extends Condition {
         case MINIMAL:
             return !edgeLabel().isBinary();
         case REVERSE:
+            // EZ says: here we always return false because either the embargo
+            // is going to be discarded (if it was checked in minimal mode) or
+            // it is going to be reversed.
             return false;
         default:
             assert false;

@@ -610,7 +610,6 @@ public class Condition implements Fixable {
         Condition result =
             new Condition(getName(), Op.FORALL, getPattern(), getRoot(),
                 getSystemProperties());
-        result.setPositive();
         result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());
@@ -642,7 +641,21 @@ public class Condition implements Fixable {
         case MINIMAL:
             return !(isNot() && hasBinaryEdges());
         case REVERSE:
-            return false;
+            if (!isNot()) {
+                // EZ says: current abstraction implementation does not support
+                // rules with multiple levels. Therefore, if this point in the
+                // code is reached it is due to artificial FORALL level that is
+                // introduced when we reverse a NAC. This handles the True
+                // sub-condition.
+                assert getOp() == Op.TRUE;
+                return true;
+            } else { // isNot()
+                // EZ says: there are two possibilities for this condition.
+                // Either it will be discarded (because it was already handled
+                // in the minimal mode) or it will be reversed. In any case we
+                // set it to incompatible at this point.
+                return false;
+            }
         default:
             assert false;
             return false;
