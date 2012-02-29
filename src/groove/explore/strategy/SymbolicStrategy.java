@@ -25,11 +25,8 @@ import groove.sts.Location;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
-import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.view.FormatException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,7 +37,7 @@ import java.util.Map;
  */
 public class SymbolicStrategy extends AbstractStrategy {
 
-    private DFSStrategy dfsStrategy;
+    private BFSStrategy bfsStrategy;
     private STS sts;
     private Map<Rule,Rule> strippedRules;
 
@@ -48,36 +45,12 @@ public class SymbolicStrategy extends AbstractStrategy {
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
 
-        // Initiate the Depth-First strategy
-        this.dfsStrategy = new DFSStrategy();
-        this.dfsStrategy.prepare(gts, startState);
-
         this.sts = new CompleteSTS();
         this.sts.hostGraphToStartLocation(startState.getGraph());
 
-        GraphGrammar g =
-            new GraphGrammar(gts.getGrammar().getName() + " -stripped");
-        g.setStartGraph(gts.startState().getGraph());
-
-        // strip all rules
-        this.strippedRules = new HashMap<Rule,Rule>();
-        for (Rule rule : gts.getGrammar().getAllRules()) {
-            Rule r = this.sts.stripRule(rule);
-            System.out.println(r);
-            System.out.println("");
-            System.out.println(r.lhs());
-            System.out.println("");
-            System.out.println(r.rhs());
-            System.out.println("");
-            this.strippedRules.put(rule, r);
-            g.add(r);
-        }
-        try {
-            g.setFixed();
-        } catch (FormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // Initiate the Breadth-First strategy
+        this.bfsStrategy = new BFSStrategy();
+        this.bfsStrategy.prepare(gts, gts.startState());
     }
 
     @Override
@@ -121,11 +94,11 @@ public class SymbolicStrategy extends AbstractStrategy {
     @Override
     protected GraphState getNextState() {
         GraphState state = null;
-        // Use the DfsStrategy to decide on the next state.
-        state = this.dfsStrategy.getNextState();
-        if (state != null) {
+        // Use the BfsStrategy to decide on the next state.
+        state = this.bfsStrategy.getNextState();
+        /*if (state != null) {
             this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
-        }
+        }*/
         return state;
     }
 
