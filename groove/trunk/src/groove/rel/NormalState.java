@@ -16,7 +16,7 @@
  */
 package groove.rel;
 
-import groove.graph.TypeElement;
+import groove.graph.TypeLabel;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -27,14 +27,15 @@ import java.util.Set;
 /**
  * State of a normalised finite automaton.
  */
-class NormalState {
+public class NormalState {
     NormalState(int number, Set<RegNode> nodes, boolean initial, boolean isFinal) {
         this.number = number;
         this.nodes = new HashSet<RegNode>(nodes);
         this.initial = initial;
         this.isFinal = isFinal;
         for (Direction dir : Direction.all) {
-            this.labelSuccMap.put(dir, new HashMap<TypeElement,NormalState>());
+            this.labelSuccMap.put(dir, new HashMap<TypeLabel,NormalState>());
+            this.varSuccMap.put(dir, new HashMap<LabelVar,NormalState>());
         }
     }
 
@@ -54,7 +55,7 @@ class NormalState {
     }
 
     /** Adds an outgoing labelled transition to another state. */
-    public void addSuccessor(Direction dir, TypeElement label, NormalState succ) {
+    public void addSuccessor(Direction dir, TypeLabel label, NormalState succ) {
         NormalState oldSucc = this.labelSuccMap.get(dir).put(label, succ);
         assert oldSucc == null : "Overrides existing transition to " + oldSucc;
     }
@@ -71,7 +72,7 @@ class NormalState {
     }
 
     /** Returns the label successor map of this state. */
-    public Map<Direction,Map<TypeElement,NormalState>> getLabelMap() {
+    public Map<Direction,Map<TypeLabel,NormalState>> getLabelMap() {
         return this.labelSuccMap;
     }
 
@@ -93,8 +94,8 @@ class NormalState {
     /** The set of nodes corresponding to an automaton state. */
     private final Set<RegNode> nodes;
     /** Mapping per direction from outgoing labels to successors states. */
-    private final Map<Direction,Map<TypeElement,NormalState>> labelSuccMap =
-        new EnumMap<Direction,Map<TypeElement,NormalState>>(Direction.class);
+    private final Map<Direction,Map<TypeLabel,NormalState>> labelSuccMap =
+        new EnumMap<Direction,Map<TypeLabel,NormalState>>(Direction.class);
     /** Mapping per direction from outgoing variables to successors states. */
     private final Map<Direction,Map<LabelVar,NormalState>> varSuccMap =
         new EnumMap<Direction,Map<LabelVar,NormalState>>(Direction.class);

@@ -111,11 +111,12 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         super.setFixed();
         // when the graph is fixed, we can initialise the auxiliary structures.
         for (Direction dir : Direction.all) {
-            this.normalAuts.put(dir, normalise(dir));
+            this.normalAuts.put(dir, createNormalAutomaton(dir));
         }
     }
 
-    private NormalAutomaton normalise(Direction dir) {
+    /** Creates a normalised automaton for exploration in a given direction. */
+    private NormalAutomaton createNormalAutomaton(Direction dir) {
         NormalAutomaton result =
             new NormalAutomaton(dir == FORWARD ? getStartNode() : getEndNode(),
                 isAcceptsEmptyWord());
@@ -127,8 +128,8 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             NormalState current = iter.next();
             iter.remove();
             // mapping from type labels to target nodes, per direction
-            Map<Direction,Map<TypeElement,Set<RegNode>>> labelOutMap =
-                new EnumMap<Direction,Map<TypeElement,Set<RegNode>>>(
+            Map<Direction,Map<TypeLabel,Set<RegNode>>> labelOutMap =
+                new EnumMap<Direction,Map<TypeLabel,Set<RegNode>>>(
                     Direction.class);
             // mapping from label variables to target nodes, per direction
             Map<Direction,Map<LabelVar,Set<RegNode>>> varOutMap =
@@ -136,8 +137,7 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                     Direction.class);
             // initialise the maps
             for (Direction edgeDir : Direction.all) {
-                labelOutMap.put(edgeDir,
-                    new HashMap<TypeElement,Set<RegNode>>());
+                labelOutMap.put(edgeDir, new HashMap<TypeLabel,Set<RegNode>>());
                 varOutMap.put(edgeDir, new HashMap<LabelVar,Set<RegNode>>());
             }
             // collect the transitions of all nodes contained in the state
@@ -152,7 +152,7 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                     if (var != null) {
                         addToImages(varOutMap.get(normalisedDir), var, opposite);
                     } else {
-                        for (TypeElement label : this.typeGraph.getMatches(edgeLabel)) {
+                        for (TypeLabel label : getMatchingLabels(edgeLabel)) {
                             addToImages(labelOutMap.get(normalisedDir), label,
                                 opposite);
                         }
@@ -170,7 +170,7 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                     }
                     current.addSuccessor(edgeDir, varEntry.getKey(), target);
                 }
-                for (Map.Entry<TypeElement,Set<RegNode>> labelEntry : labelOutMap.get(
+                for (Map.Entry<TypeLabel,Set<RegNode>> labelEntry : labelOutMap.get(
                     edgeDir).entrySet()) {
                     Set<RegNode> image = labelEntry.getValue();
                     NormalState target = result.getState(image);
@@ -183,6 +183,15 @@ public class SimpleAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             }
         } while (!unexplored.isEmpty());
         return result.getMinimised();
+    }
+
+    /** Extracts the type labels from the type elements matching a given rule label. */
+    private Set<TypeLabel> getMatchingLabels(RuleLabel label) {
+        Set<TypeLabel> result = new HashSet<TypeLabel>();
+        for (TypeElement type : this.typeGraph.getMatches(label)) {
+            result.add(type.label());
+        }
+        return result;
     }
 
     private NormalState createState(NormalAutomaton result, Set<RegNode> nodes,

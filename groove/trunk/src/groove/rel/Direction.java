@@ -24,7 +24,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-enum Direction {
+public enum Direction {
     /** Explore from start state to final state. */
     FORWARD,
     /** Explore from final state to start state. */

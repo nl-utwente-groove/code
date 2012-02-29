@@ -14,7 +14,7 @@
 /*
  * $Id: AutomatonTest.java,v 1.10 2008-02-05 13:28:27 rensink Exp $
  */
-package groove.test;
+package groove.test.rel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
