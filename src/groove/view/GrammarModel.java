@@ -915,6 +915,9 @@ public class GrammarModel implements Observer {
             nodeMap.clear();
             // Copy the nodes.
             for (AspectNode node : graph.nodeSet()) {
+                if (node.getId() != null) {
+                    System.err.println("ID:" + node.getId().getContentString());
+                }
                 AspectNode fresh = node.clone(nodeNr++);
                 layoutMap.copyNodeWithOffset(fresh, node,
                     graph.getInfo().getLayoutMap(), offsetX, offsetY);
