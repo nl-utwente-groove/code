@@ -63,6 +63,8 @@ public class JEdgeView extends EdgeView {
     /** The editor for all instances of <tt>JEdgeView</tt>. */
     static protected final MultiLinedEditor editor = new MultiLinedEditor();
 
+    private final GraphJGraph jGraph;
+
     /**
      * Apart from constructing a new edge view, adds points to the edge if it is
      * a self-edge or if a straight parallel edge already exists. Queries the
@@ -71,10 +73,7 @@ public class JEdgeView extends EdgeView {
      */
     public JEdgeView(GraphJEdge jEdge, GraphJGraph jGraph) {
         super(jEdge);
-        // first we add points and change the linestyle of the edge
-        // in the model attributes, if the new edge demands it
-        // AttributeMap jEdgeAttr = jEdge.getAttributes();
-        // jEdgeAttr.applyMap(jModel.createJEdgeAttr(jEdge));
+        this.jGraph = jGraph;
     }
 
     @Override
@@ -112,7 +111,7 @@ public class JEdgeView extends EdgeView {
         super.refresh(cache, mapper, createDependentViews);
         // target could be null, if we are dealing with a temporary cache that just
         // contains a mapping for the edge
-        if (this.target != null) {
+        if (this.target != null && !this.jGraph.isLayouting()) {
             if (this.isSelfEdge()) {
                 routeSelfEdge();
             } else if (getPointCount() <= 2) {
