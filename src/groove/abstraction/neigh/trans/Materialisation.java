@@ -481,7 +481,7 @@ public final class Materialisation {
         if (this.hasNACs()) {
             Matcher matcher = ReverseMatcherStore.getMatcher(this.matchedRule);
             TreeMatch nacMatch = matcher.find(this.shape, this.match);
-            if (nacMatch != null) {
+            if (nacMatch != null && !nacMatch.getSubMatches().isEmpty()) {
                 final Shape shape = this.shape;
                 Finder<Proof> finder = Visitor.newFinder(new Property<Proof>() {
                     @Override
