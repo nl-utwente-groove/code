@@ -304,20 +304,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Sets the {@link Key#BIDIRECTIONAL_EDGES} property flag.
-     * @param flag the new value of the flag 
-     */
-    public void setBidirectionalEdges(boolean flag) {
-        setProperty(Key.BIDIRECTIONAL_EDGES, "" + flag);
-    }
-
-    /** Gets the {@link Key#BIDIRECTIONAL_EDGES} property flag. */
-    public boolean getBidirectionalEdges() {
-        String result = getProperty(Key.BIDIRECTIONAL_EDGES);
-        return result == null || Boolean.valueOf(result);
-    }
-
-    /**
      * Sets the type graph names property.
      * @param types the list of type graphs that are in use.
      */
@@ -826,14 +812,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          * Flag that determines if (binary) loops can be shown as vertex labels.
          */
         LOOPS_AS_LABELS("loopsAsLabels", PropertyKind.BOOLEAN,
-                "Flag controlling if binary self-edges may be shown as vertex labels"),
-        /**
-         * Flag that determines if equally named opposite edges should be
-         * displayed as single bidirectional ones.
-         */
-        BIDIRECTIONAL_EDGES("showBidirectionalEdges", PropertyKind.BOOLEAN,
-                "Flag controlling if equally named opposite edges should be"
-                    + "displayed as single bidirectional ones.");
+                "Flag controlling if binary self-edges may be shown as vertex labels");
 
         private Key(String text, String comment) {
             this(text, PropertyKind.TRUE, comment);

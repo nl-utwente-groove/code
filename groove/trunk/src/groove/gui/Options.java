@@ -80,6 +80,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_PARTIAL_GTS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
+        addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addCheckbox(SHOW_LTS_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
@@ -871,6 +872,9 @@ public class Options implements Cloneable {
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
+    /** Show bidirectional edges. */
+    static public final String SHOW_BIDIRECTIONAL_EDGES_OPTION =
+        "Show bidirectional edges";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show lts option */
@@ -920,6 +924,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
         boolOptionDefaults.put(SHOW_LTS_OPTION, true);
+        boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }

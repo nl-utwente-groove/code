@@ -120,6 +120,7 @@ final public class GraphEditorTab extends ResourceTab implements
         }
         setName(graph.getName());
         AspectJModel newModel = getJGraph().newModel();
+        newModel.setBeingEdited(true);
         newModel.loadGraph(graph);
         getJGraph().setModel(newModel);
         newModel.addUndoableEditListener(getUndoManager());

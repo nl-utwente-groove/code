@@ -405,6 +405,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (edge != null && isNodeEdgeIn()) {
             GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
         }
+        if (edge != null && isBidirectional()) {
+            GraphConstants.setLineBegin(result, GraphConstants.ARROW_CLASSIC);
+        }
         if (edge != null) {
             if (edge.getInMult() != null || edge.getOutMult() != null) {
                 String inMult =

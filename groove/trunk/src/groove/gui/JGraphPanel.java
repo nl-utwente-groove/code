@@ -276,7 +276,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * @see #getRefreshListener()
      */
     protected void addRefreshListener(String option) {
-        addOptionListener(option, getRefreshListener());
+        if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
+            addOptionListener(option, new RebuildListener());
+        } else {
+            addOptionListener(option, getRefreshListener());
+        }
     }
 
     /**
@@ -339,6 +343,23 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             record.one().removeItemListener(record.two());
         }
         this.listeners.clear();
+    }
+
+    /**
+     * Rebuilds the underlying {@link GraphJGraph} from its underlying graph,
+     * and then refreshes.
+     */
+    // TODO
+    protected void rebuild() {
+        //        GraphJModel<?,?> model = getJGraph().getModel();
+        //        if (model instanceof AspectJModel) {
+        //            AspectJModel amodel = (AspectJModel) model;
+        //            AspectGraph graph = amodel.getGraph();
+        //            amodel.loadGraph(graph);
+        //        }
+        //        refresh();
+        System.out.println("Warning: automatic refresh of bidirectional edges "
+            + "option does not function properly yet. Please refresh manually.");
     }
 
     /**
@@ -438,6 +459,29 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                 AccessibleState.ENABLED.toDisplayString())) {
                 if (isEnabled()) {
                     refresh();
+                }
+            }
+        }
+    }
+
+    /** 
+     * Special listener for the show bidirectional edges option, for which a
+     * refresh() is not enough, but a rebuild is required.
+     */
+    private class RebuildListener extends RefreshListener {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (isEnabled()) {
+                rebuild();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(
+                AccessibleState.ENABLED.toDisplayString())) {
+                if (isEnabled()) {
+                    rebuild();
                 }
             }
         }
