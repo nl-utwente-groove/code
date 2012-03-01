@@ -41,7 +41,6 @@ import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -85,25 +84,14 @@ public class GrammarModel implements Observer {
         for (ResourceKind resource : ResourceKind.all(false)) {
             syncResource(resource);
         }
+        this.startGraphNames = new HashSet<String>();
         if (altStartGraphName != null) {
-            this.startGraphNames = new HashSet<String>();
             if (getResource(ResourceKind.HOST, altStartGraphName) != null) {
                 // use alternative start graph
                 this.startGraphNames.add(altStartGraphName);
             }
         } else {
-            Set<String> startGraphNames = getProperties().getStartGraphNames();
-            if (startGraphNames != null) {
-                // use start graphs from properties file
-                this.startGraphNames = startGraphNames;
-            } else {
-                // else try to set start graph to the default
-                this.startGraphNames = new HashSet<String>();
-                if (getResource(ResourceKind.HOST,
-                    Groove.DEFAULT_START_GRAPH_NAME) != null) {
-                    this.startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
-                }
-            }
+            recomputeStartGraph(false);
         }
     }
 
@@ -266,12 +254,31 @@ public class GrammarModel implements Observer {
         return Collections.unmodifiableSet(this.startGraphNames);
     }
 
-    /** Forces the start graph to be computed. */
-    public void recomputeStartGraph() {
-        this.startGraphModel = null;
+    /** 
+     * Forces the start graph to be (re-)computed. The boolean flag indicates
+     * whether or not {@link #invalidate} should be called afterwards.
+     */
+    public void recomputeStartGraph(boolean invalidate) {
+        // do nothing if there is an external start graph
+        if (this.externalStartGraph) {
+            return;
+        }
+        // else, reload names from property file
         this.startGraphNames.clear();
-        this.startGraphNames.addAll(getProperties().getStartGraphNames());
-        invalidate();
+        Set<String> startGraphNames = getProperties().getStartGraphNames();
+        if (startGraphNames != null) {
+            // use start graphs from properties file
+            this.startGraphModel = null;
+            this.startGraphNames.addAll(startGraphNames);
+        } else {
+            // else try to set start graph to the default
+            if (getResource(ResourceKind.HOST, Groove.DEFAULT_START_GRAPH_NAME) != null) {
+                this.startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
+            }
+        }
+        if (invalidate) {
+            invalidate();
+        }
     }
 
     /** 
@@ -286,6 +293,7 @@ public class GrammarModel implements Observer {
             getProperties().setStartGraphNames(this.startGraphNames);
             getStore().putProperties(getProperties());
             this.startGraphModel = null;
+            this.externalStartGraph = false;
             invalidate();
         }
     }
@@ -306,6 +314,7 @@ public class GrammarModel implements Observer {
         this.startGraphNames.add(name);
         getProperties().setStartGraphNames(this.startGraphNames);
         this.startGraphModel = null;
+        this.externalStartGraph = false;
         invalidate();
     }
 
@@ -324,6 +333,7 @@ public class GrammarModel implements Observer {
             getProperties().setStartGraphNames(this.startGraphNames);
             getStore().putProperties(getProperties());
             this.startGraphModel = null;
+            this.externalStartGraph = false;
             invalidate();
         }
     }
@@ -338,6 +348,7 @@ public class GrammarModel implements Observer {
             getProperties().setStartGraphNames(this.startGraphNames);
             getStore().putProperties(getProperties());
             this.startGraphModel = null;
+            this.externalStartGraph = false;
             invalidate();
         }
     }
@@ -353,6 +364,7 @@ public class GrammarModel implements Observer {
             getProperties().setStartGraphNames(this.startGraphNames);
             getStore().putProperties(getProperties());
             this.startGraphModel = null;
+            this.externalStartGraph = false;
             invalidate();
         }
     }
@@ -371,9 +383,8 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Sets the start graph to a given graph. This
-     * implies the start graph is not one of the graphs stored in the rule
-     * system; correspondingly, the start graph name is set to <code>null</code>.
+     * Sets the start graph to a given graph. This implies that the start graph
+     * is not one of the graphs stored in the rule system.
      * @param startGraph the new start graph; may not be {@code null}
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
@@ -386,8 +397,7 @@ public class GrammarModel implements Observer {
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraphModel = new HostModel(this, startGraph);
-        this.startGraphNames.clear();
-        getProperties().setStartGraphNames(this.startGraphNames);
+        this.externalStartGraph = true;
         invalidate();
         return this.startGraphModel;
     }
@@ -733,6 +743,8 @@ public class GrammarModel implements Observer {
     private int modificationCount;
     /** The start graph of the grammar. */
     private HostModel startGraphModel;
+    /** Flag to indicate if the start graph is external. */
+    private boolean externalStartGraph = false;
     /** Names of the host graphs that make up the current start graph. */
     private final Set<String> startGraphNames;
     /** Possibly empty list of errors found in the conversion to a grammar. */
@@ -911,8 +923,8 @@ public class GrammarModel implements Observer {
         double offsetY = 0;
         Map<AspectNode,AspectNode> nodeMap =
             new HashMap<AspectNode,AspectNode>();
-        Map<Pair<String,TypeNode>,AspectNode> sharedNodes =
-            new HashMap<Pair<String,TypeNode>,AspectNode>();
+        Map<String,AspectNode> sharedNodes = new HashMap<String,AspectNode>();
+        Map<String,TypeNode> sharedTypes = new HashMap<String,TypeNode>();
 
         // Copy the graphs one by one into the combined graph.
         for (HostModel hostModel : hostModels) {
@@ -922,16 +934,24 @@ public class GrammarModel implements Observer {
             for (AspectNode node : graph.nodeSet()) {
                 AspectNode fresh;
                 if (node.getId() != null) {
-                    Pair<String,TypeNode> sharedID =
-                        new Pair<String,TypeNode>(
-                            node.getId().getContentString(),
-                            hostModel.getTypeMap().nodeMap().get(node));
-                    if (sharedNodes.containsKey(sharedID)) {
-                        nodeMap.put(node, sharedNodes.get(sharedID));
+                    String id = node.getId().getContentString();
+                    TypeNode myType =
+                        hostModel.getTypeMap().nodeMap().get(node);
+                    if (sharedNodes.containsKey(id)) {
+                        if (!sharedTypes.get(id).equals(myType)) {
+                            this.errors.add(new FormatError(
+                                "Cannot merge start graphs: node identity '"
+                                    + id + "' is used with different types ["
+                                    + myType.toString() + " and "
+                                    + sharedTypes.get(id) + "]."));
+                            return null;
+                        }
+                        nodeMap.put(node, sharedNodes.get(id));
                         continue;
                     } else {
                         fresh = node.clone(nodeNr++);
-                        sharedNodes.put(sharedID, fresh);
+                        sharedNodes.put(id, fresh);
+                        sharedTypes.put(id, myType);
                     }
                 } else {
                     fresh = node.clone(nodeNr++);

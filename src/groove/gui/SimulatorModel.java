@@ -752,7 +752,7 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeExploration();
-            grammar.recomputeStartGraph();
+            grammar.recomputeStartGraph(true);
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
