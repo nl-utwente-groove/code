@@ -122,7 +122,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            addEdge(transition);
+            addEdge(transition, false);
             doInsert(false, true);
         }
     }

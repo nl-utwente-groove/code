@@ -376,6 +376,16 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return result.toString();
     }
 
+    /** Sets the bidirectional flag. */
+    public void setBidirectional(boolean flag) {
+        this.bidirectional = flag;
+    }
+
+    /** Gets the bidirectional flag. */
+    public boolean isBidirectional() {
+        return this.bidirectional;
+    }
+
     /** Source node of the underlying graph edges. */
     private Node source;
     /** Target node of the underlying graph edges. */
@@ -389,6 +399,9 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     private final GraphJModel<?,?> jModel;
     private boolean layoutable;
     private boolean grayedOut;
+
+    /** Display this edge as bidirectional. */
+    private boolean bidirectional = false;
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static GraphJEdge getPrototype(GraphJGraph jGraph) {

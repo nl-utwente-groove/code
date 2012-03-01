@@ -24,6 +24,7 @@ import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
+import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.ChangeCount;
@@ -241,6 +242,25 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /**
+     * Enable bidirectional edges to be merged, if the aspect graph is a host
+     * graph, and the grammar property is set to true.
+     */
+    @Override
+    public boolean mergeBidirectionalEdges() {
+        if (this.beingEdited || getGraph().getRole() != GraphRole.HOST) {
+            return false;
+        } else {
+            return this.jVertexProt.getJGraph().getOptionValue(
+                Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+        }
+    }
+
+    /** Change the {@link #beingEdited} flag. */
+    public void setBeingEdited(boolean flag) {
+        this.beingEdited = flag;
+    }
+
+    /**
      * New source is only acceptable if not <tt>null</tt>.
      */
     @Override
@@ -408,6 +428,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     private final ChangeCount jModelModCount = new ChangeCount();
     /** Counter of the modifications to the graph. */
     private final ChangeCount graphModCount = new ChangeCount();
+    /** Flag to indicate if the graph is being edited or not. */
+    private boolean beingEdited = false;
 
     /** The resource model of the graph being edited. */
     private Derived<GraphBasedModel<?>> resource =
