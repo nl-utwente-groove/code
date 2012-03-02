@@ -218,11 +218,14 @@ public class ShapeState extends AbstractGraphState {
      * subsumed states of this state is destroyed during this method call.
      * Returns the number of states that were marked as subsumed.
      */
-    protected int markSubsumedStates() {
+    protected int markSubsumedStates(Collection<ShapeState> result) {
         int markCount = 0;
         for (ShapeState subsumed : this.subsumedStates) {
             if (subsumed.setSubsumptor(this)) {
                 markCount++;
+                if (result != null) {
+                    result.add(subsumed);
+                }
             }
         }
         this.subsumedStates = null;

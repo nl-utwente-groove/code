@@ -118,17 +118,20 @@ public final class ShapeMatchApplier extends MatchApplier {
                 RuleEvent realEvent = pair.two();
                 Shape target = transformedShape.normalise();
 
-                RuleTransition trans;
+                RuleTransition trans = null;
                 ShapeNextState newState =
-                    new ShapeNextState(agts.nodeCount(), target, source,
+                    new ShapeNextState(agts.getNextStateNr(), target, source,
                         realEvent);
                 addStateReporter.start();
                 ShapeState oldState = agts.addState(newState);
                 addStateReporter.stop();
                 if (oldState != null) {
                     // The state was not added as an equivalent state existed.
-                    trans = new ShapeTransition(source, realEvent, oldState);
-                    this.println("New transition: " + trans);
+                    if (!agts.isReachability()) {
+                        trans =
+                            new ShapeTransition(source, realEvent, oldState);
+                        this.println("New transition: " + trans);
+                    }
                 } else {
                     // The state was added as a next-state.
                     trans = newState;
@@ -138,8 +141,10 @@ public final class ShapeMatchApplier extends MatchApplier {
                         ShapePreviewDialog.showShape(newState.getGraph());
                     }
                 }
-                agts.addRuleTransition(trans);
-                result = trans;
+                if (trans != null) {
+                    agts.addRuleTransition(trans);
+                    result = trans;
+                }
             }
         } catch (Throwable e) {
             // Additional code for bug hunting.
