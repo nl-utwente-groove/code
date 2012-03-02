@@ -99,6 +99,11 @@ public final class ShapeMatchApplier extends MatchApplier {
         Shape host = source.getGraph();
         AGTS agts = this.getGTS();
 
+        if (host == null) {
+            assert agts.isReachability() && source.isDisconnected();
+            return result;
+        }
+
         if (USE_GUI && source.getNumber() == 0) {
             ShapePreviewDialog.showShape(host);
         }

@@ -124,7 +124,10 @@ public final class AGTS extends GTS {
             this.subsumedStatesCount +=
                 newState.markSubsumedStates(this.toRemove);
             if (this.reachability) {
-                getStateSet().removeAll(this.toRemove);
+                for (ShapeState stateToRemove : this.toRemove) {
+                    getStateSet().remove(stateToRemove);
+                    stateToRemove.disconnectState();
+                }
             }
             // Adjust the counter for the next state number.
             this.nextStateNr = newState.getNumber() + 1;
