@@ -58,11 +58,11 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     /** The shape associated with this state. */
-    private final Shape shape;
+    private Shape shape;
     /** A (possible null) reference to a state that subsumes this one. */
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
-    private final ArrayList<RuleTransition> transitions;
+    private ArrayList<RuleTransition> transitions;
     /**
      * Temporary set of possible subsumed states used when adding the state to
      * the GTS.
@@ -230,6 +230,22 @@ public class ShapeState extends AbstractGraphState {
         }
         this.subsumedStates = null;
         return markCount;
+    }
+
+    /**
+     * Clear references to expensive structures such as the state shape. This
+     * method can only be called when this state is marked as subsumed.
+     * It is easier to keep the reference to this state around and just clear 
+     * the internal references so garbage collection will free some memory.
+     */
+    public void disconnectState() {
+        assert isSubsumed();
+        this.shape = null;
+    }
+
+    /** Returns true if this state was disconnected in the exploration. */
+    public boolean isDisconnected() {
+        return this.shape == null && isSubsumed();
     }
 
     // ------------------------------------------------------------------------
